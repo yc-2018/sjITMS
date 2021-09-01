@@ -1,0 +1,119 @@
+@import '~antd/lib/style/themes/default.less';
+
+:global {
+  .ant-form-item-label {
+    text-align: right;
+    vertical-align: middle;
+    line-height: 39.9999px;
+    display: inline-block;
+    overflow: hidden;
+    word-wrap: break-word;
+    white-space: normal;
+    padding-right: 0px;
+    padding-right: 8px;
+
+    label {
+      color:rgba(127,143,164,1);
+      font-size: 14px;
+      font-weight: 400;
+    }
+
+    label::after {
+      content: ":";
+      position: relative;
+      top: -0.5px;
+      margin: 0px 0px 0px 0px;
+    }
+  }
+}
+
+.detailContent {
+
+  .tabsWrapper {
+    margin-left: 30px;
+    margin-right: 30px;
+  }
+
+  .navTitle {
+    display: inline-block;
+    font-size:16px;
+    font-weight:400;
+    color:rgba(54,62,75,1);
+    line-height:22px;
+    height: 16px;
+    border-left: 4px solid @primary-color;
+    padding-left: 5px;
+    margin-bottom: 25px;
+
+    span {
+      position: relative;
+      top: -4px;
+    }
+  }
+
+  .edit {
+    display: inline-block;
+    margin-left: 30px;
+    position: relative;
+    top: -5px;
+
+    span {
+      margin-left: 5px;
+    }
+  }
+
+  .leftSpan {
+    font-size:14px;
+    font-weight:400;
+    color:rgba(127,143,164,1);
+    line-height:22px;
+  }
+
+  .content {
+    margin-left: 20px;
+    margin-top: 20px;
+  }
+
+  .basicInfoWrapper {
+
+    .basicInfoView {
+      margin-left: 20px;
+    }
+  }
+
+  .usedInfoWrapper {
+    margin-top: 60px;
+
+    .usedInfoView {
+      margin-left: 20px;
+
+      .progressSpan {
+        margin-left: 10px;
+      }
+    }
+  }
+}
+
+.simpleSearchBtnWrapper {
+  float: right;
+}
+
+.companyEdit {
+  .editTitle {
+    font-size:16px;
+    font-weight:400;
+    color:rgba(54,62,75,1);
+    line-height:22px;
+    height: 16px;
+    border-left: 4px solid @primary-color;
+    padding-left: 5px;
+    margin-bottom: 18px;
+
+    span {
+      position: relative;
+      top: -4px;
+    }
+
+  }
+
+}

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="17px" height="16px" viewBox="0 0 17 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.5 (67469) - http://www.bohemiancoding.com/sketch -->
+    <title>ic_note</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="新建页-企业管理-新建用户-输入" transform="translate(-806.000000, -292.000000)">
+            <g id="分组" transform="translate(48.000000, 184.000000)">
+                <g id="分组-3" transform="translate(670.083333, 100.000000)">
+                    <g id="ic/note" transform="translate(88.000000, 8.000000)">
+                        <g id="分组">
+                            <path d="M2.66666667,7.99999919 L2.66666667,8 C2.66666711,10.9455208 5.05447917,13.3333333 8,13.3333333 C10.9455208,13.3333329 13.3333333,10.9455208 13.3333333,8 C13.3333333,5.05447917 10.9455208,2.66666667 8,2.66666667 C5.05447917,2.66666667 2.66666667,5.05447917 2.66666667,8 L2.66666667,7.99999919 Z" id="路径" fill="#D8DAE6"></path>
+                            <path d="M7.33333333,5.33333333 L8.40095945,5.33333333 L8.40095945,6.4 L7.33333333,6.4 L7.33333333,5.33333333 Z M7.33333333,7.46666667 L8.40095945,7.46666667 L8.40095945,10.6666667 L7.33333333,10.6666667 L7.33333333,7.46666667 Z" id="形状" fill="#FFFFFF" fill-rule="nonzero"></path>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

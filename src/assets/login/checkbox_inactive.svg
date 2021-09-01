@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.5 (67469) - http://www.bohemiancoding.com/sketch -->
+    <title>checkbox_inactive</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="账号登录" transform="translate(-882.000000, -623.000000)" fill="#FFFFFF" stroke="#D8DAE6">
+            <g id="分组-2" transform="translate(882.000000, 316.000000)">
+                <g id="分组-4" transform="translate(0.000000, 305.000000)">
+                    <g id="分组-11">
+                        <g id="分组" transform="translate(0.000000, 2.000000)">
+                            <rect id="Checkbox" x="0.5" y="0.5" width="15" height="15" rx="4"></rect>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,114 @@
+@import '~antd/lib/style/themes/default.less';
+
+.viewPanelWrapper:not(:nth-of-type(2)) {
+  margin-top: 20px;
+  margin-bottom: 20px;
+
+  :global {
+    .ant-collapse-header {
+      width: 99%;
+      position: relative;
+    }
+
+    .ant-collapse-extra {
+      left: 90%;
+      z-index: 5px;
+      position: absolute;
+    }
+  }
+}
+
+.collapse {
+  .collapsePanel {
+    margin-top: 40px;
+    margin-bottom: 20px;
+    border: 0;
+    border-left: 4px solid @primary-color;
+    font-size: 12px;
+  }
+
+  .collapseDiv {
+    margin-top: 20px;
+    margin-left: 20px;
+    margin-bottom: 20px;
+  }
+}
+
+.formTitle {
+  font-size: 12px;
+  font-weight: 400;
+  color: rgba(54, 62, 75, 1);
+  line-height: 22px;
+  height: 16px;
+  //border-left: 4px solid @primary-color;
+  //padding-left: 5px;
+  margin-top: 0px;
+  margin-bottom: 20px;
+
+  span {
+    position: relative;
+    top: -4px;
+  }
+}
+
+.titleWrappr {
+  .navTitle {
+    font-size:14px;
+    font-weight:500;
+    color: #354052;
+    line-height:22px;
+    height: 22px;
+    //border-left: 4px solid @primary-color;
+    //padding-left: 5px;
+    margin-bottom: 6px;
+
+    span {
+      position: relative;
+    }
+  }
+
+  .edit {
+    display: inline-block;
+    margin-left: 30px;
+    position: relative;
+    top: -4px;
+
+    span {
+      margin-left: 5px;
+    }
+  }
+
+}
+
+.contentWrapper {
+  padding-left: 5px;
+
+  .leftSpan {
+    font-size: 12px;
+    font-weight: 400;
+    color: #354052;
+    line-height: 22px;
+  }
+
+  :global {
+    .ant-form .ant-form-item {
+      margin-bottom: 0;
+    }
+
+    .ant-collapse-content > .ant-collapse-content-box {
+      padding-bottom: 0px;
+    }
+  }
+}
+
+.formLabel {
+  :global {
+    .ant-form-item .ant-form-item-label{
+      text-align:left
+    }
+  }
+}
+
+.formPanel {
+  padding-right: 12px;
+}

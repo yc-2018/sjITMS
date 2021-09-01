@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.5 (67469) - http://www.bohemiancoding.com/sketch -->
+    <title>ic_homeuser</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="账号登录" transform="translate(-882.000000, -421.000000)">
+            <g id="分组-2" transform="translate(882.000000, 316.000000)">
+                <g id="input/login" transform="translate(0.000000, 105.000000)">
+                    <g id="分组-2">
+                        <g id="分组" transform="translate(2.000000, 2.000000)">
+                            <path d="M11.1040846,9.04144681 L11.2634943,10.934936 L7.87222061,12.2219536 C6.29984834,12.8186824 5.0501029,14.0479359 4.42746218,15.6102285 L3.73065666,18.3557078 C3.59117554,18.9052765 3.03625681,19.241012 2.48472205,19.1095199 L2.48472205,19.1095199 C1.95138793,18.9823671 1.62211294,18.4469366 1.74926579,17.9136025 C1.75151744,17.9041581 1.75390753,17.8947472 1.75643526,17.8853729 L2.5695768,14.8697814 C3.39976443,12.7867245 5.06609168,11.14772 7.16258804,10.3520815 L11.1040846,9.04144681 Z" id="路径-4" fill="#CED0DA" fill-rule="nonzero"></path>
+                            <circle id="椭圆形" stroke="#CED0DA" stroke-width="2" fill-rule="nonzero" cx="11" cy="6" r="4"></circle>
+                            <rect id="矩形" fill="#3B77E3" x="11" y="14" width="8" height="2" rx="1"></rect>
+                            <rect id="矩形" fill="#3B77E3" x="11" y="17" width="8" height="2" rx="1"></rect>
+                            <rect id="矩形" fill-rule="nonzero" x="0" y="0" width="20" height="20"></rect>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

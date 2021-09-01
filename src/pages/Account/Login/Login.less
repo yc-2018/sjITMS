@@ -1,0 +1,206 @@
+@import '~antd/lib/style/themes/default.less';
+
+.main {
+  min-height: 600px;
+  min-width: 1039px;
+  display: flex;
+  display: -webkit-flex; /* Safari */
+  flex-direction: row;
+
+  .cards {
+    width: 53%;
+    position: relative;
+
+    .tips {
+      z-index: 2;
+      left: 0;
+      top: 0;
+      color: red;
+
+      .tips1 {
+        display: inline-block;
+        font-size: 30px;
+        font-weight: 400;
+        color: rgba(255,255,255,1);
+        line-height: 67px;
+        margin-left: 10%;
+        margin-top: 20%;
+        margin-left: 90px;
+      }
+
+      .tips2 {
+        display: inline-block;
+        font-size: 30px;
+        font-weight: 400;
+        color: rgba(255,255,255,1);
+        line-height: 67px;
+        margin-left: 15%;
+        margin-top: 20px;
+        margin-left: 120px;
+      }
+    }
+
+    .copyright {
+      position: absolute;
+      z-index: 2;
+      bottom: 24px;
+      width: 100%;
+      height: 16px;
+      font-size: 12px;
+      font-weight: 400;
+      color: rgba(255,255,255,1);
+      line-height: 17px;
+      opacity: 0.8;
+      text-align: center;
+    }
+  }
+
+  .fill {
+    width: 47%;
+
+    .logo {
+      margin-left: 45px;
+      margin-top: 15%;
+      // margin-top: 60px;
+
+      img {
+        width:40px;
+        height:40px;
+      }
+
+      span {
+        font-size: 40px;
+        font-weight: 600;
+        color:rgba(54,62,75,1);
+        line-height:56px;
+        position: relative;
+        top: 10px;
+        left: 8px;
+      }
+    }
+
+    // 统一form包装
+    .formWrapper {
+      margin: 40px auto;
+      width: 75%;
+
+      .errorMsg {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        color: red;
+      }
+
+      .title {
+        span {
+          font-size: 18px;
+          font-weight: 600;
+          color: rgba(53,64,82,1);
+          line-height: 33px;
+        }
+
+        a {
+          display: block;
+          font-size: 12px;
+          font-weight:400;
+          color:rgba(47,150,234,1);
+          line-height:22px;
+          float: right;
+          position: relative;
+          top: 5px;
+        }
+      }
+
+      .form {
+        clear: both;
+        font-size: 20px;
+        margin-top: 20px;
+
+        input {
+          border: none;
+          border-bottom: 1px solid rgba(206,208,218,1);
+          border-radius: 0;
+          outline: none;
+        }
+
+        input:focus {
+          border-bottom: 1px solid rgba(59,119,227,1);
+        }
+
+        .inputPrefixFixed {
+          margin-left: -15px;
+        }
+
+        .forgetPassword {
+          float: right;
+          font-size: 12px;
+        }
+
+        .operate {
+          margin-top: 0px;
+        }
+
+        .loginButton {
+          width: 100%;
+          margin-top: 40px;
+          height: 44px;
+        }
+      }
+    }
+
+    // 账户登录
+    .accountLogin {
+      .form {
+        .forgetPassword {
+          float: right;
+          font-size: 12px;
+        }
+        .imageCaptcha {
+          margin-left: 2px;
+          width: 100px;
+          margin-top: -5px;
+
+          img {
+            cursor: pointer;
+          }
+
+          a {
+            float: left;
+            font-size: 12px;
+            font-weight: 400;
+            color: rgba(127,143,164,1);
+            line-height: 17px;
+          }
+        }
+      }
+    }
+
+  }
+
+  .icon {
+    font-size: 24px;
+    color: rgba(0, 0, 0, 0.2);
+    margin-left: 16px;
+    vertical-align: middle;
+    cursor: pointer;
+    transition: color 0.3s;
+
+    &:hover {
+      color: @primary-color;
+    }
+  }
+
+  .other {
+    text-align: left;
+    margin-top: 24px;
+    line-height: 22px;
+
+    .register {
+      float: right;
+    }
+  }
+}
+
+.submit {
+  width: 184px;
+  float:left;
+}

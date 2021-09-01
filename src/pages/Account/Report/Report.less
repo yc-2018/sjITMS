@@ -1,0 +1,147 @@
+
+@import '~antd/lib/style/themes/default.less';
+
+.addStoreWrapper {
+  height: 400px;
+
+  .leftWrapper {
+    float: left;
+    width: 48%;
+    height: 100%;
+    border-radius: 4px;
+    border: @border-width-base @border-style-base @border-color-split;
+    padding: 10px;
+
+    .list {
+      height: 80%;
+      overflow: auto;
+      margin-top: 10px;
+
+      div {
+        line-height: 37px;
+        height: 37px;
+        border-bottom: @border-width-base @border-style-base @border-color-split;
+        cursor: pointer;
+      }
+
+      div:hover {
+        background: #F9F9F9;
+      }
+    }
+
+    .pagination {
+      text-align: center;
+      margin-top: 10px;
+    }
+  }
+
+  .rightWrapper {
+    margin-left: 0px;
+    float: right;
+    width: 48%;
+    height: 100%;
+    border-radius: 4px;
+    border: @border-width-base @border-style-base @border-color-split;
+    padding: 10px;
+
+    .count {
+      // font-size: 14px;
+      font-weight: 400;
+      color: rgba(54, 62, 75, 1);
+      line-height: 20px;
+      display: inline-block;
+      margin-left: 10px;
+    }
+
+    .list {
+      overflow: auto;
+      margin-top: 20px;
+
+      div {
+        line-height: 37px;
+        height: 37px;
+        border-bottom: @border-width-base @border-style-base @border-color-split;
+        cursor: pointer;
+
+        .close {
+          float: right;
+        }
+      }
+
+      div:hover {
+        background: #F9F9F9;
+      }
+    }
+  }
+}
+
+.navigatorPanelWrapper{
+  line-height: 56px;
+  height: 56px;
+  border-bottom: @border-width-base @border-style-base rgba(232, 232, 232, 1);
+  position: relative;
+  margin-left: -24px;
+  clear: both;
+
+  .title {
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(54, 62, 75, 1);
+    margin-left: 24px;
+    margin-top: -16px;
+  }
+
+  .action {
+    float: right;
+    top: 25%;
+    margin-right: 24px;
+  }
+
+  .action button {
+    margin-left: 12px;
+  }
+}
+
+.content {
+  padding-top: 30px
+}
+
+.rightContentButton{
+  margin-top: 30px;
+}
+.menuItemA{
+  color: gray;
+}
+.menuItemA:hover{
+  color: red;
+}
+
+.storeButtonGrops{
+  position:absolute;
+  float: right;
+  z-index: 5;
+  right: 1%;
+  width: 200px;
+  height: 43px;
+}
+
+.tabsWrapper {
+  margin-top: -18px;
+  position:relative;
+  .standardTable {
+    :global {
+      .ant-table-pagination {
+        margin-top: 24px;
+      }
+
+      .ant-table-thead>tr>th {
+        background-color: #ffffff;
+        margin: 0 auto;
+      }
+
+      .ant-table-thead>tr {
+        height: 36px;
+      }
+    }
+  }
+}

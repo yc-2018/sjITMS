@@ -1,0 +1,173 @@
+@import '~antd/lib/style/themes/default.less';
+
+.baseView {
+  :global {
+    .ant-form-item-label {
+      label {
+        color:rgba(127,143,164,1);
+        font-size: 12px;
+        font-weight: 400;
+      }
+    }
+  }
+
+  width: 100%;
+  height: 100%;
+  background-color: @body-background;
+  display: flex;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  overflow: auto;
+  color: rgba(127,143,164,1);
+
+  .code {
+    margin-bottom: 30px;
+    vertical-align: middle;
+
+    .codeLabel {
+      display: inline-block;
+      overflow: hidden;
+      white-space: nowrap;
+      text-align: right;
+      vertical-align: middle;
+      color: rgba(127,143,164,1);
+    }
+
+    .codeLabel::after {
+      content: '';
+      position: relative;
+      top: -0.5px;
+      margin: 0 8px 0 2px;
+    }
+  
+  }
+
+  .avatar {
+    margin-bottom: 30px;
+    vertical-align: middle;
+
+    .avatarLabel {
+      display: inline-block;
+      overflow: hidden;
+      line-height: 120px;
+      white-space: nowrap;
+      text-align: right;
+      vertical-align: middle;
+      color: rgba(127,143,164,1);
+    }
+
+    .avatarLabel::after {
+      content: '';
+      position: relative;
+      top: -0.5px;
+      margin: 0 8px 0 2px;
+    }
+
+    .userAvatar {
+      width: 100px;
+      height: 120px;
+
+      .avatarUploader > .ant-upload {
+        width: 100px;
+        height: 120px;
+      }
+
+      .avatarImgWrapper {
+        .avatarImg {
+          width: 100px;
+          height: 100px;
+        }
+
+        .userAvatarEditorMask {
+          cursor: pointer;
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+          z-index: 1;
+          opacity: 0;
+          display: none;
+          transform:  translateX(100%);
+          width: 118px;
+          height: 100px;
+    
+          .userAvatarEditorMaskInner {
+            border-radius: 2px;
+            background: #1A1A1A;
+            position: absolute;
+            z-index: -1;
+            width: 100%;
+            height: 117%;
+            opacity: 0.4;
+            box-sizing: border-box;
+          }
+    
+          .maskContent {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            z-index: 5;
+            color: #FFFFFF;
+            text-align: center;
+            -webkit-transform: translate(-50%, -22%);
+            transform: translate(-50%, -22%);
+    
+            .maskInnerText {
+              white-space: nowrap;
+            }
+          }
+        }
+      }
+
+      .avatarImgWrapper:hover .userAvatarEditorMask {
+        opacity: 1;
+        transform:  translateX(0);
+        display: block;
+      }
+    }
+
+  }
+
+  .orgs {
+    margin-bottom: 30px;
+    vertical-align: middle;
+
+    .orgsLabel {
+      display: inline-block;
+      overflow: hidden;
+      white-space: nowrap;
+      text-align: right;
+      vertical-align: middle;
+      color: rgba(127,143,164,1);
+    }
+
+    .orgsLabel::after {
+      content: '';
+      position: relative;
+      top: -0.5px;
+      margin: 0 8px 0 2px;
+    }
+
+    .orgsContent {
+      div:not(:first-child) {
+        margin-top: 5px;
+      }
+    }
+
+    .selected {
+      display: inline-block;
+      width: 32px;
+      height: 20px;
+      border-radius:2px;
+      border: 1px solid rgba(255,127,91,1);
+      font-size: 12px;
+      font-weight: 400;
+      color: rgba(255,127,91,1);
+      text-align: center;
+      vertical-align: middle;
+      position: relative;
+      top: -1px;
+    }
+  }
+}

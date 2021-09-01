@@ -1,0 +1,128 @@
+@import '~antd/lib/style/themes/default.less';
+
+.contentWrapper {
+    min-height: 950px;
+    background: #ffffff;
+    margin-top: -24px;
+    :global{
+      .ant-table-tbody > tr.ant-table-row-selected td {
+        color: inherit;
+        background: none;
+      }
+
+      .ant-layout.ant-layout-has-sider{
+        width: 100%
+      }
+
+      ::-webkit-scrollbar-track{
+        background: none;
+      }
+      .ant-table-placeholder{
+        display: none;
+      }
+      .ant-table-body{
+        height: calc(50vh) !important;
+      }
+      .ant-table-tbody > tr >td {
+        padding: 0px 8px !important;
+      }
+      .ant-form-item{
+        margin-bottom: 5px;
+        .ant-form-item-label{
+          width:45%;
+        }
+      }
+    }
+    .itemView{
+      :global{
+        .ant-table-body{
+          height: calc(44vh) !important;
+        }
+      }
+    }
+    .headWrapper {
+      min-height: 45px;
+      height: 20%;
+      background: #ffffff;
+      padding-left:0px ;
+      padding-right:0px ;
+      .headRow{
+        line-height:10px;
+      }
+    }
+    .leftWrapper {
+      min-height: 450px;
+      background: #ffffff;
+      border-right:1px solid white;
+      padding-top: 8px;
+    }
+  
+    .rightWrapper {
+      background: #ffffff;
+      padding: 10px 0px 26px 24px;
+      // min-height: 400px;
+      // max-height: 400px;
+
+      overflow: hidden;
+      border-left:1px solid white;
+
+    }
+    .footerWrapper {
+      background: #ffffff;
+      min-height: 500px;
+      border-top: @border-width-base @border-style-base @border-color-split;
+    }
+
+    .main{
+      > div{
+        width: 50%;
+        height: 50%;
+        float: left;
+      }
+    }
+}
+
+.topWrapper {
+  border-bottom: @border-width-base @border-style-base @border-color-split;
+  padding-bottom: 15px;
+
+  .title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #363e4b;
+  }
+}
+
+
+.standardTable {
+  :global {
+    .ant-table-pagination {
+      margin-top: 24px;
+    }
+    .ant-table-thead > tr > th {
+      background-color: #ffffff;
+      margin: 0 auto;
+    }
+    .ant-table-thead > tr {
+      height: 36px;
+    }
+    a[disabled]{
+      color:rgb(170, 182, 190);
+      opacity: 1;
+    }
+  }
+
+  .lightRow {
+    background-color: #F9F9F9;
+    border:none;
+  }
+  
+}
+.moveButton{
+  .up:hover{
+    color: #3B77E3;
+  }
+  .down:hover{
+    color: #3B77E3;
+  }
+}

@@ -1,0 +1,190 @@
+@import '~antd/lib/style/themes/default.less';
+
+@pro-header-hover-bg: rgba(0, 0, 0, 0.025);
+
+.orgTitle {
+  width: 160px;
+  height: 44px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #354052;
+  line-height: 44px;
+  display: inline-block;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  vertical-align: top;
+}
+
+.header {
+  height: 44px;
+  padding: 0;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  position: relative;
+}
+
+.logo {
+  height: 44px;
+  line-height: 58px;
+  vertical-align: top;
+  display: inline-block;
+  padding: 0 0 0 24px;
+  cursor: pointer;
+  font-size: 18px;
+  img {
+    display: inline-block;
+    vertical-align: middle;
+  }
+}
+
+.menu {
+  :global(.anticon) {
+    margin-right: 8px;
+  }
+  :global(.ant-dropdown-menu-item) {
+    width: 160px;
+  }
+
+  .iconFont {
+    position: relative;
+    top: 1px;
+  }
+}
+
+i.trigger {
+  font-size: 18px;
+  height: 44px;
+  cursor: pointer;
+  transition: all 0.3s, padding 0s;
+  padding-left: 24px;
+  vertical-align: middle;
+  &:hover {
+    background: @pro-header-hover-bg;
+  }
+}
+
+.right {
+  float: right;
+  height: 44px;
+  line-height: 44px;
+  overflow: hidden;
+  .dropDown {
+    cursor: pointer;
+    vertical-align: top;
+    line-height: 44px;
+    > svg {
+      position: relative;
+      top: -1px;
+    }
+  }
+
+  :global {
+    .ant-divider {
+      background-color: rgba(216, 218, 230, 0.28);
+    }
+
+    .ant-select-arrow .ant-select-arrow-icon {
+      display: none;
+    }
+  }
+
+  .action {
+    cursor: pointer;
+    padding-right: 10px;
+    padding-left: 10px;
+    display: inline-block;
+    transition: all 0.3s;
+    height: 100%;
+
+    // vertical-align: middle;
+
+    > i {
+      vertical-align: middle;
+      color: @text-color;
+    }
+    &:hover {
+      background: @pro-header-hover-bg;
+    }
+    :global(&.ant-popover-open) {
+      background: @pro-header-hover-bg;
+    }
+  }
+  .search {
+    padding: 0 12px;
+    &:hover {
+      background: transparent;
+    }
+  }
+  .account {
+    .avatar {
+      margin: 10px 8px 20px 0;
+      color: @primary-color;
+      background: rgba(255, 255, 255, 0.85);
+      vertical-align: top;
+    }
+  }
+
+  .operate {
+    display: inline-block;
+    // margin: 0 auto;
+    padding-left: 4px;
+
+    // :last-child {
+    //   margin-right: 6px;
+    // }
+
+    :global {
+      .ant-popover-inner-content {
+        padding: 12px 12px;
+      }
+    }
+  }
+}
+
+.dark {
+  height: 44px;
+  .action {
+    color: rgba(255, 255, 255, 0.85);
+    > i {
+      color: rgba(255, 255, 255, 0.85);
+    }
+    &:hover,
+    &:global(.ant-popover-open) {
+      background: @primary-color;
+    }
+    :global(.ant-badge) {
+      color: rgba(255, 255, 255, 0.85);
+    }
+  }
+}
+
+@media only screen and (max-width: @screen-md) {
+  .header {
+    :global(.ant-divider-vertical) {
+      vertical-align: unset;
+    }
+    .name {
+      display: none;
+    }
+    i.trigger {
+      padding: 22px 12px;
+    }
+    .logo {
+      padding-left: 12px;
+      padding-right: 12px;
+      position: relative;
+    }
+    .right {
+      position: absolute;
+      right: 12px;
+      top: 0;
+      background: #fff;
+      .account {
+        .avatar {
+          margin-right: 0;
+        }
+      }
+    }
+  }
+}

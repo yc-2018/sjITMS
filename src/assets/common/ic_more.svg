@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.5 (67469) - http://www.bohemiancoding.com/sketch -->
+    <title>ic_more</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="列表页" transform="translate(-72.000000, -80.000000)" fill="#848C96">
+            <g id="分组" transform="translate(24.000000, 72.000000)">
+                <g transform="translate(48.000000, 8.000000)" id="arrow">
+                    <path d="M7.41043101,10.7631725 C7.69338915,11.0771791 8.22463936,11.0793124 8.51100486,10.767306 L12.8367089,6.0500081 C13.0873713,5.77706911 13.0445573,5.37292739 12.7418957,5.1469227 C12.4386417,4.92131802 11.9902048,4.95985216 11.740135,5.23279115 L7.97916206,9.35941009 L4.26396609,5.23692457 C4.01626661,4.96198553 3.56842239,4.92025133 3.26279796,5.14372264 C2.95791427,5.36666059 2.91154469,5.77080231 3.15924417,6.04587468 L7.41043101,10.7631725 Z" transform="translate(8.000000, 8.000000) scale(1, -1) rotate(-90.000000) translate(-8.000000, -8.000000) "></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

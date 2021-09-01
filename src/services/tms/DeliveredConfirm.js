@@ -1,0 +1,67 @@
+import { stringify } from 'qs';
+import request from '@/utils/request';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
+
+// 查询可送货确认订单信息
+export async function queryOrder(payload) {
+  return request(`/itms-schedule/itms-schedule/operation/deliveredconfirm/query/order`, {
+    method: 'POST',
+    body: payload
+  });
+}
+
+// 查询可送货确认门店 信息
+export async function queryStore(payload) {
+  return request(`/itms-schedule/itms-schedule/operation/deliveredconfirm/query/store`, {
+    method: 'POST',
+    body: payload
+  });
+}
+
+// 查询未送达确认门店 信息
+export async function queryOrderUndelivered(payload) {
+  return request(`/itms-schedule/itms-schedule/operation/deliveredconfirm/query/order/undelivered`, {
+    method: 'POST',
+    body: payload
+  });
+}
+
+// 订单送货确认
+export async function confirmOrder(payload) {
+  return request(`/itms-schedule/itms-schedule/operation/deliveredconfirm/confirm/order`, {
+    method: 'POST',
+    body: payload
+  });
+}
+
+
+// 门店送货确认
+export async function confirmStore(payload) {
+  return request(`/itms-schedule/itms-schedule/operation/deliveredconfirm/confirm/store`, {
+    method: 'POST',
+    body: payload
+  });
+}
+
+// 门店送货确认
+export async function confirmOrderUndelivered(payload) {
+  return request(`/itms-schedule/itms-schedule/operation/deliveredconfirm/confirm/order/undelivered`, {
+    method: 'POST',
+    body: payload
+  });
+}
+
+// 全部已送达
+export async function deliveredConfirmSchedule(payload) {
+  return request(`/itms-schedule/itms-schedule/operation/deliveredconfirm//confirm/schedule/deliveredConfirmSchedule`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+// 全部未送达
+export async function unDeliveredConfirmSchedule(payload) {
+  return request(`/itms-schedule/itms-schedule/operation/deliveredconfirm/confirm/schedule/unDeliveredConfirmSchedule`, {
+    method: 'POST',
+    body: payload
+  });
+}

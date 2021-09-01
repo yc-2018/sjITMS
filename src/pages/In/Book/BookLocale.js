@@ -1,0 +1,22 @@
+import { formatMessage } from 'umi/locale';
+export const bookLocale = {
+  title: formatMessage({ id: 'book.title' }),
+  beginBook: formatMessage({ id: 'book.beginBook' }),
+  dockGroup: formatMessage({ id: 'book.dockGroup' }),
+  bookDate: formatMessage({ id: 'book.date' }),
+  beginTime: formatMessage({ id: 'book.beginTime' }),
+  endTime: formatMessage({ id: 'book.endTime' }),
+  bookTimeRange: formatMessage({ id: 'book.timeRange' }),
+  type: formatMessage({ id: 'book.type' }),
+  bookQtyStr: formatMessage({ id: 'book.qtyStr' }),
+  ableBookQtyStr: formatMessage({ id: 'book.ableBookQtyStr' }),
+  bookArticleQty: formatMessage({ id: 'book.bookArticleQty' }),
+  ableBookArticleCount: formatMessage({ id: 'book.ableBookArticleCount' }),
+  allArticles: formatMessage({ id: 'book.allArticles' }),
+  allOrders: formatMessage({ id: 'book.allOrders' }),
+  booker: formatMessage({ id: 'book.booker' }),
+  orderInfo: formatMessage({ id: 'book.orderInfo' }),
+  auditConfirm: formatMessage({ id: 'book.audit.confirm' }),
+  removeConfirm: formatMessage({ id: 'book.remove.confirm' }),
+  abortConfirm: formatMessage({ id: 'book.abort.confirm' }),
+};

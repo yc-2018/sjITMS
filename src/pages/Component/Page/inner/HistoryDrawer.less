@@ -1,0 +1,81 @@
+.handle {
+  position: absolute;
+  top: 135px;
+  background: @primary-color;
+  width: 48px;
+  height: 54px;
+  left: 240px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 0;
+  text-align: center;
+  font-size: 24px;
+  border-radius: 0px 8px 8px 0px;
+  box-shadow: 0px 4px 8px 4px #3B77E380;
+
+}
+.iconFont{
+  font-size: 24;
+  font-weight: 300;
+}
+
+.radioButton{
+  width: 95px;
+}
+.listHeader{
+  font-size:16px;
+  font-family:PingFangSC-Semibold;
+  font-weight:600;
+}
+.popHistory{
+  width:240px;
+  :global{
+    .ant-popover-inner-content {
+      padding: 0px 0px !important;
+    }
+  }
+}
+.historyDiv {
+  height: 620px;
+  font-size: 12px;
+  font-weight:400;
+  overflow-y: auto;
+  line-height: 20px;
+  :global {
+    .ant-tabs-nav-animated .ant-tabs-tab{
+      padding-right: 0;
+      padding-left: 0;
+    }
+    .ant-tabs-nav-scroll {
+      text-align: center;
+    }
+    .ant-tabs-tab{
+      height: 36px;
+      color:#7F8FA4;
+      font-weight: 600;
+      &:hover {
+        color:#7F8FA4;
+      };
+      padding-top: 8px;
+      padding-bottom: 8px;
+    }
+    .ant-tabs-tab-active{
+      &:hover {
+        color:#354052;
+      };
+      color: #354052;
+    }
+    .ant-list-item{
+      padding: 8px 12px;
+    }
+  }
+  .time{
+    color: #748191;
+  }
+  .name{
+    color:#354052;
+  }
+}

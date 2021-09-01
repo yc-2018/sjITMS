@@ -1,0 +1,148 @@
+@import '~antd/lib/style/themes/default.less';
+
+@baseFontSize: 12px;
+// error, label, form content...
+@cformFontSize: 12px;
+
+html,
+body,
+#root {
+  height: 100%;
+  background-color: #f0f2f5;
+}
+::-webkit-scrollbar {
+  height: 12px;
+  width: 12px;
+  border-radius: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #FFFFFF;
+}
+.colorWeak {
+  filter: invert(80%);
+}
+.ant-layout {
+  min-height: 100vh;
+}
+canvas {
+  display: block;
+}
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+.globalSpin {
+  width: 100%;
+  margin: 40px 0 !important;
+}
+ul,
+ol {
+  list-style: none;
+}
+.ant-message{
+  top:69px;
+}
+
+:global {
+
+  ::-webkit-scrollbar {
+    height: 12px;
+    width: 12px;
+    border-radius: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: #FFFFFF;
+  }
+  .has-error .ant-form-explain, .has-error .ant-form-split {
+    color: #ff4046;
+    font-size: @cformFontSize;
+  }
+  .ant-form-item .ant-form-item-label {
+    text-align: right;
+    vertical-align: middle;
+    display: inline-block;
+    overflow: hidden;
+    word-wrap: break-word;
+    white-space: normal;
+    padding-right: 0px;
+    padding-right: 8px;
+    // line-height:28px;
+
+    label {
+      color: #354052;
+    }
+    label::after {
+      content: ":";
+      position: relative;
+      top: -0.5px;
+      margin: 0px 0px 0px 0px;
+    }
+  }
+  .ant-form-item {
+    margin-bottom: 8px !important;
+  }
+  .ant-modal-close-x {
+    line-height: 46px !important;
+  }
+  .ant-select {
+    color: #354052
+  }
+  .ant-table-thead > tr {
+    height: 30px;
+  }
+  .has-error .ant-form-explain, .has-error .ant-form-split {
+    font-size: 12px;
+    margin-top: 0px;
+  }
+
+  .ant-modal-content{
+    box-sizing: border-box;
+    min-height:122px;
+    min-width: 400px;
+    max-height: 90vh;
+    //padding:0 24px;
+  }
+  .ant-modal-header{
+    padding:12px 24px !important;
+  }
+  .ant-modal-footer{
+    padding:9px 24px;
+  }
+  .ant-modal-body{
+    box-sizing: border-box;
+    padding:24px 24px 20px 24px !important;
+  }
+  .ant-form-item-control {
+    line-height: 28px !important;
+  }
+  .ant-form-item-label {
+    line-height: 28px !important;
+  }
+  .ant-form-item-children>span {
+    line-height: 28px !important;
+  }
+}
+
+@media (max-width: @screen-md) {
+  .ant-table {
+    width: 100%;
+    overflow-x: auto;
+    &-thead > tr,
+    &-tbody > tr {
+      > th,
+      > td {
+        white-space: pre;
+        > span {
+          display: block;
+        }
+      }
+    }
+  }
+}
+
+.ant-btn-disabled, .ant-btn.disabled, .ant-btn[disabled], .ant-btn-disabled:hover, .ant-btn.disabled:hover, .ant-btn[disabled]:hover, .ant-btn-disabled:focus, .ant-btn.disabled:focus, .ant-btn[disabled]:focus, .ant-btn-disabled:active, .ant-btn.disabled:active, .ant-btn[disabled]:active, .ant-btn-disabled.active, .ant-btn.disabled.active, .ant-btn[disabled].active {
+  color: rgba(0, 0, 0, 0.5);
+}

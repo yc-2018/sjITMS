@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.2 (72643) - https://sketchapp.com -->
+    <title>ic_choice</title>
+    <desc>Created with Sketch.</desc>
+    <g id="配送中心管理" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="配送中心-出库流程-排车看板" transform="translate(-1036.000000, -466.000000)">
+            <g id="分组-7" transform="translate(76.000000, 168.000000)">
+                <g id="分组-4" transform="translate(32.000000, 206.000000)">
+                    <g id="分组-2-copy-4" transform="translate(718.000000, 0.000000)">
+                        <g id="分组-10" transform="translate(206.000000, 88.000000)">
+                            <g id="Group" transform="translate(4.000000, 4.000000)">
+                                <g id="Group-2">
+                                    <path d="M4.80489143,11.3038972 L9.02542678,14.5030345 L19.4594267,5.31482937 C19.4594267,5.31482937 20.1627658,4.71962573 20.7880382,5.16600008 C20.9834314,5.31482937 21.1788961,5.72394532 20.7098762,6.35640737 L9.7679065,18.5205172 C9.7679065,18.5205172 8.94726474,19.5993536 7.93122981,18.5205172 L3.2027247,12.4570461 C3.2027247,12.4570461 2.65561429,11.6387006 3.35897722,11.1550679 C3.59348718,11.0062386 4.14057374,10.7458611 4.80489143,11.3038972" id="ic_choice" fill="#FFFFFF"></path>
+                                    <rect id="Rectangle" fill-rule="nonzero" x="0" y="0" width="24" height="24"></rect>
+                                </g>
+                            </g>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

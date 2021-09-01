@@ -1,0 +1,62 @@
+@import '~antd/lib/style/themes/default.less';
+
+.navigatorPanelWrapper {
+  line-height: 56px;
+  height: 56px;
+  border-bottom: @border-width-base @border-style-base rgba(232, 232, 232, 1);
+  position: relative;
+  margin: -24px -24px 0px;
+  clear: both;
+
+  .title {
+    font-size:16px;
+    font-weight:600;
+    color:rgba(54,62,75,1);
+    margin-left: 24px;
+  }
+
+  .action {
+    float: right;
+    top: 25%;
+    margin-right: 24px;
+  }
+
+  .action button {
+    margin-left: 12px;
+  }
+}
+.searchForm {
+  :global {
+    .ant-form-item {
+      > .ant-form-item-label {
+        width: 40%
+      }
+    }
+    .ant-table-tbody > tr > td {
+      padding: 1px 0 0 16px !important;
+    }
+    .ant-table-tbody > tr.ant-table-row-selected td {
+      color: inherit;
+      background: none;
+    }
+    .antd-pro-layouts-basic-layout-content {
+      .ant-layout-footer{
+        margin-top: -15px !important;
+      }
+    }
+    .page-tableListOperator {
+      margin-top: -10px !important;
+      margin-bottom: 6px !important;
+    }
+
+  }
+}
+
+.lightRow {
+  background-color: #F9F9F9;
+  border:none;
+}
+
+.changeColor{
+  background-color: #d3eebc;
+}

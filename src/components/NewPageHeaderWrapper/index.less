@@ -1,0 +1,25 @@
+@import '~antd/lib/style/themes/default.less';
+
+.content {
+  margin: 0 0;
+  background: rgba(237,241,245,1);
+  margin-top: -24px;
+
+  :global {
+    ::-webkit-scrollbar {
+      height: 12px;
+      width: 12px;
+      border-radius: 8px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background-color: #FFFFFF;
+    }
+  }
+}
+
+@media screen and (max-width: @screen-sm) {
+  .content {
+    margin: 24px 0 0;
+  }
+}

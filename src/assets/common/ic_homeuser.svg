@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.2 (67145) - http://www.bohemiancoding.com/sketch -->
+    <title>ic/homeuser </title>
+    <desc>Created with Sketch.</desc>
+    <g id="ic/homeuser-" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="分组-2">
+            <g id="分组" transform="translate(2.000000, 2.000000)">
+                <path d="M11.1040846,9.04144681 L11.2634943,10.934936 L7.87222061,12.2219536 C6.29984834,12.8186824 5.0501029,14.0479359 4.42746218,15.6102285 L3.73065666,18.3557078 C3.59117554,18.9052765 3.03625681,19.241012 2.48472205,19.1095199 L2.48472205,19.1095199 C1.95138793,18.9823671 1.62211294,18.4469366 1.74926579,17.9136025 C1.75151744,17.9041581 1.75390753,17.8947472 1.75643526,17.8853729 L2.5695768,14.8697814 C3.39976443,12.7867245 5.06609168,11.14772 7.16258804,10.3520815 L11.1040846,9.04144681 Z" id="路径-4" fill="#CED0DA" fill-rule="nonzero"></path>
+                <path d="M11,11 C8.23857625,11 6,8.76142375 6,6 C6,3.23857625 8.23857625,1 11,1 C13.7614237,1 16,3.23857625 16,6 C16,8.76142375 13.7614237,11 11,11 Z M11,9 C12.6568542,9 14,7.65685425 14,6 C14,4.34314575 12.6568542,3 11,3 C9.34314575,3 8,4.34314575 8,6 C8,7.65685425 9.34314575,9 11,9 Z" id="椭圆形" fill="#CED0DA" fill-rule="nonzero"></path>
+                <rect id="矩形" fill="#3B77E3" x="11" y="14" width="8" height="2" rx="1"></rect>
+                <rect id="矩形" fill="#3B77E3" x="11" y="17" width="8" height="2" rx="1"></rect>
+                <rect id="矩形" fill-rule="nonzero" x="0" y="0" width="20" height="20"></rect>
+            </g>
+        </g>
+    </g>
+</svg>

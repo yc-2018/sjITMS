@@ -1,0 +1,109 @@
+@import '~antd/lib/style/themes/default.less';
+
+.viewPanelWrapper {
+  margin-left: 20px;
+  margin-top: 20px;
+
+  // .collapse{
+  //   border: 0;
+  // }
+
+  .titleWrappr {
+    .navTitle {
+      display: inline-block;
+      font-size:16px;
+      font-weight:400;
+      color:rgba(54,62,75,1);
+      line-height:22px;
+      height: 16px;
+      border-left: 4px solid @primary-color;
+      padding-left: 5px;
+  
+      span {
+        position: relative;
+        top: -4px;
+      }
+    }
+  
+    .edit {
+      display: inline-block;
+      margin-left: 30px;
+      position: relative;
+      top: -4px;
+  
+      span {
+        margin-left: 5px;
+      }
+    }
+
+  }
+
+  .contentWrapper {
+    padding-left: 20px;
+
+    .leftSpan {
+      font-size:14px;
+      font-weight:400;
+      color:rgba(127,143,164,1);
+      line-height:22px;
+    }
+
+    :global {
+      .ant-form .ant-form-item {
+        margin-bottom: 0;
+      }
+    }
+  }
+}
+
+.viewPanelWrapper:not(:nth-of-type(2)) {
+  margin-top: 20px;
+  :global{
+    .ant-collapse-header{
+      width: 99%;
+      position: relative;
+    }
+    .ant-collapse-extra{
+      left: 90%;
+      z-index: 5px;
+      position: absolute;
+    }
+  }
+}
+
+.collapse{
+  .collapsePanel{
+    margin-top: 40px;
+    border: 0;
+    border-left:4px solid @primary-color;
+    font-size:16px;
+  }
+  .collapseDiv{
+    margin-top: 20px;
+    margin-left:20px;
+  }
+}
+
+.offlineCard {
+  :global {
+    .ant-tabs-ink-bar {
+      bottom: auto;
+    }
+    .ant-tabs-bar {
+      border-bottom: none;
+    }
+    .ant-tabs-tab-prev-icon:before {
+      position: relative;
+      left: 6px;
+    }
+    .ant-tabs-tab-next-icon:before {
+      position: relative;
+      right: 6px;
+    }
+  }
+
+  :global(.ant-tabs-tab-active) h4 {
+    color: @primary-color;
+  }
+}
+

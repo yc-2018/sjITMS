@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="16px" height="16px" viewBox="0 0 16 16" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.2 (67145) - http://www.bohemiancoding.com/sketch -->
+    <title>ic_reply</title>
+    <desc>Created with Sketch.</desc>
+    <g id="⚠️-通知发布" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="新建页-通知发布-有发布" transform="translate(-1350.000000, -667.000000)">
+            <g id="list/replyone" transform="translate(884.000000, 629.000000)">
+                <g id="ic_reply" transform="translate(466.000000, 38.000000)">
+                    <g>
+                        <g>
+                            <path d="M6.16611244,3.70510452 L1.47859184,7.44430043 C1.35886922,7.53986167 1.35898311,7.6393867 1.47894077,7.73509596 L6.16611244,11.4743316 L6.16611244,9.14101112 L6.66611244,9.14101112 C9.7571487,9.14101112 12.0812284,9.78391268 14.0482602,11.4885729 C12.643373,8.02706993 9.56520641,6.03848007 6.66611244,6.03848007 L6.16611244,6.03848007 L6.16611244,3.70510452 Z" id="Fill-1" stroke="#3B77E3"></path>
+                            <polygon id="Clip-2" points="0 0 16 0 16 16 0 16"></polygon>
+                        </g>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

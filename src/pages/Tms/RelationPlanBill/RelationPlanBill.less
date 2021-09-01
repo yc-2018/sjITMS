@@ -1,0 +1,74 @@
+@import '~antd/lib/style/themes/default.less';
+
+.contentWrapper {
+    min-height: 950px;
+    background: #ffffff;
+    margin-top: -24px;
+    :global{
+      .ant-layout.ant-layout-has-sider{
+        width: 100%
+      }
+
+      .ant-form-item{
+        margin-bottom: 5px;
+      }
+    }
+
+    .leftWrapper {
+      min-height: 450px;
+      background: #ffffff;
+      border-right:1px solid white;
+      padding-top: 8px;
+    }
+  
+    .rightWrapper {
+      background: #ffffff;
+      padding: 10px 0px 26px 24px;
+      min-height: 400px;
+      overflow: hidden;
+      border-left:1px solid white;
+
+    }
+    .footerWrapper {
+      background: #ffffff;
+      min-height: 500px;
+      border-top: @border-width-base @border-style-base @border-color-split;
+    }
+    
+}
+
+.topWrapper {
+  border-bottom: @border-width-base @border-style-base @border-color-split;
+  padding-bottom: 15px;
+
+  .title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #363e4b;
+  }
+}
+
+
+.standardTable {
+  :global {
+    .ant-table-pagination {
+      margin-top: 24px;
+    }
+    .ant-table-thead > tr > th {
+      background-color: #ffffff;
+      margin: 0 auto;
+    }
+    .ant-table-thead > tr {
+      height: 36px;
+    }
+    a[disabled]{
+      color:rgb(170, 182, 190);
+      opacity: 1;
+    }
+  }
+
+  .lightRow {
+    background-color: #F9F9F9;
+    border:none;
+  }
+}

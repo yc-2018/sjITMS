@@ -1,0 +1,161 @@
+@import '~antd/lib/style/themes/default.less';
+
+.pageDetail {
+  height: 100vh;
+  margin-top: 24px;
+  margin-bottom: 5px;
+
+  .title {
+    font-size: 1px;
+    color: @heading-color;
+    font-weight: 500;
+    margin-bottom: 16px;
+  }
+
+  ::-webkit-scrollbar {
+    height: 12px;
+    width: 12px;
+    border-radius: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: #FFFFFF;
+  }
+
+  .detailNavigatorPanelWrapper {
+    box-shadow: 0px 2px 8px 0px rgba(59,119,227,0.24);
+    background: #fff;
+    line-height: 52px;
+    height: 52px;
+    position: relative;
+    margin-top: -24px;
+    clear: both;
+
+    .title {
+      font-size: 14px;
+      font-weight:600;
+      color:rgba(54,62,75,1);
+      margin-left: 24px;
+    }
+
+    .enableCheck {
+      margin-left: 24px;
+      display: inline-block;
+
+      .enableSwitch {
+        position: relative;
+        top: -2px;
+      }
+
+      span {
+        font-size: 16px;
+        font-weight: 400;
+        color: rgba(54,62,75,1);
+        line-height: 20px;
+        margin-left: 8px;
+      }
+
+    }
+
+    .billState{
+      float: left;
+      margin-left: 24px;
+      margin-right: -20px;
+    }
+    .action {
+      float: right;
+      top: 25%;
+      margin-right: 24px;
+    }
+
+    .action button {
+      margin-left: 10px;
+    }
+
+  }
+
+  .tab {
+    box-shadow: 0px 2px 8px 0px rgba(59,119,227,0.24);
+    background: #fff;
+    margin-top: 8px;
+    height:calc(~'100% - 50px');
+    overflow: hidden;
+  }
+}
+
+.detailContent {
+  height:100%;
+  :global {
+    .ant-tabs-nav-scroll {
+      border-bottom: 2px solid #EAECF1;
+    }
+    .ant-tabs-nav-wrap {
+      margin-bottom: 38px !important;
+    }
+    .ant-tabs-bar {
+      margin-bottom: 0px !important;
+    }
+  }
+
+  .tabsWrapper {
+    margin-left: 24px;
+    margin-right: 24px;
+    height: 100%;
+    padding-bottom:12px;
+    // overflow-y: auto;
+  }
+
+  .navTitle {
+    display: inline-block;
+    font-size:16px;
+    font-weight:400;
+    color:rgba(54,62,75,1);
+    line-height:22px;
+    height: 16px;
+    border-left: 4px solid @primary-color;
+    padding-left: 5px;
+    margin-bottom: 25px;
+
+    span {
+      position: relative;
+      top: -4px;
+    }
+  }
+
+  .edit {
+    display: inline-block;
+    margin-left: 30px;
+    position: relative;
+    top: -5px;
+
+    span {
+      margin-left: 5px;
+    }
+  }
+
+  .leftSpan {
+    font-size:14px;
+    font-weight:400;
+    color:rgba(127,143,164,1);
+    line-height:22px;
+  }
+
+  .content {
+    margin-left: 20px;
+    margin-top: 20px;
+  }
+}
+
+.nextBeforeButton {
+  color: #848C96;
+}
+
+.nextBeforeButton:hover {
+  color: #659AF0;
+}
+
+:global {
+  .antd-pro-pages-component-page-inner-view-page-detail-pageDetail .antd-pro-pages-component-page-inner-view-page-detail-detailNavigatorPanelWrapper .antd-pro-pages-component-page-inner-view-page-detail-title {
+    font-size: 14px;
+  }
+}

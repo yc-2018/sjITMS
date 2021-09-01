@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="60px" height="60px" viewBox="0 0 60 60" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 52.5 (67469) - http://www.bohemiancoding.com/sketch -->
+    <title>img_warnfill</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="批量操作-弹框居中显示" transform="translate(-360.000000, -635.000000)">
+            <rect id="矩形" fill-opacity="0.5" fill="#000000" fill-rule="nonzero" x="0" y="0" width="1440" height="1024"></rect>
+            <g id="分组-3" transform="translate(240.000000, 595.000000)">
+                <rect id="矩形" fill="#FFFFFF" x="0" y="0" width="300" height="234" rx="4"></rect>
+                <g id="img/warnfill" transform="translate(120.000000, 40.000000)">
+                    <g id="分组">
+                        <circle id="椭圆形" fill="#FF7F5B" cx="30" cy="30" r="28"></circle>
+                        <path d="M30,15 L31,15 C32.1045695,15 33,15.8954305 33,17 L33,33 C33,34.1045695 32.1045695,35 31,35 L30,35 C28.8954305,35 28,34.1045695 28,33 L28,17 C28,15.8954305 28.8954305,15 30,15 Z M30,39.5762712 L31,39.5762712 C32.1045695,39.5762712 33,40.4717017 33,41.5762712 L33,42.5762712 C33,43.6808407 32.1045695,44.5762712 31,44.5762712 L30,44.5762712 C28.8954305,44.5762712 28,43.6808407 28,42.5762712 L28,41.5762712 C28,40.4717017 28.8954305,39.5762712 30,39.5762712 Z" id="合并形状" fill="#FFFFFF" fill-rule="nonzero"></path>
+                        <rect id="矩形" fill-rule="nonzero" x="0" y="0" width="60" height="60"></rect>
+                    </g>
+                </g>
+                <g id="分组" transform="translate(120.000000, 40.000000)">
+                    <circle id="椭圆形" fill="#FF7F5B" cx="30" cy="30" r="28"></circle>
+                    <path d="M30,15 L31,15 C32.1045695,15 33,15.8954305 33,17 L33,33 C33,34.1045695 32.1045695,35 31,35 L30,35 C28.8954305,35 28,34.1045695 28,33 L28,17 C28,15.8954305 28.8954305,15 30,15 Z M30,39.5762712 L31,39.5762712 C32.1045695,39.5762712 33,40.4717017 33,41.5762712 L33,42.5762712 C33,43.6808407 32.1045695,44.5762712 31,44.5762712 L30,44.5762712 C28.8954305,44.5762712 28,43.6808407 28,42.5762712 L28,41.5762712 C28,40.4717017 28.8954305,39.5762712 30,39.5762712 Z" id="合并形状" fill="#FFFFFF" fill-rule="nonzero"></path>
+                    <rect id="矩形" fill-rule="nonzero" x="0" y="0" width="60" height="60"></rect>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>
