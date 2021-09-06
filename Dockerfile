@@ -1,10 +1,10 @@
-FROM harborka.qianfan123.com/iwms/nginx:1.16.1-alpine
+FROM nginx:alpine
 
-ENV DEPLOY_MODE = single
-ENV API_SERVER_ADDR = 00
+ENV DEPLOY_MODE single
+ENV API_SERVER_ADDR 192.168.111.82:8000/iwms
 ENV REPORT_SERVER_ADDR = 00
-ENV PROXY_PDS_HOST = 00
-ENV PROXY_ZUUL_HOST = 00
+ENV PROXY_PDS_HOST 192.168.111.82
+ENV PROXY_ZUUL_HOST 192.168.111.82
 ENV BALANCE_ZUUL_HOST1 = 00
 ENV BALANCE_ZUUL_HOST2 = 00
 ENV BALANCE_RABBIT_HOST1 = 00
@@ -24,4 +24,4 @@ RUN chmod +x /usr/local/bin/nginx-entrypoint.sh
 
 EXPOSE 80
 
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["sh", "/usr/local/bin/nginx-entrypoint.sh"]
