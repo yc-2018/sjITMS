@@ -3,7 +3,7 @@ import avatarSvg from '@/assets/avatar.png';
 const configs = {
   // 本地
   local: {
-     API_SERVER: 'http://127.0.0.1:8080' ,
+     API_SERVER: 'http://127.0.0.1:8081' ,
     //  API_SERVER: 'http://172.17.2.226:8080' ,//CHT
     //  API_SERVER: 'http://172.17.5.240:8080' ,  //WXB
     'avatar.default.url': 'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',

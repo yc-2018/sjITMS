@@ -469,6 +469,8 @@ export default {
   'menu.billManage.sort': '分类',
   'menu.billManage.unitConversion': '单位换算',
   'menu.billManage.billList': '费用单',
+  'menu.test': '测试菜单',
+  'menu.test.mystore': '门店',
   // ---- 公共国际化配置 Start----
   // 提示
   'common.tips.empty': '暂无数据',
