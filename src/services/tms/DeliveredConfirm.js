@@ -2,6 +2,14 @@ import { stringify } from 'qs';
 import request from '@/utils/request';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
+// 根据来源单号、车牌号、司机工号查询排车单号
+export async function queryScheduleNo(payload) {
+  return request(`/itms-schedule/itms-schedule/operation/deliveredconfirm/query/scheduleno`, {
+    method: 'POST',
+    body: payload
+  });
+}
+
 // 查询可送货确认订单信息
 export async function queryOrder(payload) {
   return request(`/itms-schedule/itms-schedule/operation/deliveredconfirm/query/order`, {

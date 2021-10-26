@@ -469,10 +469,9 @@ export default {
   'menu.billManage.sort': '分类',
   'menu.billManage.unitConversion': '单位换算',
   'menu.billManage.billList': '费用单',
-  //测试 by zz 
-  'menu.test':'zz测试',
+  'menu.test': '测试菜单',
+  'menu.test.mystore': '门店',
   'menu.test.ZzTest':'zzDemo',
-  'menu.test.store':'测试门店',
   'zz.title':'zz测试页面',
   'zz.age':'年龄',
   // ---- 公共国际化配置 Start----

@@ -296,6 +296,24 @@ export default class PickUpBillSearchPage extends SearchPage {
   }
 
   /**
+   * 打印
+   */
+  onHandlePrint = (reportParams) => {
+    if (reportParams.length < 1) {
+      message.warn(formatMessage({ id: 'iwms.print.tips' }));
+      return;
+    }
+    this.props.dispatch({
+      type: 'template/queryByTypeAndOrgUuid',
+      payload: {
+        orgUuid: loginCompany().uuid,
+        printType: PrintTemplateType.PICKUPBILL.name,
+        userUuid: loginUser().uuid
+      }
+    });
+  }
+
+  /**
    * 修改拣货人
    */
   onHandleModifyPicker = (record, batch) => {
@@ -497,24 +515,27 @@ export default class PickUpBillSearchPage extends SearchPage {
     });
     return [
       <Button key={1} onClick={() => this.onBatchModifyOperate()}
-              disabled={!havePermission(PICKUPBILL_RES.MODIFYOPERATEMETHOD)}
+        disabled={!havePermission(PICKUPBILL_RES.MODIFYOPERATEMETHOD)}
       >
         {pickUpBillLocale.batchModifyOperate}
       </Button>,
       <Button key={2} onClick={() => this.handleModifyPickerModal(true)}
-              disabled={!havePermission(PICKUPBILL_RES.MODIFYPICKDER)}
+        disabled={!havePermission(PICKUPBILL_RES.MODIFYPICKDER)}
       >
         {commonLocale.batchModifyLocale}{pickUpBillLocale.picker}
       </Button>,
       <Button key={3} onClick={() => this.handleAuditModal(true)}
-              disabled={!havePermission(PICKUPBILL_RES.AUDIT)}
+        disabled={!havePermission(PICKUPBILL_RES.AUDIT)}
       >
         {commonLocale.batchAuditLocale}
       </Button>,
       <PrintButton
         key='printButton'
         reportParams={batchPrintParams}
-        moduleId={PrintTemplateType.PICKUPBILL.name} />
+        moduleId={PrintTemplateType.PICKUPBILL.name} />,
+      <Button key={4} onClick={() => this.onHandlePrint(batchPrintParams)} type='primary'>
+        {commonLocale.printLocale}
+      </Button>
     ];
   }
 
