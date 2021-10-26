@@ -14,6 +14,7 @@ import { MemberType, Type, State } from './ShipPlanBillDispatchContants';
 import { getActiveKey, loginCompany, loginOrg } from '@/utils/LoginContext';
 import ItemEditTable from '../Utils/ItemEditTable';
 import UserSearchPage from './UserSearchPage';
+import moment from 'moment';
 
 @connect(({ vehicleDispatching, shipPlanBillDispatch, loading }) => ({
   vehicleDispatching, shipPlanBillDispatch,
@@ -108,6 +109,7 @@ export default class ShipPlanBillCreateModal extends PureComponent {
   }
 
   onOk = (e) => {
+    
     e.preventDefault();
     const { form } = this.props;
     const { entity, defSerialArch, noShipGroup } = this.state;
@@ -145,6 +147,8 @@ export default class ShipPlanBillCreateModal extends PureComponent {
         vehicleDispatching.orderDetails = [];
       }
 
+    //  console.log("进来了保存",vehicleDispatching)
+    //  vehicleDispatching.lastModifyInfo.time = moment().format("YYYY-MM-DD HH:mm:ss");
 
       if (!vehicleDispatching.memberDetails || vehicleDispatching.memberDetails.length === 0) {
         message.error('人员明细不能为空！');

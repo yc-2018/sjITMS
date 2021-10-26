@@ -580,10 +580,40 @@ export default class ReceiveBillCreatePage extends CreatePage {
       const shelfLife = this.getShelfLifeType(line);
       if (shelfLife.shelfLifeType === 'VALIDDATE') {
         target.validDate = e.startOf('day');
-        target.productDate = moment(e).add(-shelfLife.shelfLifeDays, 'days');
+        target.productDate = moment(e).add(-shelfLife.shelfLifeDays, 'days');      
       } else {
         target.productDate = e.startOf('day');
         target.validDate = moment(e).add(shelfLife.shelfLifeDays, 'days');
+     
+       
+       //根据所属组织、货主来加批次号 20211020 by zz
+        const Pdata = {
+          dcUuid:this.state.order.dcUuid,
+          ownerCode:this.state.entity.owner.code
+        }
+        this.props.dispatch({
+          type: 'receive/getBatchConfiguration',
+          payload: Pdata,
+          callback: (response) => {
+            if (response.data) {
+              if(!response.data.first){
+                response.data.first='';
+              }
+              if(!response.data.middle){
+                response.data.middle='';
+              }
+              if(!response.data.behind){
+                response.data.behind='';
+              }
+              //拼接批次号
+              target.productionBatch =response.data.first+moment(e).format('YYMMDD')
+              +response.data.middle+moment(e).add(shelfLife.shelfLifeDays, 'days').format('YYMMDD')
+              +response.data.behind;
+            }else
+            target.productionBatch = '';
+          }
+      });
+        
       }
     } else if (fieldName === 'qtyStr') {
       if (e) {
@@ -673,7 +703,7 @@ export default class ReceiveBillCreatePage extends CreatePage {
         }
       },
       {
-        title: commonLocale.inProductDateLocale,
+        title: commonLocale.inProductDateLocale, //生产日期
         dataIndex: 'productDate',
         key: 'productDate',
         width: itemColWidth.dateEditColWidth,
@@ -801,7 +831,7 @@ export default class ReceiveBillCreatePage extends CreatePage {
         },
       },
       {
-        title: commonLocale.inProductionBatchLocale,
+        title: commonLocale.inProductionBatchLocale, //批次号
         dataIndex: 'productionBatch',
         key: 'productionBatch',
         width: itemColWidth.containerEditColWidth,
@@ -809,6 +839,7 @@ export default class ReceiveBillCreatePage extends CreatePage {
 
           return(
             <Input
+              ref={c=>this.testPck=c}
               value={record.productionBatch}
               disabled={!record.manageBatch}
               onChange={

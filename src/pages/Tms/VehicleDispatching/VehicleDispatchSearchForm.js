@@ -96,6 +96,15 @@ export default class VehicleDispatchSearchForm extends SearchForm {
           )}
         </SFormItem>
       );
+      cols.push(
+        <SFormItem key="sourceNum" label={'来源单号'}>
+          {getFieldDecorator('sourceNum', {
+            initialValue: filterValue.sourceNum ? filterValue.sourceNum : ''
+          })(
+            <Input placeholder={placeholderLocale('来源单号')} />
+          )}
+        </SFormItem>
+      );
     }
     return cols;
   }

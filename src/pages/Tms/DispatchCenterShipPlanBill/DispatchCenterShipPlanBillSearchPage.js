@@ -502,7 +502,7 @@ export default class DispatchCenterShipPlanBillSearchPage extends SearchPage {
    * 允许修改司机等随车人员的信息
    */
   onEdit = (record, e) => {
-
+ 
     if (e) { //阻止冒泡 不考虑IE
       e.stopPropagation()
     }

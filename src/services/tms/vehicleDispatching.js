@@ -4,7 +4,7 @@ import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { functionExpression } from '@babel/types';
 
 export async function queryOrder(payload) {
-  return request(`/itms-schedule/itms-schedule/bill/ordertms/getByOwner?classGroupCode=${payload.classGroupCode?payload.classGroupCode:''}&companyUuid=${loginCompany().uuid}&dispatchCenterUuid=${loginOrg().uuid}&ownerCode=${payload.ownerCode?payload.ownerCode:''}&pendingTag=${payload.pendingTag}&shipGroupCode=${payload.shipGroupCode?payload.shipGroupCode:''}&deliveryPointCode=${payload.deliveryPointCode?payload.deliveryPointCode:''}&billNumber=${payload.billNumber?payload.billNumber :''}&sourceBillNumber=${payload.sourceBillNumber?payload.sourceBillNumber:''}`, {
+  return request(`/itms-schedule/itms-schedule/bill/ordertms/getByOwner?sourceNum=${payload.sourceNum}&classGroupCode=${payload.classGroupCode?payload.classGroupCode:''}&companyUuid=${loginCompany().uuid}&dispatchCenterUuid=${loginOrg().uuid}&ownerCode=${payload.ownerCode?payload.ownerCode:''}&pendingTag=${payload.pendingTag}&shipGroupCode=${payload.shipGroupCode?payload.shipGroupCode:''}&deliveryPointCode=${payload.deliveryPointCode?payload.deliveryPointCode:''}&billNumber=${payload.billNumber?payload.billNumber :''}&sourceBillNumber=${payload.sourceBillNumber?payload.sourceBillNumber:''}`, {
     method: 'POST',
     body: payload.storeOrders
   });
@@ -12,7 +12,7 @@ export async function queryOrder(payload) {
 
 
 export async function queryShipPlan(payload) {
-  return request(`/itms-schedule/itms-schedule/schedule/getByShipGroup?classGroupCode=${payload.classGroupCode?payload.classGroupCode:''}&companyUuid=${loginCompany().uuid}&dispatchCenterUuid=${loginOrg().uuid}&ownerCode=${payload.ownerCode?payload.ownerCode:''}`, {
+  return request(`/itms-schedule/itms-schedule/schedule/getByShipGroup?sourceNum=${payload.sourceNum}&classGroupCode=${payload.classGroupCode?payload.classGroupCode:''}&companyUuid=${loginCompany().uuid}&dispatchCenterUuid=${loginOrg().uuid}&ownerCode=${payload.ownerCode?payload.ownerCode:''}`, {
     method: 'POST',
     body: payload
   });

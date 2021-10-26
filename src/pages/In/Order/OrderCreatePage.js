@@ -24,6 +24,7 @@ import { MAX_DECIMAL_VALUE } from '@/utils/constants';
 import PreTypeSelect from '@/pages/Component/Select/PreTypeSelect';
 import { PRETYPE } from '@/utils/constants';
 import { ORDER_RES } from './OrderPermission';
+import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
 const logisticModeOptions = [];
 Object.keys(LogisticMode).forEach(function (key) {
   if (key === LogisticMode.UNIFY.name) {
@@ -222,9 +223,16 @@ export default class OrderCreatePage extends CreatePage {
         name: item.name,
       }
 
-        options.push(<Select.Option
-          key={JSON.stringify(item)}
-          value={JSON.stringify(item)}>{convertCodeName(item)}</Select.Option>);
+        // options.push(<Select.Option
+        //   key={JSON.stringify(item)}
+        //   value={JSON.stringify(item)}>{convertCodeName(item)}</Select.Option>);
+
+        //使用EllipsisCol来显示预览 20211026 by zz
+          options.push(<Select.Option
+            key={JSON.stringify(item)}
+            value={JSON.stringify(item)}> <EllipsisCol colValue={convertCodeName(item)} /></Select.Option>);
+
+         
     });
     return options;
   }

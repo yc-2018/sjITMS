@@ -1065,7 +1065,31 @@ export default [
             component: './Account/Version/Version',
           },
         ],
+      },
+      //测试界面 by zz
+      {
+        path: '/test',
+        name: 'test',
+        org: ['COMPANY','DC','DISPATCH_CENTER'],
+        authority: ['iwms.basic'],
+        icon: 'icon-menu_info',
+        routes: [
+          {
+            path: '/test/ZzTest',
+            name: 'ZzTest',
+            component: './Test/Zz/Zztest',
+            authority: ['iwms.basic.store'],
+          },
+          {
+            path: '/test/store',
+            name: 'store',
+            // hideInMenu: true,
+            component: './Basic/Store/Store',
+            authority: ['iwms.basic.store'],
+          }
+        ],
       }
+
     ],
   },
 ];

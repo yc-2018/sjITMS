@@ -60,3 +60,7 @@ export async function nextBill(payload) {
 export async function getByBillNumber(param) {
   return request(`/iwms-facility/facility/receive/${param.billNumber}/get?dcUuid=${loginOrg().uuid}`);
 }
+
+export async function getBatchConfiguration(param) {
+  return request(`/iwms-facility/facility/receive/queryBatchConfiguration?dcUuid=${param.dcUuid}&ownerCode=${param.ownerCode}`);
+}

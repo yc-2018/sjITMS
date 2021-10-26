@@ -241,7 +241,8 @@ export const PRETYPE = {
   unDeliveredReason:'UNDELIVEREDREASON',
   defaultQpcUnit:'DEFAULTQPCUNIT',
   billData:'BILLDATATYPE',
-  dateLimit:'DATELIMIT'
+  dateLimit:'DATELIMIT',
+  zztest:'ZZTEST'
 }
 
 /** 基本资料管理 - 仓位 */
