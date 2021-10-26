@@ -1065,7 +1065,22 @@ export default [
             component: './Account/Version/Version',
           },
         ],
+      },
+      {
+        path: '/test',
+        name: 'test',
+        icon: 'icon-menu_info',
+        org: ['COMPANY', 'DC','DISPATCH_CENTER'],
+        authority: ['iwms.basic'],
+        routes: [
+          {
+            path: '/test/mystore',
+            name: 'mystore',
+            component: './Basic/MyStore/Store',
+            authority: ['iwms.basic.store'],
+          }
+        ]
       }
     ],
-  },
+  }
 ];
