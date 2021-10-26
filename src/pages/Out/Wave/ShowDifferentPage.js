@@ -1,12 +1,12 @@
 import { connect } from 'dva';
 import { PureComponent } from "react";
 import moment from 'moment';
-import { Table,Drawer,Input,Button,Icon, InputNumber } from 'antd';
-import { commonLocale,placeholderLocale } from '@/utils/CommonLocale';
+import { Table, Drawer, Input, Button, Icon, InputNumber } from 'antd';
+import { commonLocale, placeholderLocale } from '@/utils/CommonLocale';
 import { loginCompany, loginOrg, getDefOwner } from '@/utils/LoginContext';
 import { formatMessage } from 'umi/locale';
 import { convertCodeName } from '@/utils/utils';
-import { colWidth,itemColWidth } from '@/utils/ColWidth';
+import { colWidth, itemColWidth } from '@/utils/ColWidth';
 import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
 import Empty from '@/pages/Component/Form/Empty';
 import LoadingIcon from '@/components/MyComponent/LoadingIcon';
@@ -18,11 +18,11 @@ import { waveBillLocale } from '@/pages/Out/Wave/WaveBillLocale';
 }))
 export default class ItemBatchAddModal extends PureComponent {
   state = {
-    waveAlcntcInfos:[],
+    waveAlcntcInfos: [],
   }
 
-  componentDidMount(){
-    if(this.props.visible){
+  componentDidMount() {
+    if (this.props.visible) {
       this.queryWaveDifference();
     }
   }
@@ -37,31 +37,31 @@ export default class ItemBatchAddModal extends PureComponent {
   /**
    * 查询差异结果
    */
-  queryWaveDifference =(dataIndex)=>{
+  queryWaveDifference = (dataIndex) => {
     const { pageFilter } = this.state
     const { dispatch } = this.props;
-    let payload={
-      waveBillUuid:this.props.waveBillUuid,
-      articleCode:'',
-      fillRate:''
+    let payload = {
+      waveBillUuid: this.props.waveBillUuid,
+      articleCode: '',
+      fillRate: ''
     }
 
-    if(dataIndex){
-      payload[`${dataIndex}`] = this.state[`searchText${dataIndex}`]?this.state[`searchText${dataIndex}`]:''
+    if (dataIndex) {
+      payload[`${dataIndex}`] = this.state[`searchText${dataIndex}`] ? this.state[`searchText${dataIndex}`] : ''
     }
-    
+
     dispatch({
       type: 'wave/queryWaveDifference',
-      payload:{...payload}
+      payload: { ...payload }
     });
   }
 
   /**
    * 控制弹出框展示
    */
-  handleDifferentPageVisible=()=>{
+  handleDifferentPageVisible = () => {
     this.setState({
-      waveAlcntcInfos:[],
+      waveAlcntcInfos: [],
     });
     this.props.handleDifferentPageVisible();
   }
@@ -69,16 +69,16 @@ export default class ItemBatchAddModal extends PureComponent {
   /**
    * 设置条件
    *  */
-  setText = (dataIndex,text) => {
+  setText = (dataIndex, text) => {
     this.setState({
-      [`searchText${dataIndex}`]:text
+      [`searchText${dataIndex}`]: text
     })
   };
 
   /**
    * 搜索 
    * */
-  handleSearch = (dataIndex,confirm) => {
+  handleSearch = (dataIndex, confirm) => {
     this.queryWaveDifference(dataIndex);
     confirm();
   };
@@ -86,7 +86,7 @@ export default class ItemBatchAddModal extends PureComponent {
   /**
    * 重置
    */
-  handleReset = (dataIndex,clearFilters) => {
+  handleReset = (dataIndex, clearFilters) => {
     this.setState({
       [`searchText${dataIndex}`]: ''
     });
@@ -100,23 +100,23 @@ export default class ItemBatchAddModal extends PureComponent {
   getColumnSearchProps = dataIndex => ({
     filterDropdown: ({ confirm, clearFilters }) => (
       <div style={{ padding: 8 }}>
-        {dataIndex=='articleCode'?<Input
-          placeholder={dataIndex==='articleCode'?'请输入商品':'请输入满足率'}
+        {dataIndex == 'articleCode' ? <Input
+          placeholder={dataIndex === 'articleCode' ? '请输入商品' : '请输入满足率'}
           value={this.state[`searchText${dataIndex}`]}
-          onChange={e => this.setText(dataIndex,e.target.value ? e.target.value : undefined)}
+          onChange={e => this.setText(dataIndex, e.target.value ? e.target.value : undefined)}
           style={{ width: 188, marginBottom: 8, display: 'block' }}
-        />:<InputNumber
-            placeholder={dataIndex==='articleCode'?'请输入商品':'请输入满足率'}
-            value={this.state[`searchText${dataIndex}`]}
-            onChange={e => this.setText(dataIndex,e)}
-            min={0}
-            max={100}
-            style={{ width: 188, marginBottom: 8, display: 'block' }}
-          />}
+        /> : <InputNumber
+          placeholder={dataIndex === 'articleCode' ? '请输入商品' : '请输入满足率'}
+          value={this.state[`searchText${dataIndex}`]}
+          onChange={e => this.setText(dataIndex, e)}
+          min={0}
+          max={100}
+          style={{ width: 188, marginBottom: 8, display: 'block' }}
+        />}
         <Button
           type="primary"
-          onClick = {
-            () => this.handleSearch(dataIndex,confirm)
+          onClick={
+            () => this.handleSearch(dataIndex, confirm)
           }
           icon="search"
           size="small"
@@ -124,7 +124,7 @@ export default class ItemBatchAddModal extends PureComponent {
         >
           {formatMessage({ id: 'company.index.search.button.search' })}
         </Button>
-        <Button onClick={() => this.handleReset(dataIndex,clearFilters)} size="small" style={{ width: 90 }}>
+        <Button onClick={() => this.handleReset(dataIndex, clearFilters)} size="small" style={{ width: 90 }}>
           {formatMessage({ id: 'company.index.search.button.reset' })}
         </Button>
       </div>
@@ -144,7 +144,7 @@ export default class ItemBatchAddModal extends PureComponent {
       indicator: LoadingIcon('default')
     }
 
-     let waveAlcntcCols = [
+    let waveAlcntcCols = [
       {
         title: commonLocale.inArticleLocale,
         dataIndex: 'article',
@@ -157,42 +157,42 @@ export default class ItemBatchAddModal extends PureComponent {
         title: commonLocale.inWrhLocale,
         dataIndex: 'wrh',
         key: 'wrh',
-        width: colWidth.codeNameColWidth-20,
+        width: colWidth.codeNameColWidth - 20,
         render: text => <EllipsisCol colValue={convertCodeName(text)} />
       },
       {
         title: waveBillLocale.qty,
         dataIndex: 'qty',
         key: 'qty',
-        width: itemColWidth.qtyColWidth+10,
+        width: itemColWidth.qtyColWidth + 10,
       },
       {
         title: waveBillLocale.planQty,
         dataIndex: 'planQty',
         key: 'planQty',
-        width: itemColWidth.qtyColWidth+80,
+        width: itemColWidth.qtyColWidth + 80,
       },
       {
         title: waveBillLocale.stockQty,
         dataIndex: 'stockQty',
         key: 'stockQty',
-        width: itemColWidth.qtyColWidth+60,
+        width: itemColWidth.qtyColWidth + 60,
       },
       {
         title: waveBillLocale.fillRate,
         dataIndex: 'fillRate',
         key: 'fillRate',
-        width: itemColWidth.qtyColWidth+50,
+        width: itemColWidth.qtyColWidth + 50,
         ...this.getColumnSearchProps('fillRate'),
-        render:val=>(val*100).toFixed(2),
+        render: val => (val * 100).toFixed(2),
       },
-      // {
-      //   title: waveBillLocale.message,
-      //   dataIndex: 'message',
-      //   key: 'message',
-      //   width: itemColWidth.noteEditColWidth+50,
-      //   render:val=>val?<EllipsisCol colValue={val} />:<Empty/>,
-      // }
+      {
+        title: waveBillLocale.message,
+        dataIndex: 'message',
+        key: 'message',
+        width: itemColWidth.noteEditColWidth + 50,
+        render: val => val ? <EllipsisCol colValue={val} /> : <Empty />,
+      }
     ];
 
     waveAlcntcCols.forEach(e => {
