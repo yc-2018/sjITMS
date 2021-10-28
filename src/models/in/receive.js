@@ -7,7 +7,8 @@ import {
   audit,
   queryInProgress,
   saveAndAudit,
-  previousBill, nextBill, getByBillNumber
+  previousBill, nextBill, getByBillNumber,
+  getBatchConfiguration
 } from '@/services/in/Receive';
 
 export default {
@@ -134,6 +135,11 @@ export default {
     *queryInProgress({payload,callback},{call,put}){
       const response = yield call(queryInProgress,payload);
       if(callback) callback(response);
+    },
+    //查询批次号 by zz 2021-10-20
+    *getBatchConfiguration({ payload, callback }, { call, put }) {
+      const response = yield call(getBatchConfiguration, payload);
+      if (callback) callback(response);
     }
   },
 

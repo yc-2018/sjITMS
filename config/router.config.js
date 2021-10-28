@@ -1078,9 +1078,16 @@ export default [
             name: 'mystore',
             component: './Basic/MyStore/Store',
             authority: ['iwms.basic.store'],
+          },
+          {
+            path: '/test/ZzTest',
+            name: 'ZzTest',
+            component: './Test/Zz/Zztest',
+            authority: ['iwms.basic.store'],
           }
         ]
       }
+
     ],
   }
 ];

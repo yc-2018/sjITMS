@@ -106,7 +106,8 @@ export default class PrintButton extends PureComponent {
     let data = this.state.templates;
     Array.isArray(data) && data.forEach(function (dg) {
       options.push(
-        <Menu.SubMenu title={dg.name} key={dg.name}>
+        //修改偏移量popupOffset={-1} 让用户更好选中 2021-10-21 by zz
+        <Menu.SubMenu title={dg.name} key={dg.name} popupOffset={-1}>  
           <Menu.Item key={"IWMSPRINT" + dg.path}>
             <Icon type="printer" />
           </Menu.Item>

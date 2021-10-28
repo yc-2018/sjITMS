@@ -471,6 +471,9 @@ export default {
   'menu.billManage.billList': '费用单',
   'menu.test': '测试菜单',
   'menu.test.mystore': '门店',
+  'menu.test.ZzTest':'zzDemo',
+  'zz.title':'zz测试页面',
+  'zz.age':'年龄',
   // ---- 公共国际化配置 Start----
   // 提示
   'common.tips.empty': '暂无数据',

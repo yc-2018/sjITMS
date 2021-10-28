@@ -6,7 +6,9 @@ import { placeholderLocale, placeholderChooseLocale, notNullLocale } from '@/uti
 import UserSelect from '@/pages/Component/Select/UserSelect';
 import ShipPlanBillNumberSelect from './ShipPlanBillNumberSelect';
 import VehicleSelect from '../VehicleDispatching/Utils/VehicleSelect';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { deliveredConfirmLocale } from './DeliveredConfirmLocale';
+import { queryScheduleNo } from '@/services/tms/DeliveredConfirm';
 
 @connect(({ deliveredConfirm, loading }) => ({
   deliveredConfirm,
@@ -26,30 +28,35 @@ export default class DeliveredConfirmSearchForm extends SearchForm {
     this.props.refresh(data);
   }
 
+  onQueryChange = (queryType) => {
+    var that = this
+    return (event) => {
+      let payload = {
+        page: 0,
+        searchKeyValues: {
+          companyUuid: loginCompany().uuid,
+          dispatchCenterUuid: loginOrg().uuid,
+          [queryType]: queryType == 'driverCode' ? JSON.parse(event).code : event.target.value
+        }
+      }
+      this.props.dispatch({
+        type: 'deliveredConfirm/queryScheduleNo',
+        payload,
+        callback: response => {
+          if (response && response.success && response.data) {
+            that.props.form.setFieldsValue({
+              shipPlanNumber: response.data[0]
+            })
+          }
+        }
+      });
+    }
+  }
+
   drawCols = () => {
     const { form, filterValue } = this.props;
     const { getFieldDecorator } = form;
     let cols = [];
-    cols.push(
-      <SFormItem key='vehicle' label={deliveredConfirmLocale.vehicle}>
-        {getFieldDecorator('vehicle',
-        { initialValue: filterValue.vehicle ? filterValue.vehicle : undefined }
-      )(
-        <Input placeholder={placeholderLocale(deliveredConfirmLocale.vehicle)} />)
-      }
-      </SFormItem>
-    );
-
-    cols.push(
-      <SFormItem key='driver' label={deliveredConfirmLocale.driver}>
-        {getFieldDecorator('driver',
-        { initialValue: filterValue.driver ? filterValue.driver : undefined }
-      )(
-        <UserSelect single hasAll placeholder={placeholderChooseLocale(deliveredConfirmLocale.driver)} />)}
-
-      </SFormItem>
-    );
-
     cols.push(
       <SFormItem key='shipPlanNumber' label={deliveredConfirmLocale.shipPlanNumber}>
         {getFieldDecorator('shipPlanNumber',
@@ -57,7 +64,7 @@ export default class DeliveredConfirmSearchForm extends SearchForm {
           initialValue: filterValue.shipPlanNumber ? filterValue.shipPlanNumber : undefined,
           rules: [
             { required: true, message: notNullLocale(deliveredConfirmLocale.shipPlanNumber) }
-          ],
+          ]
         }
       )(
         <ShipPlanBillNumberSelect 
@@ -66,6 +73,36 @@ export default class DeliveredConfirmSearchForm extends SearchForm {
         />
       )
       }
+      </SFormItem>
+    );
+
+    cols.push(
+      <SFormItem key="sourceBillNumber" label={deliveredConfirmLocale.sourceNum}>
+        {getFieldDecorator('sourceBillNumber', {
+          initialValue: filterValue.sourceBillNumber ? filterValue.sourceBillNumber : ''
+        })(
+          <Input placeholder={placeholderLocale(deliveredConfirmLocale.sourceNum)} onChange={this.onQueryChange('sourceBillNumber')} />
+        )}
+      </SFormItem>
+    );
+    
+    cols.push(
+      <SFormItem key="plateNumber" label={deliveredConfirmLocale.vehicle}>
+        {getFieldDecorator('plateNumber',
+          { initialValue: filterValue.vehicle ? filterValue.vehicle : undefined }
+        )(
+          <Input placeholder={placeholderLocale(deliveredConfirmLocale.vehicle)} onChange={this.onQueryChange('plateNumber')} />)
+        }
+      </SFormItem>
+    );
+
+    cols.push(
+      <SFormItem key="driverCode" label={deliveredConfirmLocale.driver}>
+        {getFieldDecorator('driverCode',
+          { initialValue: filterValue.driver ? filterValue.driver : undefined }
+        )(
+          <UserSelect single hasAll placeholder={placeholderChooseLocale(deliveredConfirmLocale.driver)}
+            onChange={this.onQueryChange('driverCode')} />)}
       </SFormItem>
     );
 

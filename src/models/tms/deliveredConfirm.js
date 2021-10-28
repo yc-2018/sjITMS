@@ -1,4 +1,5 @@
 import {
+  queryScheduleNo,
   queryOrder,
   queryStore,
   queryOrderUndelivered,
@@ -62,7 +63,10 @@ export default {
                 entityUuid: payload.entityUuid,
             });
         },
-
+        *queryScheduleNo({ payload,callback }, { call, put }) {
+            const response = yield call(queryScheduleNo, payload);
+            if (callback) callback(response);
+        },
         *queryBill({ payload }, { call, put }) {
             const response = yield call(queryOrder, payload);
             if (response.success) {

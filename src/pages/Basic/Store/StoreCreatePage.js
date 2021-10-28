@@ -269,7 +269,7 @@ export default class StoreCreatePage extends CreatePage {
           getFieldDecorator('name', {
             initialValue: entity.name,
             rules: [{ required: true, message: notNullLocale(commonLocale.nameLocale) }, {
-              max: 30, message: tooLongLocale(commonLocale.nameLocale, 30),
+              max: 100, message: tooLongLocale(commonLocale.nameLocale, 100),
             }],
           })(
             <Input placeholder={placeholderLocale(commonLocale.nameLocale)} />
