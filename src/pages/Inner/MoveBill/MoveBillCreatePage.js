@@ -765,6 +765,11 @@ export default class MoveBillCreatePage extends CreatePage {
       let bin = JSON.parse(value.bin);
       entity.billItems[line - 1].toBinCode = bin.code;
       entity.billItems[line - 1].toBinUsage = bin.usage;
+      //增加批量设置容器判断，修复无法批量设置目标货位的bug 2021-10-30 by zz
+      if (binUsage.PickUpBin.name === bin.usage
+        || binUsage.PickUpStorageBin.name === bin.usage) {
+        entity.billItems[line - 1].toContainerBarcode = '-';
+      }
     });
 
     this.setState({
