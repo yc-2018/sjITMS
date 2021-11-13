@@ -28,6 +28,11 @@ export default class DeliveredConfirmSearchForm extends SearchForm {
     this.props.refresh(data);
   }
 
+  /**
+   * 来源单号、车牌号、司机工号查询onChange监听带出排车单号 2021/10/25 by guankongjin
+   * @param {*} queryType 
+   * @returns 
+   */
   onQueryChange = (queryType) => {
     var that = this
     return (event) => {

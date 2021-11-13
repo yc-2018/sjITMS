@@ -1,6 +1,6 @@
 import {
   audit, modifyOperate, batchAudit, query, get, pickupStockItem,
-  modifyPicker, printLabel, queryElectronicRecord, printElectronicLabel, recalculate, getServerDate, getByNumber, queryCrossPrintLabelItem, printCrossLabel,previousBill, nextBill, auditPick, modifyPickUpBill
+  modifyPicker, printLabel, queryElectronicRecord, printElectronicLabel,ownerPrintTemplate, recalculate, getServerDate, getByNumber, queryCrossPrintLabelItem, printCrossLabel,previousBill, nextBill, auditPick, modifyPickUpBill
 } from '@/services/out/PickUp';
 
 export default {
@@ -133,6 +133,11 @@ export default {
       const response = yield call(printLabel, payload);
       if (callback) callback(response);
     },
+    *ownerPrintTemplate({ payload, callback }, { call, put }) {
+      const response = yield call(ownerPrintTemplate, payload);
+      if (callback) callback(response);
+    },
+
     *queryPrintRecord({ payload, callback }, { call, put }) {
       const response = yield call(query, payload);
       if (response && response.success) {

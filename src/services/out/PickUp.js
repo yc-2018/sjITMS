@@ -66,6 +66,9 @@ export async function queryElectronicRecord(payload) {
     body: payload.pickareaUuids,
   })
 }
+export async function ownerPrintTemplate(payload) {
+  return request(`/iwms-facility/facility/pick/getPickPrint`)
+}
 
 export async function printElectronicLabel(payload) {
   return request(`/iwms-facility/facility/pick/batchPrintLabel`, {

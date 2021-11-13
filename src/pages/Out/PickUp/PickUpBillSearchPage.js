@@ -1,4 +1,5 @@
 import { connect } from 'dva';
+import qs from 'qs';
 import { formatMessage } from 'umi/locale';
 import { Form, Button, Modal, message, Col, Select } from 'antd';
 import SearchPage from '@/pages/Component/Page/SearchPage';
@@ -10,7 +11,7 @@ import { colWidth, itemColWidth } from '@/utils/ColWidth';
 import { convertCodeName } from '@/utils/utils';
 import { havePermission } from '@/utils/authority';
 import { loginOrg, loginCompany, loginUser, getActiveKey } from '@/utils/LoginContext';
-import { PickupBillState, PickType, OperateMethod, PickupDateType } from './PickUpBillContants';
+import { PickupBillState, PickType, OperateMethod, PickupDateType, OwnerPrintTemplate } from './PickUpBillContants';
 import { pickUpBillLocale } from './PickUpBillLocale';
 import { PICKUPBILL_RES } from './PickUpBillPermission';
 import PickUpBillSearchForm from './PickUpBillSearchForm';
@@ -22,10 +23,12 @@ import { PrintTemplateType } from '@/pages/Account/PrintTemplate/PrintTemplateCo
 import { routerRedux } from 'dva/router';
 import { WAVEBILL_RES } from '@/pages/Out/Wave/WaveBillPermission';
 import { getQueryBillDays } from '@/utils/LoginContext';
+import configs from '@/utils/config';
 const FormItem = Form.Item;
-@connect(({ pickup, loading }) => ({
+@connect(({ pickup, loading, template }) => ({
   pickup,
   loading: loading.models.pickup,
+  template
 }))
 @Form.create()
 export default class PickUpBillSearchPage extends SearchPage {
@@ -42,7 +45,8 @@ export default class PickUpBillSearchPage extends SearchPage {
       entityUuid: '',
       auditVisible: false,//控制批量审核弹窗的显示
       suspendLoading: false,
-      key: 'pickUpBill.search.table'
+      key: 'pickUpBill.search.table',
+      ownerPrintTemplate: []
     }
 
     this.state.pageFilter.searchKeyValues.companyUuid = loginCompany().uuid;
@@ -53,13 +57,20 @@ export default class PickUpBillSearchPage extends SearchPage {
     if(this.props.pickup.fromView) {
       return;
     } else {
+      this.props.dispatch({
+        type: 'pickup/ownerPrintTemplate',
+        callback: (response) => {
+          this.setState({ ownerPrintTemplate: response.data })
+        }
+      });
       this.refreshTable();
     }
   }
 
   componentWillReceiveProps(nextProps) {
     this.setState({
-      data: nextProps.pickup.data
+      data: nextProps.pickup.data,
+      templates: nextProps.template.menuList
     });
   }
 
@@ -296,21 +307,45 @@ export default class PickUpBillSearchPage extends SearchPage {
   }
 
   /**
-   * 打印
+   * 按货主选择打印模板打印 2021/11/01 by guankongjin
    */
-  onHandlePrint = (reportParams) => {
-    if (reportParams.length < 1) {
+  onHandlePrint = (ownerBatchPrintParams) => {
+    const { templates, ownerPrintTemplate } = this.state
+    if (ownerBatchPrintParams.length < 1) {
       message.warn(formatMessage({ id: 'iwms.print.tips' }));
       return;
     }
-    this.props.dispatch({
-      type: 'template/queryByTypeAndOrgUuid',
-      payload: {
-        orgUuid: loginCompany().uuid,
-        printType: PrintTemplateType.PICKUPBILL.name,
-        userUuid: loginUser().uuid
+    if(!ownerPrintTemplate){
+      return;
+    }
+    Array.isArray(templates) && templates.forEach((template) => {
+      const printTemplate = ownerPrintTemplate.find(s=>s.printUuid==template.uuid);
+      if(!printTemplate){
+        return;
       }
+      let billNumbers = ownerBatchPrintParams.filter(x=>x.ownerCode==printTemplate.ownerCode);
+      billNumbers = billNumbers.map(x=>x.billNumber);
+      if(billNumbers){
+       let reportTempalteParams = this.buildReportParams(template.path, billNumbers);
+       window.open(configs[API_ENV].RPORTER_SERVER + '?' + qs.stringify(reportTempalteParams));
+     }
     });
+  }
+  buildReportParams = (item, billNumbers) => {
+    let reportTempalteParams = {
+      viewlet: item,
+      billNumber: billNumbers.join('-'),
+      userUuid: loginUser().uuid,
+      userCode: loginUser().code,
+      userName: loginUser().name,
+      dcUuid: loginOrg().uuid,
+      dcCode: loginOrg().code,
+      dcName: loginOrg().name,
+      companyUuid: loginCompany().uuid,
+      companyCode: loginCompany().code,
+      companyName: loginCompany().name,
+    }
+    return reportTempalteParams;
   }
 
   /**
@@ -508,9 +543,14 @@ export default class PickUpBillSearchPage extends SearchPage {
   drawToolbarPanel() {
     const { selectedRows } = this.state;
     const batchPrintParams = [];
+    const ownerBatchPrintParams = [];
     selectedRows.forEach(function (e) {
       batchPrintParams.push({
         billNumber: e.billNumber
+      })
+      ownerBatchPrintParams.push({
+        billNumber: e.billNumber,
+        ownerCode: e.owner.code
       })
     });
     return [
@@ -533,7 +573,7 @@ export default class PickUpBillSearchPage extends SearchPage {
         key='printButton'
         reportParams={batchPrintParams}
         moduleId={PrintTemplateType.PICKUPBILL.name} />,
-      <Button key={4} onClick={() => this.onHandlePrint(batchPrintParams)} type='primary'>
+      <Button key={4} onClick={() => this.onHandlePrint(ownerBatchPrintParams)} type='primary'>
         {commonLocale.printLocale}
       </Button>
     ];
