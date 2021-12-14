@@ -321,6 +321,7 @@ export default {
   'menu.basic.article': '商品',
   'menu.basic.wrh': '仓位',
   'menu.basic.team':'班组',
+  'menu.basic.BatchNumberConfig':'收货单批次号配置',
   'menu.facility.wrh': '仓位',
   'menu.bigData': '大数据',
   'menu.notice': '通知发布',
@@ -472,7 +473,7 @@ export default {
   'menu.test': '测试菜单',
   'menu.test.mystore': '门店',
   'menu.test.ZzTest':'zzDemo',
-  'zz.title':'zz测试页面',
+  'zz.title':'收货单批次号配置',
   'zz.age':'年龄',
   // ---- 公共国际化配置 Start----
   // 提示

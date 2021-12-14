@@ -166,6 +166,12 @@ export default [
             component: './Basic/Team/Team',
             authority: ['iwms.basic.dispatchcenter.classgroup'],
           },
+          {
+            path: '/basic/BatchNumberConfig',
+            name: 'BatchNumberConfig',
+            component: './Test/Zz/BatchNumberConfig',
+            authority: ['iwms.basic.store'],
+          }
         ]
       },
       {
@@ -254,7 +260,7 @@ export default [
           },
           {
             path: '/facility/config',
-            name: 'config',            
+            name: 'config',
             component: './Facility/Config/Config',
             authority: ['iwms.facility.configcenter']
           }
@@ -729,7 +735,7 @@ export default [
             component: './Tms/VehicleDispatching/VehicleDispatching',
             // authority: ['iwms.tms.alcDiff'],
           },
-          
+
           // TODO:以下 暂未开发完成  勿删除、勿打开代码
           {
             path: '/tms/pickUpDispatching',
@@ -788,7 +794,7 @@ export default [
             component: './Tms/CheckInAndCheckOut/CheckInAndCheckOut',
             // authority: ['iwms.tms.checkInAndCheckOut'],
           },
-          
+
           {
             path: '/tms/dispatchReturn',
             name: 'dispatchReturn',
@@ -812,7 +818,7 @@ export default [
             name: 'checkReceiptBill',
             org: ['DISPATCH_CENTER'],
             component: './Tms/CheckReceiptBill/CheckReceiptBill',
-          },  
+          },
           {
             path: '/tms/storeCashCollRecords',
             name: 'storeCashCollRecords',
@@ -1082,9 +1088,10 @@ export default [
           {
             path: '/test/ZzTest',
             name: 'ZzTest',
-            component: './Test/Zz/Zztest',
+            component: './Test/Zz/ZzTest',
             authority: ['iwms.basic.store'],
-          }
+          },
+
         ]
       }
 
