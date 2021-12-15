@@ -68,6 +68,15 @@ export default class VehicleDispatchSearchForm extends SearchForm {
         )}
       </SFormItem>
     );
+    cols.push(
+      <SFormItem key="sourceNum" label={'来源单号'}>
+        {getFieldDecorator('sourceNum', {
+          initialValue: filterValue.sourceNum ? filterValue.sourceNum : ''
+        })(
+          <Input placeholder={placeholderLocale('来源单号')} />
+        )}
+      </SFormItem>
+    );
     if (toggle) {
       cols.push(
         <SFormItem key="deliveryPointCode" label={'门店代码'}>
@@ -93,15 +102,6 @@ export default class VehicleDispatchSearchForm extends SearchForm {
             initialValue: filterValue.sourceBillNumber ? filterValue.sourceBillNumber : ''
           })(
             <Input placeholder={placeholderLocale('运输来源单号')} />
-          )}
-        </SFormItem>
-      );
-      cols.push(
-        <SFormItem key="sourceNum" label={'来源单号'}>
-          {getFieldDecorator('sourceNum', {
-            initialValue: filterValue.sourceNum ? filterValue.sourceNum : ''
-          })(
-            <Input placeholder={placeholderLocale('来源单号')} />
           )}
         </SFormItem>
       );
