@@ -169,7 +169,7 @@ export default [
           {
             path: '/basic/BatchNumberConfig',
             name: 'BatchNumberConfig',
-            component: './Test/Zz/BatchNumberConfig',
+            component: './Basic/BatchNumberConfig/BatchNumberConfig',
             authority: ['iwms.basic.store'],
           }
         ]
