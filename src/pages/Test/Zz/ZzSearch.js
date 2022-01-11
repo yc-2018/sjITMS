@@ -16,19 +16,29 @@ const { Search } = Input;
   }))
 export default class ZzSearch extends SearchPage {
 
-    constructor(props) {
-        super(props);
+    // constructor(props) {
+    //     super(props);
     
-        this.state = {
-          ...this.state,
-          title: zzLocale.title,
-          data: props.zztest.data,
-          suspendLoading: false,
-        };
-        this.state.pageFilter.searchKeyValues.companyUuid = loginCompany().uuid;
-        // if (!this.state.pageFilter.searchKeyValues.state)
-        //   this.state.pageFilter.searchKeyValues.state = '';
-      }
+    //     this.state = {
+    //       ...this.state,
+    //       title: zzLocale.title,
+    //       data: props.zztest.data,
+    //       suspendLoading: false,
+    //       key: 'zztest.search.table'  //用于缓存用户配置数据
+    //     };
+    //     this.state.pageFilter.searchKeyValues.companyUuid = loginCompany().uuid;
+    //     // if (!this.state.pageFilter.searchKeyValues.state)
+    //     //   this.state.pageFilter.searchKeyValues.state = '';
+    //   }
+
+      
+      state = {
+        ...this.state,
+        title: zzLocale.title,
+        data: this.props.zztest.data,
+        suspendLoading: false,
+        key: 'zztest.search.table'  //用于缓存用户配置数据
+      };
     
       /**
        * 查询后刷新数据！！
@@ -49,18 +59,7 @@ export default class ZzSearch extends SearchPage {
         //this.refreshTable();
       }
       
-      /**
-       * 查看详情
-       */
-      onView = (record) => {
-        this.props.dispatch({
-          type: 'zztest/showPage',
-          payload: {
-            showPage: 'view',
-            entityUuid: record.uuid
-          }
-        });
-      }
+ 
 
     /**
      * 显示新建/编辑界面
@@ -81,6 +80,7 @@ export default class ZzSearch extends SearchPage {
        * 刷新/重置
        */
       refreshTable = (filter) => {
+        console.log("555555555555")
         const { dispatch } = this.props;
         const { pageFilter } = this.state;
     
@@ -93,8 +93,7 @@ export default class ZzSearch extends SearchPage {
           type: 'zztest/query',
           payload: queryFilter,
         });
-        // console.log("a",this.props.zztest.data)
-        // console.log("b",this.props.zz)
+
       };
 
       /**
@@ -154,8 +153,7 @@ export default class ZzSearch extends SearchPage {
         }else{
           message.error('请至少选中一条数据！');
         }
-         
-         
+             
 
         }
 

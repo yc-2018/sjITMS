@@ -20,7 +20,7 @@ import {zzLocale} from './ZzLocale'
     loading: loading.models.zztest,
   }))
 @Form.create()
-export default class ZzCreate extends CreatePage {
+export default class QuickDemoCreate extends CreatePage {
 
     constructor(props) {
         super(props);

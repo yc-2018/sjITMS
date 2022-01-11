@@ -55,11 +55,10 @@ export default class ZzSearchForm extends SearchForm {
           {getFieldDecorator('sex',
               { initialValue:'' }
           )(
-            <PreTypeSelect 
-            hasAll
-            preType={PRETYPE.zztest}
-            orgUuid={loginOrg().type=='DC' || loginOrg().type == 'DISPATCH_CENTER'?loginCompany().uuid:loginOrg().uuid}
-          />)
+            <Select >
+              <Option value="男">男</Option>
+              <Option value="女">女</Option>
+            </Select>)
           }
         </SFormItem>
       );

@@ -106,6 +106,7 @@ export default {
     },
     reducers: {
       save(state, action) {
+        console.log("zztestPage",action.payload)
         return {
           ...state,
           data: action.payload,

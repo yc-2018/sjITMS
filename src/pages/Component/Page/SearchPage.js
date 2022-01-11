@@ -460,6 +460,8 @@ export default class SearchPage extends Component {
   };
 
   drawPage = () => {
+    //debugger
+    console.log("draw",this)
     const { selectedRows, data, scroll, key, unSaveFilter } = this.state;
     const { loading } = this.props;
 
