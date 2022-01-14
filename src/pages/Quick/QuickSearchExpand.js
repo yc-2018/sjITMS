@@ -34,9 +34,12 @@ export default class QuickSearchExpand extends SearchPage {
         const { dispatch } = this.props;
         dispatch({
             type: 'quick/queryColumns',
-            payload: this.state.quickuuid,
+            payload: {
+                "reportCode":this.state.quickuuid,
+                "sysCode":"tms"
+            },
           });
-    }
+    }   
 
     constructor(props) {
        

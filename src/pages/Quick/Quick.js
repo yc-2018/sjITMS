@@ -17,9 +17,12 @@ const { Search } = Input;
         const { dispatch } = this.props;
         dispatch({
             type: 'quick/queryColumns',
-            payload: this.state.quickuuid,
+            payload: {
+                "reportCode":this.state.quickuuid,
+                "sysCode":"tms"
+            },
           });
-    }
+    }   
 
     state = {
         quickuuid:this.props.route.quickuuid

@@ -6,22 +6,17 @@ import { func } from 'prop-types';
 import axios from 'axios';
 
 
-export async function query(payload) {
-    return request(`/itms-schedule/itms-schedule/online/report/api/getColumnsAndData/${payload}`, {
-      method: 'POST',
-    });
-}
-
 export async function queryDate(payload) {
-  return request(`/itms-schedule/itms-schedule/online/report/api/getData/${payload.quickuuid}`, {
+  return request(`/itms-schedule/itms-schedule/dev/getData/${payload.quickuuid}/tms`, {
     method: 'POST',
     body:payload
   });
 }
 
 export async function queryColumns(payload) {
-  return requestQ(`/online/report/api/getColumns/${payload}`, {
+  return request(`/itms-schedule/itms-schedule/dev/getColumns`, {
     method: 'POST',
+    body:payload
   }); 
 }
 
