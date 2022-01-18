@@ -19,7 +19,6 @@ export default class QuickDemo extends PureComponent {
      }
 
     render() {
-        console.log(this.props)
         if(this.props.zztest.showPage === 'create'){
             return (<Create/>)
         }else if(this.props.zztest.showPage === 'query'){

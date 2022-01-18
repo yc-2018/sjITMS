@@ -7,6 +7,7 @@ import SearchPage from '@/pages/Component/Page/SearchPage';
 import { colWidth } from '@/utils/ColWidth';
 import AdvanceQuery from './AdvancedQuery/QueryT'
 import SearchMoreAction from '@/pages/Component/Form/SearchMoreAction';
+import ExportJsonExcel from 'js-export-excel';
 
 const { Search } = Input;
 
@@ -153,11 +154,48 @@ export default class QuickSearch extends SearchPage {
         width: colWidth.codeColWidth,
     }] ;
 
+    port = () => {
+        const { dispatch } = this.props;
+        dispatch({
+          type: 'quick/queryAllDate',
+          payload: this.state.pageFilters,
+          callback: response => {
+            if (response && response.success) {
+              let columns = this.state.columns
+              var option = []
+              let sheetfilter = [] //对应列表数据中的key值数组，就是上面resdata中的 name，address
+              let sheetheader = [] //对应key值的表头，即excel表头
+              columns.map(a=>{
+                sheetfilter.push(a.key)
+                sheetheader.push(a.title)
+              })
+              option.fileName = this.state.title  //导出的Excel文件名
+              option.datas = [
+                {
+                  sheetData: this.state.data.list,
+                  sheetName: this.state.title,  //工作表的名字
+                  sheetFilter: sheetfilter,
+                  sheetHeader: sheetheader,
+                }
+              ]
+              var toExcel = new ExportJsonExcel(option);
+              toExcel.saveExcel();
+            }
+          }
+        })
+      }
+
      /**
        * 绘制右上角按钮
        */
     drawActionButton = () => { 
-      
+        return (
+            <div>
+              <Button onClick={this.port} type='primary'>
+                导出
+              </Button>
+            </div>
+          )
     }
     
 

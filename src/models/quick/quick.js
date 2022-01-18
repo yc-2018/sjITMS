@@ -1,4 +1,4 @@
-import {query,queryDate,queryColumns} from '@/services/quick/Quick';
+import {query,queryDate,queryAllDate,queryColumns} from '@/services/quick/Quick';
 import { colWidth } from '@/utils/ColWidth';
 
 
@@ -133,6 +133,24 @@ export default {
               });
             }
         if (callback) callback(response);
+      },
+      *queryAllDate({ payload, callback }, { call, put }){
+        const response = yield call(queryAllDate, payload);
+        if (response && response.success) {
+          var data={
+            list: response.data.records,
+          }
+          var map = new Map()
+          map.set(payload.quickuuid+'data',data)
+          yield put({
+          type: 'save',
+          payload: {
+              quickuuid:payload.quickuuid,
+              map
+             },
+            });
+          }
+      if (callback) callback(response);
       },
       *showPage({ payload }, { call, put }) {
         yield put({

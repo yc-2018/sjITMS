@@ -19,9 +19,15 @@ export async function queryDate(payload) {
   });
 }
 
+export async function queryAllDate(payload) {
+  return request(`/itms-schedule/itms-schedule/online/report/api/getAllData/${payload.quickuuid}`, {
+    method: 'POST',
+    body:payload
+  });
+}
+
 export async function queryColumns(payload) {
   return requestQ(`/online/report/api/getColumns/${payload}`, {
     method: 'POST',
   }); 
 }
-
