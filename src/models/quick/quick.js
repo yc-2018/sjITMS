@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import {queryDate,queryAllDate,queryColumns} from '@/services/quick/Quick';
-=======
-import {queryDate,queryColumns} from '@/services/quick/Quick';
->>>>>>> 5e990953383d9a58e5dbf92e14dee6d300feafe1
+import {queryDate,queryColumns,queryAllDate} from '@/services/quick/Quick';
 import { colWidth } from '@/utils/ColWidth';
 
 
