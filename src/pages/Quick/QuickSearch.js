@@ -21,7 +21,10 @@ export default class QuickSearch extends SearchPage {
         const { dispatch } = this.props;
         dispatch({
             type: 'quick/queryColumns',
-            payload: this.state.quickuuid,
+            payload: {
+                "reportCode":this.state.quickuuid,
+                "sysCode":"tms"
+            },
           });
     }   
 
@@ -52,6 +55,7 @@ export default class QuickSearch extends SearchPage {
     }
  
     componentWillReceiveProps(nextProps) {  
+        console.log("next",nextProps)
         const{map} = nextProps.quick
         const{quickuuid} = this.state
         var quickColumn = quickuuid+'columns'

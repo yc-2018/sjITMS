@@ -1,4 +1,8 @@
-import {query,queryDate,queryAllDate,queryColumns} from '@/services/quick/Quick';
+<<<<<<< HEAD
+import {queryDate,queryAllDate,queryColumns} from '@/services/quick/Quick';
+=======
+import {queryDate,queryColumns} from '@/services/quick/Quick';
+>>>>>>> 5e990953383d9a58e5dbf92e14dee6d300feafe1
 import { colWidth } from '@/utils/ColWidth';
 
 
@@ -35,46 +39,6 @@ export default {
       map:new Map()
     },
     effects: {
-      *query({ payload, callback }, { call, put }) {
-        const response = yield call(query, payload);
-        if (response && response.success) {
-            console.log("获取到的列跟数据为",response)
-            const columnsz =  response.data.columns;
-            var columns = [];   
-            for(var i = 0;i<columnsz.length;i++){
-              var column = {
-                title:columnsz[i].fieldTxt,
-                dataIndex:columnsz[i].fieldName,
-                key:columnsz[i].fieldName,
-                sorter:true,
-                width:colWidth.codeColWidth,
-                fieldType:columnsz[i].fieldType
-                }
-                columns[i] = column;
-            }
-            var data={
-              list: response.data.records,
-              pagination: {
-                total: response.data.paging.recordCount,
-                pageSize: response.data.paging.pageSize,
-                current: response.data.page ,
-                showTotal: total => `共 ${total} 条`,
-              },
-            }
-            var map = new Map()
-            map.set(payload+'columns',columns)
-            map.set(payload+'data',data)
-            map.set(payload+'reportHeadName',response.data.reportHeadName)
-            yield put({
-            type: 'save',
-            payload: {
-                quickuuid:payload,
-                map
-               },
-              });
-            }
-        if (callback) callback(response);
-      },
       *queryColumns({ payload, callback }, { call, put }) {
         const response = yield call(queryColumns, payload);
         if (response && response.success) {
@@ -93,8 +57,8 @@ export default {
                 columns[i] = column;
             }
             var map = new Map()
-            map.set(payload+'columns',columns)
-            map.set(payload+'reportHeadName',response.result.reportHeadName)
+            map.set(payload.reportCode+'columns',columns)
+            map.set(payload.reportCode+'reportHeadName',response.result.reportHeadName)
             yield put({
             type: 'save',
             payload: {
