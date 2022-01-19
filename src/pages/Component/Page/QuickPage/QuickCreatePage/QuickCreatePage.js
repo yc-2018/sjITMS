@@ -5,16 +5,30 @@ import CFormItem from '@/pages/Component/Form/CFormItem';
 import { loginCompany, loginOrg, loginUser, getDefOwner, getActiveKey } from '@/utils/LoginContext';
 import { Form, Select, Input, InputNumber, message, Col, DatePicker, Modal } from 'antd';
 import { commonLocale } from '@/utils/CommonLocale';
-import { onlFormField } from "./Data"
+// import { onlFormField } from "./Data"
 
-@connect(({ loading }) => ({
-	// loading: loading.models.alcNtc,
-	loading: false
-}))
+
+@connect(({ quick, zztest,loading }) => ({
+    quick,
+	zztest,
+    loading: loading.models.quick,
+  }))
 @Form.create()
 export default class QuickCreatePage extends CreatePage {
 
+	
+	/**
+	* 获取配置信息
+   	*/
+	   getCreateConfig = () => {
+		this.props.dispatch({
+		  type: 'quick/queryCreateConfig',
+		  payload: 'zz'
+		});
+	  }
+
 	constructor(props) {
+		console.log('2');
 		super(props);
 		this.state = {
 			title: "测试标题",
@@ -24,14 +38,18 @@ export default class QuickCreatePage extends CreatePage {
 				uuid: ""
 			},
 			auditPermission: "iwms.out.alcntc.audit",
+			onlFormField:[],
+			quickuuid:this.props.quickuuid,
 		}
 	}
 
+
 	componentDidMount() {
-		
+		this.getCreateConfig();		
 	}
 
-	componentWillReceiveProps(nextProps) {
+	componentWillReceiveProps(nextProps) {		
+		
 	}
 
 	onCancel = () => {
@@ -93,46 +111,52 @@ export default class QuickCreatePage extends CreatePage {
 	 */
 	drawFormItems = () => {
 		const { getFieldDecorator } = this.props.form;
+		const{map} = this.props.quick
+		//const {onlFormField} = this.state
+		const onlFormField = map.get("zzonlFormFields")
+		console.log(onlFormField);
 		let cols = [];
-		onlFormField.forEach(field => {
-			let formItem;
-			let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
-			
-			if (field.fieldShowType == "input") {
-				rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
-				formItem = <Input disabled={field.isReadOnly} placeholder={field.placeholder} />;
-			} else if (field.fieldShowType == "date") {
-				formItem = <DatePicker disabled={field.isReadOnly} style={{ width: '100%' }} placeholder={field.placeholder} />
-			} else if (field.fieldShowType == "number") {
-				formItem = <InputNumber style={{ width: '100%' }} placeholder={field.placeholder} />;		// TODO 数字长度、浮点数
-			} else if (field.fieldShowType == "select") {
-				let options = [];
-				if (field.dictValue) {
-					let dictValue = JSON.parse(field.dictValue);
-					Object.keys(dictValue).forEach(function (key) {
-						options.push(<Select.Option value={key} key={key}>{dictValue[key]}</Select.Option>);
-					});
-				}
-				formItem = <Select disabled={field.isReadOnly} onChange={this.onModeChange} placeholder={field.placeholder}>
-					{options}
-				</Select>;
-			} else if (field.fieldShowType == "textarea") {
-				rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
-				formItem = <Input.TextArea disabled={field.isReadOnly} placeholder={field.placeholder}/>;
-			}
-
-			cols.push(
-				<CFormItem key={field.dbFieldName} label={field.dbFieldTxt}>
-					{
-						getFieldDecorator(field.dbFieldName, {
-							initialValue: field.dbDefaultVal,
-							rules: rules,
-						})(formItem)
+		if (typeof(onlFormField)!=="undefined"&&onlFormField.length>0) {
+			onlFormField.forEach(field => {
+				let formItem;
+				let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
+				
+				if (field.fieldShowType == "text") {
+					rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
+					formItem = <Input disabled={field.isReadOnly} placeholder={field.placeholder} />;
+				} else if (field.fieldShowType == "date") {
+					formItem = <DatePicker disabled={field.isReadOnly} style={{ width: '100%' }} placeholder={field.placeholder} />
+				} else if (field.fieldShowType == "number") {
+					formItem = <InputNumber style={{ width: '100%' }} placeholder={field.placeholder} />;		// TODO 数字长度、浮点数
+				} else if (field.fieldShowType == "sel_tree") {
+					let options = [];
+					if (field.dictValue) {
+						let dictValue = JSON.parse(field.dictValue);
+						Object.keys(dictValue).forEach(function (key) {
+							options.push(<Select.Option value={key} key={key}>{dictValue[key]}</Select.Option>);
+						});
 					}
-				</CFormItem>
-			);
-		});
-		
+					formItem = <Select disabled={field.isReadOnly} onChange={this.onModeChange} placeholder={field.placeholder}>
+						{options}
+					</Select>;
+				} else if (field.fieldShowType == "textarea") {
+					rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
+					formItem = <Input.TextArea disabled={field.isReadOnly} placeholder={field.placeholder}/>;
+				}
+	
+				cols.push(
+					<CFormItem key={field.dbFieldName} label={field.dbFieldTxt}>
+						{
+							getFieldDecorator(field.dbFieldName, {
+								initialValue: field.dbDefaultVal,
+								rules: rules,
+							})(formItem)
+						}
+					</CFormItem>
+				);
+			});
+		}
+			
 		return [
 			<FormPanel key='basicInfo' title={"测试"} cols={cols}/>
 		];

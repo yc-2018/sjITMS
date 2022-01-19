@@ -85,6 +85,37 @@ export default class QuickSearchExpand extends SearchPage {
    */
   onCreate = () => {};
 
+  port = () => {
+    const { dispatch } = this.props;a
+    dispatch({
+      type: 'quick/queryAllData',
+      payload: this.state.pageFilters,
+      callback: response => {
+        if (response && response.success) {
+          let columns = this.state.columns
+          var option = []
+          let sheetfilter = [] //对应列表数据中的key值数组，就是上面resdata中的 name，address
+          let sheetheader = [] //对应key值的表头，即excel表头
+          columns.map(a=>{
+            sheetfilter.push(a.key)
+            sheetheader.push(a.title)
+          })
+          option.fileName = this.state.title  //导出的Excel文件名
+          option.datas = [
+            {
+              sheetData: this.state.data.list,
+              sheetName: this.state.title,  //工作表的名字
+              sheetFilter: sheetfilter,
+              sheetHeader: sheetheader,
+            }
+          ]
+          var toExcel = new ExportJsonExcel(option);
+          toExcel.saveExcel();
+        }
+      }
+    })
+  }
+
   /**
    * 查询
    */
@@ -142,10 +173,13 @@ export default class QuickSearchExpand extends SearchPage {
     },
   ];
 
-  /**
+  
+   /**
    * 绘制右上角按钮
    */
-  drawActionButton = () => {};
+    drawActionButton = () => {
+
+    };
 
   /**
    * 绘制批量工具栏

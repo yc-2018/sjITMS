@@ -4,23 +4,30 @@ import { async } from 'q';
 import { func } from 'prop-types';
 import axios from 'axios';
 
+
 export async function queryData(payload) {
   return request(`/itms-schedule/itms-schedule/dev/getData/${payload.quickuuid}/tms`, {
     method: 'POST',
-    body: payload,
+    body:payload
   });
 }
 
-export async function queryAllData(payload) {
-  return request(`/itms-schedule/itms-schedule/online/report/api/getAllData/${payload.quickuuid}`, {
-    method: 'POST',
-    body: payload,
+export async function queryCreateConfig(payload) {
+  return requestQ(`/online/form/api/getOnlFormInfoByCode/${payload}`, {
+    method: 'GET',
   });
 }
 
 export async function queryColumns(payload) {
   return request(`/itms-schedule/itms-schedule/dev/getColumns`, {
     method: 'POST',
-    body: payload,
+    body:payload
+  }); 
+}
+
+export async function queryAllData(payload) {
+  return request(`/itms-schedule/itms-schedule/dev/getAllData/${payload.quickuuid}`, {
+    method: 'POST',
+    body:payload
   });
 }

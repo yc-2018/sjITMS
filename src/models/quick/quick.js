@@ -1,4 +1,4 @@
-import { queryData, queryColumns, queryAllData } from '@/services/quick/Quick';
+import { queryData, queryColumns, queryAllData,queryCreateConfig } from '@/services/quick/Quick';
 import { colWidth } from '@/utils/ColWidth';
 
 export default {
@@ -92,6 +92,24 @@ export default {
         });
       }
       if (callback) callback(response);
+    },
+    *queryCreateConfig({ payload, callback }, { call, put }){
+      const response = yield call(queryCreateConfig, payload);
+      if (response && response.success) {
+        let onlFormFields = []
+        var onlFormHead = response.result.onlFormHead;
+        onlFormFields = response.result.onlFormFields;
+        var map = new Map()
+        map.set(payload+'onlFormHead',onlFormHead)
+        map.set(payload+'onlFormFields',onlFormFields)
+        yield put({
+        type: 'save',
+        payload: {
+            map
+           },
+          });
+        }
+    if (callback) callback(response);
     },
     *showPage({ payload }, { call, put }) {
       yield put({

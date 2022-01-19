@@ -147,7 +147,7 @@ export default class QuickSearch extends SearchPage {
   port = () => {
     const { dispatch } = this.props;
     dispatch({
-      type: 'quick/queryAllDate',
+      type: 'quick/queryAllData',
       payload: this.state.pageFilters,
       callback: response => {
         if (response && response.success) {
