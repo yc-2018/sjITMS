@@ -41,8 +41,10 @@ export default class QuickSearch extends SearchPage {
     data: [],
     columns: [],
     selectFields: [],
-    reportCode: this.props.quickuuid,
-    pageFilters: { quickuuid: this.props.quickuuid, changePage: true },
+    // reportCode: this.props.quickuuid,
+    // pageFilters: { quickuuid: this.props.quickuuid, changePage: true },
+    reportCode: this.props.route.quickuuid,
+    pageFilters: { quickuuid: this.props.route.quickuuid, changePage: true },
     key: this.props.quickuuid + 'quick.search.table', //用于缓存用户配置数据
   };
 
@@ -93,7 +95,7 @@ export default class QuickSearch extends SearchPage {
   onSearch = filter => {
     if (typeof filter == 'undefined') {
       //重置搜索条件
-      this.state.pageFilters = { quickuuid: this.props.quickuuid };
+      this.state.pageFilters = { quickuuid: this.props.route.quickuuid };
       this.getData(this.state.pageFilters);
     } else {
       const { dispatch } = this.props;

@@ -8,9 +8,8 @@ import { commonLocale } from '@/utils/CommonLocale';
 // import { onlFormField } from "./Data"
 
 
-@connect(({ quick, zztest,loading }) => ({
+@connect(({ quick,loading }) => ({
     quick,
-	zztest,
     loading: loading.models.quick,
   }))
 @Form.create()
@@ -20,15 +19,14 @@ export default class QuickCreatePage extends CreatePage {
 	/**
 	* 获取配置信息
    	*/
-	   getCreateConfig = () => {
+	getCreateConfig = () => {
 		this.props.dispatch({
 		  type: 'quick/queryCreateConfig',
-		  payload: 'zz'
+		  payload: this.state.quickuuid
 		});
 	  }
 
 	constructor(props) {
-		console.log('2');
 		super(props);
 		this.state = {
 			title: "测试标题",
@@ -39,7 +37,8 @@ export default class QuickCreatePage extends CreatePage {
 			},
 			auditPermission: "iwms.out.alcntc.audit",
 			onlFormField:[],
-			quickuuid:this.props.quickuuid,
+			quickuuid:props.quickuuid,
+			tableName:props.tableName
 		}
 	}
 
@@ -55,10 +54,11 @@ export default class QuickCreatePage extends CreatePage {
 	onCancel = () => {
 		this.props.form.resetFields();
 		this.props.dispatch({
-			type: 'zztest/showPage',
+			type: 'quick/showPageMap',
 			payload: {
-				showPage: 'query'
-			}
+				showPageK:this.state.quickuuid,
+				showPageV:this.state.quickuuid+'query'
+			 }
 		});
 	}
 
@@ -66,19 +66,23 @@ export default class QuickCreatePage extends CreatePage {
 		// 这里可以收集到表单的数据
 		// 自定义提交数据接口
 		// 默认实现的数据保存接口
-		console.log("data", data);
-		console.log("detail", this.state.entity.items)
+
+		//入参
+		const param = [{
+			tableName: this.state.tableName,
+			data: [data]
+		}]
+
+		this.props.dispatch({
+			type: 'quick/saveOrUpdateEntities',
+			payload: {
+				showPageK:this.state.quickuuid,
+				showPageV:this.state.quickuuid+'query',
+				param
+			 }
+		});
 		
-		// this.props.dispatch({
-		// 	type: 'alcNtc/onSave',
-		// 	payload: creation,
-		// 	callback: (response) => {
-		// 		if (response && response.success) {
-		// 			this.props.form.resetFields();
-		// 			message.success(commonLocale.saveSuccessLocale);
-		// 		}
-		// 	}
-		// });
+		
 	}
 
 	onSaveAndCreate = (data) => {
@@ -112,9 +116,7 @@ export default class QuickCreatePage extends CreatePage {
 	drawFormItems = () => {
 		const { getFieldDecorator } = this.props.form;
 		const{map} = this.props.quick
-		//const {onlFormField} = this.state
-		const onlFormField = map.get("zzonlFormFields")
-		console.log(onlFormField);
+		const onlFormField = map.get(this.state.quickuuid+"onlFormFields")
 		let cols = [];
 		if (typeof(onlFormField)!=="undefined"&&onlFormField.length>0) {
 			onlFormField.forEach(field => {
