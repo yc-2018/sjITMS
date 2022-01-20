@@ -10,25 +10,6 @@ import SimpleQuery from './SimpleQuery/SimpleQuery';
 import SearchMoreAction from '@/pages/Component/Form/SearchMoreAction';
 
 export default class QuickSearchExpand extends SearchPage {
-  getData = pageFilters => {
-    const { dispatch } = this.props;
-    dispatch({
-      type: 'quick/queryData',
-      payload: pageFilters,
-    });
-  };
-
-  queryCoulumns = () => {
-    const { dispatch } = this.props;
-    dispatch({
-      type: 'quick/queryColumns',
-      payload: {
-        reportCode: this.state.reportCode,
-        sysCode: 'tms',
-      },
-    });
-  };
-
   constructor(props) {
     super(props);
     this.state = {
@@ -44,48 +25,78 @@ export default class QuickSearchExpand extends SearchPage {
     };
   }
 
+  //查询数据
+  getData = pageFilters => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'quick/queryData',
+      payload: pageFilters,
+      callback: response => {
+        if (response.data) this.initData(response.data);
+      },
+    });
+  };
+  //获取列配置
+  queryCoulumns = () => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'quick/queryColumns',
+      payload: {
+        reportCode: this.state.reportCode,
+        sysCode: 'tms',
+      },
+      callback: response => {
+        if (response.result) this.initConfig(response.result);
+      },
+    });
+  };
+
   componentDidMount() {
     this.queryCoulumns();
     this.onSearch();
   }
 
-  componentWillReceiveProps(nextProps) {
-    const { reportCode } = this.state;
-    const { map } = nextProps.quick;
-    const quickColumnKey = reportCode + 'columns';
-    const quickDataKey = reportCode + 'data';
-    const reportHeadNameKey = reportCode + 'reportHeadName';
-    const columnArray = map.get(quickColumnKey);
-    const title = map.get(reportHeadNameKey);
-    if (columnArray != null) {
-      let quickColumns = new Array();
-      columnArray.forEach(column => {
-        const qiuckcolumn = {
-          title: column.fieldTxt,
-          dataIndex: column.fieldName,
-          key: column.fieldName,
-          sorter: true,
-          width: colWidth.codeColWidth,
-          fieldType: column.fieldType,
-        };
-        quickColumns.push(qiuckcolumn);
-      });
-      this.columns = quickColumns;
-      this.setState({
-        title,
-        columns: quickColumns,
-        selectFields: columnArray.filter(data => data.isSearch),
-      });
-    }
-    this.setState({ data: map.get(quickDataKey) });
-  }
+  //初始化配置
+  initConfig = queryConfig => {
+    const columns = queryConfig.columns;
+    let quickColumns = new Array();
+    columns.forEach(column => {
+      const qiuckcolumn = {
+        title: column.fieldTxt,
+        dataIndex: column.fieldName,
+        key: column.fieldName,
+        sorter: true,
+        width: colWidth.codeColWidth,
+        fieldType: column.fieldType,
+      };
+      quickColumns.push(qiuckcolumn);
+    });
+    this.columns = quickColumns;
+    this.setState({
+      title: queryConfig.reportHeadName,
+      columns: quickColumns,
+      selectFields: columns.filter(data => data.isSearch),
+    });
+  };
+  //初始化数据
+  initData = data => {
+    var data = {
+      list: data.records,
+      pagination: {
+        total: data.paging.recordCount,
+        pageSize: data.paging.pageSize,
+        current: data.page,
+        showTotal: total => `共 ${total} 条`,
+      },
+    };
+    this.setState({ data });
+  };
 
   /**
    * 显示新建/编辑界面
    */
   onCreate = () => {};
 
- 
   /**
    * 查询
    */
@@ -99,10 +110,7 @@ export default class QuickSearchExpand extends SearchPage {
       const { columns } = this.state;
       const pageFilters = {
         ...this.state.pageFilters,
-        superQuery: {
-          matchType: filter.matchType,
-          queryParams: filter.queryParams,
-        },
+        superQuery: { matchType: filter.matchType, queryParams: filter.queryParams },
       };
       this.state.pageFilters = pageFilters;
       this.refreshTable();
@@ -143,13 +151,10 @@ export default class QuickSearchExpand extends SearchPage {
     },
   ];
 
-  
-   /**
+  /**
    * 绘制右上角按钮
    */
-    drawActionButton = () => {
-
-    };
+  drawActionButton = () => {};
 
   /**
    * 绘制批量工具栏

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-01-15 16:03:07
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-01-19 11:54:08
+ * @LastEditTime: 2022-01-20 14:01:46
  * @Description: 快速开发简单查询
  * @FilePath: \iwms-web\src\pages\Quick\SimpleQuery\SimpleQuery.js
  */
@@ -16,7 +16,14 @@ const { RangePicker } = DatePicker;
 export default class SimpleQuery extends SearchForm {
   constructor(props) {
     super(props);
-    this.state = { toggle: false };
+    this.state = { toggle: undefined };
+  }
+
+  componentWillReceiveProps(props) {
+    const { selectFields } = props;
+    if (selectFields && selectFields.length > 3) {
+      this.setState({ toggle: false });
+    }
   }
 
   //重置
