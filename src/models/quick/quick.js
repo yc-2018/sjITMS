@@ -1,4 +1,4 @@
-import { queryData, queryColumns, queryAllData,queryCreateConfig } from '@/services/quick/Quick';
+import { queryData, queryColumns, queryAllData, queryCreateConfig } from '@/services/quick/Quick';
 import { colWidth } from '@/utils/ColWidth';
 
 export default {
@@ -28,51 +28,14 @@ export default {
     },
     showPage: 'query',
     entity: {},
-    map: new Map(),
   },
   effects: {
-    *queryColumns({ payload, callback }, { call, put }) {
+    *queryColumns({ payload, callback }, { call }) {
       const response = yield call(queryColumns, payload);
-      if (response && response.success) {
-        let map = new Map();
-        map.set(payload.reportCode + 'columns', response.result.columns);
-        map.set(payload.reportCode + 'reportHeadName', response.result.reportHeadName);
-        yield put({
-          type: 'save',
-          payload: {
-            quickuuid: payload,
-            map,
-          },
-        });
-      }
       if (callback) callback(response);
     },
-    *queryData({ payload, callback }, { call, put }) {
+    *queryData({ payload, callback }, { call }) {
       const response = yield call(queryData, payload);
-      if (response && response.success) {
-        let lists = [];
-        if (response.data.records != null) {
-          lists = response.data.records;
-        }
-        var data = {
-          list: response.data.records,
-          pagination: {
-            total: response.data.paging.recordCount,
-            pageSize: response.data.paging.pageSize,
-            current: response.data.page,
-            showTotal: total => `共 ${total} 条`,
-          },
-        };
-        var map = new Map();
-        map.set(payload.quickuuid + 'data', data);
-        yield put({
-          type: 'save',
-          payload: {
-            quickuuid: payload.quickuuid,
-            map,
-          },
-        });
-      }
       if (callback) callback(response);
     },
     *queryAllData({ payload, callback }, { call, put }) {
@@ -93,23 +56,23 @@ export default {
       }
       if (callback) callback(response);
     },
-    *queryCreateConfig({ payload, callback }, { call, put }){
+    *queryCreateConfig({ payload, callback }, { call, put }) {
       const response = yield call(queryCreateConfig, payload);
       if (response && response.success) {
-        let onlFormFields = []
+        let onlFormFields = [];
         var onlFormHead = response.result.onlFormHead;
         onlFormFields = response.result.onlFormFields;
-        var map = new Map()
-        map.set(payload+'onlFormHead',onlFormHead)
-        map.set(payload+'onlFormFields',onlFormFields)
+        var map = new Map();
+        map.set(payload + 'onlFormHead', onlFormHead);
+        map.set(payload + 'onlFormFields', onlFormFields);
         yield put({
-        type: 'save',
-        payload: {
-            map
-           },
-          });
-        }
-    if (callback) callback(response);
+          type: 'save',
+          payload: {
+            map,
+          },
+        });
+      }
+      if (callback) callback(response);
     },
     *showPage({ payload }, { call, put }) {
       yield put({
@@ -121,18 +84,6 @@ export default {
     },
   },
   reducers: {
-    save(state, action) {
-      console.log('page', action.payload);
-      let mapGra = state.map;
-      for (var [k, v] of action.payload.map) {
-        mapGra.set(k, v);
-      }
-      return {
-        ...state,
-        data: action.payload,
-        map: mapGra,
-      };
-    },
     onShowPage(state, action) {
       return {
         ...state,

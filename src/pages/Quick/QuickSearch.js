@@ -15,11 +15,28 @@ import ExportJsonExcel from 'js-export-excel';
   loading: loading.models.quick,
 }))
 export default class QuickSearch extends SearchPage {
+  constructor(props) {
+    super(props);
+    this.state = {
+      ...this.state,
+      title: '',
+      data: [],
+      columns: [],
+      selectFields: [],
+      reportCode: this.props.quickuuid,
+      pageFilters: { quickuuid: this.props.quickuuid, changePage: true },
+      key: this.props.quickuuid + 'quick.search.table', //用于缓存用户配置数据
+    };
+  }
+
   getData = pageFilters => {
     const { dispatch } = this.props;
     dispatch({
       type: 'quick/queryData',
       payload: pageFilters,
+      callback: response => {
+        if (response.data) this.initData(response.data);
+      },
     });
   };
 
@@ -31,19 +48,10 @@ export default class QuickSearch extends SearchPage {
         reportCode: this.state.reportCode,
         sysCode: 'tms',
       },
+      callback: response => {
+        if (response.result) this.initConfig(response.result);
+      },
     });
-  };
-
-  state = {
-    ...this.state,
-    title: 'test',
-    loading: true,
-    data: [],
-    columns: [],
-    selectFields: [],
-    reportCode: this.props.quickuuid,
-    pageFilters: { quickuuid: this.props.quickuuid, changePage: true },
-    key: this.props.quickuuid + 'quick.search.table', //用于缓存用户配置数据
   };
 
   componentDidMount() {
@@ -51,45 +59,46 @@ export default class QuickSearch extends SearchPage {
     this.onSearch();
   }
 
-  componentWillReceiveProps(nextProps) {
-    const { reportCode } = this.state;
-    const { map } = nextProps.quick;
-    const quickColumnKey = reportCode + 'columns';
-    const quickDataKey = reportCode + 'data';
-    const reportHeadNameKey = reportCode + 'reportHeadName';
-    const columnArray = map.get(quickColumnKey);
-    const title = map.get(reportHeadNameKey);
-    if (columnArray != null) {
-      let quickColumns = new Array();
-      columnArray.forEach(column => {
-        const qiuckcolumn = {
-          title: column.fieldTxt,
-          dataIndex: column.fieldName,
-          key: column.fieldName,
-          sorter: true,
-          width: colWidth.codeColWidth,
-          fieldType: column.fieldType,
-        };
-        quickColumns.push(qiuckcolumn);
-      });
-      this.columns = quickColumns;
-      this.setState({
-        title,
-        columns: quickColumns,
-        selectFields: columnArray.filter(data => data.isSearch),
-      });
-    }
-    this.setState({ data: map.get(quickDataKey) });
-  }
+  //初始化配置
+  initConfig = queryConfig => {
+    const columns = queryConfig.columns;
+    let quickColumns = new Array();
+    columns.forEach(column => {
+      const qiuckcolumn = {
+        title: column.fieldTxt,
+        dataIndex: column.fieldName,
+        key: column.fieldName,
+        sorter: true,
+        width: colWidth.codeColWidth,
+        fieldType: column.fieldType,
+      };
+      quickColumns.push(qiuckcolumn);
+    });
+    this.columns = quickColumns;
+    this.setState({
+      title: queryConfig.reportHeadName,
+      columns: quickColumns,
+      selectFields: columns.filter(data => data.isSearch),
+    });
+  };
+  //初始化数据
+  initData = data => {
+    var data = {
+      list: data.records,
+      pagination: {
+        total: data.paging.recordCount,
+        pageSize: data.paging.pageSize,
+        current: data.page,
+        showTotal: total => `共 ${total} 条`,
+      },
+    };
+    this.setState({ data });
+  };
 
-  /**
-   * 显示新建/编辑界面
-   */
+  //显示新建/编辑界面
   onCreate = () => {};
 
-  /**
-   * 查询
-   */
+  //查询
   onSearch = filter => {
     if (typeof filter == 'undefined') {
       //重置搜索条件
@@ -110,9 +119,7 @@ export default class QuickSearch extends SearchPage {
     }
   };
 
-  /**
-   * 刷新/重置
-   */
+  //刷新/重置
   refreshTable = filter => {
     const { dispatch } = this.props;
     const { pageFilters } = this.state;
@@ -144,6 +151,7 @@ export default class QuickSearch extends SearchPage {
     },
   ];
 
+  //导出
   port = () => {
     const { dispatch } = this.props;
     dispatch({
