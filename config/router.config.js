@@ -1118,6 +1118,13 @@ export default [
             component: './Quick/Quick',
             quickuuid:'demo',
             authority: ['iwms.basic.store'],
+          },
+          {
+            path: '/test/qiuhui1',
+            name: '邱辉',
+            component: './Quick/QuickReport/QuickReport',
+            quickuuid:'qiuhui3',
+            authority: ['iwms.basic.store'],
           }
 
         ]

@@ -22,9 +22,36 @@ export default class QuickCreatePage extends CreatePage {
 	getCreateConfig = () => {
 		this.props.dispatch({
 		  type: 'quick/queryCreateConfig',
-		  payload: this.state.quickuuid
+		  payload: this.state.quickuuid,
+		  callback: response => {
+			if (response.result) this.initCreateConfig(response.result.onlFormFields);
+		  },
 		});
-	  }
+	}
+
+	initCreateConfig=(onlFormFields)=>{
+		this.setState({onlFormField:onlFormFields})
+	}
+
+   //获取tableName
+  queryCoulumns = () => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'quick/queryColumns',
+      payload: {
+        reportCode: this.state.quickuuid,
+        sysCode: 'tms',
+      },
+      callback: response => {
+        if (response.result){
+			 //获取tableName
+			 let sqlsplit = response.result.sql.split(/\s+/);
+			 let tableName = sqlsplit[sqlsplit.length-1]
+			 this.setState({tableName:tableName})
+		}
+      },
+    });
+  };
 
 	constructor(props) {
 		super(props);
@@ -38,18 +65,16 @@ export default class QuickCreatePage extends CreatePage {
 			auditPermission: "iwms.out.alcntc.audit",
 			onlFormField:[],
 			quickuuid:props.quickuuid,
-			tableName:props.tableName
+			tableName:''
 		}
 	}
 
 
 	componentDidMount() {
 		this.getCreateConfig();		
+		this.queryCoulumns()
 	}
 
-	componentWillReceiveProps(nextProps) {		
-		
-	}
 
 	onCancel = () => {
 		this.props.form.resetFields();
@@ -66,7 +91,8 @@ export default class QuickCreatePage extends CreatePage {
 		// 这里可以收集到表单的数据
 		// 自定义提交数据接口
 		// 默认实现的数据保存接口
-
+		console.log("data",data);
+		console.log("tableName",this.state.tableName);
 		//入参
 		const param = [{
 			tableName: this.state.tableName,
@@ -79,7 +105,11 @@ export default class QuickCreatePage extends CreatePage {
 				showPageK:this.state.quickuuid,
 				showPageV:this.state.quickuuid+'query',
 				param
-			 }
+			 },
+			 callback: response => {
+				if (response.success) message.success(commonLocale.saveSuccessLocale);
+			},
+			 
 		});
 		
 		
@@ -115,8 +145,8 @@ export default class QuickCreatePage extends CreatePage {
 	 */
 	drawFormItems = () => {
 		const { getFieldDecorator } = this.props.form;
-		const{map} = this.props.quick
-		const onlFormField = map.get(this.state.quickuuid+"onlFormFields")
+		//const{map} = this.props.quick
+		const {onlFormField} = this.state
 		let cols = [];
 		if (typeof(onlFormField)!=="undefined"&&onlFormField.length>0) {
 			onlFormField.forEach(field => {

@@ -34,7 +34,6 @@ export default class QuickReport extends PureComponent {
     state = {
         quickuuid:this.props.route.quickuuid,
         showPageNow:this.props.route.quickuuid+'query',
-        tableName:''
     }
 
     componentDidMount(){
@@ -44,7 +43,7 @@ export default class QuickReport extends PureComponent {
         console.log("next1",nextProps.quick);
         const{showPageMap,map} = nextProps.quick
         this.setState({showPageNow:showPageMap.get(this.state.quickuuid)})
-        this.setState({tableName:map.get(this.state.quickuuid+'tableName')})
+        // this.setState({tableName:map.get(this.state.quickuuid+'tableName')})
     }
 
 
@@ -53,9 +52,8 @@ export default class QuickReport extends PureComponent {
 
     render() {
         const{showPageNow} = this.state
-        //var showPageNow = showPageMap.get(this.state.quickuuid)
         if(showPageNow === this.state.quickuuid+'create'){
-            return (<Create quickuuid={this.state.quickuuid} tableName={this.state.tableName}/>)
+            return (<Create quickuuid={this.state.quickuuid}/>)
         }else if(showPageNow === this.state.quickuuid+'query'){
             return (<QuicSearchPage quickuuid={this.state.quickuuid} pathname={this.props.location.pathname}/>)
         }else if(showPageNow === this.state.quickuuid+'view'){

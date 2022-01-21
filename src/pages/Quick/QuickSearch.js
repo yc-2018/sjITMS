@@ -102,7 +102,7 @@ export default class QuickSearch extends SearchPage {
   onSearch = filter => {
     if (typeof filter == 'undefined') {
       //重置搜索条件
-      this.state.pageFilters = { quickuuid: this.props.route.quickuuid };
+      this.state.pageFilters = { quickuuid: this.props.quickuuid };
       this.getData(this.state.pageFilters);
     } else {
       const { dispatch } = this.props;

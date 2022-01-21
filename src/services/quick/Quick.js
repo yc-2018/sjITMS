@@ -13,8 +13,8 @@ export async function queryData(payload) {
 }
 
 export async function queryCreateConfig(payload) {
-  return requestQ(`/online/form/api/getOnlFormInfoByCode/${payload}`, {
-    method: 'GET',
+  return request(`/itms-schedule/itms-schedule/dev/getOnlFormInfoByCode/${payload}`, {
+    method: 'POST',
   });
 }
 
@@ -27,6 +27,14 @@ export async function queryColumns(payload) {
 
 export async function queryAllData(payload) {
   return request(`/itms-schedule/itms-schedule/dev/getAllData/${payload.quickuuid}`, {
+    method: 'POST',
+    body:payload
+  });
+}
+
+
+export async function saveOrUpdateEntities(payload) {
+  return request(`/itms-schedule/itms-schedule/devDynamicCRUD/saveOrUpdateEntities`, {
     method: 'POST',
     body:payload
   });

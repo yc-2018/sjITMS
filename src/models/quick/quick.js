@@ -1,4 +1,4 @@
-import { queryData, queryColumns, queryAllData, queryCreateConfig } from '@/services/quick/Quick';
+import { queryData, queryColumns, queryAllData, queryCreateConfig,saveOrUpdateEntities } from '@/services/quick/Quick';
 import { colWidth } from '@/utils/ColWidth';
 
 export default {
@@ -28,6 +28,7 @@ export default {
     },
     showPage: 'query',
     entity: {},
+    showPageMap:new Map(),
   },
   effects: {
     *queryColumns({ payload, callback }, { call }) {
@@ -40,38 +41,10 @@ export default {
     },
     *queryAllData({ payload, callback }, { call, put }) {
       const response = yield call(queryAllData, payload);
-      if (response && response.success) {
-        var data = {
-          list: response.data.records,
-        };
-        var map = new Map();
-        map.set(payload.quickuuid + 'data', data);
-        yield put({
-          type: 'save',
-          payload: {
-            quickuuid: payload.quickuuid,
-            map,
-          },
-        });
-      }
       if (callback) callback(response);
     },
     *queryCreateConfig({ payload, callback }, { call, put }) {
       const response = yield call(queryCreateConfig, payload);
-      if (response && response.success) {
-        let onlFormFields = [];
-        var onlFormHead = response.result.onlFormHead;
-        onlFormFields = response.result.onlFormFields;
-        var map = new Map();
-        map.set(payload + 'onlFormHead', onlFormHead);
-        map.set(payload + 'onlFormFields', onlFormFields);
-        yield put({
-          type: 'save',
-          payload: {
-            map,
-          },
-        });
-      }
       if (callback) callback(response);
     },
     *showPage({ payload }, { call, put }) {
@@ -82,6 +55,27 @@ export default {
         fromView: payload.fromView,
       });
     },
+  *saveOrUpdateEntities({ payload, callback }, { call, put }){
+    const response = yield call(saveOrUpdateEntities, payload.param);
+    if (response && response.success) {
+      console.log("111",response);
+      var showPageMap = new Map()
+      showPageMap.set(payload.showPageK,payload.showPageV);
+      yield put({
+        type: 'onShowPageMap',
+        showPageMap: showPageMap,
+      });
+      }
+  if (callback) callback(response);
+  },
+  *showPageMap({ payload }, { call, put }) {
+    var showPageMap = new Map()
+    showPageMap.set(payload.showPageK,payload.showPageV);
+    yield put({
+      type: 'onShowPageMap',
+      showPageMap: showPageMap,
+      });
+    }
   },
   reducers: {
     onShowPage(state, action) {
@@ -98,6 +92,16 @@ export default {
       return {
         ...state,
         entity: action.entity,
+      };
+    },
+    onShowPageMap(state, action) {
+      let mapGra = state.showPageMap;
+      for (var [k, v] of action.showPageMap) {
+        mapGra.set(k, v);
+      }
+      return {
+        ...state,
+        showPageMap: mapGra,
       };
     },
   },
