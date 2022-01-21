@@ -1,4 +1,4 @@
-import { queryData, queryColumns, queryAllData, queryCreateConfig,saveOrUpdateEntities } from '@/services/quick/Quick';
+import { queryData, queryColumns, queryAllData, queryCreateConfig,saveOrUpdateEntities,dynamicDelete } from '@/services/quick/Quick';
 import { colWidth } from '@/utils/ColWidth';
 
 export default {
@@ -58,7 +58,6 @@ export default {
   *saveOrUpdateEntities({ payload, callback }, { call, put }){
     const response = yield call(saveOrUpdateEntities, payload.param);
     if (response && response.success) {
-      console.log("111",response);
       var showPageMap = new Map()
       showPageMap.set(payload.showPageK,payload.showPageV);
       yield put({
@@ -66,6 +65,18 @@ export default {
         showPageMap: showPageMap,
       });
       }
+  if (callback) callback(response);
+  },
+  *dynamicDelete({ payload, callback }, { call, put }){
+    const response = yield call(dynamicDelete, payload.params);
+    // if (response && response.success) {
+    //   var showPageMap = new Map()
+    //   showPageMap.set(payload.showPageK,payload.showPageV);
+    //   yield put({
+    //     type: 'onShowPageMap',
+    //     showPageMap: showPageMap,
+    //   });
+    //   }
   if (callback) callback(response);
   },
   *showPageMap({ payload }, { call, put }) {

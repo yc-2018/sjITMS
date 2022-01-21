@@ -22,8 +22,27 @@ export default class QuickSearchExpand extends SearchPage {
       reportCode: props.quickuuid,
       pageFilters: { quickuuid: props.quickuuid, changePage: true },
       key: props.quickuuid + 'quick.search.table', //用于缓存用户配置数据
+      tableName:'',
+      onlFormField:[]
     };
   }
+  	/**
+	* 获取配置信息
+   	*/
+	getCreateConfig = () => {
+		this.props.dispatch({
+		  type: 'quick/queryCreateConfig',
+		  payload: this.state.reportCode,
+		  callback: response => {
+			if (response.result) this.initCreateConfig(response.result.onlFormFields);
+		  },
+		});
+	}
+  
+	initCreateConfig=(onlFormFields)=>{
+		this.setState({onlFormField:onlFormFields})
+	}
+
 
   //查询数据
   getData = pageFilters => {
@@ -46,7 +65,13 @@ export default class QuickSearchExpand extends SearchPage {
         sysCode: 'tms',
       },
       callback: response => {
-        if (response.result) this.initConfig(response.result);
+        if (response.result) {
+          //获取tableName
+          let sqlsplit = response.result.sql.split(/\s+/);
+          let tableName = sqlsplit[sqlsplit.length-1]
+          this.setState({tableName:tableName})
+          this.initConfig(response.result);
+        }
       },
     });
   };
@@ -54,6 +79,7 @@ export default class QuickSearchExpand extends SearchPage {
   componentDidMount() {
     this.queryCoulumns();
     this.onSearch();
+    this.getCreateConfig()
   }
 
   //初始化配置

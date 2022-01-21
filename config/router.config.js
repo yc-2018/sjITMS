@@ -1125,6 +1125,13 @@ export default [
             component: './Quick/QuickReport/QuickReport',
             quickuuid:'qiuhui3',
             authority: ['iwms.basic.store'],
+          },
+          {
+            path: '/test/test_note',
+            name: 'test_note',
+            component: './Quick/QuickReport/QuickReport',
+            quickuuid:'zzzz',
+            authority: ['iwms.basic.store'],
           }
 
         ]

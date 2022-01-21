@@ -174,6 +174,9 @@ export default class QuickCreatePage extends CreatePage {
 				} else if (field.fieldShowType == "textarea") {
 					rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
 					formItem = <Input.TextArea disabled={field.isReadOnly} placeholder={field.placeholder}/>;
+				}else{
+					rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
+					formItem = <Input disabled={field.isReadOnly} placeholder={field.placeholder} />;
 				}
 	
 				cols.push(

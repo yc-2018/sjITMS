@@ -89,11 +89,31 @@ export default class QuickSearchPage extends QuickSearchExpand {
     const { dispatch } = this.props;
     let that = this;
     // const {selectedRows} = this.state
+    console.log("record",record);
+    const{onlFormField}=this.state
+    var field = onlFormField.find(x => x.dbIsKey)?.dbFieldName;
 
-    // return new Promise(function (resolve, reject) {
+    const recordMap = new Map(Object.entries(record));
+    var val = recordMap.get(field)
+
+    const params = {
+      tableName:this.state.tableName,
+      condition:{
+        params:[
+          {
+            field,
+            rule:'eq',
+            val:[val]
+          }
+        ]
+      },
+      deleteAll:"false"   
+    }  
     dispatch({
-      type: 'quick/onDelete',
-      payload: { id: record.ID },
+      type: 'quick/dynamicDelete',
+      payload: { 
+        params
+      },
       callback: response => {
         if (batch) {
           that.batchCallback(response, record);

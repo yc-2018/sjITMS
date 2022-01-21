@@ -39,3 +39,11 @@ export async function saveOrUpdateEntities(payload) {
     body:payload
   });
 }
+
+
+export async function dynamicDelete(payload) {
+  return request(`/itms-schedule/itms-schedule/devDynamicCRUD/delete`, {
+    method: 'POST',
+    body:payload
+  });
+}
