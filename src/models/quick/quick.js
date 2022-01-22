@@ -98,7 +98,6 @@ export default {
       if (callback) callback(response);
     },
     *selectField({ payload,callback }, { call, put }){
-      console.log("payload",payload)
       const response = yield call(getSelectField,payload);
       if(callback) callback(response);
     }

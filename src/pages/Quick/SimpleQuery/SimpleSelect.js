@@ -51,9 +51,8 @@ export default class SimpleSelect extends PureComponent {
     this.getCoulumns({queryParams: params})
   }
 
-  onFocus = (value) =>{
+  onFocus = () =>{
     if(!this.props.showSearch){
-      console.log(this.props.searchField)
       const { dispatch } = this.props;
       dispatch({
         type:'quick/selectField',
