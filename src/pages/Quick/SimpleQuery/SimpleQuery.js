@@ -10,6 +10,7 @@ import { Form, Input, Select, DatePicker } from 'antd';
 import Address from '@/pages/Component/Form/Address';
 import SearchForm from '@/pages/Component/Form/SearchForm';
 import SFormItem from '@/pages/Component/Form/SFormItem';
+import SimpleSelect from "@/pages/Quick/SimpleQuery/SimpleSelect";
 const { RangePicker } = DatePicker;
 
 @Form.create()
@@ -31,7 +32,7 @@ export default class SimpleQuery extends SearchForm {
     this.props.refresh();
   };
 
-  //查询
+  //查询console
   onSearch = searchParam => {
     let params = new Array();
     const { selectFields } = this.props;
@@ -60,11 +61,13 @@ export default class SimpleQuery extends SearchForm {
       case 'time':
         return <RangePicker style={{ width: '100%' }} />;
       case 'list':
-        return <RangePicker style={{ width: '100%' }} />;
+        return <SimpleSelect reportCode={this.props.reportCode} searchField={searchField} 
+        dispatch={this.props.dispatch}/>;
       case 'list_multi':
         return <RangePicker style={{ width: '100%' }} />;
       case 'sel_search':
-        return <RangePicker style={{ width: '100%' }} />;
+        return <SimpleSelect reportCode={this.props.reportCode} searchField={searchField} 
+        dispatch={this.props.dispatch} showSearch/>;
       case 'cat_tree':
         return <RangePicker style={{ width: '100%' }} />;
       case 'popup':

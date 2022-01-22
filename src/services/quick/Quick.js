@@ -47,3 +47,17 @@ export async function dynamicDelete(payload) {
     body:payload
   });
 }
+
+export async function selectCoulumns(payload) {
+  return request(`/itms-schedule/itms-schedule/dev/selectCoulumns/${payload.quickuuid}`, {
+    method: 'POST',
+    body:payload
+  });
+}
+
+export async function test(payload) {
+  return request(`/itms-schedule/itms-schedule/dev/test/${payload.searchDictTable}/${payload.searchDictField}`, {
+    method: 'POST',
+    body:payload
+  });
+}

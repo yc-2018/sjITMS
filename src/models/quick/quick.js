@@ -1,4 +1,4 @@
-import { queryData, queryColumns, queryAllData, queryCreateConfig,saveOrUpdateEntities,dynamicDelete } from '@/services/quick/Quick';
+import { queryData, queryColumns, queryAllData, queryCreateConfig,saveOrUpdateEntities,dynamicDelete,selectCoulumns,test } from '@/services/quick/Quick';
 import { colWidth } from '@/utils/ColWidth';
 
 export default {
@@ -33,6 +33,7 @@ export default {
   effects: {
     *queryColumns({ payload, callback }, { call }) {
       const response = yield call(queryColumns, payload);
+      console.log("response",response)
       if (callback) callback(response);
     },
     *queryData({ payload, callback }, { call }) {
@@ -86,6 +87,15 @@ export default {
       type: 'onShowPageMap',
       showPageMap: showPageMap,
       });
+    },
+    *selectCoulumns({ payload,callback }, { call, put }){
+      const response = yield call(selectCoulumns,payload);
+      if (callback) callback(response);
+    },
+    *test({ payload,callback }, { call, put }){
+      console.log("payload",payload)
+      const response = yield call(test,payload);
+      if(callback) callback(response);
     }
   },
   reducers: {
