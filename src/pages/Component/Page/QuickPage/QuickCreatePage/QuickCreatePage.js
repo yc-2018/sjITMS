@@ -33,27 +33,10 @@ export default class QuickCreatePage extends CreatePage {
 		this.setState({onlFormField:onlFormFields})
 	}
 
-   //获取tableName
-  queryCoulumns = () => {
-    const { dispatch } = this.props;
-    dispatch({
-      type: 'quick/queryColumns',
-      payload: {
-        reportCode: this.state.quickuuid,
-        sysCode: 'tms',
-      },
-      callback: response => {
-        if (response.result){
-			 //获取tableName
-			 let sqlsplit = response.result.sql.split(/\s+/);
-			 let tableName = sqlsplit[sqlsplit.length-1]
-			 this.setState({tableName:tableName})
-		}
-      },
-    });
-  };
+ 
 
 	constructor(props) {
+		console.log("props:",props)
 		super(props);
 		this.state = {
 			title: "测试标题",
@@ -65,14 +48,32 @@ export default class QuickCreatePage extends CreatePage {
 			auditPermission: "iwms.out.alcntc.audit",
 			onlFormField:[],
 			quickuuid:props.quickuuid,
-			tableName:''
+			tableName:props.tableName,
+			datas:new Map(),
+			
+
 		}
+		//this.queryCoulumns();
 	}
 
 
 	componentDidMount() {
 		this.getCreateConfig();		
-		this.queryCoulumns()
+		if(this.props.quick.showPageMap.get(this.props.quickuuid).endsWith("update")){
+			const{tableName} = this.state
+			const param = {
+				tableName:tableName,
+				condition: {"params":[{field:"id",rule:"eq",val:[this.props.quick.entityUuid]}]}
+			}
+			this.props.dispatch({
+				type: 'quick/dynamicqueryById',
+				payload: param,
+				callback: response => {
+					this.setState({datas:new Map(Object.entries(response.result.records[0]))});
+				},
+			  });
+		}
+		
 	}
 
 
@@ -98,7 +99,6 @@ export default class QuickCreatePage extends CreatePage {
 			tableName: this.state.tableName,
 			data: [data]
 		}]
-
 		this.props.dispatch({
 			type: 'quick/saveOrUpdateEntities',
 			payload: {
@@ -147,7 +147,9 @@ export default class QuickCreatePage extends CreatePage {
 		const { getFieldDecorator } = this.props.form;
 		//const{map} = this.props.quick
 		const {onlFormField} = this.state
+		console.log("onlFormField",onlFormField);
 		let cols = [];
+		const {datas} = this.state;
 		if (typeof(onlFormField)!=="undefined"&&onlFormField.length>0) {
 			onlFormField.forEach(field => {
 				let formItem;
@@ -183,7 +185,7 @@ export default class QuickCreatePage extends CreatePage {
 					<CFormItem key={field.dbFieldName} label={field.dbFieldTxt}>
 						{
 							getFieldDecorator(field.dbFieldName, {
-								initialValue: field.dbDefaultVal,
+								initialValue:this.state.datas.get(field.dbFieldName) ,
 								rules: rules,
 							})(formItem)
 						}

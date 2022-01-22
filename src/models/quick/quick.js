@@ -1,4 +1,4 @@
-import { queryData, queryColumns, queryAllData, queryCreateConfig,saveOrUpdateEntities,dynamicDelete } from '@/services/quick/Quick';
+import { queryData, queryColumns, queryAllData, queryCreateConfig,saveOrUpdateEntities,dynamicDelete,dynamicqueryById } from '@/services/quick/Quick';
 import { colWidth } from '@/utils/ColWidth';
 
 export default {
@@ -85,8 +85,13 @@ export default {
     yield put({
       type: 'onShowPageMap',
       showPageMap: showPageMap,
+      entityUuid:payload.entityUuid
       });
-    }
+    },
+    *dynamicqueryById({ payload, callback }, { call }) {
+      const response = yield call(dynamicqueryById, payload);
+      if (callback) callback(response);
+    },
   },
   reducers: {
     onShowPage(state, action) {
@@ -113,6 +118,7 @@ export default {
       return {
         ...state,
         showPageMap: mapGra,
+        entityUuid: action.entityUuid,
       };
     },
   },
