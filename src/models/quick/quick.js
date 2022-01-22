@@ -1,4 +1,4 @@
-import { queryData, queryColumns, queryAllData, queryCreateConfig,saveOrUpdateEntities,dynamicDelete,selectCoulumns,test } from '@/services/quick/Quick';
+import { queryData, queryColumns, queryAllData, queryCreateConfig,saveOrUpdateEntities,dynamicDelete,dynamicqueryById,selectCoulumns,getSelectField } from '@/services/quick/Quick';
 import { colWidth } from '@/utils/ColWidth';
 
 export default {
@@ -86,15 +86,20 @@ export default {
     yield put({
       type: 'onShowPageMap',
       showPageMap: showPageMap,
+      entityUuid:payload.entityUuid
       });
+    },
+    *dynamicqueryById({ payload, callback }, { call }) {
+      const response = yield call(dynamicqueryById, payload);
+      if (callback) callback(response);
     },
     *selectCoulumns({ payload,callback }, { call, put }){
       const response = yield call(selectCoulumns,payload);
       if (callback) callback(response);
     },
-    *test({ payload,callback }, { call, put }){
+    *selectField({ payload,callback }, { call, put }){
       console.log("payload",payload)
-      const response = yield call(test,payload);
+      const response = yield call(getSelectField,payload);
       if(callback) callback(response);
     }
   },
@@ -123,6 +128,7 @@ export default {
       return {
         ...state,
         showPageMap: mapGra,
+        entityUuid: action.entityUuid,
       };
     },
   },

@@ -45,7 +45,24 @@ export default class QuickSearchPage extends QuickSearchExpand {
         }
     });
   }
-
+  /**
+   * 编辑界面
+   */
+  onUpdate = () => {
+    const { selectedRows} = this.state;
+    if (selectedRows.length !== 0) {
+    this.props.dispatch({
+        type: 'quick/showPageMap',
+        payload: {
+           showPageK:this.state.reportCode,
+           showPageV:this.state.reportCode+'update',
+           entityUuid: selectedRows[0].ID
+        }
+    });
+  }else{
+    message.error('请至少选中一条数据！');
+  }
+}
   /**
    * 查看详情
    */
@@ -182,6 +199,10 @@ export default class QuickSearchPage extends QuickSearchExpand {
         <Button onClick={this.onCreate} type='primary' icon='plus'
         >
           新建
+        </Button>
+        <Button onClick={this.onUpdate} type='primary' 
+        >
+          编辑
         </Button>
         <Button onClick={this.onView} type='primary'
         >

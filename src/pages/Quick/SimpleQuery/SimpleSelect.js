@@ -56,7 +56,7 @@ export default class SimpleSelect extends PureComponent {
       console.log(this.props.searchField)
       const { dispatch } = this.props;
       dispatch({
-        type:'quick/test',
+        type:'quick/selectField',
         payload: this.props.searchField,
         callback: response => {
           if (response.data) this.initData(response.data);
