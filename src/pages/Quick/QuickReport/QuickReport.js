@@ -48,6 +48,25 @@ export default class QuickReport extends PureComponent {
         },
     });
     };
+
+    	/**
+	* 获取配置信息
+   	*/
+	getCreateConfig = () => {
+		this.props.dispatch({
+		  type: 'quick/queryCreateConfig',
+		  payload: this.state.quickuuid,
+		  callback: response => {
+			if (response.result) this.initCreateConfig(response.result.onlFormFields);
+		  },
+		});
+	}
+
+	initCreateConfig=(onlFormFields)=>{
+		this.setState({onlFormField:onlFormFields})
+	}
+
+
     constructor(props) {
         super(props);
         this.toQueryPage()   
@@ -56,11 +75,13 @@ export default class QuickReport extends PureComponent {
     state = {
         quickuuid:this.props.route.quickuuid,
         showPageNow:this.props.route.quickuuid+'query',
-        tableName:''
+        tableName:'',
+        onlFormField:[]
     }
 
     componentDidMount(){
         this.queryCoulumns();
+        this.getCreateConfig();
     }
 
     componentWillReceiveProps(nextProps){
@@ -78,13 +99,13 @@ export default class QuickReport extends PureComponent {
     render() {
         const{showPageNow} = this.state
         if(showPageNow === this.state.quickuuid+'create'){
-            return (<Create quickuuid={this.state.quickuuid} tableName={this.state.tableName}/>)
+            return (<Create quickuuid={this.state.quickuuid} tableName={this.state.tableName} onlFormField={this.state.onlFormField}/>)
         }else if(showPageNow === this.state.quickuuid+'query'){
             return (<QuicSearchPage quickuuid={this.state.quickuuid} pathname={this.props.location.pathname}/>)
         }else if(showPageNow === this.state.quickuuid+'view'){
             return (<QuickDemoView pathname={this.props.location.pathname}/>)
         }else if(showPageNow === this.state.quickuuid+'update'){
-            return (<Create quickuuid={this.state.quickuuid}  tableName={this.state.tableName}/>)
+            return (<Create quickuuid={this.state.quickuuid}  tableName={this.state.tableName} onlFormField={this.state.onlFormField}/>)
         }return null
     }
 }
