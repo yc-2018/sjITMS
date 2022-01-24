@@ -149,7 +149,6 @@ export default class QuickSearchExpand extends SearchPage {
   refreshTable = filter => {
     const { dispatch } = this.props;
     const { pageFilters } = this.state;
-
     let queryFilter = { ...pageFilters };
     if (filter) {
       var order = '';
@@ -197,6 +196,8 @@ export default class QuickSearchExpand extends SearchPage {
           selectFields={this.state.selectFields}
           filterValue={this.state.pageFilter.filterValue}
           refresh={this.onSearch}
+          reportCode={this.state.reportCode}
+          dispatch={this.props.dispatch}
         />
         <AdvanceQuery
           fieldInfos={this.columns}
