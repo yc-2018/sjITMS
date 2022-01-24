@@ -14,27 +14,6 @@ import { commonLocale } from '@/utils/CommonLocale';
   }))
 @Form.create()
 export default class QuickCreatePage extends CreatePage {
-
-	
-	/**
-	* 获取配置信息
-   	*/
-	getCreateConfig = () => {
-		this.props.dispatch({
-		  type: 'quick/queryCreateConfig',
-		  payload: this.state.quickuuid,
-		  callback: response => {
-			if (response.result) this.initCreateConfig(response.result.onlFormFields);
-		  },
-		});
-	}
-
-	initCreateConfig=(onlFormFields)=>{
-		this.setState({onlFormField:onlFormFields})
-	}
-
- 
-
 	constructor(props) {
 		console.log("props:",props)
 		super(props);
@@ -46,7 +25,7 @@ export default class QuickCreatePage extends CreatePage {
 				uuid: ""
 			},
 			auditPermission: "iwms.out.alcntc.audit",
-			onlFormField:[],
+			onlFormField:props.onlFormField,
 			quickuuid:props.quickuuid,
 			tableName:props.tableName,
 			datas:new Map(),
@@ -55,15 +34,13 @@ export default class QuickCreatePage extends CreatePage {
 		}
 		//this.queryCoulumns();
 	}
-
-
-	componentDidMount() {
-		this.getCreateConfig();		
+	dynamicqueryById(){
 		if(this.props.quick.showPageMap.get(this.props.quickuuid).endsWith("update")){
 			const{tableName} = this.state
+			var field = this.state.onlFormField.find(x => x.dbIsKey)?.dbFieldName;
 			const param = {
 				tableName:tableName,
-				condition: {"params":[{field:"id",rule:"eq",val:[this.props.quick.entityUuid]}]}
+				condition: {"params":[{"field":field,rule:"eq",val:[this.props.quick.entityUuid]}]}
 			}
 			this.props.dispatch({
 				type: 'quick/dynamicqueryById',
@@ -73,8 +50,12 @@ export default class QuickCreatePage extends CreatePage {
 				},
 			  });
 		}
-		
 	}
+
+	componentDidMount() {
+		this.dynamicqueryById();	
+	}
+
 
 
 	onCancel = () => {
@@ -119,25 +100,8 @@ export default class QuickCreatePage extends CreatePage {
 		console.log(onSaveAndCreate)
 		
 		return;
-
-		this.props.dispatch({
-			type: 'alcNtc/onSaveAndCreate',
-			payload: creation,
-			callback: (response) => {
-				if (response && response.success) {
-					this.setState({
-						entity: {
-							companyUuid: loginCompany().uuid,
-							dcUuid: loginOrg().uuid,
-							items: []
-						}
-					});
-					this.props.form.resetFields();
-					message.success(commonLocale.saveSuccessLocale);
-				}
-			}
-		});
 	}
+
 
 	/**
 	 * 渲染表单组件
@@ -147,7 +111,6 @@ export default class QuickCreatePage extends CreatePage {
 		const { getFieldDecorator } = this.props.form;
 		//const{map} = this.props.quick
 		const {onlFormField} = this.state
-		console.log("onlFormField",onlFormField);
 		let cols = [];
 		const {datas} = this.state;
 		if (typeof(onlFormField)!=="undefined"&&onlFormField.length>0) {
