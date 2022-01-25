@@ -1099,13 +1099,6 @@ export default [
             authority: ['iwms.basic.store'],
           },
           {
-            path: '/test/quick2',
-            name: 'quick2',
-            component: './Quick/Quick',
-            quickuuid:'ONL_FORM_HEAD',
-            authority: ['iwms.basic.store'],
-          },
-          {
             path: '/test/quick6',
             name: '快速开发框架扩展代码Demo',
             component: './QuickDemo/QuickDemo',
@@ -1130,7 +1123,14 @@ export default [
             path: '/test/test_note',
             name: 'qiuhuitest',
             component: './Quick/QuickReport/QuickReport',
-            quickuuid:'qiuhuitest',
+            quickuuid:'20220124',
+            authority: ['iwms.basic.store'],
+          },
+          {
+            path: '/test/test_form',
+            name: '测试表单',
+            component: './Quick/QuickReport/QuickReport',
+            quickuuid:'20220125',
             authority: ['iwms.basic.store'],
           }
 
