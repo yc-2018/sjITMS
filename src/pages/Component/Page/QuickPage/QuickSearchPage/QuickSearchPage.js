@@ -167,7 +167,7 @@ export default class QuickSearchPage extends QuickSearchExpand {
           option.fileName = this.state.title  //导出的Excel文件名
           option.datas = [
             {
-              sheetData: this.state.data.list,
+              sheetData: response.data.records,
               sheetName: this.state.title,  //工作表的名字
               sheetFilter: sheetfilter,
               sheetHeader: sheetheader,

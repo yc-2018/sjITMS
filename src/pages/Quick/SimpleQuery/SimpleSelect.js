@@ -33,7 +33,6 @@ export default class SimpleSelect extends PureComponent {
   }
 
   onChange = (value) => {
-    this.setState({ value });
     // 用于form表单获取控件值
     if (this.props.onChange)
       this.props.onChange(value);
@@ -83,12 +82,14 @@ export default class SimpleSelect extends PureComponent {
   }
 
   render() {
+    const { showSearch,value,searchField } = this.props
     const selectProps = {
-      showSearch: this.props.showSearch,
+      showSearch: showSearch,
       onChange: this.onChange,
       onSearch: this.onSearch,
       onFocus: this.onFocus,
-      value:this.props.value
+      value : value==""?undefined:value,
+      placeholder : (showSearch?"请输入":"请选择")+ searchField.fieldTxt
     };
 
     return (

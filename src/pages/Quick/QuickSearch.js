@@ -161,7 +161,7 @@ export default class QuickSearch extends SearchPage {
         if (response && response.success) {
           let columns = this.state.columns;
           var option = [];
-          let sheetfilter = []; //对应列表数据中的key值数组，就是上面resdata中的 name，address
+          let sheetfilter = []; //对应列表数据中的key值数组
           let sheetheader = []; //对应key值的表头，即excel表头
           columns.map(a => {
             sheetfilter.push(a.key);
@@ -170,7 +170,7 @@ export default class QuickSearch extends SearchPage {
           option.fileName = this.state.title; //导出的Excel文件名
           option.datas = [
             {
-              sheetData: this.state.data.list,
+              sheetData: response.data.records,
               sheetName: this.state.title, //工作表的名字
               sheetFilter: sheetfilter,
               sheetHeader: sheetheader,
