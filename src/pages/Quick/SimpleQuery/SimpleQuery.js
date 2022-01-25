@@ -2,15 +2,16 @@
  * @Author: guankongjin
  * @Date: 2022-01-15 16:03:07
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-01-24 10:10:48
+ * @LastEditTime: 2022-01-25 09:01:18
  * @Description: 快速开发简单查询
  * @FilePath: \iwms-web\src\pages\Quick\SimpleQuery\SimpleQuery.js
  */
 import { Form, Input, Select, DatePicker } from 'antd';
-import Address from '@/pages/Component/Form/Address';
+import { notNullLocale } from '@/utils/CommonLocale';
 import SearchForm from '@/pages/Component/Form/SearchForm';
 import SFormItem from '@/pages/Component/Form/SFormItem';
 import SimpleSelect from '@/pages/Quick/SimpleQuery/SimpleSelect';
+import Address from '@/pages/Component/Form/Address';
 const { RangePicker } = DatePicker;
 
 @Form.create()
@@ -39,12 +40,18 @@ export default class SimpleQuery extends SearchForm {
     const { selectFields } = this.props;
     for (let param in searchParam) {
       const field = selectFields.find(x => x.fieldName == param);
-      const val = searchParam[param];
+      let val = searchParam[param];
+      if (field.searchShowtype == 'datetime' && val instanceof Array) {
+        val = val.map(x => x.format('YYYY-MM-DD')).join('||');
+      }
+      if (field.searchShowtype == 'date') {
+        val = val.format('YYYY-MM-DD');
+      }
       if (val && field) {
         params.push({
           field: field.fieldName,
           type: field.fieldType,
-          rule: field.searchShowtype === 'text' ? 'like' : 'eq',
+          rule: field.searchCondition || 'like',
           val,
         });
       }
@@ -108,6 +115,12 @@ export default class SimpleQuery extends SearchForm {
         <SFormItem key={searchField.id} label={searchField.fieldTxt}>
           {getFieldDecorator(searchField.fieldName, {
             initialValue: filterValue ? filterValue[searchField.fieldName] : '',
+            rules: [
+              {
+                required: searchField.searchRequire,
+                message: notNullLocale(searchField.fieldTxt),
+              },
+            ],
           })(this.buildSearchItem(searchField))}
         </SFormItem>
       );
