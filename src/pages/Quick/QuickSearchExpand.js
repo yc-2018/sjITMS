@@ -71,6 +71,8 @@ export default class QuickSearchExpand extends SearchPage {
           let tableName = sqlsplit[sqlsplit.length-1]
           this.setState({tableName:tableName})
           this.initConfig(response.result);
+          //配置查询成功后再去查询数据
+          this.onSearch();
         }
       },
     });
@@ -78,7 +80,8 @@ export default class QuickSearchExpand extends SearchPage {
 
   componentDidMount() {
     this.queryCoulumns();
-    this.onSearch();
+    //解决用户列展示失效问题 暂时解决方法（查询两次）
+    this.queryCoulumns(); 
     this.getCreateConfig()
   }
 

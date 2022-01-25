@@ -49,14 +49,19 @@ export default class QuickSearch extends SearchPage {
         sysCode: 'tms',
       },
       callback: response => {
-        if (response.result) this.initConfig(response.result);
+        if (response.result) {
+          this.initConfig(response.result);
+            //配置查询成功后再去查询数据
+          this.onSearch();
+        }
       },
     });
   };
 
   componentDidMount() {
-    this.queryCoulumns();
-    this.onSearch();
+    this.queryCoulumns(); 
+    //解决用户列展示失效问题 暂时解决方法（查询两次）
+    this.queryCoulumns(); 
   }
 
   //初始化配置
