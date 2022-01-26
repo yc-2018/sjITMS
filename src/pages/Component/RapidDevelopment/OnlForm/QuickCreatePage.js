@@ -1,11 +1,13 @@
 import { connect } from 'dva';
+import { Form, Select, Input, InputNumber, message, Col, DatePicker, Modal } from 'antd';
+import moment from 'moment';
+
+import { loginCompany, loginOrg, loginUser, getDefOwner, getActiveKey } from '@/utils/LoginContext';
+import { commonLocale } from '@/utils/CommonLocale';
 import CreatePage from '@/pages/Component/Page/CreatePage';
 import FormPanel from '@/pages/Component/Form/FormPanel';
 import CFormItem from '@/pages/Component/Form/CFormItem';
 import { SimpleTreeSelect, SimpleRadio } from "@/pages/Component/RapidDevelopment/CommonComponent";
-import { loginCompany, loginOrg, loginUser, getDefOwner, getActiveKey } from '@/utils/LoginContext';
-import { Form, Select, Input, InputNumber, message, Col, DatePicker, Modal } from 'antd';
-import { commonLocale } from '@/utils/CommonLocale';
 
 @connect(({ quick, loading }) => ({
 	quick,
@@ -69,6 +71,10 @@ export default class QuickCreatePage extends CreatePage {
 		// 默认实现的数据保存接口
 		console.log("data", data);
 		console.log("tableName", this.state.tableName);
+		// TODO 日期格式oracle保存有问题
+		// 格式转换处理
+		convertSaveData(data);
+		
 		//入参
 		const param = [{
 			tableName: this.state.tableName,
@@ -141,7 +147,7 @@ export default class QuickCreatePage extends CreatePage {
 				<CFormItem key={field.dbFieldName} label={field.dbFieldTxt}>
 					{
 						getFieldDecorator(field.dbFieldName, {
-							initialValue: this.state.datas.get(field.dbFieldName),
+							initialValue: convertInitialValue(this.state.datas.get(field.dbFieldName), field.fieldShowType),
 							rules: rules,
 						})(formItem)
 					}
@@ -152,5 +158,34 @@ export default class QuickCreatePage extends CreatePage {
 		return [
 			<FormPanel key='basicInfo' title={"测试"} cols={cols} />
 		];
+	}
+}
+
+/**
+ * 转换保存数据
+ * @param {*} saveData 
+ */
+function convertSaveData(saveData){
+	for (let key in saveData) {
+		if(saveData[key]?._isAMomentObject){
+			saveData[key] = data[key].format('YYYY-MM-DD');
+		}
+	}
+}
+
+/**
+ * 转换初始值
+ * @param {*} value 值
+ * @param {string} type 类型 
+ * @returns 
+ */
+function convertInitialValue(value, type) {
+	if(!value){
+		return value;
+	}
+	if (type == "date") {
+		return moment(value, 'YYYY/MM/DD')
+	} else {
+		return value;
 	}
 }

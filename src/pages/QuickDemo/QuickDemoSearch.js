@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { Table, Button, Input, Col, Row, Popconfirm, message } from 'antd';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
-import QuickSearchExpand from '@/pages/Component/RapidDevelopment/OnlReport/QuickSearchExpand';
+import QuickSearchExpand from '@/pages/Component/RapidDevelopment/OnlForm/QuickSearchExpand';
 import SearchPage from '@/pages/Component/Page/SearchPage';
 import ExportJsonExcel from 'js-export-excel';
 

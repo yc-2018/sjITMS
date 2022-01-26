@@ -14,7 +14,7 @@ import ExportJsonExcel from 'js-export-excel';
   quick,
   loading: loading.models.quick,
 }))
-export default class QuickSearch extends SearchPage {
+export default class QuickReportSearch extends SearchPage {
   constructor(props) {
     super(props);
     this.state = {

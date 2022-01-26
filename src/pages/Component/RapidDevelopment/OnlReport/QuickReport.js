@@ -3,12 +3,12 @@ import { Table, Button, Input, Col, Row } from 'antd';
 import { query, queryDate } from '@/services/quick/Quick';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
-import QuickSearch from './QuickSearch';
+import QuickReportSearch from './QuickReportSearch';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
-export default class Quick extends Component {
+export default class QuickReport extends Component {
   state = {
     quickuuid: this.props.route.quickuuid,
   };
@@ -16,7 +16,10 @@ export default class Quick extends Component {
   render() {
     if (this.props.quick.showPage === 'query') {
       return (
-        <QuickSearch quickuuid={this.state.quickuuid} pathname={this.props.location.pathname} />
+        <QuickReportSearch
+          quickuuid={this.state.quickuuid}
+          pathname={this.props.location.pathname}
+        />
       );
     }
   }

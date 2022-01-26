@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { Table, Button, Input, Col, Row, Popconfirm, message } from 'antd';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
-import QuickSearchExpand from '@/pages/Component/RapidDevelopment/OnlReport/QuickSearchExpand';
+import QuickSearchExpand from './QuickSearchExpand';
 import SearchPage from '@/pages/Component/Page/SearchPage';
 import ExportJsonExcel from 'js-export-excel';
 
@@ -10,24 +10,18 @@ import ExportJsonExcel from 'js-export-excel';
   quick,
   loading: loading.models.quick,
 }))
-export default class QuickSearchPage extends QuickSearchExpand {
+export default class QuickFormSearchPage extends QuickSearchExpand {
   constructor(props) {
     super(props);
+    this.state = {
+      ...this.state,
+      title: 'test',
+      data: [],
+      suspendLoading: false,
+      columns: [],
+      key: this.props.quickuuid + 'quick.search.table', //用于缓存用户配置数据
+    };
   }
-
-  state = {
-    ...this.state,
-    title: 'test',
-    data: [],
-    suspendLoading: false,
-    columns: [],
-    key: this.props.quickuuid + 'quick.search.table', //用于缓存用户配置数据,
-  };
-
-  // componentDidMount(){
-  //   console.log("testzzz",this)
-
-  // }
 
   /**
    * 显示新建/编辑界面
@@ -64,7 +58,6 @@ export default class QuickSearchPage extends QuickSearchExpand {
    */
   onView = () => {
     const { selectedRows, batchAction } = this.state;
-    //console.log("rows为",selectedRows,"batchAction为",batchAction,selectedRows[0].ID)
     if (selectedRows.length > 0) {
       this.props.dispatch({
         type: 'quick/showPage',
@@ -94,19 +87,13 @@ export default class QuickSearchPage extends QuickSearchExpand {
    * 单一删除
    */
   deleteById = (record, batch) => {
-    const { dispatch } = this.props;
+    const { dispatch, tableName, onlFormField } = this.props;
     let that = this;
-    // const {selectedRows} = this.state
-    console.log('record', record);
-    const { onlFormField } = this.state;
-    console.log(this.state);
     var field = onlFormField.find(x => x.dbIsKey)?.dbFieldName;
-
     const recordMap = new Map(Object.entries(record));
     var val = recordMap.get(field);
-
     const params = {
-      tableName: this.state.tableName,
+      tableName,
       condition: {
         params: [
           {
@@ -120,9 +107,7 @@ export default class QuickSearchPage extends QuickSearchExpand {
     };
     dispatch({
       type: 'quick/dynamicDelete',
-      payload: {
-        params,
-      },
+      payload: { params },
       callback: response => {
         if (batch) {
           that.batchCallback(response, record);
@@ -139,6 +124,7 @@ export default class QuickSearchPage extends QuickSearchExpand {
     });
   };
 
+  //导出
   port = () => {
     const { dispatch } = this.props;
     dispatch({
@@ -207,7 +193,6 @@ export default class QuickSearchPage extends QuickSearchExpand {
       <Popconfirm
         title="你确定要删除所选中的内容吗?"
         onConfirm={() => this.onBatchDelete()}
-        // onCancel={cancel}
         okText="确定"
         cancelText="取消"
       >

@@ -21,28 +21,9 @@ export default class QuickSearchExpand extends SearchPage {
       selectFields: [],
       reportCode: props.quickuuid,
       pageFilters: { quickuuid: props.quickuuid, changePage: true },
-      key: props.quickuuid + 'quick.search.table',
-      tableName: '',
-      onlFormField: [],
-    }; //用于缓存用户配置数据,]
+      key: props.quickuuid + 'quick.search.table', //用于缓存用户配置数据
+    };
   }
-
-  /**
-   * 获取配置信息
-   */
-  getCreateConfig = () => {
-    this.props.dispatch({
-      type: 'quick/queryCreateConfig',
-      payload: this.state.reportCode,
-      callback: response => {
-        if (response.result) this.initCreateConfig(response.result.onlFormFields);
-      },
-    });
-  };
-
-  initCreateConfig = onlFormFields => {
-    this.setState({ onlFormField: onlFormFields });
-  };
 
   //查询数据
   getData = pageFilters => {
@@ -66,10 +47,6 @@ export default class QuickSearchExpand extends SearchPage {
       },
       callback: response => {
         if (response.result) {
-          //获取tableName
-          let sqlsplit = response.result.sql.split(/\s+/);
-          let tableName = sqlsplit[sqlsplit.length - 1];
-          this.setState({ tableName: tableName });
           this.initConfig(response.result);
           //配置查询成功后再去查询数据
           this.onSearch();
@@ -79,7 +56,6 @@ export default class QuickSearchExpand extends SearchPage {
   };
 
   componentDidMount() {
-    this.getCreateConfig();
     this.queryCoulumns();
     //解决用户列展示失效问题 暂时解决方法（查询两次）
     this.queryCoulumns();
