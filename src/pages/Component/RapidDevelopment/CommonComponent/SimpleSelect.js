@@ -4,6 +4,7 @@ import { connect } from 'dva';
 import { formatMessage } from 'umi/locale';
 import { loginCompany } from '@/utils/LoginContext';
 import { STATE } from '@/utils/constants';
+import { getSelectField, selectCoulumns } from "@/services/quick/Quick";
 
 /**
 * 简易查询下拉选择控件
@@ -19,14 +20,14 @@ export default class SimpleSelect extends PureComponent {
     super(props);
 
     this.state = {
-      selectData:[]
+      selectData: []
     }
   }
 
-  buildOptions = () =>{
+  buildOptions = () => {
     const { selectData } = this.state
     let options = [];
-    selectData.forEach(data=>{
+    selectData.forEach(data => {
       options.push(<Select.Option value={data}>{data}</Select.Option>)
     })
     return options;
@@ -45,51 +46,42 @@ export default class SimpleSelect extends PureComponent {
       field: searchField.fieldName,
       type: searchField.fieldType,
       rule: 'like',
-      val:value
+      val: value
     });
-    this.getCoulumns({queryParams: params})
+    this.getCoulumns({ queryParams: params })
   }
 
-  onFocus = () =>{
-    if(!this.props.showSearch){
-      const { dispatch } = this.props;
-      dispatch({
-        type:'quick/selectField',
-        payload: this.props.searchField,
-        callback: response => {
-          if (response.data) this.initData(response.data);
-        },
-      })
+  onFocus = async () => {
+    if (!this.props.showSearch) {
+      const selectField = await getSelectField(this.props.searchField);
+      this.initData(selectField.data);
     }
   }
 
-  getCoulumns = pageFilters =>{
-    const { dispatch } = this.props;
-    dispatch({
-      type: 'quick/selectCoulumns',
-      payload: {
-        superQuery:pageFilters,
-        quickuuid:this.props.reportCode,
-      },
-      callback: response => {
-        if (response.data) this.initData(response.data);
-      },
-    })
+  getCoulumns = async(pageFilters) => {
+    const payload = {
+      superQuery: pageFilters,
+      quickuuid: this.props.reportCode
+    }
+    const result = await selectCoulumns(payload);
+    if(result.data != null){
+      this.initData(result.data);
+    }
   }
 
-  initData = data =>{
-    this.setState({selectData:data})
+  initData = data => {
+    this.setState({ selectData: data })
   }
 
   render() {
-    const { showSearch,value,searchField } = this.props
+    const { showSearch, value, searchField } = this.props
     const selectProps = {
       showSearch: showSearch,
       onChange: this.onChange,
       onSearch: this.onSearch,
       onFocus: this.onFocus,
-      value : value==""?undefined:value,
-      placeholder : (showSearch?"请输入":"请选择")+ searchField.fieldTxt
+      value: value == "" ? undefined : value,
+      placeholder: (showSearch ? "请输入" : "请选择") + searchField.fieldTxt
     };
 
     return (
