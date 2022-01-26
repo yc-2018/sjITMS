@@ -79,11 +79,7 @@ export default class SimpleQuery extends SearchForm {
         return (
           <SimpleSelect
             searchField={searchField}
-<<<<<<< HEAD
             {...searchProperties}
-=======
-            dispatch={this.props.dispatch}
->>>>>>> 33f3d7e74d233cbb5506a78f664afb39da304c11
           />
         );
       case 'radio':
