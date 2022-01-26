@@ -73,11 +73,8 @@ export default class QuickCreatePage extends CreatePage {
 		console.log("tableName", this.state.tableName);
 		// TODO 日期格式oracle保存有问题
 		// 格式转换处理
-		for (let key in data) {
-			if(data[key]._isAMomentObject){
-				data[key] = data[key].format('YYYY-MM-DD');
-			}
-		}
+		convertSaveData(data);
+		
 		//入参
 		const param = [{
 			tableName: this.state.tableName,
@@ -165,12 +162,27 @@ export default class QuickCreatePage extends CreatePage {
 }
 
 /**
+ * 转换保存数据
+ * @param {*} saveData 
+ */
+function convertSaveData(saveData){
+	for (let key in saveData) {
+		if(saveData[key]?._isAMomentObject){
+			saveData[key] = data[key].format('YYYY-MM-DD');
+		}
+	}
+}
+
+/**
  * 转换初始值
  * @param {*} value 值
  * @param {string} type 类型 
  * @returns 
  */
 function convertInitialValue(value, type) {
+	if(!value){
+		return value;
+	}
 	if (type == "date") {
 		return moment(value, 'YYYY/MM/DD')
 	} else {
