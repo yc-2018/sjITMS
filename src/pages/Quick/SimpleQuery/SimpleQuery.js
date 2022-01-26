@@ -12,6 +12,7 @@ import SearchForm from '@/pages/Component/Form/SearchForm';
 import SFormItem from '@/pages/Component/Form/SFormItem';
 import SimpleSelect from '@/pages/Quick/SimpleQuery/SimpleSelect';
 import Address from '@/pages/Component/Form/Address';
+import { SimpleTreeSelect } from "@/pages/Component/RapidDevelopment/CommonComponent";
 const { RangePicker } = DatePicker;
 
 @Form.create()
@@ -61,6 +62,7 @@ export default class SimpleQuery extends SearchForm {
 
   //生成查询控件
   buildSearchItem = searchField => {
+    const searchProperties = searchField.searchProperties ? JSON.parse(searchField.searchProperties) : "";
     switch (searchField.searchShowtype) {
       case 'date':
         return <DatePicker style={{ width: '100%' }} />;
@@ -98,7 +100,7 @@ export default class SimpleQuery extends SearchForm {
       case 'pca':
         return <Address />;
       case 'sel_tree':
-        return <RangePicker style={{ width: '100%' }} />;
+        return <SimpleTreeSelect {...searchProperties}/>;
       default:
         return <Input placeholder={'请输入' + searchField.fieldTxt} />;
     }
