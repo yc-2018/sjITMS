@@ -5,8 +5,8 @@ import { Route, Switch } from 'react-router-dom';
 import axios from 'axios';
 import SearchPage from '@/pages/Component/Page/SearchPage';
 import { colWidth } from '@/utils/ColWidth';
-import AdvanceQuery from './AdvancedQuery/QueryT';
-import SimpleQuery from './SimpleQuery/SimpleQuery';
+import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/QueryT';
+import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuery/SimpleQuery';
 import SearchMoreAction from '@/pages/Component/Form/SearchMoreAction';
 import ExportJsonExcel from 'js-export-excel';
 

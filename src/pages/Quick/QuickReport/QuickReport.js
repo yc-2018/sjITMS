@@ -2,9 +2,8 @@ import React, { PureComponent } from 'react'
 import {Table,Button,Input,Col,Row} from 'antd';
 import {connect} from 'dva'
 import { Route,Switch } from 'react-router-dom'
-import Create from "@/pages/Component/Page/QuickPage/QuickCreatePage/QuickCreatePage"
-import QuicSearchPage from '@/pages/Component/Page/QuickPage/QuickSearchPage/QuickSearchPage'
-// import QuickDemoView from './QuickDemoView'
+import Create from "@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePage"
+import QuicSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickSearchPage'
 const { Search } = Input;
 
 @connect(({ quick, loading }) => ({

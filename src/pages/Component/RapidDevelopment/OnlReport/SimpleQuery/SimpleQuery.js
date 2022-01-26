@@ -10,9 +10,8 @@ import { Form, Input, Select, DatePicker } from 'antd';
 import { notNullLocale } from '@/utils/CommonLocale';
 import SearchForm from '@/pages/Component/Form/SearchForm';
 import SFormItem from '@/pages/Component/Form/SFormItem';
-import SimpleSelect from '@/pages/Quick/SimpleQuery/SimpleSelect';
 import Address from '@/pages/Component/Form/Address';
-import { SimpleTreeSelect } from "@/pages/Component/RapidDevelopment/CommonComponent";
+import { SimpleTreeSelect, SimpleSelect } from "@/pages/Component/RapidDevelopment/CommonComponent";
 const { RangePicker } = DatePicker;
 
 @Form.create()
