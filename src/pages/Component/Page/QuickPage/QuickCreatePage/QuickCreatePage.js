@@ -77,16 +77,16 @@ export default class QuickCreatePage extends CreatePage {
 		this.props.dispatch({
 			type: 'quick/saveOrUpdateEntities',
 			payload: {
-				showPageK:this.state.quickuuid,
-				showPageV:this.state.quickuuid+'query',
+				showPageK: this.state.quickuuid,
+				showPageV: this.state.quickuuid + 'query',
 				param
-			 },
-			 callback: response => {
+			},
+			callback: response => {
 				if (response.success) message.success(commonLocale.saveSuccessLocale);
 			},
 		});
 	}
-	
+
 	/**
 	 * 渲染表单组件
 	 */
@@ -100,7 +100,8 @@ export default class QuickCreatePage extends CreatePage {
 			onlFormField.forEach(field => {
 				let formItem;
 				let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
-				const fieldProperties = onlFormField.fieldProperties ? JSON.parse(onlFormField.fieldProperties) : "";
+				const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : "";
+				console.log(field);
 
 				if (field.fieldShowType == "text") {
 					rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
@@ -110,21 +111,23 @@ export default class QuickCreatePage extends CreatePage {
 				} else if (field.fieldShowType == "number") {
 					formItem = <InputNumber style={{ width: '100%' }} placeholder={field.placeholder} />;		// TODO 数字长度、浮点数
 				} else if (field.fieldShowType == "sel_tree") {
-					let options = [];
-					if (field.dictValue) {
-						let dictValue = JSON.parse(field.dictValue);
-						Object.keys(dictValue).forEach(function (key) {
-							options.push(<Select.Option value={key} key={key}>{dictValue[key]}</Select.Option>);
-						});
-					}
-					formItem = <Select disabled={field.isReadOnly} onChange={this.onModeChange} placeholder={field.placeholder}>
-						{options}
-					</Select>;
-				} else if (field.fieldShowType == "textarea") {
+					formItem = <SimpleTreeSelect {...fieldExtendJson} />;
+				}
+				// else if (field.fieldShowType == "sel_tree") {
+				// 	let options = [];
+				// 	if (field.dictValue) {
+				// 		let dictValue = JSON.parse(field.dictValue);
+				// 		Object.keys(dictValue).forEach(function (key) {
+				// 			options.push(<Select.Option value={key} key={key}>{dictValue[key]}</Select.Option>);
+				// 		});
+				// 	}
+				// 	formItem = <Select disabled={field.isReadOnly} onChange={this.onModeChange} placeholder={field.placeholder}>
+				// 		{options}
+				// 	</Select>;
+				// } 
+				else if (field.fieldShowType == "textarea") {
 					rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
 					formItem = <Input.TextArea disabled={field.isReadOnly} placeholder={field.placeholder} />;
-				} else if (field.fieldShowType == "sel_tree") {
-					formItem = <SimpleTreeSelect {...fieldProperties} />;
 				} else {
 					rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
 					formItem = <Input disabled={field.isReadOnly} placeholder={field.placeholder} />;
