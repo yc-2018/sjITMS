@@ -11,7 +11,7 @@ import { notNullLocale } from '@/utils/CommonLocale';
 import SearchForm from '@/pages/Component/Form/SearchForm';
 import SFormItem from '@/pages/Component/Form/SFormItem';
 import Address from '@/pages/Component/Form/Address';
-import { SimpleTreeSelect, SimpleSelect } from "@/pages/Component/RapidDevelopment/CommonComponent";
+import { SimpleTreeSelect, SimpleSelect, SimpleRadio } from "@/pages/Component/RapidDevelopment/CommonComponent";
 const { RangePicker } = DatePicker;
 
 @Form.create()
@@ -77,8 +77,8 @@ export default class SimpleQuery extends SearchForm {
             dispatch={this.props.dispatch}
           />
         );
-      case 'list_multi':
-        return <RangePicker style={{ width: '100%' }} />;
+      case 'radio':
+        return <SimpleRadio {...searchProperties}/>;
       case 'sel_search':
         return (
           <SimpleSelect

@@ -2,7 +2,7 @@ import { connect } from 'dva';
 import CreatePage from '@/pages/Component/Page/CreatePage';
 import FormPanel from '@/pages/Component/Form/FormPanel';
 import CFormItem from '@/pages/Component/Form/CFormItem';
-import { SimpleTreeSelect } from "@/pages/Component/RapidDevelopment/CommonComponent";
+import { SimpleTreeSelect, SimpleRadio } from "@/pages/Component/RapidDevelopment/CommonComponent";
 import { loginCompany, loginOrg, loginUser, getDefOwner, getActiveKey } from '@/utils/LoginContext';
 import { Form, Select, Input, InputNumber, message, Col, DatePicker, Modal } from 'antd';
 import { commonLocale } from '@/utils/CommonLocale';
@@ -96,55 +96,58 @@ export default class QuickCreatePage extends CreatePage {
 		const { onlFormField } = this.state
 		let cols = [];
 		const { datas } = this.state;
-		if (typeof (onlFormField) !== "undefined" && onlFormField.length > 0) {
-			onlFormField.forEach(field => {
-				let formItem;
-				let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
-				const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : "";
-				console.log(field);
-
-				if (field.fieldShowType == "text") {
-					rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
-					formItem = <Input disabled={field.isReadOnly} placeholder={field.placeholder} />;
-				} else if (field.fieldShowType == "date") {
-					formItem = <DatePicker disabled={field.isReadOnly} style={{ width: '100%' }} placeholder={field.placeholder} />
-				} else if (field.fieldShowType == "number") {
-					formItem = <InputNumber style={{ width: '100%' }} placeholder={field.placeholder} />;		// TODO 数字长度、浮点数
-				} else if (field.fieldShowType == "sel_tree") {
-					formItem = <SimpleTreeSelect {...fieldExtendJson} />;
-				}
-				// else if (field.fieldShowType == "sel_tree") {
-				// 	let options = [];
-				// 	if (field.dictValue) {
-				// 		let dictValue = JSON.parse(field.dictValue);
-				// 		Object.keys(dictValue).forEach(function (key) {
-				// 			options.push(<Select.Option value={key} key={key}>{dictValue[key]}</Select.Option>);
-				// 		});
-				// 	}
-				// 	formItem = <Select disabled={field.isReadOnly} onChange={this.onModeChange} placeholder={field.placeholder}>
-				// 		{options}
-				// 	</Select>;
-				// } 
-				else if (field.fieldShowType == "textarea") {
-					rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
-					formItem = <Input.TextArea disabled={field.isReadOnly} placeholder={field.placeholder} />;
-				} else {
-					rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
-					formItem = <Input disabled={field.isReadOnly} placeholder={field.placeholder} />;
-				}
-
-				cols.push(
-					<CFormItem key={field.dbFieldName} label={field.dbFieldTxt}>
-						{
-							getFieldDecorator(field.dbFieldName, {
-								initialValue: this.state.datas.get(field.dbFieldName),
-								rules: rules,
-							})(formItem)
-						}
-					</CFormItem>
-				);
-			});
+		if (!onlFormField) {
+			return null;
 		}
+
+		onlFormField.forEach(field => {
+			let formItem;
+			let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
+			const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : "";		// 扩展属性
+
+			if (field.fieldShowType == "text") {
+				rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
+				formItem = <Input {...fieldExtendJson} disabled={field.isReadOnly} placeholder={field.placeholder} />;
+			} else if (field.fieldShowType == "date") {
+				formItem = <DatePicker {...fieldExtendJson} disabled={field.isReadOnly} style={{ width: '100%' }} placeholder={field.placeholder} />
+			} else if (field.fieldShowType == "number") {
+				formItem = <InputNumber {...fieldExtendJson} disabled={field.isReadOnly} style={{ width: '100%' }} placeholder={field.placeholder} />;
+			} else if (field.fieldShowType == "sel_tree") {
+				formItem = <SimpleTreeSelect {...fieldExtendJson} />;
+			} else if (field.fieldShowType == "radio") {
+				formItem = <SimpleRadio {...fieldExtendJson} disabled={field.isReadOnly}/>;
+			}
+			// else if (field.fieldShowType == "sel_tree") {
+			// 	let options = [];
+			// 	if (field.dictValue) {
+			// 		let dictValue = JSON.parse(field.dictValue);
+			// 		Object.keys(dictValue).forEach(function (key) {
+			// 			options.push(<Select.Option value={key} key={key}>{dictValue[key]}</Select.Option>);
+			// 		});
+			// 	}
+			// 	formItem = <Select disabled={field.isReadOnly} onChange={this.onModeChange} placeholder={field.placeholder}>
+			// 		{options}
+			// 	</Select>;
+			// } 
+			else if (field.fieldShowType == "textarea") {
+				rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
+				formItem = <Input.TextArea {...fieldExtendJson} disabled={field.isReadOnly} placeholder={field.placeholder} />;
+			} else {
+				rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
+				formItem = <Input {...fieldExtendJson} disabled={field.isReadOnly} placeholder={field.placeholder} />;
+			}
+
+			cols.push(
+				<CFormItem key={field.dbFieldName} label={field.dbFieldTxt}>
+					{
+						getFieldDecorator(field.dbFieldName, {
+							initialValue: this.state.datas.get(field.dbFieldName),
+							rules: rules,
+						})(formItem)
+					}
+				</CFormItem>
+			);
+		});
 
 		return [
 			<FormPanel key='basicInfo' title={"测试"} cols={cols} />
