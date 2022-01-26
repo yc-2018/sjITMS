@@ -2,6 +2,13 @@ import React, { Component } from 'react';
 import { TreeSelect } from 'antd';
 import { dynamicQuery } from "@/services/quick/Quick";
 
+/**
+ * 下拉树选择控件，可传入props同antd TreeSelect控件
+ * {string} textField 节点文本字段 
+ * {string} valueField 值字段 
+ * {string} parentField 父节点字段 
+ * {string} queryParams 数据查询参数
+ */
 export default class SimpleTreeSelect extends Component {
     state = {
         treeData: []
