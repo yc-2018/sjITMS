@@ -66,7 +66,9 @@ export default class QuickForm extends PureComponent {
     const { showPageNow, quickuuid, tableName, onlFormField } = this.state;
     const { location } = this.props;
     switch (showPageNow) {
-      case quickuuid + 'create' || quickuuid + 'update':
+      case quickuuid + 'create':
+        return <Create quickuuid={quickuuid} tableName={tableName} onlFormField={onlFormField} />;
+      case quickuuid + 'update':
         return <Create quickuuid={quickuuid} tableName={tableName} onlFormField={onlFormField} />;
       case quickuuid + 'query':
         return (
