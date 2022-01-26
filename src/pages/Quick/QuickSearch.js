@@ -49,14 +49,19 @@ export default class QuickSearch extends SearchPage {
         sysCode: 'tms',
       },
       callback: response => {
-        if (response.result) this.initConfig(response.result);
+        if (response.result) {
+          this.initConfig(response.result);
+            //配置查询成功后再去查询数据
+          this.onSearch();
+        }
       },
     });
   };
 
   componentDidMount() {
-    this.queryCoulumns();
-    this.onSearch();
+    this.queryCoulumns(); 
+    //解决用户列展示失效问题 暂时解决方法（查询两次）
+    this.queryCoulumns(); 
   }
 
   //初始化配置
@@ -161,7 +166,7 @@ export default class QuickSearch extends SearchPage {
         if (response && response.success) {
           let columns = this.state.columns;
           var option = [];
-          let sheetfilter = []; //对应列表数据中的key值数组，就是上面resdata中的 name，address
+          let sheetfilter = []; //对应列表数据中的key值数组
           let sheetheader = []; //对应key值的表头，即excel表头
           columns.map(a => {
             sheetfilter.push(a.key);
@@ -170,7 +175,7 @@ export default class QuickSearch extends SearchPage {
           option.fileName = this.state.title; //导出的Excel文件名
           option.datas = [
             {
-              sheetData: this.state.data.list,
+              sheetData: response.data.records,
               sheetName: this.state.title, //工作表的名字
               sheetFilter: sheetfilter,
               sheetHeader: sheetheader,
