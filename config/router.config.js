@@ -53,7 +53,7 @@ export default [
         path: '/compmgr',
         name: 'compmgr',
         icon: 'icon-menu_system',
-        org: ['COMPANY', 'DC', 'STORE', 'CARRIER', 'VENDOR','DISPATCH_CENTER'],
+        org: ['COMPANY', 'DC', 'STORE', 'CARRIER', 'VENDOR', 'DISPATCH_CENTER'],
         authority: ['iwms.account'],
         routes: [
           {
@@ -71,9 +71,9 @@ export default [
           {
             path: '/compmgr/config',
             name: 'config',
-            org: ['COMPANY','DISPATCH_CENTER'],
+            org: ['COMPANY', 'DISPATCH_CENTER'],
             component: './Account/Config/Config',
-            authority: ['iwms.account.configcenter']
+            authority: ['iwms.account.configcenter'],
           },
           {
             path: '/compmgr/report',
@@ -92,20 +92,19 @@ export default [
           {
             path: '/compmgr/billImport',
             name: 'billImport',
-            org: ['DC','DISPATCH_CENTER'],
+            org: ['DC', 'DISPATCH_CENTER'],
             component: './Inner/BillImport/BillImport',
-            authority: ['iwms.account.billImport']
+            authority: ['iwms.account.billImport'],
           },
-        ]
+        ],
       },
       {
         path: '/basic',
         name: 'basic',
         icon: 'icon-menu_info',
-        org: ['COMPANY', 'DC','DISPATCH_CENTER'],
+        org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
         authority: ['iwms.basic'],
         routes: [
-
           {
             path: '/basic/dc',
             name: 'dc',
@@ -127,7 +126,6 @@ export default [
             component: './Basic/Owner/Owner',
             authority: ['iwms.basic.owner'],
             divider: true,
-
           },
           {
             path: '/basic/vendor',
@@ -145,14 +143,15 @@ export default [
             path: '/basic/category',
             name: 'category',
             component: './Basic/Category/Category',
-            authority: ['iwms.basic.category']
+            authority: ['iwms.basic.category'],
           },
           {
             path: '/basic/article',
             name: 'article',
             component: './Basic/Article/Article',
             authority: ['iwms.basic.article'],
-          }, {
+          },
+          {
             path: '/basic/wrh',
             name: 'wrh',
             org: ['COMPANY'],
@@ -171,8 +170,8 @@ export default [
             name: 'BatchNumberConfig',
             component: './Basic/BatchNumberConfig/BatchNumberConfig',
             authority: ['iwms.basic.store'],
-          }
-        ]
+          },
+        ],
       },
       {
         path: '/facility',
@@ -195,19 +194,22 @@ export default [
             org: ['DC'],
             component: './Facility/BinType/BinType',
             authority: ['iwms.facility.bintype'],
-          }, {
+          },
+          {
             path: '/facility/bin',
             name: 'bin',
             org: ['DC'],
             component: './Facility/Bin/Bin',
             authority: ['iwms.facility.bin'],
-          }, {
+          },
+          {
             path: '/facility/containerType',
             name: 'containerType',
             org: ['DC'],
             component: './Facility/ContainerType/ContainerType',
-            authority: ['iwms.facility.containerType']
-          }, {
+            authority: ['iwms.facility.containerType'],
+          },
+          {
             path: '/facility/container',
             name: 'container',
             org: ['DC'],
@@ -256,15 +258,15 @@ export default [
             name: 'superManagementBoard',
             org: ['DC'],
             component: './Facility/SuperManagementBoard/SuperManagementBoard',
-            authority: ['iwms.facility.overprotectboard']
+            authority: ['iwms.facility.overprotectboard'],
           },
           {
             path: '/facility/config',
             name: 'config',
             component: './Facility/Config/Config',
-            authority: ['iwms.facility.configcenter']
-          }
-        ]
+            authority: ['iwms.facility.configcenter'],
+          },
+        ],
       },
       {
         path: '/in',
@@ -309,20 +311,20 @@ export default [
             path: '/in/inwrhbill',
             name: 'inwrhbill',
             component: './In/InWrhBill/InWrhBill',
-            authority:['iwms.in.inwrh.board'],
+            authority: ['iwms.in.inwrh.board'],
             divider: true,
           },
           {
             path: '/in/receive',
             name: 'receive',
             component: './In/Receive/Receive',
-            authority: ['iwms.in.receive']
+            authority: ['iwms.in.receive'],
           },
           {
             path: '/in/planeMove',
             name: 'planeMove',
             component: './In/Move/PlaneMoveBill',
-            authority: ['iwms.in.move']
+            authority: ['iwms.in.move'],
           },
           {
             path: '/in/putaway',
@@ -341,9 +343,9 @@ export default [
             path: '/in/packageBill',
             name: 'packageBill',
             authority: ['iwms.in.packagebill'],
-            component: './In/PackageBill/PackageBill'
+            component: './In/PackageBill/PackageBill',
           },
-        ]
+        ],
       },
       {
         path: '/inner',
@@ -356,19 +358,19 @@ export default [
             path: '/inner/movebill',
             name: 'movebill',
             authority: ['iwms.inner.moveBill'],
-            component: './Inner/MoveBill/MoveBill'
+            component: './Inner/MoveBill/MoveBill',
           },
           {
             path: '/inner/dec',
             name: 'dec',
             component: './Inner/Dec/DecInvBill',
-            authority: ['iwms.inner.dec']
+            authority: ['iwms.inner.dec'],
           },
           {
             path: '/inner/inc',
             name: 'inc',
             component: './Inner/Inc/IncInvBill',
-            authority: ['iwms.inner.inc']
+            authority: ['iwms.inner.inc'],
           },
           {
             path: '/inner/pickBinAdjBill',
@@ -381,7 +383,7 @@ export default [
             path: '/inner/close',
             name: 'close',
             component: './Inner/Close/WrhCloseBill',
-            authority: ['iwms.inner.close']
+            authority: ['iwms.inner.close'],
           },
           {
             path: '/inner/stocklock',
@@ -400,7 +402,7 @@ export default [
             path: '/inner/prerpl',
             name: 'prerpl',
             authority: ['iwms.inner.prerpl'],
-            component: './Inner/PreRpl/PreRpl'
+            component: './Inner/PreRpl/PreRpl',
           },
           {
             path: '/inner/processingScheme',
@@ -419,15 +421,15 @@ export default [
             path: '/inner/stockTakePlanBill',
             name: 'stockTakePlan',
             component: './Inner/StockTakePlan/StockTakePlan',
-            authority: ['iwms.inner.stockTakePlan']
+            authority: ['iwms.inner.stockTakePlan'],
           },
           {
             path: '/inner/stockTakeBill',
             name: 'stockTakeBill',
             component: './Inner/StockTakeBill/StockTakeBill',
-            authority: ['iwms.inner.stockTake']
+            authority: ['iwms.inner.stockTake'],
           },
-        ]
+        ],
       },
       {
         path: '/out',
@@ -441,26 +443,26 @@ export default [
             name: 'alcNtc',
             component: './Out/AlcNtc/AlcNtc',
             divider: true,
-            authority: ['iwms.out.alcntc']
+            authority: ['iwms.out.alcntc'],
           },
           {
             path: '/out/wave',
             name: 'waveBill',
             component: './Out/Wave/WaveBill',
-            authority: ['iwms.out.wave']
+            authority: ['iwms.out.wave'],
           },
           {
             path: '/out/rpl',
             name: 'rpl',
             component: './Out/Rpl/Rpl',
             divider: true,
-            authority: ['iwms.out.rpl']
+            authority: ['iwms.out.rpl'],
           },
           {
             path: '/out/pickup',
             name: 'pickUpBill',
             component: './Out/PickUp/PickUpBill',
-            authority: ['iwms.out.pickup']
+            authority: ['iwms.out.pickup'],
           },
           {
             path: '/out/crossPickUp',
@@ -480,27 +482,27 @@ export default [
             name: 'pickUpBillPrintLabel',
             component: './Out/PickUpBillPrintLabel/PickUpBillPrintLabelPage',
             divider: true,
-            authority: ['iwms.out.pickUpBillPrintLabel']
+            authority: ['iwms.out.pickUpBillPrintLabel'],
           },
           {
             path: '/out/containerreview',
             name: 'containerreview',
             authority: ['iwms.out.containerReview'],
-            component: './Inner/ContainerReviewBill/ContainerReviewBill'
+            component: './Inner/ContainerReviewBill/ContainerReviewBill',
           },
 
           {
             path: '/out/collectbinreview',
             name: 'collectbinreview',
             authority: ['iwms.out.collectBinReview'],
-            component: './Inner/CollectBinReviewBill/CollectBinReviewBill'
+            component: './Inner/CollectBinReviewBill/CollectBinReviewBill',
           },
           {
             path: '/out/collectBinBatchReview',
             name: 'collectBinBatchReview',
             // authority: ['iwms.out.collectBinBatchReview'],
             divider: true,
-            component: './Out/CollectBinBatchReview/CollectBinBatchReview'
+            component: './Out/CollectBinBatchReview/CollectBinBatchReview',
           },
           {
             path: '/out/containermerger',
@@ -519,25 +521,25 @@ export default [
             path: '/out/storePickOrder',
             name: 'pickOrder',
             component: './Out/PickOrder/PickOrder',
-            authority: ['iwms.out.storePickScheme']
+            authority: ['iwms.out.storePickScheme'],
           },
           {
             path: '/out/deliverycycle',
             name: 'deliverycycle',
             component: './Out/Deliverycycle/Deliverycycle',
-            authority: ['iwms.out.deliveryCycle']
+            authority: ['iwms.out.deliveryCycle'],
           },
           {
             path: '/out/stockorder',
             name: 'stockorder',
             component: './Out/StockOrder/StockOrder',
-            authority: ['iwms.out.stockOrderScheme']
+            authority: ['iwms.out.stockOrderScheme'],
           },
           {
             path: '/out/collectBin',
             name: 'collectBin',
             component: './Out/CollectBin/CollectBin',
-            authority: ['iwms.out.collectBinScheme']
+            authority: ['iwms.out.collectBinScheme'],
           },
           {
             path: '/out/palletBinScheme',
@@ -545,8 +547,9 @@ export default [
             component: './Out/PalletBinScheme/PalletBinScheme',
             // authority: ['iwms.out.palletBinScheme']
           },
-        ]
-      }, {
+        ],
+      },
+      {
         path: '/rtn',
         name: 'rtn',
         org: ['DC'],
@@ -557,40 +560,46 @@ export default [
             path: '/rtn/storeRtnNtc',
             name: 'storeRtnNtc',
             component: './Rtn/StoreRtnNtc/StoreRtnNtcBill',
-            authority: ['iwms.rtn.storeRtnNtc']
-          }, {
+            authority: ['iwms.rtn.storeRtnNtc'],
+          },
+          {
             path: '/rtn/storeRtn',
             name: 'storeRtn',
             component: './Rtn/StoreRtn/StoreRtnBill',
-            authority: ['iwms.rtn.storeRtn']
-          }, {
+            authority: ['iwms.rtn.storeRtn'],
+          },
+          {
             path: '/rtn/rtnPutaway',
             name: 'rtnPutaway',
             component: './Rtn/RtnPutaway/RtnPutawayBill',
             authority: ['iwms.rtn.rtnPutaway'],
             divider: true,
-          }, {
+          },
+          {
             path: '/rtn/vendorDispatch',
             name: 'vendorDispatch',
             component: './Rtn/VendorDispatch/VendorDispatch',
-            authority: ['iwms.rtn.vendorRtnDispatch']
-          }, {
+            authority: ['iwms.rtn.vendorRtnDispatch'],
+          },
+          {
             path: '/rtn/vendorRtnNtc',
             name: 'vendorRtnNtc',
             component: './Rtn/VendorRtnNtc/VendorRtnNtcBill',
             // authority: ['iwms.rtn.VendorRtnNtc']
-          }, {
+          },
+          {
             path: '/rtn/vendorRtnPick',
             name: 'vendorRtnPick',
             component: './Rtn/VendorRtnPick/VendorRtnPickBill',
-            authority: ['iwms.rtn.vendorRtnPick']
-          }, {
+            authority: ['iwms.rtn.vendorRtnPick'],
+          },
+          {
             path: '/rtn/vendorHandover',
             name: 'vendorHandover',
             component: './Rtn/VendorHandover/VendorHandoverBill',
-            authority: ['iwms.rtn.vendorRtnHandover']
+            authority: ['iwms.rtn.vendorRtnHandover'],
           },
-        ]
+        ],
       },
       {
         path: '/wcs',
@@ -626,8 +635,8 @@ export default [
                 name: 'job',
                 component: './Wcs/Dps/Job/Job',
                 divider: true,
-              }
-            ]
+              },
+            ],
           },
           {
             path: '/wcs/electronicBalance',
@@ -645,7 +654,7 @@ export default [
             path: '/wcs/asrs',
             name: 'asrs',
           },
-        ]
+        ],
       },
       {
         path: '/dcmgr',
@@ -658,14 +667,14 @@ export default [
             path: '/dcmgr/processingScheme',
             name: 'processingScheme',
             component: './Distribution/ProcessingScheme/ProcessingScheme',
-            authority: ['iwms.inner.processScheme']
-          }
-        ]
+            authority: ['iwms.inner.processScheme'],
+          },
+        ],
       },
       {
         path: '/tms',
         name: 'tms',
-        org: ['COMPANY', 'DC','DISPATCH_CENTER'],
+        org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
         authority: ['iwms.tms'],
         icon: 'icon-menu_yunshuguanli1',
         routes: [
@@ -674,42 +683,42 @@ export default [
             name: 'serialArch',
             org: ['COMPANY', 'DC'],
             component: './Tms/SerialArch/SerialArch',
-            authority: ['iwms.tms.serialArch']
+            authority: ['iwms.tms.serialArch'],
           },
           {
             path: '/tms/dispatchCenterSerialArch',
             name: 'serialArch',
             org: ['DISPATCH_CENTER'],
             component: './Tms/DispatchCenterSerialArch/SerialArch',
-            authority: ['iwms.tms.serialArch']
+            authority: ['iwms.tms.serialArch'],
           },
           {
             path: '/tms/lineMaintenance',
             name: 'lineMaintenance',
             org: ['DISPATCH_CENTER'],
-            component: './Tms/LineMaintenance/LineMaintenance'
+            component: './Tms/LineMaintenance/LineMaintenance',
           },
           {
             path: '/tms/carrier',
             name: 'carrier',
-            org: ['COMPANY', 'DC','DISPATCH_CENTER'],
+            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './Tms/Carrier/Carrier',
             authority: ['iwms.tms.carrier'],
           },
           {
             path: '/tms/vehicleType',
             name: 'vehicleType',
-            org: ['COMPANY', 'DC','DISPATCH_CENTER'],
+            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './Tms/VehicleType/VehicleType',
-            authority: ['iwms.tms.vehicleType']
+            authority: ['iwms.tms.vehicleType'],
           },
           {
             path: '/tms/vehicle',
             name: 'vehicle',
-            org: ['COMPANY', 'DC','DISPATCH_CENTER'],
+            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './Tms/Vehicle/Vehicle',
             authority: ['iwms.tms.vehicle'],
-            divider: true
+            divider: true,
           },
           {
             path: '/tms/scheduleGroup',
@@ -717,14 +726,13 @@ export default [
             org: ['DISPATCH_CENTER'],
             component: './Tms/ScheduleGroup/ScheduleGroup',
             // authority: ['iwms.tms.scheduleGroup'],
-
           },
           {
             path: '/tms/transportOrder',
             name: 'transportOrder',
             org: ['DISPATCH_CENTER'],
             component: './Tms/TransportOrder/TransportOrder',
-            divider: true
+            divider: true,
 
             // authority: ['iwms.tms.transportOrder'],
           },
@@ -743,14 +751,14 @@ export default [
             org: ['DISPATCH_CENTER'],
             component: './Tms/PickUpDispatching/PickUpDispatching',
             // authority: ['iwms.tms.alcDiff'],
-            divider: true
+            divider: true,
           },
           {
             path: '/tms/billDispatching',
             name: 'billDispatching',
             org: ['DISPATCH_CENTER'],
             component: './Tms/BillDispatching/BillDispatching',
-            divider: true
+            divider: true,
 
             // authority: ['iwms.tms.alcDiff'],
           },
@@ -766,7 +774,7 @@ export default [
             path: '/tms/dispatchCenterShipPlanBill',
             name: 'dispatchCenterShipPlanBill',
             org: ['DISPATCH_CENTER'],
-            component: './Tms/DispatchCenterShipPlanBill/DispatchCenterShipPlanBill'
+            component: './Tms/DispatchCenterShipPlanBill/DispatchCenterShipPlanBill',
           },
           // TODO:以上 暂未开发完成  勿删除、勿打开代码
           {
@@ -824,7 +832,7 @@ export default [
             name: 'storeCashCollRecords',
             org: ['DISPATCH_CENTER'],
             component: './Tms/StoreCashCollRecords/StoreCashCollRecords',
-            divider: true
+            divider: true,
           },
           // 时捷版本配送中心取消调度
           {
@@ -844,7 +852,7 @@ export default [
           {
             path: '/tms/shipbill',
             name: 'shipbill',
-            org: ['COMPANY', 'DC','DISPATCH_CENTER'],
+            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './Tms/ShipBill/ShipBill',
             authority: ['iwms.tms.shipBill'],
           },
@@ -861,7 +869,7 @@ export default [
             org: ['COMPANY', 'DC'],
             component: './Tms/StoreHandoverBill/StoreHandoverBill',
             authority: ['iwms.tms.storeHandover'],
-            divider: true
+            divider: true,
           },
           {
             path: '/tms/containerRecycle',
@@ -884,14 +892,14 @@ export default [
             component: './Tms/AlcDiff/AlcDiffBill',
             authority: ['iwms.tms.alcDiff'],
           },
-        ]
+        ],
       },
       {
-        path:'/billmanage',
-        name:'billManage',
-        org:['COMPANY'],
+        path: '/billmanage',
+        name: 'billManage',
+        org: ['COMPANY'],
         icon: 'icon-cangchuguanli_uncheck',
-        routes:[
+        routes: [
           {
             path: '/billmanage/dataImport',
             name: 'dataImport',
@@ -928,7 +936,7 @@ export default [
           //   name: 'contract',
           //   component: './Tms/Contract/Contract',
           // },
-        ]
+        ],
       },
       {
         path: '/call',
@@ -941,21 +949,21 @@ export default [
             path: '/call/alcNtc',
             name: 'alcNtc',
             component: './Out/AlcNtc/AlcNtc',
-            authority: ['iwms.call.alcntc']
+            authority: ['iwms.call.alcntc'],
           },
           {
             path: '/call/storeHandover',
             name: 'storeHandover',
             component: './Tms/StoreHandoverBill/StoreHandoverBill',
-            authority: ['iwms.call.storeHandover']
+            authority: ['iwms.call.storeHandover'],
           },
           {
             path: '/call/vehicleMonitoring',
             name: 'vehicleMonitoring',
             component: './Tms/Map/TmsMap',
-            authority: ['iwms.call.vehicleMonitoring']
-          }
-        ]
+            authority: ['iwms.call.vehicleMonitoring'],
+          },
+        ],
       },
       {
         path: '/rtnMsg',
@@ -968,15 +976,15 @@ export default [
             path: '/rtnMsg/storeRtnNtc',
             name: 'storeRtnNtc',
             component: './Rtn/StoreRtnNtc/StoreRtnNtcBill',
-            authority: ['iwms.rtnMsg.storeRtnNtc']
+            authority: ['iwms.rtnMsg.storeRtnNtc'],
           },
           {
             path: '/rtnMsg/storeRtn',
             name: 'storeRtn',
             component: './Rtn/StoreRtn/StoreRtnBill',
-            authority: ['iwms.rtnMsg.storeRtn']
-          }
-        ]
+            authority: ['iwms.rtnMsg.storeRtn'],
+          },
+        ],
       },
       {
         path: '/tmsMsg',
@@ -1007,15 +1015,15 @@ export default [
             path: '/tmsMsg/storeHandover',
             name: 'storeHandover',
             component: './Tms/StoreHandoverBill/StoreHandoverBill',
-            authority: ['iwms.tmsMsg.storeHandover']
+            authority: ['iwms.tmsMsg.storeHandover'],
           },
           {
             path: '/tmsMsg/vehicleMonitoring',
             name: 'vehicleMonitoring',
             component: './Tms/Map/TmsMap',
-            authority: ['iwms.tmsMsg.vehicleMonitoring']
-          }
-        ]
+            authority: ['iwms.tmsMsg.vehicleMonitoring'],
+          },
+        ],
       },
       {
         path: '/inMsg',
@@ -1036,17 +1044,19 @@ export default [
             name: 'receive',
             component: './In/Receive/Receive',
             authority: ['iwms.inMsg.receive'],
-          }
-        ]
+          },
+        ],
       },
       {
         path: '/bigdata',
         name: 'bigData',
         icon: 'icon-menu_data1',
-        routes: [{
-          path: '/bigdata/:folder/:report',
-          component: './Report/ReportPage'
-        }]
+        routes: [
+          {
+            path: '/bigdata/:folder/:report',
+            component: './Report/ReportPage',
+          },
+        ],
       },
       {
         path: '/notice',
@@ -1076,7 +1086,7 @@ export default [
         path: '/test',
         name: 'test',
         icon: 'icon-menu_info',
-        org: ['COMPANY', 'DC','DISPATCH_CENTER'],
+        org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
         authority: ['iwms.basic'],
         routes: [
           {
@@ -1094,49 +1104,47 @@ export default [
           {
             path: '/test/quick',
             name: 'quick',
-            component: './Quick/Quick',
-            quickuuid:'quickDemo',
+            component: './Component/RapidDevelopment/OnlReport/Quick',
+            quickuuid: 'quickDemo',
             authority: ['iwms.basic.store'],
           },
           {
             path: '/test/quick6',
             name: '快速开发框架扩展代码Demo',
             component: './QuickDemo/QuickDemo',
-            quickuuid:'quickDemo',
+            quickuuid: 'quickDemo',
             authority: ['iwms.basic.store'],
           },
           {
             path: '/test/quick7',
             name: '白白白白白',
-            component: './Quick/Quick',
-            quickuuid:'demo',
+            component: './Component/RapidDevelopment/OnlReport/Quick',
+            quickuuid: 'demo',
             authority: ['iwms.basic.store'],
           },
           {
             path: '/test/qiuhui1',
             name: '邱辉',
-            component: './Quick/QuickReport/QuickReport',
-            quickuuid:'qiuhui3',
+            component: './Component/RapidDevelopment/OnlForm/QuickForm',
+            quickuuid: 'qiuhui3',
             authority: ['iwms.basic.store'],
           },
           {
             path: '/test/test_note',
             name: 'qiuhuitest',
-            component: './Quick/QuickReport/QuickReport',
-            quickuuid:'20220124',
+            component: './Component/RapidDevelopment/OnlForm/QuickForm',
+            quickuuid: '20220124',
             authority: ['iwms.basic.store'],
           },
           {
             path: '/test/test_form',
             name: '测试表单',
-            component: './Quick/QuickReport/QuickReport',
-            quickuuid:'20220125',
+            component: './Component/RapidDevelopment/OnlForm/QuickForm',
+            quickuuid: '20220125',
             authority: ['iwms.basic.store'],
-          }
-
-        ]
-      }
-
+          },
+        ],
+      },
     ],
-  }
+  },
 ];
