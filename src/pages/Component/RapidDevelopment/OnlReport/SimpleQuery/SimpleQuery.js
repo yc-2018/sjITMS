@@ -72,8 +72,8 @@ export default class SimpleQuery extends SearchForm {
       case 'list':
         return (
           <SimpleSelect
-            reportCode={this.props.reportCode}
             searchField={searchField}
+            {...searchProperties}
           />
         );
       case 'radio':

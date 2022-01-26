@@ -4,7 +4,7 @@ import { connect } from 'dva';
 import { formatMessage } from 'umi/locale';
 import { loginCompany } from '@/utils/LoginContext';
 import { STATE } from '@/utils/constants';
-import { getSelectField, selectCoulumns } from "@/services/quick/Quick";
+import { selectCoulumns } from "@/services/quick/Quick";
 
 /**
 * 简易查询下拉选择控件
@@ -53,8 +53,13 @@ export default class SimpleSelect extends PureComponent {
 
   onFocus = async () => {
     if (!this.props.showSearch) {
-      const selectField = await getSelectField(this.props.searchField);
-      this.initData(selectField.data);
+      const { textField, data } = this.props
+      let sourceData = JSON.parse(data);
+      let listData = new Array();
+      sourceData.forEach(a=>{
+        listData.push(a[textField])
+      })
+      this.initData(listData)
     }
   }
 

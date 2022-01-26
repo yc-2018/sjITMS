@@ -67,10 +67,3 @@ export async function selectCoulumns(payload) {
     body:payload
   });
 }
-  
-export async function getSelectField(payload) {
-  return request(`/itms-schedule/itms-schedule/dev/getSelectField/${payload.searchDictTable}/${payload.searchDictField}`, {
-     method: 'POST',
-     body:payload
-  });
-}
