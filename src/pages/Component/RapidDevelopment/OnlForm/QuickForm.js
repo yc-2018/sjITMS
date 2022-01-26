@@ -1,16 +1,25 @@
 import React, { PureComponent } from 'react';
-import { Table, Button, Input, Col, Row } from 'antd';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
 import Create from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePage';
-import QuicSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickSearchPage';
-const { Search } = Input;
+import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickFormSearchPage';
 
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
 export default class QuickForm extends PureComponent {
+  constructor(props) {
+    super(props);
+    this.state = {
+      quickuuid: props.route.quickuuid,
+      showPageNow: props.route.quickuuid + 'query',
+      tableName: '',
+      onlFormField: [],
+    };
+    this.toQueryPage();
+  }
+
   /**
    * 进入时进入query
    */
@@ -24,27 +33,9 @@ export default class QuickForm extends PureComponent {
     });
   };
 
-  //获取tableName
-  queryCoulumns = () => {
-    //debugger;
-    const { dispatch } = this.props;
-    dispatch({
-      type: 'quick/queryColumns',
-      payload: {
-        reportCode: this.state.quickuuid,
-        sysCode: 'tms',
-      },
-      callback: response => {
-        if (response.result) {
-          //获取tableName
-          let sqlsplit = response.result.sql.split(/\s+/);
-          let tableName = sqlsplit[sqlsplit.length - 1];
-          this.setState({ tableName: tableName });
-          //this.state.tableName=tableName;
-        }
-      },
-    });
-  };
+  componentDidMount() {
+    this.getCreateConfig();
+  }
 
   /**
    * 获取配置信息
@@ -54,63 +45,42 @@ export default class QuickForm extends PureComponent {
       type: 'quick/queryCreateConfig',
       payload: this.state.quickuuid,
       callback: response => {
-        if (response.result) this.initCreateConfig(response.result.onlFormFields);
+        if (response.result) {
+          this.setState({
+            onlFormField: response.result.onlFormFields,
+            tableName: response.result.onlFormHead.tableName,
+          });
+        }
       },
     });
   };
 
-  initCreateConfig = onlFormFields => {
-    this.setState({ onlFormField: onlFormFields });
-  };
-
-  constructor(props) {
-    super(props);
-    this.toQueryPage();
-  }
-
-  state = {
-    quickuuid: this.props.route.quickuuid,
-    showPageNow: this.props.route.quickuuid + 'query',
-    tableName: '',
-    onlFormField: [],
-  };
-
-  componentDidMount() {
-    this.queryCoulumns();
-    this.getCreateConfig();
-  }
-
   componentWillReceiveProps(nextProps) {
     const { showPageMap, map } = nextProps.quick;
-    this.setState({ showPageNow: showPageMap.get(this.state.quickuuid) });
-    // this.setState({tableName:map.get(this.state.quickuuid+'tableName')})
+    this.setState({
+      showPageNow: showPageMap.get(this.state.quickuuid),
+    });
   }
 
   render() {
-    const { showPageNow } = this.state;
-    if (showPageNow === this.state.quickuuid + 'create') {
-      return (
-        <Create
-          quickuuid={this.state.quickuuid}
-          tableName={this.state.tableName}
-          onlFormField={this.state.onlFormField}
-        />
-      );
-    } else if (showPageNow === this.state.quickuuid + 'query') {
-      return (
-        <QuicSearchPage quickuuid={this.state.quickuuid} pathname={this.props.location.pathname} />
-      );
-    } else if (showPageNow === this.state.quickuuid + 'view') {
-      return <QuickDemoView pathname={this.props.location.pathname} />;
-    } else if (showPageNow === this.state.quickuuid + 'update') {
-      return (
-        <Create
-          quickuuid={this.state.quickuuid}
-          tableName={this.state.tableName}
-          onlFormField={this.state.onlFormField}
-        />
-      );
+    const { showPageNow, quickuuid, tableName, onlFormField } = this.state;
+    const { location } = this.props;
+    switch (showPageNow) {
+      case quickuuid + 'create' || quickuuid + 'update':
+        return <Create quickuuid={quickuuid} tableName={tableName} onlFormField={onlFormField} />;
+      case quickuuid + 'query':
+        return (
+          <QuickFormSearchPage
+            quickuuid={quickuuid}
+            pathname={location.pathname}
+            tableName={tableName}
+            onlFormField={onlFormField}
+          />
+        );
+      case quickuuid + 'view':
+        return <QuickDemoView pathname={location.pathname} />;
+      default:
+        return null;
     }
-    return null;
   }
 }

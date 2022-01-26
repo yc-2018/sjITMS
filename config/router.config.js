@@ -1104,7 +1104,7 @@ export default [
           {
             path: '/test/quick',
             name: 'quick',
-            component: './Component/RapidDevelopment/OnlReport/Quick',
+            component: './Component/RapidDevelopment/OnlReport/QuickReport',
             quickuuid: 'quickDemo',
             authority: ['iwms.basic.store'],
           },
@@ -1118,7 +1118,7 @@ export default [
           {
             path: '/test/quick7',
             name: '白白白白白',
-            component: './Component/RapidDevelopment/OnlReport/Quick',
+            component: './Component/RapidDevelopment/OnlReport/QuickReport',
             quickuuid: 'demo',
             authority: ['iwms.basic.store'],
           },

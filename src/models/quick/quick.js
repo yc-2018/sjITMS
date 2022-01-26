@@ -1,4 +1,14 @@
-import { queryData, queryColumns, queryAllData, queryCreateConfig,saveOrUpdateEntities,dynamicDelete,dynamicqueryById,selectCoulumns,getSelectField } from '@/services/quick/Quick';
+import {
+  queryData,
+  queryColumns,
+  queryAllData,
+  queryCreateConfig,
+  saveOrUpdateEntities,
+  dynamicDelete,
+  dynamicqueryById,
+  selectCoulumns,
+  getSelectField,
+} from '@/services/quick/Quick';
 import { colWidth } from '@/utils/ColWidth';
 
 export default {
@@ -28,12 +38,11 @@ export default {
     },
     showPage: 'query',
     entity: {},
-    showPageMap:new Map(),
+    showPageMap: new Map(),
   },
   effects: {
     *queryColumns({ payload, callback }, { call }) {
       const response = yield call(queryColumns, payload);
-      console.log("response",response)
       if (callback) callback(response);
     },
     *queryData({ payload, callback }, { call }) {
@@ -56,51 +65,51 @@ export default {
         fromView: payload.fromView,
       });
     },
-  *saveOrUpdateEntities({ payload, callback }, { call, put }){
-    const response = yield call(saveOrUpdateEntities, payload.param);
-    if (response && response.success) {
-      var showPageMap = new Map()
-      showPageMap.set(payload.showPageK,payload.showPageV);
+    *saveOrUpdateEntities({ payload, callback }, { call, put }) {
+      const response = yield call(saveOrUpdateEntities, payload.param);
+      if (response && response.success) {
+        var showPageMap = new Map();
+        showPageMap.set(payload.showPageK, payload.showPageV);
+        yield put({
+          type: 'onShowPageMap',
+          showPageMap: showPageMap,
+        });
+      }
+      if (callback) callback(response);
+    },
+    *dynamicDelete({ payload, callback }, { call, put }) {
+      const response = yield call(dynamicDelete, payload.params);
+      // if (response && response.success) {
+      //   var showPageMap = new Map()
+      //   showPageMap.set(payload.showPageK,payload.showPageV);
+      //   yield put({
+      //     type: 'onShowPageMap',
+      //     showPageMap: showPageMap,
+      //   });
+      //   }
+      if (callback) callback(response);
+    },
+    *showPageMap({ payload }, { call, put }) {
+      var showPageMap = new Map();
+      showPageMap.set(payload.showPageK, payload.showPageV);
       yield put({
         type: 'onShowPageMap',
         showPageMap: showPageMap,
-      });
-      }
-  if (callback) callback(response);
-  },
-  *dynamicDelete({ payload, callback }, { call, put }){
-    const response = yield call(dynamicDelete, payload.params);
-    // if (response && response.success) {
-    //   var showPageMap = new Map()
-    //   showPageMap.set(payload.showPageK,payload.showPageV);
-    //   yield put({
-    //     type: 'onShowPageMap',
-    //     showPageMap: showPageMap,
-    //   });
-    //   }
-  if (callback) callback(response);
-  },
-  *showPageMap({ payload }, { call, put }) {
-    var showPageMap = new Map()
-    showPageMap.set(payload.showPageK,payload.showPageV);
-    yield put({
-      type: 'onShowPageMap',
-      showPageMap: showPageMap,
-      entityUuid:payload.entityUuid
+        entityUuid: payload.entityUuid,
       });
     },
     *dynamicqueryById({ payload, callback }, { call }) {
       const response = yield call(dynamicqueryById, payload);
       if (callback) callback(response);
     },
-    *selectCoulumns({ payload,callback }, { call, put }){
-      const response = yield call(selectCoulumns,payload);
+    *selectCoulumns({ payload, callback }, { call, put }) {
+      const response = yield call(selectCoulumns, payload);
       if (callback) callback(response);
     },
-    *selectField({ payload,callback }, { call, put }){
-      const response = yield call(getSelectField,payload);
-      if(callback) callback(response);
-    }
+    *selectField({ payload, callback }, { call, put }) {
+      const response = yield call(getSelectField, payload);
+      if (callback) callback(response);
+    },
   },
   reducers: {
     onShowPage(state, action) {

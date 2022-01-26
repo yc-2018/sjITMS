@@ -2,16 +2,20 @@
  * @Author: guankongjin
  * @Date: 2022-01-15 16:03:07
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-01-25 09:01:18
+ * @LastEditTime: 2022-01-26 15:09:00
  * @Description: 快速开发简单查询
- * @FilePath: \iwms-web\src\pages\Quick\SimpleQuery\SimpleQuery.js
+ * @FilePath: \iwms-web\src\pages\Component\RapidDevelopment\OnlReport\SimpleQuery\SimpleQuery.js
  */
 import { Form, Input, Select, DatePicker } from 'antd';
 import { notNullLocale } from '@/utils/CommonLocale';
 import SearchForm from '@/pages/Component/Form/SearchForm';
 import SFormItem from '@/pages/Component/Form/SFormItem';
 import Address from '@/pages/Component/Form/Address';
-import { SimpleTreeSelect, SimpleSelect, SimpleRadio } from "@/pages/Component/RapidDevelopment/CommonComponent";
+import {
+  SimpleTreeSelect,
+  SimpleSelect,
+  SimpleRadio,
+} from '@/pages/Component/RapidDevelopment/CommonComponent';
 const { RangePicker } = DatePicker;
 
 @Form.create()
@@ -42,10 +46,10 @@ export default class SimpleQuery extends SearchForm {
       const field = selectFields.find(x => x.fieldName == param);
       let val = searchParam[param];
       if (field.searchShowtype == 'datetime' && val instanceof Array) {
-        val = val.map(x => x.format('YYYY-MM-DD')).join('||');
+        val = val.map(x => x.format('YYYY-MM-DD hh:mm')).join('||');
       }
-      if (field.searchShowtype == 'date') {
-        val = val.format('YYYY-MM-DD');
+      if (field.searchShowtype == 'date' && val instanceof Array) {
+        val = val.map(x => x.format('YYYY-MM-DD')).join('||');
       }
       if (val && field) {
         params.push({
@@ -61,28 +65,32 @@ export default class SimpleQuery extends SearchForm {
 
   //生成查询控件
   buildSearchItem = searchField => {
-    const searchProperties = searchField.searchProperties ? JSON.parse(searchField.searchProperties) : "";
+    const searchProperties = searchField.searchProperties
+      ? JSON.parse(searchField.searchProperties)
+      : '';
     switch (searchField.searchShowtype) {
       case 'date':
-        return <DatePicker style={{ width: '100%' }} />;
+        return <RangePicker style={{ width: '100%' }} />;
       case 'datetime':
-        return <RangePicker style={{ width: '100%' }} />;
+        return <RangePicker style={{ width: '100%' }} showTime />;
       case 'time':
-        return <RangePicker style={{ width: '100%' }} />;
+        return <RangePicker style={{ width: '100%' }} showTime />;
       case 'list':
         return (
           <SimpleSelect
             reportCode={this.props.reportCode}
             searchField={searchField}
+            dispatch={this.props.dispatch}
           />
         );
       case 'radio':
-        return <SimpleRadio {...searchProperties}/>;
+        return <SimpleRadio {...searchProperties} />;
       case 'sel_search':
         return (
           <SimpleSelect
             reportCode={this.props.reportCode}
             searchField={searchField}
+            dispatch={this.props.dispatch}
             showSearch
           />
         );
@@ -97,7 +105,7 @@ export default class SimpleQuery extends SearchForm {
       case 'pca':
         return <Address />;
       case 'sel_tree':
-        return <SimpleTreeSelect {...searchProperties}/>;
+        return <SimpleTreeSelect {...searchProperties} />;
       default:
         return <Input placeholder={'请输入' + searchField.fieldTxt} />;
     }
