@@ -47,6 +47,14 @@ export async function dynamicDelete(payload) {
     body:payload
   });
 }
+
+export async function dynamicQuery(payload) {
+  return request(`/itms-schedule/itms-schedule/devDynamicCRUD/query`, {
+    method: 'POST',
+    body: payload
+  });
+}
+
 export async function dynamicqueryById(payload) {
   return request(`/itms-schedule/itms-schedule/devDynamicCRUD/query`, {
     method: 'POST',
