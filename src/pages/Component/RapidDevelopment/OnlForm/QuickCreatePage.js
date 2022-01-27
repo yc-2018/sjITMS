@@ -15,8 +15,10 @@ import { SimpleTreeSelect, SimpleRadio, SimpleAutoComplete } from "@/pages/Compo
 }))
 @Form.create()
 export default class QuickCreatePage extends CreatePage {
+
+	entity = {};
+
 	constructor(props) {
-		console.log("props:", props)
 		super(props);
 		this.state = {
 			title: "测试标题",
@@ -27,9 +29,8 @@ export default class QuickCreatePage extends CreatePage {
 			onlFormField: props.onlFormField,
 			quickuuid: props.quickuuid,
 			tableName: props.tableName,
-			datas: new Map(),
 		}
-		//this.queryCoulumns();
+		this.entity[this.props.tableName] = {};
 	}
 
 	dynamicqueryById() {
@@ -44,7 +45,8 @@ export default class QuickCreatePage extends CreatePage {
 				type: 'quick/dynamicqueryById',
 				payload: param,
 				callback: response => {
-					this.setState({ datas: new Map(Object.entries(response.result.records[0])) });
+					this.entity[tableName] = response.result.records[0];
+					this.setState({ });
 				},
 			});
 		}
@@ -71,6 +73,8 @@ export default class QuickCreatePage extends CreatePage {
 		// 默认实现的数据保存接口
 		console.log("data", data);
 		console.log("tableName", this.state.tableName);
+		console.log("entity", this.entity);
+		return;
 		// TODO 日期格式oracle保存有问题
 		// 格式转换处理
 		convertSaveData(data);
@@ -93,63 +97,54 @@ export default class QuickCreatePage extends CreatePage {
 		});
 	}
 
+	handleChange = (value, tableName, dbFieldName) => {
+		this.entity[tableName][dbFieldName] = value;
+	}
+
 	/**
 	 * 渲染表单组件
 	 */
 	drawFormItems = () => {
 		const { getFieldDecorator } = this.props.form;
-		//const{map} = this.props.quick
 		const { onlFormField } = this.state
 		let cols = [];
-		const { datas } = this.state;
 		if (!onlFormField) {
 			return null;
 		}
-
+		const tableName = this.state.tableName;
 		onlFormField.forEach(field => {
 			let formItem;
 			let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
-			const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : "";		// 扩展属性
-
-			if (field.fieldShowType == "text") {
-				rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
-				formItem = <Input {...fieldExtendJson} disabled={field.isReadOnly} placeholder={field.placeholder} />;
-			} else if (field.fieldShowType == "date") {
-				formItem = <DatePicker {...fieldExtendJson} disabled={field.isReadOnly} style={{ width: '100%' }} placeholder={field.placeholder} />
+			const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {};		// 扩展属性
+			const commonPropertis = {
+				disabled: field.isReadOnly,
+				style: { width: '100%' },
+				onChange: value => this.handleChange(value, tableName, field.dbFieldName)
+			};		// 通用属性
+		
+			if (field.fieldShowType == "date") {
+				formItem = <DatePicker {...commonPropertis} {...fieldExtendJson} />
 			} else if (field.fieldShowType == "number") {
-				formItem = <InputNumber {...fieldExtendJson} disabled={field.isReadOnly} style={{ width: '100%' }} placeholder={field.placeholder} />;
+				formItem = <InputNumber {...commonPropertis} {...fieldExtendJson} />;
 			} else if (field.fieldShowType == "sel_tree") {
-				formItem = <SimpleTreeSelect {...fieldExtendJson} />;
+				formItem = <SimpleTreeSelect {...commonPropertis} {...fieldExtendJson} />;
 			} else if (field.fieldShowType == "radio") {
-				formItem = <SimpleRadio {...fieldExtendJson} disabled={field.isReadOnly}/>;
+				formItem = <SimpleRadio {...commonPropertis} {...fieldExtendJson} />;
 			} else if (field.fieldShowType == "auto_complete") {
-				formItem = <SimpleAutoComplete {...fieldExtendJson} disabled={field.isReadOnly}/>;
-			}
-			// else if (field.fieldShowType == "sel_tree") {
-			// 	let options = [];
-			// 	if (field.dictValue) {
-			// 		let dictValue = JSON.parse(field.dictValue);
-			// 		Object.keys(dictValue).forEach(function (key) {
-			// 			options.push(<Select.Option value={key} key={key}>{dictValue[key]}</Select.Option>);
-			// 		});
-			// 	}
-			// 	formItem = <Select disabled={field.isReadOnly} onChange={this.onModeChange} placeholder={field.placeholder}>
-			// 		{options}
-			// 	</Select>;
-			// } 
-			else if (field.fieldShowType == "textarea") {
+				formItem = <SimpleAutoComplete {...commonPropertis} {...fieldExtendJson} />;
+			} else if (field.fieldShowType == "textarea") {
 				rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
-				formItem = <Input.TextArea {...fieldExtendJson} disabled={field.isReadOnly} placeholder={field.placeholder} />;
+				formItem = <Input.TextArea {...commonPropertis} {...fieldExtendJson} />;
 			} else {
 				rules.push({ max: field.dbLength, message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}` });
-				formItem = <Input {...fieldExtendJson} disabled={field.isReadOnly} placeholder={field.placeholder} />;
+				formItem = <Input {...commonPropertis} {...fieldExtendJson} />;
 			}
 
 			cols.push(
 				<CFormItem key={field.dbFieldName} label={field.dbFieldTxt}>
 					{
 						getFieldDecorator(field.dbFieldName, {
-							initialValue: convertInitialValue(this.state.datas.get(field.dbFieldName), field.fieldShowType),
+							initialValue: convertInitialValue(this.entity[tableName][field.dbFieldName], field.fieldShowType),
 							rules: rules,
 						})(formItem)
 					}
