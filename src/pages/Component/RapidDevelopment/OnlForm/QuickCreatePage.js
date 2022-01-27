@@ -7,7 +7,7 @@ import { commonLocale } from '@/utils/CommonLocale';
 import CreatePage from '@/pages/Component/Page/CreatePage';
 import FormPanel from '@/pages/Component/Form/FormPanel';
 import CFormItem from '@/pages/Component/Form/CFormItem';
-import { SimpleTreeSelect, SimpleRadio } from "@/pages/Component/RapidDevelopment/CommonComponent";
+import { SimpleTreeSelect, SimpleRadio, SimpleAutoComplete } from "@/pages/Component/RapidDevelopment/CommonComponent";
 
 @connect(({ quick, loading }) => ({
 	quick,
@@ -122,6 +122,8 @@ export default class QuickCreatePage extends CreatePage {
 				formItem = <SimpleTreeSelect {...fieldExtendJson} />;
 			} else if (field.fieldShowType == "radio") {
 				formItem = <SimpleRadio {...fieldExtendJson} disabled={field.isReadOnly}/>;
+			} else if (field.fieldShowType == "auto_complete") {
+				formItem = <SimpleAutoComplete {...fieldExtendJson} disabled={field.isReadOnly}/>;
 			}
 			// else if (field.fieldShowType == "sel_tree") {
 			// 	let options = [];
