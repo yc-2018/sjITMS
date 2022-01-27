@@ -176,7 +176,6 @@ export default class QuickSearchExpand extends SearchPage {
           filterValue={this.state.pageFilter.filterValue}
           refresh={this.onSearch}
           reportCode={this.state.reportCode}
-          dispatch={this.props.dispatch}
         />
         <AdvanceQuery
           fieldInfos={this.columns}

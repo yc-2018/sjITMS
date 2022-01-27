@@ -89,7 +89,6 @@ export default class SimpleQuery extends SearchForm {
           <SimpleSelect
             reportCode={this.props.reportCode}
             searchField={searchField}
-            dispatch={this.props.dispatch}
             showSearch
           />
         );

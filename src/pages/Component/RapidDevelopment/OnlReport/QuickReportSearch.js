@@ -211,6 +211,7 @@ export default class QuickReportSearch extends SearchPage {
           selectFields={this.state.selectFields}
           filterValue={this.state.pageFilter.filterValue}
           refresh={this.onSearch}
+          reportCode={this.state.reportCode}
         />
         <AdvanceQuery
           fieldInfos={this.columns}
