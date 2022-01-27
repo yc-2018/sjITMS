@@ -21,7 +21,6 @@ export default class SimpleTreeSelect extends Component {
 
     loadData = async () => {
         const { textField, valueField, parentField, queryParams } = this.props;
-        console.log(this.props);
         const queryParamsJson = JSON.parse(queryParams);
         if (!queryParamsJson) {
             return;

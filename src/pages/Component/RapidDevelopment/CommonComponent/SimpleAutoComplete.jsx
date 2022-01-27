@@ -21,7 +21,6 @@ export default class SimpleAutoComplete extends Component {
     @Bind()
     @Debounce(300)
     onSearch (searchText) {
-        console.log("searchText", searchText);
         const { textField, valueField, searchField, queryParams } = this.props;
         const searchFields = searchField.split(',');
         if (searchText == "") {
@@ -66,12 +65,12 @@ export default class SimpleAutoComplete extends Component {
     render() {
         const { searchField } = this.props;
         const searchFields = searchField.split(',');
-        const options = this.state.options.map(d => <Select.Option key={d.value} textField={d.textField}>{d.label}</Select.Option>);
+        const options = this.state.options.map(d => <Select.Option key={d.value} textfield={d.textField}>{d.label}</Select.Option>);
         // 将父组件传过来的属性传递下去，以适应Form、getFieldDecorator等处理
         return (
             <Select
                 {...this.props}
-                optionLabelProp="textField"
+                optionLabelProp="textfield"
                 optionFilterProp="children"
                 showSearch
                 onSearch={this.onSearch}
