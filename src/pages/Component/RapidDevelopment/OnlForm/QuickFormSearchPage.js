@@ -89,7 +89,7 @@ export default class QuickFormSearchPage extends QuickSearchExpand {
   deleteById = (record, batch) => {
     const { dispatch, tableName, onlFormField } = this.props;
     let that = this;
-    var field = onlFormField.find(x => x.dbIsKey)?.dbFieldName;
+    var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
     const recordMap = new Map(Object.entries(record));
     var val = recordMap.get(field);
     const params = {

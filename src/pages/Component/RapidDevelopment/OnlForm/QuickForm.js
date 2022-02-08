@@ -47,8 +47,8 @@ export default class QuickForm extends PureComponent {
       callback: response => {
         if (response.result) {
           this.setState({
-            onlFormField: response.result.onlFormFields,
-            tableName: response.result.onlFormHead.tableName,
+            onlFormField: response.result,
+            tableName: response.result[0].onlFormHead.tableName,
           });
         }
       },
@@ -67,9 +67,9 @@ export default class QuickForm extends PureComponent {
     const { location } = this.props;
     switch (showPageNow) {
       case quickuuid + 'create':
-        return <Create quickuuid={quickuuid} tableName={tableName} onlFormField={onlFormField} />;
+        return <Create quickuuid={quickuuid} onlFormField={onlFormField} />;
       case quickuuid + 'update':
-        return <Create quickuuid={quickuuid} tableName={tableName} onlFormField={onlFormField} />;
+        return <Create quickuuid={quickuuid} onlFormField={onlFormField} />;
       case quickuuid + 'query':
         return (
           <QuickFormSearchPage

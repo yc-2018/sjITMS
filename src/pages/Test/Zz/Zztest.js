@@ -3,7 +3,7 @@ import {Table,Button,Input,Col,Row} from 'antd';
 import {connect} from 'dva'
 import { Route,Switch } from 'react-router-dom'
 import List from './ZzList'
-import Create from './ZzCreate'
+import Create from './testCreate'
 import ZzSearch from './ZzSearch'
 import ZzView from './ZzView'
 const { Search } = Input;
