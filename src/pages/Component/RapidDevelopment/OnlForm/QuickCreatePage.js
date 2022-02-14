@@ -1,9 +1,8 @@
 import { connect } from 'dva';
 import { Form, Select, Input, InputNumber, message, Col, DatePicker, Modal } from 'antd';
 import moment from 'moment';
-
+import { commonLocale, notNullLocale, placeholderLocale, placeholderChooseLocale, confirmLineFieldNotNullLocale } from '@/utils/CommonLocale';
 import { loginCompany, loginOrg, loginUser, getDefOwner, getActiveKey } from '@/utils/LoginContext';
-import { commonLocale } from '@/utils/CommonLocale';
 import CreatePage from '@/pages/Component/Page/CreatePage';
 import FormPanel from '@/pages/Component/Form/FormPanel';
 import CFormItem from '@/pages/Component/Form/CFormItem';
@@ -12,7 +11,10 @@ import {
   SimpleRadio,
   SimpleAutoComplete,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
-
+import ItemEditTable from '@/pages/Component/Form/ItemEditTable';
+import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
+import { convertCodeName } from '@/utils/utils';
+import { colWidth, itemColWidth } from '@/utils/ColWidth';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -26,8 +28,14 @@ export default class QuickCreatePage extends CreatePage {
     const { onlFormField } = this.props;
     onlFormField.forEach(item => {
       //初始化表名称
-      this.entity[item.onlFormHead.tableName] = {};
-    });
+      this.entity[item.onlFormHead.tableName] = [];
+      //一对一初始化entity
+      console.log(item);
+      if(item.onlFormHead.relationType != '0'||item.onlFormHead.tableType == '1'|| item.onlFormHead.tableType == '0'){
+        this.entity[item.onlFormHead.tableName][0]={}
+      };
+      })
+      
   };
 
   constructor(props) {
@@ -50,6 +58,7 @@ export default class QuickCreatePage extends CreatePage {
     if (this.props.quick.showPageMap.get(this.props.quickuuid).endsWith('update')) {
       //const { tableName } = this.state;
       const { onlFormField } = this.props;
+      console.log("onlFormField",onlFormField);
       onlFormField.forEach(item => {
         let tableName = item.onlFormHead.tableName;
         if (item.onlFormHead.tableType == '1' || item.onlFormHead.tableType == '0') {
@@ -65,16 +74,17 @@ export default class QuickCreatePage extends CreatePage {
             payload: param,
             callback: response => {
               if (response.result.records != 'false') {
-                this.entity[tableName] = response.result.records[0];
+                this.entity[tableName] = response.result.records;
                 this.setState({});
               }
             },
           });
         } else {
+          var field  = item.onlFormFields.find(x=>x.mainField!=null && x.mainField!='')?.dbFieldName;
           const param = {
             tableName: item.onlFormHead.tableName,
             condition: {
-              params: [{ field: 'parent_id', rule: 'eq', val: [this.props.quick.entityUuid] }],
+              params: [{ field: field, rule: 'eq', val: [this.props.quick.entityUuid] }],
             },
           };
           this.props.dispatch({
@@ -82,7 +92,12 @@ export default class QuickCreatePage extends CreatePage {
             payload: param,
             callback: response => {
               if (response.result.records != 'false') {
-                this.entity[tableName] = response.result.records[0];
+                this.entity[tableName] = response.result.records;
+                console.log(this.entity[tableName])
+                for(let i = 0;i<this.entity[tableName].length;i++){
+                  //增加line
+                  this.entity[tableName][i]={...this.entity[tableName][i],line:i+1}
+                }
                 this.setState({});
               }
             },
@@ -114,6 +129,7 @@ export default class QuickCreatePage extends CreatePage {
     console.log('data', data);
     console.log('tableName', this.state.tableName);
     console.log('entity', this.entity);
+   this.convertData(this.entity);
     return;
     // TODO 日期格式oracle保存有问题
     // 格式转换处理
@@ -138,24 +154,76 @@ export default class QuickCreatePage extends CreatePage {
       },
     });
   };
+  convertData(datas){
+    const { onlFormField } = this.props;
+    const map = new Map(Object.entries(datas));
+    let newOnlFormHead;
+   for(let i =0;i<onlFormField.length;i++){
+     if(i==0){
+       continue;
+     }
+     if(onlFormField[i].onlFormHead.relationType=='0'){
+      newOnlFormHead = onlFormField[i];
+     }
+     onlFormField[i].onlFormFields.forEach(filed=>{
 
-  handleChange = (value, tableName, dbFieldName, fieldShowType) => {
-    console.log('value', value, 'dbFieldName', dbFieldName, 'fieldShowType', fieldShowType);
-    if (fieldShowType == 'date') {
-      this.entity[tableName][dbFieldName] = value.format('YYYY-MM-DD');
-    } else if (fieldShowType == 'number') {
-      this.entity[tableName][dbFieldName] = value;
-    } else if (fieldShowType == 'sel_tree') {
-      this.entity[tableName][dbFieldName] = value;
-    } else if (fieldShowType == 'radio') {
-      this.entity[tableName][dbFieldName] = value.target.value;
-    } else if (fieldShowType == 'auto_complete') {
-      this.entity[tableName][dbFieldName] = value;
-    } else if (fieldShowType == 'textarea') {
-      this.entity[tableName][dbFieldName] = value.target.value;
-    } else {
-      this.entity[tableName][dbFieldName] = value.target.value;
+    })
+   }
+   for(let key in datas){
+     if(key==newOnlFormHead.onlFormHead.tableName){
+       datas[key].forEach(data=>{
+         for(let s in data){
+          newOnlFormHead.onlFormFields.forEach((item,index)=>{
+            if(s==item.dbFieldName){
+              if(!item.dbIsNull && !data[s]){
+                message.error(confirmLineFieldNotNullLocale(data.line, item.dbFieldTxt));
+                return false;
+              }
+              if(data[s].length>item.dbLength){
+                message.error("第"+data.line+"的"+item.dbFieldTxt+"长度不能大于"+item.dbLength);
+                return false;
+              }
+            }
+        })
+         }
+      
+       })
+        
+       }
+     
+     }
+   }
+   
+     
+     
+   
+  
+  handleChange = (value, tableName, dbFieldName, fieldShowType,line) => {
+    if(line==undefined){
+      line = 0;
+    }else if(line!=0){
+      line -=1;
     }
+    console.log('value', value, 'dbFieldName', dbFieldName, 'fieldShowType', fieldShowType);
+      
+          if (fieldShowType == 'date') {
+            this.entity[tableName][line][dbFieldName] = value.format('YYYY-MM-DD');
+          } else if (fieldShowType == 'number') {
+            this.entity[tableName][line][dbFieldName] = value;
+          } else if (fieldShowType == 'sel_tree') {
+            this.entity[tableName][line][dbFieldName] = value;
+          } else if (fieldShowType == 'radio') {
+            this.entity[tableName][line][dbFieldName] = value.target.value;
+          } else if (fieldShowType == 'auto_complete') {
+            this.entity[tableName][line][dbFieldName] = value;
+          } else if (fieldShowType == 'textarea') {
+            this.entity[tableName][line][dbFieldName] = value.target.value;
+          } else {
+            this.entity[tableName][line][dbFieldName] = value.target.value;
+          }
+        
+           
+          
   };
 
   /**
@@ -169,22 +237,28 @@ export default class QuickCreatePage extends CreatePage {
     if (!onlFormField) {
       return null;
     }
+    console.log("entity",this.entity);
     //const tableName = this.state.tableName;
     //根据查询出来的配置渲染表单新增页面
-    onlFormField.forEach(item => {
-      let tableName = item.onlFormHead.tableName;
+    onlFormField.forEach((item,index) => {
+      console.log("index",index);
+      let {tableName,tableType} = item.onlFormHead;
       let cols = [];
+      if((index==1 || index==2) && item.onlFormHead.relationType=='0'){
+          return  ;
+      }
+      
       item.onlFormFields.forEach(field => {
         let formItem;
         let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
         const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
+        console.log("isReadOnly",field.isReadOnly);
         const commonPropertis = {
           disabled: field.isReadOnly,
           style: { width: '100%' },
           onChange: value =>
-            this.handleChange(value, tableName, field.dbFieldName, field.fieldShowType),
+            this.handleChange(value, tableName, field.dbFieldName, field.fieldShowType,0),
         }; // 通用属性
-
         if (field.fieldShowType == 'date') {
           formItem = <DatePicker {...commonPropertis} {...fieldExtendJson} />;
         } else if (field.fieldShowType == 'number') {
@@ -208,12 +282,15 @@ export default class QuickCreatePage extends CreatePage {
           });
           formItem = <Input {...commonPropertis} {...fieldExtendJson} />;
         }
-
+        let initialValue;
+        if( JSON.stringify(this.entity[tableName])!='[]'){
+          initialValue = this.entity[tableName][0][field.dbFieldName];
+        }
         cols.push(
           <CFormItem key={tableName + field.dbFieldName} label={field.dbFieldTxt}>
             {getFieldDecorator(tableName + field.dbFieldName, {
-              initialValue: convertInitialValue(
-                this.entity[tableName][field.dbFieldName],
+               initialValue: convertInitialValue(
+                initialValue,
                 field.fieldShowType
               ),
               rules: rules,
@@ -221,14 +298,124 @@ export default class QuickCreatePage extends CreatePage {
           </CFormItem>
         );
       });
-
-      formPanel.push(
-        <FormPanel key={item.onlFormHead.id} title={item.onlFormHead.tableTxt} cols={cols} />
-      );
+        
+          formPanel.push(
+            <FormPanel key={item.onlFormHead.id} title={item.onlFormHead.tableTxt} cols={cols} />
+          );
+       
     });
 
     return formPanel;
   };
+
+  drawTable = () => {
+    const { onlFormField } = this.props;
+    let onlFormFieldss = {};
+    //如果不是一对多；直接return;
+    if (!onlFormField || onlFormField[0].onlFormHead.relationType!='0'||onlFormField.length<2) {
+      return null;
+    }
+    onlFormField.forEach((onl,index) =>{
+      if(!(index==0 || onl.onlFormHead.relationType!='0')){
+        onlFormFieldss=onl;
+      }
+    })
+      let columns = [];
+      let tableTxt=  onlFormFieldss.onlFormHead.tableTxt ;
+      let tableName =   onlFormFieldss.onlFormHead.tableName;
+      onlFormFieldss.onlFormFields.forEach((field ,index)=>{
+        if(field.isShowForm){
+          const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
+          let tailItem = {
+            title: field.dbFieldName,
+            dataIndex: field.dbFieldName,
+            key:tableName + field.dbFieldName+index,
+            width: itemColWidth.articleEditColWidth,
+            render: (text, record) => {
+              return  <CFormItem key={tableName + field.dbFieldName+record.line} label={field.dbFieldTxt}>
+              {getFieldDecorator(tableName + field.dbFieldName+record.line, {
+                initialValue: convertInitialValue(
+                  text,
+                  field.fieldShowType
+                )
+              })(this.getWidget(field,{
+                disabled: field.isReadOnly,
+                style: { width: '100%' },
+                onChange: value =>
+                  this.handleChange(value, tableName, field.dbFieldName, field.fieldShowType,record.line),
+              },fieldExtendJson))}
+              </CFormItem>
+            }
+            
+          };
+          columns.push(tailItem);
+        }
+        
+          })
+   const {
+      form: { getFieldDecorator },
+    } = this.props;
+    debugger;
+    return (
+      <div>
+       <ItemEditTable
+      title={tableTxt}
+      columns={columns}
+      data={this.entity[tableName]}
+      handleFieldChange={this.handleFieldChange}
+      drawTotalInfo={this.drawTotalInfo}
+      drawBatchButton={this.drawBatchButton}
+      notNote
+    />
+      </div>
+    );
+  };
+  getWidget =(field,commonPropertis,fieldExtendJson)=>{
+    if (field.fieldShowType == 'date') {
+      return  <DatePicker {...commonPropertis} {...fieldExtendJson} />;
+    } else if (field.fieldShowType == 'number') {
+      return <InputNumber {...commonPropertis} {...fieldExtendJson} />;
+    } else if (field.fieldShowType == 'sel_tree') {
+      return  <SimpleTreeSelect {...commonPropertis} {...fieldExtendJson} />;
+    } else if (field.fieldShowType == 'radio') {
+      return  <SimpleRadio {...commonPropertis} {...fieldExtendJson} />;
+    } else if (field.fieldShowType == 'auto_complete') {
+     return <SimpleAutoComplete {...commonPropertis} {...fieldExtendJson} />;
+    } else if (field.fieldShowType == 'textarea') {
+     return <Input.TextArea {...commonPropertis} {...fieldExtendJson} />;
+    } else {
+     return  <Input {...commonPropertis} {...fieldExtendJson} />;
+    }
+  }
+  drawTotalInfo = () => {
+    let allQtyStr = '0';
+    let allQty = 0;
+    let allAmount = 0;
+    this.state.entity.items &&
+      this.state.entity.items.map(item => {
+        if (item.qty) {
+          allQty = allQty + parseFloat(item.qty);
+        }
+        if (item.qtyStr) {
+          allQtyStr = add(allQtyStr, item.qtyStr);
+        }
+        if (item.price) {
+          allAmount = allAmount + item.price * item.qty;
+        }
+      });
+    return (
+      <span style={{ marginLeft: '10px' }}>
+        {commonLocale.inAllQtyStrLocale}：{allQtyStr} |{commonLocale.inAllQtyLocale}：{allQty} |
+        {commonLocale.inAllAmountLocale}：{allAmount ? allAmount : 0}
+      </span>
+    );
+  };
+  /**
+     * 绘制按钮
+     */
+   drawBatchButton = selectedRowKeys => {};
+  
+   handleFieldChange(e, fieldName, line){};
 }
 
 /**
