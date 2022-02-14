@@ -355,7 +355,6 @@ export default class QuickCreatePage extends CreatePage {
    const {
       form: { getFieldDecorator },
     } = this.props;
-    debugger;
     return (
       <div>
        <ItemEditTable
