@@ -244,7 +244,7 @@ export default class QuickCreatePage extends CreatePage {
       console.log("index",index);
       let {tableName,tableType} = item.onlFormHead;
       let cols = [];
-      if((index==1 || index==2) && item.onlFormHead.relationType=='0'){
+      if(index!=0 && item.onlFormHead.relationType=='0'){
           return  ;
       }
       
@@ -315,11 +315,15 @@ export default class QuickCreatePage extends CreatePage {
     if (!onlFormField || onlFormField[0].onlFormHead.relationType!='0'||onlFormField.length<2) {
       return null;
     }
+    debugger;
     onlFormField.forEach((onl,index) =>{
-      if(!(index==0 || onl.onlFormHead.relationType!='0')){
+      if(index!=0 && onl.onlFormHead.relationType=='0'){
         onlFormFieldss=onl;
       }
     })
+     if(!onlFormFieldss){
+     return ;
+    }
       let columns = [];
       let tableTxt=  onlFormFieldss.onlFormHead.tableTxt ;
       let tableName =   onlFormFieldss.onlFormHead.tableName;
@@ -327,7 +331,7 @@ export default class QuickCreatePage extends CreatePage {
         if(field.isShowForm){
           const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
           let tailItem = {
-            title: field.dbFieldName,
+            title: field.dbFieldTxt,
             dataIndex: field.dbFieldName,
             key:tableName + field.dbFieldName+index,
             width: itemColWidth.articleEditColWidth,
