@@ -46,7 +46,11 @@ export default class QuickView extends ViewPage {
   constructor(props) {
     super(props);
 
-    this.state = { title: '信息', quickuuid: props.quickuuid, entityUuid: props.quick.entityUuid };
+    this.state = {
+      title: '基本信息',
+      quickuuid: props.quickuuid,
+      entityUuid: props.quick.entityUuid,
+    };
 
     this.initonlFormField();
   }
@@ -178,7 +182,7 @@ export default class QuickView extends ViewPage {
         //遍历主表跟单表配置信息
         item.onlFormFields.forEach(field => {
           itemInfo = {
-            label: field.dbFieldName,
+            label: field.dbFieldTxt,
             value: this.entity[tableName][0][field.dbFieldName],
           };
           items.push(itemInfo);
@@ -188,7 +192,7 @@ export default class QuickView extends ViewPage {
           //遍历一对一从表配置信息
           item.onlFormFields.forEach(field => {
             itemInfo = {
-              label: field.dbFieldName,
+              label: field.dbFieldTxt,
               value: this.entity[tableName][0][field.dbFieldName],
             };
             items.push(itemInfo);
@@ -197,7 +201,7 @@ export default class QuickView extends ViewPage {
           //遍历一对多从表配置信息
           item.onlFormFields.forEach(field => {
             itemInfo = {
-              title: field.dbFieldName,
+              title: field.dbFieldTxt,
               dataIndex: field.dbFieldName,
               key: tableName + field.dbFieldName + index,
               width: itemColWidth.articleEditColWidth,
@@ -233,7 +237,7 @@ export default class QuickView extends ViewPage {
     //将一对多放到最后
     let itemMerge = [...quickItems, ...itemsMore];
     return (
-      <TabPane key="basicInfo" tab="信息">
+      <TabPane key="basicInfo" tab="基本信息">
         {itemMerge}
       </TabPane>
     );
