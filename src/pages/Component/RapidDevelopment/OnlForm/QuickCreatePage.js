@@ -85,8 +85,7 @@ export default class QuickCreatePage extends CreatePage {
             },
           });
         } else {
-          var field = item.onlFormFields.find(x => x.mainField != null && x.mainField != '')
-            ?.dbFieldName;
+          var field = item.onlFormFields.find(x => x.mainField != null && x.mainField != '')?.dbFieldName;
           const param = {
             tableName: item.onlFormHead.tableName,
             condition: {
@@ -132,24 +131,21 @@ export default class QuickCreatePage extends CreatePage {
     // 这里可以收集到表单的数据
     // 自定义提交数据接口
     // 默认实现的数据保存接口
-    console.log('data', data);
-    console.log('tableName', this.state.tableName);
     console.log('entity', this.entity);
-    this.convertData(this.entity);
-    return;
-    // TODO 日期格式oracle保存有问题
-    // 格式转换处理
-    convertSaveData(data);
 
+    // this.convertData(this.entity);
+    // // TODO 日期格式oracle保存有问题
+    // // 格式转换处理
+    // convertSaveData(data);
+
+    console.log("this.props.onlFormHead.code", this.props);
     //入参
-    const param = [
-      {
-        tableName: this.state.tableName,
-        data: [data],
-      },
-    ];
+    const param = {
+      code: this.props.onlFormField[0].onlFormHead.code,
+      entity: this.entity
+    };
     this.props.dispatch({
-      type: 'quick/saveOrUpdateEntities',
+      type: 'quick/saveFormData',
       payload: {
         showPageK: this.state.quickuuid,
         showPageV: this.state.quickuuid + 'query',
@@ -210,15 +206,14 @@ export default class QuickCreatePage extends CreatePage {
     if (!onlFormField) {
       return null;
     }
-    console.log('entity', this.entity);
+    console.log("entity", this.entity);
     //const tableName = this.state.tableName;
     //根据查询出来的配置渲染表单新增页面
     onlFormField.forEach((item, index) => {
-      console.log('index', index);
+      console.log("index", index);
       let { tableName, tableType } = item.onlFormHead;
       let cols = [];
-
-      if (index != 0 && item.onlFormHead.relationType == '0') {
+      if ((index == 1 || index == 2) && item.onlFormHead.relationType == '0') {
         return;
       }
 
@@ -236,7 +231,7 @@ export default class QuickCreatePage extends CreatePage {
           }
         }
         const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
-        console.log('isReadOnly', field.isReadOnly);
+        console.log("isReadOnly", field.isReadOnly);
         const commonPropertis = {
           disabled: field.isReadOnly,
           style: { width: '100%' },
@@ -295,7 +290,7 @@ export default class QuickCreatePage extends CreatePage {
     //如果不是一对多；直接return;
     if (
       !onlFormField ||
-      onlFormField[0].onlFormHead.relationType != '1' ||
+      onlFormField[0].onlFormHead.tableType != '1' ||
       onlFormField.length < 2
     ) {
       return null;
@@ -336,7 +331,9 @@ export default class QuickCreatePage extends CreatePage {
                           tableName,
                           field.dbFieldName,
                           field.fieldShowType,
-                          record.line
+                          record.line,
+                          fieldExtendJson,
+                          onlFormFieldss.onlFormFields
                         ),
                     },
                     fieldExtendJson

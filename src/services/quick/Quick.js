@@ -32,14 +32,12 @@ export async function queryAllData(payload) {
   });
 }
 
-
-export async function saveOrUpdateEntities(payload) {
-  return request(`/itms-schedule/itms-schedule/devDynamicCRUD/saveOrUpdateEntities`, {
+export async function saveFormData(param) {
+  return request(`/itms-schedule/itms-schedule/dev/saveFormData/${param.code}`, {
     method: 'POST',
-    body:payload
+    body: param.entity
   });
 }
-
 
 export async function dynamicDelete(payload) {
   return request(`/itms-schedule/itms-schedule/devDynamicCRUD/delete`, {
