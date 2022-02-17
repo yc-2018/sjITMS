@@ -290,7 +290,7 @@ export default class QuickCreatePage extends CreatePage {
     //如果不是一对多；直接return;
     if (
       !onlFormField ||
-      onlFormField[0].onlFormHead.relationType != '1' ||
+      onlFormField[0].onlFormHead.tableType != '1' ||
       onlFormField.length < 2
     ) {
       return null;
