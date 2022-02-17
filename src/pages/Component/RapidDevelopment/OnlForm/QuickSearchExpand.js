@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Table, Button, Input, Col, Row } from 'antd';
+import { Table, Button, Input, Col, Row, message } from 'antd';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
 import axios from 'axios';
@@ -8,6 +8,7 @@ import { colWidth } from '@/utils/ColWidth';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/QueryT';
 import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuery/SimpleQuery';
 import SearchMoreAction from '@/pages/Component/Form/SearchMoreAction';
+import ExportJsonExcel from 'js-export-excel';
 
 export default class QuickSearchExpand extends SearchPage {
   constructor(props) {
@@ -21,8 +22,8 @@ export default class QuickSearchExpand extends SearchPage {
       selectFields: [],
       reportCode: props.quickuuid,
       pageFilters: { quickuuid: props.quickuuid, changePage: true },
-      key: props.quickuuid + 'quick.search.table', //用于缓存用户配置数据
-    };
+      key: props.quickuuid + 'quick.search.table',
+    }; //用于缓存用户配置数据
   }
 
   //查询数据
@@ -73,6 +74,10 @@ export default class QuickSearchExpand extends SearchPage {
         sorter: true,
         width: colWidth.codeColWidth,
         fieldType: column.fieldType,
+        render:
+          column.orderNum == '1'
+            ? (val, record) => <a onClick={this.onView.bind(this, record)}>{val}</a>
+            : null,
       };
       quickColumns.push(qiuckcolumn);
     });
@@ -100,7 +105,144 @@ export default class QuickSearchExpand extends SearchPage {
   /**
    * 显示新建/编辑界面
    */
-  onCreate = () => {};
+  onCreate = () => {
+    this.props.dispatch({
+      type: 'quick/showPageMap',
+      payload: {
+        showPageK: this.state.reportCode,
+        showPageV: this.state.reportCode + 'create',
+      },
+    });
+  };
+  /**
+   * 编辑界面
+   */
+  onUpdate = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length !== 0) {
+      const { onlFormField } = this.props;
+      var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
+      this.props.dispatch({
+        type: 'quick/showPageMap',
+        payload: {
+          showPageK: this.state.reportCode,
+          showPageV: this.state.reportCode + 'update',
+          entityUuid: selectedRows[0][field],
+        },
+      });
+    } else {
+      message.error('请至少选中一条数据！');
+    }
+  };
+  /**
+   * 查看详情
+   */
+  onView = record => {
+    const { onlFormField } = this.props;
+    var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
+    if (record.ROW_ID) {
+      this.props.dispatch({
+        type: 'quick/showPageMap',
+        payload: {
+          showPageK: this.state.reportCode,
+          showPageV: this.state.reportCode + 'view',
+          entityUuid: record[field],
+        },
+      });
+    } else {
+      const { selectedRows, batchAction } = this.state;
+      console.log(selectedRows, 'selectedRows');
+      if (selectedRows.length > 0) {
+        this.props.dispatch({
+          type: 'quick/showPageMap',
+          payload: {
+            showPageK: this.state.reportCode,
+            showPageV: this.state.reportCode + 'view',
+            entityUuid: selectedRows[0][field],
+          },
+        });
+      } else message.error('请至少选中一条数据！');
+    }
+  };
+
+  /**
+   * 批量删除
+   */
+  onBatchDelete = () => {
+    const { selectedRows, batchAction } = this.state;
+    if (selectedRows.length !== 0) {
+      for (var i = 0; i < selectedRows.length; i++) {
+        this.deleteById(selectedRows[i]);
+      }
+    } else {
+      message.error('请至少选中一条数据！');
+    }
+  };
+
+  /**
+   * 单一删除
+   */
+  deleteById = (record, batch) => {
+    const { dispatch, tableName, onlFormField } = this.props;
+    let that = this;
+    var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
+    const recordMap = new Map(Object.entries(record));
+    var val = recordMap.get(field);
+    const params = {
+      tableName,
+      condition: { params: [{ field, rule: 'eq', val: [val] }] },
+      deleteAll: 'false',
+    };
+    dispatch({
+      type: 'quick/dynamicDelete',
+      payload: { params },
+      callback: response => {
+        if (batch) {
+          that.batchCallback(response, record);
+          resolve({ success: response.success });
+          return;
+        }
+
+        if (response && response.success) {
+          this.setState({ selectedRows: [] });
+          that.refreshTable();
+          message.success('删除成功！');
+        }
+      },
+    });
+  };
+
+  //导出
+  port = () => {
+    //const { dispatch } = this.props;
+    this.props.dispatch({
+      type: 'quick/queryAllData',
+      payload: this.state.pageFilters,
+      callback: response => {
+        if (response && response.success) {
+          let columns = this.state.columns;
+          var option = [];
+          let sheetfilter = []; //对应列表数据中的key值数组，就是上面resdata中的 name，address
+          let sheetheader = []; //对应key值的表头，即excel表头
+          columns.map(a => {
+            sheetfilter.push(a.key);
+            sheetheader.push(a.title);
+          });
+          option.fileName = this.state.title; //导出的Excel文件名
+          option.datas = [
+            {
+              sheetData: response.data.records,
+              sheetName: this.state.title, //工作表的名字
+              sheetFilter: sheetfilter,
+              sheetHeader: sheetheader,
+            },
+          ];
+          var toExcel = new ExportJsonExcel(option);
+          toExcel.saveExcel();
+        }
+      },
+    });
+  };
 
   /**
    * 查询

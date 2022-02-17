@@ -1,8 +1,9 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
-import Create from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePage';
+import Create from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreateExpand';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickFormSearchPage';
+import QuickViewPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickViewPage';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -80,7 +81,13 @@ export default class QuickForm extends PureComponent {
           />
         );
       case quickuuid + 'view':
-        return <QuickDemoView pathname={location.pathname} />;
+        return (
+          <QuickViewPage
+            quickuuid={quickuuid}
+            onlFormField={onlFormField}
+            pathname={this.props.location.pathname}
+          />
+        );
       default:
         return null;
     }
