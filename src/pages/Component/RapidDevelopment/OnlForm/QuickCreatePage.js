@@ -197,30 +197,7 @@ export default class QuickCreatePage extends CreatePage {
     }
   }
 
-  handleChange = (value, tableName, dbFieldName, fieldShowType, line) => {
-    if (line == undefined) {
-      line = 0;
-    } else if (line != 0) {
-      line -= 1;
-    }
-    console.log('value', value, 'dbFieldName', dbFieldName, 'fieldShowType', fieldShowType);
-
-    if (fieldShowType == 'date') {
-      this.entity[tableName][line][dbFieldName] = value.format('YYYY-MM-DD');
-    } else if (fieldShowType == 'number') {
-      this.entity[tableName][line][dbFieldName] = value;
-    } else if (fieldShowType == 'sel_tree') {
-      this.entity[tableName][line][dbFieldName] = value;
-    } else if (fieldShowType == 'radio') {
-      this.entity[tableName][line][dbFieldName] = value.target.value;
-    } else if (fieldShowType == 'auto_complete') {
-      this.entity[tableName][line][dbFieldName] = value;
-    } else if (fieldShowType == 'textarea') {
-      this.entity[tableName][line][dbFieldName] = value.target.value;
-    } else {
-      this.entity[tableName][line][dbFieldName] = value.target.value;
-    }
-  };
+  handleChange = () => {  }
 
   /**
    * 渲染表单组件
