@@ -336,7 +336,9 @@ export default class QuickCreatePage extends CreatePage {
                           tableName,
                           field.dbFieldName,
                           field.fieldShowType,
-                          record.line
+                          record.line,
+                          fieldExtendJson,
+                          onlFormFieldss.onlFormFields
                         ),
                     },
                     fieldExtendJson
