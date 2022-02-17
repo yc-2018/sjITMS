@@ -227,10 +227,12 @@ export default class QuickCreatePage extends CreatePage {
         let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
         if(field.fieldValidType){
           const fieldValidJson = JSON.parse(field.fieldValidType)
-          rules.push({
-            pattern:new RegExp(fieldValidJson.pattern),
-            message:fieldValidJson.message
-          })
+          if(fieldValidJson.pattern !== null && fieldValidJson.message !== null){
+            rules.push({
+              pattern:new RegExp(fieldValidJson.pattern),
+              message:fieldValidJson.message
+            })
+          }
         }
         const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
         console.log('isReadOnly', field.isReadOnly);
@@ -238,7 +240,7 @@ export default class QuickCreatePage extends CreatePage {
           disabled: field.isReadOnly,
           style: { width: '100%' },
           onChange: value =>
-            this.handleChange(value, tableName, field.dbFieldName, field.fieldShowType, 0),
+            this.handleChange(value, tableName, field.dbFieldName, field.fieldShowType, 0,fieldExtendJson,item.onlFormFields),
         }; // 通用属性
         if (field.fieldShowType == 'date') {
           formItem = <DatePicker {...commonPropertis} {...fieldExtendJson} />;
