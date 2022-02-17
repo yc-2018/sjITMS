@@ -23,10 +23,7 @@ export default {
     setup({ dispatch, history }) {
       history.listen(location => {
         if (location.payload && location.pathname == '/quick') {
-          dispatch({
-            type: 'showPage',
-            payload: location.payload,
-          });
+          dispatch({ type: 'showPageMap', payload: location.payload });
         }
       });
     },
@@ -90,6 +87,7 @@ export default {
       if (callback) callback(response);
     },
     *showPageMap({ payload }, { call, put }) {
+      console.log('___________', payload);
       var showPageMap = new Map();
       showPageMap.set(payload.showPageK, payload.showPageV);
       yield put({
