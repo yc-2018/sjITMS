@@ -223,6 +223,7 @@ export default class QuickCreatePage extends CreatePage {
       }
 
       item.onlFormFields.forEach(field => {
+        if(field.isShowForm){
         let formItem;
         let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
         if(field.fieldValidType){
@@ -277,6 +278,7 @@ export default class QuickCreatePage extends CreatePage {
             })(formItem)}
           </CFormItem>
         );
+        }
       });
 
       formPanel.push(
@@ -289,20 +291,23 @@ export default class QuickCreatePage extends CreatePage {
 
   drawTable = () => {
     const { onlFormField } = this.props;
-    let onlFormFieldss = {};
+    let onlFormFieldss;
     //如果不是一对多；直接return;
     if (
       !onlFormField ||
-      onlFormField[0].onlFormHead.relationType != '0' ||
+      onlFormField[0].onlFormHead.relationType != '1' ||
       onlFormField.length < 2
     ) {
       return null;
     }
     onlFormField.forEach((onl, index) => {
-      if (!(index == 0 || onl.onlFormHead.relationType != '0')) {
+      if (index!=0 && onl.onlFormHead.relationType=='0') {
         onlFormFieldss = onl;
       }
     });
+    if(!onlFormFieldss){
+      return ;
+     }
     let columns = [];
     let tableTxt = onlFormFieldss.onlFormHead.tableTxt;
     let tableName = onlFormFieldss.onlFormHead.tableName;
@@ -310,7 +315,7 @@ export default class QuickCreatePage extends CreatePage {
       if (field.isShowForm) {
         const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
         let tailItem = {
-          title: field.dbFieldName,
+          title: field.dbFieldTxt,
           dataIndex: field.dbFieldName,
           key: tableName + field.dbFieldName + index,
           width: itemColWidth.articleEditColWidth,
