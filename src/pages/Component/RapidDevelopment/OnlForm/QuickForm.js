@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
-import Create from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePage';
+import Create from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreate';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickFormSearchPage';
 
 @connect(({ quick, loading }) => ({

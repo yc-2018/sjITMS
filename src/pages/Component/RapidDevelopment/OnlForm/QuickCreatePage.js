@@ -15,11 +15,7 @@ import ItemEditTable from '@/pages/Component/Form/ItemEditTable';
 import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
 import { convertCodeName } from '@/utils/utils';
 import { colWidth, itemColWidth } from '@/utils/ColWidth';
-@connect(({ quick, loading }) => ({
-  quick,
-  loading: loading.models.quick,
-}))
-@Form.create()
+
 export default class QuickCreatePage extends CreatePage {
   entity = {};
 
@@ -198,33 +194,9 @@ export default class QuickCreatePage extends CreatePage {
      
    
   
-  handleChange = (value, tableName, dbFieldName, fieldShowType,line) => {
-    if(line==undefined){
-      line = 0;
-    }else if(line!=0){
-      line -=1;
-    }
-    console.log('value', value, 'dbFieldName', dbFieldName, 'fieldShowType', fieldShowType);
-      
-          if (fieldShowType == 'date') {
-            this.entity[tableName][line][dbFieldName] = value.format('YYYY-MM-DD');
-          } else if (fieldShowType == 'number') {
-            this.entity[tableName][line][dbFieldName] = value;
-          } else if (fieldShowType == 'sel_tree') {
-            this.entity[tableName][line][dbFieldName] = value;
-          } else if (fieldShowType == 'radio') {
-            this.entity[tableName][line][dbFieldName] = value.target.value;
-          } else if (fieldShowType == 'auto_complete') {
-            this.entity[tableName][line][dbFieldName] = value;
-          } else if (fieldShowType == 'textarea') {
-            this.entity[tableName][line][dbFieldName] = value.target.value;
-          } else {
-            this.entity[tableName][line][dbFieldName] = value.target.value;
-          }
-        
-           
-          
-  };
+  handleChange = () => { };
+
+
 
   /**
    * 渲染表单组件
@@ -251,13 +223,20 @@ export default class QuickCreatePage extends CreatePage {
       item.onlFormFields.forEach(field => {
         let formItem;
         let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
+        if(field.fieldValidType){
+          const fieldValidJson = JSON.parse(field.fieldValidType)
+          rules.push({
+            pattern:new RegExp(fieldValidJson.pattern),
+            message:fieldValidJson.message
+          })
+        }
         const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
         console.log("isReadOnly",field.isReadOnly);
         const commonPropertis = {
           disabled: field.isReadOnly,
           style: { width: '100%' },
           onChange: value =>
-            this.handleChange(value, tableName, field.dbFieldName, field.fieldShowType,0),
+            this.handleChange(value, tableName, field.dbFieldName, field.fieldShowType,0,fieldExtendJson,item.onlFormFields),
         }; // 通用属性
         if (field.fieldShowType == 'date') {
           formItem = <DatePicker {...commonPropertis} {...fieldExtendJson} />;
