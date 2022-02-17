@@ -3,7 +3,7 @@ import {
   queryColumns,
   queryAllData,
   queryCreateConfig,
-  saveOrUpdateEntities,
+  saveFormData,
   dynamicDelete,
   dynamicqueryById,
   selectCoulumns,
@@ -65,8 +65,9 @@ export default {
         fromView: payload.fromView,
       });
     },
-    *saveOrUpdateEntities({ payload, callback }, { call, put }) {
-      const response = yield call(saveOrUpdateEntities, payload.param);
+    *saveFormData({ payload, callback }, { call, put }) {
+      console.log("_________________saveFormData")
+      const response = yield call(saveFormData, payload.param);
       if (response && response.success) {
         var showPageMap = new Map();
         showPageMap.set(payload.showPageK, payload.showPageV);
