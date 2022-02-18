@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-02-10 14:16:00
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-02-18 16:28:56
+ * @LastEditTime: 2022-02-18 17:27:33
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -35,7 +35,6 @@ export default class SimpleSelect extends PureComponent {
     const { selectData } = this.state
     let options = [];
     selectData.forEach(data => {
-      console.log("data",data)
       options.push(<Select.Option value={data.state}>{data.value}</Select.Option>)
     })
     return options;
