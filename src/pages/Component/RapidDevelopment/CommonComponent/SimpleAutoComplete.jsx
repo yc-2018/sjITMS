@@ -11,6 +11,8 @@ import { dynamicQuery } from "@/services/quick/Quick";
  * {string} valueField 值字段 
  * {string} searchField 查询字段 
  * {string} queryParams 数据查询参数
+ * {boolean} autoComplete 是否为下拉搜索框
+ * {boolean} showSearch 是否允许文本搜索
  */
 export default class SimpleAutoComplete extends Component {
     state = {
@@ -20,7 +22,7 @@ export default class SimpleAutoComplete extends Component {
 
     @Bind()
     @Debounce(300)
-    onSearch (searchText) {
+    onSearch(searchText) {
         const { textField, valueField, searchField, queryParams } = this.props;
         const searchFields = searchField.split(',');
         if (searchText == "") {
@@ -30,9 +32,32 @@ export default class SimpleAutoComplete extends Component {
         if (!queryParamsJson) {
             return;
         }
-        this.fetchData(searchText, searchFields, queryParamsJson).then(sourceData => {
+        this.autoCompleteFetchData(searchText, searchFields, queryParamsJson).then(sourceData => {
             this.setState({ sourceData: sourceData, options: convertData2Options(sourceData, textField, valueField, searchFields) });
         });
+    }
+
+    componentDidMount() {
+        // 非搜索直接进来就加载数据
+        if (!this.props.autoComplete) {
+            const { textField, valueField, searchField, queryParams } = this.props;
+            const searchFields = searchField.split(',');
+            const queryParamsJson = JSON.parse(queryParams);
+            if (!queryParamsJson) {
+                return;
+            }
+            this.listFetchData(queryParamsJson).then(sourceData => {
+                this.setState({ sourceData: sourceData, options: convertData2Options(sourceData, textField, valueField, searchFields) });
+            });
+        }
+    }
+
+    listFetchData = async (queryParamsJson) => {
+        const response = await dynamicQuery(queryParamsJson);
+        if (!response || !response.success || !Array.isArray(response.result.records)) {
+            return [];
+        }
+        return response.result.records;
     }
 
     /**
@@ -42,7 +67,7 @@ export default class SimpleAutoComplete extends Component {
      * @param {*} queryParamsJson 数据源查询参数
      * @returns 
      */
-    fetchData = async (searchText, searchFields, queryParamsJson) => {
+    autoCompleteFetchData = async (searchText, searchFields, queryParamsJson) => {
         // 分页查询
         queryParamsJson.pageNo = 1;
         queryParamsJson.pageSize = 20;
@@ -53,7 +78,7 @@ export default class SimpleAutoComplete extends Component {
             queryParamsJson.condition = condition;
         } else {
             // 否则将原本的查询条件与condition作为两个子查询进行and拼接
-            queryParamsJson.condition = { params: [{ nestCondition: queryParamsJson.condition }, {nestCondition: condition}] };
+            queryParamsJson.condition = { params: [{ nestCondition: queryParamsJson.condition }, { nestCondition: condition }] };
         }
         const response = await dynamicQuery(queryParamsJson);
         if (!response || !response.success || !Array.isArray(response.result.records)) {
@@ -63,17 +88,24 @@ export default class SimpleAutoComplete extends Component {
     }
 
     render() {
-        const { searchField } = this.props;
+        let { searchField, autoComplete, showSearch } = this.props;
+        let onSearch;
         const searchFields = searchField.split(',');
         const options = this.state.options.map(d => <Select.Option key={d.value} textfield={d.textField}>{d.label}</Select.Option>);
+        
+        if (autoComplete) {
+            showSearch = true;
+            onSearch = this.onSearch;
+        }
+
         // 将父组件传过来的属性传递下去，以适应Form、getFieldDecorator等处理
         return (
             <Select
                 {...this.props}
                 optionLabelProp="textfield"
                 optionFilterProp="children"
-                showSearch
-                onSearch={this.onSearch}
+                showSearch={showSearch}
+                onSearch={onSearch}
             >
                 {options}
             </Select>
@@ -89,7 +121,7 @@ export default class SimpleAutoComplete extends Component {
  * @returns 
  */
 function convertData2Options(sourceData, textField, valueField, searchFields) {
-    return sourceData.map(row => { 
+    return sourceData.map(row => {
         // let value = {};
         // searchFields.forEach(field => {
         //     value[field] = row[field];
@@ -99,6 +131,6 @@ function convertData2Options(sourceData, textField, valueField, searchFields) {
         searchFields.forEach(field => {
             labels.push(row[field]);
         });
-        return { label: labels.join(' | '), value: row[valueField], textField: row[textField] } 
+        return { label: labels.join(' | '), value: row[valueField], textField: row[textField] }
     });
 }
