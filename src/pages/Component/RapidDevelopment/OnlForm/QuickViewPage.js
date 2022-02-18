@@ -181,6 +181,8 @@ export default class QuickView extends ViewPage {
       if (item.onlFormHead.tableType == 1 || item.onlFormHead.tableType == 0) {
         //遍历主表跟单表配置信息
         item.onlFormFields.forEach(field => {
+          //判断是否显示
+          if (!field.isViewForm) return;
           itemInfo = {
             label: field.dbFieldTxt,
             value: this.entity[tableName][0][field.dbFieldName],
@@ -191,6 +193,9 @@ export default class QuickView extends ViewPage {
         if (item.onlFormHead.relationType == 1) {
           //遍历一对一从表配置信息
           item.onlFormFields.forEach(field => {
+            //判断是否显示
+            if (!field.isViewForm) return;
+
             itemInfo = {
               label: field.dbFieldTxt,
               value: this.entity[tableName][0][field.dbFieldName],
@@ -200,6 +205,9 @@ export default class QuickView extends ViewPage {
         } else {
           //遍历一对多从表配置信息
           item.onlFormFields.forEach(field => {
+            //判断是否显示
+            if (!field.isViewForm) return;
+
             itemInfo = {
               title: field.dbFieldTxt,
               dataIndex: field.dbFieldName,
@@ -210,6 +218,9 @@ export default class QuickView extends ViewPage {
           });
         }
       }
+      //为空时直接return
+      if (items.length <= 0) return;
+
       //一对一,一对多分开保存
       if (
         item.onlFormHead.relationType != 0 ||
