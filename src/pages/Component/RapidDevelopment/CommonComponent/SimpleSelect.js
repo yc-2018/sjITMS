@@ -1,3 +1,10 @@
+/*
+ * @Author: Liaorongchang
+ * @Date: 2022-02-10 14:16:00
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-02-18 16:28:56
+ * @version: 1.0
+ */
 import React, { PureComponent } from 'react';
 import { Select, message } from 'antd';
 import { connect } from 'dva';
@@ -28,7 +35,8 @@ export default class SimpleSelect extends PureComponent {
     const { selectData } = this.state
     let options = [];
     selectData.forEach(data => {
-      options.push(<Select.Option value={data}>{data}</Select.Option>)
+      console.log("data",data)
+      options.push(<Select.Option value={data.state}>{data.value}</Select.Option>)
     })
     return options;
   }
@@ -55,22 +63,26 @@ export default class SimpleSelect extends PureComponent {
     if (!this.props.showSearch) {
       const { textField, data } = this.props
       let sourceData = JSON.parse(data);
-      let listData = new Array();
-      sourceData.forEach(a=>{
-        listData.push(a[textField])
-      })
-      this.initData(listData)
+      this.initData(sourceData)
     }
   }
 
-  getCoulumns = async(pageFilters) => {
+  getCoulumns = async (pageFilters) => {
     const payload = {
       superQuery: pageFilters,
       quickuuid: this.props.reportCode
     }
+    console.log("payload",payload)
     const result = await selectCoulumns(payload);
-    if(result.data != null){
-      this.initData(result.data);
+    let sourceData = new Array();;
+    if (result.data != null) {
+      result.data.forEach(sourceDatas=>{
+        sourceData.push({
+          value:sourceDatas,
+          state:sourceDatas,
+        })
+      })
+      this.initData(sourceData);
     }
   }
 
