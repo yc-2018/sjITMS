@@ -52,6 +52,11 @@ export default class SimpleAutoComplete extends Component {
         }
     }
 
+    /**
+     * 下拉搜索框加载数据
+     * @param {*} queryParamsJson 查询条件
+     * @returns 
+     */
     listFetchData = async (queryParamsJson) => {
         const response = await dynamicQuery(queryParamsJson);
         if (!response || !response.success || !Array.isArray(response.result.records)) {
@@ -61,7 +66,7 @@ export default class SimpleAutoComplete extends Component {
     }
 
     /**
-     * 搜索数据
+     * autoComlete搜索数据
      * @param {string} searchText 查询键
      * @param {string[]} searchFields 查询字段
      * @param {*} queryParamsJson 数据源查询参数
@@ -90,9 +95,8 @@ export default class SimpleAutoComplete extends Component {
     render() {
         let { searchField, autoComplete, showSearch } = this.props;
         let onSearch;
-        const searchFields = searchField.split(',');
         const options = this.state.options.map(d => <Select.Option key={d.value} textfield={d.textField}>{d.label}</Select.Option>);
-        
+
         if (autoComplete) {
             showSearch = true;
             onSearch = this.onSearch;
@@ -102,7 +106,7 @@ export default class SimpleAutoComplete extends Component {
         return (
             <Select
                 {...this.props}
-                optionLabelProp="textfield"
+                optionLabelProp="textfield"     // 指定回填到选择框的 Option 属性
                 optionFilterProp="children"
                 showSearch={showSearch}
                 onSearch={onSearch}
@@ -118,19 +122,31 @@ export default class SimpleAutoComplete extends Component {
  * @param {array} sourceData 数据源
  * @param {string} textField 节点文本字段
  * @param {string} valueField 值字段
+ * @param {string} valueField 查询字段
  * @returns 
  */
-function convertData2Options(sourceData, textField, valueField, searchFields) {
+function convertData2Options(sourceData, textField, valueField, searchField) {
     return sourceData.map(row => {
-        // let value = {};
-        // searchFields.forEach(field => {
-        //     value[field] = row[field];
-        // });
-        // value[valueField] = row[valueField];
-        let labels = [];
-        searchFields.forEach(field => {
-            labels.push(row[field]);
-        });
-        return { label: labels.join(' | '), value: row[valueField], textField: row[textField] }
+        return { label: getFieldShow(row, textField), value: getFieldShow(row, valueField), textField: getFieldShow(row, textField) }
     });
+}
+
+
+/**
+ * 获取定义字段的显示，允许通过 %字段名% 的方式插入值
+ * @param {Map} rowData 原始数据
+ * @param {String} str 用户定义的字段文本
+ */
+function getFieldShow(rowData, str) {
+    var reg = /%\w+%/g;
+    var matchFields = str.match(reg);
+    if (matchFields) {
+        for (const replaceText of matchFields) {
+            var field = replaceText.replaceAll("%", "");
+            str = str.replaceAll(replaceText, rowData[field]);
+        }
+        return str;
+    } else {
+        return rowData[str];
+    }
 }
