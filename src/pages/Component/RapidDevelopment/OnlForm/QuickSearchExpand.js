@@ -5,7 +5,6 @@ import { Route, Switch } from 'react-router-dom';
 import axios from 'axios';
 import SearchPage from '@/pages/Component/Page/SearchPage';
 import { colWidth } from '@/utils/ColWidth';
-import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/QueryT';
 import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuery/SimpleQuery';
 import SearchMoreAction from '@/pages/Component/Form/SearchMoreAction';
 import ExportJsonExcel from 'js-export-excel';
@@ -19,7 +18,8 @@ export default class QuickSearchExpand extends SearchPage {
       data: [],
       suspendLoading: false,
       columns: [],
-      selectFields: [],
+      searchFields: [],
+      advancedFields: [],
       reportCode: props.quickuuid,
       pageFilters: { quickuuid: props.quickuuid, changePage: true },
       key: props.quickuuid + 'quick.search.table',
@@ -66,7 +66,7 @@ export default class QuickSearchExpand extends SearchPage {
   initConfig = queryConfig => {
     const columns = queryConfig.columns;
     let quickColumns = new Array();
-    columns.forEach(column => {
+    columns.filter(data => data.isShow).forEach(column => {
       const qiuckcolumn = {
         title: column.fieldTxt,
         dataIndex: column.fieldName,
@@ -74,10 +74,18 @@ export default class QuickSearchExpand extends SearchPage {
         sorter: true,
         width: colWidth.codeColWidth,
         fieldType: column.fieldType,
-        render:
-          column.orderNum == '1'
-            ? (val, record) => <a onClick={this.onView.bind(this, record)}>{val}</a>
-            : null,
+        render: (val, record) => {
+          if (column.orderNum == '1') return <a onClick={this.onView.bind(this, record)}>{val}</a>;
+          else if (column.searchShowtype == 'list' && val != undefined) {
+            const dictionaryArray =
+              column.searchProperties instanceof Object
+                ? column.searchProperties.data
+                : JSON.parse(column.searchProperties).data;
+            if (dictionaryArray instanceof Array)
+              return <p3>{dictionaryArray.find(x => x.value == val).name}</p3>;
+            else return val;
+          } else return val;
+        },
       };
       quickColumns.push(qiuckcolumn);
     });
@@ -85,9 +93,11 @@ export default class QuickSearchExpand extends SearchPage {
     this.setState({
       title: queryConfig.reportHeadName,
       columns: quickColumns,
-      selectFields: columns.filter(data => data.isSearch),
+      advancedFields: columns.filter(data => data.isShow),
+      searchFields: columns.filter(data => data.isSearch),
     });
   };
+
   //初始化数据
   initData = data => {
     var data = {
@@ -303,26 +313,16 @@ export default class QuickSearchExpand extends SearchPage {
   drawActionButton = () => {};
 
   /**
-   * 绘制批量工具栏
-   */
-  drawToolbarPanel = () => {};
-
-  /**
    * 绘制搜索表格
    */
   drawSearchPanel = () => {
     return (
       <div>
         <SimpleQuery
-          selectFields={this.state.selectFields}
+          selectFields={this.state.searchFields}
           filterValue={this.state.pageFilter.filterValue}
           refresh={this.onSearch}
           reportCode={this.state.reportCode}
-        />
-        <AdvanceQuery
-          fieldInfos={this.columns}
-          filterValue={this.state.pageFilter.searchKeyValues}
-          refresh={this.onSearch}
         />
       </div>
     );

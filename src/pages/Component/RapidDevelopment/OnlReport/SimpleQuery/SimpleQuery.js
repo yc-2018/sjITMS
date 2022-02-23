@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-01-15 16:03:07
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-01-26 15:09:00
+ * @LastEditTime: 2022-02-19 16:56:33
  * @Description: 快速开发简单查询
  * @FilePath: \iwms-web\src\pages\Component\RapidDevelopment\OnlReport\SimpleQuery\SimpleQuery.js
  */
@@ -15,6 +15,7 @@ import {
   SimpleTreeSelect,
   SimpleSelect,
   SimpleRadio,
+  SimpleAutoComplete,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 const { RangePicker } = DatePicker;
 
@@ -76,20 +77,19 @@ export default class SimpleQuery extends SearchForm {
       case 'time':
         return <RangePicker style={{ width: '100%' }} showTime />;
       case 'list':
-        return (
-          <SimpleSelect
-            searchField={searchField}
-            {...searchProperties}
-          />
-        );
+        return <SimpleSelect searchField={searchField} {...searchProperties} />;
       case 'radio':
         return <SimpleRadio {...searchProperties} />;
       case 'sel_search':
         return (
-          <SimpleSelect
-            reportCode={this.props.reportCode}
+          <SimpleSelect reportCode={this.props.reportCode} searchField={searchField} showSearch />
+        );
+      case 'auto_complete':
+        return (
+          <SimpleAutoComplete
+            placeholder={'请选择' + searchField.fieldTxt}
             searchField={searchField}
-            showSearch
+            {...searchProperties}
           />
         );
       case 'cat_tree':

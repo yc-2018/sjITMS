@@ -5,7 +5,7 @@ import { Route, Switch } from 'react-router-dom';
 import axios from 'axios';
 import SearchPage from '@/pages/Component/Page/SearchPage';
 import { colWidth } from '@/utils/ColWidth';
-import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/QueryT';
+import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuery/SimpleQuery';
 import SearchMoreAction from '@/pages/Component/Form/SearchMoreAction';
 import ExportJsonExcel from 'js-export-excel';
@@ -22,7 +22,8 @@ export default class QuickReportSearch extends SearchPage {
       title: '',
       data: [],
       columns: [],
-      selectFields: [],
+      searchFields: [],
+      advancedFields: [],
       reportCode: this.props.quickuuid,
       pageFilters: { quickuuid: this.props.quickuuid, changePage: true },
       key: this.props.quickuuid + 'quick.search.table', //用于缓存用户配置数据
@@ -68,7 +69,7 @@ export default class QuickReportSearch extends SearchPage {
   initConfig = queryConfig => {
     const columns = queryConfig.columns;
     let quickColumns = new Array();
-    columns.forEach(column => {
+    columns.filter(data => data.isShow).forEach(column => {
       const qiuckcolumn = {
         title: column.fieldTxt,
         dataIndex: column.fieldName,
@@ -83,7 +84,8 @@ export default class QuickReportSearch extends SearchPage {
     this.setState({
       title: queryConfig.reportHeadName,
       columns: quickColumns,
-      selectFields: columns.filter(data => data.isSearch),
+      advancedFields: columns.filter(data => data.isShow),
+      searchFields: columns.filter(data => data.isSearch),
     });
   };
   //初始化数据
@@ -208,15 +210,16 @@ export default class QuickReportSearch extends SearchPage {
     return (
       <div>
         <SimpleQuery
-          selectFields={this.state.selectFields}
+          selectFields={this.state.searchFields}
           filterValue={this.state.pageFilter.filterValue}
           refresh={this.onSearch}
           reportCode={this.state.reportCode}
         />
         <AdvanceQuery
-          fieldInfos={this.columns}
+          searchFields={this.state.advancedFields}
           filterValue={this.state.pageFilter.searchKeyValues}
           refresh={this.onSearch}
+          reportCode={this.state.reportCode}
         />
       </div>
     );
