@@ -52,6 +52,8 @@ export default class QuickReportSearch extends SearchPage {
       callback: response => {
         if (response.result) {
           this.initConfig(response.result);
+          //解决用户列展示失效问题 暂时解决方法（赋值两次）
+          this.initConfig(response.result);
           //配置查询成功后再去查询数据
           this.onSearch();
         }
@@ -61,8 +63,7 @@ export default class QuickReportSearch extends SearchPage {
 
   componentDidMount() {
     this.queryCoulumns();
-    //解决用户列展示失效问题 暂时解决方法（查询两次）
-    this.queryCoulumns();
+    //this.queryCoulumns();
   }
 
   //初始化配置

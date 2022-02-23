@@ -48,16 +48,16 @@ export default class QuickCreatePage extends CreatePage {
     this.state = {
       title: '测试标题',
       entityUuid: '',
-      entity: { uuid: '' }, //onlFormField: props.onlFormField,
+      entity: { uuid: '' },
       quickuuid: props.quickuuid,
-    };
+    }; //onlFormField: props.onlFormField,
     //tableName: props.tableName,
     this.initonlFormField();
     //this.entity[this.props.tableName] = {};
   }
 
   dynamicqueryById() {
-    if (this.props.quick.showPageMap.get(this.props.quickuuid).endsWith('update')) {
+    if (this.props.showPageNow == 'update') {
       //const { tableName } = this.state;
       const { onlFormField } = this.props;
       onlFormField.forEach(item => {
@@ -67,7 +67,7 @@ export default class QuickCreatePage extends CreatePage {
           const param = {
             tableName: tableName,
             condition: {
-              params: [{ field: field, rule: 'eq', val: [this.props.quick.entityUuid] }],
+              params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
             },
           };
           this.props.dispatch({
@@ -86,7 +86,7 @@ export default class QuickCreatePage extends CreatePage {
           const param = {
             tableName: item.onlFormHead.tableName,
             condition: {
-              params: [{ field: field, rule: 'eq', val: [this.props.quick.entityUuid] }],
+              params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
             },
           };
           this.props.dispatch({
@@ -116,14 +116,7 @@ export default class QuickCreatePage extends CreatePage {
   }
 
   onCancel = () => {
-    this.props.form.resetFields();
-    this.props.dispatch({
-      type: 'quick/showPageMap',
-      payload: {
-        showPageK: this.state.quickuuid,
-        showPageV: this.state.quickuuid + 'query',
-      },
-    });
+    this.props.switchTab('query');
   };
 
   onSave = data => {
@@ -141,12 +134,13 @@ export default class QuickCreatePage extends CreatePage {
     this.props.dispatch({
       type: 'quick/saveFormData',
       payload: {
-        showPageK: this.state.quickuuid,
-        showPageV: this.state.quickuuid + 'query',
         param,
       },
       callback: response => {
-        if (response.success) message.success(commonLocale.saveSuccessLocale);
+        if (response.success) {
+          message.success(commonLocale.saveSuccessLocale);
+          this.props.switchTab('query');
+        }
       },
     });
   };
