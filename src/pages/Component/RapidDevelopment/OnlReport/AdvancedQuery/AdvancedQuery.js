@@ -2,13 +2,10 @@ import React, { Component, Fragment } from 'react';
 import { Empty, Button, Row, Col, Form, Select, Card, Modal, Input, Radio, Table, Tree } from 'antd';
 import ColsAdvanced from './ColsAdvanced';
 
-<<<<<<< HEAD
 const layout = {
   wrapperCol: { span: 18 },
 };
 
-=======
->>>>>>> 0d9c96146a0518d1f1a0ed3f38a0077f63758fe3
 export default class AdvancedQuery extends Component {
   state = {
     superQueryModalVisible: false,
@@ -17,8 +14,6 @@ export default class AdvancedQuery extends Component {
     treeDatas: '',
     passParams: ''
   };
-
-
 
   //查询
   advanceQuery = () => {
@@ -29,6 +24,7 @@ export default class AdvancedQuery extends Component {
   //重置
   onReset = () => {
     this.formRef.onReset();
+    this.setState({passParams:''})
   };
 
   //保存查询条件
@@ -40,6 +36,8 @@ export default class AdvancedQuery extends Component {
   hideModal = () => {
     this.setState({ superQueryModalVisible: false });
   };
+
+
 
   hideSaveModal = () => {
     this.setState({ saveModalVisible: false });
@@ -72,6 +70,7 @@ export default class AdvancedQuery extends Component {
   }
 
   onSelectTree = (selectedKeys) => {
+    this.formRef.onReset();
     const { treeDatas } = this.state
     const data = []
     treeDatas.forEach(datas => {
@@ -85,9 +84,9 @@ export default class AdvancedQuery extends Component {
     })
   }
 
-  getRadio = () => {
+  getTree = () => {
     const { treeDatas } = this.state
-    let radio = []
+    let tree = []
     const treeData = []
     if (treeDatas.length > 0) {
       treeDatas.forEach(datas => {
@@ -98,7 +97,7 @@ export default class AdvancedQuery extends Component {
           })
         })
       })
-      radio.push(
+      tree.push(
         <Tree
           blockNode
           style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
@@ -107,9 +106,9 @@ export default class AdvancedQuery extends Component {
         />
       )
     } else {
-      radio.push(<Empty description={<span style={{ color: '#aeb8c2' }}>没有保存任何查询</span>} />)
+      tree.push(<Empty description={<span style={{ color: '#aeb8c2' }}>没有保存任何查询</span>} />)
     }
-    return radio;
+    return tree;
   }
 
   render() {
@@ -153,15 +152,9 @@ export default class AdvancedQuery extends Component {
                 wrappedComponentRef={form => (this.formRef = form)}
               />
             </Col>
-<<<<<<< HEAD
             <Col span={6}>
               <Card size="small" title="保存的查询">
-                {this.getRadio()}
-=======
-            <Col span={8}>
-              <Card title="保存的查询">
-                <Empty description={<span style={{ color: '#aeb8c2' }}>没有保存任何查询</span>} />
->>>>>>> 0d9c96146a0518d1f1a0ed3f38a0077f63758fe3
+                {this.getTree()}
               </Card>
             </Col>
           </Row>
