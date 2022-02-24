@@ -86,7 +86,7 @@ export default class QuickSearchExpand extends SearchPage {
   initConfig = queryConfig => {
     const columns = queryConfig.columns;
     let quickColumns = new Array();
-    columns.forEach(column => {
+    columns.filter(data => data.isShow).forEach(column => {
       let jumpPaths;
       if (column.jumpPath) {
         jumpPaths = column.jumpPath.split(',');
