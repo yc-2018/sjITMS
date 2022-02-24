@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-02-10 14:16:00
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-02-19 16:32:32
+ * @LastEditTime: 2022-02-24 09:15:18
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -24,27 +24,37 @@ import { selectCoulumns } from '@/services/quick/Quick';
 export default class SimpleSelect extends PureComponent {
   constructor(props) {
     super(props);
-
-    this.state = {
-      selectData: [],
-    };
+    this.state = { selectData: [] };
   }
+
   componentDidMount() {
     this.initData();
   }
 
+  initData = () => {
+    if (this.props.showSearch) {
+      this.setState({ selectData: [] });
+    } else {
+      const { data } = this.props;
+      const sourceData = data instanceof Array ? data : JSON.parse(data);
+      this.setState({ selectData: sourceData });
+    }
+  };
+
   buildOptions = () => {
     const { selectData } = this.state;
-    let options = [];
-    selectData.forEach(data => {
-      options.push(<Select.Option value={data.value}>{data.name}</Select.Option>);
+    return selectData.map(data => {
+      return <Select.Option value={data.value}>{data.name}</Select.Option>;
     });
-    return options;
   };
 
   onChange = value => {
     // 用于form表单获取控件值
     if (this.props.onChange) this.props.onChange(value);
+  };
+
+  onFocus = async () => {
+    this.initData();
   };
 
   onSearch = value => {
@@ -59,32 +69,14 @@ export default class SimpleSelect extends PureComponent {
     this.getCoulumns({ queryParams: params });
   };
 
-  onFocus = async () => {
-    this.initData();
-  };
-
   getCoulumns = async pageFilters => {
-    const payload = {
-      superQuery: pageFilters,
-      quickuuid: this.props.reportCode,
-    };
+    const payload = { superQuery: pageFilters, quickuuid: this.props.reportCode };
     const result = await selectCoulumns(payload);
     let sourceData = new Array();
     if (result.data != null) {
       result.data.forEach(sourceDatas => {
-        sourceData.push({
-          value: sourceDatas,
-          name: sourceDatas,
-        });
+        sourceData.push({ value: sourceDatas, name: sourceDatas });
       });
-      this.setState({ selectData: sourceData });
-    }
-  };
-
-  initData = () => {
-    if (!this.props.showSearch) {
-      const { data } = this.props;
-      const sourceData = data instanceof Array ? data : JSON.parse(data);
       this.setState({ selectData: sourceData });
     }
   };

@@ -2,9 +2,6 @@ import React, { Component, Fragment } from 'react';
 import { Empty, Button, Row, Col, Form, Select, Card, Modal } from 'antd';
 import ColsAdvanced from './ColsAdvanced';
 
-const layout = {
-  wrapperCol: { span: 18 },
-};
 export default class AdvancedQuery extends Component {
   state = { superQueryModalVisible: false };
 
@@ -33,10 +30,10 @@ export default class AdvancedQuery extends Component {
           高级查询
         </Button>
         <Modal
-          title="高级查询构造器"
+          title="高级查询"
           onCancel={this.hideModal}
           visible={superQueryModalVisible}
-          width={1050}
+          width={1000}
           footer={[
             <Button key="1" onClick={this.onReset} style={{ float: 'left' }}>
               重置
@@ -53,10 +50,9 @@ export default class AdvancedQuery extends Component {
           ]}
         >
           <Row>
-            <Col span={18}>
+            <Col span={16}>
               <ColsAdvanced
                 formRefs={this.formRef}
-                layout={layout}
                 searchFields={searchFields}
                 reportCode={reportCode}
                 filterValue={filterValue}
@@ -65,8 +61,8 @@ export default class AdvancedQuery extends Component {
                 wrappedComponentRef={form => (this.formRef = form)}
               />
             </Col>
-            <Col span={6}>
-              <Card size="small" title="保存的查询">
+            <Col span={8}>
+              <Card title="保存的查询">
                 <Empty description={<span style={{ color: '#aeb8c2' }}>没有保存任何查询</span>} />
               </Card>
             </Col>
