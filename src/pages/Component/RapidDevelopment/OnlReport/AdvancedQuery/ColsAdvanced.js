@@ -1,11 +1,14 @@
 import React, { Component, Fragment } from 'react';
-import { Form, Input, Row, Col, Select, Icon, Button } from 'antd';
+import { Form, Row, Col, Icon, Select, Button, Input, DatePicker } from 'antd';
+import Address from '@/pages/Component/Form/Address';
 import {
   SimpleTreeSelect,
   SimpleSelect,
   SimpleRadio,
   SimpleAutoComplete,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
+
+const { RangePicker } = DatePicker;
 
 const formItemLayout = {
   labelCol: { span: 5 },
@@ -30,7 +33,12 @@ export default class ColsAdvanced extends Component {
     this.state = { queryKey: 0, searchParams: [] };
   }
 
+  getSearchParams = params => {
+    this.setState({ searchParams: params });
+  };
+
   componentDidMount() {
+    this.props.onRef(this);
     this.add();
   }
 
@@ -156,7 +164,6 @@ export default class ColsAdvanced extends Component {
     const { getFieldDecorator } = this.props.form;
     const { searchParams } = this.state;
     const { filterValue, searchFields } = this.props;
-
     const formItems = searchParams.map(searchParam => (
       <Row gutter={16} key={searchParam.key}>
         <Col span={9}>

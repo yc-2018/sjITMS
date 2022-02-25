@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-02-10 14:16:00
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-02-24 09:15:18
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-02-25 11:44:40
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -84,6 +84,7 @@ export default class SimpleSelect extends PureComponent {
   render() {
     const { showSearch, value, searchField } = this.props;
     const selectProps = {
+      allowClear: true,
       showSearch: showSearch,
       onChange: this.onChange,
       onSearch: this.onSearch,

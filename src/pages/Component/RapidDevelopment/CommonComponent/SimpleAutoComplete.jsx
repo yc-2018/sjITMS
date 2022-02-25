@@ -127,6 +127,7 @@ export default class SimpleAutoComplete extends Component {
         optionFilterProp="children"
         showSearch={showSearch}
         onSearch={onSearch}
+        allowClear= 'true'
       >
         {options}
       </Select>
