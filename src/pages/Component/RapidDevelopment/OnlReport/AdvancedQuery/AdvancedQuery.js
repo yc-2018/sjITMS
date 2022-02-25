@@ -27,6 +27,7 @@ export default class AdvancedQuery extends Component {
     saveModalVisible: false,
     saveName: '',
     treeDatas: [],
+    treeName: '',
   };
 
   componentDidMount = () => {
@@ -65,6 +66,7 @@ export default class AdvancedQuery extends Component {
 
   //重置
   onReset = () => {
+    this.setState({ treeName: '' });
     this.formRef.onReset();
   };
 
@@ -196,8 +198,11 @@ export default class AdvancedQuery extends Component {
     this.formRef.onReset();
     const { treeDatas } = this.state;
     const data = [];
-    const passParams = treeDatas.find(x => x.alias === selectedKeys[0]).queryParams;
-    this.child.getSearchParams(passParams);
+    if (selectedKeys.length > 0) {
+      const passParams = treeDatas.find(x => x.alias === selectedKeys[0]).queryParams;
+      this.child.getSearchParams(passParams);
+      this.setState({ treeName: selectedKeys });
+    }
   };
 
   //高级查询保存查询列表
@@ -228,7 +233,7 @@ export default class AdvancedQuery extends Component {
   };
 
   render() {
-    const { superQueryModalVisible, saveModalVisible } = this.state;
+    const { superQueryModalVisible, saveModalVisible, treeName } = this.state;
     const { searchFields, filterValue, reportCode } = this.props;
     return (
       <Fragment>
@@ -286,6 +291,7 @@ export default class AdvancedQuery extends Component {
             <Input
               placeholder="请输入保存的名称"
               onChange={e => this.changeSaveName(e.target.value)}
+              value={treeName}
             />
           </Form>
         </Modal>
