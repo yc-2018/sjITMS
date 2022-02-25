@@ -13,14 +13,22 @@ export default class SimpleTreeSelect extends Component {
     state = {
         treeData: []
     };
+    currentQueryParams = "";
 
     // TODO 为什么会被挂载两次
     componentDidMount() {
         this.loadData();
     }
 
+    componentDidUpdate = () => {
+        if(this.currentQueryParams != this.props.queryParams){
+            this.loadData();
+        }
+    }
+
     loadData = async () => {
         const { textField, valueField, parentField, queryParams } = this.props;
+        this.currentQueryParams = queryParams;
         const queryParamsJson = JSON.parse(queryParams);
         if (!queryParamsJson) {
             return;
