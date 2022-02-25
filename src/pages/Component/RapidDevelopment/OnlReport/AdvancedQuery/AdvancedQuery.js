@@ -27,7 +27,6 @@ export default class AdvancedQuery extends Component {
     saveModalVisible: false,
     saveName: '',
     treeDatas: [],
-    treeName: '',
   };
 
   componentDidMount = () => {
@@ -102,7 +101,6 @@ export default class AdvancedQuery extends Component {
         defaultValue: value.val,
       });
     });
-
     const dataIndex = treeDatas.findIndex(x => x.alias === saveName);
     if (dataIndex > -1) {
       Modal.confirm({
@@ -201,7 +199,7 @@ export default class AdvancedQuery extends Component {
     if (selectedKeys.length > 0) {
       const passParams = treeDatas.find(x => x.alias === selectedKeys[0]).queryParams;
       this.child.getSearchParams(passParams);
-      this.setState({ treeName: selectedKeys });
+      this.setState({ saveName: selectedKeys[0] });
     }
   };
 
@@ -233,7 +231,7 @@ export default class AdvancedQuery extends Component {
   };
 
   render() {
-    const { superQueryModalVisible, saveModalVisible, treeName } = this.state;
+    const { superQueryModalVisible, saveModalVisible, saveName } = this.state;
     const { searchFields, filterValue, reportCode } = this.props;
     return (
       <Fragment>
@@ -291,7 +289,7 @@ export default class AdvancedQuery extends Component {
             <Input
               placeholder="请输入保存的名称"
               onChange={e => this.changeSaveName(e.target.value)}
-              value={treeName}
+              value={saveName}
             />
           </Form>
         </Modal>
