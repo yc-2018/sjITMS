@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-02-10 14:16:00
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-02-25 11:44:40
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-02-25 11:56:09
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -82,19 +82,15 @@ export default class SimpleSelect extends PureComponent {
   };
 
   render() {
-    const { showSearch, value, searchField } = this.props;
-    const selectProps = {
-      allowClear: true,
-      showSearch: showSearch,
-      onChange: this.onChange,
-      onSearch: this.onSearch,
-      onFocus: this.onFocus,
-      value: value == '' ? undefined : value,
-      placeholder:
-        (showSearch ? '请输入' : '请选择') +
-        (searchField.fieldTxt ? searchField.fieldTxt : searchField.dbFieldTxt),
-    };
-
-    return <Select {...selectProps}>{this.buildOptions()}</Select>;
+    return (
+      <Select
+        {...this.props}
+        onChange={this.onChange}
+        onSearch={this.onSearch}
+        onFocus={this.onFocus}
+      >
+        {this.buildOptions()}
+      </Select>
+    );
   }
 }

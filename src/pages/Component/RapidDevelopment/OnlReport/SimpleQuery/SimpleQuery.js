@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-01-15 16:03:07
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-02-19 16:56:33
+ * @LastEditTime: 2022-02-25 11:53:11
  * @Description: 快速开发简单查询
  * @FilePath: \iwms-web\src\pages\Component\RapidDevelopment\OnlReport\SimpleQuery\SimpleQuery.js
  */
@@ -77,12 +77,25 @@ export default class SimpleQuery extends SearchForm {
       case 'time':
         return <RangePicker style={{ width: '100%' }} showTime />;
       case 'list':
-        return <SimpleSelect searchField={searchField} {...searchProperties} />;
+        return (
+          <SimpleSelect
+            allowClear
+            placeholder={'请选择' + searchField.fieldTxt}
+            searchField={searchField}
+            {...searchProperties}
+          />
+        );
       case 'radio':
         return <SimpleRadio {...searchProperties} />;
       case 'sel_search':
         return (
-          <SimpleSelect reportCode={this.props.reportCode} searchField={searchField} showSearch />
+          <SimpleSelect
+            showSearch
+            allowClear
+            placeholder={'请输入' + searchField.fieldTxt}
+            reportCode={this.props.reportCode}
+            searchField={searchField}
+          />
         );
       case 'auto_complete':
         return (
@@ -119,7 +132,7 @@ export default class SimpleQuery extends SearchForm {
       cols.push(
         <SFormItem key={searchField.id} label={searchField.fieldTxt}>
           {getFieldDecorator(searchField.fieldName, {
-            initialValue: filterValue ? filterValue[searchField.fieldName] : '',
+            initialValue: filterValue ? filterValue[searchField.fieldName] : undefined,
             rules: [
               {
                 required: searchField.searchRequire,

@@ -34,7 +34,8 @@ export default class ColsAdvanced extends Component {
   }
 
   getSearchParams = params => {
-    this.setState({ searchParams: params });
+    console.log(params);
+    this.setState({ queryKey: params.length + 1, searchParams: params });
   };
 
   componentDidMount() {
@@ -128,12 +129,25 @@ export default class ColsAdvanced extends Component {
       case 'time':
         return <RangePicker style={{ width: '100%' }} showTime />;
       case 'list':
-        return <SimpleSelect searchField={searchField} {...searchProperties} />;
+        return (
+          <SimpleSelect
+            allowClear
+            placeholder={'请选择' + searchField.fieldTxt}
+            searchField={searchField}
+            {...searchProperties}
+          />
+        );
       case 'radio':
         return <SimpleRadio {...searchProperties} />;
       case 'sel_search':
         return (
-          <SimpleSelect reportCode={this.props.reportCode} searchField={searchField} showSearch />
+          <SimpleSelect
+            showSearch
+            allowClear
+            placeholder={'请输入' + searchField.fieldTxt}
+            reportCode={this.props.reportCode}
+            searchField={searchField}
+          />
         );
       case 'auto_complete':
         return (
