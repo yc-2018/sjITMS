@@ -23,6 +23,11 @@ import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
 import { convertCodeName } from '@/utils/utils';
 import { colWidth, itemColWidth } from '@/utils/ColWidth';
 
+@connect(({ quick, loading }) => ({
+  quick,
+  loading: loading.models.quick,
+}))
+@Form.create()
 export default class QuickCreatePage extends CreatePage {
   entity = {};
   exComponentProperty = {}
