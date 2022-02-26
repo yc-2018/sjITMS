@@ -233,15 +233,17 @@ export default class AdvancedQuery extends Component {
             >
               <div
                 style={{
-                  width: '150px',
+                  backgroundColor: this.state.saveName === item ? '#e6f7ff' : '',
+                  width: '280px',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   display: 'inline-block',
                 }}
-                onClick={this.onSelectTree.bind(this, item)}
               >
-                <a style={{ color: 'black' }}>{item}</a>
+                <a onClick={this.onSelectTree.bind(this, item)} style={{ color: 'black' }}>
+                  {item}
+                </a>
               </div>
             </List.Item>
           )}
