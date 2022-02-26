@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
-import { Form, Input, Row, Col, Select, TreeSelect, Icon, Button } from 'antd';
-import SFormItem from '@/pages/Component/Form/SFormItem';
+import { Form, Row, Col, Icon, Select, Button, Input, DatePicker } from 'antd';
+import Address from '@/pages/Component/Form/Address';
 import {
   SimpleTreeSelect,
   SimpleSelect,
@@ -8,12 +8,11 @@ import {
   SimpleAutoComplete,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 
+const { RangePicker } = DatePicker;
+
 const formItemLayout = {
-  labelCol: { xs: { span: 24 }, sm: { span: 4 } },
-  wrapperCol: { xs: { span: 24 }, sm: { span: 20 } },
-};
-const formItemLayoutWithOutLabel = {
-  wrapperCol: { xs: { span: 24, offset: 0 }, sm: { span: 20, offset: 4 } },
+  labelCol: { span: 5 },
+  wrapperCol: { span: 19 },
 };
 const mathRule = [
   { value: 'eq', name: '等于' },
@@ -34,7 +33,13 @@ export default class ColsAdvanced extends Component {
     this.state = { queryKey: 0, searchParams: [] };
   }
 
+  getSearchParams = params => {
+    console.log(params);
+    this.setState({ queryKey: params.length + 1, searchParams: params });
+  };
+
   componentDidMount() {
+    this.props.onRef(this);
     this.add();
   }
 
@@ -49,8 +54,9 @@ export default class ColsAdvanced extends Component {
     const { searchParams, queryKey } = this.state;
     const nextSearchParams = searchParams.concat({
       key: queryKey,
-      searchField: '',
+      searchField: undefined,
       searchCondition: 'like',
+      defaultValue: undefined,
     });
     this.setState({ searchParams: nextSearchParams, queryKey: queryKey + 1 });
   };
@@ -61,8 +67,9 @@ export default class ColsAdvanced extends Component {
       searchParams: [
         {
           key: 1,
-          searchField: '',
+          searchField: undefined,
           searchCondition: 'like',
+          defaultValue: undefined,
         },
       ],
     });
@@ -92,6 +99,7 @@ export default class ColsAdvanced extends Component {
     return undefined;
   };
 
+  //选择字段显示对应搜索控件
   onSelect = key => {
     return value => {
       const { searchParams } = this.state;
@@ -100,8 +108,10 @@ export default class ColsAdvanced extends Component {
       const newSearchParams = [...searchParams];
       const index = newSearchParams.findIndex(x => x.key == key);
       newSearchParams[index].searchField = value;
+      newSearchParams[index].defaultValue = undefined;
       newSearchParams[index].searchCondition = field.searchCondition;
       this.setState({ searchParams: newSearchParams });
+      this.props.form.resetFields([`val[${key}]`]);
     };
   };
 
@@ -119,12 +129,25 @@ export default class ColsAdvanced extends Component {
       case 'time':
         return <RangePicker style={{ width: '100%' }} showTime />;
       case 'list':
-        return <SimpleSelect searchField={searchField} {...searchProperties} />;
+        return (
+          <SimpleSelect
+            allowClear
+            placeholder={'请选择' + searchField.fieldTxt}
+            searchField={searchField}
+            {...searchProperties}
+          />
+        );
       case 'radio':
         return <SimpleRadio {...searchProperties} />;
       case 'sel_search':
         return (
-          <SimpleSelect reportCode={this.props.reportCode} searchField={searchField} showSearch />
+          <SimpleSelect
+            showSearch
+            allowClear
+            placeholder={'请输入' + searchField.fieldTxt}
+            reportCode={this.props.reportCode}
+            searchField={searchField}
+          />
         );
       case 'auto_complete':
         return (
@@ -155,12 +178,13 @@ export default class ColsAdvanced extends Component {
     const { getFieldDecorator } = this.props.form;
     const { searchParams } = this.state;
     const { filterValue, searchFields } = this.props;
-
     const formItems = searchParams.map(searchParam => (
-      <Row gutter={16} key={searchParam.key} style={{ marginBottom: '5px' }}>
+      <Row gutter={16} key={searchParam.key}>
         <Col span={9}>
-          <SFormItem key={[searchParam.key, 'field']} label={''}>
-            {getFieldDecorator(`field[${searchParam.key}]`, {})(
+          <Form.Item key={[searchParam.key, 'field']}>
+            {getFieldDecorator(`field[${searchParam.key}]`, {
+              initialValue: searchParam.searchField,
+            })(
               <Select
                 showSearch
                 placeholder="请选择查询字段"
@@ -173,10 +197,10 @@ export default class ColsAdvanced extends Component {
                 })}
               </Select>
             )}
-          </SFormItem>
+          </Form.Item>
         </Col>
         <Col span={4}>
-          <SFormItem key={[searchParam.key, 'rule']} label={''}>
+          <Form.Item key={[searchParam.key, 'rule']}>
             {getFieldDecorator(`rule[${searchParam.key}]`, {
               initialValue: searchParam.searchCondition,
             })(
@@ -186,14 +210,16 @@ export default class ColsAdvanced extends Component {
                 })}
               </Select>
             )}
-          </SFormItem>
+          </Form.Item>
         </Col>
         <Col span={9}>
-          <SFormItem key={[searchParam.key, 'val']} label={''}>
-            {getFieldDecorator(`val[${searchParam.key}]`, { initialValue: '' })(
+          <Form.Item key={[searchParam.key, 'val']}>
+            {getFieldDecorator(`val[${searchParam.key}]`, {
+              initialValue: searchParam.defaultValue,
+            })(
               this.buildSearchItem(searchFields.find(x => x.fieldName == searchParam.searchField))
             )}
-          </SFormItem>
+          </Form.Item>
         </Col>
         <Col span={1}>
           {searchParams.length > 1 ? (
@@ -207,27 +233,30 @@ export default class ColsAdvanced extends Component {
       </Row>
     ));
     return (
-      <Form {...this.props.layout} onSubmit={this.handleSubmit}>
-        <div style={{ width: '50%' }}>
-          <span>过滤条件匹配:</span>
-          <SFormItem key="matchType">
-            {getFieldDecorator('matchType', { initialValue: 'and' })(
-              <Select>
-                <Option value="and">AND（所有条件都要求匹配）</Option>
-                <Option value="or">OR（条件中的任意一个匹配）</Option>
-              </Select>
-            )}
-          </SFormItem>
-        </div>
-        <br />
+      <Form onSubmit={this.handleSubmit}>
+        <Row>
+          <Col span={16}>
+            <Form.Item {...formItemLayout} key={'matchType'} label={'过滤条件匹配'}>
+              {getFieldDecorator('matchType', { initialValue: 'and' })(
+                <Select>
+                  <Option value="and">AND（所有条件都要求匹配）</Option>
+                  <Option value="or">OR（条件中的任意一个匹配）</Option>
+                </Select>
+              )}
+            </Form.Item>
+          </Col>
+          <Col span={4} offset={2}>
+            <Form.Item key={'add'}>
+              {getFieldDecorator('add', {})(
+                <Button type="dashed" onClick={this.add}>
+                  <Icon type="plus" /> 添加
+                </Button>
+              )}
+            </Form.Item>
+          </Col>
+        </Row>
 
         {formItems}
-
-        <Form.Item {...formItemLayoutWithOutLabel}>
-          <Button type="dashed" onClick={this.add} style={{ width: '60%' }}>
-            <Icon type="plus" /> 添加
-          </Button>
-        </Form.Item>
       </Form>
     );
   }

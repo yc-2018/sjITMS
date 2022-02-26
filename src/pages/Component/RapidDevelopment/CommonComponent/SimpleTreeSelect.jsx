@@ -1,3 +1,10 @@
+/*
+ * @Author: Liaorongchang
+ * @Date: 2022-02-10 14:16:22
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-02-25 11:47:09
+ * @version: 1.0
+ */
 import React, { Component } from 'react';
 import { TreeSelect } from 'antd';
 import { dynamicQuery } from "@/services/quick/Quick";
@@ -38,6 +45,7 @@ export default class SimpleTreeSelect extends Component {
         // 将父组件传过来的属性传递下去，以适应Form、getFieldDecorator等处理
         return (
             <TreeSelect
+                allowClear='true'
                 {...this.props}
                 treeData={this.state.treeData}
             />

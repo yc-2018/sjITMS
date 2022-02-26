@@ -137,7 +137,7 @@ export default class QuickSearchExpand extends SearchPage {
         showTotal: total => `共 ${total} 条`,
       },
     };
-    this.setState({ data });
+    this.setState({ data, selectedRows: [] });
   };
 
   /**
