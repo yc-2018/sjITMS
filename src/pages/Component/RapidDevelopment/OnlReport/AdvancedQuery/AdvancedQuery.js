@@ -13,9 +13,11 @@ import {
   Table,
   Tree,
   message,
+  List,
 } from 'antd';
 import ColsAdvanced from './ColsAdvanced';
 import { saveOrUpdateEntities, dynamicqueryById, dynamicDelete } from '@/services/quick/Quick';
+import { loginUser } from '@/utils/LoginContext';
 
 const layout = {
   wrapperCol: { span: 18 },
@@ -38,7 +40,10 @@ export default class AdvancedQuery extends Component {
     const param = {
       tableName: 'itms_query_conditions',
       condition: {
-        params: [{ field: 'reportCode', rule: 'eq', val: [this.props.reportCode] }],
+        params: [
+          { field: 'reportCode', rule: 'eq', val: [this.props.reportCode] },
+          { field: 'creatorid', rule: 'eq', val: [loginUser().code] },
+        ],
       },
     };
     await dynamicqueryById(param).then(result => {
@@ -65,7 +70,7 @@ export default class AdvancedQuery extends Component {
 
   //重置
   onReset = () => {
-    this.setState({ treeName: '' });
+    this.setState({ saveName: '' });
     this.formRef.onReset();
   };
 
@@ -148,6 +153,7 @@ export default class AdvancedQuery extends Component {
             reportCode: this.props.reportCode,
             matchType: matchType,
             queryParams: JSON.stringify(queryParam),
+            creatorid: loginUser().code,
           },
         ],
       },
@@ -155,25 +161,25 @@ export default class AdvancedQuery extends Component {
     return await saveOrUpdateEntities(payload);
   };
 
-  handleRightClick = ({ event, node }) => {
-    let key = node.props.eventKey;
+  deleteList = value => {
     Modal.confirm({
-      title: '是否删除' + key + '?',
+      title: '是否删除' + value + '?',
       okText: '确定',
       onOk: () => {
-        this.handleDelete(key);
+        this.handleDelete(value);
       },
     });
   };
 
   //删除高级查询保存列表
-  handleDelete = async key => {
+  handleDelete = async param => {
     const params = {
       tableName: 'itms_query_conditions',
       condition: {
         params: [
-          { field: 'alias', rule: 'eq', val: [key] },
+          { field: 'alias', rule: 'eq', val: [param] },
           { field: 'reportCode', rule: 'eq', val: [this.props.reportCode] },
+          { field: 'creatorid', rule: 'eq', val: [loginUser().code] },
         ],
       },
       deleteAll: 'false',
@@ -192,42 +198,59 @@ export default class AdvancedQuery extends Component {
     this.setState({ saveName: value });
   };
 
-  onSelectTree = selectedKeys => {
+  onSelectTree = value => {
     this.formRef.onReset();
     const { treeDatas } = this.state;
     const data = [];
-    if (selectedKeys.length > 0) {
-      const passParams = treeDatas.find(x => x.alias === selectedKeys[0]).queryParams;
-      this.child.getSearchParams(passParams);
-      this.setState({ saveName: selectedKeys[0] });
-    }
+    const passParams = treeDatas.find(x => x.alias === value).queryParams;
+    console.log('passParams', passParams);
+    this.child.getSearchParams(passParams);
+    this.setState({ saveName: value });
   };
 
   //高级查询保存查询列表
-  getTree = () => {
+  getList = () => {
     const { treeDatas } = this.state;
-    let tree = [];
+    let list = [];
     const treeData = [];
     if (treeDatas.length > 0) {
       treeDatas.forEach(datas => {
-        treeData.push({
-          title: datas.alias,
-          key: datas.alias,
-        });
+        treeData.push(datas.alias);
       });
-      tree.push(
-        <Tree
-          blockNode
-          style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}
-          treeData={treeData}
-          onSelect={this.onSelectTree}
-          onRightClick={this.handleRightClick}
+
+      list.push(
+        <List
+          className="demo-loadmore-list"
+          itemLayout="horizontal"
+          dataSource={treeData}
+          renderItem={item => (
+            <List.Item
+              actions={[
+                <a onClick={this.deleteList.bind(this, item)} key="list-loadmore-delete">
+                  删除
+                </a>,
+              ]}
+            >
+              <div
+                style={{
+                  width: '150px',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap',
+                  display: 'inline-block',
+                }}
+                onClick={this.onSelectTree.bind(this, item)}
+              >
+                <a style={{ color: 'black' }}>{item}</a>
+              </div>
+            </List.Item>
+          )}
         />
       );
     } else {
-      tree.push(<Empty description={<span style={{ color: '#aeb8c2' }}>没有保存任何查询</span>} />);
+      list.push(<Empty description={<span style={{ color: '#aeb8c2' }}>没有保存任何查询</span>} />);
     }
-    return tree;
+    return list;
   };
 
   render() {
@@ -274,7 +297,7 @@ export default class AdvancedQuery extends Component {
             </Col>
             <Col span={6}>
               <Card size="small" title="保存的查询">
-                {this.getTree()}
+                {this.getList()}
               </Card>
             </Col>
           </Row>
