@@ -122,12 +122,19 @@ export default class SimpleAutoComplete extends Component {
     // 将父组件传过来的属性传递下去，以适应Form、getFieldDecorator等处理
     return (
       <Select
+        allowClear='true'
         {...this.props}
-        optionLabelProp="textfield" // 指定回填到选择框的 Option 属性
+        optionLabelProp="textfield"     // 指定回填到选择框的 Option 属性
         optionFilterProp="children"
         showSearch={showSearch}
         onSearch={onSearch}
-        allowClear= 'true'
+        // 将value进行了一层包装，以方便日后扩展
+        value={typeof this.props.value == "object" ? this.props.value.value : this.props.value}
+        onChange={(value, optionElemnt) => {
+          if (this.props.onChange) {
+            this.props.onChange(this.state.options.find(x => x.value == value)?.data, optionElemnt)
+          }
+        }}
       >
         {options}
       </Select>
@@ -149,7 +156,11 @@ function convertData2Options(sourceData, textField, valueField, searchField) {
       label: getFieldShow(row, textField),
       value: getFieldShow(row, valueField),
       textField: getFieldShow(row, textField),
-    };
+      data: {
+        value: getFieldShow(row, valueField),
+        record: row
+      }
+    }
   });
 }
 

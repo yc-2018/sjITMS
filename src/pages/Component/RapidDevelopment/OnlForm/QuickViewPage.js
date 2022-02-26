@@ -17,6 +17,7 @@ import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
 import { accMul } from '@/utils/QpcStrUtil';
 import { colWidth, itemColWidth } from '@/utils/ColWidth';
 import ViewTablePanel from '@/pages/Component/Form/ViewTablePanel';
+import { routerRedux } from 'dva/router';
 
 const TabPane = Tabs.TabPane;
 
@@ -30,15 +31,21 @@ export default class QuickView extends ViewPage {
   initonlFormField = () => {
     const { onlFormField } = this.props;
     onlFormField.forEach(item => {
+      let tableName;
+      if (item.onlFormHead.viewSql) {
+        tableName = item.onlFormHead.viewSql;
+      } else {
+        tableName = item.onlFormHead.tableName;
+      }
       //初始化表名称
-      this.entity[item.onlFormHead.tableName] = [];
+      this.entity[tableName] = [];
       //一对一初始化entity
       if (
         item.onlFormHead.relationType != '0' ||
         item.onlFormHead.tableType == '1' ||
         item.onlFormHead.tableType == '0'
       ) {
-        this.entity[item.onlFormHead.tableName][0] = {};
+        this.entity[tableName][0] = {};
       }
     });
   };
@@ -49,7 +56,7 @@ export default class QuickView extends ViewPage {
     this.state = {
       title: '基本信息',
       quickuuid: props.quickuuid,
-      entityUuid: props.quick.entityUuid,
+      entityUuid: props.params.entityUuid,
     };
 
     this.initonlFormField();
@@ -62,10 +69,14 @@ export default class QuickView extends ViewPage {
   componentWillReceiveProps(nextProps) {}
 
   dynamicqueryById() {
-    //console.log('viewProps', this.props);
     const { onlFormField } = this.props;
     onlFormField.forEach(item => {
-      let tableName = item.onlFormHead.tableName;
+      let tableName;
+      if (item.onlFormHead.viewSql) {
+        tableName = item.onlFormHead.viewSql;
+      } else {
+        tableName = item.onlFormHead.tableName;
+      }
       if (item.onlFormHead.tableType == '1' || item.onlFormHead.tableType == '0') {
         var field = item.onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
         const param = {
@@ -88,7 +99,7 @@ export default class QuickView extends ViewPage {
         var field = item.onlFormFields.find(x => x.mainField != null && x.mainField != '')
           ?.dbFieldName;
         const param = {
-          tableName: item.onlFormHead.tableName,
+          tableName: tableName,
           condition: {
             params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
           },
@@ -122,13 +133,6 @@ export default class QuickView extends ViewPage {
    * 返回
    */
   onBack = () => {
-    // this.props.dispatch({
-    //   type: 'quick/showPageMap',
-    //   payload: {
-    //     showPageK: this.state.quickuuid,
-    //     showPageV: this.state.quickuuid + 'query',
-    //   },
-    // });
     this.props.switchTab('query');
   };
 
@@ -137,6 +141,29 @@ export default class QuickView extends ViewPage {
    */
   onEdit = () => {
     this.props.switchTab('update', { entityUuid: this.props.params.entityUuid });
+  };
+
+  //跳转到其他详情页
+  onOtherView = (jumpPaths, tableName) => {
+    if (!jumpPaths || jumpPaths.length != 2) {
+      message.error('配置为空或配置错误，请检查点击事件配置！');
+      return;
+    }
+
+    console.log('jumpPath', jumpPaths[0], 'data', this.entity[tableName][jumpPaths[1]]);
+
+    this.props.dispatch(
+      routerRedux.push({
+        pathname: jumpPaths[0],
+        state: {
+          tab: 'view',
+          param: {
+            entityUuid: this.entity[tableName][0][jumpPaths[1]],
+            quickuuid: this.state.quickuuid,
+          },
+        },
+      })
+    );
   };
 
   /**
@@ -158,6 +185,11 @@ export default class QuickView extends ViewPage {
     );
   };
 
+  //数据转换
+  convertData = (data, preview, record) => {
+    if (!preview) return data;
+    return record[preview];
+  };
   /**
    * 绘制信息详情
    */
@@ -171,7 +203,12 @@ export default class QuickView extends ViewPage {
     onlFormField.forEach((item, index) => {
       let items = [];
       let itemInfo;
-      let tableName = item.onlFormHead.tableName;
+      let tableName;
+      if (item.onlFormHead.viewSql) {
+        tableName = item.onlFormHead.viewSql;
+      } else {
+        tableName = item.onlFormHead.tableName;
+      }
 
       //判断是主表跟单表
       if (item.onlFormHead.tableType == 1 || item.onlFormHead.tableType == 0) {
@@ -179,9 +216,26 @@ export default class QuickView extends ViewPage {
         item.onlFormFields.forEach(field => {
           //判断是否显示
           if (!field.isViewForm) return;
+          let jumpPaths;
+          let fieldName;
+          if (field.jumpPath) {
+            jumpPaths = field.jumpPath.split(',');
+          }
+          if (field.preview) {
+            fieldName = field.preview;
+          } else {
+            fieldName = field.dbFieldName;
+          }
           itemInfo = {
             label: field.dbFieldTxt,
-            value: this.entity[tableName][0][field.dbFieldName],
+            value:
+              field.clickEvent == '2' ? (
+                <a onClick={this.onOtherView.bind(true, jumpPaths, tableName)}>
+                  {this.entity[tableName][0][fieldName]}
+                </a>
+              ) : (
+                this.entity[tableName][0][fieldName]
+              ),
           };
           items.push(itemInfo);
         });
@@ -191,7 +245,11 @@ export default class QuickView extends ViewPage {
           item.onlFormFields.forEach(field => {
             //判断是否显示
             if (!field.isViewForm) return;
-
+            if (field.preview) {
+              fieldName = field.preview;
+            } else {
+              fieldName = field.dbFieldName;
+            }
             itemInfo = {
               label: field.dbFieldTxt,
               value: this.entity[tableName][0][field.dbFieldName],
@@ -209,6 +267,20 @@ export default class QuickView extends ViewPage {
               dataIndex: field.dbFieldName,
               key: tableName + field.dbFieldName + index,
               width: itemColWidth.articleEditColWidth,
+              render:
+                field.clickEvent == '1'
+                  ? (val, record) => (
+                      <a onClick={this.onView.bind(this, record)}>
+                        {this.convertData(val, field.preview, record)}
+                      </a>
+                    )
+                  : field.clickEvent == '2'
+                    ? (val, record) => (
+                        <a onClick={this.onOtherView.bind(this, record, jumpPaths)}>
+                          {this.convertData(val, field.preview, record)}
+                        </a>
+                      )
+                    : (val, record) => <p3>{this.convertData(val, field.preview, record)}</p3>,
             };
             items.push(itemInfo);
           });

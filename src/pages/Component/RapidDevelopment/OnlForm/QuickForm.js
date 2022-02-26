@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
-import Create from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreateExpand';
+import Create from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePage';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickFormSearchPage';
 import QuickViewPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickViewPage';
 
@@ -21,19 +21,6 @@ export default class QuickForm extends PureComponent {
     };
     //this.toQueryPage();
   }
-
-  /**
-   * 进入时进入query
-   */
-  toQueryPage = () => {
-    this.props.dispatch({
-      type: 'quick/showPageMap',
-      payload: {
-        showPageK: this.state.quickuuid,
-        showPageV: this.state.quickuuid + 'query',
-      },
-    });
-  };
 
   componentDidMount() {
     this.getCreateConfig();
