@@ -72,24 +72,25 @@ export default class QuickSearchExpand extends SearchPage {
   }
 
   //数据转换
-  convertData = (data, dict) => {
-    if (!dict) return data;
-    var dictJson = JSON.parse(dict);
-    for (var i in dictJson) {
-      // console.log('dictJson[i].value', dictJson[i].value, 'data', data);
-      if (dictJson[i].value == data) return dictJson[i].name;
-    }
-    return data;
+  convertData = (data, preview, record) => {
+    if (!preview) return data;
+    return record[preview];
   };
 
   //初始化配置
   initConfig = queryConfig => {
     const columns = queryConfig.columns;
     let quickColumns = new Array();
-    columns.forEach(column => {
+    columns.filter(data => data.isShow).forEach(column => {
       let jumpPaths;
+      let preview;
       if (column.jumpPath) {
         jumpPaths = column.jumpPath.split(',');
+      }
+      if (column.preview) {
+        preview = column.preview;
+      } else {
+        preview = 'N';
       }
       const qiuckcolumn = {
         title: column.fieldTxt,
@@ -98,30 +99,21 @@ export default class QuickSearchExpand extends SearchPage {
         sorter: true,
         width: colWidth.codeColWidth,
         fieldType: column.fieldType,
-        // render: (val, record) => {
-        //   if (column.orderNum == '1') return <a onClick={this.onView.bind(this, record)}>{val}</a>;
-        //   else if (column.searchShowtype == 'list' && val != undefined) {
-        //     const dictionaryArray =
-        //       column.searchProperties instanceof Object
-        //         ? column.searchProperties.data
-        //         : JSON.parse(column.searchProperties).data;
-        //     if (dictionaryArray instanceof Array)
-        //       return <p3>{dictionaryArray.find(x => x.value == val).name}</p3>;
-        //     else return val;
-        //   } else return val;
-        // },
+        preview: preview,
         render:
           column.clickEvent == '1'
             ? (val, record) => (
-                <a onClick={this.onView.bind(this, record)}>{this.convertData(val)}</a>
+                <a onClick={this.onView.bind(this, record)}>
+                  {this.convertData(val, column.preview, record)}
+                </a>
               )
             : column.clickEvent == '2'
               ? (val, record) => (
                   <a onClick={this.onOtherView.bind(this, record, jumpPaths)}>
-                    {this.convertData(val)}
+                    {this.convertData(val, column.preview, record)}
                   </a>
                 )
-              : null,
+              : (val, record) => <p3>{this.convertData(val, column.preview, record)}</p3>,
       };
       quickColumns.push(qiuckcolumn);
     });
@@ -145,7 +137,7 @@ export default class QuickSearchExpand extends SearchPage {
         showTotal: total => `共 ${total} 条`,
       },
     };
-    this.setState({ data });
+    this.setState({ data, selectedRows: [] });
   };
 
   /**
@@ -194,7 +186,7 @@ export default class QuickSearchExpand extends SearchPage {
       return;
     }
 
-    //console.log('jumpPath', jumpPaths[0], 'entityUuid', record[jumpPaths[1]]);
+    // console.log('jumpPath', jumpPaths[0], 'entityUuid', record[jumpPaths[1]], '3', jumpPaths[2]);
 
     this.props.dispatch(
       routerRedux.push({
@@ -281,10 +273,15 @@ export default class QuickSearchExpand extends SearchPage {
           let sheetfilter = []; //对应列表数据中的key值数组，就是上面resdata中的 name，address
           let sheetheader = []; //对应key值的表头，即excel表头
           columns.map(a => {
-            sheetfilter.push(a.key);
+            if (a.preview != 'N') {
+              sheetfilter.push(a.preview);
+            } else {
+              sheetfilter.push(a.key);
+            }
             sheetheader.push(a.title);
           });
           option.fileName = this.state.title; //导出的Excel文件名
+          response.data.records.map(item => {});
           option.datas = [
             {
               sheetData: response.data.records,

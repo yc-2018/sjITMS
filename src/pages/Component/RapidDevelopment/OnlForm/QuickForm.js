@@ -22,19 +22,6 @@ export default class QuickForm extends PureComponent {
     //this.toQueryPage();
   }
 
-  /**
-   * 进入时进入query
-   */
-  toQueryPage = () => {
-    this.props.dispatch({
-      type: 'quick/showPageMap',
-      payload: {
-        showPageK: this.state.quickuuid,
-        showPageV: this.state.quickuuid + 'query',
-      },
-    });
-  };
-
   componentDidMount() {
     this.getCreateConfig();
   }
