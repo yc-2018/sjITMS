@@ -14,11 +14,12 @@ export default class QuickForm extends PureComponent {
     super(props);
     this.state = {
       quickuuid: props.route.quickuuid,
-      showPageNow: props.route.quickuuid + 'query',
+      showPageNow: 'query',
       tableName: '',
       onlFormField: [],
+      params: {},
     };
-    this.toQueryPage();
+    //this.toQueryPage();
   }
 
   /**
@@ -52,40 +53,66 @@ export default class QuickForm extends PureComponent {
             tableName: response.result[0].onlFormHead.tableName,
           });
         }
+        //获取路由中的值
+        if (this.props.location.state) {
+          const { state } = this.props.location;
+          this.setState({ params: state.param });
+          this.setState({ showPageNow: state.tab });
+        }
       },
     });
   };
 
   componentWillReceiveProps(nextProps) {
-    const { showPageMap, map } = nextProps.quick;
-    this.setState({
-      showPageNow: showPageMap.get(this.state.quickuuid),
-    });
+    // const { showPageMap, map } = nextProps.quick;
+    // this.setState({
+    //   showPageNow: showPageMap.get(this.state.quickuuid),
+    // });
   }
 
+  //页面切换
+  switchTab = (tab, param) => {
+    this.setState({ showPageNow: tab });
+    this.setState({ params: param });
+  };
+
   render() {
+    //console.log('this.state', this.state);
     const { showPageNow, quickuuid, tableName, onlFormField } = this.state;
     const { location } = this.props;
     switch (showPageNow) {
-      case quickuuid + 'create':
-        return <Create quickuuid={quickuuid} onlFormField={onlFormField} />;
-      case quickuuid + 'update':
-        return <Create quickuuid={quickuuid} onlFormField={onlFormField} />;
-      case quickuuid + 'query':
+      case 'create':
+        return (
+          <Create quickuuid={quickuuid} onlFormField={onlFormField} switchTab={this.switchTab} />
+        );
+      case 'update':
+        return (
+          <Create
+            quickuuid={quickuuid}
+            onlFormField={onlFormField}
+            switchTab={this.switchTab}
+            params={this.state.params}
+            showPageNow={this.state.showPageNow}
+          />
+        );
+      case 'query':
         return (
           <QuickFormSearchPage
             quickuuid={quickuuid}
             pathname={location.pathname}
             tableName={tableName}
             onlFormField={onlFormField}
+            switchTab={this.switchTab}
           />
         );
-      case quickuuid + 'view':
+      case 'view':
         return (
           <QuickViewPage
             quickuuid={quickuuid}
             onlFormField={onlFormField}
             pathname={this.props.location.pathname}
+            switchTab={this.switchTab}
+            params={this.state.params}
           />
         );
       default:

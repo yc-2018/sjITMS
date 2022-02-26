@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-01-15 16:03:07
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-01-26 15:09:00
+ * @LastEditTime: 2022-02-25 11:53:11
  * @Description: 快速开发简单查询
  * @FilePath: \iwms-web\src\pages\Component\RapidDevelopment\OnlReport\SimpleQuery\SimpleQuery.js
  */
@@ -15,6 +15,7 @@ import {
   SimpleTreeSelect,
   SimpleSelect,
   SimpleRadio,
+  SimpleAutoComplete,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 const { RangePicker } = DatePicker;
 
@@ -78,6 +79,8 @@ export default class SimpleQuery extends SearchForm {
       case 'list':
         return (
           <SimpleSelect
+            allowClear
+            placeholder={'请选择' + searchField.fieldTxt}
             searchField={searchField}
             {...searchProperties}
           />
@@ -87,9 +90,19 @@ export default class SimpleQuery extends SearchForm {
       case 'sel_search':
         return (
           <SimpleSelect
+            showSearch
+            allowClear
+            placeholder={'请输入' + searchField.fieldTxt}
             reportCode={this.props.reportCode}
             searchField={searchField}
-            showSearch
+          />
+        );
+      case 'auto_complete':
+        return (
+          <SimpleAutoComplete
+            placeholder={'请选择' + searchField.fieldTxt}
+            searchField={searchField}
+            {...searchProperties}
           />
         );
       case 'cat_tree':
@@ -119,7 +132,7 @@ export default class SimpleQuery extends SearchForm {
       cols.push(
         <SFormItem key={searchField.id} label={searchField.fieldTxt}>
           {getFieldDecorator(searchField.fieldName, {
-            initialValue: filterValue ? filterValue[searchField.fieldName] : '',
+            initialValue: filterValue ? filterValue[searchField.fieldName] : undefined,
             rules: [
               {
                 required: searchField.searchRequire,

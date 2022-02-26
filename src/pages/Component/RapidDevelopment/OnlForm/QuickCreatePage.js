@@ -13,6 +13,7 @@ import CreatePage from '@/pages/Component/Page/CreatePage';
 import FormPanel from '@/pages/Component/Form/FormPanel';
 import CFormItem from '@/pages/Component/Form/CFormItem';
 import {
+  SimpleSelect,
   SimpleTreeSelect,
   SimpleRadio,
   SimpleAutoComplete,
@@ -52,7 +53,7 @@ export default class QuickCreatePage extends CreatePage {
   }
 
   dynamicqueryById() {
-    if (this.props.quick.showPageMap.get(this.props.quickuuid).endsWith('update')) {
+    if (this.props.showPageNow == 'update') {
       //const { tableName } = this.state;
       const { onlFormField } = this.props;
       onlFormField.forEach(item => {
@@ -62,7 +63,7 @@ export default class QuickCreatePage extends CreatePage {
           const param = {
             tableName: tableName,
             condition: {
-              params: [{ field: field, rule: 'eq', val: [this.props.quick.entityUuid] }],
+              params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
             },
           };
           this.props.dispatch({
@@ -76,11 +77,12 @@ export default class QuickCreatePage extends CreatePage {
             },
           });
         } else {
-          var field = item.onlFormFields.find(x => x.mainField != null && x.mainField != '')?.dbFieldName;
+          var field = item.onlFormFields.find(x => x.mainField != null && x.mainField != '')
+            ?.dbFieldName;
           const param = {
             tableName: item.onlFormHead.tableName,
             condition: {
-              params: [{ field: field, rule: 'eq', val: [this.props.quick.entityUuid] }],
+              params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
             },
           };
           this.props.dispatch({
@@ -91,7 +93,10 @@ export default class QuickCreatePage extends CreatePage {
                 this.entity[tableName] = response.result.records;
                 for (let i = 0; i < this.entity[tableName].length; i++) {
                   //增加line
-                  this.entity[tableName][i] = { ...this.entity[tableName][i], line: i + 1 };
+                  this.entity[tableName][i] = {
+                    ...this.entity[tableName][i],
+                    line: i + 1,
+                  };
                 }
                 this.setState({});
               }
@@ -107,14 +112,7 @@ export default class QuickCreatePage extends CreatePage {
   }
 
   onCancel = () => {
-    this.props.form.resetFields();
-    this.props.dispatch({
-      type: 'quick/showPageMap',
-      payload: {
-        showPageK: this.state.quickuuid,
-        showPageV: this.state.quickuuid + 'query',
-      },
-    });
+    this.props.switchTab('query');
   };
 
   onSave = data => {
@@ -124,19 +122,17 @@ export default class QuickCreatePage extends CreatePage {
     }
 
     //入参
-    const param = {
-      code: this.props.onlFormField[0].onlFormHead.code,
-      entity: this.entity
-    };
+    const param = { code: this.props.onlFormField[0].onlFormHead.code, entity: this.entity };
     this.props.dispatch({
       type: 'quick/saveFormData',
       payload: {
-        showPageK: this.state.quickuuid,
-        showPageV: this.state.quickuuid + 'query',
         param,
       },
       callback: response => {
-        if (response.success) message.success(commonLocale.saveSuccessLocale);
+        if (response.success) {
+          message.success(commonLocale.saveSuccessLocale);
+          this.props.switchTab('query');
+        }
       },
     });
   };
@@ -179,7 +175,6 @@ export default class QuickCreatePage extends CreatePage {
     }
   }
 
-
   /**
    * 处理值改变事件
    * @param {} e 
@@ -190,10 +185,10 @@ export default class QuickCreatePage extends CreatePage {
    * @param {*} onlFormField 
    */
   handleChange = (e, tableName, dbFieldName, line, formInfo, onlFormField) => {
-    if(!this.entity[tableName][line]){
+    if (!this.entity[tableName][line]) {
       this.entity[tableName][line] = {};
     }
-    
+
     const value = this.convertSaveValue(e, onlFormField.fieldShowType);
     this.entity[tableName][line][dbFieldName] = value;
 
@@ -294,7 +289,7 @@ export default class QuickCreatePage extends CreatePage {
               message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}`,
             });
           }
-          
+
           const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
           const commonPropertis = {
             disabled: field.isReadOnly,
@@ -302,7 +297,7 @@ export default class QuickCreatePage extends CreatePage {
             onChange: e => this.handleChange(e, tableName, field.dbFieldName, 0, item, field)
           }; // 通用属性
           const exComponentPropertis = this.exComponentProperty[tableName + "_" + field.dbFieldName];   // 代码扩展属性
-          
+
           let initialValue = this.entity[tableName][0] && this.entity[tableName][0][field.dbFieldName]; // 初始值
           cols.push(
             <CFormItem key={tableName + "_" + field.dbFieldName} label={field.dbFieldTxt}>
@@ -319,7 +314,7 @@ export default class QuickCreatePage extends CreatePage {
         <FormPanel key={item.onlFormHead.id} title={item.onlFormHead.tableTxt} cols={cols} />
       );
     });
-    
+
     return formPanel;
   };
 
@@ -346,7 +341,7 @@ export default class QuickCreatePage extends CreatePage {
           width: itemColWidth.articleEditColWidth,
           render: (text, record) => {
             const exComponentPropertis = this.exComponentProperty[tableName + "_" + field.dbFieldName];   // 代码扩展属性
-          
+
             return (
               <CFormItem key={`${tableName}_${field.dbFieldName}_${record.line - 1}`} label={field.dbFieldTxt}>
                 {getFieldDecorator(`${tableName}_${field.dbFieldName}_${record.line - 1}`, {
@@ -378,7 +373,7 @@ export default class QuickCreatePage extends CreatePage {
         columns.push(tailItem);
       }
     });
-    
+
     return (
       <div>
         <ItemEditTable
@@ -409,22 +404,22 @@ export default class QuickCreatePage extends CreatePage {
 
   getWidget = (field, commonPropertis, fieldExtendJson, exComponentPropertis) => {
     if (field.fieldShowType == 'date') {
-      return <DatePicker {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis}/>;
+      return <DatePicker {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
     } else if (field.fieldShowType == 'number') {
-      return <InputNumber {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis}/>;
+      return <InputNumber {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
     } else if (field.fieldShowType == 'sel_tree') {
-      return <SimpleTreeSelect {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis}/>;
+      return <SimpleTreeSelect {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
     } else if (field.fieldShowType == 'radio') {
-      return <SimpleRadio {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis}/>;
+      return <SimpleRadio {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
     } else if (field.fieldShowType == 'auto_complete') {
-      return <SimpleAutoComplete {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis}/>;
+      return <SimpleAutoComplete {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
     } else if (field.fieldShowType == 'textarea') {
-      return <Input.TextArea {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis}/>;
+      return <Input.TextArea {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
     } else {
-      return <Input {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis}/>;
+      return <Input {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
     }
   };
 
   handleFieldChange(e, fieldName, line) {
-   }
+  }
 }

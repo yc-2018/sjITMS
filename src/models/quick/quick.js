@@ -22,7 +22,7 @@ export default {
      */
     setup({ dispatch, history }) {
       history.listen(location => {
-        if (location.payload && location.pathname == '/quick') {
+        if (location.payload && location.pathname == '/test/test_form') {
           dispatch({ type: 'showPageMap', payload: location.payload });
         }
       });
@@ -63,32 +63,14 @@ export default {
       });
     },
     *saveFormData({ payload, callback }, { call, put }) {
-      console.log("_________________saveFormData")
       const response = yield call(saveFormData, payload.param);
-      if (response && response.success) {
-        var showPageMap = new Map();
-        showPageMap.set(payload.showPageK, payload.showPageV);
-        yield put({
-          type: 'onShowPageMap',
-          showPageMap: showPageMap,
-        });
-      }
       if (callback) callback(response);
     },
     *dynamicDelete({ payload, callback }, { call, put }) {
       const response = yield call(dynamicDelete, payload.params);
-      // if (response && response.success) {
-      //   var showPageMap = new Map()
-      //   showPageMap.set(payload.showPageK,payload.showPageV);
-      //   yield put({
-      //     type: 'onShowPageMap',
-      //     showPageMap: showPageMap,
-      //   });
-      //   }
       if (callback) callback(response);
     },
     *showPageMap({ payload }, { call, put }) {
-      console.log('___________', payload);
       var showPageMap = new Map();
       showPageMap.set(payload.showPageK, payload.showPageV);
       yield put({

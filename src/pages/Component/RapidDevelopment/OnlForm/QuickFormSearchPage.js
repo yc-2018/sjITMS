@@ -3,6 +3,7 @@ import { Table, Button, Input, Col, Row, Popconfirm, message } from 'antd';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
 import QuickSearchExpand from './QuickSearchExpand';
+import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import SearchPage from '@/pages/Component/Page/SearchPage';
 
 @connect(({ quick, loading }) => ({
@@ -56,14 +57,23 @@ export default class QuickFormSearchPage extends QuickSearchExpand {
    */
   drawToolbarPanel = () => {
     return (
-      <Popconfirm
-        title="你确定要删除所选中的内容吗?"
-        onConfirm={() => this.onBatchDelete()}
-        okText="确定"
-        cancelText="取消"
-      >
-        <Button>删除</Button>
-      </Popconfirm>
+      <div>
+        <Popconfirm
+          title="你确定要删除所选中的内容吗?"
+          onConfirm={() => this.onBatchDelete()}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Button>删除</Button>
+        </Popconfirm>
+        <AdvanceQuery
+          searchFields={this.state.advancedFields}
+          fieldInfos={this.columns}
+          filterValue={this.state.pageFilter.searchKeyValues}
+          refresh={this.onSearch}
+          reportCode={this.state.reportCode}
+        />
+      </div>
     );
   };
 }

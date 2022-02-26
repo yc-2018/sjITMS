@@ -62,6 +62,7 @@ export default class QuickView extends ViewPage {
   componentWillReceiveProps(nextProps) {}
 
   dynamicqueryById() {
+    //console.log('viewProps', this.props);
     const { onlFormField } = this.props;
     onlFormField.forEach(item => {
       let tableName = item.onlFormHead.tableName;
@@ -70,7 +71,7 @@ export default class QuickView extends ViewPage {
         const param = {
           tableName: tableName,
           condition: {
-            params: [{ field: field, rule: 'eq', val: [this.props.quick.entityUuid] }],
+            params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
           },
         };
         this.props.dispatch({
@@ -89,7 +90,7 @@ export default class QuickView extends ViewPage {
         const param = {
           tableName: item.onlFormHead.tableName,
           condition: {
-            params: [{ field: field, rule: 'eq', val: [this.props.quick.entityUuid] }],
+            params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
           },
         };
         this.props.dispatch({
@@ -121,27 +122,21 @@ export default class QuickView extends ViewPage {
    * 返回
    */
   onBack = () => {
-    this.props.dispatch({
-      type: 'quick/showPageMap',
-      payload: {
-        showPageK: this.state.quickuuid,
-        showPageV: this.state.quickuuid + 'query',
-      },
-    });
+    // this.props.dispatch({
+    //   type: 'quick/showPageMap',
+    //   payload: {
+    //     showPageK: this.state.quickuuid,
+    //     showPageV: this.state.quickuuid + 'query',
+    //   },
+    // });
+    this.props.switchTab('query');
   };
 
   /**
    * 编辑
    */
   onEdit = () => {
-    this.props.dispatch({
-      type: 'quick/showPageMap',
-      payload: {
-        showPageK: this.state.quickuuid,
-        showPageV: this.state.quickuuid + 'update',
-        entityUuid: this.state.entityUuid,
-      },
-    });
+    this.props.switchTab('update', { entityUuid: this.props.params.entityUuid });
   };
 
   /**
@@ -177,6 +172,7 @@ export default class QuickView extends ViewPage {
       let items = [];
       let itemInfo;
       let tableName = item.onlFormHead.tableName;
+
       //判断是主表跟单表
       if (item.onlFormHead.tableType == 1 || item.onlFormHead.tableType == 0) {
         //遍历主表跟单表配置信息
@@ -218,6 +214,7 @@ export default class QuickView extends ViewPage {
           });
         }
       }
+
       //为空时直接return
       if (items.length <= 0) return;
 

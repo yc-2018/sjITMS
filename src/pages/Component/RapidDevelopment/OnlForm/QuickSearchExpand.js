@@ -5,10 +5,10 @@ import { Route, Switch } from 'react-router-dom';
 import axios from 'axios';
 import SearchPage from '@/pages/Component/Page/SearchPage';
 import { colWidth } from '@/utils/ColWidth';
-import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/QueryT';
 import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuery/SimpleQuery';
 import SearchMoreAction from '@/pages/Component/Form/SearchMoreAction';
 import ExportJsonExcel from 'js-export-excel';
+import { routerRedux } from 'dva/router';
 
 export default class QuickSearchExpand extends SearchPage {
   constructor(props) {
@@ -19,7 +19,8 @@ export default class QuickSearchExpand extends SearchPage {
       data: [],
       suspendLoading: false,
       columns: [],
-      selectFields: [],
+      searchFields: [],
+      advancedFields: [],
       reportCode: props.quickuuid,
       pageFilters: { quickuuid: props.quickuuid, changePage: true },
       key: props.quickuuid + 'quick.search.table',
@@ -49,6 +50,9 @@ export default class QuickSearchExpand extends SearchPage {
       callback: response => {
         if (response.result) {
           this.initConfig(response.result);
+          //解决用户列展示失效问题 暂时解决方法（赋值两次）
+          this.initConfig(response.result);
+
           //配置查询成功后再去查询数据
           this.onSearch();
         }
@@ -58,15 +62,35 @@ export default class QuickSearchExpand extends SearchPage {
 
   componentDidMount() {
     this.queryCoulumns();
-    //解决用户列展示失效问题 暂时解决方法（查询两次）
-    this.queryCoulumns();
+    //this.queryCoulumns();
   }
+
+  componentWillUnmount() {
+    this.setState = () => {
+      return;
+    };
+  }
+
+  //数据转换
+  convertData = (data, dict) => {
+    if (!dict) return data;
+    var dictJson = JSON.parse(dict);
+    for (var i in dictJson) {
+      // console.log('dictJson[i].value', dictJson[i].value, 'data', data);
+      if (dictJson[i].value == data) return dictJson[i].name;
+    }
+    return data;
+  };
 
   //初始化配置
   initConfig = queryConfig => {
     const columns = queryConfig.columns;
     let quickColumns = new Array();
-    columns.forEach(column => {
+    columns.filter(data => data.isShow).forEach(column => {
+      let jumpPaths;
+      if (column.jumpPath) {
+        jumpPaths = column.jumpPath.split(',');
+      }
       const qiuckcolumn = {
         title: column.fieldTxt,
         dataIndex: column.fieldName,
@@ -74,10 +98,30 @@ export default class QuickSearchExpand extends SearchPage {
         sorter: true,
         width: colWidth.codeColWidth,
         fieldType: column.fieldType,
+        // render: (val, record) => {
+        //   if (column.orderNum == '1') return <a onClick={this.onView.bind(this, record)}>{val}</a>;
+        //   else if (column.searchShowtype == 'list' && val != undefined) {
+        //     const dictionaryArray =
+        //       column.searchProperties instanceof Object
+        //         ? column.searchProperties.data
+        //         : JSON.parse(column.searchProperties).data;
+        //     if (dictionaryArray instanceof Array)
+        //       return <p3>{dictionaryArray.find(x => x.value == val).name}</p3>;
+        //     else return val;
+        //   } else return val;
+        // },
         render:
-          column.orderNum == '1'
-            ? (val, record) => <a onClick={this.onView.bind(this, record)}>{val}</a>
-            : null,
+          column.clickEvent == '1'
+            ? (val, record) => (
+                <a onClick={this.onView.bind(this, record)}>{this.convertData(val)}</a>
+              )
+            : column.clickEvent == '2'
+              ? (val, record) => (
+                  <a onClick={this.onOtherView.bind(this, record, jumpPaths)}>
+                    {this.convertData(val)}
+                  </a>
+                )
+              : null,
       };
       quickColumns.push(qiuckcolumn);
     });
@@ -85,9 +129,11 @@ export default class QuickSearchExpand extends SearchPage {
     this.setState({
       title: queryConfig.reportHeadName,
       columns: quickColumns,
-      selectFields: columns.filter(data => data.isSearch),
+      advancedFields: columns.filter(data => data.isShow),
+      searchFields: columns.filter(data => data.isSearch),
     });
   };
+
   //初始化数据
   initData = data => {
     var data = {
@@ -99,20 +145,14 @@ export default class QuickSearchExpand extends SearchPage {
         showTotal: total => `共 ${total} 条`,
       },
     };
-    this.setState({ data });
+    this.setState({ data, selectedRows: [] });
   };
 
   /**
    * 显示新建/编辑界面
    */
   onCreate = () => {
-    this.props.dispatch({
-      type: 'quick/showPageMap',
-      payload: {
-        showPageK: this.state.reportCode,
-        showPageV: this.state.reportCode + 'create',
-      },
-    });
+    this.props.switchTab('create');
   };
   /**
    * 编辑界面
@@ -122,13 +162,8 @@ export default class QuickSearchExpand extends SearchPage {
     if (selectedRows.length !== 0) {
       const { onlFormField } = this.props;
       var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
-      this.props.dispatch({
-        type: 'quick/showPageMap',
-        payload: {
-          showPageK: this.state.reportCode,
-          showPageV: this.state.reportCode + 'update',
-          entityUuid: selectedRows[0][field],
-        },
+      this.props.switchTab('update', {
+        entityUuid: selectedRows[0][field],
       });
     } else {
       message.error('请至少选中一条数据！');
@@ -141,28 +176,35 @@ export default class QuickSearchExpand extends SearchPage {
     const { onlFormField } = this.props;
     var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
     if (record.ROW_ID) {
-      this.props.dispatch({
-        type: 'quick/showPageMap',
-        payload: {
-          showPageK: this.state.reportCode,
-          showPageV: this.state.reportCode + 'view',
-          entityUuid: record[field],
-        },
-      });
+      this.props.switchTab('view', { entityUuid: record[field] });
     } else {
       const { selectedRows, batchAction } = this.state;
-      console.log(selectedRows, 'selectedRows');
       if (selectedRows.length > 0) {
-        this.props.dispatch({
-          type: 'quick/showPageMap',
-          payload: {
-            showPageK: this.state.reportCode,
-            showPageV: this.state.reportCode + 'view',
-            entityUuid: selectedRows[0][field],
-          },
+        this.props.switchTab('view', {
+          entityUuid: selectedRows[0][field],
         });
       } else message.error('请至少选中一条数据！');
     }
+  };
+
+  //跳转到其他详情页
+  onOtherView = (record, jumpPaths) => {
+    if (!jumpPaths || jumpPaths.length != 2) {
+      message.error('配置为空或配置错误，请检查点击事件配置！');
+      return;
+    }
+
+    //console.log('jumpPath', jumpPaths[0], 'entityUuid', record[jumpPaths[1]]);
+
+    this.props.dispatch(
+      routerRedux.push({
+        pathname: jumpPaths[0],
+        state: {
+          tab: 'view',
+          param: { entityUuid: record[jumpPaths[1]] },
+        },
+      })
+    );
   };
 
   /**
@@ -303,26 +345,16 @@ export default class QuickSearchExpand extends SearchPage {
   drawActionButton = () => {};
 
   /**
-   * 绘制批量工具栏
-   */
-  drawToolbarPanel = () => {};
-
-  /**
    * 绘制搜索表格
    */
   drawSearchPanel = () => {
     return (
       <div>
         <SimpleQuery
-          selectFields={this.state.selectFields}
+          selectFields={this.state.searchFields}
           filterValue={this.state.pageFilter.filterValue}
           refresh={this.onSearch}
           reportCode={this.state.reportCode}
-        />
-        <AdvanceQuery
-          fieldInfos={this.columns}
-          filterValue={this.state.pageFilter.searchKeyValues}
-          refresh={this.onSearch}
         />
       </div>
     );
