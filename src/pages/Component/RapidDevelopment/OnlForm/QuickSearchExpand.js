@@ -72,14 +72,9 @@ export default class QuickSearchExpand extends SearchPage {
   }
 
   //数据转换
-  convertData = (data, dict) => {
-    if (!dict) return data;
-    var dictJson = JSON.parse(dict);
-    for (var i in dictJson) {
-      // console.log('dictJson[i].value', dictJson[i].value, 'data', data);
-      if (dictJson[i].value == data) return dictJson[i].name;
-    }
-    return data;
+  convertData = (data, preview, record) => {
+    if (!preview) return data;
+    return record[preview];
   };
 
   //初始化配置
@@ -88,8 +83,14 @@ export default class QuickSearchExpand extends SearchPage {
     let quickColumns = new Array();
     columns.filter(data => data.isShow).forEach(column => {
       let jumpPaths;
+      let preview;
       if (column.jumpPath) {
         jumpPaths = column.jumpPath.split(',');
+      }
+      if (column.preview) {
+        preview = column.preview;
+      } else {
+        preview = 'N';
       }
       const qiuckcolumn = {
         title: column.fieldTxt,
@@ -98,30 +99,21 @@ export default class QuickSearchExpand extends SearchPage {
         sorter: true,
         width: colWidth.codeColWidth,
         fieldType: column.fieldType,
-        // render: (val, record) => {
-        //   if (column.orderNum == '1') return <a onClick={this.onView.bind(this, record)}>{val}</a>;
-        //   else if (column.searchShowtype == 'list' && val != undefined) {
-        //     const dictionaryArray =
-        //       column.searchProperties instanceof Object
-        //         ? column.searchProperties.data
-        //         : JSON.parse(column.searchProperties).data;
-        //     if (dictionaryArray instanceof Array)
-        //       return <p3>{dictionaryArray.find(x => x.value == val).name}</p3>;
-        //     else return val;
-        //   } else return val;
-        // },
+        preview: preview,
         render:
           column.clickEvent == '1'
             ? (val, record) => (
-                <a onClick={this.onView.bind(this, record)}>{this.convertData(val)}</a>
+                <a onClick={this.onView.bind(this, record)}>
+                  {this.convertData(val, column.preview, record)}
+                </a>
               )
             : column.clickEvent == '2'
               ? (val, record) => (
                   <a onClick={this.onOtherView.bind(this, record, jumpPaths)}>
-                    {this.convertData(val)}
+                    {this.convertData(val, column.preview, record)}
                   </a>
                 )
-              : null,
+              : (val, record) => <p3>{this.convertData(val, column.preview, record)}</p3>,
       };
       quickColumns.push(qiuckcolumn);
     });
@@ -194,7 +186,7 @@ export default class QuickSearchExpand extends SearchPage {
       return;
     }
 
-    //console.log('jumpPath', jumpPaths[0], 'entityUuid', record[jumpPaths[1]]);
+    // console.log('jumpPath', jumpPaths[0], 'entityUuid', record[jumpPaths[1]], '3', jumpPaths[2]);
 
     this.props.dispatch(
       routerRedux.push({
@@ -212,10 +204,30 @@ export default class QuickSearchExpand extends SearchPage {
    */
   onBatchDelete = () => {
     const { selectedRows, batchAction } = this.state;
+    const { dispatch } = this.props;
+    const params = [];
+    let that = this;
     if (selectedRows.length !== 0) {
       for (var i = 0; i < selectedRows.length; i++) {
-        this.deleteById(selectedRows[i]);
+        this.deleteById(selectedRows[i],params);
       }
+      dispatch({
+        type: 'quick/dynamicDelete',
+        payload:{params},
+        callback: response => {
+          // if (batch) {
+          //   that.batchCallback(response, record);
+          //   resolve({ success: response.success });
+          //   return;
+          // }
+  
+          if (response && response.success) {
+            this.setState({ selectedRows: [] });
+            that.refreshTable();
+            message.success('删除成功！');
+          }
+        },
+      });
     } else {
       message.error('请至少选中一条数据！');
     }
@@ -224,34 +236,28 @@ export default class QuickSearchExpand extends SearchPage {
   /**
    * 单一删除
    */
-  deleteById = (record, batch) => {
+  deleteById = (record, paramsData) => {
     const { dispatch, tableName, onlFormField } = this.props;
-    let that = this;
+    
     var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
     const recordMap = new Map(Object.entries(record));
-    var val = recordMap.get(field);
-    const params = {
-      tableName,
-      condition: { params: [{ field, rule: 'eq', val: [val] }] },
-      deleteAll: 'false',
-    };
-    dispatch({
-      type: 'quick/dynamicDelete',
-      payload: { params },
-      callback: response => {
-        if (batch) {
-          that.batchCallback(response, record);
-          resolve({ success: response.success });
-          return;
+    var val =record[field];
+   
+    onlFormField.forEach(x =>{
+      var field ;
+      var tableName = x.onlFormHead.tableName;
+      if(x.onlFormHead.tableType=='2'){
+         field = x.onlFormFields.find(x=>x.mainField!=null)?.dbFieldName;
+       }else{
+         field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
+       }
+       var params={
+          tableName,
+          condition: { params: [{field, rule: 'eq',val:[val]}] },
+          deleteAll: 'false',
         }
-
-        if (response && response.success) {
-          this.setState({ selectedRows: [] });
-          that.refreshTable();
-          message.success('删除成功！');
-        }
-      },
-    });
+        paramsData.push(params);
+    })
   };
 
   //导出
@@ -267,10 +273,15 @@ export default class QuickSearchExpand extends SearchPage {
           let sheetfilter = []; //对应列表数据中的key值数组，就是上面resdata中的 name，address
           let sheetheader = []; //对应key值的表头，即excel表头
           columns.map(a => {
-            sheetfilter.push(a.key);
+            if (a.preview != 'N') {
+              sheetfilter.push(a.preview);
+            } else {
+              sheetfilter.push(a.key);
+            }
             sheetheader.push(a.title);
           });
           option.fileName = this.state.title; //导出的Excel文件名
+          response.data.records.map(item => {});
           option.datas = [
             {
               sheetData: response.data.records,
