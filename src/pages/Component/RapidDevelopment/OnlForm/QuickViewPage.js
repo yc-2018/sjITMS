@@ -49,7 +49,7 @@ export default class QuickView extends ViewPage {
     this.state = {
       title: '基本信息',
       quickuuid: props.quickuuid,
-      entityUuid: props.quick.entityUuid,
+      entityUuid: props.params.entityUuid,
     };
 
     this.initonlFormField();

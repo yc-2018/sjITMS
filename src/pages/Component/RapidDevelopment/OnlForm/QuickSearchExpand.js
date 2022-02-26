@@ -212,10 +212,30 @@ export default class QuickSearchExpand extends SearchPage {
    */
   onBatchDelete = () => {
     const { selectedRows, batchAction } = this.state;
+    const { dispatch } = this.props;
+    const params = [];
+    let that = this;
     if (selectedRows.length !== 0) {
       for (var i = 0; i < selectedRows.length; i++) {
-        this.deleteById(selectedRows[i]);
+        this.deleteById(selectedRows[i],params);
       }
+      dispatch({
+        type: 'quick/dynamicDelete',
+        payload:{params},
+        callback: response => {
+          // if (batch) {
+          //   that.batchCallback(response, record);
+          //   resolve({ success: response.success });
+          //   return;
+          // }
+  
+          if (response && response.success) {
+            this.setState({ selectedRows: [] });
+            that.refreshTable();
+            message.success('删除成功！');
+          }
+        },
+      });
     } else {
       message.error('请至少选中一条数据！');
     }
@@ -224,34 +244,28 @@ export default class QuickSearchExpand extends SearchPage {
   /**
    * 单一删除
    */
-  deleteById = (record, batch) => {
+  deleteById = (record, paramsData) => {
     const { dispatch, tableName, onlFormField } = this.props;
-    let that = this;
+    
     var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
     const recordMap = new Map(Object.entries(record));
-    var val = recordMap.get(field);
-    const params = {
-      tableName,
-      condition: { params: [{ field, rule: 'eq', val: [val] }] },
-      deleteAll: 'false',
-    };
-    dispatch({
-      type: 'quick/dynamicDelete',
-      payload: { params },
-      callback: response => {
-        if (batch) {
-          that.batchCallback(response, record);
-          resolve({ success: response.success });
-          return;
+    var val =record[field];
+   
+    onlFormField.forEach(x =>{
+      var field ;
+      var tableName = x.onlFormHead.tableName;
+      if(x.onlFormHead.tableType=='2'){
+         field = x.onlFormFields.find(x=>x.mainField!=null)?.dbFieldName;
+       }else{
+         field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
+       }
+       var params={
+          tableName,
+          condition: { params: [{field, rule: 'eq',val:[val]}] },
+          deleteAll: 'false',
         }
-
-        if (response && response.success) {
-          this.setState({ selectedRows: [] });
-          that.refreshTable();
-          message.success('删除成功！');
-        }
-      },
-    });
+        paramsData.push(params);
+    })
   };
 
   //导出
