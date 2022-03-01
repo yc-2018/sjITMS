@@ -14,6 +14,8 @@ import {
   Tree,
   message,
   List,
+  Dropdown,
+  Menu,
 } from 'antd';
 import ColsAdvanced from './ColsAdvanced';
 import { saveOrUpdateEntities, dynamicqueryById, dynamicDelete } from '@/services/quick/Quick';
@@ -48,8 +50,7 @@ export default class AdvancedQuery extends Component {
     };
     await dynamicqueryById(param).then(result => {
       const treeDatas = [];
-      console.log('result', result);
-      if (result.result.records !== 'false') {
+      if (result.success && result.result.records !== 'false') {
         result.result.records.forEach(data => {
           treeDatas.push({
             alias: data.ALIAS,
@@ -60,6 +61,34 @@ export default class AdvancedQuery extends Component {
       }
       this.setState({ treeDatas });
     });
+  };
+
+  buildMenu = () => {
+    const { treeDatas } = this.state;
+    return (
+      <Menu onClick={this.handleMenuClick}>
+        {treeDatas.map(data => {
+          return <Menu.Item key={data.alias}>{data.alias}</Menu.Item>;
+        })}
+      </Menu>
+    );
+  };
+
+  handleMenuClick = ({ key }) => {
+    const { treeDatas } = this.state;
+    const passParams = treeDatas.find(x => x.alias === key);
+    const { matchType, queryParams } = passParams;
+    const queryParam = [];
+    queryParams.forEach(data => {
+      queryParam.push({
+        field: data.searchField,
+        rule: data.searchCondition,
+        type: data.type,
+        val: data.defaultValue,
+      });
+    });
+    const data = { matchType, queryParams: queryParam };
+    this.props.refresh(data);
   };
 
   //查询
@@ -101,6 +130,7 @@ export default class AdvancedQuery extends Component {
     queryParams.forEach((value, index) => {
       queryParam.push({
         key: index + 1,
+        type: value.type,
         searchField: value.field,
         searchCondition: value.rule,
         defaultValue: value.val,
@@ -173,17 +203,19 @@ export default class AdvancedQuery extends Component {
 
   //删除高级查询保存列表
   handleDelete = async param => {
-    const params = {
-      tableName: 'itms_query_conditions',
-      condition: {
-        params: [
-          { field: 'alias', rule: 'eq', val: [param] },
-          { field: 'reportCode', rule: 'eq', val: [this.props.reportCode] },
-          { field: 'creatorid', rule: 'eq', val: [loginUser().code] },
-        ],
+    const params = [
+      {
+        tableName: 'itms_query_conditions',
+        condition: {
+          params: [
+            { field: 'alias', rule: 'eq', val: [param] },
+            { field: 'reportCode', rule: 'eq', val: [this.props.reportCode] },
+            { field: 'creatorid', rule: 'eq', val: [loginUser().code] },
+          ],
+        },
+        deleteAll: 'false',
       },
-      deleteAll: 'false',
-    };
+    ];
     await dynamicDelete(params).then(result => {
       if (result.success) {
         message.success('删除成功！');
@@ -203,7 +235,6 @@ export default class AdvancedQuery extends Component {
     const { treeDatas } = this.state;
     const data = [];
     const passParams = treeDatas.find(x => x.alias === value).queryParams;
-    console.log('passParams', passParams);
     this.child.getSearchParams(passParams);
     this.setState({ saveName: value });
   };
@@ -225,26 +256,28 @@ export default class AdvancedQuery extends Component {
           dataSource={treeData}
           renderItem={item => (
             <List.Item
+              style={{ padding: '2px 0' }}
               actions={[
                 <a onClick={this.deleteList.bind(this, item)} key="list-loadmore-delete">
                   删除
                 </a>,
               ]}
             >
-              <div
+              <a
                 style={{
                   backgroundColor: this.state.saveName === item ? '#e6f7ff' : '',
-                  width: '280px',
+                  color: 'black',
+                  width: '9rem',
+                  height: '1.5rem',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
-                  display: 'inline-block',
+                  lineHeight: '2',
                 }}
+                onClick={this.onSelectTree.bind(this, item)}
               >
-                <a onClick={this.onSelectTree.bind(this, item)} style={{ color: 'black' }}>
-                  {item}
-                </a>
-              </div>
+                {item}
+              </a>
             </List.Item>
           )}
         />
@@ -263,6 +296,10 @@ export default class AdvancedQuery extends Component {
         <Button type="primary" onClick={() => this.setState({ superQueryModalVisible: true })}>
           高级查询
         </Button>
+        <Dropdown overlay={this.buildMenu.bind()}>
+          <Button>高级查询保存查询列表</Button>
+        </Dropdown>
+
         <Modal
           title="高级查询"
           onCancel={this.hideModal}
