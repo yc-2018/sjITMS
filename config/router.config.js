@@ -1143,6 +1143,13 @@ export default [
             quickuuid: '20220125',
             authority: ['iwms.basic.store'],
           },
+          {
+            path: '/test/test_form1',
+            name: '演示',
+            component: './Component/RapidDevelopment/OnlForm/QuickForm',
+            quickuuid: '1111',
+            authority: ['iwms.basic.store'],
+          },
         ],
       },
     ],
