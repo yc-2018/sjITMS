@@ -165,12 +165,6 @@ export default [
             component: './Basic/Team/Team',
             authority: ['iwms.basic.dispatchcenter.classgroup'],
           },
-          {
-            path: '/basic/BatchNumberConfig',
-            name: 'BatchNumberConfig',
-            component: './Basic/BatchNumberConfig/BatchNumberConfig',
-            authority: ['iwms.basic.store'],
-          },
         ],
       },
       {
