@@ -50,7 +50,7 @@ export default class AdvancedQuery extends Component {
     };
     await dynamicqueryById(param).then(result => {
       const treeDatas = [];
-      if (result.result.records !== 'false') {
+      if (result.success && result.result.records !== 'false') {
         result.result.records.forEach(data => {
           treeDatas.push({
             alias: data.ALIAS,
@@ -203,17 +203,19 @@ export default class AdvancedQuery extends Component {
 
   //删除高级查询保存列表
   handleDelete = async param => {
-    const params = {
-      tableName: 'itms_query_conditions',
-      condition: {
-        params: [
-          { field: 'alias', rule: 'eq', val: [param] },
-          { field: 'reportCode', rule: 'eq', val: [this.props.reportCode] },
-          { field: 'creatorid', rule: 'eq', val: [loginUser().code] },
-        ],
+    const params = [
+      {
+        tableName: 'itms_query_conditions',
+        condition: {
+          params: [
+            { field: 'alias', rule: 'eq', val: [param] },
+            { field: 'reportCode', rule: 'eq', val: [this.props.reportCode] },
+            { field: 'creatorid', rule: 'eq', val: [loginUser().code] },
+          ],
+        },
+        deleteAll: 'false',
       },
-      deleteAll: 'false',
-    };
+    ];
     await dynamicDelete(params).then(result => {
       if (result.success) {
         message.success('删除成功！');
