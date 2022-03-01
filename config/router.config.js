@@ -1096,26 +1096,6 @@ export default [
             authority: ['iwms.basic.store'],
           },
           {
-            path: '/test/ZzTest',
-            name: 'ZzTest',
-            component: './Test/Zz/ZzTest',
-            authority: ['iwms.basic.store'],
-          },
-          {
-            path: '/test/quick',
-            name: 'quick',
-            component: './Component/RapidDevelopment/OnlReport/QuickReport',
-            quickuuid: 'quickDemo',
-            authority: ['iwms.basic.store'],
-          },
-          {
-            path: '/test/quick6',
-            name: '快速开发框架扩展代码Demo',
-            component: './QuickDemo/QuickDemo',
-            quickuuid: 'quickDemo',
-            authority: ['iwms.basic.store'],
-          },
-          {
             path: '/test/quick7',
             name: '白白白白白',
             component: './Component/RapidDevelopment/OnlReport/QuickReport',
