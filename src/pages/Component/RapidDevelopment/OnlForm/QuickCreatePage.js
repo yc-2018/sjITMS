@@ -30,10 +30,10 @@ import { colWidth, itemColWidth } from '@/utils/ColWidth';
 @Form.create()
 export default class QuickCreatePage extends CreatePage {
   entity = {};
-  exComponentProperty = {}
+  exComponentProperty = {};
 
-  beforeSave = (data) => { }
-  exHandleChange = (e, tableName, dbFieldName, line, formInfo, onlFormField) => { }
+  beforeSave = data => {};
+  exHandleChange = (e, tableName, dbFieldName, line, formInfo, onlFormField) => {};
 
   //初始化表单数据
   initonlFormField = () => {
@@ -154,7 +154,7 @@ export default class QuickCreatePage extends CreatePage {
       if (onlFormField[i].onlFormHead.relationType == '0') {
         newOnlFormHead = onlFormField[i];
       }
-      onlFormField[i].onlFormFields.forEach(filed => { });
+      onlFormField[i].onlFormFields.forEach(filed => {});
     }
     for (let key in datas) {
       if (key == newOnlFormHead.onlFormHead.tableName) {
@@ -182,12 +182,12 @@ export default class QuickCreatePage extends CreatePage {
 
   /**
    * 处理值改变事件
-   * @param {} e 
-   * @param {*} tableName 
-   * @param {*} dbFieldName 
-   * @param {*} line 
-   * @param {*} formInfo 
-   * @param {*} onlFormField 
+   * @param {} e
+   * @param {*} tableName
+   * @param {*} dbFieldName
+   * @param {*} line
+   * @param {*} formInfo
+   * @param {*} onlFormField
    */
   handleChange = (e, tableName, dbFieldName, line, formInfo, onlFormField) => {
     if (!this.entity[tableName][line]) {
@@ -199,17 +199,17 @@ export default class QuickCreatePage extends CreatePage {
 
     // 执行扩展代码
     this.exHandleChange(e, tableName, dbFieldName, line, formInfo, onlFormField);
-  }
+  };
 
   setFieldsValue = (tableName, dbFieldName, value, line) => {
-    const fieldName = tableName + "_" + dbFieldName + (line == undefined ? "" : "_" + line);
+    const fieldName = tableName + '_' + dbFieldName + (line == undefined ? '' : '_' + line);
     this.props.form.setFieldsValue({ [fieldName]: value });
     this.entity[tableName][line == undefined ? 0 : line][dbFieldName] = value;
     // handleChange();   // 手动触发值改变事件
-  }
+  };
 
   setComponentproperty = (tableName, dbFieldName, props, line) => {
-    const fieldName = tableName + "_" + dbFieldName;
+    const fieldName = tableName + '_' + dbFieldName;
     if (line == undefined) {
       this.exComponentProperty[fieldName] = props;
     } else {
@@ -218,7 +218,7 @@ export default class QuickCreatePage extends CreatePage {
       }
       this.exComponentProperty[fieldName][line] = props;
     }
-  }
+  };
 
   /**
    * 转换初始值
@@ -235,7 +235,7 @@ export default class QuickCreatePage extends CreatePage {
     } else {
       return value;
     }
-  }
+  };
 
   /**
    * 转换保存数据
@@ -245,14 +245,14 @@ export default class QuickCreatePage extends CreatePage {
   convertSaveValue = (e, fieldShowType) => {
     if (fieldShowType == 'date') {
       return e.format('YYYY-MM-DD');
-    } else if (fieldShowType == "text" || fieldShowType == 'textarea' || fieldShowType == "radio") {
+    } else if (fieldShowType == 'text' || fieldShowType == 'textarea' || fieldShowType == 'radio') {
       return e.target.value;
-    } else if (fieldShowType == "auto_complete") {
+    } else if (fieldShowType == 'auto_complete') {
       return e.value;
     } else {
       return e;
     }
-  }
+  };
 
   /**
    * 渲染表单组件
@@ -265,9 +265,9 @@ export default class QuickCreatePage extends CreatePage {
     if (!onlFormField) {
       return null;
     }
-
+    console.log('onlFormField', onlFormField);
     //根据查询出来的配置渲染表单新增页面
-    onlFormField.forEach((item) => {
+    onlFormField.forEach(item => {
       let { tableName, tableType, relationType } = item.onlFormHead;
       let cols = [];
       // 附表一对多情况不进行该方式渲染
@@ -280,15 +280,15 @@ export default class QuickCreatePage extends CreatePage {
           let formItem;
           let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
           if (field.fieldValidType) {
-            const fieldValidJson = JSON.parse(field.fieldValidType)
+            const fieldValidJson = JSON.parse(field.fieldValidType);
             if (fieldValidJson.pattern !== null && fieldValidJson.message !== null) {
               rules.push({
                 pattern: new RegExp(fieldValidJson.pattern),
-                message: fieldValidJson.message
-              })
+                message: fieldValidJson.message,
+              });
             }
           }
-          if (["text", "textarea"].indexOf(field.fieldShowType) > -1) {
+          if (['text', 'textarea'].indexOf(field.fieldShowType) > -1) {
             rules.push({
               max: field.dbLength,
               message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}`,
@@ -299,14 +299,18 @@ export default class QuickCreatePage extends CreatePage {
           const commonPropertis = {
             disabled: field.isReadOnly,
             style: { width: '100%' },
-            onChange: e => this.handleChange(e, tableName, field.dbFieldName, 0, item, field)
+            onChange: e => this.handleChange(e, tableName, field.dbFieldName, 0, item, field),
           }; // 通用属性
-          const exComponentPropertis = this.exComponentProperty[tableName + "_" + field.dbFieldName];   // 代码扩展属性
+          const exComponentPropertis = this.exComponentProperty[
+            tableName + '_' + field.dbFieldName
+          ]; // 代码扩展属性
 
-          let initialValue = this.entity[tableName][0] && this.entity[tableName][0][field.dbFieldName]; // 初始值
+          // let initialValue =
+          //   this.entity[tableName][0] && this.entity[tableName][0][field.dbFieldName]; // 初始值
+          let initialValue = field.dbDefaultVal;
           cols.push(
-            <CFormItem key={tableName + "_" + field.dbFieldName} label={field.dbFieldTxt}>
-              {getFieldDecorator(tableName + "_" + field.dbFieldName, {
+            <CFormItem key={tableName + '_' + field.dbFieldName} label={field.dbFieldTxt}>
+              {getFieldDecorator(tableName + '_' + field.dbFieldName, {
                 initialValue: this.convertInitialValue(initialValue, field.fieldShowType),
                 rules: rules,
               })(this.getWidget(field, commonPropertis, fieldExtendJson, exComponentPropertis))}
@@ -326,7 +330,9 @@ export default class QuickCreatePage extends CreatePage {
   drawTable = () => {
     const { getFieldDecorator } = this.props.form;
     // 找到一对多的数据
-    const formInfo = this.props.onlFormField.find(formInfo => formInfo.onlFormHead.tableType == 2 && formInfo.onlFormHead.relationType == 0);
+    const formInfo = this.props.onlFormField.find(
+      formInfo => formInfo.onlFormHead.tableType == 2 && formInfo.onlFormHead.relationType == 0
+    );
     if (!formInfo) {
       return;
     }
@@ -336,21 +342,27 @@ export default class QuickCreatePage extends CreatePage {
     let tableTxt = onlFormHead.tableTxt;
     let tableName = onlFormHead.tableName;
     onlFormFields.forEach((field, index) => {
+      console.log('field', field);
       if (field.isShowForm) {
         const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
-        const exComponentPropertis = this.exComponentProperty[tableName + "_" + field.dbFieldName];   // 代码扩展属性
+        const exComponentPropertis = this.exComponentProperty[tableName + '_' + field.dbFieldName]; // 代码扩展属性
         let tailItem = {
           title: field.dbFieldTxt,
           dataIndex: field.dbFieldName,
           key: tableName + field.dbFieldName + index,
           width: itemColWidth.articleEditColWidth,
           render: (text, record) => {
-            const exComponentPropertis = this.exComponentProperty[tableName + "_" + field.dbFieldName];   // 代码扩展属性
+            const exComponentPropertis = this.exComponentProperty[
+              tableName + '_' + field.dbFieldName
+            ]; // 代码扩展属性
 
             return (
-              <CFormItem key={`${tableName}_${field.dbFieldName}_${record.line - 1}`} label={field.dbFieldTxt}>
+              <CFormItem
+                key={`${tableName}_${field.dbFieldName}_${record.line - 1}`}
+                label={field.dbFieldTxt}
+              >
                 {getFieldDecorator(`${tableName}_${field.dbFieldName}_${record.line - 1}`, {
-                  initialValue: this.convertInitialValue(text, field.fieldShowType),
+                  initialValue: this.convertInitialValue(field.dbDefaultVal, field.dbType),
                 })(
                   this.getWidget(
                     field,
@@ -368,7 +380,9 @@ export default class QuickCreatePage extends CreatePage {
                         ),
                     },
                     fieldExtendJson,
-                    exComponentPropertis ? exComponentPropertis[record.line - 1] : exComponentPropertis
+                    exComponentPropertis
+                      ? exComponentPropertis[record.line - 1]
+                      : exComponentPropertis
                   )
                 )}
               </CFormItem>
@@ -388,7 +402,7 @@ export default class QuickCreatePage extends CreatePage {
           handleFieldChange={this.handleFieldChange}
           drawTotalInfo={this.drawTotalInfo}
           drawBatchButton={this.drawBatchButton}
-          handleRemove={(data) => this.handleTableRemove(tableName, data)}
+          handleRemove={data => this.handleTableRemove(tableName, data)}
           notNote
         />
       </div>
@@ -400,12 +414,11 @@ export default class QuickCreatePage extends CreatePage {
     //   if (!key.startsWith(tableName)) {
     //     break;
     //   }
-
     //   for (const item of data) {
     //     this.exComponentProperty[key].splice(data.line - 1, 1);
     //   }
     // }
-  }
+  };
 
   getWidget = (field, commonPropertis, fieldExtendJson, exComponentPropertis) => {
     if (field.fieldShowType == 'date') {
@@ -413,18 +426,30 @@ export default class QuickCreatePage extends CreatePage {
     } else if (field.fieldShowType == 'number') {
       return <InputNumber {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
     } else if (field.fieldShowType == 'sel_tree') {
-      return <SimpleTreeSelect {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
+      return (
+        <SimpleTreeSelect {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />
+      );
     } else if (field.fieldShowType == 'radio') {
       return <SimpleRadio {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
     } else if (field.fieldShowType == 'auto_complete') {
-      return <SimpleAutoComplete {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
+      return (
+        <SimpleAutoComplete {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />
+      );
     } else if (field.fieldShowType == 'textarea') {
       return <Input.TextArea {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
+    } else if (field.fieldShowType == 'list') {
+      return (
+        <SimpleSelect
+          allowClear
+          placeholder={'请选择' + field.dbFieldTxt}
+          {...commonPropertis}
+          {...fieldExtendJson}
+        />
+      );
     } else {
       return <Input {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
     }
   };
 
-  handleFieldChange(e, fieldName, line) {
-  }
+  handleFieldChange(e, fieldName, line) {}
 }
