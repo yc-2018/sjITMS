@@ -47,7 +47,7 @@ export default class QuickCreatePage extends CreatePage {
   constructor(props) {
     super(props);
     this.state = {
-      title: '测试标题',
+      title: '',
       entityUuid: '',
       entity: {
         uuid: '',
@@ -58,9 +58,9 @@ export default class QuickCreatePage extends CreatePage {
   }
 
   dynamicqueryById() {
+    const { onlFormField } = this.props;
     if (this.props.showPageNow == 'update') {
       //const { tableName } = this.state;
-      const { onlFormField } = this.props;
       onlFormField.forEach(item => {
         let tableName = item.onlFormHead.tableName;
         if (item.onlFormHead.tableType == '1' || item.onlFormHead.tableType == '0') {
@@ -109,6 +109,9 @@ export default class QuickCreatePage extends CreatePage {
           });
         }
       });
+      
+    }else{
+      this.setState({title:'新建'+onlFormField[0].onlFormHead.tableTxt})
     }
   }
 
@@ -121,13 +124,31 @@ export default class QuickCreatePage extends CreatePage {
   };
 
   onSave = data => {
-    const result = this.beforeSave(this.entity);
+    const {entity} = this;
+    const { onlFormField } = this.props;
+    const result = this.beforeSave(entity);
     if (result === false) {
       return;
     }
-
+    //插入组织uuid和企业uuid
+    let loginOrgType = loginOrg().type.replace('_',"");
+    let loginInfo  = ["COMPANYUUID",loginOrgType,loginOrgType+"UUID"];
+    let loginObj = {
+      COMPANYUUID:loginCompany().uuid,
+      [loginOrgType]:loginOrg().uuid,
+      [loginOrgType+"UUID"]:loginOrg().uuid
+     }
+    for(let item of onlFormField){
+        for(let onl of item.onlFormFields ){
+           if(loginInfo.indexOf(onl.dbFieldName.toUpperCase())!=-1){
+                entity[item.onlFormHead.tableName].forEach(data =>{
+                data[onl.dbFieldName] = loginObj[onl.dbFieldName.toUpperCase()];
+            })
+           }
+        }
+    }
     //入参
-    const param = { code: this.props.onlFormField[0].onlFormHead.code, entity: this.entity };
+    const param = { code: this.props.onlFormField[0].onlFormHead.code, entity: entity };
     this.props.dispatch({
       type: 'quick/saveFormData',
       payload: {
@@ -261,73 +282,88 @@ export default class QuickCreatePage extends CreatePage {
     const { getFieldDecorator } = this.props.form;
     const { onlFormField } = this.props;
     let formPanel = [];
-
+    let updateOrAdd = this.props.showPageNow=='update';
     if (!onlFormField) {
       return null;
     }
-    console.log('onlFormField', onlFormField);
     //根据查询出来的配置渲染表单新增页面
     onlFormField.forEach(item => {
       let { tableName, tableType, relationType } = item.onlFormHead;
-      let cols = [];
+      //let cols = [];
       // 附表一对多情况不进行该方式渲染
       if (tableType == 2 && relationType == 0) {
         return;
       }
-
+      //所有序号
+     const sortNumber =  item.onlFormFields.map(current=>current.categorySort)
+                                   .filter((element,index, self)=> self.indexOf(element) === index).sort();
+    sortNumber.forEach(i=>{
+      let cols = [];
+      let category ;
       item.onlFormFields.forEach(field => {
-        if (field.isShowForm) {
-          let formItem;
-          let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
-          if (field.fieldValidType) {
-            const fieldValidJson = JSON.parse(field.fieldValidType);
-            if (fieldValidJson.pattern !== null && fieldValidJson.message !== null) {
+          if(field.isShowForm && i==field.categorySort){
+            category = field.category;
+            let formItem;
+            let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
+            if (field.fieldValidType) {
+              const fieldValidJson = JSON.parse(field.fieldValidType);
+              if (fieldValidJson.pattern !== null && fieldValidJson.message !== null) {
+                rules.push({
+                  pattern: new RegExp(fieldValidJson.pattern),
+                  message: fieldValidJson.message,
+                });
+              }
+            }
+            if (['text', 'textarea'].indexOf(field.fieldShowType) > -1) {
               rules.push({
-                pattern: new RegExp(fieldValidJson.pattern),
-                message: fieldValidJson.message,
+                max: field.dbLength,
+                message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}`,
               });
             }
+  
+            const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
+            let isReadOnly = false;
+            //isReadOnly （1:字段只读,2:新增时只读,3:不只读，0：编辑时只读）
+            if(field.isReadOnly==1 || (field.isReadOnly==0 && updateOrAdd)|| (field.isReadOnly==2 && !updateOrAdd)){
+              isReadOnly = true;
+            }
+            const commonPropertis = {
+              disabled: isReadOnly,
+              style: { width: '100%' },
+              onChange: e => this.handleChange(e, tableName, field.dbFieldName, 0, item, field),
+            }; // 通用属性
+            const exComponentPropertis = this.exComponentProperty[
+              tableName + '_' + field.dbFieldName
+            ]; // 代码扩展属性
+  
+            let initialValue =
+              this.entity[tableName][0] && this.entity[tableName][0][field.dbFieldName]; // 初始值  
+           // let initialValue = field.dbDefaultVal;
+            cols.push(
+              <CFormItem key={tableName + '_' + field.dbFieldName} label={field.dbFieldTxt}>
+                {getFieldDecorator(tableName + '_' + field.dbFieldName, {
+                  initialValue: this.convertInitialValue(initialValue, field.fieldShowType),
+                  rules: rules,
+                })(this.getWidget(field, commonPropertis, fieldExtendJson, exComponentPropertis))}
+              </CFormItem>
+            );
           }
-          if (['text', 'textarea'].indexOf(field.fieldShowType) > -1) {
-            rules.push({
-              max: field.dbLength,
-              message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}`,
-            });
-          }
-
-          const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
-          const commonPropertis = {
-            disabled: field.isReadOnly,
-            style: { width: '100%' },
-            onChange: e => this.handleChange(e, tableName, field.dbFieldName, 0, item, field),
-          }; // 通用属性
-          const exComponentPropertis = this.exComponentProperty[
-            tableName + '_' + field.dbFieldName
-          ]; // 代码扩展属性
-
-          // let initialValue =
-          //   this.entity[tableName][0] && this.entity[tableName][0][field.dbFieldName]; // 初始值
-          let initialValue = field.dbDefaultVal;
-          cols.push(
-            <CFormItem key={tableName + '_' + field.dbFieldName} label={field.dbFieldTxt}>
-              {getFieldDecorator(tableName + '_' + field.dbFieldName, {
-                initialValue: this.convertInitialValue(initialValue, field.fieldShowType),
-                rules: rules,
-              })(this.getWidget(field, commonPropertis, fieldExtendJson, exComponentPropertis))}
-            </CFormItem>
-          );
-        }
+        
+        
       });
 
       formPanel.push(
-        <FormPanel key={item.onlFormHead.id} title={item.onlFormHead.tableTxt} cols={cols} />
+        <FormPanel key={item.onlFormHead.id} title={category} cols={cols} />
       );
+    })  
+      
     });
 
     return formPanel;
   };
 
   drawTable = () => {
+    let updateOrAdd = this.props.showPageNow=='update';
     const { getFieldDecorator } = this.props.form;
     // 找到一对多的数据
     const formInfo = this.props.onlFormField.find(
@@ -342,10 +378,12 @@ export default class QuickCreatePage extends CreatePage {
     let tableTxt = onlFormHead.tableTxt;
     let tableName = onlFormHead.tableName;
     onlFormFields.forEach((field, index) => {
-      console.log('field', field);
       if (field.isShowForm) {
         const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
         const exComponentPropertis = this.exComponentProperty[tableName + '_' + field.dbFieldName]; // 代码扩展属性
+        //isReadOnly （1:字段只读,2:新增时只读,3:不只读，0：编辑时只读）
+        let isReadOnly = (field.isReadOnly==1 || (field.isReadOnly==0 && updateOrAdd)|| (field.isReadOnly==2 && !updateOrAdd))?true:false;
+
         let tailItem = {
           title: field.dbFieldTxt,
           dataIndex: field.dbFieldName,
@@ -362,12 +400,12 @@ export default class QuickCreatePage extends CreatePage {
                 label={field.dbFieldTxt}
               >
                 {getFieldDecorator(`${tableName}_${field.dbFieldName}_${record.line - 1}`, {
-                  initialValue: this.convertInitialValue(field.dbDefaultVal, field.dbType),
+                  initialValue:this.convertInitialValue(text, field.fieldShowType), //this.convertInitialValue(field.dbDefaultVal, field.dbType),
                 })(
                   this.getWidget(
                     field,
                     {
-                      disabled: field.isReadOnly,
+                      disabled: isReadOnly,
                       style: { width: '100%' },
                       onChange: e =>
                         this.handleChange(
