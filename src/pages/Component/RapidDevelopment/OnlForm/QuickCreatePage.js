@@ -17,6 +17,7 @@ import {
   SimpleTreeSelect,
   SimpleRadio,
   SimpleAutoComplete,
+  SimpleAddress,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import ItemEditTable from '@/pages/Component/Form/ItemEditTable';
 import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
@@ -337,7 +338,9 @@ export default class QuickCreatePage extends CreatePage {
             ]; // 代码扩展属性
   
             let initialValue =
-              this.entity[tableName][0] && this.entity[tableName][0][field.dbFieldName]; // 初始值  
+            this.entity[tableName].length === 0
+              ? field.dbDefaultVal
+              : this.entity[tableName][0] && this.entity[tableName][0][field.dbFieldName];
            // let initialValue = field.dbDefaultVal;
             cols.push(
               <CFormItem key={tableName + '_' + field.dbFieldName} label={field.dbFieldTxt}>
@@ -393,14 +396,14 @@ export default class QuickCreatePage extends CreatePage {
             const exComponentPropertis = this.exComponentProperty[
               tableName + '_' + field.dbFieldName
             ]; // 代码扩展属性
-
+            let initialValue = text === undefined ? field.dbDefaultVal : text;
             return (
               <CFormItem
                 key={`${tableName}_${field.dbFieldName}_${record.line - 1}`}
                 label={field.dbFieldTxt}
               >
                 {getFieldDecorator(`${tableName}_${field.dbFieldName}_${record.line - 1}`, {
-                  initialValue:this.convertInitialValue(text, field.fieldShowType), //this.convertInitialValue(field.dbDefaultVal, field.dbType),
+                  initialValue: this.convertInitialValue(initialValue, field.fieldShowType),
                 })(
                   this.getWidget(
                     field,
@@ -484,6 +487,8 @@ export default class QuickCreatePage extends CreatePage {
           {...fieldExtendJson}
         />
       );
+    } else if (field.fieldShowType == 'pca') {
+      return <SimpleAddress {...commonPropertis} />;
     } else {
       return <Input {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
     }
