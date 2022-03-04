@@ -59,9 +59,9 @@ export default class QuickCreatePage extends CreatePage {
   }
 
   dynamicqueryById() {
+    const { onlFormField } = this.props;
     if (this.props.showPageNow == 'update') {
       //const { tableName } = this.state;
-      const { onlFormField } = this.props;
       onlFormField.forEach(item => {
         let tableName = item.onlFormHead.tableName;
         if (item.onlFormHead.tableType == '1' || item.onlFormHead.tableType == '0') {
@@ -108,6 +108,19 @@ export default class QuickCreatePage extends CreatePage {
               }
             },
           });
+        }
+      });
+    } else {
+      //默认初始值
+      onlFormField.forEach(item => {
+        let tableName = item.onlFormHead.tableName;
+        if (item.onlFormHead.tableType == '1' || item.onlFormHead.tableType == '0') {
+          const result = item.onlFormFields.filter(x => x.dbDefaultVal !== undefined);
+          this.entity[tableName][0] = {};
+          result.forEach(data => {
+            this.entity[tableName][0][data.dbFieldName] = data.dbDefaultVal;
+          });
+          this.setState({});
         }
       });
     }
@@ -349,10 +362,6 @@ export default class QuickCreatePage extends CreatePage {
       if (field.isShowForm) {
         const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
         const exComponentPropertis = this.exComponentProperty[tableName + '_' + field.dbFieldName]; // 代码扩展属性
-        // let initialValue =
-        //     this.entity[tableName].length === 0
-        //       ? field.dbDefaultVal
-        //       : this.entity[tableName][0] && this.entity[tableName][0][field.dbFieldName];
         let tailItem = {
           title: field.dbFieldTxt,
           dataIndex: field.dbFieldName,
@@ -362,14 +371,15 @@ export default class QuickCreatePage extends CreatePage {
             const exComponentPropertis = this.exComponentProperty[
               tableName + '_' + field.dbFieldName
             ]; // 代码扩展属性
-            let initialValue = text === undefined ? field.dbDefaultVal : text;
+            // let initialValue = text === undefined ? field.dbDefaultVal : text;
             return (
               <CFormItem
                 key={`${tableName}_${field.dbFieldName}_${record.line - 1}`}
                 label={field.dbFieldTxt}
               >
                 {getFieldDecorator(`${tableName}_${field.dbFieldName}_${record.line - 1}`, {
-                  initialValue: this.convertInitialValue(initialValue, field.fieldShowType),
+                  // initialValue: this.convertInitialValue(initialValue, field.fieldShowType),
+                  initialValue: this.convertInitialValue(text, field.fieldShowType),
                 })(
                   this.getWidget(
                     field,
