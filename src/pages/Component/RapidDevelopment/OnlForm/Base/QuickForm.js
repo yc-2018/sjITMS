@@ -5,10 +5,7 @@ import Create from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageDe
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickFormSearchPageDefault';
 import QuickViewPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickViewPageDefault';
 
-@connect(({ quick, loading }) => ({
-  quick,
-  loading: loading.models.quick,
-}))
+//目录跳转界面
 export default class QuickForm extends PureComponent {
   constructor(props) {
     super(props);
