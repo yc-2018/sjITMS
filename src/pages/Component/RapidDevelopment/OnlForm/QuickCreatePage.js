@@ -117,9 +117,20 @@ export default class QuickCreatePage extends CreatePage {
           });
         }
       });
-      
-    }else{
-      this.setState({title:'新建'+onlFormField[0].onlFormHead.tableTxt})
+    } else {
+      this.setState({ title: '新建' + onlFormField[0].onlFormHead.tableTxt });
+      //默认初始值
+      onlFormField.forEach(item => {
+        let tableName = item.onlFormHead.tableName;
+        if (item.onlFormHead.tableType == '1' || item.onlFormHead.tableType == '0') {
+          const result = item.onlFormFields.filter(x => x.dbDefaultVal !== undefined);
+          this.entity[tableName][0] = {};
+          result.forEach(data => {
+            this.entity[tableName][0][data.dbFieldName] = data.dbDefaultVal;
+          });
+          this.setState({});
+        }
+      });
     }
   }
 
@@ -132,28 +143,28 @@ export default class QuickCreatePage extends CreatePage {
   };
 
   onSave = data => {
-    const {entity} = this;
+    const { entity } = this;
     const { onlFormField } = this.props;
     const result = this.beforeSave(entity);
     if (result === false) {
       return;
     }
     //插入组织uuid和企业uuid
-    let loginOrgType = loginOrg().type.replace('_',"");
-    let loginInfo  = ["COMPANYUUID",loginOrgType,loginOrgType+"UUID"];
+    let loginOrgType = loginOrg().type.replace('_', '');
+    let loginInfo = ['COMPANYUUID', loginOrgType, loginOrgType + 'UUID'];
     let loginObj = {
-      COMPANYUUID:loginCompany().uuid,
-      [loginOrgType]:loginOrg().uuid,
-      [loginOrgType+"UUID"]:loginOrg().uuid
-     }
-    for(let item of onlFormField){
-        for(let onl of item.onlFormFields ){
-           if(loginInfo.indexOf(onl.dbFieldName.toUpperCase())!=-1){
-                entity[item.onlFormHead.tableName].forEach(data =>{
-                data[onl.dbFieldName] = loginObj[onl.dbFieldName.toUpperCase()];
-            })
-           }
+      COMPANYUUID: loginCompany().uuid,
+      [loginOrgType]: loginOrg().uuid,
+      [loginOrgType + 'UUID']: loginOrg().uuid,
+    };
+    for (let item of onlFormField) {
+      for (let onl of item.onlFormFields) {
+        if (loginInfo.indexOf(onl.dbFieldName.toUpperCase()) != -1) {
+          entity[item.onlFormHead.tableName].forEach(data => {
+            data[onl.dbFieldName] = loginObj[onl.dbFieldName.toUpperCase()];
+          });
         }
+      }
     }
     //入参
     const param = { code: this.props.onlFormField[0].onlFormHead.code, entity: entity };
@@ -290,7 +301,7 @@ export default class QuickCreatePage extends CreatePage {
     const { getFieldDecorator } = this.props.form;
     const { onlFormField } = this.props;
     let formPanel = [];
-    let updateOrAdd = this.props.showPageNow=='update';
+    let updateOrAdd = this.props.showPageNow == 'update';
     if (!onlFormField) {
       return null;
     }
@@ -303,13 +314,15 @@ export default class QuickCreatePage extends CreatePage {
         return;
       }
       //所有序号
-     const sortNumber =  item.onlFormFields.map(current=>current.categorySort)
-                                   .filter((element,index, self)=> self.indexOf(element) === index).sort();
-    sortNumber.forEach(i=>{
-      let cols = [];
-      let category ;
-      item.onlFormFields.forEach(field => {
-          if(field.isShowForm && i==field.categorySort){
+      const sortNumber = item.onlFormFields
+        .map(current => current.categorySort)
+        .filter((element, index, self) => self.indexOf(element) === index)
+        .sort();
+      sortNumber.forEach(i => {
+        let cols = [];
+        let category;
+        item.onlFormFields.forEach(field => {
+          if (field.isShowForm && i == field.categorySort) {
             category = field.category;
             let formItem;
             let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
@@ -328,11 +341,15 @@ export default class QuickCreatePage extends CreatePage {
                 message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}`,
               });
             }
-  
+
             const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
             let isReadOnly = false;
             //isReadOnly （1:字段只读,2:新增时只读,3:不只读，0：编辑时只读）
-            if(field.isReadOnly==1 || (field.isReadOnly==0 && updateOrAdd)|| (field.isReadOnly==2 && !updateOrAdd)){
+            if (
+              field.isReadOnly == 1 ||
+              (field.isReadOnly == 0 && updateOrAdd) ||
+              (field.isReadOnly == 2 && !updateOrAdd)
+            ) {
               isReadOnly = true;
             }
             const commonPropertis = {
@@ -343,12 +360,12 @@ export default class QuickCreatePage extends CreatePage {
             const exComponentPropertis = this.exComponentProperty[
               tableName + '_' + field.dbFieldName
             ]; // 代码扩展属性
-  
+
             let initialValue =
-            this.entity[tableName].length === 0
-              ? field.dbDefaultVal
-              : this.entity[tableName][0] && this.entity[tableName][0][field.dbFieldName];
-           // let initialValue = field.dbDefaultVal;
+              this.entity[tableName].length === 0
+                ? field.dbDefaultVal
+                : this.entity[tableName][0] && this.entity[tableName][0][field.dbFieldName];
+            // let initialValue = field.dbDefaultVal;
             cols.push(
               <CFormItem key={tableName + '_' + field.dbFieldName} label={field.dbFieldTxt}>
                 {getFieldDecorator(tableName + '_' + field.dbFieldName, {
@@ -358,22 +375,17 @@ export default class QuickCreatePage extends CreatePage {
               </CFormItem>
             );
           }
-        
-        
-      });
+        });
 
-      formPanel.push(
-        <FormPanel key={item.onlFormHead.id} title={category} cols={cols} />
-      );
-    })  
-      
+        formPanel.push(<FormPanel key={item.onlFormHead.id} title={category} cols={cols} />);
+      });
     });
 
     return formPanel;
   };
 
   drawTable = () => {
-    let updateOrAdd = this.props.showPageNow=='update';
+    let updateOrAdd = this.props.showPageNow == 'update';
     const { getFieldDecorator } = this.props.form;
     // 找到一对多的数据
     const formInfo = this.props.onlFormField.find(
@@ -392,7 +404,12 @@ export default class QuickCreatePage extends CreatePage {
         const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
         const exComponentPropertis = this.exComponentProperty[tableName + '_' + field.dbFieldName]; // 代码扩展属性
         //isReadOnly （1:字段只读,2:新增时只读,3:不只读，0：编辑时只读）
-        let isReadOnly = (field.isReadOnly==1 || (field.isReadOnly==0 && updateOrAdd)|| (field.isReadOnly==2 && !updateOrAdd))?true:false;
+        let isReadOnly =
+          field.isReadOnly == 1 ||
+          (field.isReadOnly == 0 && updateOrAdd) ||
+          (field.isReadOnly == 2 && !updateOrAdd)
+            ? true
+            : false;
 
         let tailItem = {
           title: field.dbFieldTxt,
@@ -403,14 +420,15 @@ export default class QuickCreatePage extends CreatePage {
             const exComponentPropertis = this.exComponentProperty[
               tableName + '_' + field.dbFieldName
             ]; // 代码扩展属性
-            let initialValue = text === undefined ? field.dbDefaultVal : text;
+            // let initialValue = text === undefined ? field.dbDefaultVal : text;
             return (
               <CFormItem
                 key={`${tableName}_${field.dbFieldName}_${record.line - 1}`}
                 label={field.dbFieldTxt}
               >
                 {getFieldDecorator(`${tableName}_${field.dbFieldName}_${record.line - 1}`, {
-                  initialValue: this.convertInitialValue(initialValue, field.fieldShowType),
+                  // initialValue: this.convertInitialValue(initialValue, field.fieldShowType),
+                  initialValue: this.convertInitialValue(text, field.fieldShowType),
                 })(
                   this.getWidget(
                     field,
