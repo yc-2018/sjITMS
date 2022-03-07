@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-02-10 14:16:00
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-02-25 11:56:09
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-03-02 10:24:00
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -50,7 +50,9 @@ export default class SimpleSelect extends PureComponent {
 
   onChange = value => {
     // 用于form表单获取控件值
-    if (this.props.onChange) this.props.onChange(value);
+    if (this.props.onChange) {
+      this.props.onChange(value);
+    }
   };
 
   onFocus = async () => {
@@ -85,7 +87,7 @@ export default class SimpleSelect extends PureComponent {
     return (
       <Select
         {...this.props}
-        onChange={this.onChange}
+        // onChange={this.onChange}
         onSearch={this.onSearch}
         onFocus={this.onFocus}
       >

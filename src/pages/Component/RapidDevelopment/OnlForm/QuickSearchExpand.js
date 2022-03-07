@@ -9,6 +9,8 @@ import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuer
 import SearchMoreAction from '@/pages/Component/Form/SearchMoreAction';
 import ExportJsonExcel from 'js-export-excel';
 import { routerRedux } from 'dva/router';
+import { Badge } from 'antd';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
 export default class QuickSearchExpand extends SearchPage {
   constructor(props) {
@@ -23,6 +25,7 @@ export default class QuickSearchExpand extends SearchPage {
       advancedFields: [],
       reportCode: props.quickuuid,
       pageFilters: { quickuuid: props.quickuuid, changePage: true },
+      isOrgQuery: [],
       key: props.quickuuid + 'quick.search.table',
     }; //用于缓存用户配置数据
   }
@@ -53,6 +56,40 @@ export default class QuickSearchExpand extends SearchPage {
           //解决用户列展示失效问题 暂时解决方法（赋值两次）
           this.initConfig(response.result);
 
+          let companyuuid = response.result.columns.find(
+            item => item.fieldName.toLowerCase() == 'companyuuid'
+          );
+          let orgName =
+            loginOrg().type.toLowerCase() == 'dc'
+              ? loginOrg().type.toLowerCase() + 'Uuid'
+              : 'dispatchcenteruuid';
+          let org = response.result.columns.find(item => item.fieldName.toLowerCase() == orgName);
+
+          if (companyuuid) {
+            this.state.isOrgQuery = [
+              { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+            ];
+          }
+
+          if (org) {
+            this.setState({
+              isOrgQuery: response.result.reportHead.organizationQuery
+                ? [
+                    {
+                      field:
+                        loginOrg().type.toLowerCase() == 'dc'
+                          ? loginOrg().type.toLowerCase() + 'Uuid'
+                          : 'dispatchCenterUuid',
+                      type: 'VarChar',
+                      rule: 'eq',
+                      val: loginOrg().uuid,
+                    },
+                    ...this.state.isOrgQuery,
+                  ]
+                : [...this.state.isOrgQuery],
+            });
+          }
+
           //配置查询成功后再去查询数据
           this.onSearch();
         }
@@ -75,6 +112,18 @@ export default class QuickSearchExpand extends SearchPage {
   convertData = (data, preview, record) => {
     if (!preview) return data;
     return record[preview];
+  };
+
+  colorChange = (data, color) => {
+    if (!color) return '';
+
+    let colorJson = JSON.parse(color);
+    if (!Array.isArray(colorJson)) return '';
+    let colorItem = colorJson.find(item => item.value == data);
+
+    if (!colorItem) return '';
+
+    return colorItem.color;
   };
 
   //初始化配置
@@ -103,17 +152,36 @@ export default class QuickSearchExpand extends SearchPage {
         render:
           column.clickEvent == '1'
             ? (val, record) => (
-                <a onClick={this.onView.bind(this, record)}>
+                <a
+                  onClick={this.onView.bind(this, record)}
+                  style={{ color: this.colorChange(val, column.textColor) }}
+                >
                   {this.convertData(val, column.preview, record)}
                 </a>
               )
             : column.clickEvent == '2'
               ? (val, record) => (
-                  <a onClick={this.onOtherView.bind(this, record, jumpPaths)}>
+                  <a
+                    onClick={this.onOtherView.bind(this, record, jumpPaths)}
+                    style={{ color: this.colorChange(val, column.textColor) }}
+                  >
                     {this.convertData(val, column.preview, record)}
                   </a>
                 )
-              : (val, record) => <p3>{this.convertData(val, column.preview, record)}</p3>,
+              : (val, record) => {
+                  if (column.textColor && Array.isArray(JSON.parse(column.textColor))) {
+                    return (
+                      <div>
+                        <Badge
+                          color={this.colorChange(val, column.textColor)}
+                          text={this.convertData(val, column.preview, record)}
+                        />
+                      </div>
+                    );
+                  } else {
+                    return <p3>{this.convertData(val, column.preview, record)}</p3>;
+                  }
+                },
       };
       quickColumns.push(qiuckcolumn);
     });
@@ -209,18 +277,18 @@ export default class QuickSearchExpand extends SearchPage {
     let that = this;
     if (selectedRows.length !== 0) {
       for (var i = 0; i < selectedRows.length; i++) {
-        this.deleteById(selectedRows[i],params);
+        this.deleteById(selectedRows[i], params);
       }
       dispatch({
         type: 'quick/dynamicDelete',
-        payload:{params},
+        payload: { params },
         callback: response => {
           // if (batch) {
           //   that.batchCallback(response, record);
           //   resolve({ success: response.success });
           //   return;
           // }
-  
+
           if (response && response.success) {
             this.setState({ selectedRows: [] });
             that.refreshTable();
@@ -238,26 +306,26 @@ export default class QuickSearchExpand extends SearchPage {
    */
   deleteById = (record, paramsData) => {
     const { dispatch, tableName, onlFormField } = this.props;
-    
+
     var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
     const recordMap = new Map(Object.entries(record));
-    var val =record[field];
-   
-    onlFormField.forEach(x =>{
-      var field ;
+    var val = record[field];
+
+    onlFormField.forEach(x => {
+      var field;
       var tableName = x.onlFormHead.tableName;
-      if(x.onlFormHead.tableType=='2'){
-         field = x.onlFormFields.find(x=>x.mainField!=null)?.dbFieldName;
-       }else{
-         field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
-       }
-       var params={
-          tableName,
-          condition: { params: [{field, rule: 'eq',val:[val]}] },
-          deleteAll: 'false',
-        }
-        paramsData.push(params);
-    })
+      if (x.onlFormHead.tableType == '2') {
+        field = x.onlFormFields.find(x => x.mainField != null)?.dbFieldName;
+      } else {
+        field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
+      }
+      var params = {
+        tableName,
+        condition: { params: [{ field, rule: 'eq', val: [val] }] },
+        deleteAll: 'false',
+      };
+      paramsData.push(params);
+    });
   };
 
   //导出
@@ -303,14 +371,20 @@ export default class QuickSearchExpand extends SearchPage {
   onSearch = filter => {
     if (typeof filter == 'undefined') {
       //重置搜索条件
-      this.state.pageFilters = { quickuuid: this.props.quickuuid };
+      this.state.pageFilters = {
+        quickuuid: this.props.quickuuid,
+        superQuery: { matchType: '', queryParams: this.state.isOrgQuery }, //增加组织 公司id查询条件
+      };
       this.getData(this.state.pageFilters);
     } else {
       const { dispatch } = this.props;
       const { columns } = this.state;
       const pageFilters = {
         ...this.state.pageFilters,
-        superQuery: { matchType: filter.matchType, queryParams: filter.queryParams },
+        superQuery: {
+          matchType: filter.matchType,
+          queryParams: [...filter.queryParams, ...this.state.isOrgQuery],
+        },
       };
       this.state.pageFilters = pageFilters;
       this.refreshTable();

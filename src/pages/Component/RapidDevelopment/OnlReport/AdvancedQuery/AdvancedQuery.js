@@ -65,13 +65,22 @@ export default class AdvancedQuery extends Component {
 
   buildMenu = () => {
     const { treeDatas } = this.state;
-    return (
-      <Menu onClick={this.handleMenuClick}>
-        {treeDatas.map(data => {
-          return <Menu.Item key={data.alias}>{data.alias}</Menu.Item>;
-        })}
-      </Menu>
-    );
+    if (treeDatas.length > 0) {
+      return (
+        <Menu onClick={this.handleMenuClick}>
+          {treeDatas.map(data => {
+            return <Menu.Item key={data.alias}>{data.alias}</Menu.Item>;
+          })}
+        </Menu>
+      );
+    } else {
+      return (
+        <Empty
+          style={{ textAlign: 'center' }}
+          description={<span style={{ color: '#aeb8c2' }}>没有保存任何查询</span>}
+        />
+      );
+    }
   };
 
   handleMenuClick = ({ key }) => {
