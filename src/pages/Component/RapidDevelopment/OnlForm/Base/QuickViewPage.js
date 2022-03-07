@@ -21,10 +21,9 @@ import { routerRedux } from 'dva/router';
 
 const TabPane = Tabs.TabPane;
 
-@connect(({ quick, loading }) => ({
-  quick,
-  loading: loading.models.quick,
-}))
+/**
+ * 预览界面
+ */
 export default class QuickView extends ViewPage {
   entity = {};
   //初始化表单数据

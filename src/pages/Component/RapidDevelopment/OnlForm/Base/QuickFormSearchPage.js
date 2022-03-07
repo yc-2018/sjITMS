@@ -1,18 +1,22 @@
 import React, { PureComponent } from 'react';
-import { Table, Button, Input, Col, Row, message } from 'antd';
+import { Table, Button, Input, Col, Row, message, Popconfirm } from 'antd';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
 import axios from 'axios';
 import SearchPage from '@/pages/Component/Page/SearchPage';
 import { colWidth } from '@/utils/ColWidth';
 import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuery/SimpleQuery';
+import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import SearchMoreAction from '@/pages/Component/Form/SearchMoreAction';
 import ExportJsonExcel from 'js-export-excel';
 import { routerRedux } from 'dva/router';
 import { Badge } from 'antd';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
-export default class QuickSearchExpand extends SearchPage {
+/**
+ * 查询界面
+ */
+export default class QuickFormSearchPage extends SearchPage {
   constructor(props) {
     super(props);
     this.state = {
@@ -75,17 +79,17 @@ export default class QuickSearchExpand extends SearchPage {
             this.setState({
               isOrgQuery: response.result.reportHead.organizationQuery
                 ? [
-                    {
-                      field:
-                        loginOrg().type.toLowerCase() == 'dc'
-                          ? loginOrg().type.toLowerCase() + 'Uuid'
-                          : 'dispatchCenterUuid',
-                      type: 'VarChar',
-                      rule: 'eq',
-                      val: loginOrg().uuid,
-                    },
-                    ...this.state.isOrgQuery,
-                  ]
+                  {
+                    field:
+                      loginOrg().type.toLowerCase() == 'dc'
+                        ? loginOrg().type.toLowerCase() + 'Uuid'
+                        : 'dispatchCenterUuid',
+                    type: 'VarChar',
+                    rule: 'eq',
+                    val: loginOrg().uuid,
+                  },
+                  ...this.state.isOrgQuery,
+                ]
                 : [...this.state.isOrgQuery],
             });
           }
@@ -152,36 +156,36 @@ export default class QuickSearchExpand extends SearchPage {
         render:
           column.clickEvent == '1'
             ? (val, record) => (
+              <a
+                onClick={this.onView.bind(this, record)}
+                style={{ color: this.colorChange(val, column.textColor) }}
+              >
+                {this.convertData(val, column.preview, record)}
+              </a>
+            )
+            : column.clickEvent == '2'
+              ? (val, record) => (
                 <a
-                  onClick={this.onView.bind(this, record)}
+                  onClick={this.onOtherView.bind(this, record, jumpPaths)}
                   style={{ color: this.colorChange(val, column.textColor) }}
                 >
                   {this.convertData(val, column.preview, record)}
                 </a>
               )
-            : column.clickEvent == '2'
-              ? (val, record) => (
-                  <a
-                    onClick={this.onOtherView.bind(this, record, jumpPaths)}
-                    style={{ color: this.colorChange(val, column.textColor) }}
-                  >
-                    {this.convertData(val, column.preview, record)}
-                  </a>
-                )
               : (val, record) => {
-                  if (column.textColor && Array.isArray(JSON.parse(column.textColor))) {
-                    return (
-                      <div>
-                        <Badge
-                          color={this.colorChange(val, column.textColor)}
-                          text={this.convertData(val, column.preview, record)}
-                        />
-                      </div>
-                    );
-                  } else {
-                    return <p3>{this.convertData(val, column.preview, record)}</p3>;
-                  }
-                },
+                if (column.textColor && Array.isArray(JSON.parse(column.textColor))) {
+                  return (
+                    <div>
+                      <Badge
+                        color={this.colorChange(val, column.textColor)}
+                        text={this.convertData(val, column.preview, record)}
+                      />
+                    </div>
+                  );
+                } else {
+                  return <p3>{this.convertData(val, column.preview, record)}</p3>;
+                }
+              },
       };
       quickColumns.push(qiuckcolumn);
     });
@@ -349,7 +353,7 @@ export default class QuickSearchExpand extends SearchPage {
             sheetheader.push(a.title);
           });
           option.fileName = this.state.title; //导出的Excel文件名
-          response.data.records.map(item => {});
+          response.data.records.map(item => { });
           option.datas = [
             {
               sheetData: response.data.records,
@@ -424,10 +428,61 @@ export default class QuickSearchExpand extends SearchPage {
     },
   ];
 
+
+
   /**
    * 绘制右上角按钮
    */
-  drawActionButton = () => {};
+  drawActionButton = () => {
+    //额外的菜单选项
+    const menus = [];
+    menus.push({
+      // disabled: !havePermission(STORE_RES.CREATE), //权限认证
+      name: '测试', //功能名称
+      onClick: this.test, //功能实现
+    });
+    return (
+      <div>
+        <Button onClick={this.onCreate} type="primary" icon="plus">
+          新建
+        </Button>
+        <Button onClick={this.onUpdate} type="primary">
+          编辑
+        </Button>
+        <Button onClick={this.onView} type="primary">
+          查看
+        </Button>
+        <Button onClick={this.port} type="primary">
+          导出
+        </Button>
+      </div>
+    );
+  };
+
+  /**
+   * 绘制批量工具栏
+   */
+  drawToolbarPanel = () => {
+    return (
+      <div>
+        <Popconfirm
+          title="你确定要删除所选中的内容吗?"
+          onConfirm={() => this.onBatchDelete()}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Button>删除</Button>
+        </Popconfirm>
+        <AdvanceQuery
+          searchFields={this.state.advancedFields}
+          fieldInfos={this.columns}
+          filterValue={this.state.pageFilter.searchKeyValues}
+          refresh={this.onSearch}
+          reportCode={this.state.reportCode}
+        />
+      </div>
+    );
+  };
 
   /**
    * 绘制搜索表格

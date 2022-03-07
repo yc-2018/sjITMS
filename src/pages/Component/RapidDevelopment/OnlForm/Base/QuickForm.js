@@ -1,9 +1,9 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
-import Create from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePage';
-import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickFormSearchPage';
-import QuickViewPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickViewPage';
+import Create from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageDefault';
+import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickFormSearchPageDefault';
+import QuickViewPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickViewPageDefault';
 
 @connect(({ quick, loading }) => ({
   quick,
