@@ -78,7 +78,16 @@ export default class QuickCreatePage extends CreatePage {
             callback: response => {
               if (response.result.records != 'false') {
                 this.entity[tableName] = response.result.records;
-                this.setState({});
+                let title =item.onlFormHead.formTitle; 
+                console.log("item.onlFormHead.formTitle",item.onlFormHead.formTitle);   
+                if(item.onlFormHead.formTitle && item.onlFormHead.formTitle.indexOf("]")!=-1){   
+                  const titles =  item.onlFormHead.formTitle.split("]");
+                  var entityCode = response.result.records[0][titles[0].replace("[","")];
+                  var entityTitle = titles[1].indexOf("}")==-1?titles[1] : response.result.records[0][titles[1].replace("}","").replace("{","")];
+                  console.log("entityTitle",entityTitle);
+                  title = '['+entityCode+']'+entityTitle;
+                }
+                this.setState({title:title});
               }
             },
           });

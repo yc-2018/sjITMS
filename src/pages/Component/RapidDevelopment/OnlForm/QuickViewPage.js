@@ -57,20 +57,23 @@ export default class QuickView extends ViewPage {
       title: '基本信息',
       quickuuid: props.quickuuid,
       entityUuid: props.params.entityUuid,
+      entityCode:""
     };
 
     this.initonlFormField();
   }
 
   componentDidMount() {
+    console.log("componentDidMount");
     this.dynamicqueryById();
   }
 
   componentWillReceiveProps(nextProps) {}
 
   dynamicqueryById() {
-    const { onlFormField } = this.props;
-    onlFormField.forEach(item => {
+    //const { onlFormField } = this.props;
+    const onsda = this.props.onlFormField;
+    onsda.forEach(item => {
       let tableName;
       if (item.onlFormHead.viewSql) {
         tableName = item.onlFormHead.viewSql;
@@ -85,13 +88,21 @@ export default class QuickView extends ViewPage {
             params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
           },
         };
+        //debugger;
         this.props.dispatch({
           type: 'quick/dynamicqueryById',
           payload: param,
           callback: response => {
             if (response.result.records != 'false') {
               this.entity[tableName] = response.result.records;
-              this.setState({});
+              let title =item.onlFormHead.formTitle; 
+              if(item.onlFormHead.formTitle && item.onlFormHead.formTitle.indexOf("]")!=-1){   
+                const titles =  item.onlFormHead.formTitle.split("]");
+                var entityCode = response.result.records[0][titles[0].replace("[","")];
+                var entityTitle = titles[1].indexOf("}")==-1?titles[1] : response.result.records[0][titles[1].replace("}","").replace("{","")];
+                title = '['+entityCode+']'+entityTitle;
+              }
+              this.setState({title:title,entityCode:entityCode});
             }
           },
         });
@@ -121,12 +132,83 @@ export default class QuickView extends ViewPage {
       }
     });
   }
-
+  /**
+   * 通过指定字段查
+   */
+  dynamicQuery(entityCode,entityUuid) {
+    const { onlFormField } = this.props;
+    console.log("onlFormField",onlFormField);
+    onlFormField.forEach(item => {
+      let tableName;
+      if (item.onlFormHead.viewSql) {
+        tableName = item.onlFormHead.viewSql;
+      } else {
+        tableName = item.onlFormHead.tableName;
+      }
+      if (item.onlFormHead.tableType == '1' || item.onlFormHead.tableType == '0') {
+        let titles;
+        var keyName = item.onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
+        if(item.onlFormHead.formTitle && item.onlFormHead.formTitle.indexOf("]")!=-1){
+          titles = item.onlFormHead.formTitle.split("]");
+          var field = titles[0].substr(1);
+        }
+        if (!entityCode && !entityUuid) {
+          entityCode = this.state.entityCode;
+        }
+        const param = {
+          tableName: tableName,
+          condition: {
+            params: [{ field: field, rule: 'eq', val: [entityCode] }],
+          },
+        };
+        this.props.dispatch({
+          type: 'quick/dynamicqueryById',
+          payload: param,
+          callback: response => {
+            if (response.result.records != 'false') {
+              this.entity[tableName] = response.result.records;
+              var entityTitle = titles[1].indexOf("}")==-1?titles[1] : response.result.records[0][titles[1].replace("}","").replace("{","")];
+              let title = '['+response.result.records[0][titles[0].substr(1)]+']'+ entityTitle;
+              
+              this.setState({entityCode:entityCode,title:title,entityUuid:response.result.records[0][keyName]});
+            }else{
+              message.error("查询的数据不存在！");
+            }
+          },
+        });
+      } else {
+        var field = item.onlFormFields.find(x => x.mainField != null && x.mainField != '')
+          ?.dbFieldName;
+        const param = {
+          tableName: tableName,
+          condition: {
+            params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
+          },
+        };
+        this.props.dispatch({
+          type: 'quick/dynamicqueryById',
+          payload: param,
+          callback: response => {
+            if (response.result.records != 'false') {
+              this.entity[tableName] = response.result.records;
+              for (let i = 0; i < this.entity[tableName].length; i++) {
+                //增加line
+                this.entity[tableName][i] = { ...this.entity[tableName][i], line: i + 1 };
+              }
+              this.setState({});
+            }
+          },
+        });
+      }
+    });
+  }
   /**
    * 刷新
    */
-  refresh() {
-    this.dynamicqueryById();
+  refresh(entityCode,entityUuid) {
+    console.log("entityCode",entityCode);
+    console.log("entityUuid",entityUuid);
+    this.dynamicQuery(entityCode,entityUuid);
   }
 
   /**
@@ -140,7 +222,7 @@ export default class QuickView extends ViewPage {
    * 编辑
    */
   onEdit = () => {
-    this.props.switchTab('update', { entityUuid: this.props.params.entityUuid });
+    this.props.switchTab('update', { entityUuid: this.state.entityUuid });
   };
 
   //跳转到其他详情页
