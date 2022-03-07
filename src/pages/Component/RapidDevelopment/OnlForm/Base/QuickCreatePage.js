@@ -300,23 +300,26 @@ export default class QuickCreatePage extends CreatePage {
     for (const onlFormInfo of onlFormInfos) {
       const { onlFormHead, onlFormFields } = onlFormInfo;
       let { tableName, tableType, relationType } = onlFormHead;
-      let cols = [];
       // 附表一对多情况不进行该方式渲染
       if (tableType == 2 && relationType == 0) {
         continue;
       }
 
-      // 所有序号
+      // 分组
       const categorySorts = onlFormFields
         .map(current => current.categorySort)
         .filter((element, index, self) => self.indexOf(element) === index)
         .sort();
         
-      for (const category of categorySorts) {
+      for (const categorySort of categorySorts) {
+        let categoryName;
+        let cols = [];
+
         for (const field of onlFormFields) {
-          if (!field.isShowForm || category != field.categorySort) {
+          if (!field.isShowForm || categorySort != field.categorySort) {
             continue;
           }
+          categoryName = field.category;
 
           let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
           if (field.fieldValidType) {
@@ -364,9 +367,9 @@ export default class QuickCreatePage extends CreatePage {
             </CFormItem>
           );
         }
-
+        
         formPanel.push(
-          <FormPanel key={onlFormHead.id} title={category} cols={cols} />
+          <FormPanel key={onlFormHead.id + categoryName} title={categoryName} cols={cols} />
         );
       }
       return formPanel;
