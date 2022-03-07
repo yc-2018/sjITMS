@@ -88,7 +88,6 @@ export default class QuickView extends ViewPage {
             params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
           },
         };
-        //debugger;
         this.props.dispatch({
           type: 'quick/dynamicqueryById',
           payload: param,
