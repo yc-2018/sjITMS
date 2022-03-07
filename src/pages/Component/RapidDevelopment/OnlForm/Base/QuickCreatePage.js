@@ -237,7 +237,6 @@ export default class QuickCreatePage extends CreatePage {
 
     const value = this.convertSaveValue(e, onlFormField.fieldShowType);
     this.entity[tableName][line][dbFieldName] = value;
-    console.log("handleChange", this.entity)
 
     // 执行扩展代码
     this.exHandleChange(e, tableName, dbFieldName, line, formInfo, onlFormField);
@@ -258,11 +257,13 @@ export default class QuickCreatePage extends CreatePage {
    * @returns
    */
   convertInitialValue = (value, fieldShowType) => {
-    if (!value) {
+    if (value == undefined || value == null) {
       return value;
     }
     if (fieldShowType == 'date') {
       return moment(value, 'YYYY/MM/DD');
+    } else if (["text", "textarea"].indexOf(fieldShowType) > -1 || !fieldShowType) {
+      return value.toString();
     } else {
       return value;
     }
@@ -276,7 +277,7 @@ export default class QuickCreatePage extends CreatePage {
   convertSaveValue = (e, fieldShowType) => {
     if (fieldShowType == 'date') {
       return e.format('YYYY-MM-DD');
-    } else if (fieldShowType == 'text' || fieldShowType == 'textarea' || fieldShowType == 'radio') {
+    } else if (fieldShowType == 'text' || fieldShowType == 'textarea' || fieldShowType == 'radio' || !fieldShowType) {
       return e.target.value;
     } else if (fieldShowType == 'auto_complete') {
       return e.value;
@@ -376,6 +377,9 @@ export default class QuickCreatePage extends CreatePage {
     };
   }
 
+  /**
+   * 绘制一对多表格
+   */
   drawTable = () => {
     let updateOrAdd = this.props.showPageNow == 'update';
     const { getFieldDecorator } = this.props.form;
@@ -452,6 +456,9 @@ export default class QuickCreatePage extends CreatePage {
   };
 
   
+  /**
+   * 根据控件类型获取控件
+   */
   getComponent = (field) => {
     if (field.fieldShowType == 'date') {
       return DatePicker;
