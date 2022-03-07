@@ -30,10 +30,10 @@ import { colWidth, itemColWidth } from '@/utils/ColWidth';
 @Form.create()
 export default class QuickCreatePage extends CreatePage {
   entity = {};
-  exComponentProperty = {}
 
   beforeSave = (data) => { }
   exHandleChange = (e, tableName, dbFieldName, line, formInfo, onlFormField) => { }
+  drawcell = (e) => { }
 
   //初始化表单数据
   initonlFormField = () => {
@@ -196,9 +196,11 @@ export default class QuickCreatePage extends CreatePage {
 
     const value = this.convertSaveValue(e, onlFormField.fieldShowType);
     this.entity[tableName][line][dbFieldName] = value;
+    console.log("handleChange", this.entity)
 
     // 执行扩展代码
     this.exHandleChange(e, tableName, dbFieldName, line, formInfo, onlFormField);
+    this.setState({})
   }
 
   setFieldsValue = (tableName, dbFieldName, value, line) => {
@@ -206,18 +208,6 @@ export default class QuickCreatePage extends CreatePage {
     this.props.form.setFieldsValue({ [fieldName]: value });
     this.entity[tableName][line == undefined ? 0 : line][dbFieldName] = value;
     // handleChange();   // 手动触发值改变事件
-  }
-
-  setComponentproperty = (tableName, dbFieldName, props, line) => {
-    const fieldName = tableName + "_" + dbFieldName;
-    if (line == undefined) {
-      this.exComponentProperty[fieldName] = props;
-    } else {
-      if (!this.exComponentProperty[fieldName]) {
-        this.exComponentProperty[fieldName] = [];
-      }
-      this.exComponentProperty[fieldName][line] = props;
-    }
   }
 
   /**
@@ -267,58 +257,68 @@ export default class QuickCreatePage extends CreatePage {
     }
 
     //根据查询出来的配置渲染表单新增页面
-    onlFormField.forEach((item) => {
-      let { tableName, tableType, relationType } = item.onlFormHead;
+    for (const onlFormInfo of onlFormField) {
+      const { onlFormHead, onlFormFields } = onlFormInfo;
+      let { tableName, tableType, relationType } = onlFormHead;
       let cols = [];
       // 附表一对多情况不进行该方式渲染
       if (tableType == 2 && relationType == 0) {
-        return;
+        continue;
       }
 
-      item.onlFormFields.forEach(field => {
-        if (field.isShowForm) {
-          let formItem;
-          let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
-          if (field.fieldValidType) {
-            const fieldValidJson = JSON.parse(field.fieldValidType)
-            if (fieldValidJson.pattern !== null && fieldValidJson.message !== null) {
-              rules.push({
-                pattern: new RegExp(fieldValidJson.pattern),
-                message: fieldValidJson.message
-              })
-            }
-          }
-          if (["text", "textarea"].indexOf(field.fieldShowType) > -1) {
-            rules.push({
-              max: field.dbLength,
-              message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}`,
-            });
-          }
-
-          const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
-          const commonPropertis = {
-            disabled: field.isReadOnly,
-            style: { width: '100%' },
-            onChange: e => this.handleChange(e, tableName, field.dbFieldName, 0, item, field)
-          }; // 通用属性
-          const exComponentPropertis = this.exComponentProperty[tableName + "_" + field.dbFieldName];   // 代码扩展属性
-
-          let initialValue = this.entity[tableName][0] && this.entity[tableName][0][field.dbFieldName]; // 初始值
-          cols.push(
-            <CFormItem key={tableName + "_" + field.dbFieldName} label={field.dbFieldTxt}>
-              {getFieldDecorator(tableName + "_" + field.dbFieldName, {
-                initialValue: this.convertInitialValue(initialValue, field.fieldShowType),
-                rules: rules,
-              })(this.getWidget(field, commonPropertis, fieldExtendJson, exComponentPropertis))}
-            </CFormItem>
-          );
+      for (const field of onlFormFields) {
+        if (!field.isShowForm) {
+          continue;
         }
-      });
+
+        let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
+        if (field.fieldValidType) {
+          const fieldValidJson = JSON.parse(field.fieldValidType)
+          if (fieldValidJson.pattern !== null && fieldValidJson.message !== null) {
+            rules.push({
+              pattern: new RegExp(fieldValidJson.pattern),
+              message: fieldValidJson.message
+            })
+          }
+        }
+        if (["text", "textarea"].indexOf(field.fieldShowType) > -1) {
+          rules.push({
+            max: field.dbLength,
+            message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}`,
+          });
+        }
+
+        const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
+        const commonPropertis = {
+          disabled: field.isReadOnly,
+          style: { width: '100%' },
+          onChange: e => this.handleChange(e, tableName, field.dbFieldName, 0, onlFormInfo, field)
+        }; // 通用属性
+
+        let e = {
+          onlFormInfo,
+          onlFormField: field,
+          component: this.getComponent(field),
+          props: { ...commonPropertis, ...fieldExtendJson }
+        };
+
+        this.drawcell(e);
+
+        let initialValue = this.entity[tableName][0] && this.entity[tableName][0][field.dbFieldName]; // 初始值
+        cols.push(
+          <CFormItem key={tableName + "_" + field.dbFieldName} label={field.dbFieldTxt}>
+            {getFieldDecorator(tableName + "_" + field.dbFieldName, {
+              initialValue: this.convertInitialValue(initialValue, field.fieldShowType),
+              rules: rules,
+            })(<e.component {...e.props}></e.component>)}
+          </CFormItem>
+        );
+      }
 
       formPanel.push(
-        <FormPanel key={item.onlFormHead.id} title={item.onlFormHead.tableTxt} cols={cols} />
+        <FormPanel key={onlFormHead.id} title={onlFormHead.tableTxt} cols={cols} />
       );
-    });
+    }
 
     return formPanel;
   };
@@ -335,96 +335,79 @@ export default class QuickCreatePage extends CreatePage {
     let columns = [];
     let tableTxt = onlFormHead.tableTxt;
     let tableName = onlFormHead.tableName;
-    onlFormFields.forEach((field, index) => {
-      if (field.isShowForm) {
-        const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
-        const exComponentPropertis = this.exComponentProperty[tableName + "_" + field.dbFieldName];   // 代码扩展属性
-        let tailItem = {
-          title: field.dbFieldTxt,
-          dataIndex: field.dbFieldName,
-          key: tableName + field.dbFieldName + index,
-          width: itemColWidth.articleEditColWidth,
-          render: (text, record) => {
-            const exComponentPropertis = this.exComponentProperty[tableName + "_" + field.dbFieldName];   // 代码扩展属性
-
-            return (
-              <CFormItem key={`${tableName}_${field.dbFieldName}_${record.line - 1}`} label={field.dbFieldTxt}>
-                {getFieldDecorator(`${tableName}_${field.dbFieldName}_${record.line - 1}`, {
-                  initialValue: this.convertInitialValue(text, field.fieldShowType),
-                })(
-                  this.getWidget(
-                    field,
-                    {
-                      disabled: field.isReadOnly,
-                      style: { width: '100%' },
-                      onChange: e =>
-                        this.handleChange(
-                          e,
-                          tableName,
-                          field.dbFieldName,
-                          record.line - 1,
-                          formInfo,
-                          field
-                        ),
-                    },
-                    fieldExtendJson,
-                    exComponentPropertis ? exComponentPropertis[record.line - 1] : exComponentPropertis
-                  )
-                )}
-              </CFormItem>
-            );
-          },
-        };
-        columns.push(tailItem);
+    for (const field of onlFormFields) {
+      if (!field.isShowForm) {
+        continue;
       }
-    });
 
+      const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
+      let tailItem = {
+        title: field.dbFieldTxt,
+        dataIndex: tableName + field.dbFieldName,
+        key: tableName + field.dbFieldName,
+        width: itemColWidth.articleEditColWidth,
+        render: (text, record) => {
+          const commonPropertis = {
+            disabled: field.isReadOnly,
+            style: { width: '100%' },
+            onChange: e =>
+              this.handleChange(
+                e,
+                tableName,
+                field.dbFieldName,
+                record.line - 1,
+                formInfo,
+                field
+              ),
+            value: record[field.dbFieldName]
+          };
+
+          let e = {
+            onlFormInfo: formInfo,
+            onlFormField: field,
+            record: record,
+            component: this.getComponent(field),
+            props: { ...commonPropertis, ...fieldExtendJson }
+          };
+
+          this.drawcell(e);
+
+          return <e.component {...e.props}></e.component>;
+        },
+      };
+      columns.push(tailItem);
+    }
+    
     return (
       <div>
         <ItemEditTable
           title={tableTxt}
           columns={columns}
           data={this.entity[tableName]}
-          handleFieldChange={this.handleFieldChange}
           drawTotalInfo={this.drawTotalInfo}
           drawBatchButton={this.drawBatchButton}
-          handleRemove={(data) => this.handleTableRemove(tableName, data)}
           notNote
         />
       </div>
     );
   };
 
-  handleTableRemove = (tableName, data) => {
-    // for (const key in this.exComponentProperty) {
-    //   if (!key.startsWith(tableName)) {
-    //     break;
-    //   }
-
-    //   for (const item of data) {
-    //     this.exComponentProperty[key].splice(data.line - 1, 1);
-    //   }
-    // }
-  }
-
-  getWidget = (field, commonPropertis, fieldExtendJson, exComponentPropertis) => {
+  
+  getComponent = (field) => {
     if (field.fieldShowType == 'date') {
-      return <DatePicker {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
+      return DatePicker;
     } else if (field.fieldShowType == 'number') {
-      return <InputNumber {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
+      return InputNumber;
     } else if (field.fieldShowType == 'sel_tree') {
-      return <SimpleTreeSelect {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
+      return SimpleTreeSelect;
     } else if (field.fieldShowType == 'radio') {
-      return <SimpleRadio {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
+      return SimpleRadio;
     } else if (field.fieldShowType == 'auto_complete') {
-      return <SimpleAutoComplete {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
+      return SimpleAutoComplete;
     } else if (field.fieldShowType == 'textarea') {
-      return <Input.TextArea {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
+      return Input.TextArea;
     } else {
-      return <Input {...commonPropertis} {...fieldExtendJson} {...exComponentPropertis} />;
+      return Input;
     }
   };
-
-  handleFieldChange(e, fieldName, line) {
-  }
 }
