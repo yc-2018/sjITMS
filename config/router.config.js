@@ -1135,6 +1135,23 @@ export default [
           },
         ],
       },
+      {
+        path: '/test',
+        name: 'test',
+        org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+        authority: ['itms.base'],
+        icon: 'icon-menu_info',
+        routes: [
+          {
+            path: '/test/testForm',
+            name: '扩展代码编写demo',
+            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+            component: './Test/TestForm',
+            quickuuid: '20220224',
+            authority: ['itms.base.vehicle'],
+          },
+        ],
+      },
     ],
   },
 ];

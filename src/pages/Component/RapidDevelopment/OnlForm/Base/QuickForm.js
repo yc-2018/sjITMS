@@ -7,6 +7,8 @@ import QuickViewPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickViewP
 
 //目录跳转界面
 export default class QuickForm extends PureComponent {
+  drawTab = () => {}; //扩展标签页
+
   constructor(props) {
     super(props);
     this.state = {
@@ -16,7 +18,6 @@ export default class QuickForm extends PureComponent {
       onlFormField: [],
       params: {},
     };
-    //this.toQueryPage();
   }
 
   componentDidMount() {
@@ -47,12 +48,7 @@ export default class QuickForm extends PureComponent {
     });
   };
 
-  componentWillReceiveProps(nextProps) {
-    // const { showPageMap, map } = nextProps.quick;
-    // this.setState({
-    //   showPageNow: showPageMap.get(this.state.quickuuid),
-    // });
-  }
+  componentWillReceiveProps(nextProps) {}
 
   //页面切换
   switchTab = (tab, param) => {
@@ -61,44 +57,57 @@ export default class QuickForm extends PureComponent {
   };
 
   render() {
-    //console.log('this.state', this.state);
-    const { showPageNow, quickuuid, tableName, onlFormField } = this.state;
+    const { showPageNow, quickuuid, tableName, onlFormField, params } = this.state;
     const { location } = this.props;
+    const props = {
+      showPageNow: showPageNow,
+      quickuuid: quickuuid,
+      onlFormField: onlFormField,
+      switchTab: (tab, param) => this.switchTab(tab, param),
+      onlFormField: onlFormField,
+      params: params,
+      tableName: tableName,
+      pathname: location.pathname,
+    };
+    let component;
+    let e;
     switch (showPageNow) {
       case 'create':
-        return (
-          <Create quickuuid={quickuuid} onlFormField={onlFormField} switchTab={this.switchTab} />
-        );
+        component = <Create {...props} />;
+        e = {
+          component: component,
+          showPageNow: showPageNow,
+          props: props,
+        };
+        this.drawTab(e);
+        return e.component;
       case 'update':
-        return (
-          <Create
-            quickuuid={quickuuid}
-            onlFormField={onlFormField}
-            switchTab={this.switchTab}
-            params={this.state.params}
-            showPageNow={this.state.showPageNow}
-          />
-        );
+        component = <Create {...props} />;
+        e = {
+          component: component,
+          showPageNow: showPageNow,
+          props: props,
+        };
+        this.drawTab(e);
+        return e.component;
       case 'query':
-        return (
-          <QuickFormSearchPage
-            quickuuid={quickuuid}
-            pathname={location.pathname}
-            tableName={tableName}
-            onlFormField={onlFormField}
-            switchTab={this.switchTab}
-          />
-        );
+        component = <QuickFormSearchPage {...props} />;
+        e = {
+          component: component,
+          showPageNow: showPageNow,
+          props: props,
+        };
+        this.drawTab(e);
+        return e.component;
       case 'view':
-        return (
-          <QuickViewPage
-            quickuuid={quickuuid}
-            onlFormField={onlFormField}
-            pathname={this.props.location.pathname}
-            switchTab={this.switchTab}
-            params={this.state.params}
-          />
-        );
+        component = <QuickViewPage {...props} />;
+        e = {
+          component: component,
+          showPageNow: showPageNow,
+          props: props,
+        };
+        this.drawTab(e);
+        return e.component;
       default:
         return null;
     }
