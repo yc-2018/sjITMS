@@ -1,5 +1,6 @@
 import React, { PureComponent } from 'react';
 import { Table, Button, Input, Col, Row, Popconfirm, message } from 'antd';
+import { colWidth } from '@/utils/ColWidth';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 
@@ -9,6 +10,48 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 }))
 //继承QuickSearchExpand
 export default class TestSearch extends QuickFormSearchPage {
+  /**
+   * 该方法用于自定义扩展列
+     e={
+       column:column
+     }
+   */
+  drawExColumns = e => {
+    if (e.column.fieldName == 'CODE') {
+      const c = {
+        title: 'CODE前扩展',
+        dataIndex: 'name',
+        key: 'name',
+        sorter: true,
+        width: colWidth.codeColWidth,
+        render: (val, record) => {
+          return (
+            <a onClick={this.onView.bind(this, record)} style={{ color: 'red' }}>
+              {111}
+            </a>
+          );
+        },
+      };
+      return c;
+    }
+    if (e.column.fieldName == 'STATE') {
+      const c = {
+        title: 'STATE前扩展',
+        dataIndex: 'name',
+        key: 'stateEx',
+        sorter: true,
+        width: colWidth.codeColWidth,
+        render: (val, record) => {
+          return (
+            <a onClick={this.onView.bind(this, record)} style={{ color: 'green' }}>
+              {222}
+            </a>
+          );
+        },
+      };
+      return c;
+    }
+  };
   /**
    该方法用于修改table的render
 

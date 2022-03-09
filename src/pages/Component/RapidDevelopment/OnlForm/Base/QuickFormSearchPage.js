@@ -20,6 +20,7 @@ export default class QuickFormSearchPage extends SearchPage {
   drawcell = e => {}; //扩展render
   drawTopButton = () => {}; //扩展最上层按钮
   drawToolsButton = () => {}; //扩展中间功能按钮
+  drawExColumns = () => {}; //table额外的列
 
   constructor(props) {
     super(props);
@@ -164,6 +165,7 @@ export default class QuickFormSearchPage extends SearchPage {
   initConfig = queryConfig => {
     const columns = queryConfig.columns;
     let quickColumns = new Array();
+
     columns.filter(data => data.isShow).forEach(column => {
       let jumpPaths;
       let preview;
@@ -175,6 +177,10 @@ export default class QuickFormSearchPage extends SearchPage {
       } else {
         preview = 'N';
       }
+      let e = {
+        column: column,
+      };
+      let exColumns = this.drawExColumns(e); //额外的列
       const qiuckcolumn = {
         title: column.fieldTxt,
         dataIndex: column.fieldName,
@@ -245,8 +251,13 @@ export default class QuickFormSearchPage extends SearchPage {
                   }
                 },
       };
+      if (exColumns) {
+        quickColumns.push(exColumns);
+      }
+
       quickColumns.push(qiuckcolumn);
     });
+
     this.columns = quickColumns;
     this.setState({
       title: queryConfig.reportHeadName,
