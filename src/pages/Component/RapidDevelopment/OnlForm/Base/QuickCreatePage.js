@@ -229,7 +229,7 @@ export default class QuickCreatePage extends CreatePage {
       for (const multiSave of multiSaves) {
         const [key, value] = multiSave.split(":");
         if (onlFormField.fieldShowType == "auto_complete") {
-          this.entity[tableName][line][key] = e.record[value];
+          this.entity[tableName][line][key] = getFieldShow(e.record, value);
         }
       }
     }
@@ -503,4 +503,23 @@ export default class QuickCreatePage extends CreatePage {
       return e;
     }
   };
+}
+
+/**
+ * 获取定义字段的显示，允许通过 %字段名% 的方式插入值
+ * @param {Map} rowData 原始数据
+ * @param {String} str 用户定义的字段文本
+ */
+ function getFieldShow(rowData, str) {
+  var reg = /%\w+%/g;
+  var matchFields = str.match(reg);
+  if (matchFields) {
+    for (const replaceText of matchFields) {
+      var field = replaceText.replaceAll('%', '');
+      str = str.replaceAll(replaceText, rowData[field]);
+    }
+    return str;
+  } else {
+    return rowData[str];
+  }
 }
