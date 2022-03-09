@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
 import QuickFormSearchPage from './TestSearch';
+import TestView from './TestView';
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
 
 @connect(({ quick, loading }) => ({
@@ -9,7 +10,7 @@ import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm
   loading: loading.models.quick,
 }))
 export default class TestForm extends QuickForm {
-  //继承QuickForm 重写drawTab方法
+  //继承QuickForm 重写drawTab方法 该方法用于重写跳转的界面
   /**
    * e的对象格式为{
       component: component,
@@ -30,6 +31,10 @@ export default class TestForm extends QuickForm {
   drawTab = e => {
     if (e.showPageNow == 'query') {
       const component = <QuickFormSearchPage {...e.props} />;
+      e.component = component;
+    }
+    if (e.showPageNow == 'view') {
+      const component = <TestView {...e.props} />;
       e.component = component;
     }
   };

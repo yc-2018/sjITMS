@@ -8,7 +8,7 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
   quick,
   loading: loading.models.quick,
 }))
-//继承QuickSearchExpand
+//继承QuickFormSearchPage Search页面扩展
 export default class TestSearch extends QuickFormSearchPage {
   /**
    * 该方法用于自定义扩展列
@@ -89,4 +89,13 @@ export default class TestSearch extends QuickFormSearchPage {
       </span>
     );
   };
+
+  //该方法会覆盖所有的上层按钮
+  //drawActionButton = () => {};
+
+  //该方法会覆盖所有的中间功能按钮
+  //drawToolbarPanel = () => {};
+
+  // 该方法会覆盖所有的搜索查询
+  // drawSearchPanel=()=>{}
 }
