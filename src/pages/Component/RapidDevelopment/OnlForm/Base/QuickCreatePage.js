@@ -26,6 +26,14 @@ import { colWidth, itemColWidth } from '@/utils/ColWidth';
 
 /**
  * 新增编辑界面
+ * 新建页面基类，子类加标注@Form.create()
+ * 子类可实现的方法：
+ * beforeSave
+ * exHandleChange
+ * drawcell
+ * 子类可调用的方法：
+ * entity
+ * setFieldsValue
  */
 export default class QuickCreatePage extends CreatePage {
   entity = {};
@@ -34,13 +42,17 @@ export default class QuickCreatePage extends CreatePage {
   exHandleChange = (e, tableName, dbFieldName, line, formInfo, onlFormField) => { }
   drawcell = (e) => { }
 
-  //初始化表单数据
-  initOnlFormField = () => {
-    const { onlFormInfos } = this.state;
-    //初始化entity
-    onlFormInfos.forEach(item => {
-      this.entity[item.onlFormHead.tableName] = [];
-    });
+  /**
+   * 设置字段的值
+   * @param {*} tableName 表名
+   * @param {*} dbFieldName 字段
+   * @param {*} value 值
+   * @param {*} line 行
+   */
+  setFieldsValue = (tableName, dbFieldName, value, line) => {
+    const fieldName = tableName + '_' + dbFieldName + (line == undefined ? '' : '_' + line);
+    this.entity[tableName][line == undefined ? 0 : line][dbFieldName] = value;
+    this.props.form.setFieldsValue({ [fieldName]: value });
   };
 
   constructor(props) {
@@ -56,6 +68,15 @@ export default class QuickCreatePage extends CreatePage {
     };
     this.initOnlFormField();
   }
+
+  //初始化表单数据
+  initOnlFormField = () => {
+    const { onlFormInfos } = this.state;
+    //初始化entity
+    onlFormInfos.forEach(item => {
+      this.entity[item.onlFormHead.tableName] = [];
+    });
+  };
 
   dynamicqueryById() {
     const { onlFormField } = this.props;
@@ -184,43 +205,6 @@ export default class QuickCreatePage extends CreatePage {
     });
   };
 
-  // 校验一对多子表的数据
-  verifyTable(datas) {
-    const { onlFormInfos } = this.state;
-    const map = new Map(Object.entries(datas));
-    let newOnlFormHead;
-    for (let i = 0; i < onlFormInfos.length; i++) {
-      if (i == 0) {
-        continue;
-      }
-      if (onlFormInfos[i].onlFormHead.relationType == '0') {
-        newOnlFormHead = onlFormInfos[i];
-      }
-    }
-    for (let key in datas) {
-      if (key == newOnlFormHead.onlFormHead.tableName) {
-        datas[key].forEach(data => {
-          for (let s in data) {
-            newOnlFormHead.onlFormFields.forEach((item, index) => {
-              if (s == item.dbFieldName) {
-                if (!item.dbIsNull && !data[s]) {
-                  message.error(confirmLineFieldNotNullLocale(data.line, item.dbFieldTxt));
-                  return false;
-                }
-                if (data[s].length > item.dbLength) {
-                  message.error(
-                    '第' + data.line + '的' + item.dbFieldTxt + '长度不能大于' + item.dbLength
-                  );
-                  return false;
-                }
-              }
-            });
-          }
-        });
-      }
-    }
-  }
-
   /**
    * 处理值改变事件
    * @param {} e
@@ -238,53 +222,22 @@ export default class QuickCreatePage extends CreatePage {
     const value = this.convertSaveValue(e, onlFormField.fieldShowType);
     this.entity[tableName][line][dbFieldName] = value;
 
+    // 处理多值保存
+    const fieldExtendJson = onlFormField.fieldExtendJson ? JSON.parse(onlFormField.fieldExtendJson) : {};
+    if (fieldExtendJson.multiSave) {
+      const multiSaves = fieldExtendJson.multiSave.split(",");
+      for (const multiSave of multiSaves) {
+        const [key, value] = multiSave.split(":");
+        if (onlFormField.fieldShowType == "auto_complete") {
+          this.entity[tableName][line][key] = e.record[value];
+        }
+      }
+    }
+
     // 执行扩展代码
     this.exHandleChange(e, tableName, dbFieldName, line, formInfo, onlFormField);
     this.setState({})
   }
-
-  setFieldsValue = (tableName, dbFieldName, value, line) => {
-    const fieldName = tableName + '_' + dbFieldName + (line == undefined ? '' : '_' + line);
-    this.props.form.setFieldsValue({ [fieldName]: value });
-    this.entity[tableName][line == undefined ? 0 : line][dbFieldName] = value;
-    // handleChange();   // 手动触发值改变事件
-  };
-
-  /**
-   * 转换初始值
-   * @param {*} value 值
-   * @param {string} fieldShowType 类型
-   * @returns
-   */
-  convertInitialValue = (value, fieldShowType) => {
-    if (value == undefined || value == null) {
-      return value;
-    }
-    if (fieldShowType == 'date') {
-      return moment(value, 'YYYY/MM/DD');
-    } else if (["text", "textarea"].indexOf(fieldShowType) > -1 || !fieldShowType) {
-      return value.toString();
-    } else {
-      return value;
-    }
-  };
-
-  /**
-   * 转换保存数据
-   * @param {*} e 值改变事件的参数
-   * @param {string} fieldShowType 类型
-   */
-  convertSaveValue = (e, fieldShowType) => {
-    if (fieldShowType == 'date') {
-      return e.format('YYYY-MM-DD');
-    } else if (fieldShowType == 'text' || fieldShowType == 'textarea' || fieldShowType == 'radio' || !fieldShowType) {
-      return e.target.value;
-    } else if (fieldShowType == 'auto_complete') {
-      return e.value;
-    } else {
-      return e;
-    }
-  };
 
   /**
    * 渲染表单组件
@@ -293,7 +246,6 @@ export default class QuickCreatePage extends CreatePage {
     const { getFieldDecorator } = this.props.form;
     const { onlFormInfos } = this.state;
     let formPanel = [];
-    let updateOrAdd = this.props.showPageNow == 'update';
     if (!onlFormInfos) {
       return null;
     }
@@ -322,26 +274,8 @@ export default class QuickCreatePage extends CreatePage {
           }
           categoryName = field.category;
 
-          let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
-          if (field.fieldValidType) {
-            const fieldValidJson = JSON.parse(field.fieldValidType)
-            if (fieldValidJson.pattern !== null && fieldValidJson.message !== null) {
-              rules.push({
-                pattern: new RegExp(fieldValidJson.pattern),
-                message: fieldValidJson.message
-              })
-            }
-          }
-          if (["text", "textarea"].indexOf(field.fieldShowType) > -1) {
-            rules.push({
-              max: field.dbLength,
-              message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}`,
-            });
-          }
-
-          // isReadOnly （1:字段只读,2:新增时只读,3:不只读，0：编辑时只读）
-          let isReadOnly = field.isReadOnly == 1 || (field.isReadOnly == 0 && updateOrAdd) || (field.isReadOnly == 2 && !updateOrAdd);
-
+          const rules = this.getFormRules(field);
+          const isReadOnly = this.isReadOnly(field.isReadOnly);
           const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
           const commonPropertis = {
             disabled: isReadOnly,
@@ -352,6 +286,7 @@ export default class QuickCreatePage extends CreatePage {
           let e = {
             onlFormInfo,
             onlFormField: field,
+            rules: rules,
             component: this.getComponent(field),
             props: { ...commonPropertis, ...fieldExtendJson }
           };
@@ -381,7 +316,6 @@ export default class QuickCreatePage extends CreatePage {
    * 绘制一对多表格
    */
   drawTable = () => {
-    let updateOrAdd = this.props.showPageNow == 'update';
     const { getFieldDecorator } = this.props.form;
     // 找到一对多的数据
     const formInfo = this.state.onlFormInfos.find(
@@ -400,9 +334,8 @@ export default class QuickCreatePage extends CreatePage {
         continue;
       }
 
-      //isReadOnly （1:字段只读,2:新增时只读,3:不只读，0：编辑时只读）
-      let isReadOnly = field.isReadOnly == 1 || (field.isReadOnly == 0 && updateOrAdd) || (field.isReadOnly == 2 && !updateOrAdd);
-
+      const rules = this.getFormRules(field);
+      const isReadOnly = this.isReadOnly(field.isReadOnly);
       const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
       let tailItem = {
         title: field.dbFieldTxt,
@@ -411,7 +344,7 @@ export default class QuickCreatePage extends CreatePage {
         width: itemColWidth.articleEditColWidth,
         render: (text, record) => {
           const commonPropertis = {
-            disabled: field.isReadOnly,
+            disabled: isReadOnly,
             style: { width: '100%' },
             onChange: e =>
               this.handleChange(
@@ -421,21 +354,29 @@ export default class QuickCreatePage extends CreatePage {
                 record.line - 1,
                 formInfo,
                 field
-              ),
-            value: record[field.dbFieldName]
+              )
           };
 
           let e = {
             onlFormInfo: formInfo,
             onlFormField: field,
             record: record,
+            rules: rules,
             component: this.getComponent(field),
             props: { ...commonPropertis, ...fieldExtendJson }
           };
 
           this.drawcell(e);
 
-          return <e.component {...e.props}></e.component>;
+          let initialValue = this.entity[tableName][record.line - 1][field.dbFieldName]; // 初始值
+          return <Form.Item>
+            {
+              getFieldDecorator(tableName + "_" + field.dbFieldName + "_" + (record.line - 1), {
+                initialValue: this.convertInitialValue(initialValue, field.fieldShowType),
+                rules: rules
+              })(<e.component {...e.props}></e.component>)
+            }
+          </Form.Item>;
         },
       };
       columns.push(tailItem);
@@ -447,14 +388,64 @@ export default class QuickCreatePage extends CreatePage {
           title={tableTxt}
           columns={columns}
           data={this.entity[tableName]}
-          drawTotalInfo={this.drawTotalInfo}
-          drawBatchButton={this.drawBatchButton}
+          handleRemove={(data) => this.handleTableRemove(tableName, data)}
           notNote
         />
       </div>
     );
   };
 
+  /**
+   * 处理表格删除事件，修复删除form表单没有更新的bug
+   */
+  handleTableRemove = (tableName, data) => {
+    let fields = {};
+    for (const row of data) {
+      for (const key in row) {
+        if (key == "line") {
+          continue;
+        }
+        fields[tableName + "_" + key + "_" + (row.line - 1)] = row[key];
+      }
+    }
+    this.props.form.setFieldsValue(fields);
+  }
+
+  /**
+   * 判断是否只读
+   * @param {*} readOnlyType field的isReadOnly字段
+   * @returns 
+   */
+  isReadOnly = (readOnlyType) => {
+    const update = this.props.showPageNow == 'update';
+    // readOnlyType （0：编辑时只读, 1:字段只读, 2:新增时只读, 3:不只读）
+    return readOnlyType == 1 || (readOnlyType == 0 && update) || (readOnlyType == 2 && !update);
+  }
+
+  /**
+   * 生成校验规则
+   * @param {*} field onlFormField
+   */
+  getFormRules = (field) => {
+    let rules = [{ required: !field.dbIsNull, message: `${field.dbFieldTxt}字段不能为空` }];
+    if (field.fieldValidType) {
+      const fieldValidJson = JSON.parse(field.fieldValidType)
+      if (fieldValidJson.pattern !== null && fieldValidJson.message !== null) {
+        rules.push({
+          pattern: new RegExp(fieldValidJson.pattern),
+          message: fieldValidJson.message
+        })
+      }
+    }
+
+    if (["text", "textarea"].indexOf(field.fieldShowType) > -1) {
+      rules.push({
+        max: field.dbLength,
+        message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}`,
+      });
+    }
+    return rules;
+  }
   
   /**
    * 根据控件类型获取控件
@@ -474,6 +465,42 @@ export default class QuickCreatePage extends CreatePage {
       return Input.TextArea;
     } else {
       return Input;
+    }
+  };
+
+  /**
+   * 转换初始值
+   * @param {*} value 值
+   * @param {string} fieldShowType 类型
+   * @returns
+   */
+   convertInitialValue = (value, fieldShowType) => {
+    if (value == undefined || value == null) {
+      return value;
+    }
+    if (fieldShowType == 'date') {
+      return moment(value, 'YYYY/MM/DD');
+    } else if (["text", "textarea"].indexOf(fieldShowType) > -1 || !fieldShowType) {
+      return value.toString();
+    } else {
+      return value;
+    }
+  };
+
+  /**
+   * 转换保存数据
+   * @param {*} e 值改变事件的参数
+   * @param {string} fieldShowType 类型
+   */
+  convertSaveValue = (e, fieldShowType) => {
+    if (fieldShowType == 'date') {
+      return e.format('YYYY-MM-DD');
+    } else if (fieldShowType == 'text' || fieldShowType == 'textarea' || fieldShowType == 'radio' || !fieldShowType) {
+      return e.target.value;
+    } else if (fieldShowType == 'auto_complete') {
+      return e.value;
+    } else {
+      return e;
     }
   };
 }
