@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
 import QuickFormSearchPage from './TestSearch';
-import TestView from './TestView';
+// import TestView from './TestView';
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
 
 @connect(({ quick, loading }) => ({
