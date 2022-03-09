@@ -17,6 +17,11 @@ import { loginCompany, loginOrg } from '@/utils/LoginContext';
  * 查询界面
  */
 export default class QuickFormSearchPage extends SearchPage {
+  drawcell = e => {}; //扩展render
+  drawTopButton = () => {}; //扩展最上层按钮
+  drawToolsButton = () => {}; //扩展中间功能按钮
+  drawExColumns = () => {}; //table额外的列
+
   constructor(props) {
     super(props);
     this.state = {
@@ -60,6 +65,8 @@ export default class QuickFormSearchPage extends SearchPage {
           //解决用户列展示失效问题 暂时解决方法（赋值两次）
           this.initConfig(response.result);
 
+          let queryRequired = response.result.columns.find(item => item.searchRequire);
+
           let companyuuid = response.result.columns.find(
             item => item.fieldName.toLowerCase() == 'companyuuid'
           );
@@ -71,7 +78,12 @@ export default class QuickFormSearchPage extends SearchPage {
 
           if (companyuuid) {
             this.state.isOrgQuery = [
-              { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+              {
+                field: 'companyuuid',
+                type: 'VarChar',
+                rule: 'eq',
+                val: loginCompany().uuid,
+              },
             ];
           }
 
@@ -79,20 +91,22 @@ export default class QuickFormSearchPage extends SearchPage {
             this.setState({
               isOrgQuery: response.result.reportHead.organizationQuery
                 ? [
-                  {
-                    field:
-                      loginOrg().type.toLowerCase() == 'dc'
-                        ? loginOrg().type.toLowerCase() + 'Uuid'
-                        : 'dispatchCenterUuid',
-                    type: 'VarChar',
-                    rule: 'eq',
-                    val: loginOrg().uuid,
-                  },
-                  ...this.state.isOrgQuery,
-                ]
+                    {
+                      field:
+                        loginOrg().type.toLowerCase() == 'dc'
+                          ? loginOrg().type.toLowerCase() + 'Uuid'
+                          : 'dispatchCenterUuid',
+                      type: 'VarChar',
+                      rule: 'eq',
+                      val: loginOrg().uuid,
+                    },
+                    ...this.state.isOrgQuery,
+                  ]
                 : [...this.state.isOrgQuery],
             });
           }
+          //查询条件有必填时默认不查询
+          if (queryRequired) return;
 
           //配置查询成功后再去查询数据
           this.onSearch();
@@ -114,6 +128,7 @@ export default class QuickFormSearchPage extends SearchPage {
 
   //数据转换
   convertData = (data, preview, record) => {
+    if (!data) return '<空>';
     if (!preview) return data;
     return record[preview];
   };
@@ -130,10 +145,27 @@ export default class QuickFormSearchPage extends SearchPage {
     return colorItem.color;
   };
 
+  //自定义报表的render
+  customize(record, val, component, column) {
+    let e = {
+      column: column,
+      record: record,
+      component: component,
+      val: val,
+      // props: { ...commonPropertis, ...fieldExtendJson },
+    };
+
+    //自定义报表的render
+    this.drawcell(e);
+
+    return e.component;
+  }
+
   //初始化配置
   initConfig = queryConfig => {
     const columns = queryConfig.columns;
     let quickColumns = new Array();
+
     columns.filter(data => data.isShow).forEach(column => {
       let jumpPaths;
       let preview;
@@ -145,6 +177,10 @@ export default class QuickFormSearchPage extends SearchPage {
       } else {
         preview = 'N';
       }
+      let e = {
+        column: column,
+      };
+      let exColumns = this.drawExColumns(e); //额外的列
       const qiuckcolumn = {
         title: column.fieldTxt,
         dataIndex: column.fieldName,
@@ -155,40 +191,73 @@ export default class QuickFormSearchPage extends SearchPage {
         preview: preview,
         render:
           column.clickEvent == '1'
-            ? (val, record) => (
-              <a
-                onClick={this.onView.bind(this, record)}
-                style={{ color: this.colorChange(val, column.textColor) }}
-              >
-                {this.convertData(val, column.preview, record)}
-              </a>
-            )
+            ? (val, record) => {
+                const component = (
+                  <a
+                    onClick={this.onView.bind(this, record)}
+                    style={{ color: this.colorChange(val, column.textColor) }}
+                  >
+                    {this.convertData(val, column.preview, record)}
+                  </a>
+                );
+                return this.customize(
+                  record,
+                  this.convertData(val, column.preview, record),
+                  component,
+                  column
+                );
+              }
             : column.clickEvent == '2'
-              ? (val, record) => (
-                <a
-                  onClick={this.onOtherView.bind(this, record, jumpPaths)}
-                  style={{ color: this.colorChange(val, column.textColor) }}
-                >
-                  {this.convertData(val, column.preview, record)}
-                </a>
-              )
-              : (val, record) => {
-                if (column.textColor && Array.isArray(JSON.parse(column.textColor))) {
-                  return (
-                    <div>
-                      <Badge
-                        color={this.colorChange(val, column.textColor)}
-                        text={this.convertData(val, column.preview, record)}
-                      />
-                    </div>
+              ? (val, record) => {
+                  const component = (
+                    <a
+                      onClick={this.onOtherView.bind(this, record, jumpPaths)}
+                      style={{ color: this.colorChange(val, column.textColor) }}
+                    >
+                      {this.convertData(val, column.preview, record)}
+                    </a>
                   );
-                } else {
-                  return <p3>{this.convertData(val, column.preview, record)}</p3>;
+                  return this.customize(
+                    record,
+                    this.convertData(val, column.preview, record),
+                    component,
+                    column
+                  );
                 }
-              },
+              : (val, record) => {
+                  if (column.textColor && Array.isArray(JSON.parse(column.textColor))) {
+                    const component = (
+                      <div>
+                        <Badge
+                          color={this.colorChange(val, column.textColor)}
+                          text={this.convertData(val, column.preview, record)}
+                        />
+                      </div>
+                    );
+                    return this.customize(
+                      record,
+                      this.convertData(val, column.preview, record),
+                      component,
+                      column
+                    );
+                  } else {
+                    const component = <p3>{this.convertData(val, column.preview, record)}</p3>;
+                    return this.customize(
+                      record,
+                      this.convertData(val, column.preview, record),
+                      component,
+                      column
+                    );
+                  }
+                },
       };
+      if (exColumns) {
+        quickColumns.push(exColumns);
+      }
+
       quickColumns.push(qiuckcolumn);
     });
+
     this.columns = quickColumns;
     this.setState({
       title: queryConfig.reportHeadName,
@@ -353,7 +422,7 @@ export default class QuickFormSearchPage extends SearchPage {
             sheetheader.push(a.title);
           });
           option.fileName = this.state.title; //导出的Excel文件名
-          response.data.records.map(item => { });
+          response.data.records.map(item => {});
           option.datas = [
             {
               sheetData: response.data.records,
@@ -377,8 +446,8 @@ export default class QuickFormSearchPage extends SearchPage {
       //重置搜索条件
       this.state.pageFilters = {
         quickuuid: this.props.quickuuid,
-        superQuery: { matchType: '', queryParams: this.state.isOrgQuery }, //增加组织 公司id查询条件
-      };
+        superQuery: { matchType: '', queryParams: this.state.isOrgQuery },
+      }; //增加组织 公司id查询条件
       this.getData(this.state.pageFilters);
     } else {
       const { dispatch } = this.props;
@@ -428,7 +497,9 @@ export default class QuickFormSearchPage extends SearchPage {
     },
   ];
 
-
+  // test=()=>{
+  //   alert("测试弹出")
+  // }
 
   /**
    * 绘制右上角按钮
@@ -455,6 +526,8 @@ export default class QuickFormSearchPage extends SearchPage {
         <Button onClick={this.port} type="primary">
           导出
         </Button>
+        {this.drawTopButton()}
+        {/* <SearchMoreAction menus={menus} /> */}
       </div>
     );
   };
@@ -480,6 +553,7 @@ export default class QuickFormSearchPage extends SearchPage {
           refresh={this.onSearch}
           reportCode={this.state.reportCode}
         />
+        {this.drawToolsButton()}
       </div>
     );
   };
