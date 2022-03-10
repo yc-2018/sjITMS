@@ -1,6 +1,7 @@
 import React, { PureComponent } from 'react';
 import { Table, Button, Input, Col, Row, Popconfirm, message } from 'antd';
 import { colWidth } from '@/utils/ColWidth';
+import OperateCol from '@/pages/Component/Form/OperateCol';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 
@@ -10,6 +11,13 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 }))
 //继承QuickFormSearchPage Search页面扩展
 export default class TestSearch extends QuickFormSearchPage {
+  //需要操作列的显示 将noActionCol设置为false
+  state = { ...this.state, noActionCol: false };
+
+  //该方法用于更改State
+  changeState = () => {
+    this.setState({ title: '' });
+  };
   /**
    * 该方法用于自定义扩展列
      e={
@@ -28,23 +36,6 @@ export default class TestSearch extends QuickFormSearchPage {
           return (
             <a onClick={this.onView.bind(this, record)} style={{ color: 'red' }}>
               {111}
-            </a>
-          );
-        },
-      };
-      return c;
-    }
-    if (e.column.fieldName == 'STATE') {
-      const c = {
-        title: 'STATE前扩展',
-        dataIndex: 'name',
-        key: 'stateEx',
-        sorter: true,
-        width: colWidth.codeColWidth,
-        render: (val, record) => {
-          return (
-            <a onClick={this.onView.bind(this, record)} style={{ color: 'green' }}>
-              {222}
             </a>
           );
         },
@@ -98,4 +89,19 @@ export default class TestSearch extends QuickFormSearchPage {
 
   // 该方法会覆盖所有的搜索查询
   // drawSearchPanel=()=>{}
+
+  //该方法用于写操作列的render
+  renderOperateCol = record => {
+    return <OperateCol menus={this.fetchOperatePropsCommon(record)} />;
+  };
+  //操作列举例 具体看OperateCol内介绍
+  fetchOperatePropsCommon = record => {
+    return [
+      {
+        name: '111',
+        onClick: this.test.bind(this, record),
+      },
+    ];
+  };
+  test = (a, b) => {};
 }
