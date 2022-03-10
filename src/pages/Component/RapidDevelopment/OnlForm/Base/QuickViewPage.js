@@ -26,6 +26,7 @@ const TabPane = Tabs.TabPane;
  */
 export default class QuickView extends ViewPage {
   entity = {};
+  drawcell = e => {}; //扩展component
   //初始化表单数据
   initonlFormField = () => {
     const { onlFormField } = this.props;
@@ -56,14 +57,13 @@ export default class QuickView extends ViewPage {
       title: '基本信息',
       quickuuid: props.quickuuid,
       entityUuid: props.params.entityUuid,
-      entityCode:""
+      entityCode: '',
     };
 
     this.initonlFormField();
   }
 
   componentDidMount() {
-    console.log("componentDidMount");
     this.dynamicqueryById();
   }
 
@@ -93,14 +93,17 @@ export default class QuickView extends ViewPage {
           callback: response => {
             if (response.result.records != 'false') {
               this.entity[tableName] = response.result.records;
-              let title =item.onlFormHead.formTitle; 
-              if(item.onlFormHead.formTitle && item.onlFormHead.formTitle.indexOf("]")!=-1){   
-                const titles =  item.onlFormHead.formTitle.split("]");
-                var entityCode = response.result.records[0][titles[0].replace("[","")];
-                var entityTitle = titles[1].indexOf("}")==-1?titles[1] : response.result.records[0][titles[1].replace("}","").replace("{","")];
-                title = '['+entityCode+']'+entityTitle;
+              let title = item.onlFormHead.formTitle;
+              if (item.onlFormHead.formTitle && item.onlFormHead.formTitle.indexOf(']') != -1) {
+                const titles = item.onlFormHead.formTitle.split(']');
+                var entityCode = response.result.records[0][titles[0].replace('[', '')];
+                var entityTitle =
+                  titles[1].indexOf('}') == -1
+                    ? titles[1]
+                    : response.result.records[0][titles[1].replace('}', '').replace('{', '')];
+                title = '[' + entityCode + ']' + entityTitle;
               }
-              this.setState({title:title,entityCode:entityCode});
+              this.setState({ title: title, entityCode: entityCode });
             }
           },
         });
@@ -133,9 +136,8 @@ export default class QuickView extends ViewPage {
   /**
    * 通过指定字段查
    */
-  dynamicQuery(entityCode,entityUuid) {
+  dynamicQuery(entityCode, entityUuid) {
     const { onlFormField } = this.props;
-    console.log("onlFormField",onlFormField);
     onlFormField.forEach(item => {
       let tableName;
       if (item.onlFormHead.viewSql) {
@@ -146,8 +148,8 @@ export default class QuickView extends ViewPage {
       if (item.onlFormHead.tableType == '1' || item.onlFormHead.tableType == '0') {
         let titles;
         var keyName = item.onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
-        if(item.onlFormHead.formTitle && item.onlFormHead.formTitle.indexOf("]")!=-1){
-          titles = item.onlFormHead.formTitle.split("]");
+        if (item.onlFormHead.formTitle && item.onlFormHead.formTitle.indexOf(']') != -1) {
+          titles = item.onlFormHead.formTitle.split(']');
           var field = titles[0].substr(1);
         }
         if (!entityCode && !entityUuid) {
@@ -165,12 +167,19 @@ export default class QuickView extends ViewPage {
           callback: response => {
             if (response.result.records != 'false') {
               this.entity[tableName] = response.result.records;
-              var entityTitle = titles[1].indexOf("}")==-1?titles[1] : response.result.records[0][titles[1].replace("}","").replace("{","")];
-              let title = '['+response.result.records[0][titles[0].substr(1)]+']'+ entityTitle;
-              
-              this.setState({entityCode:entityCode,title:title,entityUuid:response.result.records[0][keyName]});
-            }else{
-              message.error("查询的数据不存在！");
+              var entityTitle =
+                titles[1].indexOf('}') == -1
+                  ? titles[1]
+                  : response.result.records[0][titles[1].replace('}', '').replace('{', '')];
+              let title = '[' + response.result.records[0][titles[0].substr(1)] + ']' + entityTitle;
+
+              this.setState({
+                entityCode: entityCode,
+                title: title,
+                entityUuid: response.result.records[0][keyName],
+              });
+            } else {
+              message.error('查询的数据不存在！');
             }
           },
         });
@@ -203,10 +212,8 @@ export default class QuickView extends ViewPage {
   /**
    * 刷新
    */
-  refresh(entityCode,entityUuid) {
-    console.log("entityCode",entityCode);
-    console.log("entityUuid",entityUuid);
-    this.dynamicQuery(entityCode,entityUuid);
+  refresh(entityCode, entityUuid) {
+    this.dynamicQuery(entityCode, entityUuid);
   }
 
   /**
@@ -270,6 +277,23 @@ export default class QuickView extends ViewPage {
     if (!preview) return data;
     return record[preview];
   };
+
+  //自定义table的render
+  customize(record, val, component, field, onlFormHead) {
+    let e = {
+      onlFormField: field,
+      onlFormHead: onlFormHead,
+      record: record,
+      component: component,
+      val: val,
+      // props: { ...commonPropertis, ...fieldExtendJson },
+    };
+
+    //自定义报表的render
+    this.drawcell(e);
+
+    return e.component;
+  }
   /**
    * 绘制信息详情
    */
@@ -338,7 +362,15 @@ export default class QuickView extends ViewPage {
                   ),
               };
 
-              catelogItems.push(itemInfo);
+              let e = {
+                onlFormHead: item.onlFormHead,
+                onlFormField: field,
+                component: itemInfo,
+                val: this.entity[tableName][0][fieldName],
+              };
+              this.drawcell(e);
+
+              catelogItems.push(e.component);
             }
           });
 
@@ -383,7 +415,15 @@ export default class QuickView extends ViewPage {
                   value: this.entity[tableName][0][field.dbFieldName],
                 };
 
-                catelogItems.push(itemInfo);
+                let e = {
+                  onlFormHead: item.onlFormHead,
+                  onlFormField: field,
+                  component: itemInfo,
+                  val: this.entity[tableName][0][fieldName],
+                };
+                this.drawcell(e);
+
+                catelogItems.push(e.component);
               }
             });
 
@@ -410,18 +450,45 @@ export default class QuickView extends ViewPage {
               width: itemColWidth.articleEditColWidth,
               render:
                 field.clickEvent == '1'
-                  ? (val, record) => (
-                      <a onClick={this.onView.bind(this, record)}>
-                        {this.convertData(val, field.preview, record)}
-                      </a>
-                    )
-                  : field.clickEvent == '2'
-                    ? (val, record) => (
-                        <a onClick={this.onOtherView.bind(this, record, jumpPaths)}>
+                  ? (val, record) => {
+                      const component = (
+                        <a onClick={this.onView.bind(this, record)}>
                           {this.convertData(val, field.preview, record)}
                         </a>
-                      )
-                    : (val, record) => <p3>{this.convertData(val, field.preview, record)}</p3>,
+                      );
+                      return this.customize(
+                        record,
+                        this.convertData(val, field.preview, record),
+                        component,
+                        field,
+                        item.onlFormHead
+                      );
+                    }
+                  : field.clickEvent == '2'
+                    ? (val, record) => {
+                        const component = (
+                          <a onClick={this.onOtherView.bind(this, record, jumpPaths)}>
+                            {this.convertData(val, field.preview, record)}
+                          </a>
+                        );
+                        return this.customize(
+                          record,
+                          this.convertData(val, field.preview, record),
+                          component,
+                          field,
+                          item.onlFormHead
+                        );
+                      }
+                    : (val, record) => {
+                        const component = <p3>{this.convertData(val, field.preview, record)}</p3>;
+                        return this.customize(
+                          record,
+                          this.convertData(val, field.preview, record),
+                          component,
+                          field,
+                          item.onlFormHead
+                        );
+                      },
             };
 
             catelogItems.push(itemInfo);
@@ -466,18 +533,5 @@ export default class QuickView extends ViewPage {
   drawTabPanes = () => {
     let tabPanes = [this.drawQuickInfoTab()];
     return tabPanes;
-  };
-
-  /**
-   * 跳转至列表页面
-   */
-  onCancel = () => {
-    this.props.dispatch({
-      type: 'quick/showPageMap',
-      payload: {
-        showPageK: this.state.reportCode,
-        showPageV: this.state.reportCode + 'query',
-      },
-    });
   };
 }
