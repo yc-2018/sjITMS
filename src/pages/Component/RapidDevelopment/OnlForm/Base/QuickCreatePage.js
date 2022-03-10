@@ -79,78 +79,94 @@ export default class QuickCreatePage extends CreatePage {
   };
 
   dynamicqueryById() {
-    const { onlFormField } = this.props;
+    const { onlFormInfos } = this.state;
     if (this.props.showPageNow == 'update') {
-      onlFormField.forEach(item => {
-        let tableName = item.onlFormHead.tableName;
-        if (item.onlFormHead.tableType == '1' || item.onlFormHead.tableType == '0') {
-          var field = item.onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
-          const param = {
-            tableName: tableName,
-            condition: {
-              params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
-            },
-          };
-          this.props.dispatch({
-            type: 'quick/dynamicqueryById',
-            payload: param,
-            callback: response => {
-              if (response.result.records != 'false') {
-                this.entity[tableName] = response.result.records;
-                let title =item.onlFormHead.formTitle; 
-                if(item.onlFormHead.formTitle && item.onlFormHead.formTitle.indexOf("]")!=-1){   
-                  const titles =  item.onlFormHead.formTitle.split("]");
-                  var entityCode = response.result.records[0][titles[0].replace("[","")];
-                  var entityTitle = titles[1].indexOf("}")==-1?titles[1] : response.result.records[0][titles[1].replace("}","").replace("{","")];
-                  title = '['+entityCode+']'+entityTitle;
-                }
-                this.setState({title:title});
-              }
-            },
-          });
-        } else {
-          var field = item.onlFormFields.find(x => x.mainField != null && x.mainField != '')
-            ?.dbFieldName;
-          const param = {
-            tableName: item.onlFormHead.tableName,
-            condition: {
-              params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
-            },
-          };
-          this.props.dispatch({
-            type: 'quick/dynamicqueryById',
-            payload: param,
-            callback: response => {
-              if (response.result.records != 'false') {
-                this.entity[tableName] = response.result.records;
-                for (let i = 0; i < this.entity[tableName].length; i++) {
-                  //增加line
-                  this.entity[tableName][i] = {
-                    ...this.entity[tableName][i],
-                    line: i + 1,
-                  };
-                }
-                this.setState({});
-              }
-            },
-          });
-        }
-      });
+      this.initUpdateForm(onlFormInfos);
     } else {
-      this.setState({ title: '新建' + onlFormField[0].onlFormHead.tableTxt });
-      //默认初始值
-      onlFormField.forEach(item => {
-        let tableName = item.onlFormHead.tableName;
-        if (item.onlFormHead.tableType == '1' || item.onlFormHead.tableType == '0') {
-          const result = item.onlFormFields.filter(x => x.dbDefaultVal !== undefined);
-          this.entity[tableName][0] = {};
-          result.forEach(data => {
-            this.entity[tableName][0][data.dbFieldName] = data.dbDefaultVal;
-          });
-          this.setState({});
+      this.initCreateForm(onlFormInfos);
+    }
+  }
+
+  /**
+   * 初始化更新表单
+   */
+  initUpdateForm = (onlFormInfos) => {
+    for (const onlFormInfo of onlFormInfos) {
+      const { onlFormHead, onlFormFields } = onlFormInfo;
+      let tableName = onlFormHead.tableName;
+      let param;
+      // 主表用主键关联，附表用外键关联
+      if (onlFormHead.tableType != 2) {
+        var field = onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
+        param = {
+          tableName: tableName,
+          condition: {
+            params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
+          },
+        };
+      } else {
+        var field = onlFormFields.find(x => x.mainField != null && x.mainField != '')?.dbFieldName;
+        param = {
+          tableName: onlFormHead.tableName,
+          condition: {
+            params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
+          },
+        };
+      }
+      this.props.dispatch({
+        type: 'quick/dynamicqueryById',
+        payload: param,
+        callback: response => {
+          // 请求的数据为空
+          if (response.result.records == 'false') {
+            return;
+          }
+          const records = response.result.records;
+
+          if (onlFormHead.tableType != 2) {
+            this.entity[tableName] = records;
+            let title = onlFormHead.formTitle;
+            if (onlFormHead.formTitle && onlFormHead.formTitle.indexOf("]") != -1) {
+              const titles = onlFormInfo.onlFormHead.formTitle.split("]");
+              var entityCode = records[0][titles[0].replace("[", "")];
+              var entityTitle = titles[1].indexOf("}") == -1 ? titles[1] : records[0][titles[1].replace("}", "").replace("{", "")];
+              title = '[' + entityCode + ']' + entityTitle;
+            }
+            this.setState({ title: title });
+          } else {
+            this.entity[tableName] = response.result.records;
+            for (let i = 0; i < this.entity[tableName].length; i++) {
+              //增加line
+              this.entity[tableName][i] = {
+                ...this.entity[tableName][i],
+                line: i + 1,
+              };
+            }
+            this.setState({});
+          }
         }
       });
     }
+  }
+
+  /**
+   * 初始化新建表单
+   */
+  initCreateForm = (onlFormInfos) => {
+    // 默认初始值
+    for (const onlFormInfo of onlFormInfos) {
+      const { onlFormHead, onlFormFields } = onlFormInfo
+      if (onlFormHead.tableType == 2) {
+        continue;
+      }
+      const tableName = onlFormHead.tableName;
+      this.entity[tableName][0] = {};
+      const result = onlFormFields.filter(x => x.dbDefaultVal !== undefined);
+      result.forEach(data => {
+        this.entity[tableName][0][data.dbFieldName] = data.dbDefaultVal;
+      });
+    }
+    this.setState({ title: '新建' + onlFormInfos[0].onlFormHead.tableTxt });
   }
 
   componentDidMount() {
@@ -308,8 +324,8 @@ export default class QuickCreatePage extends CreatePage {
           <FormPanel key={onlFormHead.id + categoryName} title={categoryName} cols={cols} />
         );
       }
-      return formPanel;
     };
+    return formPanel;
   }
 
   /**
