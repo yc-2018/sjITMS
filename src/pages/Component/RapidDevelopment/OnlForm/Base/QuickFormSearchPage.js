@@ -2,6 +2,7 @@ import React, { PureComponent } from 'react';
 import { Table, Button, Input, Col, Row, message, Popconfirm } from 'antd';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
+import { havePermission } from '@/utils/authority';
 import axios from 'axios';
 import SearchPage from '@/pages/Component/Page/SearchPage';
 import { colWidth } from '@/utils/ColWidth';
@@ -21,6 +22,8 @@ export default class QuickFormSearchPage extends SearchPage {
   drawTopButton = () => {}; //扩展最上层按钮
   drawToolsButton = () => {}; //扩展中间功能按钮
   drawExColumns = () => {}; //table额外的列
+  changeState = () => {}; //扩展state
+  renderOperateCol = () => {}; //操作列
 
   constructor(props) {
     super(props);
@@ -110,6 +113,9 @@ export default class QuickFormSearchPage extends SearchPage {
 
           //配置查询成功后再去查询数据
           this.onSearch();
+
+          //扩展State
+          this.changeState();
         }
       },
     });
@@ -185,7 +191,7 @@ export default class QuickFormSearchPage extends SearchPage {
         title: column.fieldTxt,
         dataIndex: column.fieldName,
         key: column.fieldName,
-        sorter: true,
+        sorter: column.orderType != 0,
         width: colWidth.codeColWidth,
         fieldType: column.fieldType,
         preview: preview,
@@ -257,7 +263,12 @@ export default class QuickFormSearchPage extends SearchPage {
 
       quickColumns.push(qiuckcolumn);
     });
-
+    let OptColumn = {
+      title: '操作',
+      width: colWidth.operateColWidth,
+      render: record => this.renderOperateCol(record),
+    };
+    quickColumns.push(OptColumn);
     this.columns = quickColumns;
     this.setState({
       title: queryConfig.reportHeadName,
@@ -514,16 +525,33 @@ export default class QuickFormSearchPage extends SearchPage {
     });
     return (
       <div>
-        <Button onClick={this.onCreate} type="primary" icon="plus">
+        <Button
+          // hidden={!havePermission(this.state.reportCode + '.create')}
+          onClick={this.onCreate}
+          type="primary"
+          icon="plus"
+        >
           新建
         </Button>
-        <Button onClick={this.onUpdate} type="primary">
+        <Button
+          // hidden={!havePermission(this.state.reportCode + '.edit')}
+          onClick={this.onUpdate}
+          type="primary"
+        >
           编辑
         </Button>
-        <Button onClick={this.onView} type="primary">
+        <Button
+          // hidden={!havePermission(this.state.reportCode + '.view')}
+          onClick={this.onView}
+          type="primary"
+        >
           查看
         </Button>
-        <Button onClick={this.port} type="primary">
+        <Button
+          // hidden={!havePermission(this.state.reportCode + '.port')}
+          onClick={this.port}
+          type="primary"
+        >
           导出
         </Button>
         {this.drawTopButton()}
@@ -544,7 +572,11 @@ export default class QuickFormSearchPage extends SearchPage {
           okText="确定"
           cancelText="取消"
         >
-          <Button>删除</Button>
+          <Button
+          // hidden={!havePermission(this.state.reportCode + '.delete')}
+          >
+            删除
+          </Button>
         </Popconfirm>
         <AdvanceQuery
           searchFields={this.state.advancedFields}
