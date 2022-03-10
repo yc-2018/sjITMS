@@ -11,10 +11,12 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 }))
 //继承QuickFormSearchPage Search页面扩展
 export default class TestSearch extends QuickFormSearchPage {
+  //需要操作列的显示 将noActionCol设置为false
+  state = { ...this.state, noActionCol: false };
+
   //该方法用于更改State
   changeState = () => {
     this.setState({ title: '' });
-    this.setState({ noActionCol: false });
   };
   /**
    * 该方法用于自定义扩展列
@@ -92,10 +94,11 @@ export default class TestSearch extends QuickFormSearchPage {
   renderOperateCol = record => {
     return <OperateCol menus={this.fetchOperatePropsCommon(record)} />;
   };
+  //操作列举例 具体看OperateCol内介绍
   fetchOperatePropsCommon = record => {
     return [
       {
-        name: '操作功能名称',
+        name: '111',
         onClick: this.test.bind(this, record),
       },
     ];
