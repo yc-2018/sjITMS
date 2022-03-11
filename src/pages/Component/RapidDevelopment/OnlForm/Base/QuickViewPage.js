@@ -1,7 +1,7 @@
 import { connect } from 'dva';
 import moment from 'moment';
 import { Fragment } from 'react';
-import { Button, Tabs, message, Spin } from 'antd';
+import { Button, Tabs, message, Spin, Input } from 'antd';
 import ViewPage from '@/pages/Component/Page/ViewPage';
 import ViewPanel from '@/pages/Component/Form/ViewPanel';
 import { orgType } from '@/utils/OrgType';
@@ -58,6 +58,9 @@ export default class QuickView extends ViewPage {
       quickuuid: props.quickuuid,
       entityUuid: props.params.entityUuid,
       entityCode: '',
+      onlFormInfos: props.onlFormField,
+      singleItems: [],
+      oddItems: [],
     };
 
     this.initonlFormField();
@@ -65,7 +68,88 @@ export default class QuickView extends ViewPage {
 
   componentDidMount() {
     this.dynamicqueryById();
+    this.initAllViewItems();
   }
+
+  initAllViewItems = () => {
+    const { onlFormInfos } = this.state;
+    //找出非一对多的所有Items;
+    let singleItems = onlFormInfos.filter(item => {
+      return item.onlFormHead.tableType != 2 || item.onlFormHead.relationType != 0;
+    });
+    //找出一对多的Items
+    let oddItems = onlFormInfos.filter(item => {
+      return item.onlFormHead.tableType == 2 && item.onlFormHead.relationType == 0;
+    });
+
+    this.setState({ oddItems: oddItems });
+    this.setState({ singleItems: singleItems });
+  };
+
+  initSingleItems = singleItems => {
+    const { entity } = this;
+    let resultItems = [];
+    for (const singleItem of singleItems) {
+      const { onlFormFields, onlFormHead } = singleItem;
+      const { viewSql } = onlFormHead;
+      let tableName = viewSql ? viewSql : onlFormHead.tableName;
+      for (const field of onlFormFields) {
+        const { jumpPath, preview, dbFieldTxt, clickEvent, category, isViewForm } = field;
+        if (!isViewForm) continue;
+        let fieldName = preview ? preview : field.dbFieldName;
+        let jumpPaths = jumpPath ? jumpPath.split(',') : [];
+        let itemInfo = {
+          label: dbFieldTxt,
+          value:
+            clickEvent == '2' ? (
+              <a onClick={this.onOtherView.bind(true, jumpPaths, tableName)}>
+                {this.entity[tableName][0][fieldName]}
+              </a>
+            ) : (
+              this.entity[tableName][0][fieldName]
+            ),
+        };
+        let e = {
+          onlFormHead: onlFormHead,
+          onlFormField: field,
+          component: itemInfo,
+          val: this.entity[tableName][0][fieldName],
+          category: category,
+        };
+        this.drawcell(e);
+        resultItems.push(e);
+      }
+    }
+
+    return resultItems;
+  };
+
+  //获取category
+  getCategory = () => {
+    const { onlFormInfos } = this.state;
+    let categories = [];
+    for (const onlFormInfo of onlFormInfos) {
+      const { onlFormHead, onlFormFields } = onlFormInfo;
+      // 默认表描述作为一个分类
+      categories.push(onlFormHead.tableTxt);
+      // 找到有做分类处理
+      if (onlFormFields.find(field => field.category)) {
+        const categorySorts = onlFormFields
+          .map(field => {
+            return { categorySort: field.categorySort, category: field.category };
+          })
+          .filter((item, index, arr) => arr.findIndex(x => x.category == item.category) === index)
+          .sort(item => item.categorySort);
+        for (const item of categorySorts) {
+          categories.push(item.category);
+        }
+      }
+    }
+    // 去重
+    categories = categories.filter((item, index, arr) => arr.indexOf(item) === index);
+    return categories;
+    //this.setState({ categories: categories });
+  };
 
   componentWillReceiveProps(nextProps) {}
 
@@ -301,20 +385,38 @@ export default class QuickView extends ViewPage {
     const { entity } = this.state;
     const { onlFormField } = this.props;
     //没数据直接return
-    if (onlFormField.length <= 0) return;
+    if (onlFormField.length <= 0)
+      return <TabPane key="1" tab={onlFormField[0].onlFormHead.tableTxt} />;
 
     let quickItems = [];
     let itemsMore = [];
 
+    const { singleItems, oddItems, onlFormInfos } = this.state;
+    if (singleItems.length <= 0)
+      return <TabPane key="1" tab={onlFormField[0].onlFormHead.tableTxt} />;
+
+    let categories = this.getCategory();
+    let a = this.initSingleItems(singleItems); //非一对多
+    let i = 1;
+    for (const category of categories) {
+      let items = [];
+      let catelogItems = [];
+      let key;
+      for (const singleItem of a) {
+        if (singleItem.category != category) continue;
+        catelogItems.push(singleItem.component);
+        key = singleItem.onlFormHead.tableTxt;
+      }
+      if (catelogItems.length <= 0) continue;
+      items.push(<ViewPanel items={catelogItems} title={category} key={key} />);
+      quickItems.push(items);
+    }
+
+    //TODO:一对多的渲染待优化
     onlFormField.forEach((item, index) => {
       let items = [];
       let itemInfo;
       let tableName;
-
-      const sortNumber = item.onlFormFields
-        .map(current => current.categorySort)
-        .filter((element, index, self) => self.indexOf(element) === index)
-        .sort();
 
       if (item.onlFormHead.viewSql) {
         tableName = item.onlFormHead.viewSql;
@@ -322,137 +424,38 @@ export default class QuickView extends ViewPage {
         tableName = item.onlFormHead.tableName;
       }
 
-      //判断是主表跟单表
-      if (item.onlFormHead.tableType == 1 || item.onlFormHead.tableType == 0) {
-        //根据分类的组数来进行分组渲染
-        for (var i = 0; i < item.onlFormHead.categoryNums; i++) {
-          let catelogItems = [];
-          let catelogName;
-          //遍历主表跟单表配置信息
-          item.onlFormFields.forEach(field => {
-            //判断是否显示
-            if (!field.isViewForm) return;
-
-            let jumpPaths;
-            let fieldName;
-
-            //分割跳转内容
-            if (field.jumpPath) {
-              jumpPaths = field.jumpPath.split(',');
-            }
-
-            //预览字段
-            if (field.preview) {
-              fieldName = field.preview;
-            } else {
-              fieldName = field.dbFieldName;
-            }
-
-            if (field.categorySort == sortNumber[i]) {
-              catelogName = field.category;
-              itemInfo = {
-                label: field.dbFieldTxt,
-                value:
-                  field.clickEvent == '2' ? (
-                    <a onClick={this.onOtherView.bind(true, jumpPaths, tableName)}>
-                      {this.entity[tableName][0][fieldName]}
-                    </a>
-                  ) : (
-                    this.entity[tableName][0][fieldName]
-                  ),
-              };
-
-              let e = {
-                onlFormHead: item.onlFormHead,
-                onlFormField: field,
-                component: itemInfo,
-                val: this.entity[tableName][0][fieldName],
-              };
-              this.drawcell(e);
-
-              catelogItems.push(e.component);
-            }
-          });
-
-          if (catelogItems.length <= 0) continue;
-
-          items.push(
-            <ViewPanel
-              items={catelogItems}
-              title={catelogName}
-              key={item.onlFormHead.tableTxt + i}
-            />
-          );
-        }
-      } else {
-        if (item.onlFormHead.relationType == 1) {
-          //遍历一对一从表配置信息
-          for (var i = 0; i < item.onlFormHead.categoryNums; i++) {
-            let catelogItems = [];
-            let catelogName;
-            //遍历主表跟单表配置信息
-            item.onlFormFields.forEach(field => {
-              //判断是否显示
-              if (!field.isViewForm) return;
-
-              let jumpPaths;
-              let fieldName;
-
-              if (field.jumpPath) {
-                jumpPaths = field.jumpPath.split(',');
-              }
-
-              if (field.preview) {
-                fieldName = field.preview;
-              } else {
-                fieldName = field.dbFieldName;
-              }
-
-              if (field.categorySort == sortNumber[i]) {
-                catelogName = field.category;
-                itemInfo = itemInfo = {
-                  label: field.dbFieldTxt,
-                  value: this.entity[tableName][0][field.dbFieldName],
-                };
-
-                let e = {
-                  onlFormHead: item.onlFormHead,
-                  onlFormField: field,
-                  component: itemInfo,
-                  val: this.entity[tableName][0][fieldName],
-                };
-                this.drawcell(e);
-
-                catelogItems.push(e.component);
-              }
-            });
-
-            if (catelogItems.length <= 0) continue;
-
-            items.push(
-              <ViewPanel
-                items={catelogItems}
-                title={catelogName}
-                key={item.onlFormHead.tableTxt + i}
-              />
-            );
-          }
-        } else {
-          let catelogItems = [];
-          //遍历一对多从表配置信息
-          item.onlFormFields.forEach(field => {
-            //判断是否显示
-            if (!field.isViewForm) return;
-            itemInfo = {
-              title: field.dbFieldTxt,
-              dataIndex: field.dbFieldName,
-              key: tableName + field.dbFieldName + index,
-              width: itemColWidth.articleEditColWidth,
-              render:
-                field.clickEvent == '1'
+      if (item.onlFormHead.relationType == 0 && item.onlFormHead.tableType == 2) {
+        console.log('111');
+        let catelogItems = [];
+        //遍历一对多从表配置信息
+        item.onlFormFields.forEach(field => {
+          //判断是否显示
+          if (!field.isViewForm) return;
+          itemInfo = {
+            title: field.dbFieldTxt,
+            dataIndex: field.dbFieldName,
+            key: tableName + field.dbFieldName + index,
+            width: itemColWidth.articleEditColWidth,
+            render:
+              field.clickEvent == '1'
+                ? (val, record) => {
+                    const component = (
+                      <a onClick={this.onView.bind(this, record)}>
+                        {this.convertData(val, field.preview, record)}
+                      </a>
+                    );
+                    return this.customize(
+                      record,
+                      this.convertData(val, field.preview, record),
+                      component,
+                      field,
+                      item.onlFormHead
+                    );
+                  }
+                : field.clickEvent == '2'
                   ? (val, record) => {
                       const component = (
-                        <a onClick={this.onView.bind(this, record)}>
+                        <a onClick={this.onOtherView.bind(this, record, jumpPaths)}>
                           {this.convertData(val, field.preview, record)}
                         </a>
                       );
@@ -464,64 +467,39 @@ export default class QuickView extends ViewPage {
                         item.onlFormHead
                       );
                     }
-                  : field.clickEvent == '2'
-                    ? (val, record) => {
-                        const component = (
-                          <a onClick={this.onOtherView.bind(this, record, jumpPaths)}>
-                            {this.convertData(val, field.preview, record)}
-                          </a>
-                        );
-                        return this.customize(
-                          record,
-                          this.convertData(val, field.preview, record),
-                          component,
-                          field,
-                          item.onlFormHead
-                        );
-                      }
-                    : (val, record) => {
-                        const component = <p3>{this.convertData(val, field.preview, record)}</p3>;
-                        return this.customize(
-                          record,
-                          this.convertData(val, field.preview, record),
-                          component,
-                          field,
-                          item.onlFormHead
-                        );
-                      },
-            };
+                  : (val, record) => {
+                      const component = <p3>{this.convertData(val, field.preview, record)}</p3>;
+                      return this.customize(
+                        record,
+                        this.convertData(val, field.preview, record),
+                        component,
+                        field,
+                        item.onlFormHead
+                      );
+                    },
+          };
 
-            catelogItems.push(itemInfo);
-          });
-          items.push(
-            <ViewTablePanel
-              title={item.onlFormHead.tableTxt}
-              columns={catelogItems}
-              data={this.entity[tableName] ? this.entity[tableName] : []}
-              key={item.onlFormHead.tableTxt}
-            />
-          );
-        }
+          catelogItems.push(itemInfo);
+        });
+        items.push(
+          <ViewTablePanel
+            title={item.onlFormHead.tableTxt}
+            columns={catelogItems}
+            data={this.entity[tableName] ? this.entity[tableName] : []}
+            key={item.onlFormHead.tableTxt + index}
+          />
+        );
       }
 
       //为空时直接return
       if (items.length <= 0) return;
 
-      //一对一,一对多分开保存
-      if (
-        item.onlFormHead.relationType != 0 ||
-        item.onlFormHead.tableType == 1 ||
-        item.onlFormHead.tableType == 0
-      ) {
-        quickItems.push(items);
-      } else {
-        itemsMore.push(items);
-      }
+      itemsMore.push(items);
     });
     //将一对多放到最后
     let itemMerge = [...quickItems, ...itemsMore];
     return (
-      <TabPane key="basicInfo" tab={onlFormField[0].onlFormHead.tableTxt}>
+      <TabPane key="1" tab={onlFormField[0].onlFormHead.tableTxt}>
         {itemMerge}
       </TabPane>
     );
