@@ -192,7 +192,7 @@ export default class QuickFormSearchPage extends SearchPage {
         dataIndex: column.fieldName,
         key: column.fieldName,
         sorter: column.orderType != 0,
-        width: colWidth.codeColWidth,
+        width: column.fieldWidth,
         fieldType: column.fieldType,
         preview: preview,
         render:
