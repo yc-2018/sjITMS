@@ -95,6 +95,7 @@ export default class SimpleQuery extends SearchForm {
             placeholder={'请输入' + searchField.fieldTxt}
             reportCode={this.props.reportCode}
             searchField={searchField}
+            isOrgQuery={this.props.isOrgQuery}
           />
         );
       case 'auto_complete':
