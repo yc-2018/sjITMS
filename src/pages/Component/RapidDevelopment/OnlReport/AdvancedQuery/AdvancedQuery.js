@@ -338,6 +338,7 @@ export default class AdvancedQuery extends Component {
                 filterValue={filterValue}
                 refresh={this.props.refresh}
                 wrappedComponentRef={form => (this.formRef = form)}
+                isOrgQuery={this.props.isOrgQuery}
                 onRef={ref => {
                   this.child = ref;
                 }}

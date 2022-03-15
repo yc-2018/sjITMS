@@ -584,6 +584,7 @@ export default class QuickFormSearchPage extends SearchPage {
           filterValue={this.state.pageFilter.searchKeyValues}
           refresh={this.onSearch}
           reportCode={this.state.reportCode}
+          isOrgQuery={this.state.isOrgQuery}
         />
         {this.drawToolsButton()}
       </div>
