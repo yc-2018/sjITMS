@@ -71,21 +71,46 @@ export default class QuickCreatePage extends CreatePage {
       categories: [],
       runTimeProps: {}
     };
-    this.initEntity();
   }
 
   componentDidMount() {
-    this.initForm();
+    if (!this.props.onlFormField) {
+      this.getCreateConfig();
+    } else {
+      this.initEntity();
+      this.initForm();
+    }
   }
 
   onCancel = () => {
     this.props.switchTab('query');
   };
 
+  
+  /**
+   * 获取配置信息
+   */
+   getCreateConfig = () => {
+     this.props.dispatch({
+       type: 'quick/queryCreateConfig',
+       payload: this.state.quickuuid,
+       callback: response => {
+         if (response.result) {
+           this.setState({
+             onlFormInfos: response.result,
+           });
+
+           this.initEntity();
+           this.initForm();
+        }
+      },
+    })
+  }
+
   /**
    * 初始化表单
    */
-  initForm() {
+  initForm = () => {
     this.initCategory();
     this.initFormItems();
   }

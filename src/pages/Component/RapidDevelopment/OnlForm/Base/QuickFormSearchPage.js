@@ -67,7 +67,7 @@ export default class QuickFormSearchPage extends SearchPage {
           this.initConfig(response.result);
           //解决用户列展示失效问题 暂时解决方法（赋值两次）
           this.initConfig(response.result);
-
+          //查询必填
           let queryRequired = response.result.columns.find(item => item.searchRequire);
 
           let companyuuid = response.result.columns.find(
@@ -192,7 +192,7 @@ export default class QuickFormSearchPage extends SearchPage {
         dataIndex: column.fieldName,
         key: column.fieldName,
         sorter: column.orderType != 0,
-        width: colWidth.codeColWidth,
+        width: column.fieldWidth,
         fieldType: column.fieldType,
         preview: preview,
         render:
@@ -584,6 +584,7 @@ export default class QuickFormSearchPage extends SearchPage {
           filterValue={this.state.pageFilter.searchKeyValues}
           refresh={this.onSearch}
           reportCode={this.state.reportCode}
+          isOrgQuery={this.state.isOrgQuery}
         />
         {this.drawToolsButton()}
       </div>
@@ -601,6 +602,7 @@ export default class QuickFormSearchPage extends SearchPage {
           filterValue={this.state.pageFilter.filterValue}
           refresh={this.onSearch}
           reportCode={this.state.reportCode}
+          isOrgQuery={this.state.isOrgQuery}
         />
       </div>
     );
