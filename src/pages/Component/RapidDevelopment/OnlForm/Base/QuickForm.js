@@ -4,6 +4,7 @@ import { Route, Switch } from 'react-router-dom';
 import Create from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageDefault';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickFormSearchPageDefault';
 import QuickViewPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickViewPageDefault';
+import ExcelImport from '@/components/ExcelImport';
 
 //目录跳转界面
 export default class QuickForm extends PureComponent {
@@ -101,6 +102,15 @@ export default class QuickForm extends PureComponent {
         return e.component;
       case 'view':
         component = <QuickViewPage {...props} />;
+        e = {
+          component: component,
+          showPageNow: showPageNow,
+          props: props,
+        };
+        this.drawTab(e);
+        return e.component;
+      case 'import':
+        component = <ExcelImport {...props} />;
         e = {
           component: component,
           showPageNow: showPageNow,
