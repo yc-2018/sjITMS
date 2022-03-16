@@ -179,13 +179,15 @@ export default class QuickCreatePage extends CreatePage {
             this.setState({ title: title });
           } else {
             this.entity[tableName] = response.result.records;
-            for (let i = 0; i < this.entity[tableName].length; i++) {
-              //增加line
-              this.entity[tableName][i] = {
-                ...this.entity[tableName][i],
-                line: i + 1,
-                key: this.tableKey++
-              };
+            // 一对多增加line
+            if (onlFormHead.relationType == 0) {
+              for (let i = 0; i < this.entity[tableName].length; i++) {
+                this.entity[tableName][i] = {
+                  ...this.entity[tableName][i],
+                  line: i + 1,
+                  key: this.tableKey++
+                };
+              }
             }
             this.setState({});
           }
@@ -352,38 +354,9 @@ export default class QuickCreatePage extends CreatePage {
     this.entity[tableName][line][fieldName] = value;
 
     // 处理多值保存
-    if (props.multiSave) {
-      const multiSaves = props.multiSave.split(",");
-      for (const multiSave of multiSaves) {
-        const [key, value] = multiSave.split(":");
-        if (fieldShowType == "auto_complete") {
-          this.entity[tableName][line][key] = getFieldShow(valueEvent.record, value);
-        }
-      }
-    }
-
+    this.multiSave(e);
     // 字段联动
-    if (props.linkField) {
-      if (fieldShowType == "auto_complete") {
-        const { runTimeProps } = this.state;
-        const linkFields = props.linkField.split(',');
-        for (const linkField of linkFields) {
-          const [field, key, value] = linkField.split(':');
-          let fieldName = tableName + "_" + field;
-          if (e.record) {
-            fieldName = fieldName + "_" + e.record.key;
-          }
-          if (!runTimeProps[fieldName]) {
-            runTimeProps[fieldName] = {};
-          }
-          if (!runTimeProps[fieldName].linkFilter) {
-            runTimeProps[fieldName].linkFilter = {};
-          }
-          runTimeProps[fieldName].linkFilter[key] = valueEvent.record[value];
-        }
-        this.setState({ runTimeProps });
-      }
-    }
+    this.linkField(e);
 
     // 执行扩展代码
     this.exHandleChange(e);
@@ -417,7 +390,8 @@ export default class QuickCreatePage extends CreatePage {
             ...e
           })
         e.props = { ...e.props, ...runTimeProps[tableName + "_" + fieldName] };
-        
+        this.reverseMultiSave(e);
+
         this.drawcell(e);
         
         let initialValue = this.entity[tableName][0] && this.entity[tableName][0][fieldName]; // 初始值
@@ -455,19 +429,19 @@ export default class QuickCreatePage extends CreatePage {
       let currentTableName;
       for (const tableItemKey in tableItems) {
         const tableItem = tableItems[tableItemKey];
-        const e = { ...tableItem };
-        const { categoryName, key, tableName, fieldName } = tableItem;
+        const { categoryName, key, tableName, fieldName, label } = tableItem;
         if (categoryName != categoryItem.category) {
           continue;
         }
         currentTableName = tableName;
 
         let tailItem = {
-          title: e.label,
+          title: label,
           dataIndex: key,
           key: key,
           width: itemColWidth.articleEditColWidth,
           render: (text, record) => {
+            const e = { ...tableItem };
             e.record = record;
             e.props.onChange = valueEvent =>
               this.handleChange({
@@ -476,6 +450,7 @@ export default class QuickCreatePage extends CreatePage {
                 ...e
               })
             e.props = { ...e.props, ...runTimeProps[tableName + "_" + fieldName + "_" + record.key] };
+            this.reverseMultiSave(e);
   
             this.drawcell(e);
   
@@ -526,6 +501,75 @@ export default class QuickCreatePage extends CreatePage {
       }
     }
     this.props.form.setFieldsValue(fields);
+  }
+
+  /**
+   * 处理多值保存
+   */
+  multiSave = (e) => {
+    if (!e.props.multiSave) {
+      return;
+    }
+    const { props, fieldShowType, tableName, line, valueEvent } = e;
+    if (fieldShowType == "auto_complete") {
+      const multiSaves = props.multiSave.split(",");
+      for (const multiSave of multiSaves) {
+        const [key, value] = multiSave.split(":");
+        this.entity[tableName][line][key] = getFieldShow(valueEvent.record, value);
+      }
+    }
+  }
+
+  /**
+   * 多值保存反转初始化数据
+   */
+  reverseMultiSave = (e) => {
+    if (!e.props.multiSave) {
+      return;
+    }
+    const { fieldShowType, props, tableName, record, fieldName } = e;
+    let line = record ? record.line - 1 : 0;
+    if (fieldShowType == "auto_complete") {
+      const multiSaves = props.multiSave.split(",");
+      const initialRecord = {}
+      if (this.entity[tableName][line]) {
+        for (const multiSave of multiSaves) {
+          const [value, key] = multiSave.split(":");
+          initialRecord[key] = this.entity[tableName][line][value];
+        }
+        initialRecord[props.valueField] = this.entity[tableName][line][fieldName];
+        e.props.initialRecord = initialRecord;
+      }
+    }
+  }
+
+  /**
+   * 处理字段联动
+   */
+  linkField = (e) => {
+    if (!e.props.linkField) {
+      return;
+    }
+    const { fieldShowType, props, tableName, valueEvent } = e;
+    if (fieldShowType == "auto_complete") {
+      const { runTimeProps } = this.state;
+      const linkFields = props.linkField.split(',');
+      for (const linkField of linkFields) {
+        const [field, key, value] = linkField.split(':');
+        let fieldName = tableName + "_" + field;
+        if (e.record) {
+          fieldName = fieldName + "_" + e.record.key;
+        }
+        if (!runTimeProps[fieldName]) {
+          runTimeProps[fieldName] = {};
+        }
+        if (!runTimeProps[fieldName].linkFilter) {
+          runTimeProps[fieldName].linkFilter = {};
+        }
+        runTimeProps[fieldName].linkFilter[key] = valueEvent.record[value];
+      }
+      this.setState({ runTimeProps });
+    }
   }
 
   /**
