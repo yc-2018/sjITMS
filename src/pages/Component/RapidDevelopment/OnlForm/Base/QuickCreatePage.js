@@ -39,6 +39,7 @@ export default class QuickCreatePage extends CreatePage {
   entity = {};
   tableKey = 0;
 
+  formLoaded = () => {}
   beforeSave = (data) => { }
   exHandleChange = (e) => { }
   drawcell = (e) => { }
@@ -113,6 +114,7 @@ export default class QuickCreatePage extends CreatePage {
   initForm = () => {
     this.initCategory();
     this.initFormItems();
+    this.formLoaded();
   }
 
   /**
