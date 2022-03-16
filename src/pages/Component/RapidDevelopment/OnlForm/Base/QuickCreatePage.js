@@ -39,7 +39,7 @@ export default class QuickCreatePage extends CreatePage {
   entity = {};
   tableKey = 0;
 
-  formLoaded = () => {}
+  formLoaded = () => { }
   beforeSave = (data) => { }
   exHandleChange = (e) => { }
   drawcell = (e) => { }
@@ -83,6 +83,13 @@ export default class QuickCreatePage extends CreatePage {
     }
   }
 
+  componentDidUpdate() {
+    if(this.state.onlFormInfos && !this.runFormLoaded){
+      this.runFormLoaded = true;
+      this.formLoaded();
+    }
+  }
+
   onCancel = () => {
     this.props.switchTab('query');
   };
@@ -114,7 +121,6 @@ export default class QuickCreatePage extends CreatePage {
   initForm = () => {
     this.initCategory();
     this.initFormItems();
-    this.formLoaded();
   }
 
   /**
