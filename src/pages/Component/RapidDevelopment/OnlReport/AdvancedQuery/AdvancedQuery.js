@@ -9,15 +9,13 @@ import {
   Card,
   Modal,
   Input,
-  Radio,
-  Table,
-  Tree,
   message,
   List,
   Dropdown,
   Menu,
 } from 'antd';
 import ColsAdvanced from './ColsAdvanced';
+import IconFont from '@/components/IconFont';
 import { saveOrUpdateEntities, dynamicqueryById, dynamicDelete } from '@/services/quick/Quick';
 import { loginUser } from '@/utils/LoginContext';
 
@@ -298,16 +296,22 @@ export default class AdvancedQuery extends Component {
   };
 
   render() {
-    const { superQueryModalVisible, saveModalVisible, saveName } = this.state;
+    const { superQueryModalVisible, saveModalVisible, saveName, treeDatas } = this.state;
     const { searchFields, filterValue, reportCode } = this.props;
     return (
       <Fragment>
-        <Button type="primary" onClick={() => this.setState({ superQueryModalVisible: true })}>
-          高级查询
-        </Button>
-        <Dropdown overlay={this.buildMenu.bind()}>
-          <Button>高级查询保存查询列表</Button>
-        </Dropdown>
+        {treeDatas.length > 0 ? (
+          <Dropdown overlay={this.buildMenu.bind()}>
+            <Button type="primary" onClick={() => this.setState({ superQueryModalVisible: true })}>
+              高级查询
+              <IconFont type="icon-line_down" />
+            </Button>
+          </Dropdown>
+        ) : (
+          <Button type="primary" onClick={() => this.setState({ superQueryModalVisible: true })}>
+            高级查询
+          </Button>
+        )}
 
         <Modal
           title="高级查询"
@@ -338,6 +342,7 @@ export default class AdvancedQuery extends Component {
                 filterValue={filterValue}
                 refresh={this.props.refresh}
                 wrappedComponentRef={form => (this.formRef = form)}
+                isOrgQuery={this.props.isOrgQuery}
                 onRef={ref => {
                   this.child = ref;
                 }}

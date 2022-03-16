@@ -63,7 +63,6 @@ export default class QuickForm extends PureComponent {
     const props = {
       showPageNow: showPageNow,
       quickuuid: quickuuid,
-      onlFormField: onlFormField,
       switchTab: (tab, param) => this.switchTab(tab, param),
       onlFormField: onlFormField,
       params: params,

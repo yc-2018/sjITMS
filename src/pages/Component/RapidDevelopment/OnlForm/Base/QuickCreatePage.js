@@ -37,9 +37,10 @@ import { colWidth, itemColWidth } from '@/utils/ColWidth';
  */
 export default class QuickCreatePage extends CreatePage {
   entity = {};
+  tableKey = 0;
 
   beforeSave = (data) => { }
-  exHandleChange = (e, tableName, dbFieldName, line, formInfo, onlFormField) => { }
+  exHandleChange = (e) => { }
   drawcell = (e) => { }
 
   /**
@@ -65,36 +66,75 @@ export default class QuickCreatePage extends CreatePage {
       },
       quickuuid: props.quickuuid,
       onlFormInfos: props.onlFormField,
-      formItems: [],
-      categories: []
+      formItems: {},
+      tableItems: {},
+      categories: [],
+      runTimeProps: {}
     };
-    this.initOnlFormField();
   }
 
-  //初始化表单数据
-  initOnlFormField = () => {
-    const { onlFormInfos } = this.state;
-    //初始化entity
-    onlFormInfos.forEach(item => {
-      this.entity[item.onlFormHead.tableName] = [];
-    });
+  componentDidMount() {
+    if (!this.props.onlFormField) {
+      this.getCreateConfig();
+    } else {
+      this.initEntity();
+      this.initForm();
+    }
+  }
+
+  onCancel = () => {
+    this.props.switchTab('query');
   };
 
-  dynamicqueryById() {
-    const { onlFormInfos } = this.state;
-    if (this.props.showPageNow == 'update') {
-      this.initUpdateForm(onlFormInfos);
-    } else {
-      this.initCreateForm(onlFormInfos);
-    }
+  
+  /**
+   * 获取配置信息
+   */
+   getCreateConfig = () => {
+     this.props.dispatch({
+       type: 'quick/queryCreateConfig',
+       payload: this.state.quickuuid,
+       callback: response => {
+         if (response.result) {
+           this.setState({
+             onlFormInfos: response.result,
+           });
+
+           this.initEntity();
+           this.initForm();
+        }
+      },
+    })
+  }
+
+  /**
+   * 初始化表单
+   */
+  initForm = () => {
     this.initCategory();
     this.initFormItems();
   }
 
   /**
+   * 初始化表单数据
+   */
+  initEntity = () => {
+    const { onlFormInfos } = this.state;
+    //初始化entity
+    onlFormInfos.forEach(item => {
+      this.entity[item.onlFormHead.tableName] = [];
+    });
+    if (this.props.showPageNow == 'update') {
+      this.initUpdateEntity(onlFormInfos);
+    } else {
+      this.initCreateEntity(onlFormInfos);
+    }
+  };
+
+  /**
    * 初始化更新表单
    */
-  initUpdateForm = (onlFormInfos) => {
+  initUpdateEntity = (onlFormInfos) => {
     for (const onlFormInfo of onlFormInfos) {
       const { onlFormHead, onlFormFields } = onlFormInfo;
       let tableName = onlFormHead.tableName;
@@ -144,6 +184,7 @@ export default class QuickCreatePage extends CreatePage {
               this.entity[tableName][i] = {
                 ...this.entity[tableName][i],
                 line: i + 1,
+                key: this.tableKey++
               };
             }
             this.setState({});
@@ -156,7 +197,7 @@ export default class QuickCreatePage extends CreatePage {
   /**
    * 初始化新建表单
    */
-  initCreateForm = (onlFormInfos) => {
+  initCreateEntity = (onlFormInfos) => {
     // 默认初始值
     for (const onlFormInfo of onlFormInfos) {
       const { onlFormHead, onlFormFields } = onlFormInfo
@@ -173,48 +214,49 @@ export default class QuickCreatePage extends CreatePage {
     this.setState({ title: '新建' + onlFormInfos[0].onlFormHead.tableTxt });
   }
 
-  componentDidMount() {
-    this.dynamicqueryById();
-  }
-
-  onCancel = () => {
-    this.props.switchTab('query');
-  };
-
+  /**
+   * 初始化分类
+   */
   initCategory = () => {
     const { onlFormInfos } = this.state;
     let categories = [];
     for (const onlFormInfo of onlFormInfos) {
       const { onlFormHead, onlFormFields } = onlFormInfo;
-      // 默认表描述作为一个分类
-      categories.push(onlFormHead.tableTxt);
-      // 找到有做分类处理
-      if (onlFormFields.find(field => field.category)) {
-        const categorySorts = onlFormFields
-          .map(field => { return { categorySort: field.categorySort, category: field.category } })
-          .filter((item, index, arr) => arr.findIndex(x => x.category == item.category) === index)
-          .sort(item => item.categorySort);
-        for (const item of categorySorts) {
-          categories.push(item.category);
+      let { tableType, relationType } = onlFormHead;
+      // 附表一对多情况
+      if (tableType == 2 && relationType == 0) {
+        categories.push({ category: onlFormHead.tableTxt, type: 1 });
+      } else {
+        // 默认表描述作为一个分类
+        categories.push({ category: onlFormHead.tableTxt, type: 0 });
+        // 找到有做分类处理的
+        if (onlFormFields.find(field => field.category)) {
+          const categorySorts = onlFormFields
+            .map(field => { return { categorySort: field.categorySort, category: field.category } })
+            .filter((item, index, arr) => arr.findIndex(x => x.category == item.category) === index)
+            .sort(item => item.categorySort);
+          for (const item of categorySorts) {
+            categories.push({ category: item.category, type: 0 });
+          }
         }
       }
     }
     // 去重
-    categories = categories.filter((item, index, arr) => arr.indexOf(item) === index);
+    categories = categories.filter((item, index, arr) => arr.findIndex(x => x.category == item.category) === index);
     this.setState({ categories: categories });
   }
 
+  /**
+   * 初始化字段控件
+   */
   initFormItems = () => {
     const { onlFormInfos } = this.state;
-    let formItems = [];
+    let formItems = {};
+    let tableItems = {};
     // 根据查询出来的配置渲染表单新增页面
     for (const onlFormInfo of onlFormInfos) {
       const { onlFormHead, onlFormFields } = onlFormInfo;
       let { tableName, tableType, relationType } = onlFormHead;
-      // 附表一对多情况不进行该方式渲染
-      if (tableType == 2 && relationType == 0) {
-        continue;
-      }
 
       for (const field of onlFormFields) {
         if (!field.isShowForm) {
@@ -225,8 +267,7 @@ export default class QuickCreatePage extends CreatePage {
         const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
         const commonPropertis = {
           disabled: this.isReadOnly(field.isReadOnly),
-          style: { width: '100%' },
-          onChange: e => this.handleChange(e, tableName, field.dbFieldName, 0, onlFormInfo, field)
+          style: { width: '100%' }
         }; // 通用属性
         
         let item = {
@@ -242,10 +283,17 @@ export default class QuickCreatePage extends CreatePage {
           onlFormInfo,
           onlFormField: field,
         };
-        formItems.push(item);
+
+        // 附表一对多情况
+        if (tableType == 2 && relationType == 0) {
+          item.categoryName = onlFormHead.tableTxt;
+          tableItems[item.key] = item;
+        } else {
+          formItems[item.key] = item;
+        }
       }
     }
-    this.setState({ formItems: formItems });
+    this.setState({ tableItems, formItems });
   }
 
   onSave = data => {
@@ -294,33 +342,51 @@ export default class QuickCreatePage extends CreatePage {
 
   /**
    * 处理值改变事件
-   * @param {} e
-   * @param {*} tableName
-   * @param {*} dbFieldName
-   * @param {*} line
-   * @param {*} formInfo
-   * @param {*} onlFormField
    */
-  handleChange = (e, tableName, dbFieldName, line, formInfo, onlFormField) => {
+  handleChange = (e) => {
+    const { tableName, fieldName, line, fieldShowType, props, valueEvent } = e;
     if (!this.entity[tableName][line]) {
       this.entity[tableName][line] = {};
     }
-    const value = this.convertSaveValue(e, onlFormField.fieldShowType);
-    this.entity[tableName][line][dbFieldName] = value;
+    const value = this.convertSaveValue(valueEvent, fieldShowType);
+    this.entity[tableName][line][fieldName] = value;
+
     // 处理多值保存
-    const fieldExtendJson = onlFormField.fieldExtendJson ? JSON.parse(onlFormField.fieldExtendJson) : {};
-    if (fieldExtendJson.multiSave) {
-      const multiSaves = fieldExtendJson.multiSave.split(",");
+    if (props.multiSave) {
+      const multiSaves = props.multiSave.split(",");
       for (const multiSave of multiSaves) {
         const [key, value] = multiSave.split(":");
-        if (onlFormField.fieldShowType == "auto_complete") {
-          this.entity[tableName][line][key] = getFieldShow(e.record, value);
+        if (fieldShowType == "auto_complete") {
+          this.entity[tableName][line][key] = getFieldShow(valueEvent.record, value);
         }
       }
     }
 
+    // 字段联动
+    if (props.linkField) {
+      if (fieldShowType == "auto_complete") {
+        const { runTimeProps } = this.state;
+        const linkFields = props.linkField.split(',');
+        for (const linkField of linkFields) {
+          const [field, key, value] = linkField.split(':');
+          let fieldName = tableName + "_" + field;
+          if (e.record) {
+            fieldName = fieldName + "_" + e.record.key;
+          }
+          if (!runTimeProps[fieldName]) {
+            runTimeProps[fieldName] = {};
+          }
+          if (!runTimeProps[fieldName].linkFilter) {
+            runTimeProps[fieldName].linkFilter = {};
+          }
+          runTimeProps[fieldName].linkFilter[key] = valueEvent.record[value];
+        }
+        this.setState({ runTimeProps });
+      }
+    }
+
     // 执行扩展代码
-    this.exHandleChange(e, tableName, dbFieldName, line, formInfo, onlFormField);
+    this.exHandleChange(e);
     this.setState({})
   }
 
@@ -329,31 +395,44 @@ export default class QuickCreatePage extends CreatePage {
    */
   drawFormItems = () => {
     const { getFieldDecorator } = this.props.form;
-    const { formItems, categories } = this.state;
+    let { formItems, categories, runTimeProps } = this.state;
     let formPanel = [];
-    for (const category of categories) {
+    categories = categories.filter(x => x.type == 0);
+    if(!categories){
+      return;
+    }
+    for (const categoryItem of categories) {
       let cols = [];
-      for (const formItem of formItems) {
-        const { categoryName, key, tableName, fieldName, label, fieldShowType, rules, props } = formItem;
-        if (categoryName != category) {
+      for (const formItemKey in formItems) {
+        const formItem = formItems[formItemKey];
+        const e = { ...formItem };
+        const { categoryName, key, tableName, fieldName } = formItem;
+        if (categoryName != categoryItem.category) {
           continue;
         }
+        e.props.onChange = valueEvent =>
+          this.handleChange({
+            valueEvent,
+            line: 0,
+            ...e
+          })
+        e.props = { ...e.props, ...runTimeProps[tableName + "_" + fieldName] };
         
-        this.drawcell(formItem);
+        this.drawcell(e);
         
         let initialValue = this.entity[tableName][0] && this.entity[tableName][0][fieldName]; // 初始值
         cols.push(
-          <CFormItem key={key} label={label}>
+          <CFormItem key={key} label={e.label}>
             {getFieldDecorator(key, {
-              initialValue: this.convertInitialValue(initialValue, fieldShowType),
-              rules: rules,
-            })(<formItem.component {...props}></formItem.component>)}
+              initialValue: this.convertInitialValue(initialValue, e.fieldShowType),
+              rules: e.rules,
+            })(<e.component {...e.props}></e.component>)}
           </CFormItem>
         );
       }
       if (cols.length > 0) {
         formPanel.push(
-          <FormPanel key={category} title={category} cols={cols} />
+          <FormPanel key={categoryItem.category} title={categoryItem.category} cols={cols} />
         );
       }
     }
@@ -365,82 +444,72 @@ export default class QuickCreatePage extends CreatePage {
    */
   drawTable = () => {
     const { getFieldDecorator } = this.props.form;
-    // 找到一对多的数据
-    const formInfo = this.state.onlFormInfos.find(
-      formInfo => formInfo.onlFormHead.tableType == 2 && formInfo.onlFormHead.relationType == 0
-    );
-    if (!formInfo) {
+    let { tableItems, categories, runTimeProps } = this.state;
+    categories = categories.filter(x => x.type == 1);
+    if (!categories) {
       return;
     }
+    let formPanel = [];
+    for (const categoryItem of categories) {
+      let cols = [];
+      let currentTableName;
+      for (const tableItemKey in tableItems) {
+        const tableItem = tableItems[tableItemKey];
+        const e = { ...tableItem };
+        const { categoryName, key, tableName, fieldName } = tableItem;
+        if (categoryName != categoryItem.category) {
+          continue;
+        }
+        currentTableName = tableName;
 
-    const { onlFormHead, onlFormFields } = formInfo;
-    let columns = [];
-    let tableTxt = onlFormHead.tableTxt;
-    let tableName = onlFormHead.tableName;
-    for (const field of onlFormFields) {
-      if (!field.isShowForm) {
-        continue;
+        let tailItem = {
+          title: e.label,
+          dataIndex: key,
+          key: key,
+          width: itemColWidth.articleEditColWidth,
+          render: (text, record) => {
+            e.record = record;
+            e.props.onChange = valueEvent =>
+              this.handleChange({
+                valueEvent,
+                line: record.line - 1,
+                ...e
+              })
+            e.props = { ...e.props, ...runTimeProps[tableName + "_" + fieldName + "_" + record.key] };
+  
+            this.drawcell(e);
+  
+            let initialValue = this.entity[tableName][record.line - 1][fieldName]; // 初始值
+            return <Form.Item>
+              {
+                getFieldDecorator(key + "_" + (record.line - 1), {
+                  initialValue: this.convertInitialValue(initialValue, e.fieldShowType),
+                  rules: e.rules
+                })(<e.component {...e.props}></e.component>)
+              }
+            </Form.Item>;
+          },
+        };
+        cols.push(tailItem);
       }
-
-      const rules = this.getFormRules(field);
-      const isReadOnly = this.isReadOnly(field.isReadOnly);
-      const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
-      let tailItem = {
-        title: field.dbFieldTxt,
-        dataIndex: tableName + field.dbFieldName,
-        key: tableName + field.dbFieldName,
-        width: itemColWidth.articleEditColWidth,
-        render: (text, record) => {
-          const commonPropertis = {
-            disabled: isReadOnly,
-            style: { width: '100%' },
-            onChange: e =>
-              this.handleChange(
-                e,
-                tableName,
-                field.dbFieldName,
-                record.line - 1,
-                formInfo,
-                field
-              )
-          };
-
-          let e = {
-            onlFormInfo: formInfo,
-            onlFormField: field,
-            record: record,
-            rules: rules,
-            component: this.getComponent(field),
-            props: { ...commonPropertis, ...fieldExtendJson }
-          };
-
-          this.drawcell(e);
-
-          let initialValue = this.entity[tableName][record.line - 1][field.dbFieldName]; // 初始值
-          return <Form.Item>
-            {
-              getFieldDecorator(tableName + "_" + field.dbFieldName + "_" + (record.line - 1), {
-                initialValue: this.convertInitialValue(initialValue, field.fieldShowType),
-                rules: rules
-              })(<e.component {...e.props}></e.component>)
-            }
-          </Form.Item>;
-        },
-      };
-      columns.push(tailItem);
+      if (cols.length > 0) {
+        formPanel.push(
+          <ItemEditTable
+            key={categoryItem.category}
+            title={categoryItem.category}
+            columns={cols}
+            data={this.entity[currentTableName]}
+            newMember={() => {
+              this.entity[currentTableName].push({ line: this.entity[currentTableName].length + 1, key: this.tableKey++ });
+              this.setState({});
+            }}
+            handleRemove={(data) => this.handleTableRemove(currentTableName, data)}
+            notNote
+          />
+        );
+      }
     }
-    
-    return (
-      <div>
-        <ItemEditTable
-          title={tableTxt}
-          columns={columns}
-          data={this.entity[tableName]}
-          handleRemove={(data) => this.handleTableRemove(tableName, data)}
-          notNote
-        />
-      </div>
-    );
+    return formPanel;
   };
 
   /**
@@ -450,7 +519,7 @@ export default class QuickCreatePage extends CreatePage {
     let fields = {};
     for (const row of data) {
       for (const key in row) {
-        if (key == "line") {
+        if (key == "line" || key == "key") {
           continue;
         }
         fields[tableName + "_" + key + "_" + (row.line - 1)] = row[key];
@@ -558,7 +627,10 @@ export default class QuickCreatePage extends CreatePage {
  * @param {Map} rowData 原始数据
  * @param {String} str 用户定义的字段文本
  */
- function getFieldShow(rowData, str) {
+function getFieldShow(rowData, str) {
+  if (!rowData || !str) {
+    return;
+  }
   var reg = /%\w+%/g;
   var matchFields = str.match(reg);
   if (matchFields) {

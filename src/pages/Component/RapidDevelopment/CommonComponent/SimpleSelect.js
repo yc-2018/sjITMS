@@ -68,6 +68,7 @@ export default class SimpleSelect extends PureComponent {
       rule: 'like',
       val: value,
     });
+    params = [...params, ...this.props.isOrgQuery];
     this.getCoulumns({ queryParams: params });
   };
 

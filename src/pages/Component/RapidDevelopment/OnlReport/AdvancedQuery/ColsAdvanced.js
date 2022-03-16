@@ -9,6 +9,7 @@ import {
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 
 const { RangePicker } = DatePicker;
+const { Option } = Select;
 
 const formItemLayout = {
   labelCol: { span: 5 },
@@ -34,7 +35,6 @@ export default class ColsAdvanced extends Component {
   }
 
   getSearchParams = params => {
-    console.log(params);
     this.setState({ queryKey: params.length + 1, searchParams: params });
   };
 
@@ -114,13 +114,25 @@ export default class ColsAdvanced extends Component {
       this.props.form.resetFields([`val[${key}]`]);
     };
   };
+  //查询条件选择
+  onConditionSelect = key => {
+    return condition => {
+      this.props.form.resetFields([`val[${key}]`, `rule[${key}]`]);
+      const { searchParams } = this.state;
+      const newSearchParams = [...searchParams];
+      const index = newSearchParams.findIndex(x => x.key == key);
+      newSearchParams[index].searchCondition = condition;
+      this.setState({ searchParams: newSearchParams });
+    };
+  };
 
   //生成查询控件
-  buildSearchItem = searchField => {
+  buildSearchItem = (searchField, condition) => {
     if (searchField == undefined) return <Input />;
     const searchProperties = searchField.searchProperties
       ? JSON.parse(searchField.searchProperties)
       : '';
+    if (condition === 'like') return <Input placeholder={'请输入' + searchField.fieldTxt} />;
     switch (searchField.searchShowtype) {
       case 'date':
         return <RangePicker style={{ width: '100%' }} />;
@@ -147,6 +159,7 @@ export default class ColsAdvanced extends Component {
             placeholder={'请输入' + searchField.fieldTxt}
             reportCode={this.props.reportCode}
             searchField={searchField}
+            isOrgQuery={this.props.isOrgQuery}
           />
         );
       case 'auto_complete':
@@ -193,7 +206,11 @@ export default class ColsAdvanced extends Component {
                 filterOption={(input, option) => option.props.children.indexOf(input) >= 0}
               >
                 {searchFields.map(column => {
-                  return <Option value={column.fieldName}>{column.fieldTxt}</Option>;
+                  return (
+                    <Option value={column.fieldName} key={column.fieldName}>
+                      {column.fieldTxt}
+                    </Option>
+                  );
                 })}
               </Select>
             )}
@@ -204,9 +221,13 @@ export default class ColsAdvanced extends Component {
             {getFieldDecorator(`rule[${searchParam.key}]`, {
               initialValue: searchParam.searchCondition,
             })(
-              <Select>
+              <Select onSelect={this.onConditionSelect(searchParam.key)}>
                 {mathRule.map(rule => {
-                  return <Option value={rule.value}>{rule.name}</Option>;
+                  return (
+                    <Option value={rule.value} key={rule.name}>
+                      {rule.name}
+                    </Option>
+                  );
                 })}
               </Select>
             )}
@@ -217,7 +238,10 @@ export default class ColsAdvanced extends Component {
             {getFieldDecorator(`val[${searchParam.key}]`, {
               initialValue: searchParam.defaultValue,
             })(
-              this.buildSearchItem(searchFields.find(x => x.fieldName == searchParam.searchField))
+              this.buildSearchItem(
+                searchFields.find(x => x.fieldName == searchParam.searchField),
+                searchParam.searchCondition
+              )
             )}
           </Form.Item>
         </Col>

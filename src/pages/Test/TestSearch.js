@@ -1,9 +1,10 @@
 import React, { PureComponent } from 'react';
-import { Table, Button, Input, Col, Row, Popconfirm, message } from 'antd';
+import { Table, Button, Input, Col, Row, Popconfirm, message, Modal } from 'antd';
 import { colWidth } from '@/utils/ColWidth';
 import OperateCol from '@/pages/Component/Form/OperateCol';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
+import TestCreate from './TestCreate';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -12,7 +13,7 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 //继承QuickFormSearchPage Search页面扩展
 export default class TestSearch extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
-  state = { ...this.state, noActionCol: false };
+  state = { ...this.state, noActionCol: false, isShow: false };
 
   //该方法用于更改State
   changeState = () => {
@@ -66,9 +67,23 @@ export default class TestSearch extends QuickFormSearchPage {
     }
   };
 
+  aaaa = () => {
+    this.setState({ isShow: !this.state.isShow });
+    console.log(this.state.isShow);
+  };
+
   //该方法用于写最上层的按钮 多个按钮用<span>包裹
   drawTopButton = () => {
-    return <Button type="primary">1111</Button>;
+    return (
+      <span>
+        <Button onClick={this.aaaa} type="primary">
+          gotoCreate
+        </Button>
+        <Modal visible={this.state.isShow} onCancel={this.aaaa}>
+          <TestCreate quickuuid="itms_create_linesystem" />
+        </Modal>
+      </span>
+    );
   };
 
   //该方法用于写中间的功能按钮 多个按钮用<span>包裹
