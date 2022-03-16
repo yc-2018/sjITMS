@@ -25,13 +25,6 @@ export default class SimpleAutoComplete extends Component {
     preQueryStr: ""
   };
 
-  constructor(props) {
-    super(props);
-    if (props.initialRecord) {
-      this.state.sourceData = [props.initialRecord];
-    }
-  }
-
   static defaultProps = {
     textField: "NAME",
     valueField: "VALUE",
@@ -48,15 +41,16 @@ export default class SimpleAutoComplete extends Component {
   }
 
   static getDerivedStateFromProps(props, state) {
+    const nextState = {};
     const nextQueryStr = JSON.stringify({
       dictCode: props.dictCode,
       queryParams: props.queryParams,
       linkFilter: props.linkFilter
     });
     if (nextQueryStr != state.preQueryStr) {
-      return { preQueryStr: nextQueryStr }
+      nextState.preQueryStr = nextQueryStr;
     }
-    return null;
+    return nextState;
   }
 
   componentDidMount() {
@@ -67,6 +61,10 @@ export default class SimpleAutoComplete extends Component {
   }
 
   componentDidUpdate(preProps , preState) {
+    if (this.props.initialRecord && this.state.sourceData.length == 0 && !this.state.initialRecord) {
+      this.setState({ initialRecord: this.props.initialRecord });
+      this.setSourceData([this.props.initialRecord]);
+    }
     // 判断判断查询条件是否一致,如果一致则不加载
     if (preState.preQueryStr != this.state.preQueryStr) {
       this.listFetchData();
@@ -77,7 +75,7 @@ export default class SimpleAutoComplete extends Component {
    * 构建queryParams
    */
   getQueryParams = () => {
-    const { queryParams, dictCode, isLink, linkFilter } = this.props;
+    const { queryParams, dictCode, linkFilter } = this.props;
     let queryParamsJson;
     // 字典查询优先
     if (dictCode) {
@@ -93,7 +91,7 @@ export default class SimpleAutoComplete extends Component {
       queryParamsJson = queryParams instanceof Object ? queryParams : JSON.parse(queryParams);
     }
 
-    if (isLink && linkFilter) {
+    if (linkFilter) {
       // 构建出联动筛选语句，过滤数据
       const linkFilterCondition = this.getLinkFilterCondition();
       // 构建失败,退出
