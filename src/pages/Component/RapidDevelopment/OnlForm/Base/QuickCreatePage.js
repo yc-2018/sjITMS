@@ -422,8 +422,7 @@ export default class QuickCreatePage extends CreatePage {
           });
         e.props = { ...e.props, ...runTimeProps[tableName + '_' + fieldName] };
         this.reverseMultiSave(e);
-
-        if (e.fieldShowType == 'auto_complete') {
+        if (e.fieldShowType == 'auto_complete' || e.fieldShowType == 'sel_tree') {
           e.props.onSourceDataChange = data => {
             this.setRunTimeProps(e.tableName, e.fieldName, { sourceData: data });
           };
@@ -492,7 +491,7 @@ export default class QuickCreatePage extends CreatePage {
               ...runTimeProps[tableName + '_' + fieldName + '_' + record.key],
             };
             this.reverseMultiSave(e);
-            if (e.fieldShowType == 'auto_complete') {
+            if (e.fieldShowType == 'auto_complete' || e.fieldShowType == 'sel_tree') {
               e.props.onSourceDataChange = data => {
                 this.setRunTimeProps(e.tableName, e.fieldName, { sourceData: data }, e.record.key);
               };
@@ -560,7 +559,7 @@ export default class QuickCreatePage extends CreatePage {
       return;
     }
     const { props, fieldShowType, tableName, line, valueEvent } = e;
-    if (fieldShowType == 'auto_complete') {
+    if (fieldShowType == 'auto_complete' || e.fieldShowType == 'sel_tree') {
       const multiSaves = props.multiSave.split(',');
       for (const multiSave of multiSaves) {
         const [key, value] = multiSave.split(':');
@@ -578,7 +577,7 @@ export default class QuickCreatePage extends CreatePage {
     }
     const { fieldShowType, props, tableName, record, fieldName } = e;
     let line = record ? record.line - 1 : 0;
-    if (fieldShowType == 'auto_complete') {
+    if (fieldShowType == 'auto_complete' || e.fieldShowType == 'sel_tree') {
       const multiSaves = props.multiSave.split(',');
       const initialRecord = {};
       if (this.entity[tableName][line]) {
