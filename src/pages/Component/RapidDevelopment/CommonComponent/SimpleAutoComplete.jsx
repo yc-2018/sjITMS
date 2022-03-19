@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { Select, Spin } from 'antd';
 import Debounce from 'lodash-decorators/debounce';
 import Bind from 'lodash-decorators/bind';
+import memoize from "memoize-one";
 
 import { dynamicQuery } from '@/services/quick/Quick';
 
@@ -14,15 +15,17 @@ import { dynamicQuery } from '@/services/quick/Quick';
  * {string} dictCode 字典编码,与queryParams冲突,字典编码优先
  * {boolean} isLink    是否为联动控件 
  * {string} linkFilter   联动过滤条件 {field:val}形式
- * {object} initialRecord  初始行记录
+ * {object} initialRecord  初始行记录，用作显示
+ * {function} onSourceDataChange  查询数据发生变化事件
+ * {array} sourceData  原始数据
  * {boolean} autoComplete 是否为下拉搜索框
  * {boolean} showSearch 是否允许文本搜索
  */
 export default class SimpleAutoComplete extends Component {
   state = {
-    sourceData: [],
-    options: [],
-    preQueryStr: ""
+    sourceData: undefined,
+    preQueryStr: "",
+    value: undefined
   };
 
   static defaultProps = {
@@ -40,6 +43,13 @@ export default class SimpleAutoComplete extends Component {
     this.autoCompleteFetchData(searchText);
   }
 
+  // 在 sourceData, textField, valueField 变化时，重新运行 getOptions
+  convertOptions = memoize(
+    (sourceData, textField, valueField) => convertData2Options(sourceData, textField, valueField)
+  );
+
+  getOptions = () => this.convertOptions(this.state.sourceData, this.props.textField, this.props.valueField)
+
   static getDerivedStateFromProps(props, state) {
     const nextState = {};
     const nextQueryStr = JSON.stringify({
@@ -50,21 +60,24 @@ export default class SimpleAutoComplete extends Component {
     if (nextQueryStr != state.preQueryStr) {
       nextState.preQueryStr = nextQueryStr;
     }
+    if (props.sourceData){
+      nextState.sourceData = props.sourceData;
+    }
+    if (props.initialRecord && !props.sourceData && !state.sourceData) {
+      nextState.sourceData = [props.initialRecord];
+    }
+    nextState.value = typeof props.value == "object" ? props.value.value : props.value;
     return nextState;
   }
 
   componentDidMount() {
     // 非搜索直接进来就加载数据
-    if (!this.props.autoComplete) {
+    if (!this.props.sourceData && !this.props.autoComplete) {
       this.listFetchData();
     }
   }
 
-  componentDidUpdate(preProps , preState) {
-    if (this.props.initialRecord && this.state.sourceData.length == 0 && !this.state.initialRecord) {
-      this.setState({ initialRecord: this.props.initialRecord });
-      this.setSourceData([this.props.initialRecord]);
-    }
+  componentDidUpdate(_, preState) {
     // 判断判断查询条件是否一致,如果一致则不加载
     if (preState.preQueryStr != this.state.preQueryStr) {
       this.listFetchData();
@@ -192,13 +205,16 @@ export default class SimpleAutoComplete extends Component {
   };
 
   /**
-   * 设置state的数据源以及选项
+   * 设置state的数据源
    */
   setSourceData = (sourceData) => {
     const { textField, valueField } = this.props;
+    if (this.props.onSourceDataChange) {
+      this.props.onSourceDataChange(sourceData);
+      return;
+    }
     this.setState({
       sourceData: sourceData,
-      options: convertData2Options(sourceData, textField, valueField),
     });
   }
 
@@ -214,8 +230,7 @@ export default class SimpleAutoComplete extends Component {
       this.setSourceData(response.result.records);
     }
     // 重新加载完数据后,看数据源中是否还有对应的value,没有则清除控件值
-    const value = typeof this.props.value == "object" ? this.props.value.value : this.props.value
-    let data = this.state.options.find(x => x.value == value)?.data;
+    let data = this.getOptions().find(x => x.value == this.state.value)?.data;
     if (!data) {
       this.onChange(undefined);
     }
@@ -226,7 +241,7 @@ export default class SimpleAutoComplete extends Component {
    */
   onChange = (value) => {
     if (this.props.onChange) {
-      let data = this.state.options.find(x => x.value == value)?.data;
+      let data = this.getOptions().find(x => x.value == value)?.data;
       if (!data) {
         data = {
           value: undefined,
@@ -240,7 +255,7 @@ export default class SimpleAutoComplete extends Component {
   render() {
     let { autoComplete, showSearch } = this.props;
     let onSearch;
-    const options = this.state.options.map(d => (
+    const options = this.getOptions().map(d => (
       <Select.Option key={d.value} textfield={d.textField}>
         {d.label}
       </Select.Option>
@@ -261,7 +276,7 @@ export default class SimpleAutoComplete extends Component {
         showSearch={showSearch}
         onSearch={onSearch}
         // 将value进行了一层包装，以方便日后扩展
-        value={typeof this.props.value == "object" ? this.props.value.value : this.props.value}
+        value={this.state.value}
         onChange={this.onChange}
       >
         {options}
@@ -278,6 +293,9 @@ export default class SimpleAutoComplete extends Component {
  * @returns
  */
 function convertData2Options(sourceData, textField, valueField) {
+  if (!sourceData) {
+    return [];
+  }
   return sourceData.map(row => {
     const textShow = getFieldShow(row, textField);
     const valueShow = getFieldShow(row, valueField);
