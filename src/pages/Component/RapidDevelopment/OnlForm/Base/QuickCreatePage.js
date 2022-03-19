@@ -453,7 +453,6 @@ export default class QuickCreatePage extends CreatePage {
    * 绘制一对多表格
    */
   drawTable = () => {
-    console.log(this.state.runTimeProps);
     const { getFieldDecorator } = this.props.form;
     let { tableItems, categories, runTimeProps } = this.state;
     categories = categories.filter(x => x.type == 1);
