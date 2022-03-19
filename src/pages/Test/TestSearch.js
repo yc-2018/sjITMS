@@ -15,6 +15,24 @@ export default class TestSearch extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
   state = { ...this.state, noActionCol: false, isShow: false };
 
+  //该方法用于扩展查询
+  exSearchFilter = () => {
+    let testS = [
+      {
+        field: 'CODE',
+        type: 'VarChar',
+        rule: 'eq',
+        val: '1037',
+      },
+      // {
+      //   field: 'ccc',
+      //   type: 'VarChar',
+      //   rule: 'eq',
+      //   val: '1',
+      // },
+    ];
+    return testS;
+  };
   //该方法用于更改State
   changeState = () => {
     this.setState({ title: '' });

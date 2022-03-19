@@ -24,6 +24,7 @@ export default class QuickFormSearchPage extends SearchPage {
   drawExColumns = () => {}; //table额外的列
   changeState = () => {}; //扩展state
   renderOperateCol = () => {}; //操作列
+  exSearchFilter = () => {}; //扩展查询
 
   constructor(props) {
     super(props);
@@ -453,11 +454,13 @@ export default class QuickFormSearchPage extends SearchPage {
    * 查询
    */
   onSearch = filter => {
+    let exSearchFilter = this.exSearchFilter();
+    if (!exSearchFilter) exSearchFilter = [];
     if (typeof filter == 'undefined') {
       //重置搜索条件
       this.state.pageFilters = {
         quickuuid: this.props.quickuuid,
-        superQuery: { matchType: '', queryParams: this.state.isOrgQuery },
+        superQuery: { matchType: '', queryParams: [...this.state.isOrgQuery, ...exSearchFilter] },
       }; //增加组织 公司id查询条件
       this.getData(this.state.pageFilters);
     } else {
@@ -467,7 +470,7 @@ export default class QuickFormSearchPage extends SearchPage {
         ...this.state.pageFilters,
         superQuery: {
           matchType: filter.matchType,
-          queryParams: [...filter.queryParams, ...this.state.isOrgQuery],
+          queryParams: [...filter.queryParams, ...this.state.isOrgQuery, ...exSearchFilter],
         },
       };
       this.state.pageFilters = pageFilters;
