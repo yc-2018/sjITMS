@@ -52,6 +52,9 @@ export default class SimpleQuery extends SearchForm {
       if (field.searchShowtype == 'date' && val instanceof Array) {
         val = val.map(x => x.format('YYYY-MM-DD')).join('||');
       }
+      if (field.searchShowtype == 'auto_complete' || field.searchShowtype == 'sel_tree') {
+        val = val.value;
+      }
       if (val && field) {
         params.push({
           field: field.fieldName,

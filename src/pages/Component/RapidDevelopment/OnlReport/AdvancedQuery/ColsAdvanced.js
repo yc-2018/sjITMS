@@ -86,11 +86,16 @@ export default class ColsAdvanced extends Component {
     if (field != undefined) {
       field.map((item, index) => {
         if (item != undefined && rule[index] != undefined) {
+          const searchField = searchFields.find(x => x.fieldName === item);
           const data = {};
-          data.type = searchFields.find(x => x.fieldName === item)?.fieldType;
+          data.type = searchField?.fieldType;
           data.field = item;
           data.rule = rule[index];
-          data.val = val[index];
+          if(searchField?.searchShowtype == "auto_complete" || searchField?.searchShowtype == "sel_tree"){
+            data.val = val[index].value;
+          } else {
+            data.val = val[index];
+          }
           IQueryParam.queryParams.push(data);
         }
       });
