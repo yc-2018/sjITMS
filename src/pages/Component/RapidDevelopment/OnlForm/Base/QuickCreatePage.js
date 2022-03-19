@@ -57,6 +57,20 @@ export default class QuickCreatePage extends CreatePage {
     this.props.form.setFieldsValue({ [fieldName]: value });
   };
 
+  /**
+   * 设置运行时产生的props
+   * @param {*} tableName 表名
+   * @param {*} fieldName 字段
+   * @param {*} props 属性
+   * @param {*} key 一对多表格的key
+   */
+  setRunTimeProps = (tableName, fieldName, props, key) => {
+    const { runTimeProps } = this.state;
+    const field = tableName + '_' + fieldName + (key != undefined ? '_' + key : '');
+    runTimeProps[field] = { ...runTimeProps[field], ...props };
+    this.setState({ runTimeProps });
+  }
+
   constructor(props) {
     super(props);
     this.state = {
@@ -399,6 +413,11 @@ export default class QuickCreatePage extends CreatePage {
           })
         e.props = { ...e.props, ...runTimeProps[tableName + "_" + fieldName] };
         this.reverseMultiSave(e);
+        if (e.fieldShowType == "auto_complete") {
+          e.props.onSourceDataChange = data => {
+            this.setRunTimeProps(e.tableName, e.fieldName, { sourceData: data });
+          }
+        }
 
         this.drawcell(e);
         
@@ -459,6 +478,11 @@ export default class QuickCreatePage extends CreatePage {
               })
             e.props = { ...e.props, ...runTimeProps[tableName + "_" + fieldName + "_" + record.key] };
             this.reverseMultiSave(e);
+            if (e.fieldShowType == "auto_complete") {
+              e.props.onSourceDataChange = data => {
+                this.setRunTimeProps(e.tableName, e.fieldName, { sourceData: data }, e.record.key);
+              }
+            }
   
             this.drawcell(e);
   
@@ -546,6 +570,9 @@ export default class QuickCreatePage extends CreatePage {
           initialRecord[key] = this.entity[tableName][line][value];
         }
         initialRecord[props.valueField] = this.entity[tableName][line][fieldName];
+        if (initialRecord[props.valueField] == undefined) {
+          return;
+        }
         e.props.initialRecord = initialRecord;
       }
     }
@@ -560,23 +587,15 @@ export default class QuickCreatePage extends CreatePage {
     }
     const { fieldShowType, props, tableName, valueEvent } = e;
     if (fieldShowType == "auto_complete") {
-      const { runTimeProps } = this.state;
+      const linkFilters = {};
       const linkFields = props.linkField.split(',');
       for (const linkField of linkFields) {
         const [field, key, value] = linkField.split(':');
-        let fieldName = tableName + "_" + field;
-        if (e.record) {
-          fieldName = fieldName + "_" + e.record.key;
-        }
-        if (!runTimeProps[fieldName]) {
-          runTimeProps[fieldName] = {};
-        }
-        if (!runTimeProps[fieldName].linkFilter) {
-          runTimeProps[fieldName].linkFilter = {};
-        }
-        runTimeProps[fieldName].linkFilter[key] = valueEvent.record[value];
+        linkFilters[field] = { ...linkFilters[field], [key]: valueEvent.record[value] };
       }
-      this.setState({ runTimeProps });
+      for (const field in linkFilters) {
+        this.setRunTimeProps(tableName, field, { linkFilter: linkFilters[field] }, e.record?.key);
+      }
     }
   }
 
@@ -666,7 +685,7 @@ export default class QuickCreatePage extends CreatePage {
       return e.format('YYYY-MM-DD');
     } else if (fieldShowType == 'text' || fieldShowType == 'textarea' || fieldShowType == 'radio' || !fieldShowType) {
       return e.target.value;
-    } else if (fieldShowType == 'auto_complete') {
+    } else if (fieldShowType == 'auto_complete' || fieldShowType == "sel_tree") {
       return e.value;
     } else {
       return e;
