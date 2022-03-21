@@ -57,17 +57,20 @@ export default class QuickForm extends PureComponent {
     this.setState({ params: param });
   };
 
+  // 如果把函数参数在render中声明，则react会当成props发生改变从而导致子组件重新render
+  fixedProps = { switchTab: (tab, param) => this.switchTab(tab, param) };
+
   render() {
     const { showPageNow, quickuuid, tableName, onlFormField, params } = this.state;
     const { location } = this.props;
     const props = {
       showPageNow: showPageNow,
       quickuuid: quickuuid,
-      switchTab: (tab, param) => this.switchTab(tab, param),
       onlFormField: onlFormField,
       params: params,
       tableName: tableName,
       pathname: location.pathname,
+      ...this.fixedProps
     };
     let component;
     let e;
