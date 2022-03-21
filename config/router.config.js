@@ -1151,14 +1151,6 @@ export default [
             divider: true,
           },
           {
-            path: '/tmsbase/schedule',
-            name: '排车单TEST',
-            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
-            component: './SJDispatchCenterShipPlanBill/ShipPlanBillForm',
-            quickuuid: 'sj_itms_schedule',
-            authority: ['itms.base.vehicle'],
-          },
-          {
             path: '/tmsbase/confirm',
             name: '回车送货确认',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
