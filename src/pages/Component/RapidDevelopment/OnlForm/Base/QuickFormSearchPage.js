@@ -13,6 +13,7 @@ import ExportJsonExcel from 'js-export-excel';
 import { routerRedux } from 'dva/router';
 import { Badge } from 'antd';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { guid } from '@/utils/utils'
 
 /**
  * 查询界面
@@ -281,6 +282,10 @@ export default class QuickFormSearchPage extends SearchPage {
 
   //初始化数据
   initData = data => {
+    // 海鼎底层需要uuid作为StandardTable的rowkey
+    if (data?.records && data.records.length > 0 && !data.records[0].uuid) {
+      data.records.forEach(row => row.uuid = guid());
+    }
     var data = {
       list: data.records,
       pagination: {
