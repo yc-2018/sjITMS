@@ -259,7 +259,7 @@ export default class CreatePage extends Component {
             <NavigatorPanel title={this.state.title}
                             style={{marginLeft: -12}}
                             action={auditButton ? this.drawAuditButtons() : this.drawCreateButtons()}/>
-            <div style={{ height: 'calc(100vh - 165px)', overflowY: this.drawTable ? 'hidden' : 'scroll' }}>
+            <div style={{ height: 'calc(100vh - 165px)', overflowY: 'scroll' }}>
               <Form onChange={this.onChange} autoComplete="off">
                 {this.drawFormItems()}
                 {this.drawTable && this.drawTable()}
