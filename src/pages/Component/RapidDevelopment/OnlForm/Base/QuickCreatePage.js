@@ -9,7 +9,7 @@ import {
   confirmLineFieldNotNullLocale,
 } from '@/utils/CommonLocale';
 import { loginCompany, loginOrg, loginUser, getDefOwner, getActiveKey } from '@/utils/LoginContext';
-import CreatePage from '@/pages/Component/Page/CreatePage';
+import CreatePage from '@/pages/Component/RapidDevelopment/CommonLayout/CreatePage';
 import FormPanel from '@/pages/Component/Form/FormPanel';
 import CFormItem from '@/pages/Component/Form/CFormItem';
 import {
