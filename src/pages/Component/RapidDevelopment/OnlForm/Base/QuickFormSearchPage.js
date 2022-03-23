@@ -137,7 +137,8 @@ export default class QuickFormSearchPage extends SearchPage {
 
   //数据转换
   convertData = (data, preview, record) => {
-    if (!data) return '<空>';
+    // if (!data) return '<空>';
+    if (data === '' || data == undefined) return '<空>';
     if (!preview) return data;
     return record[preview];
   };
