@@ -5,6 +5,9 @@ import OperateCol from '@/pages/Component/Form/OperateCol';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import TestCreate from './TestCreate';
+import StandardTable from '@/components/StandardTable';
+import { DndProvider, DragSource, DropTarget } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -13,22 +16,16 @@ import TestCreate from './TestCreate';
 //继承QuickFormSearchPage Search页面扩展
 export default class TestSearch extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
-  state = { ...this.state, noActionCol: false, isShow: false };
+  state = { ...this.state, noActionCol: false, isShow: false, canDragTable: true };
 
   //该方法用于扩展查询
   exSearchFilter = () => {
     let testS = [
-      {
-        field: 'CODE',
-        type: 'VarChar',
-        rule: 'eq',
-        val: '1037',
-      },
       // {
-      //   field: 'ccc',
+      //   field: 'CODE',
       //   type: 'VarChar',
       //   rule: 'eq',
-      //   val: '1',
+      //   val: '1037',
       // },
     ];
     return testS;
@@ -137,4 +134,30 @@ export default class TestSearch extends QuickFormSearchPage {
     ];
   };
   test = (a, b) => {};
+
+  // render() {
+  //   return (
+  //     <DndProvider backend={HTML5Backend}>
+  //       <StandardTable
+  //         unShowRow={this.state.unShowRow ? this.state.unShowRow : false}
+  //         rowKey={record => record.uuid}
+  //         hasSettingColumns
+  //         selectedRows={this.state.selectedRows}
+  //         tableHeight={this.state.tableHeight}
+  //         data={this.state.data}
+  //         columns={this.columns}
+  //         noPagination={this.state.noPagination}
+  //         scroll={scroll ? scroll : undefined}
+  //         onSelectRow={this.handleSelectRows}
+  //         onChange={this.handleStandardTableChange}
+  //         noActionCol={this.state.noActionCol}
+  //         canDrag={this.state.canDragTable}
+  //         pageSize={sessionStorage.getItem('searchPageLine')}
+  //         noToolbarPanel={
+  //           !this.state.noToolbar && this.drawToolbarPanel && this.drawToolbarPanel() ? false : true
+  //         }
+  //       />
+  //     </DndProvider>
+  //   );
+  // }
 }

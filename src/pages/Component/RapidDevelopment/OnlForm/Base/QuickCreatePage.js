@@ -9,7 +9,7 @@ import {
   confirmLineFieldNotNullLocale,
 } from '@/utils/CommonLocale';
 import { loginCompany, loginOrg, loginUser, getDefOwner, getActiveKey } from '@/utils/LoginContext';
-import CreatePage from '@/pages/Component/RapidDevelopment/CommonLayout/CreatePage';
+import CreatePage from '@/pages/Component/Page/CreatePage';
 import FormPanel from '@/pages/Component/Form/FormPanel';
 import CFormItem from '@/pages/Component/Form/CFormItem';
 import {
@@ -297,7 +297,7 @@ export default class QuickCreatePage extends CreatePage {
         const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
         const commonPropertis = {
           disabled: this.isReadOnly(field.isReadOnly),
-          style: { width: '100%' },
+          style: { width: field.dbLength == 0 ? '100%' : field.dbLength },
         }; // 通用属性
 
         let item = {
@@ -394,6 +394,25 @@ export default class QuickCreatePage extends CreatePage {
     this.setState({});
   };
 
+  getGutt = () => {
+    const { onlFormInfos } = this.state;
+    let { formItems, categories } = this.state;
+    let nums = onlFormInfos[0].onlFormHead.formTemplate
+      ? onlFormInfos[0].onlFormHead.formTemplate
+      : 4;
+    nums = nums == 0 ? 4 : nums;
+    // console.log('nums', nums, categories.length, formItems);
+    let gutt = [];
+    for (var i = 0; i < categories.length; i++) {
+      let guttItems = [];
+      for (var j = 0; j < Object.getOwnPropertyNames(formItems).length; j++) {
+        guttItems.push(nums);
+      }
+      gutt.push(guttItems);
+    }
+    return gutt;
+  };
+
   /**
    * 渲染表单组件
    */
@@ -402,9 +421,15 @@ export default class QuickCreatePage extends CreatePage {
     let { formItems, categories, runTimeProps } = this.state;
     let formPanel = [];
     categories = categories.filter(x => x.type == 0);
-    if (!categories) {
+    if (!categories || !this.state.onlFormInfos) {
       return;
     }
+    let z = 0;
+    let gutt = this.state.onlFormInfos[0].onlFormHead.formTemplateList
+      ? this.state.onlFormInfos[0].onlFormHead.formTemplateList
+      : this.getGutt()
+        ? this.getGutt()
+        : [];
     for (const categoryItem of categories) {
       let cols = [];
       for (const formItemKey in formItems) {
@@ -432,7 +457,7 @@ export default class QuickCreatePage extends CreatePage {
 
         let initialValue = this.entity[tableName][0] && this.entity[tableName][0][fieldName]; // 初始值
         cols.push(
-          <CFormItem key={key} label={e.label}>
+          <CFormItem key={key} label={e.label} span={6}>
             {getFieldDecorator(key, {
               initialValue: this.convertInitialValue(initialValue, e.fieldShowType),
               rules: e.rules,
@@ -442,8 +467,14 @@ export default class QuickCreatePage extends CreatePage {
       }
       if (cols.length > 0) {
         formPanel.push(
-          <FormPanel key={categoryItem.category} title={categoryItem.category} cols={cols} />
+          <FormPanel
+            key={categoryItem.category}
+            title={categoryItem.category}
+            cols={cols}
+            gutterCols={gutt[z] ? gutt[z] : null}
+          />
         );
+        z++;
       }
     }
     return formPanel;

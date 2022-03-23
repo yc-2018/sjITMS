@@ -4,7 +4,8 @@ import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
 import { havePermission } from '@/utils/authority';
 import axios from 'axios';
-import SearchPage from '@/pages/Component/Page/SearchPage';
+// import SearchPage from '@/pages/Component/Page/SearchPage';
+import SearchPage from '../../CommonLayout/RyzeSearchPage';
 import { colWidth } from '@/utils/ColWidth';
 import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuery/SimpleQuery';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
@@ -13,7 +14,7 @@ import ExportJsonExcel from 'js-export-excel';
 import { routerRedux } from 'dva/router';
 import { Badge } from 'antd';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { guid } from '@/utils/utils'
+import { guid } from '@/utils/utils';
 
 /**
  * 查询界面
@@ -194,7 +195,7 @@ export default class QuickFormSearchPage extends SearchPage {
         dataIndex: column.fieldName,
         key: column.fieldName,
         sorter: column.orderType != 0,
-        width: column.fieldWidth,
+        width: column.fieldWidth == 0 ? colWidth.codeColWidth : column.fieldWidth,
         fieldType: column.fieldType,
         preview: preview,
         render:
@@ -284,7 +285,7 @@ export default class QuickFormSearchPage extends SearchPage {
   initData = data => {
     // 海鼎底层需要uuid作为StandardTable的rowkey
     if (data?.records && data.records.length > 0 && !data.records[0].uuid) {
-      data.records.forEach(row => row.uuid = guid());
+      data.records.forEach(row => (row.uuid = guid()));
     }
     var data = {
       list: data.records,

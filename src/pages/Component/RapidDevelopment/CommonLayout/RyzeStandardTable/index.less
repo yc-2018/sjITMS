@@ -1,0 +1,234 @@
+@import '~antd/lib/style/themes/default.less';
+
+.standardTable {
+  :global {
+    .ant-table-pagination {
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
+
+    .ant-table-thead > tr {
+      height: 30px;
+    }
+
+    .ant-table-thead > tr > th .ant-table-column-sorter {
+      display: table-cell;
+      padding-top: 1px;
+      vertical-align: initial;
+      background-color: rgba(88,142,240,0.03);
+    }
+
+    .ant-table-tbody > tr > td.ant-table-column-sort {
+      background-color: rgba(88,142,240,0.03);
+    }
+
+    .ant-table-thead > tr > th {
+      background-color: #f9f9f9;
+      //margin: 0 auto;
+      //border-bottom: 0.2px solid;
+      //border: 1px solid @border-color-base;
+      //border: @border-width-base @border-style-base rgba(232, 232, 232, 1);
+      margin: 12px 0;
+    }
+
+    .ant-table-tbody > tr.ant-table-row-selected td {
+      color: inherit;
+      background: #F2F8FF;
+    }
+
+    .react-resizable {
+      position: relative;
+      background-clip: padding-box;
+    }
+
+    .react-resizable-handle {
+      position: absolute;
+      width: 10px;
+      height: 100%;
+      bottom: 0;
+      right: -5px;
+      cursor: col-resize;
+      z-index: 1;
+    }
+
+    a[disabled] {
+      color: rgb(170, 182, 190);
+      opacity: 1;
+    }
+
+    .ant-table-middle > .ant-table-title,
+    .ant-table-middle > .ant-table-content > .ant-table-footer {
+      padding: 5px 0px 5px 16px;
+    }
+
+    .ant-table-tbody > tr > td {
+      border-bottom: 1px solid #EAECF1;
+      transition: all 0.3s, border 0s;
+    }
+
+    .ant-table-middle > .ant-table-content > .ant-table-header > table > .ant-table-thead > tr > th,
+    .ant-table-middle > .ant-table-content > .ant-table-body > table > .ant-table-thead > tr > th,
+    .ant-table-middle > .ant-table-content > .ant-table-scroll > .ant-table-header > table > .ant-table-thead > tr > th,
+    .ant-table-middle > .ant-table-content > .ant-table-scroll > .ant-table-body > table > .ant-table-thead > tr > th,
+    .ant-table-middle > .ant-table-content > .ant-table-fixed-left > .ant-table-header > table > .ant-table-thead > tr > th,
+    .ant-table-middle > .ant-table-content > .ant-table-fixed-right > .ant-table-header > table > .ant-table-thead > tr > th,
+    .ant-table-middle > .ant-table-content > .ant-table-fixed-left > .ant-table-body-outer > .ant-table-body-inner > table > .ant-table-thead > tr > th,
+    .ant-table-middle > .ant-table-content > .ant-table-fixed-right > .ant-table-body-outer > .ant-table-body-inner > table > .ant-table-thead > tr > th,
+    .ant-table-middle > .ant-table-content > .ant-table-header > table > .ant-table-tbody > tr > td,
+    .ant-table-middle > .ant-table-content > .ant-table-body > table > .ant-table-tbody > tr > td,
+    .ant-table-middle > .ant-table-content > .ant-table-scroll > .ant-table-header > table > .ant-table-tbody > tr > td,
+    .ant-table-middle > .ant-table-content > .ant-table-scroll > .ant-table-body > table > .ant-table-tbody > tr > td,
+    .ant-table-middle > .ant-table-content > .ant-table-fixed-left > .ant-table-header > table > .ant-table-tbody > tr > td,
+    .ant-table-middle > .ant-table-content > .ant-table-fixed-right > .ant-table-header > table > .ant-table-tbody > tr > td,
+    .ant-table-middle > .ant-table-content > .ant-table-fixed-left > .ant-table-body-outer > .ant-table-body-inner > table > .ant-table-tbody > tr > td,
+    .ant-table-middle > .ant-table-content > .ant-table-fixed-right > .ant-table-body-outer > .ant-table-body-inner > table > .ant-table-tbody > tr > td {
+      padding: 5px 0px 5px 16px;
+    }
+
+    //.ant-table-thead > tr > th .anticon-filter, .ant-table-thead > tr > th .ant-table-filter-icon {
+    //  height: 75%;
+    //}
+    .antd-pro-components-standard-table-index-standardTable .ant-table-thead > tr > th .anticon-filter > svg,
+    .antd-pro-components-standard-table-index-standardTable .ant-table-thead > tr > th .ant-table-filter-icon > svg,
+    .ant-table-thead > tr > th .anticon-filter > svg,
+    .ant-table-thead > tr > th .ant-table-filter-icon > svg {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      margin-left: 0px;
+      margin-top: 0px;
+      transform: translate(-50%, -50%) !important;
+    }
+
+    // item 筛选和排序
+    //.ant-table-tbody > tr > td.ant-table-column-sort {
+    //  background: #588EF0 !important;
+    //  opacity: 0.3;
+    //  border: none !important;
+    //}
+
+    // selected row hover
+    tr.ant-table-row.antd-pro-components-standard-table-index-selectedRow.ant-table-row-level-0:hover > td {
+      background: unset;
+    }
+  }
+
+  ::-webkit-scrollbar {
+    height: 12px;
+    width: 12px;
+    border-radius: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: #FFFFFF;
+  }
+
+  .darkRow {
+    background-color: #F9F9F9;
+    border: none;
+  }
+
+  .filterRow {
+    //background-color: rgba(88, 142, 240, 0.8);
+    background: #F2F8FF;
+    //background-color: rgba(88, 142, 240, 0.8);
+    border: none;
+    color: #000000;
+  }
+
+  .greyRow {
+    background-color: LightGray;
+    border: none;
+  }
+
+  .lightRow {
+    background-color: #FFFFFF;
+    border: none;
+  }
+
+  .selectedRow {
+    border: 1px solid #3B77E3;
+    background: #405780;
+    color: #FFFFFF;
+  }
+
+  .overRow {
+    background: #EDF1F5;
+    border: 1px solid #CED0DA;
+    color: #354052;
+    color: rgba(53, 64, 82, 0.5);
+  }
+
+  .theadBorder {
+    border: 0.2px solid;
+  }
+
+  .setting {
+    display: flex;
+    margin-right : 10px;
+    margin-bottom: 0px;
+    position: relative;
+    z-index:3;
+  }
+
+  .setting :hover {
+    cursor: pointer;
+  }
+}
+
+.settingTable {
+  :global {
+    .ant-table-tbody > tr > td {
+      //border-bottom: 1px solid #EAECF1;
+      border-bottom: none !important;
+      transition: all 0.3s, border 0s;
+    }
+
+    .ant-table-body > table > .ant-table-thead > tr > th,
+    .ant-table-body > table > .ant-table-thead > tr > th,
+    .ant-table-tbody > tr > td,
+    .ant-table-body > table > .ant-table-tbody > tr > td,
+    .ant-table-body-inner > table > .ant-table-tbody > tr > td,
+    .ant-table-body-inner > table > .ant-table-tbody > tr > td {
+      padding: 5px 0px 5px 0px;
+    }
+
+    ::-webkit-scrollbar {
+      height: 12px;
+      width: 12px;
+      border-radius: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background-color: #FFFFFF;
+    }
+  }
+}
+
+.modalStyle {
+  :global {
+    .ant-modal-header {
+      border-bottom: none
+    }
+
+    .ant-modal-body {
+      padding-top: 10px;
+      padding-right: 0px;
+    }
+  }
+}
+
+.settingDropdown {
+  max-width: 200px;
+  padding: 0;
+  margin: 0;
+  min-width: 168px !important;
+}
+
+tr.drop-over-downward td {
+  border-bottom: 2px dashed #1890ff;
+}
+
+tr.drop-over-upward td {
+  border-top: 2px dashed #1890ff;
+}
