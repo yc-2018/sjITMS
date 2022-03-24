@@ -3,8 +3,8 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
 import ConfirmLeave from '@/pages/Component/Page/inner/ConfirmLeave';
-import { formatMessage,getLocale } from 'umi/locale';
-import { Button, Form, Input, Spin,message, Modal } from 'antd';
+import { formatMessage, getLocale } from 'umi/locale';
+import { Button, Form, Input, Spin, message, Modal } from 'antd';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import { CONFIRM_LEAVE_ACTION } from '@/utils/constants';
 import CFormItem from '@/pages/Component/Form/CFormItem';
@@ -91,7 +91,7 @@ export default class CreatePage extends Component {
     }
   }
 
-  handleEnter= (event) => {
+  handleEnter = (event) => {
     if (event.keyCode === 13) {
       const form = event.target.form;
       const index = Array.prototype.indexOf.call(form, event.target);
@@ -109,7 +109,7 @@ export default class CreatePage extends Component {
     }
   };
 
-  renderTitle = (action)=>{
+  renderTitle = (action) => {
     let s = '';
     if (action === CONFIRM_LEAVE_ACTION['NEW']) {
       s = formatMessage({ id: 'common.leaveconfirm.action.new' });
@@ -121,7 +121,6 @@ export default class CreatePage extends Component {
     } else if (getLocale() === 'zh-CN') {
       return "确认离开当前页面吗？";
     }
-
   }
 
   renderLeaveConfirmTips = (action) => {
@@ -142,39 +141,31 @@ export default class CreatePage extends Component {
     if (this.state.hasChanged) {
       const action = this.state.currentView ? CONFIRM_LEAVE_ACTION[this.state.currentView] : CONFIRM_LEAVE_ACTION['NEW']
       Modal.confirm({
-        title:this.renderTitle(action),
-        content:this.renderLeaveConfirmTips(action),
-        icon:<IconFont type='icon-status_warn' />,
-        onOk:this.handleLeaveConfirmOk,
-        okText:'确定',
-        cancelText:'取消'
-
+        title: this.renderTitle(action),
+        content: this.renderLeaveConfirmTips(action),
+        icon: <IconFont type='icon-status_warn' />,
+        onOk: this.handleLeaveConfirmOk,
+        okText: '确定',
+        cancelText: '取消'
       })
-      // this.setState({
-      //   confirmLeaveVisible: true,
-      // });
     } else {
       if (this.onCancel)
         this.onCancel();
     }
   };
 
-  handleSave = (continueCreate, e) => {
+  handleSave = (e) => {
     e.preventDefault();
 
     const { form } = this.props;
     form.validateFields((errors, fieldsValue) => {
       if (errors) {
-
-        return};
+        return;
+      };
       const data = {
         ...fieldsValue,
       };
-      if (continueCreate) {
-        this.onSaveAndCreate(data);
-      } else {
-        this.onSave(data);
-      }
+      this.onSave(data);
     });
   };
 
@@ -196,79 +187,71 @@ export default class CreatePage extends Component {
         <Button key="cancel" onClick={this.handleCancel}>
           {formatMessage({ id: 'company.create.button.cancel' })}
         </Button>
-        <Button key="save" type="primary" onClick={this.handleSave.bind(this, false)}>
+        <Button key="save" type="primary" onClick={this.handleSave.bind(this)}>
           {formatMessage({ id: 'company.create.button.confirm' })}
         </Button>
       </Fragment>
     );
   };
 
-  drawAuditButtons = () => {
-    return (
-      <Fragment>
-        <Button key="cancel" onClick={this.handleCancel}>
-          {formatMessage({ id: 'company.create.button.cancel' })}
-        </Button>
-        <Button key="save" type="primary" onClick={this.handleSave.bind(this, false)}>
-          {formatMessage({ id: 'company.create.button.save' })}
-        </Button>
-        {!this.state.entity.uuid &&
-        <Button key="saveAndAudit" type="primary" onClick={this.handleSave.bind(this, true)}
-                disabled={this.state.auditPermission ? !havePermission(this.state.auditPermission): true}>
-          {formatMessage({ id: 'company.create.button.saveAndAudit' })}
-        </Button>}
-      </Fragment>
-    );
-  };
-
-  drawNotePanel = () => {
-    if (this.state.noNote) {
-      return undefined;
-    }
-    const { form } = this.props;
-    return <CFormItem key='note' label={commonLocale.noteLocale}>
-      {
-        form.getFieldDecorator('note', {
-          initialValue: this.state.entity.note,
-          rules: [
-            {
-              max: 255,
-              message: '备注最大长度为255',
-            },
-          ],
-        })(
-          <Input.TextArea value={this.state.entity.note} placeholder='请输入备注'/>,
-        )
-      }
-    </CFormItem>;
-  };
-
-  render() {
+  FormConfirmLeave = () => {
     const confirmLeaveProps = {
       confirmLeaveVisible: this.state.confirmLeaveVisible,
       action: this.state.currentView ? CONFIRM_LEAVE_ACTION[this.state.currentView] : CONFIRM_LEAVE_ACTION['NEW'],
       handleLeaveConfirmOk: this.handleLeaveConfirmOk,
       handleLeaveConfirmCancel: this.handleLeaveConfirmCancel,
     };
+    return <ConfirmLeave {...confirmLeaveProps} />;
+  }
 
+  PanelWrapper = (props) => {
+    const FormConfirmLeave = this.FormConfirmLeave;
     const { auditButton } = this.state;
+
     return (
       <PageHeaderWrapper>
         <Spin indicator={LoadingIcon('default')} delay={5} spinning={this.props.loading}>
           <Page>
             <NavigatorPanel title={this.state.title}
-                            style={{marginLeft: -12}}
-                            action={auditButton ? this.drawAuditButtons() : this.drawCreateButtons()}/>
-            <div style={{ height: 'calc(100vh - 165px)', overflowY: 'scroll' }}>
-              <Form onChange={this.onChange} autoComplete="off">
-                {this.drawFormItems()}
-                {this.drawTable && this.drawTable()}
-              </Form>
+              style={{ marginLeft: -12 }}
+              action={this.drawCreateButtons()} />
+            <div style={{ height: 'calc(100vh - 165px)', overflowY: 'auto' }}>
+              {props.children}
             </div>
           </Page>
         </Spin>
-        <ConfirmLeave {...confirmLeaveProps} />
+        <FormConfirmLeave />
       </PageHeaderWrapper>
+    )
+  }
+
+  NoBorderWrapper = (props) => {
+    const FormConfirmLeave = this.FormConfirmLeave;
+
+    return (
+      <div>
+        <Spin indicator={LoadingIcon('default')} delay={5} spinning={this.props.loading}>
+          <div>
+            <div style={{ height: this.props.height, overflowY: 'auto' }}>
+              {props.children}
+            </div>
+          </div>
+        </Spin>
+        <FormConfirmLeave />
+      </div>
+    )
+  }
+
+  render() {
+    const { noBorder } = this.props;
+    const Wrapper = noBorder ? this.NoBorderWrapper : this.PanelWrapper;
+    return (
+      <Wrapper>
+        <Form onChange={this.onChange} autoComplete="off">
+          {this.drawFormItems()}
+          {this.drawTable && this.drawTable()}
+        </Form>
+      </Wrapper>
     );
   }
 }

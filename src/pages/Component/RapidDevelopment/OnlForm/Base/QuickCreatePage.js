@@ -9,7 +9,7 @@ import {
   confirmLineFieldNotNullLocale,
 } from '@/utils/CommonLocale';
 import { loginCompany, loginOrg, loginUser, getDefOwner, getActiveKey } from '@/utils/LoginContext';
-import CreatePage from '@/pages/Component/Page/CreatePage';
+import CreatePage from '@/pages/Component/RapidDevelopment/CommonLayout/CreatePage';
 import FormPanel from '@/pages/Component/Form/FormPanel';
 import CFormItem from '@/pages/Component/Form/CFormItem';
 import {
@@ -75,10 +75,6 @@ export default class QuickCreatePage extends CreatePage {
     super(props);
     this.state = {
       title: '',
-      entityUuid: '',
-      entity: {
-        uuid: '',
-      },
       quickuuid: props.quickuuid,
       onlFormInfos: props.onlFormField,
       formItems: {},
@@ -95,6 +91,8 @@ export default class QuickCreatePage extends CreatePage {
       this.initEntity();
       this.initForm();
     }
+    // 将本组件交给父级
+    this.props.onRef && this.props.onRef(this);
   }
 
   componentDidUpdate() {
@@ -105,7 +103,11 @@ export default class QuickCreatePage extends CreatePage {
   }
 
   onCancel = () => {
-    this.props.switchTab('query');
+    if(this.props.onCancel){
+      this.props.onCancel();
+    } else if(this.props.switchTab){
+      this.props.switchTab('query');
+    }
   };
 
   /**
