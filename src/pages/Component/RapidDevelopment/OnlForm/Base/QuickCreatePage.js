@@ -299,7 +299,7 @@ export default class QuickCreatePage extends CreatePage {
         const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
         const commonPropertis = {
           disabled: this.isReadOnly(field.isReadOnly),
-          style: { width: field.dbLength == 0 ? '100%' : field.dbLength },
+          style: { width: field.fieldLength == 0 ? '100%' : field.fieldLength },
         }; // 通用属性
 
         let item = {
@@ -459,7 +459,7 @@ export default class QuickCreatePage extends CreatePage {
 
         let initialValue = this.entity[tableName][0] && this.entity[tableName][0][fieldName]; // 初始值
         cols.push(
-          <CFormItem key={key} label={e.label} span={6}>
+          <CFormItem key={key} label={e.label} xs={2} sm={4} md={6} lg={8} xl={10}>
             {getFieldDecorator(key, {
               initialValue: this.convertInitialValue(initialValue, e.fieldShowType),
               rules: e.rules,
