@@ -885,8 +885,6 @@ class StandardTable extends Component {
   moveRow = (dragIndex, hoverIndex) => {
     const { list } = this.state;
     const dragRow = list[dragIndex];
-    this.props.drapTableChange(list);
-
     // adjust data
     this.setState(
       update(this.state, {
@@ -898,6 +896,7 @@ class StandardTable extends Component {
         // this.handleOK();
       }
     );
+    this.props.drapTableChange(this.state.list);
   };
 
   renderDragTable() {
