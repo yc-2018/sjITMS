@@ -492,7 +492,54 @@ export default class RyzeSearchPage extends Component {
       spinning: this.state.sucomIdspendLoading ? false : loading,
       indicator: LoadingIcon('default'),
     };
-    return (
+    return this.state.isNotHd ? (
+      <div>
+        <NavigatorPanel
+          canFullScreen={this.state.canFullScreen}
+          title={this.state.title}
+          action={this.drawActionButton ? this.drawActionButton() : ''}
+        />
+        {this.drawSearchPanel ? this.drawSearchPanel() : ''}
+        {this.drawToolbar()}
+        {this.drawToolbarTwo()}
+        {!this.state.noTable ? (
+          <StandardTable
+            unShowRow={this.state.unShowRow ? this.state.unShowRow : false}
+            rowKey={record => record.uuid}
+            hasSettingColumns
+            selectedRows={selectedRows}
+            loading={tableLoading}
+            tableHeight={this.state.tableHeight}
+            data={data}
+            columns={this.columns}
+            noPagination={this.state.noPagination}
+            newScroll={scroll ? scroll : undefined}
+            onSelectRow={this.handleSelectRows}
+            onChange={this.handleStandardTableChange}
+            comId={key}
+            rowClassName={(record, index) => {
+              let name = '';
+              if (record.sourceOrderBillTms) {
+                name = styles.changeColor;
+              } else if (index % 2 === 0) {
+                name = styles.lightRow;
+              }
+              return name;
+            }}
+            noActionCol={this.state.noActionCol}
+            canDrag={this.state.canDragTable}
+            pageSize={sessionStorage.getItem('searchPageLine')}
+            noToolbarPanel={
+              !this.state.noToolbar && this.drawToolbarPanel && this.drawToolbarPanel()
+                ? false
+                : true
+            }
+            drapTableChange={this.drapTableChange}
+          />
+        ) : null}
+        {this.drawOtherCom && this.drawOtherCom()}
+      </div>
+    ) : (
       <Page withCollect={true} pathname={this.props.pathname}>
         <NavigatorPanel
           canFullScreen={this.state.canFullScreen}
@@ -548,6 +595,11 @@ export default class RyzeSearchPage extends Component {
         {this.drawPage()}
         {this.drawProgress()}
       </FreshPageHeaderWrapper>
+    ) : this.state.isNotHd ? (
+      <div>
+        {this.drawPage()}
+        {this.drawProgress()}
+      </div>
     ) : (
       <PageHeaderWrapper>
         {this.drawPage()}
