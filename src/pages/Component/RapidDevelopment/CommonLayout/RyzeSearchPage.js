@@ -29,6 +29,7 @@ import styles from '@/pages/Tms/TransportOrder/transportOrder.less';
  * @param {boolean} noActionCol: 表格列是否有操作列
  */
 export default class RyzeSearchPage extends Component {
+  drapTableChange = () => {}; //拖拽事件
   constructor(props) {
     super(props);
 
@@ -533,6 +534,7 @@ export default class RyzeSearchPage extends Component {
                 ? false
                 : true
             }
+            drapTableChange={this.drapTableChange}
           />
         ) : null}
         {this.drawOtherCom && this.drawOtherCom()}

@@ -8,6 +8,9 @@ import TestCreate from './TestCreate';
 import StandardTable from '@/components/StandardTable';
 import { DndProvider, DragSource, DropTarget } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
+// import FormPanel from '../Component/Form/FormPanel';
+import FormPanel from '@/pages/Component/Form/FormPanel';
+import CFormItem from '@/pages/Component/Form/CFormItem';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -95,7 +98,7 @@ export default class TestSearch extends QuickFormSearchPage {
           gotoCreate
         </Button>
         <Modal visible={this.state.isShow} onCancel={this.aaaa}>
-          <TestCreate quickuuid="itms_create_linesystem" />
+          <TestCreate quickuuid="20220124" />
         </Modal>
       </span>
     );
@@ -135,29 +138,8 @@ export default class TestSearch extends QuickFormSearchPage {
   };
   test = (a, b) => {};
 
-  // render() {
-  //   return (
-  //     <DndProvider backend={HTML5Backend}>
-  //       <StandardTable
-  //         unShowRow={this.state.unShowRow ? this.state.unShowRow : false}
-  //         rowKey={record => record.uuid}
-  //         hasSettingColumns
-  //         selectedRows={this.state.selectedRows}
-  //         tableHeight={this.state.tableHeight}
-  //         data={this.state.data}
-  //         columns={this.columns}
-  //         noPagination={this.state.noPagination}
-  //         scroll={scroll ? scroll : undefined}
-  //         onSelectRow={this.handleSelectRows}
-  //         onChange={this.handleStandardTableChange}
-  //         noActionCol={this.state.noActionCol}
-  //         canDrag={this.state.canDragTable}
-  //         pageSize={sessionStorage.getItem('searchPageLine')}
-  //         noToolbarPanel={
-  //           !this.state.noToolbar && this.drawToolbarPanel && this.drawToolbarPanel() ? false : true
-  //         }
-  //       />
-  //     </DndProvider>
-  //   );
-  // }
+  //该方法用于拖拽后触发事件 拖拽需要在state中canDragTable: true
+  drapTableChange = list => {
+    console.log('list', list);
+  };
 }

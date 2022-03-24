@@ -27,6 +27,7 @@ export default class QuickFormSearchPage extends SearchPage {
   changeState = () => {}; //扩展state
   renderOperateCol = () => {}; //操作列
   exSearchFilter = () => {}; //扩展查询
+  drapTableChange = e => {}; //拖拽事件
 
   constructor(props) {
     super(props);
