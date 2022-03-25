@@ -1148,6 +1148,14 @@ export default [
             component: './SjOrder/OrderForm',
             quickuuid: 'sj_itms_order',
             authority: ['itms.base.vehicle'],
+          },
+          {
+            path: '/tmsbase/ShipPlanBill',
+            name: '排车单',
+            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+            component: './SJDispatchCenterShipPlanBill/ShipPlanBillForm',
+            quickuuid: 'sj_itms_schedule',
+            authority: ['itms.base.vehicle'],
             divider: true,
           },
           {
