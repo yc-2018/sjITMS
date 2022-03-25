@@ -17,6 +17,8 @@ import ShipPlanBillDtlSearch from './ShipPlanBillDtlSearch';
 import emptySvg from '@/assets/common/img_empoty.svg';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import ShipPlanBillCreatePage from './ShipPlanBillCreatePage';
+import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
+
 
 const { Content } = Layout;
 const TabPane = Tabs.TabPane;
@@ -173,11 +175,12 @@ export default class ShipPlanBillSearchPage extends PureComponent {
   };
 
   memberModalClick = record => {
-    console.log('record', record.UUID);
     this.setState({
       updateMemberModalVisible: true,
       params: { entityUuid: record.UUID, title: record.BILLNUMBER },
     });
+    this.createPageModalRef.show();
+    console.log('record', record.UUID);
   };
 
   okHandleMember = () => {
@@ -240,23 +243,12 @@ export default class ShipPlanBillSearchPage extends PureComponent {
             </div>
           </Content>
         </Page>
-        <Modal
-          title={params.title}
-          width={800}
-          height={500}
-          visible={updateMemberModalVisible}
-          onOk={this.okHandleMember}
-          confirmLoading={false}
-          onCancel={() => this.setState({ updateMemberModalVisible: false })}
-        >
-          {/* <a>测试</a> */}
-          <ShipPlanBillCreatePage
-            quickuuid="sj_itms_schedule"
-            params={params}
-            noBorder={true}
-            noCategory={true}
-          />
-        </Modal>
+
+        <CreatePageModal modal={{ title: params.title, width: 1000 }}
+          page={{ quickuuid: "sj_itms_schedule", params: params }}
+          customPage={ShipPlanBillCreatePage}
+          onRef={node => this.createPageModalRef = node} />
+
       </PageHeaderWrapper>
     );
   }
