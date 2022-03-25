@@ -3,14 +3,6 @@
 .contentWrapper {
   height: 100%;
   overflow: hidden;
-  ::-webkit-scrollbar {
-    height: 12px;
-    width: 12px;
-    border-radius: 8px;
-  }
-  ::-webkit-scrollbar-track {
-    background-color: #ffffff;
-  }
 
   :global {
     .ant-layout.ant-layout-has-sider {
@@ -28,6 +20,15 @@
     .ant-menu-vertical-left {
       border-right: none;
     }
+
+    .ant-tree-node-content-wrapper {
+      width: ~'calc(100% - 24px)';
+      height: 30px !important;
+      line-height: 30px !important;
+    }
+    .ant-tree-node-selected {
+      border-right: 3px solid #3b77e3;
+    }
   }
 
   .leftWrapper {
@@ -36,36 +37,25 @@
 
   .rightWrapper {
     background: #ffff;
-    height: 100%;
-    overflow: hidden;
     margin-left: 8px;
-    padding: 24px 0 0;
+    padding-left: 12px;
   }
 }
 
 .navigatorPanelWrapper {
-  line-height: 56px;
-  height: 56px;
+  line-height: 50px;
+  height: 50px;
   border-bottom: @border-width-base @border-style-base rgba(232, 232, 232, 1);
   position: relative;
-  margin-left: -24px;
-  clear: both;
+  margin-right: 12px;
 
   .sidertitle {
     font-size: 16px;
     font-weight: 600;
     color: rgba(54, 62, 75, 1);
-    margin-left: 24px;
-    margin-top: -16px;
   }
 
   .action {
     float: right;
-    top: 25%;
-    margin-right: 24px;
-  }
-
-  .action button {
-    margin-left: 12px;
   }
 }
