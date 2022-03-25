@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-10 09:59:43
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-03-19 16:38:39
+ * @LastEditTime: 2022-03-25 09:19:54
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\Tms\LineSystem\LineShipAddress.js
  */
@@ -23,8 +23,11 @@ import TableTransfer from './TableTransfer';
 export default class LineShipAddress extends QuickFormSearchPage {
   state = {
     ...this.state,
+    canDragTable: true,
     noActionCol: false,
     unShowRow: false,
+    isNotHd: true,
+    lineModalVisible: false,
     modalVisible: false,
     modalTitle: '',
     modalQuickuuid: '',
@@ -35,30 +38,20 @@ export default class LineShipAddress extends QuickFormSearchPage {
 
   drawcell = event => {
     if (event.column.fieldName == 'ORDERNUM') {
-      const component = <Input value={event.val} style={{ width: 80, textAlign: 'center' }} />;
+      const component = (
+        <Input
+          defaultValue={event.val}
+          value={event.val}
+          // type="number"
+          style={{ width: 80, textAlign: 'center' }}
+          onChange={event => {
+            console.log(event);
+          }}
+        />
+      );
       event.component = component;
     }
   };
-
-  drawExColumns = event => {
-    if (event.column.fieldName == 'ORDERNUM') {
-      return {
-        title: '排序',
-        dataIndex: 'sort',
-        width: 80,
-        key: 'sort',
-        render: () => {
-          return <IconFont type="icon-positiveorder" style={{ fontSize: '20px' }} />;
-        },
-      };
-    }
-  };
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.lineuuid !== this.props.lineuuid) {
-      this.onSearch();
-    }
-  }
 
   exSearchFilter = () => {
     return [
@@ -131,9 +124,9 @@ export default class LineShipAddress extends QuickFormSearchPage {
     });
   };
   //保存
-  okHandleSystem = () => {
-    const { targetKeys, transferDataSource, pageFilters } = this.state;
-    const { lineuuid, dispatch } = this.props;
+  handleStoreSave = () => {
+    const { targetKeys, transferDataSource, data } = this.state;
+    const { lineuuid } = this.props;
     const saveData = transferDataSource
       .filter(x => targetKeys.indexOf(x.UUID) != -1)
       .map((data, index) => {
@@ -142,15 +135,21 @@ export default class LineShipAddress extends QuickFormSearchPage {
           ADDRESSUUID: data.UUID,
           ADDRESSCODE: data.CODE,
           ADDRESSNAME: data.NAME,
+          LONGITUDE: data.LONGITUDE,
+          LATITUDE: data.LATITUDE,
           TYPE: data.TYPE,
-          ORDERNUM: index + 1,
+          ORDERNUM: this.state.data.pagination.total + index + 1,
         };
       });
+    this.saveFormData(saveData);
+  };
+  saveFormData = saveData => {
+    const { pageFilters } = this.state;
     const param = {
-      code: 'itms_line_shipaddress',
+      code: 'sj_itms_line_shipaddress',
       entity: { SJ_ITMS_LINE_SHIPADDRESS: saveData },
     };
-    dispatch({
+    this.props.dispatch({
       type: 'quick/saveFormData',
       payload: { param },
       callback: response => {
@@ -177,6 +176,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
       modalQuickuuid,
       transferColumnsTitle,
       targetKeys,
+      lineModalVisible,
     } = this.state;
     return (
       <div>
@@ -184,7 +184,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
           title={modalTitle}
           width={800}
           visible={modalVisible}
-          onOk={this.okHandleSystem}
+          onOk={this.handleStoreSave}
           confirmLoading={false}
           onCancel={() => this.setState({ modalVisible: false })}
           destroyOnClose
@@ -196,20 +196,52 @@ export default class LineShipAddress extends QuickFormSearchPage {
             handleFetch={this.onTranferFetch}
             quickuuid={modalQuickuuid}
           />
-          {/* <LineSystemCreatePage quickuuid="itms_create_lines" /> */}
         </Modal>
+
         <Button type="primary" icon="plus" onClick={this.handleAddStore}>
           添加门店
         </Button>
         <Button type="primary" icon="plus" onClick={this.handleAddVendor}>
           添加供应商
         </Button>
-        <Button type="primary" icon="plus">
-          添加配送中心
+        <Button
+          onClick={() => {
+            this.setState({ lineModalVisible: true });
+          }}
+        >
+          添加子路线
         </Button>
+        <Modal
+          title="添加线路"
+          width={800}
+          height={500}
+          visible={lineModalVisible}
+          onOk={e => this.lineSystemCreatePage.handleSave(e)}
+          onCancel={() => this.lineSystemCreatePage.handleCancel()}
+          confirmLoading={false}
+          destroyOnClose
+        >
+          <LineSystemCreatePage
+            quickuuid="itms_create_lines"
+            noBorder={true}
+            noCategory={true}
+            onCancel={() => this.setState({ lineModalVisible: false })}
+            onRef={node => (this.lineSystemCreatePage = node)}
+          />
+        </Modal>
       </div>
     );
   };
 
   drawToolbarPanel = () => {};
+
+  //拖拽排序
+  drapTableChange = list => {
+    const { data } = this.state;
+    data.list = list.map((record, index) => {
+      record.ORDERNUM = index + 1;
+      return record;
+    });
+    this.saveFormData(data.list);
+  };
 }

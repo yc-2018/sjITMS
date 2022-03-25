@@ -2,26 +2,28 @@
  * @Author: guankongjin
  * @Date: 2022-03-09 10:31:16
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-03-19 17:34:45
+ * @LastEditTime: 2022-03-25 09:20:02
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\Tms\LineSystem\LineSystemSearchPage.js
  */
 
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { Button, message, Modal, Form, Layout, Menu, Icon } from 'antd';
+import { Button, message, Modal, Form, Layout, Menu, Icon, Tree } from 'antd';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { convertCodeName } from '@/utils/utils';
-import Page from '@/pages/Component/Page/inner/Page';
+import Page from '@/pages/Component/Page/inner/NewStylePage';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import LineShipAddress from './LineShipAddress';
 import LineSystemCreatePage from './LineSystemCreatePage';
+import LineMap from './LineMap';
 import { dynamicqueryById } from '@/services/quick/Quick';
 import linesStyles from './LineSystem.less';
 
 const { Content, Sider } = Layout;
 const Item = Menu.Item;
 const { SubMenu } = Menu;
+const { TreeNode } = Tree;
 @connect(({ lineSystem, loading }) => ({
   lineSystem,
   loading: loading.models.lineSystem,
@@ -29,7 +31,12 @@ const { SubMenu } = Menu;
 export default class LineSystemSearchPage extends Component {
   constructor(props) {
     super(props);
-    this.state = { frames: [], createSystemModalVisible: false, selectLineUuid: '' };
+    this.state = {
+      lineTreeData: [],
+      createSystemModalVisible: false,
+      createLineModalVisible: false,
+      rightContent: '',
+    };
   }
   componentDidMount() {
     this.queryLineSystem();
@@ -39,11 +46,35 @@ export default class LineSystemSearchPage extends Component {
   queryLineSystem = async () => {
     await dynamicqueryById({ tableName: 'SJ_ITMS_LINESYSTEM' }).then(async response => {
       if (response.result) {
+        const { lineTreeData } = this.state;
         const frames = response.result.records;
-        frames.forEach(async element => {
+        frames.forEach(async (element, index) => {
           const lines = await this.getSerialArchLineList(element.UUID);
-          if (lines.result.records != 'false') element.lines = lines.result.records;
-          this.setState({ frames });
+          if (lines.result.records != 'false') {
+            lineTreeData.push({
+              value: `[${element.CODE}]` + element.NAME,
+              key: element.UUID,
+              icon: <Icon type="swap" rotate={90} />,
+              system: true,
+              children: lines.result.records.map((record, lineIndex) => {
+                return {
+                  value: `[${record.CODE}]` + record.NAME,
+                  key: record.UUID,
+                  icon: <Icon type="swap" rotate={90} />,
+                  selected: index == 0 && lineIndex == 0 ? true : false,
+                };
+              }),
+            });
+          } else {
+            lineTreeData.push({
+              value: `[${element.CODE}]` + element.NAME,
+              key: element.UUID,
+              icon: <Icon type="swap" rotate={90} />,
+              system: true,
+            });
+          }
+
+          this.setState({ lineTreeData });
         });
       }
     });
@@ -63,18 +94,61 @@ export default class LineSystemSearchPage extends Component {
   handleCreateSystem = () => {
     this.setState({ createSystemModalVisible: true });
   };
-  okHandleSystem = () => {};
+
   //新建新路
   handleCreateLine = () => {};
-  //选中线路
-  handleLineMenuItem = (systemUuid, lineUuid) => {
-    // const { frames } = this.state;
-    // const newFrames = [...frames];
-    // newFrames.find(x => x.UUID == systemUuid).find(x => x.UUID == lineUuid).display = true;
-    this.setState({ selectLineUuid: lineUuid });
+
+  //选中树节点
+  onSelect = selectedKeys => {
+    const { lineTreeData } = this.state;
+    const system = lineTreeData.find(x => x.key == selectedKeys[0]);
+    this.setState({
+      rightContent: system ? (
+        <LineSystemCreatePage
+          key={selectedKeys[0]}
+          quickuuid="itms_create_linesystem"
+          showPageNow="update"
+          noBorder={true}
+          params={{ entityUuid: selectedKeys[0] }}
+        />
+      ) : (
+        <LineShipAddress
+          key={selectedKeys[0]}
+          quickuuid="itms-lines-shipaddress"
+          lineuuid={selectedKeys[0]}
+        />
+      ),
+    });
   };
+
   //绘制左侧菜单栏
   drawSider = () => {
+    const renderTreeNode = data => {
+      let nodeArr = data.map(item => {
+        item.title = (
+          <div>
+            <span>{item.value}</span>
+            {item.system ? (
+              <span />
+            ) : (
+              <span style={{ float: 'right' }}>
+                <a style={{ marginRight: 15 }}>编辑</a>
+                <a style={{ marginRight: 15 }}>删除</a>
+              </span>
+            )}
+          </div>
+        );
+        if (item.children) {
+          return (
+            <TreeNode title={item.title} key={item.key} dataRef={item}>
+              {renderTreeNode(item.children)}
+            </TreeNode>
+          );
+        }
+        return <TreeNode title={item.title} key={item.key} />;
+      });
+      return nodeArr;
+    };
     return (
       <div>
         <div className={linesStyles.navigatorPanelWrapper}>
@@ -85,83 +159,20 @@ export default class LineSystemSearchPage extends Component {
             </Button>
           </div>
         </div>
-        <Menu
-          defaultSelectedKeys={[this.state.frames.length > 0 ? this.state.frames[0].uuid : '']}
-          defaultOpenKeys={[this.state.frames.length > 0 ? this.state.frames[0].uuid : '']}
-          mode="inline"
-          theme="light"
-        >
-          {this.renderSilderMenu()}
-        </Menu>
+        <Tree showLine={true} showIcon={true} selectable defaultExpandAll onSelect={this.onSelect}>
+          {renderTreeNode(this.state.lineTreeData)}
+        </Tree>
       </div>
     );
-  };
-  //渲染菜单列表
-  renderSilderMenu = () => {
-    const { frames } = this.state;
-    let menuItems = [];
-    frames.map(scheme => {
-      menuItems.push(
-        <SubMenu
-          // onTitleClick={this.handleClickSubMenuItem}
-          key={scheme.uuid}
-          title={
-            <span>
-              <Icon type="folder" style={{ color: '#3B77E3' }} />
-              <span>{`[${scheme.CODE}]` + scheme.NAME}</span>
-            </span>
-          }
-        >
-          {scheme.lines
-            ? scheme.lines.map(line => {
-                return (
-                  <Menu.Item
-                    key={line.UUID}
-                    onClick={() => this.handleLineMenuItem(scheme.UUID, line.UUID)}
-                  >
-                    <span>
-                      <Icon type="swap" rotate={90} />
-                      {`[${line.CODE}]` + line.NAME}
-                    </span>
-                    {line.display ? (
-                      <span style={{ float: 'right' }}>
-                        <a
-                          className={linesStyles.menuItemA}
-                          onClick={() => {
-                            this.handleCreateModalVisible(true, line, scheme);
-                          }}
-                        >
-                          编辑
-                        </a>
-                        <a
-                          className={linesStyles.menuItemA}
-                          onClick={() => {
-                            this.handleModalVisible(commonLocale.deleteLocale, line);
-                          }}
-                        >
-                          删除
-                        </a>
-                      </span>
-                    ) : null}
-                  </Menu.Item>
-                );
-              })
-            : null}
-        </SubMenu>
-      );
-    });
-
-    return menuItems;
   };
 
   //绘制右侧内容
   drawContent = () => {
-    const { selectLineUuid } = this.state;
-    return <LineShipAddress quickuuid="itms-lines-shipaddress" lineuuid={selectLineUuid} />;
+    return this.state.rightContent;
   };
 
   render() {
-    const { createSystemModalVisible } = this.state;
+    const { createSystemModalVisible, createLineModalVisible } = this.state;
     return (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
@@ -175,21 +186,40 @@ export default class LineSystemSearchPage extends Component {
                   width={800}
                   height={500}
                   visible={createSystemModalVisible}
-                  onOk={this.okHandleSystem}
+                  onOk={e => this.lineSystemCreatePage.handleSave(e)}
+                  onCancel={() => this.lineSystemCreatePage.handleCancel()}
                   confirmLoading={false}
-                  onCancel={() => this.setState({ createSystemModalVisible: false })}
                   destroyOnClose
                 >
-                  <LineSystemCreatePage quickuuid="itms_create_linesystem" />
+                  <LineSystemCreatePage
+                    quickuuid="itms_create_linesystem"
+                    noBorder={true}
+                    noCategory={true}
+                    onCancel={() => this.setState({ createSystemModalVisible: false })}
+                    onRef={node => (this.lineSystemCreatePage = node)}
+                  />
+                </Modal>
+                <Modal
+                  title="编辑线路"
+                  width={800}
+                  height={500}
+                  visible={createLineModalVisible}
+                  onOk={e => this.lineSystemCreatePage.handleSave(e)}
+                  onCancel={() => this.lineSystemCreatePage.handleCancel()}
+                  confirmLoading={false}
+                  destroyOnClose
+                >
+                  <LineSystemCreatePage
+                    quickuuid="itms_create_lines"
+                    noBorder={true}
+                    noCategory={true}
+                    onCancel={() => this.setState({ createLineModalVisible: false })}
+                    onRef={node => (this.lineSystemCreatePage = node)}
+                  />
                 </Modal>
               </Sider>
               {/* 右侧内容 */}
-              <Content
-                style={{ marginLeft: '8px', height: '100%', overflow: 'hidden' }}
-                className={linesStyles.rightWrapper}
-              >
-                {this.drawContent()}
-              </Content>
+              <Content className={linesStyles.rightWrapper}>{this.drawContent()}</Content>
             </Layout>
           </Content>
         </Page>
