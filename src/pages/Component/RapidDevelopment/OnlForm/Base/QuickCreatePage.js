@@ -369,7 +369,7 @@ export default class QuickCreatePage extends CreatePage {
       callback: response => {
         if (response.success) {
           message.success(commonLocale.saveSuccessLocale);
-          this.props.switchTab('query');
+          this.onCancel();
         }
       },
     });
@@ -459,7 +459,7 @@ export default class QuickCreatePage extends CreatePage {
 
         let initialValue = this.entity[tableName][0] && this.entity[tableName][0][fieldName]; // 初始值
         cols.push(
-          <CFormItem key={key} label={e.label} xs={2} sm={4} md={6} lg={8} xl={10}>
+          <CFormItem key={key} label={e.label}>
             {getFieldDecorator(key, {
               initialValue: this.convertInitialValue(initialValue, e.fieldShowType),
               rules: e.rules,
@@ -471,7 +471,7 @@ export default class QuickCreatePage extends CreatePage {
         formPanel.push(
           <FormPanel
             key={categoryItem.category}
-            title={categoryItem.category}
+            title={this.props.noCategory ? undefined : categoryItem.category}
             cols={cols}
             gutterCols={gutt[z] ? gutt[z] : null}
           />
@@ -548,7 +548,7 @@ export default class QuickCreatePage extends CreatePage {
         formPanel.push(
           <ItemEditTable
             key={categoryItem.category}
-            title={categoryItem.category}
+            title={this.props.noCategory ? undefined : categoryItem.category}
             columns={cols}
             data={this.entity[currentTableName]}
             newMember={() => {
