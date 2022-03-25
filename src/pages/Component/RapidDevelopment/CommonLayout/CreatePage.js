@@ -210,7 +210,7 @@ export default class CreatePage extends Component {
 
     return (
       <PageHeaderWrapper>
-        <Spin indicator={LoadingIcon('default')} delay={5} spinning={this.props.loading}>
+        <Spin indicator={LoadingIcon('default')} delay={5} spinning={this.state.loading}>
           <Page>
             <NavigatorPanel title={this.state.title}
               style={{ marginLeft: -12 }}
@@ -230,7 +230,7 @@ export default class CreatePage extends Component {
 
     return (
       <div>
-        <Spin indicator={LoadingIcon('default')} delay={5} spinning={this.props.loading}>
+        <Spin indicator={LoadingIcon('default')} delay={5} spinning={this.state.loading}>
           <div>
             <div style={{ height: this.props.height, overflowY: 'auto' }}>
               {props.children}

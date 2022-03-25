@@ -3,8 +3,7 @@ import { Form } from 'antd';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 
 @connect(({ quick, loading }) => ({
-  quick,
-  loading: loading.models.quick,
+  quick
 }))
 @Form.create()
 export default class QuickCreatePageDefault extends QuickCreatePage {}

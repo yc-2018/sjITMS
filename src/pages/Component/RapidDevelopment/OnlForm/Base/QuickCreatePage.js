@@ -75,6 +75,7 @@ export default class QuickCreatePage extends CreatePage {
     super(props);
     this.state = {
       title: '',
+      loading: true,
       quickuuid: props.quickuuid,
       onlFormInfos: props.onlFormField,
       formItems: {},
@@ -120,7 +121,7 @@ export default class QuickCreatePage extends CreatePage {
       callback: response => {
         if (response.result) {
           this.setState({
-            onlFormInfos: response.result,
+            onlFormInfos: response.result
           });
 
           this.initEntity();
@@ -136,6 +137,7 @@ export default class QuickCreatePage extends CreatePage {
   initForm = () => {
     this.initCategory();
     this.initFormItems();
+    this.setState({ loading: false });
   };
 
   /**
