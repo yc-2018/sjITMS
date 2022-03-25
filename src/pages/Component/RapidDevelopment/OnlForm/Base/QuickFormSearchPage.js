@@ -43,6 +43,7 @@ export default class QuickFormSearchPage extends SearchPage {
       pageFilters: { quickuuid: props.quickuuid, changePage: true },
       isOrgQuery: [],
       key: props.quickuuid + 'quick.search.table',
+      defaultSort: '',
     }; //用于缓存用户配置数据
   }
 
@@ -112,6 +113,16 @@ export default class QuickFormSearchPage extends SearchPage {
                 : [...this.state.isOrgQuery],
             });
           }
+
+          let defaultSortColumn = response.result.columns.find(item => item.orderType > 1);
+          if (defaultSortColumn) {
+            let defaultSort =
+              defaultSortColumn.orderType == 2
+                ? defaultSortColumn.fieldName + ',ascend'
+                : defaultSortColumn.fieldName + ',descend';
+            this.setState({ defaultSort });
+          }
+
           //查询条件有必填时默认不查询
           if (queryRequired) return;
 
@@ -467,6 +478,7 @@ export default class QuickFormSearchPage extends SearchPage {
     if (typeof filter == 'undefined') {
       //重置搜索条件
       this.state.pageFilters = {
+        order: this.state.defaultSort,
         quickuuid: this.props.quickuuid,
         superQuery: { matchType: '', queryParams: [...this.state.isOrgQuery, ...exSearchFilter] },
       }; //增加组织 公司id查询条件
@@ -500,8 +512,8 @@ export default class QuickFormSearchPage extends SearchPage {
         order = key + ',' + sort;
       }
       queryFilter = {
-        order: order,
         ...pageFilters,
+        order: order,
         page: filter.page + 1,
         pageSize: filter.pageSize,
       };
