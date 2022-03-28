@@ -34,6 +34,7 @@ export default class CreatePageModal extends Component {
                 confirmLoading={false}
                 destroyOnClose
                 {...modal}
+                bodyStyle={{ padding: "0", ...modal.bodyStyle }}
             >
                 <CreatePage
                     noBorder={true}
