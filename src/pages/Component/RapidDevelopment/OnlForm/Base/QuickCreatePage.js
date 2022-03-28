@@ -458,12 +458,12 @@ export default class QuickCreatePage extends CreatePage {
         }
 
         this.drawcell(e);
-
+        
         let initialValue = this.entity[tableName][0] && this.entity[tableName][0][fieldName]; // 初始值
         cols.push(
           <CFormItem key={key} label={e.label}>
             {getFieldDecorator(key, {
-              initialValue: this.convertInitialValue(initialValue, e.fieldShowType),
+              initialValue: this.convertInitialValue(initialValue, e.fieldShowType, e.dbType),
               rules: e.rules,
             })(<e.component {...e.props} />)}
           </CFormItem>
@@ -537,7 +537,7 @@ export default class QuickCreatePage extends CreatePage {
             return (
               <Form.Item>
                 {getFieldDecorator(key + '_' + (record.line - 1), {
-                  initialValue: this.convertInitialValue(initialValue, e.fieldShowType),
+                  initialValue: this.convertInitialValue(initialValue, e.fieldShowType, e.dbType),
                   rules: e.rules,
                 })(<e.component {...e.props} />)}
               </Form.Item>
@@ -742,7 +742,7 @@ export default class QuickCreatePage extends CreatePage {
    * @param {string} fieldShowType 类型
    * @returns
    */
-  convertInitialValue = (value, fieldShowType) => {
+  convertInitialValue = (value, fieldShowType, dbType) => {
     if (value == undefined || value == null) {
       return value;
     }
@@ -750,6 +750,10 @@ export default class QuickCreatePage extends CreatePage {
       return moment(value, 'YYYY/MM/DD');
     } else if (['text', 'textarea'].indexOf(fieldShowType) > -1 || !fieldShowType) {
       return value.toString();
+    } else if (dbType == "Integer") {
+      return parseInt(value);
+    } else if (dbType == "Double" || dbType == "BigDecimal") {
+      return parseInt(value);
     } else {
       return value;
     }
