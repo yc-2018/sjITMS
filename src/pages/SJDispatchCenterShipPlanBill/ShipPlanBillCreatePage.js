@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-25 10:17:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-03-28 17:13:50
+ * @LastEditTime: 2022-03-28 17:24:09
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -59,7 +59,6 @@ export default class ShipPlanBillCreatePage extends QuickCreatePage {
     onlFormInfos.forEach(item => {
       this.entity[item.onlFormHead.tableName] = [];
     });
-    console.log('onlFormInfos', onlFormInfos, 'props', this.props.params);
     this.initUpdateEntity(onlFormInfos);
   };
 }
