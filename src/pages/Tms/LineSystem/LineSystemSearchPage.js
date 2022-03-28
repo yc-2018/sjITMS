@@ -2,28 +2,30 @@
  * @Author: guankongjin
  * @Date: 2022-03-09 10:31:16
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-03-25 09:20:02
+ * @LastEditTime: 2022-03-28 17:05:46
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\Tms\LineSystem\LineSystemSearchPage.js
  */
 
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { Button, message, Modal, Form, Layout, Menu, Icon, Tree } from 'antd';
+import { Button, Switch, Modal, message, Form, Layout, Menu, Icon, Tree, Tabs } from 'antd';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { convertCodeName } from '@/utils/utils';
 import Page from '@/pages/Component/Page/inner/NewStylePage';
+import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import LineShipAddress from './LineShipAddress';
 import LineSystemCreatePage from './LineSystemCreatePage';
 import LineMap from './LineMap';
-import { dynamicqueryById } from '@/services/quick/Quick';
+import { dynamicqueryById, dynamicDelete } from '@/services/quick/Quick';
 import linesStyles from './LineSystem.less';
 
 const { Content, Sider } = Layout;
 const Item = Menu.Item;
 const { SubMenu } = Menu;
 const { TreeNode } = Tree;
+const { TabPane } = Tabs;
 @connect(({ lineSystem, loading }) => ({
   lineSystem,
   loading: loading.models.lineSystem,
@@ -33,8 +35,7 @@ export default class LineSystemSearchPage extends Component {
     super(props);
     this.state = {
       lineTreeData: [],
-      createSystemModalVisible: false,
-      createLineModalVisible: false,
+      selectLineUuid: '',
       rightContent: '',
     };
   }
@@ -46,9 +47,11 @@ export default class LineSystemSearchPage extends Component {
   queryLineSystem = async () => {
     await dynamicqueryById({ tableName: 'SJ_ITMS_LINESYSTEM' }).then(async response => {
       if (response.result) {
-        const { lineTreeData } = this.state;
+        const { selectLineUuid } = this.state;
+        let newSelectLineUuid = '';
+        let lineTreeData = [];
         const frames = response.result.records;
-        frames.forEach(async (element, index) => {
+        frames.forEach(async element => {
           const lines = await this.getSerialArchLineList(element.UUID);
           if (lines.result.records != 'false') {
             lineTreeData.push({
@@ -56,12 +59,14 @@ export default class LineSystemSearchPage extends Component {
               key: element.UUID,
               icon: <Icon type="swap" rotate={90} />,
               system: true,
-              children: lines.result.records.map((record, lineIndex) => {
+              children: lines.result.records.map(record => {
+                if (newSelectLineUuid == undefined) {
+                  newSelectLineUuid = record.UUID;
+                }
                 return {
                   value: `[${record.CODE}]` + record.NAME,
                   key: record.UUID,
                   icon: <Icon type="swap" rotate={90} />,
-                  selected: index == 0 && lineIndex == 0 ? true : false,
                 };
               }),
             });
@@ -73,9 +78,9 @@ export default class LineSystemSearchPage extends Component {
               system: true,
             });
           }
-
-          this.setState({ lineTreeData });
+          this.setState({ lineTreeData, selectLineUuid: newSelectLineUuid });
         });
+        this.onSelect(this.state.selectLineUuid);
       }
     });
   };
@@ -89,51 +94,130 @@ export default class LineSystemSearchPage extends Component {
     };
     return await dynamicqueryById(param);
   };
-
-  //新建体系
-  handleCreateSystem = () => {
-    this.setState({ createSystemModalVisible: true });
+  //删除体系
+  handleDeleteSystem = async systemUuid => {
+    const params = [
+      {
+        tableName: 'SJ_ITMS_LINESYSTEM',
+        condition: {
+          params: [{ field: 'UUID', rule: 'eq', val: [systemUuid] }],
+        },
+        deleteAll: 'false',
+      },
+    ];
+    await dynamicDelete(params).then(result => {
+      if (result.success) {
+        message.success('删除成功！');
+        this.queryLineSystem();
+      } else {
+        message.error('删除失败，请刷新后再操作');
+      }
+    });
+  };
+  //删除线路
+  handleDeleteLine = lineUuid => {
+    Modal.confirm({
+      title: '确定删除?',
+      onOk: async () => {
+        const params = [
+          {
+            tableName: 'SJ_ITMS_LINE',
+            condition: {
+              params: [{ field: 'UUID', rule: 'eq', val: [lineUuid] }],
+            },
+            deleteAll: 'false',
+          },
+        ];
+        await dynamicDelete(params).then(result => {
+          if (result.success) {
+            message.success('删除成功！');
+            this.queryLineSystem();
+          } else {
+            message.error('删除失败，请刷新后再操作');
+          }
+        });
+      },
+    });
   };
 
-  //新建新路
-  handleCreateLine = () => {};
-
   //选中树节点
-  onSelect = selectedKeys => {
+  onSelect = (selectedKeys, event) => {
+    if (event && !event.selected) return;
     const { lineTreeData } = this.state;
     const system = lineTreeData.find(x => x.key == selectedKeys[0]);
     this.setState({
       rightContent: system ? (
-        <LineSystemCreatePage
-          key={selectedKeys[0]}
-          quickuuid="itms_create_linesystem"
-          showPageNow="update"
-          noBorder={true}
-          params={{ entityUuid: selectedKeys[0] }}
-        />
+        <div>
+          <div className={linesStyles.navigatorPanelWrapper}>
+            <span className={linesStyles.sidertitle}>线路体系</span>
+            <div className={linesStyles.action}>
+              {/* <Button type="primary" icon="plus">导入门店</Button> */}
+              <Button type="primary" icon="plus" onClick={() => this.lineCreatePageModalRef.show()}>
+                添加路线
+              </Button>
+              <Button
+                onClick={() => {
+                  Modal.confirm({
+                    title: '确定删除?',
+                    onOk: () => {
+                      this.handleDeleteSystem(selectedKeys[0]);
+                    },
+                  });
+                }}
+              >
+                删除
+              </Button>
+              <Button type="primary" onClick={e => this.lineSystemEditPage.handleSave(e)}>
+                保存
+              </Button>
+            </div>
+          </div>
+          <LineSystemCreatePage
+            key={selectedKeys[0]}
+            quickuuid="itms_create_linesystem"
+            showPageNow="update"
+            noBorder={true}
+            noCategory={true}
+            params={{ entityUuid: selectedKeys[0] }}
+            onRef={node => (this.lineSystemEditPage = node)}
+          />
+        </div>
       ) : (
-        <LineShipAddress
-          key={selectedKeys[0]}
-          quickuuid="itms-lines-shipaddress"
-          lineuuid={selectedKeys[0]}
-        />
+        <Tabs defaultActiveKey={`Tab${selectedKeys[0]}`}>
+          <TabPane tab="线路门店" key="1">
+            <LineShipAddress
+              key={`Line${selectedKeys[0]}`}
+              quickuuid="itms-lines-shipaddress"
+              lineuuid={selectedKeys[0]}
+            />
+          </TabPane>
+          <TabPane tab="门店地图" key="2">
+            <LineMap key={`Map${selectedKeys[0]}`} lineuuid={selectedKeys[0]} />
+          </TabPane>
+        </Tabs>
       ),
+      selectLineUuid: selectedKeys[0],
     });
   };
 
   //绘制左侧菜单栏
   drawSider = () => {
+    const { lineTreeData, selectLineUuid } = this.state;
     const renderTreeNode = data => {
       let nodeArr = data.map(item => {
         item.title = (
           <div>
             <span>{item.value}</span>
-            {item.system ? (
+            {item.system || item.key != selectLineUuid ? (
               <span />
             ) : (
               <span style={{ float: 'right' }}>
-                <a style={{ marginRight: 15 }}>编辑</a>
-                <a style={{ marginRight: 15 }}>删除</a>
+                <a style={{ marginRight: 15 }} onClick={() => this.lineEditPageModalRef.show()}>
+                  编辑
+                </a>
+                <a style={{ marginRight: 15 }} onClick={() => this.handleDeleteLine(item.key)}>
+                  删除
+                </a>
               </span>
             )}
           </div>
@@ -154,13 +238,20 @@ export default class LineSystemSearchPage extends Component {
         <div className={linesStyles.navigatorPanelWrapper}>
           <span className={linesStyles.sidertitle}>线路体系</span>
           <div className={linesStyles.action}>
-            <Button type="primary" onClick={this.handleCreateSystem}>
+            <Button type="primary" onClick={() => this.lineSystemCreatePageModalRef.show()}>
               新建体系
             </Button>
           </div>
         </div>
-        <Tree showLine={true} showIcon={true} selectable defaultExpandAll onSelect={this.onSelect}>
-          {renderTreeNode(this.state.lineTreeData)}
+        <Tree
+          showLine={true}
+          showIcon={true}
+          selectable
+          expandedKeys={lineTreeData.map(x => x.key)}
+          selectedKeys={[selectLineUuid]}
+          onSelect={this.onSelect}
+        >
+          {renderTreeNode(lineTreeData)}
         </Tree>
       </div>
     );
@@ -172,7 +263,7 @@ export default class LineSystemSearchPage extends Component {
   };
 
   render() {
-    const { createSystemModalVisible, createLineModalVisible } = this.state;
+    const { createSystemModalVisible, createLineModalVisible, selectLineUuid } = this.state;
     return (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
@@ -181,42 +272,38 @@ export default class LineSystemSearchPage extends Component {
               {/* 左侧内容 */}
               <Sider width={300} className={linesStyles.leftWrapper}>
                 {this.drawSider()}
-                <Modal
-                  title="新建线路体系"
-                  width={800}
-                  height={500}
-                  visible={createSystemModalVisible}
-                  onOk={e => this.lineSystemCreatePage.handleSave(e)}
-                  onCancel={() => this.lineSystemCreatePage.handleCancel()}
-                  confirmLoading={false}
-                  destroyOnClose
-                >
-                  <LineSystemCreatePage
-                    quickuuid="itms_create_linesystem"
-                    noBorder={true}
-                    noCategory={true}
-                    onCancel={() => this.setState({ createSystemModalVisible: false })}
-                    onRef={node => (this.lineSystemCreatePage = node)}
-                  />
-                </Modal>
-                <Modal
-                  title="编辑线路"
-                  width={800}
-                  height={500}
-                  visible={createLineModalVisible}
-                  onOk={e => this.lineSystemCreatePage.handleSave(e)}
-                  onCancel={() => this.lineSystemCreatePage.handleCancel()}
-                  confirmLoading={false}
-                  destroyOnClose
-                >
-                  <LineSystemCreatePage
-                    quickuuid="itms_create_lines"
-                    noBorder={true}
-                    noCategory={true}
-                    onCancel={() => this.setState({ createLineModalVisible: false })}
-                    onRef={node => (this.lineSystemCreatePage = node)}
-                  />
-                </Modal>
+                <CreatePageModal
+                  modal={{
+                    title: '新建线路体系',
+                    width: 500,
+                    bodyStyle: { marginRight: '40px' },
+                  }}
+                  page={{ quickuuid: 'itms_create_linesystem', noCategory: true }}
+                  onRef={node => (this.lineSystemCreatePageModalRef = node)}
+                />
+                <CreatePageModal
+                  modal={{
+                    title: '添加线路',
+                    width: 500,
+                    bodyStyle: { marginRight: '40px' },
+                  }}
+                  page={{ quickuuid: 'itms_create_lines', noCategory: true }}
+                  onRef={node => (this.lineCreatePageModalRef = node)}
+                />
+                <CreatePageModal
+                  modal={{
+                    title: '编辑线路',
+                    width: 500,
+                    bodyStyle: { marginRight: '40px' },
+                  }}
+                  page={{
+                    quickuuid: 'itms_create_lines',
+                    params: { entityUuid: selectLineUuid },
+                    showPageNow: 'update',
+                    noCategory: true,
+                  }}
+                  onRef={node => (this.lineEditPageModalRef = node)}
+                />
               </Sider>
               {/* 右侧内容 */}
               <Content className={linesStyles.rightWrapper}>{this.drawContent()}</Content>
