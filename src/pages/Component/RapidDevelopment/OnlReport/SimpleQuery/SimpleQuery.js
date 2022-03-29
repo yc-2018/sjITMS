@@ -46,6 +46,9 @@ export default class SimpleQuery extends SearchForm {
     for (let param in searchParam) {
       const field = selectFields.find(x => x.fieldName == param);
       let val = searchParam[param];
+      if(val == null || val == undefined){
+        continue;
+      }
       if (field.searchShowtype == 'datetime' && val instanceof Array) {
         val = val.map(x => x.format('YYYY-MM-DD hh:mm')).join('||');
       }
