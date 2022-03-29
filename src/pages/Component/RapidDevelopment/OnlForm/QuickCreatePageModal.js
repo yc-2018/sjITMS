@@ -1,6 +1,7 @@
 import React, { Component } from 'react'
 import { Modal } from 'antd';
 import QuickCreatePageDefault from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageDefault';
+import styles from "./QuickCreatePageModal.less"
 
 /**
  * 弹窗式表单页面
@@ -32,13 +33,13 @@ export default class CreatePageModal extends Component {
         const CreatePage = customPage ? customPage : QuickCreatePageDefault;
         return (
             <Modal
+                className={styles.noPadding}
                 visible={this.state.visible}
                 onOk={e => this.createPageRef.handleSave(e)}
                 onCancel={() => this.createPageRef.handleCancel()}
                 confirmLoading={this.state.saving}
                 destroyOnClose
                 {...modal}
-                bodyStyle={{ padding: "0", ...modal.bodyStyle }}
             >
                 <CreatePage
                     noBorder={true}
