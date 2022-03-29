@@ -231,7 +231,7 @@ export default class SimpleAutoComplete extends Component {
     }
     // 重新加载完数据后,看数据源中是否还有对应的value,没有则清除控件值
     let data = this.getOptions().find(x => x.value == this.state.value)?.data;
-    if (!data) {
+    if (!data && this.state.value != undefined) {
       this.onChange(undefined);
     }
   }
