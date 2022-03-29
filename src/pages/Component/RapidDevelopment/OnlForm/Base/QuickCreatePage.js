@@ -87,21 +87,23 @@ export default class QuickCreatePage extends CreatePage {
   }
 
   componentDidMount() {
-    if (!this.props.onlFormField) {
-      this.getCreateConfig();
-    } else {
-      this.initEntity();
-      this.initForm();
-    }
+    this.init();
     // 将本组件交给父级
     this.props.onRef && this.props.onRef(this);
   }
 
-  componentDidUpdate() {
-    if (this.state.onlFormInfos && !this.runFormLoaded) {
-      this.runFormLoaded = true;
-      this.formLoaded();
+  init = async () => {
+    if (!this.props.onlFormField) {
+      const response = await this.queryCreateConfig();
+      if (response.result) {
+        this.setState({
+          onlFormInfos: response.result
+        });
+      }
     }
+    await this.initEntity();
+    this.initForm();
+    this.formLoaded();
   }
 
   onSaving = () => {
@@ -127,26 +129,6 @@ export default class QuickCreatePage extends CreatePage {
   }
 
   /**
-   * 获取配置信息
-   */
-  getCreateConfig = () => {
-    this.props.dispatch({
-      type: 'quick/queryCreateConfig',
-      payload: this.state.quickuuid,
-      callback: response => {
-        if (response.result) {
-          this.setState({
-            onlFormInfos: response.result
-          });
-
-          this.initEntity();
-          this.initForm();
-        }
-      },
-    });
-  };
-
-  /**
    * 初始化表单
    */
   initForm = () => {
@@ -158,14 +140,14 @@ export default class QuickCreatePage extends CreatePage {
   /**
    * 初始化表单数据
    */
-  initEntity = () => {
+  initEntity = async () => {
     const { onlFormInfos } = this.state;
     //初始化entity
     onlFormInfos.forEach(item => {
       this.entity[item.onlFormHead.tableName] = [];
     });
     if (this.props.showPageNow == 'update') {
-      this.initUpdateEntity(onlFormInfos);
+      await this.initUpdateEntity(onlFormInfos);
     } else {
       this.initCreateEntity(onlFormInfos);
     }
@@ -174,7 +156,7 @@ export default class QuickCreatePage extends CreatePage {
   /**
    * 初始化更新表单
    */
-  initUpdateEntity = onlFormInfos => {
+  initUpdateEntity = async onlFormInfos => {
     for (const onlFormInfo of onlFormInfos) {
       const { onlFormHead, onlFormFields } = onlFormInfo;
       let tableName = onlFormHead.tableName;
@@ -197,47 +179,91 @@ export default class QuickCreatePage extends CreatePage {
           },
         };
       }
+      const response = await this.queryEntityData(param);
+      // 请求的数据为空
+      if (response.result.records == 'false') {
+        return;
+      }
+      const records = response.result.records;
+
+      if (onlFormHead.tableType != 2) {
+        this.entity[tableName] = records;
+        let title = onlFormHead.formTitle;
+        if (onlFormHead.formTitle && onlFormHead.formTitle.indexOf(']') != -1) {
+          const titles = onlFormInfo.onlFormHead.formTitle.split(']');
+          var entityCode = records[0][titles[0].replace('[', '')];
+          var entityTitle =
+            titles[1].indexOf('}') == -1
+              ? titles[1]
+              : records[0][titles[1].replace('}', '').replace('{', '')];
+          title = '[' + entityCode + ']' + entityTitle;
+        }
+        this.setState({ title: title });
+      } else {
+        this.entity[tableName] = response.result.records;
+        // 一对多增加line
+        if (onlFormHead.relationType == 0) {
+          for (let i = 0; i < this.entity[tableName].length; i++) {
+            this.entity[tableName][i] = {
+              ...this.entity[tableName][i],
+              line: i + 1,
+              key: this.tableKey++,
+            };
+          }
+        }
+        this.setState({});
+      }
+    }
+  };
+
+  /**
+   * 获取配置信息
+   */
+  queryCreateConfig = () => {
+    return new Promise((resolve, reject) => {
+      this.props.dispatch({
+        type: 'quick/queryCreateConfig',
+        payload: this.state.quickuuid,
+        callback: response => {
+          resolve(response);
+        }
+      });
+    });
+  }
+
+  /**
+   * 获取实体数据
+   * @param {*} param 参数
+   */
+  queryEntityData = (param) => {
+    return new Promise((resolve, reject) => {
       this.props.dispatch({
         type: 'quick/dynamicqueryById',
         payload: param,
         callback: response => {
-          // 请求的数据为空
-          if (response.result.records == 'false') {
-            return;
-          }
-          const records = response.result.records;
-
-          if (onlFormHead.tableType != 2) {
-            this.entity[tableName] = records;
-            let title = onlFormHead.formTitle;
-            if (onlFormHead.formTitle && onlFormHead.formTitle.indexOf(']') != -1) {
-              const titles = onlFormInfo.onlFormHead.formTitle.split(']');
-              var entityCode = records[0][titles[0].replace('[', '')];
-              var entityTitle =
-                titles[1].indexOf('}') == -1
-                  ? titles[1]
-                  : records[0][titles[1].replace('}', '').replace('{', '')];
-              title = '[' + entityCode + ']' + entityTitle;
-            }
-            this.setState({ title: title });
-          } else {
-            this.entity[tableName] = response.result.records;
-            // 一对多增加line
-            if (onlFormHead.relationType == 0) {
-              for (let i = 0; i < this.entity[tableName].length; i++) {
-                this.entity[tableName][i] = {
-                  ...this.entity[tableName][i],
-                  line: i + 1,
-                  key: this.tableKey++,
-                };
-              }
-            }
-            this.setState({});
-          }
-        },
+          resolve(response);
+        }
       });
-    }
-  };
+    });
+  }
+
+  /**
+   * 保存实体数据
+   * @param {*} param 参数
+   */
+  saveEntityData = (param) => {
+    return new Promise((resolve, reject) => {
+      this.props.dispatch({
+        type: 'quick/saveFormData',
+        payload: {
+          param,
+        },
+        callback: response => {
+          resolve(response);
+        }
+      });
+    });
+  }
 
   /**
    * 初始化新建表单
@@ -349,7 +375,7 @@ export default class QuickCreatePage extends CreatePage {
     this.setState({ tableItems, formItems });
   };
 
-  onSave = data => {
+  onSave = async data => {
     const { entity } = this;
     const { onlFormInfos } = this.state;
     const result = this.beforeSave(entity);
@@ -380,20 +406,13 @@ export default class QuickCreatePage extends CreatePage {
     //入参
     const param = { code: this.state.onlFormInfos[0].onlFormHead.code, entity: entity };
     this.onSaving();
-    this.props.dispatch({
-      type: 'quick/saveFormData',
-      payload: {
-        param,
-      },
-      callback: response => {
-        const success = response.success == true;
-        this.afterSave(success);
-        this.onSaved(success);
-        if (success) {
-          message.success(commonLocale.saveSuccessLocale);
-        }
-      },
-    });
+    const response = await this.saveEntityData(param);
+    const success = response.success == true;
+    this.afterSave(success);
+    this.onSaved(success);
+    if (success) {
+      message.success(commonLocale.saveSuccessLocale);
+    }
   };
 
   /**
@@ -500,7 +519,11 @@ export default class QuickCreatePage extends CreatePage {
         z++;
       }
     }
-    return formPanel;
+    if (formPanel.length == 0) {
+      return null;
+    } else {
+      return formPanel;
+    }
   };
 
   /**
