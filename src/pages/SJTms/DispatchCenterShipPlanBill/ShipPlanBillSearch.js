@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-03-25 11:10:24
+ * @LastEditTime: 2022-03-28 17:23:57
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -266,8 +266,6 @@ export default class ShipPlanBillSearch extends SearchPage {
       message.error('配置为空或配置错误，请检查点击事件配置！');
       return;
     }
-
-    // console.log('jumpPath', jumpPaths[0], 'entityUuid', record[jumpPaths[1]], '3', jumpPaths[2]);
 
     this.props.dispatch(
       routerRedux.push({

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-03-25 16:49:08
+ * @LastEditTime: 2022-03-28 17:23:59
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -18,7 +18,6 @@ import emptySvg from '@/assets/common/img_empoty.svg';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import ShipPlanBillCreatePage from './ShipPlanBillCreatePage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
-
 
 const { Content } = Layout;
 const TabPane = Tabs.TabPane;
@@ -75,8 +74,6 @@ export default class ShipPlanBillSearchPage extends PureComponent {
               ? loginOrg().type.toLowerCase() + 'Uuid'
               : 'dispatchcenteruuid';
           let org = response.result.columns.find(item => item.fieldName.toLowerCase() == orgName);
-
-          console.log('companyuuid', companyuuid);
 
           if (companyuuid) {
             this.state.isOrgQuery = [
@@ -154,7 +151,6 @@ export default class ShipPlanBillSearchPage extends PureComponent {
   };
 
   refreshView = (record, selectedRows) => {
-    console.log('record', record, 'selectedRows', selectedRows);
     if (!record && selectedRows && selectedRows.length > 0) {
       this.setState({
         showCreatePage: true,
@@ -180,7 +176,6 @@ export default class ShipPlanBillSearchPage extends PureComponent {
       params: { entityUuid: record.UUID, title: record.BILLNUMBER },
     });
     this.createPageModalRef.show();
-    console.log('record', record.UUID);
   };
 
   okHandleMember = () => {
@@ -244,11 +239,12 @@ export default class ShipPlanBillSearchPage extends PureComponent {
           </Content>
         </Page>
 
-        <CreatePageModal modal={{ title: params.title, width: 1000 }}
-          page={{ quickuuid: "sj_itms_schedule", params: params }}
+        <CreatePageModal
+          modal={{ title: params.title, width: 1000 }}
+          page={{ quickuuid: 'sj_itms_schedule', params: params }}
           customPage={ShipPlanBillCreatePage}
-          onRef={node => this.createPageModalRef = node} />
-
+          onRef={node => (this.createPageModalRef = node)}
+        />
       </PageHeaderWrapper>
     );
   }

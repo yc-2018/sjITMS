@@ -2,16 +2,15 @@
  * @Author: guankongjin
  * @Date: 2022-03-10 09:59:43
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-03-25 09:19:54
+ * @LastEditTime: 2022-03-28 17:28:52
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\Tms\LineSystem\LineShipAddress.js
  */
 import { connect } from 'dva';
-import { Table, Modal, Button, Input, Col, Row, message } from 'antd';
-import IconFont from '@/components/IconFont';
-import LineSystemCreatePage from './LineSystemCreatePage';
+import { Table, Modal, Button, Input, message } from 'antd';
 import OperateCol from '@/pages/Component/Form/OperateCol';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
+import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import { dynamicDelete } from '@/services/quick/Quick';
 import { commonLocale } from '@/utils/CommonLocale';
 import TableTransfer from './TableTransfer';
@@ -27,7 +26,6 @@ export default class LineShipAddress extends QuickFormSearchPage {
     noActionCol: false,
     unShowRow: false,
     isNotHd: true,
-    lineModalVisible: false,
     modalVisible: false,
     modalTitle: '',
     modalQuickuuid: '',
@@ -36,13 +34,16 @@ export default class LineShipAddress extends QuickFormSearchPage {
     targetKeys: [],
   };
 
+  getLineShipAddress = () => {
+    return this.state.data;
+  };
+
   drawcell = event => {
     if (event.column.fieldName == 'ORDERNUM') {
       const component = (
         <Input
           defaultValue={event.val}
           value={event.val}
-          // type="number"
           style={{ width: 80, textAlign: 'center' }}
           onChange={event => {
             console.log(event);
@@ -128,20 +129,28 @@ export default class LineShipAddress extends QuickFormSearchPage {
     const { targetKeys, transferDataSource, data } = this.state;
     const { lineuuid } = this.props;
     const saveData = transferDataSource
-      .filter(x => targetKeys.indexOf(x.UUID) != -1)
-      .map((data, index) => {
+      .filter(
+        x =>
+          targetKeys.indexOf(x.UUID) != -1 &&
+          data.list.findIndex(d => d.ADDRESSUUID == x.UUID) == -1
+      )
+      .map((address, index) => {
         return {
           LINEUUID: lineuuid,
-          ADDRESSUUID: data.UUID,
-          ADDRESSCODE: data.CODE,
-          ADDRESSNAME: data.NAME,
-          LONGITUDE: data.LONGITUDE,
-          LATITUDE: data.LATITUDE,
-          TYPE: data.TYPE,
+          ADDRESSUUID: address.UUID,
+          ADDRESSCODE: address.CODE,
+          ADDRESSNAME: address.NAME,
+          LONGITUDE: address.LONGITUDE,
+          LATITUDE: address.LATITUDE,
+          TYPE: address.TYPE,
           ORDERNUM: this.state.data.pagination.total + index + 1,
         };
       });
-    this.saveFormData(saveData);
+    if (saveData.length > 0) {
+      this.saveFormData(saveData);
+    } else {
+      this.setState({ modalVisible: false });
+    }
   };
   saveFormData = saveData => {
     const { pageFilters } = this.state;
@@ -176,7 +185,6 @@ export default class LineShipAddress extends QuickFormSearchPage {
       modalQuickuuid,
       transferColumnsTitle,
       targetKeys,
-      lineModalVisible,
     } = this.state;
     return (
       <div>
@@ -204,31 +212,16 @@ export default class LineShipAddress extends QuickFormSearchPage {
         <Button type="primary" icon="plus" onClick={this.handleAddVendor}>
           添加供应商
         </Button>
-        <Button
-          onClick={() => {
-            this.setState({ lineModalVisible: true });
+        <Button onClick={() => this.lineCreatePageModalRef.show()}>添加子路线</Button>
+        <CreatePageModal
+          modal={{
+            title: '添加子路线',
+            width: 500,
+            bodyStyle: { marginRight: '40px' },
           }}
-        >
-          添加子路线
-        </Button>
-        <Modal
-          title="添加线路"
-          width={800}
-          height={500}
-          visible={lineModalVisible}
-          onOk={e => this.lineSystemCreatePage.handleSave(e)}
-          onCancel={() => this.lineSystemCreatePage.handleCancel()}
-          confirmLoading={false}
-          destroyOnClose
-        >
-          <LineSystemCreatePage
-            quickuuid="itms_create_lines"
-            noBorder={true}
-            noCategory={true}
-            onCancel={() => this.setState({ lineModalVisible: false })}
-            onRef={node => (this.lineSystemCreatePage = node)}
-          />
-        </Modal>
+          page={{ quickuuid: 'itms_create_lines', noCategory: true }}
+          onRef={node => (this.lineCreatePageModalRef = node)}
+        />
       </div>
     );
   };

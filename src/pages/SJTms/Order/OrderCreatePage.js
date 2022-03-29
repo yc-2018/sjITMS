@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:14
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-03-19 14:17:39
+ * @LastEditTime: 2022-03-28 17:24:00
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -111,7 +111,6 @@ export default class OrderCreatePage extends QuickCreatePage {
   };
 
   exHandleChange = e => {
-    console.log('entity', this.entity);
     const { tableName, fieldName, line, fieldShowType, props, valueEvent } = e;
     const { articleVolume, articleWeight, articlePaq } = this.state;
     if (fieldName == 'QPCSTR') {
