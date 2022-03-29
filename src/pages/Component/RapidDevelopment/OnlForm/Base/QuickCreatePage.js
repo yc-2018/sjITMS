@@ -41,6 +41,7 @@ export default class QuickCreatePage extends CreatePage {
 
   formLoaded = () => {};
   beforeSave = data => {};
+  afterSave = data => {};
   exHandleChange = e => {};
   drawcell = e => {};
 
@@ -103,6 +104,11 @@ export default class QuickCreatePage extends CreatePage {
     }
   }
 
+  onSaving = () => {
+    this.setState({ saving: true });
+    this.props.onSaving && this.props.onSaving();
+  }
+
   onCancel = () => {
     if(this.props.onCancel){
       this.props.onCancel();
@@ -110,6 +116,15 @@ export default class QuickCreatePage extends CreatePage {
       this.props.switchTab('query');
     }
   };
+
+  onSaved = (success) => {
+    this.setState({ saving: false });
+    if(this.props.onSaved){
+      this.props.onSaved(success);
+    } else if(this.props.switchTab){
+      this.props.switchTab('query');
+    }
+  }
 
   /**
    * 获取配置信息
@@ -236,9 +251,9 @@ export default class QuickCreatePage extends CreatePage {
       }
       const tableName = onlFormHead.tableName;
       this.entity[tableName][0] = {};
-      const result = onlFormFields.filter(x => x.dbDefaultVal !== undefined);
+      const result = onlFormFields.filter(x => x.fieldDefaultValue !== undefined);
       result.forEach(data => {
-        this.entity[tableName][0][data.dbFieldName] = data.dbDefaultVal;
+        this.entity[tableName][0][data.dbFieldName] = data.fieldDefaultValue;
       });
     }
     this.setState({ title: '新建' + onlFormInfos[0].onlFormHead.tableTxt });
@@ -314,6 +329,7 @@ export default class QuickCreatePage extends CreatePage {
           tableName,
           fieldName: field.dbFieldName,
           fieldShowType: field.fieldShowType,
+          dbType: field.dbType,
           onlFormInfo,
           onlFormField: field,
         };
@@ -363,15 +379,18 @@ export default class QuickCreatePage extends CreatePage {
 
     //入参
     const param = { code: this.state.onlFormInfos[0].onlFormHead.code, entity: entity };
+    this.onSaving();
     this.props.dispatch({
       type: 'quick/saveFormData',
       payload: {
         param,
       },
       callback: response => {
-        if (response.success) {
+        const success = response.success == true;
+        this.afterSave(success);
+        this.onSaved(success);
+        if (success) {
           message.success(commonLocale.saveSuccessLocale);
-          this.onCancel();
         }
       },
     });
@@ -753,7 +772,7 @@ export default class QuickCreatePage extends CreatePage {
     } else if (dbType == "Integer") {
       return parseInt(value);
     } else if (dbType == "Double" || dbType == "BigDecimal") {
-      return parseInt(value);
+      return parseFloat(value);
     } else {
       return value;
     }

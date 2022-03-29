@@ -187,7 +187,7 @@ export default class CreatePage extends Component {
         <Button key="cancel" onClick={this.handleCancel}>
           {formatMessage({ id: 'company.create.button.cancel' })}
         </Button>
-        <Button key="save" type="primary" onClick={this.handleSave.bind(this)}>
+        <Button key="save" type="primary" loading={this.state.saving} onClick={this.handleSave.bind(this)}>
           {formatMessage({ id: 'company.create.button.confirm' })}
         </Button>
       </Fragment>

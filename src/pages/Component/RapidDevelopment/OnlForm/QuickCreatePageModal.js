@@ -1,5 +1,5 @@
 import React, { Component } from 'react'
-import { Button, message, Modal, Form, Layout, Menu, Icon, Tree } from 'antd';
+import { Modal } from 'antd';
 import QuickCreatePageDefault from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageDefault';
 
 /**
@@ -11,6 +11,7 @@ import QuickCreatePageDefault from '@/pages/Component/RapidDevelopment/OnlForm/Q
  */
 export default class CreatePageModal extends Component {
     state = {
+        saving: false,
         visible: false
     }
 
@@ -22,23 +23,33 @@ export default class CreatePageModal extends Component {
         this.setState({ visible: true });
     }
 
+    hide = () => {
+        this.setState({ visible: false });
+    }
+
     render() {
         const { modal, page, customPage } = this.props;
         const CreatePage = customPage ? customPage : QuickCreatePageDefault;
-
         return (
             <Modal
                 visible={this.state.visible}
                 onOk={e => this.createPageRef.handleSave(e)}
                 onCancel={() => this.createPageRef.handleCancel()}
-                confirmLoading={false}
+                confirmLoading={this.state.saving}
                 destroyOnClose
                 {...modal}
                 bodyStyle={{ padding: "0", ...modal.bodyStyle }}
             >
                 <CreatePage
                     noBorder={true}
-                    onCancel={() => this.setState({ visible: false })}
+                    onSaving={() => this.setState({ saving: true })}
+                    onSaved={(success) => {
+                        this.setState({ saving: false });
+                        if (success) {
+                            this.hide();
+                        }
+                    }}
+                    onCancel={() => this.hide()}
                     onRef={node => (this.createPageRef = node)}
                     {...page}
                 />
