@@ -1153,7 +1153,7 @@ export default [
             path: '/tmsbase/ShipPlanBill',
             name: '排车单',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
-            component: './SJTms/DispatchCenterShipPlanBill/ShipPlanBillForm',
+            component: './SJTms/DispatchCenterShipPlanBill/DispatchCenterShipPlanBill',
             quickuuid: 'sj_itms_schedule',
             authority: ['itms.base.vehicle'],
             divider: true,
