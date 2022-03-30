@@ -39,9 +39,9 @@ export async function saveFormData(param) {
 }
 
 export async function dynamicDelete(payload) {
-  return request(`/itms-schedule/itms-schedule/devDynamicCRUD/delete`, {
+  return request(`/itms-schedule/itms-schedule/devDynamicCRUD/delete/${payload.code}`, {
     method: 'POST',
-    body: payload,
+    body: payload.params,
   });
 }
 

@@ -67,7 +67,7 @@ export default {
       if (callback) callback(response);
     },
     *dynamicDelete({ payload, callback }, { call, put }) {
-      const response = yield call(dynamicDelete, payload.params);
+      const response = yield call(dynamicDelete, payload);
       if (callback) callback(response);
     },
     *showPageMap({ payload }, { call, put }) {

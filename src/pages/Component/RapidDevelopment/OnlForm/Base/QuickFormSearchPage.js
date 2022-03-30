@@ -378,6 +378,7 @@ export default class QuickFormSearchPage extends SearchPage {
     const { selectedRows, batchAction } = this.state;
     const { dispatch } = this.props;
     const params = [];
+    const code = this.props.onlFormField[0].onlFormHead.code;
     let that = this;
     if (selectedRows.length !== 0) {
       for (var i = 0; i < selectedRows.length; i++) {
@@ -385,7 +386,7 @@ export default class QuickFormSearchPage extends SearchPage {
       }
       dispatch({
         type: 'quick/dynamicDelete',
-        payload: { params },
+        payload: { params, code },
         callback: response => {
           // if (batch) {
           //   that.batchCallback(response, record);
