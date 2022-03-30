@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 10:48:58
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-03-19 14:46:12
+ * @LastEditTime: 2022-03-29 08:54:55
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -36,7 +36,7 @@ export default class OrderForm extends QuickForm {
           title="运输订单"
           templateType="TMSORDERBILL"
           dispatch={this.props.dispatch}
-          uploadType="cctest/batchImport"
+          uploadType="SJOrderBill/batchImport"
           cancelCallback={this.onCancel}
         />
       );

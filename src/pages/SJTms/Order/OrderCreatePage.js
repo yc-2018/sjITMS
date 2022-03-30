@@ -2,20 +2,25 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:14
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-03-28 17:24:00
+ * @LastEditTime: 2022-03-30 10:33:17
  * @version: 1.0
  */
 import { connect } from 'dva';
 import { Form, Input } from 'antd';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import { saveOrUpdateEntities, dynamicqueryById, dynamicDelete } from '@/services/quick/Quick';
+import { add, toQtyStr, accAdd, accMul } from '@/utils/QpcStrUtil';
 
 const formType = [
   { value: 'CARTON', name: '整箱数' },
+  { value: 'CARTONWEIGHT', name: '整箱重量' },
+  { value: 'CARTONVOLUME', name: '整箱体积' },
   { value: 'SCATTERED', name: '散件' },
+  { value: 'SCATTEREDWEIGHT', name: '散件重量' },
+  { value: 'SCATTEREDVOLUME', name: '散件体积' },
   { value: 'CONTAINER', name: '周装箱数' },
-  { value: 'WEIGHT', name: '重量' },
-  { value: 'VOLUME', name: '体积' },
+  { value: 'CONTAINERWEIGHT', name: '周装箱重量' },
+  { value: 'CONTAINERVOLUME', name: '周装箱体积' },
 ];
 
 @connect(({ quick, loading }) => ({
@@ -26,17 +31,12 @@ const formType = [
 export default class OrderCreatePage extends QuickCreatePage {
   state = {
     ...this.state,
-    articleVolume: '',
-    articleWeight: '',
-    articlePaq: '',
-    containerVolume: 0,
-    containerWeight: 0,
-    containerQtystr: 0,
-    containerQty: 0,
+    articleProp: [],
   };
 
-  handleQtystr = (Qtystr, line) => {
-    const { articleVolume, articleWeight, articlePaq } = this.state;
+  handleQtystr = (Qtystr, line, tableName) => {
+    const { articleProp } = this.state;
+    const { articlePaq, articleVolume, articleWeight } = articleProp.find(x => x.line == line);
     let result = '';
     if (Qtystr.indexOf('+') !== -1) {
       const qtystrList = Qtystr.split('+');
@@ -47,84 +47,138 @@ export default class OrderCreatePage extends QuickCreatePage {
       result = Qtystr;
     }
     const qty = Math.ceil(result * articlePaq);
-    const volume = (result * articleVolume).toFixed(4);
-    const weight = (result * articleWeight).toFixed(4);
-    this.entity['sj_itms_order_article'][line == undefined ? 0 : line]['QTY'] = qty;
-    this.entity['sj_itms_order_article'][line == undefined ? 0 : line]['VOLUME'] = volume;
-    this.entity['sj_itms_order_article'][line == undefined ? 0 : line]['WEIGHT'] = weight;
+    const volume = accMul(result, articleVolume).toFixed(4);
+    const weight = accMul(result, articleWeight).toFixed(4);
+    this.entity[tableName][line == undefined ? 0 : line]['QTY'] = qty;
+    this.entity[tableName][line == undefined ? 0 : line]['VOLUME'] = volume;
+    this.entity[tableName][line == undefined ? 0 : line]['WEIGHT'] = weight;
     this.props.form.setFieldsValue({
-      ['sj_itms_order_article_QTY_' + line]: qty,
-      ['sj_itms_order_article_VOLUME_' + line]: volume,
-      ['sj_itms_order_article_WEIGHT_' + line]: weight,
+      [tableName + '_QTY_' + line]: qty,
+      [tableName + '_VOLUME_' + line]: volume,
+      [tableName + '_WEIGHT_' + line]: weight,
     });
   };
 
   handleContainer = () => {
+    const { articleProp } = this.state;
     const articleDtl = this.entity['sj_itms_order_article'];
     let qtystr = 0;
     let qty = 0;
-    let volume = 0;
-    let weight = 0;
+    let cartonVolume = 0;
+    let cartonweight = 0;
+    let scatteredVolume = 0;
+    let scatteredWeight = 0;
     articleDtl.forEach(data => {
+      const { articleVolume, articleWeight } = articleProp.find(x => x.line == data.line - 1);
+
       qtystr = qtystr + Math.floor(data.QTY / data.QPC);
       qty = qty + Number(data.QTY % data.QPC);
-      volume = volume + Number(data.VOLUME).toFixed(4);
-      weight = weight + Number(data.WEIGHT).toFixed(4);
+      cartonVolume = accAdd(
+        cartonVolume,
+        accMul(Math.floor(data.QTY / data.QPC), articleVolume)
+      ).toFixed(4);
+      cartonweight = accAdd(
+        cartonweight,
+        accMul(Math.floor(data.QTY / data.QPC), articleWeight)
+      ).toFixed(4);
+      scatteredVolume = accAdd(
+        scatteredVolume,
+        accMul(Number(data.QTY % data.QPC) / data.QPC, articleVolume)
+      ).toFixed(4);
+      scatteredWeight = accAdd(
+        scatteredWeight,
+        accMul(Number(data.QTY % data.QPC) / data.QPC, articleWeight)
+      ).toFixed(4);
     });
-    if (!this.entity['sj_itms_order_containernumber'][0]) {
-      this.entity['sj_itms_order_containernumber'][0] = {};
+
+    if (!this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]) {
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0] = {};
     }
-    this.entity['sj_itms_order_containernumber'][0]['CARTON'] = qtystr;
-    this.entity['sj_itms_order_containernumber'][0]['SCATTERED'] = qty;
-    this.entity['sj_itms_order_containernumber'][0]['VOLUME'] = volume;
-    this.entity['sj_itms_order_containernumber'][0]['WEIGHT'] = weight;
+
+    this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CARTON'] = qtystr;
+    this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['SCATTERED'] = qty;
+    this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CONTAINER'] = 0;
+    this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CARTONVOLUME'] = cartonVolume;
+    this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CARTONWEIGHT'] = cartonweight;
+    this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['SCATTEREDVOLUME'] = scatteredVolume;
+    this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['SCATTEREDWEIGHT'] = scatteredWeight;
+    this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CONTAINERVOLUME'] = 0;
+    this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CONTAINERWEIGHT'] = 0;
+
     this.props.form.setFieldsValue({
-      ['sj_itms_order_containernumber_CARTON_0']: qtystr,
-      ['sj_itms_order_containernumber_SCATTERED_0']: qty,
-      ['sj_itms_order_containernumber_VOLUME_0']: volume,
-      ['sj_itms_order_containernumber_WEIGHT_0']: weight,
+      ['SJ_ITMS_ORDER_CONTAINERNUMBER_CARTON_0']: qtystr,
+      ['SJ_ITMS_ORDER_CONTAINERNUMBER_SCATTERED_0']: qty,
+      ['SJ_ITMS_ORDER_CONTAINERNUMBER_CONTAINER_0']: 0,
+      ['SJ_ITMS_ORDER_CONTAINERNUMBER_CARTONVOLUME_0']: cartonVolume,
+      ['SJ_ITMS_ORDER_CONTAINERNUMBER_CARTONWEIGHT_0']: cartonweight,
+      ['SJ_ITMS_ORDER_CONTAINERNUMBER_SCATTEREDVOLUME_0']: scatteredVolume,
+      ['SJ_ITMS_ORDER_CONTAINERNUMBER_SCATTEREDWEIGHT_0']: scatteredWeight,
+      ['SJ_ITMS_ORDER_CONTAINERNUMBER_CONTAINERVOLUME_0']: 0,
+      ['SJ_ITMS_ORDER_CONTAINERNUMBER_CONTAINERWEIGHT_0']: 0,
     });
   };
 
   beforeSave = data => {
-    const { sj_itms_order_containernumber } = this.entity;
+    const { SJ_ITMS_ORDER_CONTAINERNUMBER } = this.entity;
     const cc = [];
     cc.push({
       VEHICLETYPE: '整箱',
-      FORECASTCOUNT: sj_itms_order_containernumber[0].CARTON,
-      FORECASTWEIGHT: sj_itms_order_containernumber[0].WEIGHT,
-      FORECASTVOLUME: sj_itms_order_containernumber[0].VOLUME,
+      FORECASTCOUNT: SJ_ITMS_ORDER_CONTAINERNUMBER[0].CARTON,
+      FORECASTWEIGHT: SJ_ITMS_ORDER_CONTAINERNUMBER[0].CARTONWEIGHT,
+      FORECASTVOLUME: SJ_ITMS_ORDER_CONTAINERNUMBER[0].CARTONVOLUME,
     });
     cc.push({
       VEHICLETYPE: '周转箱',
-      FORECASTCOUNT: sj_itms_order_containernumber[0].CONTAINER,
-      FORECASTWEIGHT: sj_itms_order_containernumber[0].WEIGHT,
-      FORECASTVOLUME: sj_itms_order_containernumber[0].VOLUME,
+      FORECASTCOUNT: SJ_ITMS_ORDER_CONTAINERNUMBER[0].CONTAINER,
+      FORECASTWEIGHT: SJ_ITMS_ORDER_CONTAINERNUMBER[0].CONTAINERWEIGHT,
+      FORECASTVOLUME: SJ_ITMS_ORDER_CONTAINERNUMBER[0].CONTAINERVOLUME,
     });
     cc.push({
       VEHICLETYPE: '散件',
-      FORECASTCOUNT: sj_itms_order_containernumber[0].SCATTERED,
-      FORECASTWEIGHT: sj_itms_order_containernumber[0].WEIGHT,
-      FORECASTVOLUME: sj_itms_order_containernumber[0].VOLUME,
+      FORECASTCOUNT: SJ_ITMS_ORDER_CONTAINERNUMBER[0].SCATTERED,
+      FORECASTWEIGHT: SJ_ITMS_ORDER_CONTAINERNUMBER[0].SCATTEREDWEIGHT,
+      FORECASTVOLUME: SJ_ITMS_ORDER_CONTAINERNUMBER[0].SCATTEREDVOLUME,
     });
-    this.entity.sj_itms_order_contaeinernumber = cc;
+    this.entity.SJ_ITMS_ORDER_CONTAINERNUMBER = cc;
   };
 
   exHandleChange = e => {
     const { tableName, fieldName, line, fieldShowType, props, valueEvent } = e;
-    const { articleVolume, articleWeight, articlePaq } = this.state;
+    const { articleProp } = this.state;
     if (fieldName == 'QPCSTR') {
       const { LENGTH, WIDTH, HEIGHT, WEIGHT, PAQ } = valueEvent.record;
       const articleVolume = isNaN((LENGTH * WIDTH * HEIGHT) / 1000000)
         ? '0'
         : (LENGTH * WIDTH * HEIGHT) / 1000000;
       const articleWeight = isNaN(WEIGHT / 1000) ? '0' : WEIGHT / 1000;
-      const articlePaq = PAQ;
-      this.setState({ articleVolume, articleWeight, articlePaq });
+      const articlePaq = PAQ ? PAQ : 0;
+
+      const index = articleProp.findIndex(x => x.line == line);
+      if (index < 0) {
+        const newArticleProp = articleProp.concat({
+          line: line,
+          articleVolume: articleVolume,
+          articleWeight: articleWeight,
+          articlePaq: articlePaq,
+        });
+        this.setState({ articleProp: newArticleProp });
+      } else {
+        articleProp[index] = {
+          line: line,
+          articleVolume: articleVolume,
+          articleWeight: articleWeight,
+          articlePaq: articlePaq,
+        };
+        this.setState({ articleProp });
+      }
+
+      this.entity[tableName][line == undefined ? 0 : line]['QTYSTR'] = 0;
+      this.props.form.setFieldsValue({ [tableName + '_QTYSTR_' + line]: 0 });
+      this.handleQtystr('0', line, tableName);
     } else if (fieldName == 'QTYSTR') {
       const value = this.convertSaveValue(valueEvent, fieldShowType);
       //货品明细件数
-      this.handleQtystr(value, line);
+      this.handleQtystr(value, line, tableName);
       //容器货品件数
       this.handleContainer();
     }
@@ -138,16 +192,17 @@ export default class OrderCreatePage extends QuickCreatePage {
     const { categories, formItems } = this.state;
     categories.push({ category: '业务信息', type: 0 });
     formType.forEach(data => {
-      formItems['sj_itms_order_containernumber_' + data.value] = {
+      formItems['SJ_ITMS_ORDER_CONTAINERNUMBER_' + data.value] = {
         categoryName: '业务信息',
         component: Input,
         fieldName: data.value,
         fieldShowType: 'text',
-        key: 'sj_itms_order_containernumber_' + data.value,
+        key: 'SJ_ITMS_ORDER_CONTAINERNUMBER_' + data.value,
         label: data.name,
-        tableName: 'sj_itms_order_containernumber',
+        tableName: 'SJ_ITMS_ORDER_CONTAINERNUMBER',
         props: { disabled: true },
       };
     });
+    // console.log('cc', this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER']);
   };
 }
