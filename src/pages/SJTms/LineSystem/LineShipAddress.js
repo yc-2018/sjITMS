@@ -2,9 +2,9 @@
  * @Author: guankongjin
  * @Date: 2022-03-10 09:59:43
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-03-28 17:28:52
+ * @LastEditTime: 2022-03-31 17:03:29
  * @Description: file content
- * @FilePath: \iwms-web\src\pages\Tms\LineSystem\LineShipAddress.js
+ * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineShipAddress.js
  */
 import { connect } from 'dva';
 import { Table, Modal, Button, Input, message } from 'antd';
@@ -96,7 +96,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
         deleteAll: 'false',
       },
     ];
-    await dynamicDelete(params).then(result => {
+    await dynamicDelete({ params: params }).then(result => {
       if (result.success) {
         message.success('删除成功！');
         this.getData(pageFilters);
@@ -127,23 +127,25 @@ export default class LineShipAddress extends QuickFormSearchPage {
   //保存
   handleStoreSave = () => {
     const { targetKeys, transferDataSource, data } = this.state;
-    const { lineuuid } = this.props;
+    const { lineuuid, linecode } = this.props;
     const saveData = transferDataSource
       .filter(
         x =>
           targetKeys.indexOf(x.UUID) != -1 &&
-          data.list.findIndex(d => d.ADDRESSUUID == x.UUID) == -1
+          (data.list ? data.list.findIndex(d => d.ADDRESSUUID == x.UUID) == -1 : true)
       )
       .map((address, index) => {
+        const orderNum = this.state.data.pagination.total + index + 1;
         return {
           LINEUUID: lineuuid,
+          LINECODE: linecode + '-' + orderNum.toString().padStart(3, '0'),
           ADDRESSUUID: address.UUID,
           ADDRESSCODE: address.CODE,
           ADDRESSNAME: address.NAME,
           LONGITUDE: address.LONGITUDE,
           LATITUDE: address.LATITUDE,
           TYPE: address.TYPE,
-          ORDERNUM: this.state.data.pagination.total + index + 1,
+          ORDERNUM: orderNum,
         };
       });
     if (saveData.length > 0) {
@@ -226,7 +228,14 @@ export default class LineShipAddress extends QuickFormSearchPage {
     );
   };
 
-  drawToolbarPanel = () => {};
+  drawToolbarPanel = () => {
+    return (
+      <div style={{ marginBottom: 15 }}>
+        <Button>排序</Button>
+        <Button>保存</Button>
+      </div>
+    );
+  };
 
   //拖拽排序
   drapTableChange = list => {

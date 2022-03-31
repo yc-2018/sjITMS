@@ -2,9 +2,9 @@
  * @Author: guankongjin
  * @Date: 2022-03-09 10:31:16
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-03-28 17:05:46
+ * @LastEditTime: 2022-03-31 16:56:50
  * @Description: file content
- * @FilePath: \iwms-web\src\pages\Tms\LineSystem\LineSystemSearchPage.js
+ * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineSystemSearchPage.js
  */
 
 import React, { Component } from 'react';
@@ -35,6 +35,8 @@ export default class LineSystemSearchPage extends Component {
     super(props);
     this.state = {
       lineTreeData: [],
+      lineData: [],
+      expandKeys: [],
       selectLineUuid: '',
       rightContent: '',
     };
@@ -47,7 +49,7 @@ export default class LineSystemSearchPage extends Component {
   queryLineSystem = async () => {
     await dynamicqueryById({ tableName: 'SJ_ITMS_LINESYSTEM' }).then(async response => {
       if (response.result) {
-        const { selectLineUuid } = this.state;
+        const { selectLineUuid, lineData } = this.state;
         let newSelectLineUuid = '';
         let lineTreeData = [];
         const frames = response.result.records;
@@ -60,6 +62,7 @@ export default class LineSystemSearchPage extends Component {
               icon: <Icon type="swap" rotate={90} />,
               system: true,
               children: lines.result.records.map(record => {
+                lineData.push(record);
                 if (newSelectLineUuid == undefined) {
                   newSelectLineUuid = record.UUID;
                 }
@@ -78,7 +81,12 @@ export default class LineSystemSearchPage extends Component {
               system: true,
             });
           }
-          this.setState({ lineTreeData, selectLineUuid: newSelectLineUuid });
+          this.setState({
+            expandKeys: lineTreeData.map(x => x.key),
+            lineTreeData,
+            lineData,
+            selectLineUuid: newSelectLineUuid,
+          });
         });
         this.onSelect(this.state.selectLineUuid);
       }
@@ -143,7 +151,7 @@ export default class LineSystemSearchPage extends Component {
   //选中树节点
   onSelect = (selectedKeys, event) => {
     if (event && !event.selected) return;
-    const { lineTreeData } = this.state;
+    const { lineTreeData, lineData } = this.state;
     const system = lineTreeData.find(x => x.key == selectedKeys[0]);
     this.setState({
       rightContent: system ? (
@@ -189,6 +197,9 @@ export default class LineSystemSearchPage extends Component {
               key={`Line${selectedKeys[0]}`}
               quickuuid="itms-lines-shipaddress"
               lineuuid={selectedKeys[0]}
+              linecode={
+                lineData.length > 0 ? lineData.find(x => x.UUID == selectedKeys[0]).CODE : ''
+              }
             />
           </TabPane>
           <TabPane tab="门店地图" key="2">
@@ -199,10 +210,20 @@ export default class LineSystemSearchPage extends Component {
       selectLineUuid: selectedKeys[0],
     });
   };
+  //展开/收起节点
+  onExpand = (_, event) => {
+    const { expandKeys } = this.state;
+    if (event.expanded) {
+      expandKeys.push(event.node.props.eventKey);
+    } else {
+      expandKeys.splice(expandKeys.indexOf(event.node.props.eventKey), 1);
+    }
+    this.setState({ expandKeys });
+  };
 
   //绘制左侧菜单栏
   drawSider = () => {
-    const { lineTreeData, selectLineUuid } = this.state;
+    const { expandKeys, lineTreeData, selectLineUuid } = this.state;
     const renderTreeNode = data => {
       let nodeArr = data.map(item => {
         item.title = (
@@ -247,9 +268,10 @@ export default class LineSystemSearchPage extends Component {
           showLine={true}
           showIcon={true}
           selectable
-          expandedKeys={lineTreeData.map(x => x.key)}
+          expandedKeys={expandKeys}
           selectedKeys={[selectLineUuid]}
           onSelect={this.onSelect}
+          onExpand={this.onExpand}
         >
           {renderTreeNode(lineTreeData)}
         </Tree>
