@@ -563,7 +563,7 @@ export default class QuickView extends RyzeViewPage {
     return (
       <TabPane
         key="1"
-        tab={this.state.viewStyle.noTitle ? '' : onlFormInfos[0].onlFormHead.tableTxt}
+        tab={this.state.viewStyle?.noTitle ? '' : onlFormInfos[0].onlFormHead.tableTxt}
       >
         {itemMerge}
       </TabPane>
