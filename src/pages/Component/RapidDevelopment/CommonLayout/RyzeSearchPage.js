@@ -86,17 +86,12 @@ export default class RyzeSearchPage extends Component {
   };
 
   shouldComponentUpdate() {
-    // if (this.state.batching) {
-    //   return false;
-    // }
     if (this.props.pathname && this.props.pathname !== window.location.pathname) {
       return false;
     } else {
       return true;
     }
   }
-
-  componentWillReceiveProps(nextProps) {}
 
   handleSelectRows = rows => {
     this.setState({
@@ -127,9 +122,6 @@ export default class RyzeSearchPage extends Component {
 
     if (sorter.field) {
       var sortField = `${sorter.field}`;
-      if (sorter.field === 'article' || sorter.field === 'store') {
-        sortField = `${sorter.field}Code`;
-      }
       var sortType = sorter.order === 'descend' ? true : false;
       // 排序触发表格变化清空表格选中行，分页则不触发
       if (pageFilter.sortFields[sortField] === sortType) {
@@ -144,321 +136,6 @@ export default class RyzeSearchPage extends Component {
 
     if (this.refreshTable) this.refreshTable(pageFilter);
   };
-
-  // region -------- 批处理相关 START -------
-
-  /**
-   * 确认执行任务之前回调
-   */
-  taskConfirmCallback = () => {
-    this.setState({
-      batchProcessConfirmModalVisible: false,
-      batching: true,
-      description: false,
-    });
-    localStorage.setItem('showMessage', '0');
-  };
-
-  /**
-   * progress流程结束
-   */
-  terminateProgress = cancel => {
-    if (cancel) {
-      this.setState({
-        batching: false,
-      });
-      return;
-    }
-
-    this.setState(
-      {
-        batchProcessConfirmModalVisible: false,
-        selectedRows: [],
-        failedTasks: [],
-        batching: false,
-      },
-      () => {
-        this.refreshTable();
-      }
-    );
-    this.changeSelectedRows && this.changeSelectedRows([]);
-  };
-
-  /**
-   * 重试取消
-   */
-  retryCancelCallback = () => {
-    localStorage.setItem('showMessage', '1');
-    this.terminateProgress(true);
-  };
-
-  /**
-   * 任务执行出错时回调，用于重试
-   */
-  taskFailedCallback = () => {
-    const { taskInfo, selectedRows, failedTasks } = this.state;
-    // 关掉错误提示
-    this.setState({
-      isCloseFailedResultModal: false,
-      batchProcessConfirmModalVisible: false,
-      batching: false,
-    });
-
-    if (failedTasks.length >= 1) {
-      // 将执行失败的任务加入到selectedRows
-      this.setState({
-        selectedRows: failedTasks,
-        failedTasks: [],
-      });
-      // 继续进行批处理
-      this.handleBatchProcessConfirmModalVisible(true, taskInfo.type, failedTasks);
-      this.changeSelectedRows && this.changeSelectedRows(failedTasks);
-    }
-  };
-
-  /**
-   * 批量处理弹出框显示处理（入口）
-   */
-  handleBatchProcessConfirmModalVisible = (flag, taskType, failedTasks) => {
-    const { selectedRows } = this.state;
-    if (selectedRows.length === 0 && (failedTasks ? failedTasks.length : 0) === 0) {
-      if (!this.state.noMessage) {
-        message.warn(formatMessage({ id: 'common.progress.select.tips' }));
-      }
-      return;
-    }
-    if (flag) {
-      const { taskInfo } = this.state;
-      taskInfo.total = failedTasks ? failedTasks.length : selectedRows.length;
-      taskInfo.type = taskType;
-
-      this.setState({
-        taskInfo: taskInfo,
-        batchProcessConfirmModalVisible: flag,
-      });
-    } else {
-      this.setState({
-        batchProcessConfirmModalVisible: !!flag,
-      });
-    }
-  };
-
-  showConfirm = (content, action) => {
-    const { confirm } = Modal;
-    let confirmTitle =
-      '确认' + formatMessage({ id: 'common.progress.confirmModal.title' }) + action;
-    confirm({
-      title: confirmTitle,
-      icon: <IconFont type="icon-status_warn" />,
-      content: content,
-      okText: '确定',
-      cancelText: '取消',
-      onOk: () => {
-        //防抖
-        debounce(this.handleConfirmOk, 600);
-      },
-      onCancel: () => {
-        //防抖
-        debounce(this.handleConfirmCancel, 600);
-      },
-    });
-  };
-  // 确认框确定按钮 -- onOk
-  handleConfirmOk = () => {
-    this.refs.batchHandle.handleProgressModalVisible(true);
-    this.taskConfirmCallback();
-    // 执行任务
-    this.onBatchProcess();
-  };
-  // 确认框取消按钮 -- onCancel
-  handleConfirmCancel = () => {
-    this.refs.batchHandle.resetProgress();
-    this.taskCancelCallback();
-  };
-  /**
-   * 任务全部执行成功时回调
-   */
-  taskSuccessedCallback = () => {
-    this.terminateProgress();
-    localStorage.setItem('showMessage', '1');
-  };
-
-  /**
-   * 任务取消执行
-   */
-  taskCancelCallback = () => {
-    this.setState({
-      batchProcessConfirmModalVisible: false,
-      description: false,
-    });
-    localStorage.setItem('showMessage', '1');
-    this.terminateProgress(true);
-    this.subTaskCancelCallback && this.subTaskCancelCallback();
-  };
-
-  /**
-   * 收集批量处理产生的失败任务
-   */
-  collectFaildedTask = record => {
-    const { failedTasks } = this.state;
-    if (failedTasks.indexOf(record) == -1) {
-      failedTasks.push(record);
-      this.setState({
-        failedTasks: failedTasks,
-      });
-    }
-  };
-
-  /**
-   * 成功或者失败回调
-   */
-  batchCallback = (response, record) => {
-    if (response && response.success) {
-      this.refs.batchHandle.calculateTaskSuccessed();
-    } else {
-      this.refs.batchHandle.calculateTaskFailed();
-      this.collectFaildedTask(record);
-    }
-  };
-
-  /**
-   * 渲染批处理
-   */
-  drawProgress = () => {
-    const { taskInfo, batchProcessConfirmModalVisible, isCloseFailedResultModal } = this.state;
-
-    const progressProps = {
-      taskInfo: taskInfo,
-      entity: this.state.title,
-      action: this.state.batchAction,
-      batchProcessConfirmModalVisible: batchProcessConfirmModalVisible,
-      isCloseFailedResultModal: isCloseFailedResultModal,
-      content: this.state.content,
-      description: this.state.description,
-    };
-    const progressMethods = {
-      taskConfirmCallback: this.taskConfirmCallback,
-      taskCancelCallback: this.taskCancelCallback,
-      taskFailedCallback: this.taskFailedCallback,
-      taskSuccessedCallback: this.taskSuccessedCallback,
-      retryCancelCallback: this.retryCancelCallback,
-      taskExecutionFunc: this.onBatchProcess,
-    };
-    return <ConfirmProgress {...progressProps} {...progressMethods} ref="batchHandle" />;
-  };
-
-  // endregion -------- 批处理相关 END -------
-
-  // region ----------- 公共模块跳转方法 -----------
-  onViewDC = dcUuid => {
-    this.props.dispatch(
-      routerRedux.push({
-        pathname: '/basic/dc',
-        payload: {
-          showPage: 'view',
-          entityUuid: dcUuid,
-        },
-      })
-    );
-  };
-
-  onViewArticle = articleUuid => {
-    this.props.dispatch(
-      routerRedux.push({
-        pathname: '/basic/article',
-        payload: {
-          showPage: 'view',
-          entityUuid: articleUuid,
-        },
-      })
-    );
-  };
-
-  onViewVendor = vendorUuid => {
-    this.props.dispatch(
-      routerRedux.push({
-        pathname: '/basic/vendor',
-        payload: {
-          showPage: 'view',
-          entityUuid: vendorUuid,
-        },
-      })
-    );
-  };
-
-  onViewStore = storeUuid => {
-    this.props.dispatch(
-      routerRedux.push({
-        pathname: '/basic/store',
-        payload: {
-          showPage: 'view',
-          entityUuid: storeUuid,
-        },
-      })
-    );
-  };
-
-  onViewOwner = ownerUuid => {
-    this.props.dispatch(
-      routerRedux.push({
-        pathname: '/basic/owner',
-        payload: {
-          showPage: 'view',
-          entityUuid: ownerUuid,
-        },
-      })
-    );
-  };
-
-  onViewContainer = barcode => {
-    if (!barcode || '-' === barcode) return;
-    this.props.dispatch(
-      routerRedux.push({
-        pathname: '/facility/container',
-        payload: {
-          showPage: 'view',
-          entityUuid: barcode,
-        },
-      })
-    );
-  };
-
-  onViewWrh = wrhUuid => {
-    this.props.dispatch(
-      routerRedux.push({
-        pathname: '/facility/wrh',
-        payload: {
-          showPage: 'view',
-          entityUuid: wrhUuid,
-        },
-      })
-    );
-  };
-
-  onViewCarrier = carrierUuid => {
-    this.props.dispatch(
-      routerRedux.push({
-        pathname: '/tms/carrier',
-        payload: {
-          showPage: 'view',
-          entityUuid: carrierUuid,
-        },
-      })
-    );
-  };
-
-  onViewVehicle = vehicleUuid => {
-    this.props.dispatch(
-      routerRedux.push({
-        pathname: '/tms/vehicle',
-        payload: {
-          showPage: 'view',
-          uuid: vehicleUuid,
-        },
-      })
-    );
-  };
-  // endregion
 
   drawToolbar = () => {
     if (this.drawToolbarPanel) {
@@ -492,119 +169,70 @@ export default class RyzeSearchPage extends Component {
       spinning: this.state.sucomIdspendLoading ? false : loading,
       indicator: LoadingIcon('default'),
     };
-    return this.state.isNotHd ? (
-      <div>
-        <NavigatorPanel
-          canFullScreen={this.state.canFullScreen}
-          title={this.state.title}
-          action={this.drawActionButton ? this.drawActionButton() : ''}
-        />
-        {this.drawSearchPanel ? this.drawSearchPanel() : ''}
-        {this.drawToolbar()}
-        {this.drawToolbarTwo()}
-        {!this.state.noTable ? (
-          <StandardTable
-            unShowRow={this.state.unShowRow ? this.state.unShowRow : false}
-            rowKey={record => record.uuid}
-            hasSettingColumns
-            selectedRows={selectedRows}
-            loading={tableLoading}
-            tableHeight={this.state.tableHeight}
-            data={data}
-            columns={this.columns}
-            noPagination={this.state.noPagination}
-            newScroll={scroll ? scroll : undefined}
-            onSelectRow={this.handleSelectRows}
-            onChange={this.handleStandardTableChange}
-            comId={key}
-            rowClassName={(record, index) => {
-              let name = '';
-              if (record.sourceOrderBillTms) {
-                name = styles.changeColor;
-              } else if (index % 2 === 0) {
-                name = styles.lightRow;
-              }
-              return name;
-            }}
-            noActionCol={this.state.noActionCol}
-            canDrag={this.state.canDragTable}
-            pageSize={sessionStorage.getItem('searchPageLine')}
-            noToolbarPanel={
-              !this.state.noToolbar && this.drawToolbarPanel && this.drawToolbarPanel()
-                ? false
-                : true
+    
+    return <div>
+      <NavigatorPanel
+        canFullScreen={this.state.canFullScreen}
+        title={this.state.title}
+        action={this.drawActionButton ? this.drawActionButton() : ''}
+      />
+      {this.drawSearchPanel ? this.drawSearchPanel() : ''}
+      {this.drawToolbar()}
+      {this.drawToolbarTwo()}
+      {!this.state.noTable ? (
+        <StandardTable
+          unShowRow={this.state.unShowRow ? this.state.unShowRow : false}
+          rowKey={record => record.uuid}
+          hasSettingColumns
+          selectedRows={selectedRows}
+          loading={tableLoading}
+          tableHeight={this.state.tableHeight}
+          data={data}
+          columns={this.columns}
+          noPagination={this.state.noPagination}
+          newScroll={scroll ? scroll : undefined}
+          onSelectRow={this.handleSelectRows}
+          onChange={this.handleStandardTableChange}
+          comId={key}
+          rowClassName={(record, index) => {
+            let name = '';
+            if (record.sourceOrderBillTms) {
+              name = styles.changeColor;
+            } else if (index % 2 === 0) {
+              name = styles.lightRow;
             }
-            drapTableChange={this.drapTableChange}
-          />
-        ) : null}
-        {this.drawOtherCom && this.drawOtherCom()}
-      </div>
-    ) : (
-      <Page withCollect={true} pathname={this.props.pathname}>
-        <NavigatorPanel
-          canFullScreen={this.state.canFullScreen}
-          title={this.state.title}
-          action={this.drawActionButton ? this.drawActionButton() : ''}
+            return name;
+          }}
+          noActionCol={this.state.noActionCol}
+          canDrag={this.state.canDragTable}
+          pageSize={sessionStorage.getItem('searchPageLine')}
+          noToolbarPanel={
+            !this.state.noToolbar && this.drawToolbarPanel && this.drawToolbarPanel()
+              ? false
+              : true
+          }
+          drapTableChange={this.drapTableChange}
         />
-        {this.drawSearchPanel ? this.drawSearchPanel() : ''}
-        {this.drawToolbar()}
-        {this.drawToolbarTwo()}
-        {!this.state.noTable ? (
-          <StandardTable
-            unShowRow={this.state.unShowRow ? this.state.unShowRow : false}
-            rowKey={record => record.uuid}
-            hasSettingColumns
-            selectedRows={selectedRows}
-            loading={tableLoading}
-            tableHeight={this.state.tableHeight}
-            data={data}
-            columns={this.columns}
-            noPagination={this.state.noPagination}
-            newScroll={scroll ? scroll : undefined}
-            onSelectRow={this.handleSelectRows}
-            onChange={this.handleStandardTableChange}
-            comId={key}
-            rowClassName={(record, index) => {
-              let name = '';
-              if (record.sourceOrderBillTms) {
-                name = styles.changeColor;
-              } else if (index % 2 === 0) {
-                name = styles.lightRow;
-              }
-              return name;
-            }}
-            noActionCol={this.state.noActionCol}
-            canDrag={this.state.canDragTable}
-            pageSize={sessionStorage.getItem('searchPageLine')}
-            noToolbarPanel={
-              !this.state.noToolbar && this.drawToolbarPanel && this.drawToolbarPanel()
-                ? false
-                : true
-            }
-            drapTableChange={this.drapTableChange}
-          />
-        ) : null}
-        {this.drawOtherCom && this.drawOtherCom()}
-      </Page>
-    );
-  };
+      ) : null}
+      {this.drawOtherCom && this.drawOtherCom()}
+    </div>
+  }
 
   render() {
     let ret = this.state.canFullScreen ? (
       <FreshPageHeaderWrapper>
         {this.drawPage()}
-        {this.drawProgress()}
       </FreshPageHeaderWrapper>
     ) : this.state.isNotHd ? (
       <div>
         {this.drawPage()}
-        {this.drawProgress()}
       </div>
-    ) : (
-      <PageHeaderWrapper>
-        {this.drawPage()}
-        {this.drawProgress()}
-      </PageHeaderWrapper>
+      ) : (
+        <PageHeaderWrapper>
+          <Page withCollect={true} pathname={this.props.pathname}>
+            {this.drawPage()}
+          </Page>
+        </PageHeaderWrapper>
     );
     if (this.state.isDrag) {
       return <DndProvider backend={HTML5Backend}>{ret}</DndProvider>;
