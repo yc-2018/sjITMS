@@ -2,7 +2,8 @@ import { connect } from 'dva';
 import moment from 'moment';
 import { Fragment } from 'react';
 import { Button, Tabs, message, Spin, Input } from 'antd';
-import ViewPage from '@/pages/Component/Page/ViewPage';
+// import ViewPage from '@/pages/Component/Page/ViewPage';
+import RyzeViewPage from '../../CommonLayout/RyzeViewPage';
 import ViewPanel from '@/pages/Component/Form/ViewPanel';
 import { orgType } from '@/utils/OrgType';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
@@ -24,7 +25,7 @@ const TabPane = Tabs.TabPane;
 /**
  * 预览界面
  */
-export default class QuickView extends ViewPage {
+export default class QuickView extends RyzeViewPage {
   entity = {};
   drawcell = e => {}; //扩展component
   //初始化表单数据
@@ -404,6 +405,27 @@ export default class QuickView extends ViewPage {
 
     return e.component;
   }
+
+  getGutt = () => {
+    const { onlFormInfos } = this.state;
+    let { singleItems } = this.state;
+    let categories = this.getCategory();
+    let nums = onlFormInfos[0].onlFormHead.formTemplate
+      ? onlFormInfos[0].onlFormHead.formTemplate
+      : 4;
+    nums = nums == 0 ? 4 : nums;
+    // console.log('nums', nums, categories.length, formItems);
+    let gutt = [];
+    for (var i = 0; i < categories.length; i++) {
+      let guttItems = [];
+      for (var j = 0; j < Object.getOwnPropertyNames(singleItems).length; j++) {
+        guttItems.push(nums);
+      }
+      gutt.push(guttItems);
+    }
+    return gutt;
+  };
+
   /**
    * 绘制信息详情
    */
@@ -412,13 +434,20 @@ export default class QuickView extends ViewPage {
     // const { onlFormInfos } = this.state;
     const { singleItems, oddItems, onlFormInfos } = this.state;
     //没数据直接return
-    if (!onlFormInfos) return <TabPane key="1" tab="过度" />;
+    if (!onlFormInfos) return <TabPane key="1" tab="" />;
 
     let quickItems = [];
     let itemsMore = [];
 
     if (singleItems.length <= 0)
       return <TabPane key="1" tab={onlFormInfos[0].onlFormHead.tableTxt} />;
+
+    let z = 0;
+    let gutt = this.state.onlFormInfos[0].onlFormHead.formTemplateList
+      ? this.state.onlFormInfos[0].onlFormHead.formTemplateList
+      : this.getGutt()
+        ? this.getGutt()
+        : [];
 
     let categories = this.getCategory();
     let a = this.initSingleItems(singleItems); //非一对多
@@ -433,8 +462,16 @@ export default class QuickView extends ViewPage {
         key = singleItem.onlFormHead.tableTxt;
       }
       if (catelogItems.length <= 0) continue;
-      items.push(<ViewPanel items={catelogItems} title={category} key={key} />);
+      items.push(
+        <ViewPanel
+          items={catelogItems}
+          title={category}
+          key={key}
+          gutterCols={gutt[z] ? gutt[z] : null}
+        />
+      );
       quickItems.push(items);
+      z++;
     }
 
     //TODO:一对多的渲染待优化
@@ -524,7 +561,10 @@ export default class QuickView extends ViewPage {
     //将一对多放到最后
     let itemMerge = [...quickItems, ...itemsMore];
     return (
-      <TabPane key="1" tab={onlFormInfos[0].onlFormHead.tableTxt}>
+      <TabPane
+        key="1"
+        tab={this.state.viewStyle.noTitle ? '' : onlFormInfos[0].onlFormHead.tableTxt}
+      >
         {itemMerge}
       </TabPane>
     );

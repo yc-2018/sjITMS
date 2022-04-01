@@ -10,6 +10,13 @@ import QuickViewPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/Quick
 //View界面扩展
 export default class TestView extends QuickViewPage {
   /**
+   * state中增加viewStyle会去掉hd默认样式
+   * noTitle：去除TabPane的Title
+   * card:Pane使用card样式
+   * hasOpt：是否显示操作日志
+   */
+  state = { ...this.state, viewStyle: { noTitle: false, card: false, hasOpt: true } };
+  /**
    该方法用于重写view界面的render
    ps：一对一、一对多的component写法有点不同
    一对一：

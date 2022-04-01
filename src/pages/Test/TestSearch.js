@@ -13,6 +13,7 @@ import FormPanel from '@/pages/Component/Form/FormPanel';
 import CFormItem from '@/pages/Component/Form/CFormItem';
 import CreatePageModal from '../Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import QuickView from '../Component/RapidDevelopment/OnlForm/QuickViewPageDefault';
+import TestView from './TestView';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -108,18 +109,20 @@ export default class TestSearch extends QuickFormSearchPage {
         <Button onClick={this.bbb} type="primary">
           gotoView
         </Button>
+
         <Modal
           title="Basic Modal"
           visible={this.state.isShow}
           //  onOk={this.handleOk}
           onCancel={this.bbb}
         >
-          <QuickView
-            quickuuid="20220124"
-            params={{ entityUuid: '1507171023747653633' }}
-            pathname={this.props.pathname}
-          />
-          {/* <div>111</div> */}
+          <div style={{ overflow: 'scroll', height: '300px' }}>
+            <TestView
+              quickuuid="20220124"
+              params={{ entityUuid: '1507171023747653633' }}
+              pathname={this.props.pathname}
+            />
+          </div>
         </Modal>
       </span>
     );
