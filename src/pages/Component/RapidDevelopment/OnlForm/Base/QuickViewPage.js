@@ -29,8 +29,8 @@ export default class QuickView extends ViewPage {
   drawcell = e => {}; //扩展component
   //初始化表单数据
   initonlFormField = () => {
-    const { onlFormField } = this.props;
-    onlFormField.forEach(item => {
+    const { onlFormInfos } = this.state;
+    onlFormInfos.forEach(item => {
       let tableName;
       if (item.onlFormHead.viewSql) {
         tableName = item.onlFormHead.viewSql;
@@ -62,14 +62,40 @@ export default class QuickView extends ViewPage {
       singleItems: [],
       oddItems: [],
     };
-
-    this.initonlFormField();
   }
 
   componentDidMount() {
+    this.init();
+  }
+
+  init = async () => {
+    if (!this.props.onlFormField) {
+      const response = await this.queryCreateConfig();
+      if (response.result) {
+        this.setState({
+          onlFormInfos: response.result,
+        });
+      }
+    }
+    this.initonlFormField();
     this.dynamicqueryById();
     this.initAllViewItems();
-  }
+  };
+
+  /**
+   * 获取配置信息
+   */
+  queryCreateConfig = () => {
+    return new Promise((resolve, reject) => {
+      this.props.dispatch({
+        type: 'quick/queryCreateConfig',
+        payload: this.state.quickuuid,
+        callback: response => {
+          resolve(response);
+        },
+      });
+    });
+  };
 
   initAllViewItems = () => {
     const { onlFormInfos } = this.state;
@@ -155,7 +181,7 @@ export default class QuickView extends ViewPage {
 
   dynamicqueryById() {
     //const { onlFormField } = this.props;
-    const onsda = this.props.onlFormField;
+    const onsda = this.state.onlFormInfos;
     onsda.forEach(item => {
       let tableName;
       if (item.onlFormHead.viewSql) {
@@ -221,8 +247,8 @@ export default class QuickView extends ViewPage {
    * 通过指定字段查
    */
   dynamicQuery(entityCode, entityUuid) {
-    const { onlFormField } = this.props;
-    onlFormField.forEach(item => {
+    const { onlFormInfos } = this.state;
+    onlFormInfos.forEach(item => {
       let tableName;
       if (item.onlFormHead.viewSql) {
         tableName = item.onlFormHead.viewSql;
@@ -383,17 +409,16 @@ export default class QuickView extends ViewPage {
    */
   drawQuickInfoTab = () => {
     const { entity } = this.state;
-    const { onlFormField } = this.props;
+    // const { onlFormInfos } = this.state;
+    const { singleItems, oddItems, onlFormInfos } = this.state;
     //没数据直接return
-    if (onlFormField.length <= 0)
-      return <TabPane key="1" tab={onlFormField[0].onlFormHead.tableTxt} />;
+    if (!onlFormInfos) return <TabPane key="1" tab="过度" />;
 
     let quickItems = [];
     let itemsMore = [];
 
-    const { singleItems, oddItems, onlFormInfos } = this.state;
     if (singleItems.length <= 0)
-      return <TabPane key="1" tab={onlFormField[0].onlFormHead.tableTxt} />;
+      return <TabPane key="1" tab={onlFormInfos[0].onlFormHead.tableTxt} />;
 
     let categories = this.getCategory();
     let a = this.initSingleItems(singleItems); //非一对多
@@ -413,7 +438,7 @@ export default class QuickView extends ViewPage {
     }
 
     //TODO:一对多的渲染待优化
-    onlFormField.forEach((item, index) => {
+    onlFormInfos.forEach((item, index) => {
       let items = [];
       let itemInfo;
       let tableName;
@@ -499,7 +524,7 @@ export default class QuickView extends ViewPage {
     //将一对多放到最后
     let itemMerge = [...quickItems, ...itemsMore];
     return (
-      <TabPane key="1" tab={onlFormField[0].onlFormHead.tableTxt}>
+      <TabPane key="1" tab={onlFormInfos[0].onlFormHead.tableTxt}>
         {itemMerge}
       </TabPane>
     );

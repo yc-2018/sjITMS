@@ -11,6 +11,8 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 // import FormPanel from '../Component/Form/FormPanel';
 import FormPanel from '@/pages/Component/Form/FormPanel';
 import CFormItem from '@/pages/Component/Form/CFormItem';
+import CreatePageModal from '../Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
+import QuickView from '../Component/RapidDevelopment/OnlForm/QuickViewPageDefault';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -86,10 +88,12 @@ export default class TestSearch extends QuickFormSearchPage {
   };
 
   aaaa = () => {
-    this.setState({ isShow: !this.state.isShow });
-    console.log(this.state.isShow);
+    this.aa.show();
   };
 
+  bbb = () => {
+    this.setState({ isShow: !this.state.isShow });
+  };
   //该方法用于写最上层的按钮 多个按钮用<span>包裹
   drawTopButton = () => {
     return (
@@ -97,8 +101,25 @@ export default class TestSearch extends QuickFormSearchPage {
         <Button onClick={this.aaaa} type="primary">
           gotoCreate
         </Button>
-        <Modal visible={this.state.isShow} onCancel={this.aaaa}>
-          <TestCreate quickuuid="20220124" />
+        <CreatePageModal
+          page={{ quickuuid: '20220125', noCategory: true }}
+          onRef={c => (this.aa = c)}
+        />
+        <Button onClick={this.bbb} type="primary">
+          gotoView
+        </Button>
+        <Modal
+          title="Basic Modal"
+          visible={this.state.isShow}
+          //  onOk={this.handleOk}
+          onCancel={this.bbb}
+        >
+          <QuickView
+            quickuuid="20220124"
+            params={{ entityUuid: '1507171023747653633' }}
+            pathname={this.props.pathname}
+          />
+          {/* <div>111</div> */}
         </Modal>
       </span>
     );
