@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-29 17:25:56
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-01 14:20:11
+ * @LastEditTime: 2022-04-01 16:17:08
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -13,6 +13,7 @@ import styles from './ChargeLoading.less';
 import { getByCarrier, beginloading } from '@/services/sjitms/ChargeLoading';
 import ChargeLoadingViewPage from './ChargeLoadingViewPage';
 import SearchPage from './ChargeLoadingDtlSearchPage';
+import { placeholderLocale } from '@/utils/CommonLocale';
 
 const { Content } = Layout;
 
@@ -24,11 +25,18 @@ export default class ChargeLoadingSearch extends PureComponent {
         list: [],
         pagination: {},
       },
-      shipBill: {},
       responseError: false,
       responseMsg: '',
       selectedRows: '',
     };
+  }
+
+  bindRef(ref) {
+    this.child = ref;
+  }
+
+  ccRef(ref) {
+    this.cc = ref;
   }
 
   onSubmit = e => {
@@ -48,7 +56,6 @@ export default class ChargeLoadingSearch extends PureComponent {
         }
       } else {
         this.setState({
-          shipBill: {},
           shipPlanBill: {},
           responseMsg: response.message ? response.message : '当前没有已批准的排车单或装车单不存在',
           responseError: true,
@@ -69,6 +76,13 @@ export default class ChargeLoadingSearch extends PureComponent {
           responseError: false,
           selectedRows: uuid,
         });
+        this.child.onSearch();
+        this.cc.init();
+      } else {
+        this.setState({
+          responseMsg: response.message,
+          responseError: true,
+        });
       }
     });
   };
@@ -76,6 +90,13 @@ export default class ChargeLoadingSearch extends PureComponent {
   getChargeMessageEnd = (uuid, data) => {
     if (!uuid) return;
     console.log('结束装车');
+    this.setState({
+      responseMsg: '结束装车',
+      responseError: false,
+      selectedRows: uuid,
+    });
+    this.child.onSearch();
+    this.cc.init();
   };
 
   render() {
@@ -93,7 +114,7 @@ export default class ChargeLoadingSearch extends PureComponent {
                     <Input
                       className={styles.right}
                       onPressEnter={this.onSubmit}
-                      // placeholder={placeholderLocale('刷卡人代码')}
+                      placeholder={placeholderLocale('刷卡人代码')}
                     />
                   </div>
                   <div className={styles.marginTop}>
@@ -106,17 +127,21 @@ export default class ChargeLoadingSearch extends PureComponent {
                     />
                   </div>
                   <div>
-                    {/* <div>测试</div> */}
                     <ChargeLoadingViewPage
                       quickuuid={'v_sj_itms_schedule_loading'}
-                      params={{ entityUuid: '1507171023747653633' }}
+                      params={{ entityUuid: selectedRows }}
                       pathname={this.props.pathname}
+                      onRef={this.ccRef.bind(this)}
                     />
                   </div>
                 </div>
               </div>
-              <div style={{ width: '70%', float: 'left', margin: '24px 0 0 0' }}>
-                <SearchPage quickuuid={'v_sj_itms_scheduledtl'} selectedRows={selectedRows} />
+              <div style={{ width: '70%', float: 'left' }}>
+                <SearchPage
+                  quickuuid={'v_sj_itms_scheduledtl'}
+                  onRef={this.bindRef.bind(this)}
+                  selectedRows={selectedRows}
+                />
               </div>
             </div>
           </Content>
