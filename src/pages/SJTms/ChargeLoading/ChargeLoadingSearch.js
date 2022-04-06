@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-29 17:25:56
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-01 16:17:08
+ * @LastEditTime: 2022-04-04 10:22:14
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -10,7 +10,7 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import Page from '@/components/MyComponent/Page';
 import { Layout, Space, Input, Form, message } from 'antd';
 import styles from './ChargeLoading.less';
-import { getByCarrier, beginloading } from '@/services/sjitms/ChargeLoading';
+import { getByCarrier, beginloading, finishloading } from '@/services/sjitms/ChargeLoading';
 import ChargeLoadingViewPage from './ChargeLoadingViewPage';
 import SearchPage from './ChargeLoadingDtlSearchPage';
 import { placeholderLocale } from '@/utils/CommonLocale';
@@ -49,10 +49,10 @@ export default class ChargeLoadingSearch extends PureComponent {
     await getByCarrier(driverCode).then(response => {
       if (response && response.success && response.data) {
         if (response.data.stat === 'Approved') {
-          this.getChargeMessageStart(response.data.uuid, response.data);
+          this.getChargeMessageStart(response.data.uuid);
         }
         if (response.data.stat === 'Shipping') {
-          this.getChargeMessageEnd(response.data.uuid, response.data);
+          this.getChargeMessageEnd(response.data.uuid);
         }
       } else {
         this.setState({
@@ -65,7 +65,7 @@ export default class ChargeLoadingSearch extends PureComponent {
   };
 
   //刷卡装车
-  getChargeMessageStart = async (uuid, data) => {
+  getChargeMessageStart = async uuid => {
     if (!uuid) return;
     console.log('开始装车', uuid);
     await beginloading(uuid).then(response => {
@@ -87,16 +87,26 @@ export default class ChargeLoadingSearch extends PureComponent {
     });
   };
 
-  getChargeMessageEnd = (uuid, data) => {
+  getChargeMessageEnd = async uuid => {
     if (!uuid) return;
     console.log('结束装车');
-    this.setState({
-      responseMsg: '结束装车',
-      responseError: false,
-      selectedRows: uuid,
+    await finishloading(uuid).then(response => {
+      console.log('response', response);
+      if (response && response.success) {
+        this.setState({
+          responseMsg: '结束装车',
+          responseError: false,
+          selectedRows: uuid,
+        });
+        this.child.onSearch();
+        this.cc.init();
+      } else {
+        this.setState({
+          responseMsg: response.message,
+          responseError: true,
+        });
+      }
     });
-    this.child.onSearch();
-    this.cc.init();
   };
 
   render() {

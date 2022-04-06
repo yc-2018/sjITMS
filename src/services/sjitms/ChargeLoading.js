@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-30 15:20:52
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-03-31 14:47:12
+ * @LastEditTime: 2022-04-04 09:16:40
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -21,6 +21,12 @@ export async function getByCarrier(payload) {
 
 export async function beginloading(payload) {
   return request(`/itms-schedule/itms-schedule/sjbeginloading?scheduleBillUuid=${payload}`, {
+    method: 'POST',
+  });
+}
+
+export async function finishloading(payload) {
+  return request(`/itms-schedule/itms-schedule/sjfinishloading?scheduleBillUuid=${payload}`, {
     method: 'POST',
   });
 }
