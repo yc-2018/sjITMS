@@ -414,11 +414,15 @@ export default class QuickView extends RyzeViewPage {
       ? onlFormInfos[0].onlFormHead.formTemplate
       : 4;
     nums = nums == 0 ? 4 : nums;
-    // console.log('nums', nums, categories.length, formItems);
+    console.log('nums', this.initSingleItems(singleItems).length);
     let gutt = [];
     for (var i = 0; i < categories.length; i++) {
       let guttItems = [];
-      for (var j = 0; j < Object.getOwnPropertyNames(singleItems).length; j++) {
+      for (
+        var j = 0;
+        j < Object.getOwnPropertyNames(this.initSingleItems(singleItems)).length + 2;
+        j++
+      ) {
         guttItems.push(nums);
       }
       gutt.push(guttItems);
