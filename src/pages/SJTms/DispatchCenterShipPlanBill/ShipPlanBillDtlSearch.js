@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-22 15:06:02
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-03-24 09:18:18
+ * @LastEditTime: 2022-04-01 16:21:58
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -17,6 +17,7 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 export default class ShipPlanBillDtlSearch extends QuickFormSearchPage {
   state = {
     ...this.state,
+    isNotHd: true,
     scroll: {
       x: 4000,
       y: 'calc(50vh)',
