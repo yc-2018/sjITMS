@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-03-28 17:23:57
+ * @LastEditTime: 2022-04-07 16:46:56
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -140,7 +140,7 @@ export default class ShipPlanBillSearch extends SearchPage {
                 const component = (
                   <a
                     onClick={this.onView.bind(this, record)}
-                    style={{ color: this.colorChange(val, column.textColor) }}
+                    style={{ color: this.colorChange(val, column.textColorJson) }}
                   >
                     {this.convertData(val, column.preview, record)}
                   </a>
@@ -157,7 +157,7 @@ export default class ShipPlanBillSearch extends SearchPage {
                   const component = (
                     <a
                       onClick={this.onOtherView.bind(this, record, jumpPaths)}
-                      style={{ color: this.colorChange(val, column.textColor) }}
+                      style={{ color: this.colorChange(val, column.textColorJson) }}
                     >
                       {this.convertData(val, column.preview, record)}
                     </a>
@@ -170,11 +170,11 @@ export default class ShipPlanBillSearch extends SearchPage {
                   );
                 }
               : (val, record) => {
-                  if (column.textColor && Array.isArray(JSON.parse(column.textColor))) {
+                  if (column.textColorJson) {
                     const component = (
                       <div>
                         <Badge
-                          color={this.colorChange(val, column.textColor)}
+                          color={this.colorChange(val, column.textColorJson)}
                           text={this.convertData(val, column.preview, record)}
                         />
                       </div>
@@ -210,13 +210,13 @@ export default class ShipPlanBillSearch extends SearchPage {
   colorChange = (data, color) => {
     if (!color) return '';
 
-    let colorJson = JSON.parse(color);
-    if (!Array.isArray(colorJson)) return '';
-    let colorItem = colorJson.find(item => item.value == data);
-
+    //let colorJson = JSON.parse(color);
+    //if (!Array.isArray(colorJson)) return '';
+    let colorItem = color.find(item => item.ITEM_VALUE == data);
+    console.log(colorItem, 'colorItem');
     if (!colorItem) return '';
 
-    return colorItem.color;
+    return colorItem.TEXT_COLOR;
   };
 
   //数据转换

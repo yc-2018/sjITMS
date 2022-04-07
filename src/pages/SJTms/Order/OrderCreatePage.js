@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:14
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-03-30 10:33:17
+ * @LastEditTime: 2022-04-04 16:28:35
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -36,6 +36,7 @@ export default class OrderCreatePage extends QuickCreatePage {
 
   handleQtystr = (Qtystr, line, tableName) => {
     const { articleProp } = this.state;
+    console.log('articleProp', articleProp);
     const { articlePaq, articleVolume, articleWeight } = articleProp.find(x => x.line == line);
     let result = '';
     if (Qtystr.indexOf('+') !== -1) {
@@ -61,7 +62,7 @@ export default class OrderCreatePage extends QuickCreatePage {
 
   handleContainer = () => {
     const { articleProp } = this.state;
-    const articleDtl = this.entity['sj_itms_order_article'];
+    const articleDtl = this.entity['SJ_ITMS_ORDER_ARTICLE'];
     let qtystr = 0;
     let qty = 0;
     let cartonVolume = 0;
@@ -105,21 +106,22 @@ export default class OrderCreatePage extends QuickCreatePage {
     this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CONTAINERVOLUME'] = 0;
     this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CONTAINERWEIGHT'] = 0;
 
-    this.props.form.setFieldsValue({
-      ['SJ_ITMS_ORDER_CONTAINERNUMBER_CARTON_0']: qtystr,
-      ['SJ_ITMS_ORDER_CONTAINERNUMBER_SCATTERED_0']: qty,
-      ['SJ_ITMS_ORDER_CONTAINERNUMBER_CONTAINER_0']: 0,
-      ['SJ_ITMS_ORDER_CONTAINERNUMBER_CARTONVOLUME_0']: cartonVolume,
-      ['SJ_ITMS_ORDER_CONTAINERNUMBER_CARTONWEIGHT_0']: cartonweight,
-      ['SJ_ITMS_ORDER_CONTAINERNUMBER_SCATTEREDVOLUME_0']: scatteredVolume,
-      ['SJ_ITMS_ORDER_CONTAINERNUMBER_SCATTEREDWEIGHT_0']: scatteredWeight,
-      ['SJ_ITMS_ORDER_CONTAINERNUMBER_CONTAINERVOLUME_0']: 0,
-      ['SJ_ITMS_ORDER_CONTAINERNUMBER_CONTAINERWEIGHT_0']: 0,
-    });
+    this.props.form.validateFields();
+    // this.props.form.setFieldsValue({
+    //   ['SJ_ITMS_ORDER_CONTAINERNUMBER_CARTON_0']: qtystr,
+    //   ['SJ_ITMS_ORDER_CONTAINERNUMBER_SCATTERED_0']: qty,
+    //   ['SJ_ITMS_ORDER_CONTAINERNUMBER_CONTAINER_0']: 0,
+    //   ['SJ_ITMS_ORDER_CONTAINERNUMBER_CARTONVOLUME_0']: cartonVolume,
+    //   ['SJ_ITMS_ORDER_CONTAINERNUMBER_CARTONWEIGHT_0']: cartonweight,
+    //   ['SJ_ITMS_ORDER_CONTAINERNUMBER_SCATTEREDVOLUME_0']: scatteredVolume,
+    //   ['SJ_ITMS_ORDER_CONTAINERNUMBER_SCATTEREDWEIGHT_0']: scatteredWeight,
+    //   ['SJ_ITMS_ORDER_CONTAINERNUMBER_CONTAINERVOLUME_0']: 0,
+    //   ['SJ_ITMS_ORDER_CONTAINERNUMBER_CONTAINERWEIGHT_0']: 0,
+    // });
   };
 
   beforeSave = data => {
-    const { SJ_ITMS_ORDER_CONTAINERNUMBER } = this.entity;
+    const { SJ_ITMS_ORDER_CONTAINERNUMBER, SJ_ITMS_ORDER } = this.entity;
     const cc = [];
     cc.push({
       VEHICLETYPE: '整箱',
@@ -140,6 +142,10 @@ export default class OrderCreatePage extends QuickCreatePage {
       FORECASTVOLUME: SJ_ITMS_ORDER_CONTAINERNUMBER[0].SCATTEREDVOLUME,
     });
     this.entity.SJ_ITMS_ORDER_CONTAINERNUMBER = cc;
+
+    if (!SJ_ITMS_ORDER[0].STAT) {
+      SJ_ITMS_ORDER[0].STAT = 'Saved';
+    }
   };
 
   exHandleChange = e => {
@@ -169,12 +175,13 @@ export default class OrderCreatePage extends QuickCreatePage {
           articleWeight: articleWeight,
           articlePaq: articlePaq,
         };
-        this.setState({ articleProp });
+        this.setState({ articleProp }, () => {
+          this.handleQtystr('0', line, tableName);
+        });
       }
 
       this.entity[tableName][line == undefined ? 0 : line]['QTYSTR'] = 0;
       this.props.form.setFieldsValue({ [tableName + '_QTYSTR_' + line]: 0 });
-      this.handleQtystr('0', line, tableName);
     } else if (fieldName == 'QTYSTR') {
       const value = this.convertSaveValue(valueEvent, fieldShowType);
       //货品明细件数
@@ -203,6 +210,18 @@ export default class OrderCreatePage extends QuickCreatePage {
         props: { disabled: true },
       };
     });
-    // console.log('cc', this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER']);
+    if (this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]) {
+      const data = this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'];
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CARTON'] = data[2].FORECASTCOUNT;
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['SCATTERED'] = data[1].FORECASTCOUNT;
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CONTAINER'] = data[0].FORECASTCOUNT;
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CARTONVOLUME'] = data[2].FORECASTVOLUME;
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CARTONWEIGHT'] = data[2].FORECASTWEIGHT;
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['SCATTEREDVOLUME'] = data[1].FORECASTVOLUME;
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['SCATTEREDWEIGHT'] = data[1].FORECASTWEIGHT;
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CONTAINERVOLUME'] = data[0].FORECASTVOLUME;
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CONTAINERWEIGHT'] = data[0].FORECASTWEIGHT;
+      this.props.form.validateFields();
+    }
   };
 }

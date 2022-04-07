@@ -47,6 +47,21 @@ export default class QuickFormSearchPage extends SearchPage {
     }; //用于缓存用户配置数据
   }
 
+  /**
+   * 获取配置信息,用于写入redis
+   */
+  getCreateConfig = () => {
+    this.props.dispatch({
+      type: 'quick/queryCreateConfig',
+      payload: this.state.reportCode,
+      callback: response => {
+        if (response.result) {
+          console.log('请求配置成功');
+        }
+      },
+    });
+  };
+
   //查询数据
   getData = pageFilters => {
     const { dispatch } = this.props;
@@ -138,6 +153,7 @@ export default class QuickFormSearchPage extends SearchPage {
 
   componentDidMount() {
     this.queryCoulumns();
+    this.getCreateConfig();
     //this.queryCoulumns();
   }
 
@@ -158,13 +174,13 @@ export default class QuickFormSearchPage extends SearchPage {
   colorChange = (data, color) => {
     if (!color) return '';
 
-    let colorJson = JSON.parse(color);
-    if (!Array.isArray(colorJson)) return '';
-    let colorItem = colorJson.find(item => item.value == data);
-
+    //let colorJson = JSON.parse(color);
+    //if (!Array.isArray(colorJson)) return '';
+    let colorItem = color.find(item => item.ITEM_VALUE == data);
+    console.log(colorItem, 'colorItem');
     if (!colorItem) return '';
 
-    return colorItem.color;
+    return colorItem.TEXT_COLOR;
   };
 
   //自定义报表的render
@@ -217,7 +233,7 @@ export default class QuickFormSearchPage extends SearchPage {
                 const component = (
                   <a
                     onClick={this.onView.bind(this, record)}
-                    style={{ color: this.colorChange(val, column.textColor) }}
+                    style={{ color: this.colorChange(val, column.textColorJson) }}
                   >
                     {this.convertData(val, column.preview, record)}
                   </a>
@@ -234,7 +250,7 @@ export default class QuickFormSearchPage extends SearchPage {
                   const component = (
                     <a
                       onClick={this.onOtherView.bind(this, record, jumpPaths)}
-                      style={{ color: this.colorChange(val, column.textColor) }}
+                      style={{ color: this.colorChange(val, column.textColorJson) }}
                     >
                       {this.convertData(val, column.preview, record)}
                     </a>
@@ -247,11 +263,11 @@ export default class QuickFormSearchPage extends SearchPage {
                   );
                 }
               : (val, record) => {
-                  if (column.textColor && Array.isArray(JSON.parse(column.textColor))) {
+                  if (column.textColorJson) {
                     const component = (
                       <div>
                         <Badge
-                          color={this.colorChange(val, column.textColor)}
+                          color={this.colorChange(val, column.textColorJson)}
                           text={this.convertData(val, column.preview, record)}
                         />
                       </div>

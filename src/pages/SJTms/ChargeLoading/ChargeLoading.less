@@ -4,34 +4,34 @@
   min-height: 950px;
   background: #ffffff;
   margin-top: -24px;
-  :global{
+  :global {
     .ant-table-tbody > tr.ant-table-row-selected td {
       color: inherit;
       background: none;
     }
-    .ant-layout.ant-layout-has-sider{
-      width: 100%
+    .ant-layout.ant-layout-has-sider {
+      width: 100%;
     }
 
-    ::-webkit-scrollbar-track{
+    ::-webkit-scrollbar-track {
       background: none;
     }
-    .ant-table-placeholder{
+    .ant-table-placeholder {
       display: none;
     }
-    .ant-table-body{
+    .ant-table-body {
       height: calc(50vh) !important;
     }
-    .ant-table-tbody > tr >td {
-      padding: 0px 8px !important;
+    .ant-table-tbody > tr > td {
+      // padding: 0px 8px !important;
     }
-    .ant-form-item{
+    .ant-form-item {
       margin-bottom: 5px;
     }
   }
-  .itemView{
-    :global{
-      .ant-table-body{
+  .itemView {
+    :global {
+      .ant-table-body {
         height: calc(44vh) !important;
       }
     }
@@ -40,16 +40,16 @@
     min-height: 45px;
     height: 20%;
     background: #ffffff;
-    padding-left:0px ;
-    padding-right:0px ;
-    .headRow{
-      line-height:10px;
+    padding-left: 0px;
+    padding-right: 0px;
+    .headRow {
+      line-height: 10px;
     }
   }
   .leftWrapper {
     min-height: 450px;
     background: #ffffff;
-    border-right:1px solid white;
+    border-right: 1px solid white;
     padding-top: 8px;
   }
 
@@ -60,8 +60,7 @@
     // max-height: 400px;
 
     overflow: hidden;
-    border-left:1px solid white;
-
+    border-left: 1px solid white;
   }
   .footerWrapper {
     background: #ffffff;
@@ -69,8 +68,8 @@
     border-top: @border-width-base @border-style-base @border-color-split;
   }
 
-  .main{
-    > div{
+  .main {
+    > div {
       width: 50%;
       height: 50%;
       float: left;
@@ -89,7 +88,6 @@
   }
 }
 
-
 .standardTable {
   :global {
     .ant-table-pagination {
@@ -102,39 +100,37 @@
     .ant-table-thead > tr {
       height: 36px;
     }
-    a[disabled]{
-      color:rgb(170, 182, 190);
+    a[disabled] {
+      color: rgb(170, 182, 190);
       opacity: 1;
     }
   }
 
   .lightRow {
-    background-color: #F9F9F9;
-    border:none;
-  }
-
-}
-.moveButton{
-  .up:hover{
-    color: #3B77E3;
-  }
-  .down:hover{
-    color: #3B77E3;
+    background-color: #f9f9f9;
+    border: none;
   }
 }
-.borderLeft{
+.moveButton {
+  .up:hover {
+    color: #3b77e3;
+  }
+  .down:hover {
+    color: #3b77e3;
+  }
+}
+.borderLeft {
   font-size: 16px;
   font-weight: 600;
   color: #363e4b;
   margin-top: 25px;
 }
-.marginTop{
+.marginTop {
   margin-top: 15px;
 }
-.left{
-  width:15%;
+.left {
+  width: 15%;
 }
 .right {
-  width:80%;
+  width: 80%;
 }
-

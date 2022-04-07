@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-01 11:30:00
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-01 14:11:24
+ * @LastEditTime: 2022-04-01 16:12:15
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -17,10 +17,16 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 export default class ChargeLoadingDtlSearchPage extends QuickFormSearchPage {
   state = {
     ...this.state,
+    isNotHd: true,
     scroll: {
       x: 4000,
       y: 'calc(50vh)',
     },
+  };
+
+  componentDidMount = () => {
+    this.queryCoulumns();
+    this.props.onRef(this);
   };
 
   drawActionButton = () => {};
@@ -30,6 +36,7 @@ export default class ChargeLoadingDtlSearchPage extends QuickFormSearchPage {
   drawSearchPanel = () => {};
 
   onSearch = () => {
+    console.log('这里会跑？');
     const { selectedRows } = this.props;
     if (!selectedRows) {
       return;
@@ -40,10 +47,11 @@ export default class ChargeLoadingDtlSearchPage extends QuickFormSearchPage {
         matchType: '',
         queryParams: [
           {
-            field: 'billuuid',
+            field: 'uuid',
             type: 'VarChar',
             rule: 'eq',
-            val: selectedRows[0].UUID,
+            val: selectedRows,
+            // val: 'cc3364d4bb394efc82b1b446dfa24fe9',
           },
         ],
       },

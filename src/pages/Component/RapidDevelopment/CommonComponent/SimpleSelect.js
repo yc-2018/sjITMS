@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-02-10 14:16:00
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-03-02 10:24:00
+ * @LastEditTime: 2022-04-07 15:39:23
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -11,7 +11,7 @@ import { connect } from 'dva';
 import { formatMessage } from 'umi/locale';
 import { loginCompany } from '@/utils/LoginContext';
 import { STATE } from '@/utils/constants';
-import { selectCoulumns } from '@/services/quick/Quick';
+import { selectCoulumns, dynamicQuery } from '@/services/quick/Quick';
 
 /**
  * 简易查询下拉选择控件
@@ -24,27 +24,54 @@ import { selectCoulumns } from '@/services/quick/Quick';
 export default class SimpleSelect extends PureComponent {
   constructor(props) {
     super(props);
-    this.state = { selectData: [] };
+    this.state = { sourceData: [] };
   }
 
   componentDidMount() {
     this.initData();
   }
 
-  initData = () => {
+  initData = async () => {
+    let queryParamsJson;
     if (this.props.showSearch) {
-      this.setState({ selectData: [] });
+      this.setState({ sourceData: [] });
     } else {
-      const { data } = this.props;
-      const sourceData = data instanceof Array ? data : JSON.parse(data);
-      this.setState({ selectData: sourceData });
+      const { dictCode } = this.props;
+      if (dictCode) {
+        queryParamsJson = {
+          tableName: 'V_SYS_DICT_ITEM',
+          condition: {
+            params: [{ field: 'DICT_CODE', rule: 'eq', val: [dictCode] }],
+          },
+        };
+        const response = await dynamicQuery(queryParamsJson);
+        if (!response || !response.success || !Array.isArray(response.result.records)) {
+          this.setSourceData([]);
+        } else {
+          this.setSourceData(response.result.records);
+        }
+      }
     }
   };
 
+  /**
+   * 设置state的数据源
+   */
+  setSourceData = sourceData => {
+    const { textField, valueField } = this.props;
+    if (this.props.onSourceDataChange) {
+      this.props.onSourceDataChange(sourceData);
+      return;
+    }
+    this.setState({
+      sourceData: sourceData,
+    });
+  };
+
   buildOptions = () => {
-    const { selectData } = this.state;
-    return selectData.map(data => {
-      return <Select.Option value={data.value}>{data.name}</Select.Option>;
+    const { sourceData } = this.state;
+    return sourceData.map(data => {
+      return <Select.Option value={data.VALUE}>{data.NAME}</Select.Option>;
     });
   };
 
@@ -78,9 +105,9 @@ export default class SimpleSelect extends PureComponent {
     let sourceData = new Array();
     if (result.data != null) {
       result.data.forEach(sourceDatas => {
-        sourceData.push({ value: sourceDatas, name: sourceDatas });
+        sourceData.push({ NAME: sourceDatas });
       });
-      this.setState({ selectData: sourceData });
+      this.setState({ sourceData: sourceData });
     }
   };
 
