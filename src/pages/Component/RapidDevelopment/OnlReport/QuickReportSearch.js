@@ -30,44 +30,23 @@ export default class QuickReportSearch extends SearchPage {
     };
   }
 
-  getData = pageFilters => {
-    const { dispatch } = this.props;
-    dispatch({
-      type: 'quick/queryData',
-      payload: pageFilters,
-      callback: response => {
-        if (response.data) this.initData(response.data);
-      },
-    });
-  };
-
-  queryCoulumns = () => {
-    const { dispatch } = this.props;
-    dispatch({
-      type: 'quick/queryColumns',
-      payload: {
-        reportCode: this.state.reportCode,
-        sysCode: 'tms',
-      },
-      callback: response => {
-        if (response.result) {
-          this.initConfig(response.result);
-          //解决用户列展示失效问题 暂时解决方法（赋值两次）
-          this.initConfig(response.result);
-          //配置查询成功后再去查询数据
-          this.onSearch();
-        }
-      },
-    });
-  };
-
   componentDidMount() {
-    this.queryCoulumns();
-    //this.queryCoulumns();
+    this.init();
   }
 
-  //初始化配置
-  initConfig = queryConfig => {
+  init = async () => {
+    await this.initConfig();
+    this.onSearch();
+  }
+  
+  // 初始化配置
+  initConfig = async () => {
+    const response = await this.queryCoulumns();
+    const { result: queryConfig } = response;
+    if (!queryConfig) {
+      return;
+    }
+
     const columns = queryConfig.columns;
     let quickColumns = new Array();
     columns.filter(data => data.isShow).forEach(column => {
@@ -89,9 +68,15 @@ export default class QuickReportSearch extends SearchPage {
       searchFields: columns.filter(data => data.isSearch),
     });
   };
+
   //初始化数据
-  initData = data => {
-    var data = {
+  reloadData = async (pageFilter) => {
+    const response = await this.getData(pageFilter);
+    const { data } = response;
+    if (!data) {
+      return;
+    }
+    var tableData = {
       list: data.records,
       pagination: {
         total: data.paging.recordCount,
@@ -100,18 +85,52 @@ export default class QuickReportSearch extends SearchPage {
         showTotal: total => `共 ${total} 条`,
       },
     };
-    this.setState({ data });
+    this.setState({ data: tableData });
+  };
+
+  /**
+   * 获取表格数据
+   * @param {*} pageFilters 查询条件
+   */
+  getData = pageFilters => {
+    return new Promise((resolve, reject) => {
+      this.props.dispatch({
+        type: 'quick/queryData',
+        payload: pageFilters,
+        callback: response => {
+          resolve(response); 
+        }
+      });
+    }); 
+  };
+
+  /**
+   * 获取字段配置
+   */
+  queryCoulumns = () => {
+    return new Promise((resolve, reject) => {
+      this.props.dispatch({
+        type: 'quick/queryColumns',
+        payload: {
+          reportCode: this.state.reportCode,
+          sysCode: 'tms',
+        },
+        callback: response => {
+          resolve(response);
+        },
+      });
+    });
   };
 
   //显示新建/编辑界面
-  onCreate = () => {};
+  onCreate = () => { };
 
   //查询
-  onSearch = filter => {
+  onSearch = async filter => {
     if (typeof filter == 'undefined') {
       //重置搜索条件
       this.state.pageFilters = { quickuuid: this.props.quickuuid };
-      this.getData(this.state.pageFilters);
+      this.reloadData(this.state.pageFilters);
     } else {
       const { dispatch } = this.props;
       const { columns } = this.state;
@@ -123,12 +142,12 @@ export default class QuickReportSearch extends SearchPage {
         },
       };
       this.state.pageFilters = pageFilters;
-      this.refreshTable();
+      await this.refreshTable();
     }
   };
 
   //刷新/重置
-  refreshTable = filter => {
+  refreshTable = async filter => {
     const { dispatch } = this.props;
     const { pageFilters } = this.state;
 
@@ -146,7 +165,7 @@ export default class QuickReportSearch extends SearchPage {
         pageSize: filter.pageSize,
       };
     }
-    this.getData(queryFilter);
+    await this.reloadData(queryFilter);
   };
 
   columns = [
