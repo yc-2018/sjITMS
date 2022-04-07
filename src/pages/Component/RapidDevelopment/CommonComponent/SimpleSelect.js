@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-02-10 14:16:00
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-06 17:36:53
+ * @LastEditTime: 2022-04-07 15:39:23
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -71,7 +71,7 @@ export default class SimpleSelect extends PureComponent {
   buildOptions = () => {
     const { sourceData } = this.state;
     return sourceData.map(data => {
-      return <Select.Option value={data.NAME}>{data.NAME}</Select.Option>;
+      return <Select.Option value={data.VALUE}>{data.NAME}</Select.Option>;
     });
   };
 
