@@ -196,9 +196,7 @@ export default class RyzeSearchPage extends Component {
           comId={key}
           rowClassName={(record, index) => {
             let name = '';
-            if (record.sourceOrderBillTms) {
-              name = styles.changeColor;
-            } else if (index % 2 === 0) {
+            if (index % 2 === 0) {
               name = styles.lightRow;
             }
             return name;
