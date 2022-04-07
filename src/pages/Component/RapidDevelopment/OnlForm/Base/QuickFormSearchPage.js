@@ -47,6 +47,21 @@ export default class QuickFormSearchPage extends SearchPage {
     }; //用于缓存用户配置数据
   }
 
+  /**
+   * 获取配置信息,用于写入redis
+   */
+  getCreateConfig = () => {
+    this.props.dispatch({
+      type: 'quick/queryCreateConfig',
+      payload: this.state.reportCode,
+      callback: response => {
+        if (response.result) {
+          console.log('请求配置成功');
+        }
+      },
+    });
+  };
+
   //查询数据
   getData = pageFilters => {
     const { dispatch } = this.props;
@@ -138,6 +153,7 @@ export default class QuickFormSearchPage extends SearchPage {
 
   componentDidMount() {
     this.queryCoulumns();
+    this.getCreateConfig();
     //this.queryCoulumns();
   }
 
