@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-10 09:59:43
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-03-31 17:03:29
+ * @LastEditTime: 2022-04-07 15:47:30
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineShipAddress.js
  */
@@ -221,7 +221,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
             width: 500,
             bodyStyle: { marginRight: '40px' },
           }}
-          page={{ quickuuid: 'itms_create_lines', noCategory: true }}
+          page={{ quickuuid: 'sj_itms_create_lines', noCategory: true }}
           onRef={node => (this.lineCreatePageModalRef = node)}
         />
       </div>

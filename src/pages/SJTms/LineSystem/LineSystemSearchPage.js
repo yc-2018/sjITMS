@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-09 10:31:16
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-03-31 16:56:50
+ * @LastEditTime: 2022-04-07 15:39:29
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineSystemSearchPage.js
  */
@@ -182,7 +182,7 @@ export default class LineSystemSearchPage extends Component {
           </div>
           <LineSystemCreatePage
             key={selectedKeys[0]}
-            quickuuid="itms_create_linesystem"
+            quickuuid="sj_itms_create_linesystem"
             showPageNow="update"
             noBorder={true}
             noCategory={true}
@@ -195,7 +195,7 @@ export default class LineSystemSearchPage extends Component {
           <TabPane tab="线路门店" key="1">
             <LineShipAddress
               key={`Line${selectedKeys[0]}`}
-              quickuuid="itms-lines-shipaddress"
+              quickuuid="sj_itms_line_shipaddress"
               lineuuid={selectedKeys[0]}
               linecode={
                 lineData.length > 0 ? lineData.find(x => x.UUID == selectedKeys[0]).CODE : ''
@@ -300,7 +300,7 @@ export default class LineSystemSearchPage extends Component {
                     width: 500,
                     bodyStyle: { marginRight: '40px' },
                   }}
-                  page={{ quickuuid: 'itms_create_linesystem', noCategory: true }}
+                  page={{ quickuuid: 'sj_itms_create_linesystem', noCategory: true }}
                   onRef={node => (this.lineSystemCreatePageModalRef = node)}
                 />
                 <CreatePageModal
@@ -309,7 +309,7 @@ export default class LineSystemSearchPage extends Component {
                     width: 500,
                     bodyStyle: { marginRight: '40px' },
                   }}
-                  page={{ quickuuid: 'itms_create_lines', noCategory: true }}
+                  page={{ quickuuid: 'sj_itms_create_lines', noCategory: true }}
                   onRef={node => (this.lineCreatePageModalRef = node)}
                 />
                 <CreatePageModal
@@ -319,7 +319,7 @@ export default class LineSystemSearchPage extends Component {
                     bodyStyle: { marginRight: '40px' },
                   }}
                   page={{
-                    quickuuid: 'itms_create_lines',
+                    quickuuid: 'sj_itms_create_lines',
                     params: { entityUuid: selectLineUuid },
                     showPageNow: 'update',
                     noCategory: true,
