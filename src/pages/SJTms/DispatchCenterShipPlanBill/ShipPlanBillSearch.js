@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-07 16:46:56
+ * @LastEditTime: 2022-04-08 10:12:40
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -104,7 +104,7 @@ export default class ShipPlanBillSearch extends SearchPage {
   //初始化配置
   initConfig = queryConfig => {
     const columns = queryConfig.columns;
-    const editableState = ['已保存', '已批准', '装车中', '已装车', '配送中'];
+    const editableState = ['Saved', 'Approved', 'Shipping', 'Shiped', 'Delivering'];
     let quickColumns = new Array();
     columns.filter(data => data.isShow).forEach(column => {
       let OptColumn = {

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:14
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-04 16:28:35
+ * @LastEditTime: 2022-04-09 10:48:30
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -130,7 +130,7 @@ export default class OrderCreatePage extends QuickCreatePage {
       FORECASTVOLUME: SJ_ITMS_ORDER_CONTAINERNUMBER[0].CARTONVOLUME,
     });
     cc.push({
-      VEHICLETYPE: '周转箱',
+      VEHICLETYPE: '周转筐',
       FORECASTCOUNT: SJ_ITMS_ORDER_CONTAINERNUMBER[0].CONTAINER,
       FORECASTWEIGHT: SJ_ITMS_ORDER_CONTAINERNUMBER[0].CONTAINERWEIGHT,
       FORECASTVOLUME: SJ_ITMS_ORDER_CONTAINERNUMBER[0].CONTAINERVOLUME,
@@ -145,6 +145,7 @@ export default class OrderCreatePage extends QuickCreatePage {
 
     if (!SJ_ITMS_ORDER[0].STAT) {
       SJ_ITMS_ORDER[0].STAT = 'Saved';
+      SJ_ITMS_ORDER[0].PENDINGTAG = 'Normal';
     }
   };
 
@@ -212,15 +213,26 @@ export default class OrderCreatePage extends QuickCreatePage {
     });
     if (this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]) {
       const data = this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'];
-      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CARTON'] = data[2].FORECASTCOUNT;
-      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['SCATTERED'] = data[1].FORECASTCOUNT;
-      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CONTAINER'] = data[0].FORECASTCOUNT;
-      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CARTONVOLUME'] = data[2].FORECASTVOLUME;
-      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CARTONWEIGHT'] = data[2].FORECASTWEIGHT;
-      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['SCATTEREDVOLUME'] = data[1].FORECASTVOLUME;
-      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['SCATTEREDWEIGHT'] = data[1].FORECASTWEIGHT;
-      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CONTAINERVOLUME'] = data[0].FORECASTVOLUME;
-      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CONTAINERWEIGHT'] = data[0].FORECASTWEIGHT;
+      console.log('data', data);
+      const CARTONS = data.find(x => x.VEHICLETYPE == '整箱');
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CARTON'] = CARTONS.FORECASTCOUNT;
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CARTONVOLUME'] = CARTONS.FORECASTVOLUME;
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CARTONWEIGHT'] = CARTONS.FORECASTWEIGHT;
+
+      const SCATTEREDS = data.find(x => x.VEHICLETYPE == '散件');
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['SCATTERED'] = SCATTEREDS.FORECASTCOUNT;
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['SCATTEREDVOLUME'] =
+        SCATTEREDS.FORECASTVOLUME;
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['SCATTEREDWEIGHT'] =
+        SCATTEREDS.FORECASTWEIGHT;
+
+      const CONTAINERS = data.find(x => x.VEHICLETYPE == '周转筐');
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CONTAINER'] = CONTAINERS.FORECASTCOUNT;
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CONTAINERVOLUME'] =
+        CONTAINERS.FORECASTVOLUME;
+      this.entity['SJ_ITMS_ORDER_CONTAINERNUMBER'][0]['CONTAINERWEIGHT'] =
+        CONTAINERS.FORECASTWEIGHT;
+
       this.props.form.validateFields();
     }
   };

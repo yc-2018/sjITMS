@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-12 16:08:35
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-04 16:12:07
+ * @LastEditTime: 2022-04-09 10:34:05
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -23,6 +23,17 @@ export async function batchImport(payload) {
 export async function audit(payload) {
   return request(
     `/itms-schedule/itms-schedule/sj/bill/ordertms/audited?companyUuid=${
+      loginCompany().uuid
+    }&dispatchCenterUuid=${loginOrg().uuid}&billNumber=${payload}`,
+    {
+      method: 'POST',
+    }
+  );
+}
+
+export async function cancel(payload) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/ordertms/canceled?companyUuid=${
       loginCompany().uuid
     }&dispatchCenterUuid=${loginOrg().uuid}&billNumber=${payload}`,
     {
