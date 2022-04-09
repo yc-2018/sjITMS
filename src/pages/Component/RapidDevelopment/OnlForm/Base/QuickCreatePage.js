@@ -23,6 +23,7 @@ import ItemEditTable from '@/pages/Component/Form/ItemEditTable';
 import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
 import { convertCodeName } from '@/utils/utils';
 import { colWidth, itemColWidth } from '@/utils/ColWidth';
+import Address from '@/pages/Component/Form/Address';
 
 /**
  * 新增编辑界面
@@ -97,36 +98,36 @@ export default class QuickCreatePage extends CreatePage {
       const response = await this.queryCreateConfig();
       if (response.result) {
         this.setState({
-          onlFormInfos: response.result
+          onlFormInfos: response.result,
         });
       }
     }
     await this.initEntity();
     this.initForm();
     this.formLoaded();
-  }
+  };
 
   onSaving = () => {
     this.setState({ saving: true });
     this.props.onSaving && this.props.onSaving();
-  }
+  };
 
   onCancel = () => {
-    if(this.props.onCancel){
+    if (this.props.onCancel) {
       this.props.onCancel();
-    } else if(this.props.switchTab){
+    } else if (this.props.switchTab) {
       this.props.switchTab('query');
     }
   };
 
-  onSaved = (success) => {
+  onSaved = success => {
     this.setState({ saving: false });
-    if(this.props.onSaved){
+    if (this.props.onSaved) {
       this.props.onSaved(success);
-    } else if(this.props.switchTab){
+    } else if (this.props.switchTab) {
       this.props.switchTab('query');
     }
-  }
+  };
 
   /**
    * 初始化表单
@@ -188,6 +189,20 @@ export default class QuickCreatePage extends CreatePage {
 
       if (onlFormHead.tableType != 2) {
         this.entity[tableName] = records;
+        //address组件初始值
+        let addItem = onlFormFields.find(item => item.fieldShowType == 'address');
+        if (addItem) {
+          let address = {
+            country: records[0].COUNTRY,
+            city: records[0].CITY,
+            province: records[0].PROVINCE,
+            district: records[0].DISTRICT,
+            street: records[0].STREET,
+          };
+          this.entity[tableName][0][addItem.dbFieldName] = address;
+        }
+
+        //title处理
         let title = onlFormHead.formTitle;
         if (onlFormHead.formTitle && onlFormHead.formTitle.indexOf(']') != -1) {
           const titles = onlFormInfo.onlFormHead.formTitle.split(']');
@@ -226,32 +241,32 @@ export default class QuickCreatePage extends CreatePage {
         payload: this.state.quickuuid,
         callback: response => {
           resolve(response);
-        }
+        },
       });
     });
-  }
+  };
 
   /**
    * 获取实体数据
    * @param {*} param 参数
    */
-  queryEntityData = (param) => {
+  queryEntityData = param => {
     return new Promise((resolve, reject) => {
       this.props.dispatch({
         type: 'quick/dynamicqueryById',
         payload: param,
         callback: response => {
           resolve(response);
-        }
+        },
       });
     });
-  }
+  };
 
   /**
    * 保存实体数据
    * @param {*} param 参数
    */
-  saveEntityData = (param) => {
+  saveEntityData = param => {
     return new Promise((resolve, reject) => {
       this.props.dispatch({
         type: 'quick/saveFormData',
@@ -260,10 +275,10 @@ export default class QuickCreatePage extends CreatePage {
         },
         callback: response => {
           resolve(response);
-        }
+        },
       });
     });
-  }
+  };
 
   /**
    * 初始化新建表单
@@ -378,6 +393,15 @@ export default class QuickCreatePage extends CreatePage {
   onSave = async data => {
     const { entity } = this;
     const { onlFormInfos } = this.state;
+
+    //保存前对address字段做处理 不进行保存
+    for (let onlFormInfo of onlFormInfos) {
+      let addItem = onlFormInfo.onlFormFields.find(item => item.fieldShowType == 'address');
+      if (addItem) {
+        delete this.entity[onlFormInfo.onlFormHead.tableName][0][addItem.dbFieldName];
+      }
+    }
+
     const result = this.beforeSave(entity);
     if (result === false) {
       return;
@@ -424,8 +448,17 @@ export default class QuickCreatePage extends CreatePage {
       this.entity[tableName][line] = {};
     }
     const value = this.convertSaveValue(valueEvent, fieldShowType);
-    this.entity[tableName][line][fieldName] = value;
+    //address单独处理
+    if (fieldShowType == 'address') {
+      for (var key in value) {
+        this.entity[tableName][line][key.toUpperCase()] = value[key];
+      }
+      this.entity[tableName][line][fieldName] = null;
+    } else {
+      this.entity[tableName][line][fieldName] = value;
+    }
 
+    console.log('entity', this.entity);
     // 处理多值保存
     this.multiSave(e);
     // 字段联动
@@ -496,7 +529,7 @@ export default class QuickCreatePage extends CreatePage {
         }
 
         this.drawcell(e);
-        
+
         let initialValue = this.entity[tableName][0] && this.entity[tableName][0][fieldName]; // 初始值
         cols.push(
           <CFormItem key={key} label={e.label}>
@@ -773,6 +806,8 @@ export default class QuickCreatePage extends CreatePage {
       return SimpleAutoComplete;
     } else if (field.fieldShowType == 'textarea') {
       return Input.TextArea;
+    } else if (field.fieldShowType == 'address') {
+      return Address;
     } else {
       return Input;
     }
@@ -792,9 +827,9 @@ export default class QuickCreatePage extends CreatePage {
       return moment(value, 'YYYY/MM/DD');
     } else if (['text', 'textarea'].indexOf(fieldShowType) > -1 || !fieldShowType) {
       return value.toString();
-    } else if (dbType == "Integer") {
+    } else if (dbType == 'Integer') {
       return parseInt(value);
-    } else if (dbType == "Double" || dbType == "BigDecimal") {
+    } else if (dbType == 'Double' || dbType == 'BigDecimal') {
       return parseFloat(value);
     } else {
       return value;
