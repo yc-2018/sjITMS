@@ -2,13 +2,13 @@
  * @Author: guankongjin
  * @Date: 2022-04-01 08:43:48
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-11 15:30:39
+ * @LastEditTime: 2022-04-12 09:10:25
  * @Description: 嵌套子表格组件
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\CardTable.js
  */
 import React, { Component } from 'react';
 import { Table } from 'antd';
-import cardTableStyle from './cardTableStyle.less';
+import cardTableStyle from './CardTableStyle.less';
 
 export default class CardTable extends Component {
   state = {
