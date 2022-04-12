@@ -1150,6 +1150,13 @@ export default [
             authority: ['itms.base.vehicle'],
           },
           {
+            path: '/tmsbase/dispatching',
+            name: '配送调度',
+            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+            component: './SJTms/Dispatching/Dispatching',
+            authority: ['itms.base.vehicle'],
+          },
+          {
             path: '/tmsbase/ShipPlanBill',
             name: '排车单',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],

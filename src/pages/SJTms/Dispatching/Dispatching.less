@@ -1,0 +1,90 @@
+@import '~antd/lib/style/themes/default.less';
+
+.dispatchingContent {
+  min-height: 800px;
+}
+
+.dispatchingLayout {
+  background: #ffffff;
+
+  :global {
+    .ant-tabs-bar {
+      margin: 0 0 8px 0;
+    }
+  }
+
+  .dispatchingCard {
+    padding: 0 5px;
+    min-height: 660px;
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+  }
+}
+
+.dispatchingCreatePage {
+  width: 96vw !important;
+  height: 96vh;
+
+  :global {
+    .ant-card-head {
+      min-height: 30px;
+    }
+    .ant-card-head-title {
+      padding: 8px 0;
+    }
+    .ant-card-extra {
+      padding: 0;
+    }
+    .ant-tabs .ant-tabs-large-bar .ant-tabs-tab {
+      padding: 8px 16px;
+    }
+    .ant-modal {
+      padding-bottom: 0;
+    }
+    .ant-modal-content {
+      max-height: unset;
+      height: 96vh;
+    }
+  }
+  .selectedVehicleCardWapper {
+    border: 2px solid #20bf55;
+    border-radius: 5px;
+    margin: 0 5px 5px 0;
+    color: #20bf55;
+    width: 180px;
+    height: 80px;
+    display: inline-block;
+    text-align: center;
+    padding: 30px 0;
+  }
+  .vehicleCardWapper {
+    border: 2px solid #3b77e3;
+    border-radius: 5px;
+    margin: 0 5px 5px 0;
+    color: #000000a6;
+    width: 180px;
+    height: 80px;
+    display: inline-block;
+    text-align: center;
+    padding: 30px 0;
+  }
+  .orderTotalCard {
+    height: 25.8vh;
+    font-size: 14px;
+  }
+  .orderTotalCardBody {
+    margin-top: 20px;
+    text-align: center;
+    display: flex;
+    align-items: center;
+  }
+  .orderTotalNumber {
+    margin-top: 5px;
+    font-size: 20px;
+    font-weight: bold;
+    color: black;
+  }
+  .orderTotalCol {
+    border-right: 1px solid #e8e8e8;
+  }
+}
