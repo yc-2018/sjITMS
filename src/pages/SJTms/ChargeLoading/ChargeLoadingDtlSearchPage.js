@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-01 11:30:00
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-01 16:12:15
+ * @LastEditTime: 2022-04-12 11:45:11
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -36,7 +36,6 @@ export default class ChargeLoadingDtlSearchPage extends QuickFormSearchPage {
   drawSearchPanel = () => {};
 
   onSearch = () => {
-    console.log('这里会跑？');
     const { selectedRows } = this.props;
     if (!selectedRows) {
       return;
