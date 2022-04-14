@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-11 17:30:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-12 15:20:39
+ * @LastEditTime: 2022-04-13 17:14:59
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -73,6 +73,7 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
           ARTICLECODE: rows.ARTICLECODE,
           ORDERQTY: rows.QTY,
           TAKEDELIVERYQTY: rows.TDQTY,
+          SCHEDULEUUID: rows.SCHEDULEUUID,
         });
       });
       if (isReturn == 1) {
