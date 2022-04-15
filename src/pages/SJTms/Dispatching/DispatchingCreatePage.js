@@ -1,19 +1,20 @@
 import React, { Component } from 'react';
-import { Modal, Card, Row, Col, Divider, Input } from 'antd';
-import { queryAllData } from '@/services/quick/Quick';
+import { Modal, Card, Row, Col, Divider, Input, Select, message } from 'antd';
+import { queryAllData, dynamicQuery } from '@/services/quick/Quick';
+import { save } from '@/services/sjitms/ScheduleBill';
 import CardTable from './CardTable';
 import { CreatePageOrderColumns } from './DispatchingColumns';
 import dispatchingStyles from './Dispatching.less';
 import DataType from '@/pages/BillManage/DataType/DataType';
-import { sumBy } from 'lodash';
+import { sumBy, uniq } from 'lodash';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { key } from 'localforage';
 
 const { Search } = Input;
-/**
- * 弹窗式表单页面
- * modal    模态窗口的props
- * page     CreatePage的props
- * onRef    获取本类，可以调用 show 方法弹出窗口
- */
+const queryParams = [
+  { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+];
+
 export default class DispatchingCreatePage extends Component {
   state = {
     saving: false,
@@ -21,6 +22,7 @@ export default class DispatchingCreatePage extends Component {
     orders: [],
     vehicles: [],
     employees: [],
+    employeeType: [],
     selectVehicle: {},
     selectEmployees: [],
   };
@@ -29,13 +31,13 @@ export default class DispatchingCreatePage extends Component {
     this.props.onRef && this.props.onRef(this);
     this.getVehicle();
     this.getEmployee();
+    this.getEmployeeType();
   };
 
   //显示
   show = () => {
     this.setState({ visible: true });
   };
-
   //隐藏
   hide = () => {
     this.setState({ visible: false });
@@ -45,7 +47,7 @@ export default class DispatchingCreatePage extends Component {
 
   //获取车辆
   getVehicle = () => {
-    queryAllData({ quickuuid: 'sj_itms_vehicle' }).then(response => {
+    queryAllData({ quickuuid: 'sj_itms_vehicle', superQuery: { queryParams } }).then(response => {
       if (response.success) {
         this.setState({ vehicles: response.data.records });
       }
@@ -54,11 +56,33 @@ export default class DispatchingCreatePage extends Component {
 
   //获取人员
   getEmployee = () => {
-    queryAllData({ quickuuid: 'sj_itms_employee' }).then(response => {
+    queryAllData({ quickuuid: 'sj_itms_employee', superQuery: { queryParams } }).then(response => {
       if (response.success) {
         this.setState({ employees: response.data.records });
       }
     });
+  };
+  //获取员工类型
+  getEmployeeType = () => {
+    dynamicQuery({
+      tableName: 'V_SYS_DICT_ITEM',
+      condition: {
+        params: [{ field: 'DICT_CODE', rule: 'eq', val: ['employeeType'] }],
+      },
+    }).then(response => {
+      if (response.success) {
+        this.setState({ employeeType: response.result.records });
+      }
+    });
+  };
+  //员工类型选择事件
+  handleEmployeeTypeChange = employee => {
+    const { selectEmployees } = this.state;
+    return val => {
+      employee.memberType = val;
+      selectEmployees.splice(selectEmployees.indexOf(employee), 1, employee);
+      this.setState({ selectEmployees });
+    };
   };
 
   //选车
@@ -82,11 +106,68 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //保存
-  handleSave = () => {};
+  handleSave = () => {
+    const { data } = this.props;
+    const { selectVehicle, selectEmployees } = this.state;
+    const driver = selectEmployees.find(x => x.memberType == 'DRIVER');
+    const paramBody = {
+      type: 'Job',
+      vehicle: {
+        uuid: selectVehicle.UUID,
+        code: selectVehicle.CODE,
+        name: selectVehicle.PLATENUMBER,
+      },
+      vehicleType: {
+        uuid: selectVehicle.VEHICLETYPEUUID,
+        code: selectVehicle.VEHICLETYPECODE,
+        name: selectVehicle.VEHICLETYPENAME,
+      },
+      carrier: {
+        uuid: driver.UUID,
+        code: driver.CODE,
+        name: driver.NAME,
+      },
+      orderDetails: data.map(x => x.UUID),
+      memberDetails: selectEmployees.map((x, index) => {
+        return {
+          line: index + 1,
+          member: { uuid: x.UUID, code: x.CODE, name: x.NAME },
+          memberType: x.memberType,
+        };
+      }),
+      cartonCount: sumBy(data.map(x => x.CARTONCOUNT)),
+      scatteredCount: sumBy(data.map(x => x.SCATTEREDCOUNT)),
+      containerCount: sumBy(data.map(x => x.CONTAINERCOUNT)),
+      realCartonCount: sumBy(data.map(x => x.REALCARTONCOUNT)),
+      realScatteredCount: sumBy(data.map(x => x.REALSCATTEREDCOUNT)),
+      realContainerCount: sumBy(data.map(x => x.REALCONTAINERCOUNT)),
+      weight: sumBy(data.map(x => Number(x.REALWEIGHT))),
+      volume: sumBy(data.map(x => Number(x.REALVOLUME))),
+      totalAmount: 0,
+      deliveryPointCount: uniq(data.map(x => x.DELIVERYPOINTCODE)).length,
+      pickupPointCount: uniq(data.map(x => x.PICKUPPOINTNAME)).length,
+      ownerCount: uniq(data.map(x => x.OWNER)).length,
+      companyUuid: loginCompany().uuid,
+      dispatchCenterUuid: loginOrg().uuid,
+    };
+    save(paramBody).then(response => {
+      if (response.success) {
+        message.success('保存成功！');
+        this.hide();
+      }
+    });
+  };
 
   render() {
     const { modal, data } = this.props;
-    const { orders, vehicles, employees, selectVehicle, selectEmployees } = this.state;
+    const {
+      orders,
+      vehicles,
+      employees,
+      employeeType,
+      selectVehicle,
+      selectEmployees,
+    } = this.state;
     return (
       <Modal
         visible={this.state.visible}
@@ -101,12 +182,7 @@ export default class DispatchingCreatePage extends Component {
         <Row gutter={[8, 0]}>
           <Col span={16}>
             <Card title="订单" bodyStyle={{ padding: 1, height: '36.8vh' }}>
-              <CardTable
-                scrollY={'32vh'}
-                dataSource={data}
-                quickuuid="sj_itms_dispatching_orderpool"
-                columns={CreatePageOrderColumns}
-              />
+              <CardTable scrollY={'32vh'} dataSource={data} columns={CreatePageOrderColumns} />
             </Card>
             <Row gutter={[8, 0]} style={{ marginTop: 8 }}>
               <Col span={12}>
@@ -210,14 +286,35 @@ export default class DispatchingCreatePage extends Component {
               </div>
             </Card>
             <Card title="车辆" style={{ height: '15vh', marginTop: 8 }}>
-              <div>{selectVehicle.PLATENUMBER}</div>
+              {selectVehicle.PLATENUMBER ? (
+                <Row>
+                  <Col span={8}>{selectVehicle.PLATENUMBER}</Col>
+                  <Col span={8} offset={4}>
+                    车型：
+                    {selectVehicle.VEHICLETYPE}
+                  </Col>
+                </Row>
+              ) : (
+                <></>
+              )}
             </Card>
             <Card title="人员明细" style={{ height: '40vh', marginTop: 8 }}>
               {selectEmployees.map(employee => {
                 return (
-                  <div>
-                    <span>{`[${employee.CODE}]` + employee.NAME}</span>
-                  </div>
+                  <Row gutter={[8, 8]}>
+                    <Col span={8}>{`[${employee.CODE}]` + employee.NAME}</Col>
+                    <Col span={8} offset={4}>
+                      <Select
+                        placeholder="请选择员工类型"
+                        onChange={this.handleEmployeeTypeChange(employee)}
+                        style={{ width: 150 }}
+                      >
+                        {employeeType.map(d => (
+                          <Select.Option key={d.VALUE}>{d.NAME}</Select.Option>
+                        ))}
+                      </Select>
+                    </Col>
+                  </Row>
                 );
               })}
             </Card>
