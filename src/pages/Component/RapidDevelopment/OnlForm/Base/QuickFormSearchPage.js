@@ -44,6 +44,7 @@ export default class QuickFormSearchPage extends SearchPage {
       isOrgQuery: [],
       key: props.quickuuid + 'quick.search.table',
       defaultSort: '',
+      formConfig: {},
     }; //用于缓存用户配置数据
   }
 
@@ -57,6 +58,7 @@ export default class QuickFormSearchPage extends SearchPage {
       callback: response => {
         if (response.result) {
           console.log('请求配置成功');
+          this.setState({ formConfig: response.result });
         }
       },
     });
@@ -177,7 +179,6 @@ export default class QuickFormSearchPage extends SearchPage {
     //let colorJson = JSON.parse(color);
     //if (!Array.isArray(colorJson)) return '';
     let colorItem = color.find(item => item.ITEM_VALUE == data);
-    console.log(colorItem, 'colorItem');
     if (!colorItem) return '';
 
     return colorItem.TEXT_COLOR;

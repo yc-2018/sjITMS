@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-03-28 17:23:59
+ * @LastEditTime: 2022-04-18 11:27:28
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -227,7 +227,7 @@ export default class ShipPlanBillSearchPage extends PureComponent {
                         />
                       ) : (
                         <ShipPlanBillDtlSearch
-                          quickuuid={'v_sj_itms_schedule_order'}
+                          quickuuid={'sj_itms_schedule_order'}
                           selectedRows={selectedRows}
                         />
                       )}

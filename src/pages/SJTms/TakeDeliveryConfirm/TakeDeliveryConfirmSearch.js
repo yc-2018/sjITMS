@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-11 17:30:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-13 17:14:59
+ * @LastEditTime: 2022-04-18 15:29:57
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -37,7 +37,6 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
   };
 
   drawExColumns = e => {
-    console.log('e', e);
     if (e.column.fieldName == 'SOURCENUM') {
       const c = {
         title: '确认数量',
@@ -57,7 +56,6 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
 
   comfirm = () => {
     const { selectedRows, reportCode } = this.state;
-    console.log('reportCode', reportCode);
     const deliveryList = [];
     let isReturn = 0;
     if (selectedRows.length !== 0) {
@@ -79,10 +77,7 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
       if (isReturn == 1) {
         return;
       }
-      console.log('deliveryList', deliveryList);
-      this.onSaveData(deliveryList).then(result => {
-        console.log('result', result);
-      });
+      this.onSaveData(deliveryList);
     } else {
       message.error('请至少选中一条数据！');
     }
@@ -94,7 +89,6 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
       code: reportCode,
       entity: { SJ_ITMS_TAKEDELIVERYCONFIRM: deliveryList },
     };
-    console.log('param', param);
     return await saveFormData(param);
   };
 

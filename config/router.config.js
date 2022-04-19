@@ -1174,6 +1174,14 @@ export default [
             authority: ['itms.base.vehicle'],
           },
           {
+            path: '/tmsbase/checkreceiptbill',
+            name: '对单回单',
+            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+            component: './SJTms/CheckreceiptBill/CheckreceiptBillForm',
+            quickuuid: 'sj_itms_checkreceiptbill',
+            authority: ['itms.base.vehicle'],
+          },
+          {
             path: '/tmsbase/inAndOuitInfo',
             name: '出车回车信息录入',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
