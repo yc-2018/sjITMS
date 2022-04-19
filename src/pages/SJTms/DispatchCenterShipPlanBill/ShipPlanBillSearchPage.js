@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-18 11:27:28
+ * @LastEditTime: 2022-04-19 16:10:24
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -219,7 +219,7 @@ export default class ShipPlanBillSearchPage extends PureComponent {
                         memberModalClick={this.memberModalClick}
                       />
                     </div>
-                    <div style={{ margin: '24px -8px 0px', height: '700px' }}>
+                    <div style={{ margin: '0px -8px 0px', height: '700px' }}>
                       {!showCreatePage ? (
                         <Empty
                           image={emptySvg}

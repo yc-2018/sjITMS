@@ -2,15 +2,16 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-08 10:12:40
+ * @LastEditTime: 2022-04-19 17:01:17
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
-import { Form, Badge } from 'antd';
+import { Form, Badge, Button } from 'antd';
 import { colWidth } from '@/utils/ColWidth';
 import { connect } from 'dva';
 import SearchPage from '@/pages/Tms/DispatchCenterShipPlanBill/SearchPage';
 import { guid } from '@/utils/utils';
+import { aborted, shipRollback } from '@/services/sjitms/ScheduleBill';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -210,10 +211,7 @@ export default class ShipPlanBillSearch extends SearchPage {
   colorChange = (data, color) => {
     if (!color) return '';
 
-    //let colorJson = JSON.parse(color);
-    //if (!Array.isArray(colorJson)) return '';
     let colorItem = color.find(item => item.ITEM_VALUE == data);
-    console.log(colorItem, 'colorItem');
     if (!colorItem) return '';
 
     return colorItem.TEXT_COLOR;
@@ -333,5 +331,104 @@ export default class ShipPlanBillSearch extends SearchPage {
 
   changeSelectedRows = selectedRows => {
     this.props.refreshView(null, selectedRows);
+  };
+
+  /**
+   * 批量回滚
+   */
+  onBatchRollBack = () => {
+    this.setState({
+      batchAction: '回滚',
+    });
+    this.handleBatchProcessConfirmModalVisible(true);
+  };
+
+  /**
+   * 批量作废
+   */
+  onBatchAbort = () => {
+    this.setState({
+      batchAction: '作废',
+    });
+    this.handleBatchProcessConfirmModalVisible(true);
+  };
+
+  onRollBack = (record, batch) => {
+    console.log('record', record, 'batch', batch);
+    const that = this;
+    return new Promise(function(resolve, reject) {
+      shipRollback(record).then(result => {
+        console.log('ccccc');
+        if (result && batch) {
+          that.batchCallback(result, record);
+          resolve({ success: result.success });
+          that.refreshTable(that.props.pageFilter ? that.props.pageFilter : null);
+          return;
+        }
+      });
+    });
+  };
+
+  onAbort = (record, batch) => {
+    const that = this;
+    return new Promise(function(resolve, reject) {
+      aborted(record).then(result => {
+        console.log('ccccc');
+        if (result && batch) {
+          that.batchCallback(result, record);
+          resolve({ success: result.success });
+          that.refreshTable(that.props.pageFilter ? that.props.pageFilter : null);
+          return;
+        }
+      });
+    });
+  };
+
+  onBatchProcess = () => {
+    const { selectedRows, batchAction } = this.state;
+    console.log('selectedRows', selectedRows, 'batchAction', batchAction);
+    const that = this;
+    let bacth = i => {
+      console.log(i);
+      if (i < selectedRows.length) {
+        if (batchAction === '回滚') {
+          if (selectedRows[i].STAT == 'Approved') {
+            this.onRollBack(selectedRows[i], true).then(res => {
+              bacth(i + 1);
+            });
+          } else {
+            that.refs.batchHandle.calculateTaskSkipped();
+            bacth(i + 1);
+          }
+        } else if (batchAction === '作废') {
+          if (
+            selectedRows[i].STAT == 'Approved' ||
+            selectedRows[i].STAT == 'Delivering' ||
+            selectedRows[i].STAT == 'Shiped'
+          ) {
+            this.onAbort(selectedRows[i], true).then(res => {
+              bacth(i + 1);
+            });
+          } else {
+            that.refs.batchHandle.calculateTaskSkipped();
+            bacth(i + 1);
+          }
+        }
+      }
+    };
+    bacth(0);
+  };
+
+  drawOther = () => {
+    return (
+      <div>
+        <Button style={{ marginBottom: '-5px' }} onClick={() => this.onBatchRollBack()}>
+          取消批准
+        </Button>
+        <Button style={{ marginLeft: '12px' }} onClick={() => this.onBatchAbort()}>
+          作废
+        </Button>
+      </div>
+    );
   };
 }
