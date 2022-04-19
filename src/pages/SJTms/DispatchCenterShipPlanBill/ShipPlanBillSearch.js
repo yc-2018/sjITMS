@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-19 17:01:17
+ * @LastEditTime: 2022-04-19 17:08:44
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -105,7 +105,7 @@ export default class ShipPlanBillSearch extends SearchPage {
   //初始化配置
   initConfig = queryConfig => {
     const columns = queryConfig.columns;
-    const editableState = ['Saved', 'Approved', 'Shipping', 'Shiped', 'Delivering'];
+    const editableState = ['Saved', 'Approved', 'Shipping', 'Shiped'];
     let quickColumns = new Array();
     columns.filter(data => data.isShow).forEach(column => {
       let OptColumn = {
@@ -354,11 +354,9 @@ export default class ShipPlanBillSearch extends SearchPage {
   };
 
   onRollBack = (record, batch) => {
-    console.log('record', record, 'batch', batch);
     const that = this;
     return new Promise(function(resolve, reject) {
       shipRollback(record).then(result => {
-        console.log('ccccc');
         if (result && batch) {
           that.batchCallback(result, record);
           resolve({ success: result.success });
@@ -373,7 +371,6 @@ export default class ShipPlanBillSearch extends SearchPage {
     const that = this;
     return new Promise(function(resolve, reject) {
       aborted(record).then(result => {
-        console.log('ccccc');
         if (result && batch) {
           that.batchCallback(result, record);
           resolve({ success: result.success });
@@ -386,7 +383,6 @@ export default class ShipPlanBillSearch extends SearchPage {
 
   onBatchProcess = () => {
     const { selectedRows, batchAction } = this.state;
-    console.log('selectedRows', selectedRows, 'batchAction', batchAction);
     const that = this;
     let bacth = i => {
       console.log(i);
