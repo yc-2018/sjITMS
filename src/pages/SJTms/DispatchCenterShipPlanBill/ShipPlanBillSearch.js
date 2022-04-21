@@ -2,11 +2,11 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-19 17:08:44
+ * @LastEditTime: 2022-04-20 11:51:56
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
-import { Form, Badge, Button } from 'antd';
+import { Form, Badge, Button, message } from 'antd';
 import { colWidth } from '@/utils/ColWidth';
 import { connect } from 'dva';
 import SearchPage from '@/pages/Tms/DispatchCenterShipPlanBill/SearchPage';
@@ -231,11 +231,7 @@ export default class ShipPlanBillSearch extends SearchPage {
       record: record,
       component: component,
       val: val,
-      // props: { ...commonPropertis, ...fieldExtendJson },
     };
-
-    // //自定义报表的render
-    // this.drawcell(e);
 
     return e.component;
   }
@@ -353,6 +349,14 @@ export default class ShipPlanBillSearch extends SearchPage {
     this.handleBatchProcessConfirmModalVisible(true);
   };
 
+  onMoveCar = () => {
+    const { selectedRows } = this.state;
+    console.log('selectedRows', selectedRows);
+    if (selectedRows.length === 1) {
+      this.props.removeCarModalClick(selectedRows);
+    } else message.error('请选中一条数据！');
+  };
+
   onRollBack = (record, batch) => {
     const that = this;
     return new Promise(function(resolve, reject) {
@@ -423,6 +427,9 @@ export default class ShipPlanBillSearch extends SearchPage {
         </Button>
         <Button style={{ marginLeft: '12px' }} onClick={() => this.onBatchAbort()}>
           作废
+        </Button>
+        <Button style={{ marginLeft: '12px' }} onClick={() => this.onMoveCar()}>
+          移车
         </Button>
       </div>
     );

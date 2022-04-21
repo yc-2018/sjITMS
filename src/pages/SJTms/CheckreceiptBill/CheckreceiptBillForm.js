@@ -2,13 +2,13 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:05:33
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-18 09:30:26
+ * @LastEditTime: 2022-04-20 11:31:34
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
-import CheckreceiptBillSearch from './CheckreceiptbillSearch';
+import CheckreceiptBillSearch from './CheckreceiptBillSearch';
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
 import PretypeSearch from './Pretype';
 import Checkreceipt from './Checkreceipt';

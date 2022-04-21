@@ -2,12 +2,12 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-18 09:26:02
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-18 11:33:00
+ * @LastEditTime: 2022-04-20 11:30:13
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
-import CheckreceiptbillSearch from './CheckreceiptbillSearch';
+import CheckreceiptbillSearch from './CheckreceiptBillSearch';
 import { Drawer } from 'antd';
 import CheckreceiptHistorySearch from './CheckreceiptHistorySearch';
 
