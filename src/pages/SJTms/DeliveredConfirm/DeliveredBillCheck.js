@@ -23,25 +23,28 @@ export default class DeliveredBillCheck extends QuickFormSearchPage {
         super(props)
        
     }
-      // exSearchFilter = () => {
-      //    return this.state.pageData;
-      //   }
+
+   exSearchFilter = () => {
+        return this.props.pageFilters;
+         
+     };
+     drawTopButton = () => {
+    
+    }; 
+      //该方法用于写中间的功能按钮  <span>包裹
+  drawToolsButton = () => {
+    //console.log("drawToolsButton",this.state);
    
-       componentWillReceiveProps(nextProps){
-         console.log("nex",nextProps);
-        // this.setState({pageData:nextProps.queryParams})
+  };
 
-        //  this.onSearch(nextProps.pageFilters)
-
-       }
-
-
-
-      
-     
+  //该方法会覆盖所有的中间功能按钮
+  drawToolbarPanel = () => {};
   //该方法会覆盖所有的上层按钮
-  drawActionButton = () => {};
+  drawActionButton = () => {
 
+  };
+ // 该方法会覆盖所有的搜索查询
+  drawSearchPanel=()=>{}
   //该方法会覆盖所有的中间功能按钮
   drawToolbarPanel = () => {
     return (<><Button onClick={this.checkAndSave}>核对并保存单据</Button></>)

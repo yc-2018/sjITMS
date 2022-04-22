@@ -43,8 +43,6 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
   drawcell = e => {
     //找到fieldName为CODE这一列 更改它的component
     if (e.column.fieldName == 'DELIVERED') {
-      console.log("dfsa",e.record);
-      // const component = <p3 style={{ color: 'red' }}>{e.val}</p3>;
       const component = (
        <Select style={{width:100}} defaultValue={e.record.DELIVERED} onChange = {this.deliveredChage.bind(this, e.record,e.column)}>
         <Select.Option key={"Pending"} value={"Pending"}>{"待处理"}</Select.Option>
@@ -60,16 +58,8 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
     console.log("e",e,"val",val);
   }
   exSearchFilter = () => {
-    console.log("fasdf",this.props.pageFilters);
      return this.props.pageFilters;
-      // return [
-      //   {
-      //     field: 'driverCode',
-      //     type: 'VarChar',
-      //     rule: 'eq',
-      //     val: this.props.pageFilters['driverCode'],
-      //   }
-      // ]
+      
   };
 
           //该方法用于更改State
@@ -121,7 +111,6 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
 //     }
 //   };
   handleModal = (record)=>{
-   // console.log("tshisdaf",record);
     if(record){
       this.setState({
         storeUuid : record.DELIVERYPOINTUUID,  
@@ -319,8 +308,6 @@ return (
   drawSearchPanel=()=>{}
 
   drawOtherCom = () =>{
-    //this.onSearch();
-    console.log("drawOtherCom",this.state.storeItemConfirmModalVisible);
     const { storeSelectedRows,billSelectedRows,billData,storeData,targetTabKey,storeItemConfirmModalVisible,storeUuid,storeCode,storeName,storeAddress,scheduleBillNumber } = this.state;
        <StoreItemConfirmModal
         visible = {true}

@@ -127,10 +127,10 @@ export default class DeliveredConfirmPage extends SearchForm{
             }
           )
         }
-        const fdsafd =  JSON.parse(JSON.stringify(pageFilters.queryParams));
+        const params =  JSON.parse(JSON.stringify(pageFilters.queryParams));
      
-        this.setState({tableList:<DeliveredConfirmSearch   key={Date.now()} quickuuid= 'ITMS_SHIP_ORDER_STORE_CONFIRM' pageFilters = {fdsafd}/>
-         ,tableList2:<DeliveredBillCheck quickuuid = 'sj_schedule_order_bill_check'></DeliveredBillCheck>
+        this.setState({tableList:<DeliveredConfirmSearch   key={Date.now()} quickuuid= 'ITMS_SHIP_ORDER_STORE_CONFIRM' pageFilters = {params} />
+         ,tableList2:<DeliveredBillCheck quickuuid = 'sj_schedule_order_bill_check' pageFilters = {params} ></DeliveredBillCheck>
         });
       }
     render() {
