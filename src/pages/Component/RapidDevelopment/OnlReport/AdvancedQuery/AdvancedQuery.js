@@ -16,7 +16,7 @@ import {
 } from 'antd';
 import ColsAdvanced from './ColsAdvanced';
 import IconFont from '@/components/IconFont';
-import { saveOrUpdateEntities, dynamicqueryById, dynamicDelete } from '@/services/quick/Quick';
+import { saveOrUpdateEntities, dynamicqueryById, dyDelete } from '@/services/quick/Quick';
 import { loginUser } from '@/utils/LoginContext';
 
 const layout = {
@@ -223,7 +223,7 @@ export default class AdvancedQuery extends Component {
         deleteAll: 'false',
       },
     ];
-    await dynamicDelete({ params, code: 'woxiangyaokuaile' }).then(result => {
+    await dyDelete({ params }).then(result => {
       if (result.success) {
         message.success('删除成功！');
         this.getData();
