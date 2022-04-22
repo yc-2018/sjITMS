@@ -1165,7 +1165,7 @@ export default [
             authority: ['itms.base.vehicle'],
             divider: true,
           },
-        
+
           {
             path: '/tmsbase/checkreceiptbill',
             name: '对单回单',
@@ -1174,7 +1174,7 @@ export default [
             quickuuid: 'sj_itms_checkreceiptbill',
             authority: ['itms.base.vehicle'],
           },
-       
+
           {
             path: '/tmsbase/chargeLoading',
             name: '刷卡装车',
@@ -1196,7 +1196,7 @@ export default [
             name: '回车送货确认',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             //component: './SJtms/DeliveredConfirm/DeliveredConfirmForm',
-            component:'./SJtms/DeliveredConfirm/DeliveredConfirmPage',
+            component: './SJTms/DeliveredConfirm/DeliveredConfirmPage',
             quickuuid: 'ITMS_SHIP_ORDER_STORE_CONFIRM',
             authority: ['itms.base.vehicle'],
           },
@@ -1204,7 +1204,7 @@ export default [
             path: '/tmsbase/inAndOuitInfo',
             name: '出车回车信息录入',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
-            component: './SJtms/InAndOutInfo/InAndOutInfoForm',
+            component: './SJTms/InAndOutInfo/InAndOutInfoForm',
             quickuuid: 'ITMS_SHIP_VEHICE_SJ',
             authority: ['itms.base.vehicle'],
           },
@@ -1212,16 +1212,16 @@ export default [
             path: '/tmsbase/CheckInAndCheckOut',
             name: '出车回车登记1',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
-            component: './SJtms/CheckInAndCheckOut/CheckInAndCheckOut',
+            component: './SJTms/CheckInAndCheckOut/CheckInAndCheckOut',
             authority: ['itms.base.vehicle'],
           },
           {
             path: '/tmsbase/xxl_job',
             name: '调度平台',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
-           component: './SJtms/xxjob',
+            component: './SJTms/xxjob',
             authority: ['itms.base.vehicle'],
-          }
+          },
         ],
       },
     ],
