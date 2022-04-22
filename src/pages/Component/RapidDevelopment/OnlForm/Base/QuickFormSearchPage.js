@@ -395,7 +395,9 @@ export default class QuickFormSearchPage extends SearchPage {
     const { selectedRows, batchAction } = this.state;
     const { dispatch } = this.props;
     const params = [];
-    const code = this.props.onlFormField[0].onlFormHead.code;
+    const code = this.state.formConfig[0].onlFormHead.code
+      ? this.state.formConfig[0].onlFormHead.code
+      : 'woxiangyaokuaile';
     let that = this;
     if (selectedRows.length !== 0) {
       for (var i = 0; i < selectedRows.length; i++) {

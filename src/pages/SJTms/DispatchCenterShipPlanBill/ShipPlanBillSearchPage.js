@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-20 15:40:38
+ * @LastEditTime: 2022-04-22 16:18:46
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -178,7 +178,6 @@ export default class ShipPlanBillSearchPage extends PureComponent {
   };
 
   removeCarModalClick = selectedRows => {
-    console.log('selectedRows', selectedRows, selectedRows[0].UUID);
     this.setState({
       params: { entityUuid: selectedRows[0].UUID, title: selectedRows[0].BILLNUMBER },
     });

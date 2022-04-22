@@ -223,7 +223,7 @@ export default class AdvancedQuery extends Component {
         deleteAll: 'false',
       },
     ];
-    await dynamicDelete(params).then(result => {
+    await dynamicDelete({ params, code: 'woxiangyaokuaile' }).then(result => {
       if (result.success) {
         message.success('删除成功！');
         this.getData();
