@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-12 08:54:04
+ * @LastEditTime: 2022-04-21 10:19:57
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -17,28 +17,26 @@ import CardTable from './CardTable';
 import { OrderColumns } from './DispatchingColumns';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { queryData } from '@/services/quick/Quick';
+import { queryAllData } from '@/services/quick/Quick';
 import { groupBy, sumBy } from 'lodash';
 
 const { TabPane } = Tabs;
-let queryParams = [
-  { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
-  { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
-];
-@connect(({ loading }) => ({ loading: loading.models.quick }))
+
 @Form.create()
 export default class OrderPoolPage extends Component {
   state = {
+    loading: false,
     auditedData: [],
     scheduledData: [],
     pendingData: [],
     selectedRowKeys: [],
     selectedPendingRowKeys: [],
+    activeTab: 'Audited',
   };
   auditedTable = React.createRef();
 
   componentDidMount() {
-    this.getAuditedOrders();
+    this.getAuditedOrders('Delivery');
   }
 
   //搜索
@@ -52,8 +50,7 @@ export default class OrderPoolPage extends Component {
       const data = {
         ...fieldsValue,
       };
-      queryParams.push({ field: 'ORDERTYPE', type: 'VarChar', rule: 'eq', val: data.orderType });
-      this.getAuditedOrders();
+      this.getAuditedOrders(data.orderType.value);
     });
   };
   //重置
@@ -62,11 +59,17 @@ export default class OrderPoolPage extends Component {
   };
 
   //获取待排运输订单
-  getAuditedOrders = () => {
-    queryParams.push({ field: 'STAT', type: 'VarChar', rule: 'eq', val: 'Audited' });
-    queryData({ quickuuid: 'sj_itms_order', superQuery: { queryParams } }).then(response => {
+  getAuditedOrders = orderType => {
+    this.setState({ loading: true });
+    let queryParams = [
+      { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
+      { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+      { field: 'ORDERTYPE', type: 'VarChar', rule: 'eq', val: orderType },
+      { field: 'STAT', type: 'VarChar', rule: 'eq', val: 'Audited' },
+    ];
+    queryAllData({ quickuuid: 'sj_itms_order', superQuery: { queryParams } }).then(response => {
       if (response.success) {
-        this.setState({ auditedData: response.data.records });
+        this.setState({ auditedData: response.data.records, loading: false });
       }
     });
   };
@@ -95,6 +98,9 @@ export default class OrderPoolPage extends Component {
     });
     return deliveryPointGroupArr;
   };
+  handleTabChange = activeKey => {
+    this.setState({ activeTab: activeKey });
+  };
 
   //排车
   dispatching = () => {
@@ -108,16 +114,31 @@ export default class OrderPoolPage extends Component {
   };
 
   render() {
-    const { columns, auditedData, selectedRowKeys, scheduledData, pendingData } = this.state;
+    const {
+      loading,
+      columns,
+      auditedData,
+      selectedRowKeys,
+      scheduledData,
+      pendingData,
+      activeTab,
+    } = this.state;
     const { getFieldDecorator } = this.props.form;
     const operations = (
-      <Button type={'primary'} onClick={() => this.dispatching()}>
-        排车
-      </Button>
+      <>
+        <Button type={'primary'} onClick={() => this.dispatching()}>
+          排车
+        </Button>
+        <Button style={{ marginLeft: 10 }}>添加到待定池</Button>
+      </>
     );
     return (
-      <Tabs defaultActiveKey="1" tabBarExtraContent={operations}>
-        <TabPane tab="待排" key="1">
+      <Tabs
+        activeKey={activeTab}
+        onChange={this.handleTabChange}
+        tabBarExtraContent={activeTab == 'Audited' ? operations : ''}
+      >
+        <TabPane tab="待排" key="Audited">
           {/* 查询表单 */}
           <Form
             labelCol={{ span: 8 }}
@@ -135,7 +156,7 @@ export default class OrderPoolPage extends Component {
               </Col>
               <Col span={8}>
                 <Form.Item label="单据类型">
-                  {getFieldDecorator('orderType', { initialValue: 'Delivery' })(
+                  {getFieldDecorator('orderType', {})(
                     <SimpleAutoComplete
                       placeholder="请选择单据类型"
                       dictCode="orderType"
@@ -163,6 +184,7 @@ export default class OrderPoolPage extends Component {
           <CardTable
             scrollY={540}
             rowSelect
+            loading={loading}
             ref={this.auditedTable}
             dataSource={auditedData}
             columns={OrderColumns}
@@ -170,17 +192,29 @@ export default class OrderPoolPage extends Component {
           {/* 排车modal */}
           <DispatchingCreatePage
             modal={{ title: '排车' }}
-            data={auditedData.filter(x => selectedRowKeys.indexOf(x.UUID) != -1)}
+            data={auditedData ? auditedData.filter(x => selectedRowKeys.indexOf(x.UUID) != -1) : []}
             onRef={node => (this.createPageModalRef = node)}
           />
         </TabPane>
-        <TabPane tab="已排" key="2">
+        <TabPane tab="已排" key="Scheduled">
           {/* 已排列表 */}
-          <CardTable scrollY={540} pagination dataSource={scheduledData} columns={OrderColumns} />
+          <CardTable
+            scrollY={540}
+            pagination
+            loading={loading}
+            dataSource={scheduledData}
+            columns={OrderColumns}
+          />
         </TabPane>
-        <TabPane tab="待定" key="3">
+        <TabPane tab="待定" key="Pending">
           {/* 待定列表 */}
-          <CardTable scrollY={540} rowSelect dataSource={pendingData} columns={OrderColumns} />
+          <CardTable
+            scrollY={540}
+            rowSelect
+            loading={loading}
+            dataSource={pendingData}
+            columns={OrderColumns}
+          />
         </TabPane>
       </Tabs>
     );

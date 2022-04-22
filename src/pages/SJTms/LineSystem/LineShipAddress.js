@@ -2,16 +2,20 @@
  * @Author: guankongjin
  * @Date: 2022-03-10 09:59:43
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-03-31 17:03:29
+ * @LastEditTime: 2022-04-22 10:08:13
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineShipAddress.js
  */
 import { connect } from 'dva';
-import { Table, Modal, Button, Input, message,Form,Row,Col,Select, TreeSelect } from 'antd';
+import { Table, Modal, Button, Input, message, Form, Row, Col, Select, TreeSelect } from 'antd';
 import OperateCol from '@/pages/Component/Form/OperateCol';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
-import {deleteLineStoreAddressById,findLineByNameLike,addToNewLine } from '@/services/quick/Quick';
+import {
+  deleteLineStoreAddressById,
+  findLineByNameLike,
+  addToNewLine,
+} from '@/services/quick/Quick';
 import { commonLocale } from '@/utils/CommonLocale';
 import TableTransfer from './TableTransfer';
 import { disable } from '@/services/account/Company';
@@ -39,16 +43,15 @@ export default class LineShipAddress extends QuickFormSearchPage {
     transferColumnsTitle: '',
     transferDataSource: [],
     targetKeys: [],
-    buttonDisable:false,
-    lineModalVisible:false,
-    lineData:[],
-    lineValue:undefined
-
+    buttonDisable: false,
+    lineModalVisible: false,
+    lineData: [],
+    lineValue: undefined,
   };
-constructor(props){
-  super(props);
-}
- 
+  constructor(props) {
+    super(props);
+  }
+
   getLineShipAddress = () => {
     return this.state.data;
   };
@@ -79,8 +82,8 @@ constructor(props){
       },
     ];
   };
-  componentWillReceiveProps(nextProps){
-    console.log("xl",nextProps);
+  componentWillReceiveProps(nextProps) {
+    console.log('xl', nextProps);
   }
   //列删除操作
   renderOperateCol = record => {
@@ -119,7 +122,7 @@ constructor(props){
     this.setState({
       modalVisible: true,
       modalTitle: '添加门店',
-      modalQuickuuid: 'itms-store',
+      modalQuickuuid: 'sj_itms_store',
       transferColumnsTitle: '门店',
     });
   };
@@ -128,7 +131,7 @@ constructor(props){
     this.setState({
       modalVisible: true,
       modalTitle: '添加供应商',
-      modalQuickuuid: 'itms-vendor',
+      modalQuickuuid: 'sj_itms_vendor',
       transferColumnsTitle: '供应商',
     });
   };
@@ -189,7 +192,7 @@ constructor(props){
   };
 
   drawActionButton = () => {
-   // const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = this.props;
+    // const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = this.props;
     const {
       modalVisible,
       modalTitle,
@@ -197,14 +200,14 @@ constructor(props){
       transferColumnsTitle,
       targetKeys,
       lineModalVisible,
-      lineData
+      lineData,
     } = this.state;
-    console.log("lineData",lineData);
-    console.log("lineTreeData",this.props.lineTreeData);
-    const options = lineData.map(a=>{
-        return <Select.Option key={a.uuid}>{a.name}</Select.Option>
-    })
-    console.log("options",options);
+    console.log('lineData', lineData);
+    console.log('lineTreeData', this.props.lineTreeData);
+    const options = lineData.map(a => {
+      return <Select.Option key={a.uuid}>{a.name}</Select.Option>;
+    });
+    console.log('options', options);
     return (
       <div>
         <Modal
@@ -234,10 +237,10 @@ constructor(props){
           destroyOnClose
         >
           <Form ref="xlref">
-         <Row>
-           <Col>
-            <Form.Item label= "线路" >
-            {/* <Select
+            <Row>
+              <Col>
+                <Form.Item label="线路">
+                  {/* <Select
         showSearch
         value={this.state.lineValue}
         placeholder={this.props.placeholder}
@@ -251,18 +254,18 @@ constructor(props){
       >
         {options}
       </Select> */}
-      <TreeSelect
-                allowClear={true}
-                optionFilterProp="children"
-                treeData={this.props.lineTreeData}
-                // 将value进行了一层包装，以方便日后扩展
-                value={this.state.lineValue}
-                onChange={this.handleChange}
-            />
-            </Form.Item>
-           </Col>
-         </Row>
-         </Form>
+                  <TreeSelect
+                    allowClear={true}
+                    optionFilterProp="children"
+                    treeData={this.props.lineTreeData}
+                    // 将value进行了一层包装，以方便日后扩展
+                    value={this.state.lineValue}
+                    onChange={this.handleChange}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </Form>
         </Modal>
 
         <Button type="primary" icon="plus" onClick={this.handleAddStore}>
@@ -285,43 +288,45 @@ constructor(props){
     );
   };
 
- 
-  handleSearch = async (value)=>{
-    if(value){
-    await findLineByNameLike(value).then(result => {
-      if(result && result.data){
-        this.setState({lineData:result.data})
-      }else{
-        this.setState({});
-      }
-    })
-  }
-  }
-  handleChange = value=>{
-     this.setState({lineValue:value});
-  }
-  handleAddToNewLine  =async()=>{
-    const{selectedRows,lineValue} = this.state;
-    let params = {
-      lineuuid : lineValue,
-      addressIds:selectedRows.map(e=>e.UUID)
-      
+  handleSearch = async value => {
+    if (value) {
+      await findLineByNameLike(value).then(result => {
+        if (result && result.data) {
+          this.setState({ lineData: result.data });
+        } else {
+          this.setState({});
+        }
+      });
     }
-    await addToNewLine(params).then(result=>{
-      if(result){
-       message.success("添加成功");
-      }else{
-        message.error("添加失败");
+  };
+  handleChange = value => {
+    this.setState({ lineValue: value });
+  };
+  handleAddToNewLine = async () => {
+    const { selectedRows, lineValue } = this.state;
+    let params = {
+      lineuuid: lineValue,
+      addressIds: selectedRows.map(e => e.UUID),
+    };
+    await addToNewLine(params).then(result => {
+      if (result) {
+        message.success('添加成功');
+      } else {
+        message.error('添加失败');
       }
-      this.setState({lineValue:undefined,lineData:[],selectedRows:[],lineModalVisible:false})
-    })
-    
-  }
+      this.setState({
+        lineValue: undefined,
+        lineData: [],
+        selectedRows: [],
+        lineModalVisible: false,
+      });
+    });
+  };
   drawToolbarPanel = () => {
-    const {buttonDisable} = this.state;
+    const { buttonDisable } = this.state;
     return (
       <div style={{ marginBottom: 15 }}>
-       { buttonDisable?<Button onClick={this.tableSortSave} >排序并保存</Button>:<></>}
+        {buttonDisable ? <Button onClick={this.tableSortSave}>排序并保存</Button> : <></>}
         <Button onClick={this.addToNewLine}>添加到新线路</Button>
       </div>
     );
@@ -334,22 +339,21 @@ constructor(props){
       record.ORDERNUM = index + 1;
       return record;
     });
-    this.setState({buttonDisable:true})
+    this.setState({ buttonDisable: true });
     //this.saveFormData(data.list);
   };
 
-  tableSortSave = ()=>{
+  tableSortSave = () => {
     const { data } = this.state;
     this.saveFormData(data.list);
-  }
+  };
 
-  addToNewLine = ()=>{
-    const{selectedRows} = this.state;
-    if(selectedRows.length>0){
-      this.setState({lineModalVisible:true,modalTitle:'添加到新的线路'})
-    }else{
-      message.warn("至少选择一条记录");
+  addToNewLine = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length > 0) {
+      this.setState({ lineModalVisible: true, modalTitle: '添加到新的线路' });
+    } else {
+      message.warn('至少选择一条记录');
     }
-   
-  }
+  };
 }

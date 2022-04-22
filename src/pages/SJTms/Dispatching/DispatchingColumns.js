@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-02 08:59:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-15 14:39:44
+ * @LastEditTime: 2022-04-19 08:58:52
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingColumns.js
  */
@@ -17,16 +17,16 @@ export const OrderColumns = [
     width: 80,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
-  {
-    title: '波次',
-    dataIndex: 'WAVENUM',
-    width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
-  },
+  // {
+  //   title: '波次',
+  //   dataIndex: 'WAVENUM',
+  //   width: 80,
+  //   render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+  // },
   {
     title: '送货点',
     dataIndex: 'DELIVERYPOINTCODE',
-    width: 120,
+    width: 150,
     render: (val, record) => {
       let data = {
         code: record.DELIVERYPOINTCODE,
@@ -40,33 +40,35 @@ export const OrderColumns = [
     dataIndex: 'REALCARTONCOUNT',
     width: 80,
     render: (val, record) =>
-      val != undefined ? <span>{record.CARTONCOUNT + '/' + val}</span> : <Empty />,
+      val != undefined ? <EllipsisCol colValue={record.CARTONCOUNT + '/' + val} /> : <Empty />,
   },
   {
     title: '散件数(估/实)',
     dataIndex: 'REALSCATTEREDCOUNT',
     width: 80,
     render: (val, record) =>
-      val != undefined ? <span>{record.SCATTEREDCOUNT + '/' + val}</span> : <Empty />,
+      val != undefined ? <EllipsisCol colValue={record.SCATTEREDCOUNT + '/' + val} /> : <Empty />,
   },
   {
     title: '周转箱(估/实)',
     dataIndex: 'REALCONTAINERCOUNT',
     width: 80,
     render: (val, record) =>
-      val != undefined ? <span>{record.CONTAINERCOUNT + '/' + val}</span> : <Empty />,
+      val != undefined ? <EllipsisCol colValue={record.CONTAINERCOUNT + '/' + val} /> : <Empty />,
   },
   {
     title: '体积(估/实)',
     dataIndex: 'REALVOLUME',
     width: 100,
-    render: (val, record) => (val ? <span>{record.FORECASTVOLUME + '/' + val}</span> : <Empty />),
+    render: (val, record) =>
+      val ? <EllipsisCol colValue={record.FORECASTVOLUME + '/' + val} /> : <Empty />,
   },
   {
     title: '重量(估/实)',
     dataIndex: 'REALWEIGHT',
     width: 100,
-    render: (val, record) => (val ? <span>{record.FORECASTWEIGHT + '/' + val}</span> : <Empty />),
+    render: (val, record) =>
+      val ? <EllipsisCol colValue={record.FORECASTWEIGHT + '/' + val} /> : <Empty />,
   },
   {
     title: '货主',
