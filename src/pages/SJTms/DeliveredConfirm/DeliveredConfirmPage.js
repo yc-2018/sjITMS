@@ -98,7 +98,7 @@ export default class DeliveredConfirmPage extends SearchForm{
         console.log("onsearch");
         if(pageData['SCHEDULEBILLNUMBER']){
           pageFilters.queryParams.push(
-            {
+            {//SCHEDULEBILLNUMBER
               field: 'SCHEDULEBILLNUMBER',
               type: 'VarChar',
               rule: 'eq',
@@ -130,7 +130,7 @@ export default class DeliveredConfirmPage extends SearchForm{
         const params =  JSON.parse(JSON.stringify(pageFilters.queryParams));
      
         this.setState({tableList:<DeliveredConfirmSearch   key={Date.now()} quickuuid= 'ITMS_SHIP_ORDER_STORE_CONFIRM' pageFilters = {params} />
-         ,tableList2:<DeliveredBillCheck quickuuid = 'sj_schedule_order_bill_check' pageFilters = {params} ></DeliveredBillCheck>
+         ,tableList2:<DeliveredBillCheck quickuuid = 'sj_schedule_order_bill_check'  key={Date.now()} pageFilters = {params} ></DeliveredBillCheck>
         });
       }
     render() {

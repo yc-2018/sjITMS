@@ -6,7 +6,6 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import{confirmOrder} from '@/services/sjtms/DeliveredConfirm';
 import Result from '@/components/Result';
 import { res } from '@/pages/In/Move/PlaneMovePermission';
-import PubSub from 'pubsub-js' 
 import { queryIdleAndThisPostionUseing } from '@/services/facility/Container';
 @connect(({ quick, loading }) => ({
     quick,
@@ -41,13 +40,13 @@ export default class DeliveredBillCheck extends QuickFormSearchPage {
   drawToolbarPanel = () => {};
   //该方法会覆盖所有的上层按钮
   drawActionButton = () => {
-
+    return (<><Button onClick={this.checkAndSave}>核对并保存单据</Button></>)
   };
  // 该方法会覆盖所有的搜索查询
   drawSearchPanel=()=>{}
   //该方法会覆盖所有的中间功能按钮
   drawToolbarPanel = () => {
-    return (<><Button onClick={this.checkAndSave}>核对并保存单据</Button></>)
+    
   };
   checkAndSave = async ()=>{
     const{selectedRows} = this.state;

@@ -10,7 +10,6 @@ import { deliveredConfirmLocale } from './DeliveredConfirmLocale';
 import StandardTable from '@/components/StandardTable';
 import { commonLocale, placeholderLocale, placeholderChooseLocale } from '@/utils/CommonLocale';
 import DeliveredBillCheck from './DeliveredBillCheck'
-import PubSub from 'pubsub-js' 
 import { TITLE_SEPARATION } from '@/utils/constants';
 @connect(({ quick, deliveredConfirm,loading, }) => ({
   quick,
