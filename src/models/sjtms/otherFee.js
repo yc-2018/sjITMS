@@ -1,12 +1,12 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-03-09 10:39:39
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-03-09 16:25:36
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-04-22 11:28:36
  * @Description: file content
  * @FilePath: \iwms-web\src\models\tms\lineSystem.js
  */
-import { modify, query } from '@/services/sjtms/OtherFee';
+import { modify, query } from '@/services/sjtms/OtherFeeService';
 export default {
   namespace: 'otherFee',
   state: { showPage: 'query' },
