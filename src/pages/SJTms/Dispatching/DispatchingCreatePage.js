@@ -128,7 +128,7 @@ export default class DispatchingCreatePage extends Component {
         code: driver.CODE,
         name: driver.NAME,
       },
-      orderDetails: data.map(x => x.UUID),
+      orderUuids: data.map(x => x.UUID),
       memberDetails: selectEmployees.map((x, index) => {
         return {
           line: index + 1,
