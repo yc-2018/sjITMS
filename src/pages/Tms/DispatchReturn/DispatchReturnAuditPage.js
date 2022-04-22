@@ -164,8 +164,6 @@ export default class DispatchReturnAuditPage extends SearchPage {
   onAudit=(name)=>{
     const { selectedRows } = this.state;
     let list = [];
-    console.log("name",name);
-    debugger;
     if(name){
       selectedRows.forEach(row=>{
         let list = []

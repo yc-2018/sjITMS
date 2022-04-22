@@ -83,14 +83,7 @@ export default class DeliveredConfirmPage extends SearchForm{
         return cols;
       };
      
-      onChangeBill =()=>{
-        console.log("aaaa11");
-        PubSub.subscribe("aaaa",(msg,obj)=>{
-          debugger
-          console.log("aaaa",obj);
-            this.setState({pageFilters:obj})
-        })
-      }
+     
      
       onSearch = (pageData)=>{
         const{pageFilters } = this.state;
@@ -144,7 +137,7 @@ export default class DeliveredConfirmPage extends SearchForm{
           </Form>
         </SearchPanel>
         <Page>
-          <Tabs defaultActiveKey="store" onChange={this.onChangeBill1}>
+          <Tabs defaultActiveKey="store">
           <TabPane tab={"送货确认"} key="store">
               {this.state.tableList}
           </TabPane>

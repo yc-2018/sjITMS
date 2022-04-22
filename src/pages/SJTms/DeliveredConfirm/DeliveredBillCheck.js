@@ -7,6 +7,7 @@ import{confirmOrder} from '@/services/sjtms/DeliveredConfirm';
 import Result from '@/components/Result';
 import { res } from '@/pages/In/Move/PlaneMovePermission';
 import { queryIdleAndThisPostionUseing } from '@/services/facility/Container';
+import { loginOrg, loginCompany, loginUser } from '@/utils/LoginContext';
 @connect(({ quick, loading }) => ({
     quick,
     loading: loading.models.quick,
@@ -50,12 +51,11 @@ export default class DeliveredBillCheck extends QuickFormSearchPage {
   };
   checkAndSave = async ()=>{
     const{selectedRows} = this.state;
-    let ids = [];
     selectedRows.forEach(e=>{
-      ids.push(e.UUID);
+      e.companyUuid = loginCompany().uuid;
+      e.dispatchCenterUuid = loginOrg().uuid;
     })
-    console.log(ids);
-    await confirmOrder(ids).then(result=>{
+    await confirmOrder(selectedRows).then(result=>{
       if(result && result.success){
         this.refreshTable();
         message.success("保存成功");
