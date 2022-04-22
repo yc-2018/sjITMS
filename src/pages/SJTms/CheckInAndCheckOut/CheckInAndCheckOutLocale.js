@@ -1,0 +1,15 @@
+export const checkInAndCheckOutLocals = {
+  title: '出车回车登记1',
+  driver: '司机',
+  carrier: '承运商',
+  shipBillNumber: '装车单号',
+  vehicleInfo: '车辆信息',
+  deliveryMan: '送货员',
+  shipPlanBillNumber: '排车单号',
+  checkOutTime: '出车时间',
+  checkInTime: '回车时间',
+  itemsCount: '明细数',
+  totalWeight: '总重(吨)',
+  volume: '体积(立方米)',
+  noticeMessage: '提示信息',
+}

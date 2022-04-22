@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-09 10:31:16
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-07 15:39:29
+ * @LastEditTime: 2022-03-31 16:56:50
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineSystemSearchPage.js
  */
@@ -18,7 +18,7 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import LineShipAddress from './LineShipAddress';
 import LineSystemCreatePage from './LineSystemCreatePage';
 import LineMap from './LineMap';
-import { dynamicqueryById, dynamicDelete } from '@/services/quick/Quick';
+import { dynamicqueryById, dynamicDelete,findLineSystemTree,deleteLineSystemTree } from '@/services/quick/Quick';
 import linesStyles from './LineSystem.less';
 
 const { Content, Sider } = Layout;
@@ -44,53 +44,78 @@ export default class LineSystemSearchPage extends Component {
   componentDidMount() {
     this.queryLineSystem();
   }
-
+  //遍历树
+  getLineSystemTree =(data,itemData,lineData)=>{
+    console.log("lineData",lineData);
+      let treeNode = [];
+      let ef = [];
+      if(Array.isArray(data)){
+        data.forEach(e =>{
+         let temp = {};
+         temp.value=`[${e.code}]` + e.name;
+         temp.key=e.uuid;
+         temp.title =  `[${e.code}]` + e.name;
+         temp.icon=<Icon type="swap" rotate={90} />;
+        // temp.system=true;
+         treeNode.push(temp);
+         ef.push(e);
+         if(data.type=='lineSystem'){
+           //temp.disabled=true;
+           temp.system=true;
+           temp.selectable = false;
+         } 
+         data.type='line' &&  lineData.push(e);
+        })
+        itemData.children = treeNode; 
+       ef.forEach((f,index)=>{
+         this.getLineSystemTree(f,treeNode[index],lineData);
+       })
+      }else{
+        itemData.value=`[${data.code}]` + data.name;
+        itemData.key=data.uuid;
+        itemData.title =  `[${data.code}]` + data.name;
+        itemData.icon=<Icon type="swap" rotate={90} />;
+        if(data.type=='lineSystem'){
+          itemData.system=true;
+         // itemData.disabled=true;
+          itemData.selectable = false;
+        } 
+        data.type='line' && lineData.push(data);
+          
+         
+        if(data.childLines){
+          this.getLineSystemTree(data.childLines,itemData,lineData);
+        }
+      }
+  }
+      
+    
+  
   //查询所有线路体系
   queryLineSystem = async () => {
-    await dynamicqueryById({ tableName: 'SJ_ITMS_LINESYSTEM' }).then(async response => {
-      if (response.result) {
-        const { selectLineUuid, lineData } = this.state;
-        let newSelectLineUuid = '';
-        let lineTreeData = [];
-        const frames = response.result.records;
-        frames.forEach(async element => {
-          const lines = await this.getSerialArchLineList(element.UUID);
-          if (lines.result.records != 'false') {
-            lineTreeData.push({
-              value: `[${element.CODE}]` + element.NAME,
-              key: element.UUID,
-              icon: <Icon type="swap" rotate={90} />,
-              system: true,
-              children: lines.result.records.map(record => {
-                lineData.push(record);
-                if (newSelectLineUuid == undefined) {
-                  newSelectLineUuid = record.UUID;
-                }
-                return {
-                  value: `[${record.CODE}]` + record.NAME,
-                  key: record.UUID,
-                  icon: <Icon type="swap" rotate={90} />,
-                };
-              }),
-            });
-          } else {
-            lineTreeData.push({
-              value: `[${element.CODE}]` + element.NAME,
-              key: element.UUID,
-              icon: <Icon type="swap" rotate={90} />,
-              system: true,
-            });
-          }
-          this.setState({
-            expandKeys: lineTreeData.map(x => x.key),
-            lineTreeData,
-            lineData,
-            selectLineUuid: newSelectLineUuid,
-          });
+    await findLineSystemTree().then(async response => {
+       console.log("response",response.data);
+       let lineTreeData = [];
+       let lineData = [];
+      if(response){
+         const data= response.data;
+         data.forEach((element) =>{
+           let itemData = {};
+           this.getLineSystemTree(element,itemData,lineData)
+          lineTreeData.push(itemData);
+
+         })
+         console.log("data",lineTreeData);
+         this.setState({
+          expandKeys: lineTreeData.map(x => x.key),
+          lineTreeData,
+          lineData,
+          selectLineUuid: lineTreeData[0].children[0].key,
         });
-        this.onSelect(this.state.selectLineUuid);
-      }
-    });
+        this.onSelect([this.state.selectLineUuid]);
+       }
+    })
+    
   };
   //查询线路体系下所有线路
   getSerialArchLineList = async defSchemeUuid => {
@@ -127,16 +152,7 @@ export default class LineSystemSearchPage extends Component {
     Modal.confirm({
       title: '确定删除?',
       onOk: async () => {
-        const params = [
-          {
-            tableName: 'SJ_ITMS_LINE',
-            condition: {
-              params: [{ field: 'UUID', rule: 'eq', val: [lineUuid] }],
-            },
-            deleteAll: 'false',
-          },
-        ];
-        await dynamicDelete(params).then(result => {
+        await deleteLineSystemTree(lineUuid).then(result => {
           if (result.success) {
             message.success('删除成功！');
             this.queryLineSystem();
@@ -152,6 +168,8 @@ export default class LineSystemSearchPage extends Component {
   onSelect = (selectedKeys, event) => {
     if (event && !event.selected) return;
     const { lineTreeData, lineData } = this.state;
+    console.log("selectedKeys",selectedKeys[0]);
+    console.log("lineTreeData",lineTreeData);
     const system = lineTreeData.find(x => x.key == selectedKeys[0]);
     this.setState({
       rightContent: system ? (
@@ -197,8 +215,9 @@ export default class LineSystemSearchPage extends Component {
               key={`Line${selectedKeys[0]}`}
               quickuuid="sj_itms_line_shipaddress"
               lineuuid={selectedKeys[0]}
+              lineTreeData = {this.state.lineTreeData}
               linecode={
-                lineData.length > 0 ? lineData.find(x => x.UUID == selectedKeys[0]).CODE : ''
+                lineData.length > 0 ? lineData.find(x => x.uuid == selectedKeys[0]).code : ''
               }
             />
           </TabPane>
@@ -223,15 +242,16 @@ export default class LineSystemSearchPage extends Component {
 
   //绘制左侧菜单栏
   drawSider = () => {
-    const { expandKeys, lineTreeData, selectLineUuid } = this.state;
+    const { expandKeys,selectLineUuid } = this.state;
+    var lineTreeData = JSON.parse(JSON.stringify(this.state.lineTreeData));
     const renderTreeNode = data => {
       let nodeArr = data.map(item => {
         item.title = (
           <div>
             <span>{item.value}</span>
-            {item.system || item.key != selectLineUuid ? (
+             {item.system || item.key != selectLineUuid ? (
               <span />
-            ) : (
+            ) : ( 
               <span style={{ float: 'right' }}>
                 <a style={{ marginRight: 15 }} onClick={() => this.lineEditPageModalRef.show()}>
                   编辑
@@ -240,7 +260,7 @@ export default class LineSystemSearchPage extends Component {
                   删除
                 </a>
               </span>
-            )}
+           )}
           </div>
         );
         if (item.children) {

@@ -2,18 +2,25 @@
  * @Author: guankongjin
  * @Date: 2022-03-10 09:59:43
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-07 15:47:30
+ * @LastEditTime: 2022-03-31 17:03:29
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineShipAddress.js
  */
 import { connect } from 'dva';
-import { Table, Modal, Button, Input, message } from 'antd';
+import { Table, Modal, Button, Input, message,Form,Row,Col,Select, TreeSelect } from 'antd';
 import OperateCol from '@/pages/Component/Form/OperateCol';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
-import { dynamicDelete } from '@/services/quick/Quick';
+import {deleteLineStoreAddressById,findLineByNameLike,addToNewLine } from '@/services/quick/Quick';
 import { commonLocale } from '@/utils/CommonLocale';
 import TableTransfer from './TableTransfer';
+import { disable } from '@/services/account/Company';
+import {
+  SimpleTreeSelect,
+  SimpleSelect,
+  SimpleRadio,
+  SimpleAutoComplete,
+} from '@/pages/Component/RapidDevelopment/CommonComponent';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -32,8 +39,16 @@ export default class LineShipAddress extends QuickFormSearchPage {
     transferColumnsTitle: '',
     transferDataSource: [],
     targetKeys: [],
-  };
+    buttonDisable:false,
+    lineModalVisible:false,
+    lineData:[],
+    lineValue:undefined
 
+  };
+constructor(props){
+  super(props);
+}
+ 
   getLineShipAddress = () => {
     return this.state.data;
   };
@@ -64,7 +79,9 @@ export default class LineShipAddress extends QuickFormSearchPage {
       },
     ];
   };
-
+  componentWillReceiveProps(nextProps){
+    console.log("xl",nextProps);
+  }
   //列删除操作
   renderOperateCol = record => {
     return <OperateCol menus={this.fetchOperatePropsCommon(record)} />;
@@ -87,16 +104,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
   //删除执行
   handleDelete = async shipAddressUuid => {
     const { pageFilters } = this.state;
-    const params = [
-      {
-        tableName: 'SJ_ITMS_LINE_SHIPADDRESS',
-        condition: {
-          params: [{ field: 'UUID', rule: 'eq', val: [shipAddressUuid] }],
-        },
-        deleteAll: 'false',
-      },
-    ];
-    await dynamicDelete({ params: params }).then(result => {
+    await deleteLineStoreAddressById(shipAddressUuid).then(result => {
       if (result.success) {
         message.success('删除成功！');
         this.getData(pageFilters);
@@ -181,13 +189,22 @@ export default class LineShipAddress extends QuickFormSearchPage {
   };
 
   drawActionButton = () => {
+   // const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = this.props;
     const {
       modalVisible,
       modalTitle,
       modalQuickuuid,
       transferColumnsTitle,
       targetKeys,
+      lineModalVisible,
+      lineData
     } = this.state;
+    console.log("lineData",lineData);
+    console.log("lineTreeData",this.props.lineTreeData);
+    const options = lineData.map(a=>{
+        return <Select.Option key={a.uuid}>{a.name}</Select.Option>
+    })
+    console.log("options",options);
     return (
       <div>
         <Modal
@@ -206,6 +223,46 @@ export default class LineShipAddress extends QuickFormSearchPage {
             handleFetch={this.onTranferFetch}
             quickuuid={modalQuickuuid}
           />
+        </Modal>
+        <Modal
+          title={modalTitle}
+          width={800}
+          visible={lineModalVisible}
+          onOk={this.handleAddToNewLine}
+          confirmLoading={false}
+          onCancel={() => this.setState({ lineModalVisible: false })}
+          destroyOnClose
+        >
+          <Form ref="xlref">
+         <Row>
+           <Col>
+            <Form.Item label= "线路" >
+            {/* <Select
+        showSearch
+        value={this.state.lineValue}
+        placeholder={this.props.placeholder}
+        style={this.props.style}
+        defaultActiveFirstOption={false}
+        showArrow={false}
+        filterOption={false}
+        onSearch={this.handleSearch}
+        onChange={this.handleChange}
+        notFoundContent={null}
+      >
+        {options}
+      </Select> */}
+      <TreeSelect
+                allowClear={true}
+                optionFilterProp="children"
+                treeData={this.props.lineTreeData}
+                // 将value进行了一层包装，以方便日后扩展
+                value={this.state.lineValue}
+                onChange={this.handleChange}
+            />
+            </Form.Item>
+           </Col>
+         </Row>
+         </Form>
         </Modal>
 
         <Button type="primary" icon="plus" onClick={this.handleAddStore}>
@@ -228,11 +285,44 @@ export default class LineShipAddress extends QuickFormSearchPage {
     );
   };
 
+ 
+  handleSearch = async (value)=>{
+    if(value){
+    await findLineByNameLike(value).then(result => {
+      if(result && result.data){
+        this.setState({lineData:result.data})
+      }else{
+        this.setState({});
+      }
+    })
+  }
+  }
+  handleChange = value=>{
+     this.setState({lineValue:value});
+  }
+  handleAddToNewLine  =async()=>{
+    const{selectedRows,lineValue} = this.state;
+    let params = {
+      lineuuid : lineValue,
+      addressIds:selectedRows.map(e=>e.UUID)
+      
+    }
+    await addToNewLine(params).then(result=>{
+      if(result){
+       message.success("添加成功");
+      }else{
+        message.error("添加失败");
+      }
+      this.setState({lineValue:undefined,lineData:[],selectedRows:[],lineModalVisible:false})
+    })
+    
+  }
   drawToolbarPanel = () => {
+    const {buttonDisable} = this.state;
     return (
       <div style={{ marginBottom: 15 }}>
-        <Button>排序</Button>
-        <Button>保存</Button>
+       { buttonDisable?<Button onClick={this.tableSortSave} >排序并保存</Button>:<></>}
+        <Button onClick={this.addToNewLine}>添加到新线路</Button>
       </div>
     );
   };
@@ -244,6 +334,22 @@ export default class LineShipAddress extends QuickFormSearchPage {
       record.ORDERNUM = index + 1;
       return record;
     });
-    this.saveFormData(data.list);
+    this.setState({buttonDisable:true})
+    //this.saveFormData(data.list);
   };
+
+  tableSortSave = ()=>{
+    const { data } = this.state;
+    this.saveFormData(data.list);
+  }
+
+  addToNewLine = ()=>{
+    const{selectedRows} = this.state;
+    if(selectedRows.length>0){
+      this.setState({lineModalVisible:true,modalTitle:'添加到新的线路'})
+    }else{
+      message.warn("至少选择一条记录");
+    }
+   
+  }
 }
