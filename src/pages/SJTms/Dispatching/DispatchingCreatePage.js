@@ -98,6 +98,7 @@ export default class DispatchingCreatePage extends Component {
     const { selectEmployees } = this.state;
     let employees = [...selectEmployees];
     const index = selectEmployees.findIndex(x => x.UUID == employee.UUID);
+    employee.memberType = undefined;
     index == -1 ? employees.push(employee) : employees.splice(index, 1);
     this.setState({ selectEmployees: employees });
   };
@@ -288,10 +289,30 @@ export default class DispatchingCreatePage extends Component {
             <Card title="车辆" style={{ height: '15vh', marginTop: 8 }}>
               {selectVehicle.PLATENUMBER ? (
                 <Row>
-                  <Col span={8}>{selectVehicle.PLATENUMBER}</Col>
-                  <Col span={8} offset={4}>
-                    车型：
-                    {selectVehicle.VEHICLETYPE}
+                  <Col span={6}>
+                    <div>{selectVehicle.PLATENUMBER}</div>
+                    <div>
+                      车型：
+                      {selectVehicle.VEHICLETYPE}
+                    </div>
+                  </Col>
+                  <Col span={14} offset={2}>
+                    <div>
+                      <span>
+                        容积：
+                        {selectVehicle.BEARVOLUME}
+                        m³
+                      </span>
+                      <span>
+                        容积率：
+                        {selectVehicle.BEARVOLUMERATE}%
+                      </span>
+                    </div>
+                    <div>
+                      载重：
+                      {selectVehicle.BEARWEIGHT}
+                      kg
+                    </div>
                   </Col>
                 </Row>
               ) : (
@@ -302,17 +323,33 @@ export default class DispatchingCreatePage extends Component {
               {selectEmployees.map(employee => {
                 return (
                   <Row gutter={[8, 8]}>
-                    <Col span={8}>{`[${employee.CODE}]` + employee.NAME}</Col>
-                    <Col span={8} offset={4}>
+                    <Col span={8}>
+                      <div style={{ lineHeight: '30px' }}>
+                        {`[${employee.CODE}]` + employee.NAME}
+                      </div>
+                    </Col>
+                    <Col span={10}>
                       <Select
                         placeholder="请选择员工类型"
                         onChange={this.handleEmployeeTypeChange(employee)}
-                        style={{ width: 150 }}
+                        style={{ width: '100%' }}
+                        value={employee.memberType}
                       >
                         {employeeType.map(d => (
                           <Select.Option key={d.VALUE}>{d.NAME}</Select.Option>
                         ))}
                       </Select>
+                    </Col>
+                    <Col span={4} offset={2}>
+                      <a
+                        href="#"
+                        style={{ lineHeight: '30px' }}
+                        onClick={() => {
+                          this.handleEmployee(employee);
+                        }}
+                      >
+                        移除
+                      </a>
                     </Col>
                   </Row>
                 );

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-01 08:43:48
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-12 09:10:25
+ * @LastEditTime: 2022-04-15 14:56:37
  * @Description: 嵌套子表格组件
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\CardTable.js
  */
@@ -132,6 +132,7 @@ export default class CardTable extends Component {
       nestColumns,
       childTable,
       dataSource,
+      loading,
     } = this.props;
     const { selectedRowKeys, childSelectedRowKeys } = this.state;
     const childRowSelection = {
@@ -164,6 +165,7 @@ export default class CardTable extends Component {
       <Table
         rowSelection={rowSelect ? parentRowSelection : ''}
         columns={columns}
+        loading={loading}
         size="small"
         rowKey={record => record.UUID}
         dataSource={dataSource}
