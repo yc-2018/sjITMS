@@ -184,7 +184,7 @@ convertCodeName = ()=>{
     return;
   }
   this.props.dispatch({
-    type: 'dispatchReturn1/onConfirm',
+    type: 'dispatchReturnStore/onConfirm',
     payload:selectedRows,
     callback:response=>{
       this.setState({selectedRows:[]});
@@ -199,35 +199,13 @@ convertCodeName = ()=>{
 
 
 audits =(name)=>{
-  console.log("name");
   const { selectedRows, batchAction } = this.state;
   if(selectedRows.length<1){
     message.warn("请至少选择一条记录");
     return;
   }
-  selectedRows.forEach(element => {
-    let feeItems = [];
-    name.forEach(item=>{
-      let  feeItem = {};
-      if(item=='业务费'){
-        feeItem.amount = element["OPERATION_FEE"];
-      }
-      if(item=='罚款'){
-        feeItem.amount = element["FINE"];
-      }
-      if(item=='高速费'){
-        feeItem.amount = element['HIGH_SPEED_FEE'];
-      }
-      if(item=='装卸费'){ 
-        feeItem.amount = element['HANDLING_CHARGES'];
-      }
-      feeItem.feeType = item;
-      feeItems.push(feeItem);
-    })
-    element.feeItems = feeItems;
-  });
   this.props.dispatch({
-    type: 'dispatchReturn1/onAudit',
+    type: 'dispatchReturnStore/onAudit',
     payload:selectedRows,
     callback:response=>{
       this.setState({selectedRows:[]});

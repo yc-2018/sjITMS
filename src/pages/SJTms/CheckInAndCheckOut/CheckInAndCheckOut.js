@@ -142,18 +142,6 @@ export default class CheckInAndCheckOut extends SearchPage {
       wrapperCol: { span: 36 },
       colon: false,
     };
-    // return (
-    //   <div className={styles.notePanel}>
-    //     <FormTitle title={'刷卡结果'} className={styles.formTitle} />
-    //     <Row style={{ marginLeft: 30 }}>
-    //       <Col span={36}>
-    //         <FormItem {...noteItemLayout}>
-    //           <Input.TextArea style={responseError ? { color: '#F5222D' } : {}} value={responseMsg}  rows={4} />
-    //         </FormItem>
-    //       </Col>
-    //     </Row>
-    //   </div>
-    // );
     return ( 
     <Card title="刷卡结果" bordered={false} style={{ width: '100%' ,height:'640px'}}>
     <Input.TextArea style={responseError ? { color: '#F5222D' } : {}} value={responseMsg}  rows={28}/>
@@ -218,44 +206,6 @@ export default class CheckInAndCheckOut extends SearchPage {
       </Row>
    </Card>
  )
-    
-    
-    // let cols = [
-    //   <CFormItem label={checkInAndCheckOutLocals.shipPlanBillNumber}
-    //     key='shipPlanBillNumber'>
-    //     {getFieldDecorator('shipPlanBillNumber')
-    //       (<Row><Col>{shipPlanBill ? shipPlanBill.billNumber : <Empty />}</Col></Row>)}
-    //   </CFormItem>,
-    //   <CFormItem label={checkInAndCheckOutLocals.itemsCount}
-    //     key='qtyStr'>
-    //     {getFieldDecorator('qtyStr')
-    //       (<Row><Col>{shipBill ? shipBill.qtyStr : <Empty />}</Col></Row>)}
-    //   </CFormItem>,
-    //   <CFormItem label={checkInAndCheckOutLocals.checkOutTime}
-    //     key='dispatchTime'>
-    //     {getFieldDecorator('dispatchTime')
-    //       (<Col>{shipBill ? shipBill.dispatchTime : <Empty />}</Col>)}
-    //   </CFormItem>,
-    //   <CFormItem label={checkInAndCheckOutLocals.checkInTime}
-    //     key='returnTime'>
-    //     {getFieldDecorator('returnTime')
-    //       (<Col>{shipBill ? shipBill.returnTime : <Empty />}</Col>)}
-    //   </CFormItem>,
-    //   <CFormItem label={checkInAndCheckOutLocals.totalWeight}
-    //     key='weight'>
-    //     {getFieldDecorator('weight')
-    //       (<Col>{shipPlanBill ? shipPlanBill.weight : <Empty />}</Col>)}
-    //   </CFormItem>,
-    //   <CFormItem label={checkInAndCheckOutLocals.volume}
-    //     key='volume'>
-    //     {getFieldDecorator('volume')
-    //       (<Col>{shipPlanBill ? shipPlanBill.volume : <Empty />}</Col>)}
-    //   </CFormItem>,
-    // ];
-
-    // return [
-    //   <FormPanel title={commonLocale.billInfoLocale} cols={cols} />,
-    // ];
   }
 
   render() {

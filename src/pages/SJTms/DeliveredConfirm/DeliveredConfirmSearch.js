@@ -5,6 +5,7 @@ import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 //import { convertCodeName } from '@/utils/utils';
 import StoreItemConfirmModal from './StoreItemConfirmModal';
+import DeliveredNoCheck from './DeliveredNoCheck'
 import { loginOrg, loginCompany, loginUser } from '@/utils/LoginContext';
 import { deliveredConfirmLocale } from './DeliveredConfirmLocale';
 import StandardTable from '@/components/StandardTable';
@@ -239,12 +240,7 @@ handleCancel = ()=>{
   this.setState({isShowStandardTable:false})
 }
 //票据核对
-chickOrder = ()=>{
-  const{selectedRows} = this.state;
-  if(selectedRows.length!=1){
-    message.warn("请选择一条记录");
-    return ;
-  }
+showNoDelivered = ()=>{
  this.setState({isShowStandardTable:true});
 }
   //该方法会覆盖所有的上层按钮
@@ -260,7 +256,6 @@ chickOrder = ()=>{
       scheduleBillNumber ,
       selectedRows
      } = this.state;
-     console.log("selectedRows",selectedRows);
 return (
   <span>
      <StoreItemConfirmModal
@@ -276,7 +271,8 @@ return (
     visible={this.state.isShowStandardTable}
    onOk={this.handleOk} 
    onCancel={this.handleCancel} 
-   width ={1200}
+   width ={1400}
+   style={{overflow:'auto'}}
    >
   {/* <Button >保存票据</Button> */}
   {/* <StandardTable
@@ -289,9 +285,9 @@ return (
       onSelectRow={this.handleBillSelectRows}
       onChange={this.handleStandardTableChange}
     /> */}
-    <DeliveredBillCheck quickuuid = 'sj_schedule_order_bill_check' scheduleData ={selectedRows[0]} />
+    <DeliveredNoCheck quickuuid = 'sj_schedule_order_no_check'/>
   </Modal>
-  
+  <Button onClick={this.showNoDelivered}>回车未送达确认</Button>
     <Button onClick={this.saveDelivered}>保存门店送货</Button>
     <Button onClick={this.deliveredConfirmSchedule}>全部送达</Button>
     <Button  onClick={this.unDeliveredConfirmSchedule}>全部未送达</Button>

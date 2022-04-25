@@ -8,6 +8,7 @@ import {
   confirmOrderUndelivered,
   deliveredConfirmSchedule,
   unDeliveredConfirmSchedule,
+  updateNoDelivered
 } from '@/services/sjtms/DeliveredConfirm';
 
 export default {
@@ -65,6 +66,10 @@ export default {
         },
         *queryScheduleNo({ payload,callback }, { call, put }) {
             const response = yield call(queryScheduleNo, payload);
+            if (callback) callback(response);
+        },
+        *updateNoDelivered({ payload,callback }, { call, put }) {
+            const response = yield call(updateNoDelivered, payload);
             if (callback) callback(response);
         },
         *queryBill({ payload }, { call, put }) {

@@ -59,7 +59,7 @@ export async function confirmOrderUndelivered(payload) {
   });
 }
 
-// 全部已送达
+// 全部已送达,全部未送达
 export async function deliveredConfirmSchedule(payload) {
   return request(`/itms-schedule/itms-schedule/newoperation/deliveredconfirm/confirm/schedule/newDeliveredConfirmSchedule`, {
     method: 'POST',
@@ -67,8 +67,14 @@ export async function deliveredConfirmSchedule(payload) {
   });
 }
 // 全部未送达
-export async function unDeliveredConfirmSchedule(payload) {
-  return request(`/itms-schedule/itms-schedule/operation/deliveredconfirm/confirm/schedule/unDeliveredConfirmSchedule`, {
+// export async function unDeliveredConfirmSchedule(payload) {
+//   return request(`/itms-schedule/itms-schedule/operation/deliveredconfirm/confirm/schedule/unDeliveredConfirmSchedule`, {
+//     method: 'POST',
+//     body: payload
+//   });
+// }
+export async function updateNoDelivered(payload){
+  return request(`/itms-schedule/itms-schedule/newoperation/deliveredconfirm/confirm/schedule/updateNoDelivered`, {
     method: 'POST',
     body: payload
   });
