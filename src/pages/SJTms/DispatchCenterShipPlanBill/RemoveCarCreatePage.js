@@ -2,11 +2,11 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-20 10:41:30
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-21 12:00:21
+ * @LastEditTime: 2022-04-25 15:20:44
  * @version: 1.0
  */
 import { connect } from 'dva';
-import { Form } from 'antd';
+import { Form, message } from 'antd';
 import { loginCompany } from '@/utils/LoginContext';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import { dynamicqueryById } from '@/services/quick/Quick';
@@ -21,7 +21,6 @@ export default class RemoveCarCreatePage extends QuickCreatePage {
   exHandleChange = async e => {
     const { tableName, fieldName, line, fieldShowType, props, valueEvent } = e;
     const { form } = this.props;
-    console.log('valueEvent', valueEvent);
 
     if (fieldName == 'REMOVECAR' && valueEvent) {
       const param = {
@@ -61,15 +60,19 @@ export default class RemoveCarCreatePage extends QuickCreatePage {
       this.entity['V_SJ_ITMS_SCHEDULE'][0].VEHICLETYPEUUID = valueEvent.record.VEHICLETYPEUUID;
       this.entity['V_SJ_ITMS_SCHEDULE'][0].VEHICLETYPECODE = valueEvent.record.VEHICLETYPECODE;
       this.entity['V_SJ_ITMS_SCHEDULE'][0].VEHICLETYPENAME = valueEvent.record.VEHICLETYPENAME;
-
-      console.log(this.entity);
     }
   };
 
   onSave = async () => {
     const { entity } = this;
-    console.log('entity', entity);
-    await removeCar(entity);
+    await removeCar(entity).then(result => {
+      if (result.success) {
+        this.onSaved(result.success);
+        message.success('移车成功,已作废此排车单,生成对应的新排车单');
+      } else {
+        message.success('移车时发生错误，请联系管理员');
+      }
+    });
   };
 
   initEntity = () => {
