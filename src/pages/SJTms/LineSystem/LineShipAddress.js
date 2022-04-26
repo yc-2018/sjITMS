@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-10 09:59:43
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-22 10:08:13
+ * @LastEditTime: 2022-04-22 14:36:26
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineShipAddress.js
  */
@@ -63,9 +63,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
           defaultValue={event.val}
           value={event.val}
           style={{ width: 80, textAlign: 'center' }}
-          onChange={event => {
-            console.log(event);
-          }}
+          onChange={event => {}}
         />
       );
       event.component = component;
@@ -82,9 +80,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
       },
     ];
   };
-  componentWillReceiveProps(nextProps) {
-    console.log('xl', nextProps);
-  }
+
   //列删除操作
   renderOperateCol = record => {
     return <OperateCol menus={this.fetchOperatePropsCommon(record)} />;
@@ -202,12 +198,9 @@ export default class LineShipAddress extends QuickFormSearchPage {
       lineModalVisible,
       lineData,
     } = this.state;
-    console.log('lineData', lineData);
-    console.log('lineTreeData', this.props.lineTreeData);
     const options = lineData.map(a => {
       return <Select.Option key={a.uuid}>{a.name}</Select.Option>;
     });
-    console.log('options', options);
     return (
       <div>
         <Modal

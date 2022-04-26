@@ -128,7 +128,9 @@ export default class DispatchingCreatePage extends Component {
         code: driver.CODE,
         name: driver.NAME,
       },
-      orderUuids: data.map(x => x.UUID),
+      details: data.map(item => {
+        return { ...item, orderUuid: item.uuid, orderNumber: item.billNumber };
+      }),
       memberDetails: selectEmployees.map((x, index) => {
         return {
           line: index + 1,
@@ -136,18 +138,18 @@ export default class DispatchingCreatePage extends Component {
           memberType: x.memberType,
         };
       }),
-      cartonCount: sumBy(data.map(x => x.CARTONCOUNT)),
-      scatteredCount: sumBy(data.map(x => x.SCATTEREDCOUNT)),
-      containerCount: sumBy(data.map(x => x.CONTAINERCOUNT)),
-      realCartonCount: sumBy(data.map(x => x.REALCARTONCOUNT)),
-      realScatteredCount: sumBy(data.map(x => x.REALSCATTEREDCOUNT)),
-      realContainerCount: sumBy(data.map(x => x.REALCONTAINERCOUNT)),
-      weight: sumBy(data.map(x => Number(x.REALWEIGHT))),
-      volume: sumBy(data.map(x => Number(x.REALVOLUME))),
-      totalAmount: 0,
-      deliveryPointCount: uniq(data.map(x => x.DELIVERYPOINTCODE)).length,
-      pickupPointCount: uniq(data.map(x => x.PICKUPPOINTNAME)).length,
-      ownerCount: uniq(data.map(x => x.OWNER)).length,
+      cartonCount: sumBy(data.map(x => x.cartoncount)),
+      scatteredCount: sumBy(data.map(x => x.scatteredcount)),
+      containerCount: sumBy(data.map(x => x.containercount)),
+      realCartonCount: sumBy(data.map(x => x.realcartoncount)),
+      realScatteredCount: sumBy(data.map(x => x.realscatteredcount)),
+      realContainerCount: sumBy(data.map(x => x.realcontainercount)),
+      weight: sumBy(data.map(x => Number(x.weight))),
+      volume: sumBy(data.map(x => Number(x.volume))),
+      totalAmount: sumBy(data.map(x => Number(x.amount))),
+      deliveryPointCount: uniq(data.map(x => x.deliverypointcode)).length,
+      pickupPointCount: uniq(data.map(x => x.pickuppointname)).length,
+      ownerCount: uniq(data.map(x => x.owner)).length,
       companyUuid: loginCompany().uuid,
       dispatchCenterUuid: loginOrg().uuid,
     };
@@ -269,7 +271,7 @@ export default class DispatchingCreatePage extends Component {
                   <div> 总体积</div>
                   <div>
                     <span className={dispatchingStyles.orderTotalNumber}>
-                      {sumBy(data.map(x => x.REALVOLUME)).toFixed(4)}
+                      {sumBy(data.map(x => x.volume)).toFixed(4)}
                     </span>
                     <span>m³</span>
                   </div>
@@ -279,7 +281,7 @@ export default class DispatchingCreatePage extends Component {
                   <div>总重量</div>
                   <div>
                     <span className={dispatchingStyles.orderTotalNumber}>
-                      {sumBy(data.map(x => x.REALWEIGHT)).toFixed(4)}
+                      {sumBy(data.map(x => x.weight)).toFixed(4)}
                     </span>
                     <span>kg</span>
                   </div>

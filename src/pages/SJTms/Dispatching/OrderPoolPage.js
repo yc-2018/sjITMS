@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-21 10:19:57
+ * @LastEditTime: 2022-04-26 10:36:58
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -17,7 +17,8 @@ import CardTable from './CardTable';
 import { OrderColumns } from './DispatchingColumns';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { queryAllData } from '@/services/quick/Quick';
+// import { queryAllData } from '@/services/quick/Quick';
+import { getOrderByStat, getOrderInPending, savePending } from '@/services/sjitms/OrderBill';
 import { groupBy, sumBy } from 'lodash';
 
 const { TabPane } = Tabs;
@@ -26,7 +27,6 @@ const { TabPane } = Tabs;
 export default class OrderPoolPage extends Component {
   state = {
     loading: false,
-    auditedData: [],
     scheduledData: [],
     pendingData: [],
     selectedRowKeys: [],
@@ -36,7 +36,7 @@ export default class OrderPoolPage extends Component {
   auditedTable = React.createRef();
 
   componentDidMount() {
-    this.getAuditedOrders('Delivery');
+    this.getAuditedOrders(this.state.activeTab);
   }
 
   //搜索
@@ -59,17 +59,20 @@ export default class OrderPoolPage extends Component {
   };
 
   //获取待排运输订单
-  getAuditedOrders = orderType => {
+  getAuditedOrders = orderStat => {
     this.setState({ loading: true });
-    let queryParams = [
-      { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
-      { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
-      { field: 'ORDERTYPE', type: 'VarChar', rule: 'eq', val: orderType },
-      { field: 'STAT', type: 'VarChar', rule: 'eq', val: 'Audited' },
-    ];
-    queryAllData({ quickuuid: 'sj_itms_order', superQuery: { queryParams } }).then(response => {
+    getOrderByStat(orderStat).then(response => {
       if (response.success) {
-        this.setState({ auditedData: response.data.records, loading: false });
+        this.setState({ loading: false, scheduledData: response.data });
+      }
+    });
+  };
+  //获取待排运输订单
+  getPendingOrders = activeKey => {
+    this.setState({ loading: true });
+    getOrderInPending().then(response => {
+      if (response.success) {
+        this.setState({ loading: false, pendingData: response.data });
       }
     });
   };
@@ -100,6 +103,14 @@ export default class OrderPoolPage extends Component {
   };
   handleTabChange = activeKey => {
     this.setState({ activeTab: activeKey });
+    switch (activeKey) {
+      case 'Pending':
+        this.getPendingOrders(activeKey);
+        break;
+      default:
+        this.getAuditedOrders(activeKey);
+        break;
+    }
   };
 
   //排车
@@ -112,24 +123,32 @@ export default class OrderPoolPage extends Component {
     this.setState({ selectedRowKeys });
     this.createPageModalRef.show();
   };
+  //添加到待定池
+  handleAddPending = () => {
+    const { selectedRowKeys } = this.auditedTable.current.state;
+    if (selectedRowKeys.length == 0) {
+      message.warning('请选择运输订单！');
+      return;
+    }
+    savePending(selectedRowKeys[0]).then(response => {
+      if (response.success) {
+        message.success('保存成功！');
+        this.getAuditedOrders(this.state.activeTab);
+      }
+    });
+  };
 
   render() {
-    const {
-      loading,
-      columns,
-      auditedData,
-      selectedRowKeys,
-      scheduledData,
-      pendingData,
-      activeTab,
-    } = this.state;
+    const { loading, columns, selectedRowKeys, scheduledData, pendingData, activeTab } = this.state;
     const { getFieldDecorator } = this.props.form;
     const operations = (
       <>
-        <Button type={'primary'} onClick={() => this.dispatching()}>
+        <Button type={'primary'} onClick={this.dispatching}>
           排车
         </Button>
-        <Button style={{ marginLeft: 10 }}>添加到待定池</Button>
+        <Button style={{ marginLeft: 10 }} onClick={this.handleAddPending}>
+          添加到待定池
+        </Button>
       </>
     );
     return (
@@ -150,7 +169,15 @@ export default class OrderPoolPage extends Component {
               <Col span={8}>
                 <Form.Item label="线路">
                   {getFieldDecorator('shipGroupCode', { initialValue: '' })(
-                    <Input placeholder="请选择线路" />
+                    <SimpleTreeSelect
+                      placeholder="请选择线路"
+                      textField="[%CODE%]%NAME%"
+                      valueField="UUID"
+                      parentField="PARENTUUID"
+                      queryParams={{ tableName: 'SJ_ITMS_LINE' }}
+                      treeDefaultExpandAll={true}
+                      multiSave="PARENTUUID:UUID"
+                    />
                   )}
                 </Form.Item>
               </Col>
@@ -186,13 +213,15 @@ export default class OrderPoolPage extends Component {
             rowSelect
             loading={loading}
             ref={this.auditedTable}
-            dataSource={auditedData}
+            dataSource={scheduledData}
             columns={OrderColumns}
           />
           {/* 排车modal */}
           <DispatchingCreatePage
             modal={{ title: '排车' }}
-            data={auditedData ? auditedData.filter(x => selectedRowKeys.indexOf(x.UUID) != -1) : []}
+            data={
+              scheduledData ? scheduledData.filter(x => selectedRowKeys.indexOf(x.uuid) != -1) : []
+            }
             onRef={node => (this.createPageModalRef = node)}
           />
         </TabPane>
