@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:14
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-09 10:48:30
+ * @LastEditTime: 2022-04-26 09:02:50
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -146,6 +146,7 @@ export default class OrderCreatePage extends QuickCreatePage {
     if (!SJ_ITMS_ORDER[0].STAT) {
       SJ_ITMS_ORDER[0].STAT = 'Saved';
       SJ_ITMS_ORDER[0].PENDINGTAG = 'Normal';
+      SJ_ITMS_ORDER[0].SOURCEWAY = 'CREATE';
     }
   };
 
