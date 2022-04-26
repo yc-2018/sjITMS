@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-03-09 10:31:16
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-22 16:32:27
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-04-26 16:34:44
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineSystemSearchPage.js
  */
@@ -135,7 +135,7 @@ export default class LineSystemSearchPage extends Component {
         deleteAll: 'false',
       },
     ];
-    await dynamicDelete(params).then(result => {
+    await dynamicDelete({ params, code: 'woxiangyaokuaile' }).then(result => {
       if (result.success) {
         message.success('删除成功！');
         this.queryLineSystem();
