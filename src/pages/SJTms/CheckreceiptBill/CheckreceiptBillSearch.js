@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-01 15:58:47
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-19 09:32:57
+ * @LastEditTime: 2022-04-27 16:18:25
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -12,6 +12,7 @@ import { Checkbox, Select, Input, Button, Popconfirm, message } from 'antd';
 import { loginCompany } from '@/utils/LoginContext';
 import { dynamicQuery, saveFormData } from '@/services/quick/Quick';
 import { confirm } from '@/services/sjitms/Checkreceipt';
+import { isBlank, isEmptyObj } from '@/utils/utils';
 
 const { Option } = Select;
 @connect(({ quick, loading }) => ({
@@ -101,16 +102,29 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
     if (e.column.fieldName == 'RECEIPTED') {
       e.component = (
         <Checkbox
-          defaultChecked={e.val == '0' ? false : true}
+          checked={e.val == '0' ? false : true}
           key={e.record.UUID}
-          onChange={v => (e.record.RECEIPTED = v.target.checked ? 1 : 0)}
+          // onChange={v => (e.record.RECEIPTED = v.target.checked ? 1 : 0)}
+          onChange={v => {
+            e.record.RECEIPTED = v.target.checked ? 1 : 0;
+            if (v.target.checked) {
+              e.record.DEALMETHOD = '';
+            }
+          }}
         >
           回单
         </Checkbox>
       );
     } else if (e.column.fieldName == 'DEALMETHOD') {
       e.component = (
-        <Select style={{ width: 120 }} onChange={v => (e.record.DEALMETHOD = v)}>
+        <Select
+          value={e.val}
+          style={{ width: 120 }}
+          onChange={v => {
+            e.record.DEALMETHOD = v;
+            e.record.RECEIPTED = '0';
+          }}
+        >
           {this.buildOptions()}
         </Select>
       );
@@ -123,18 +137,26 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
 
   //该方法用于写中间的功能按钮 多个按钮用<span>包裹
   drawToolsButton = () => {
-    return (
-      <span>
-        <Popconfirm
-          title="你确定要保存所选中的内容吗?"
-          onConfirm={() => this.onCheckreceiptSave()}
-          okText="确定"
-          cancelText="取消"
-        >
-          <Button>保存</Button>
-        </Popconfirm>
-      </span>
-    );
+    const superQuery = this.state.pageFilters.superQuery;
+    let c;
+    if (superQuery) {
+      const queryParams = superQuery.queryParams;
+      c = queryParams.find(x => x.field === 'RECEIPTED').val;
+    }
+    if (c === '0' || isBlank(c)) {
+      return (
+        <span>
+          <Popconfirm
+            title="你确定要保存所选中的内容吗?"
+            onConfirm={() => this.onCheckreceiptSave()}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button>保存</Button>
+          </Popconfirm>
+        </span>
+      );
+    }
   };
 
   //该方法用于写操作列的render
