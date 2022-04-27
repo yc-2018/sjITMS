@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-01 15:58:47
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-27 16:20:21
+ * @LastEditTime: 2022-04-27 16:26:08
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -141,10 +141,14 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
     const superQuery = this.state.pageFilters.superQuery;
     let c;
     if (superQuery) {
+      console.log(superQuery);
       const queryParams = superQuery.queryParams;
-      c = queryParams.find(x => x.field === 'RECEIPTED').val;
+      const receipted = queryParams.find(x => x.field === 'RECEIPTED');
+      if (receipted) {
+        c = receipted.val;
+      }
     }
-    if (c === '0' || isBlank(c)) {
+    if (c === '0') {
       return (
         <span>
           <Popconfirm
