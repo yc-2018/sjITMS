@@ -29,13 +29,13 @@ export default class DispatchingCreatePage extends Component {
 
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
-    this.getVehicle();
-    this.getEmployee();
-    this.getEmployeeType();
   };
 
   //显示
   show = () => {
+    this.getVehicle();
+    this.getEmployee();
+    this.getEmployeeType();
     this.setState({ visible: true });
   };
   //隐藏
@@ -138,24 +138,25 @@ export default class DispatchingCreatePage extends Component {
           memberType: x.memberType,
         };
       }),
-      cartonCount: sumBy(data.map(x => x.cartoncount)),
-      scatteredCount: sumBy(data.map(x => x.scatteredcount)),
-      containerCount: sumBy(data.map(x => x.containercount)),
-      realCartonCount: sumBy(data.map(x => x.realcartoncount)),
-      realScatteredCount: sumBy(data.map(x => x.realscatteredcount)),
-      realContainerCount: sumBy(data.map(x => x.realcontainercount)),
+      cartonCount: sumBy(data.map(x => x.cartonCount)),
+      scatteredCount: sumBy(data.map(x => x.scatteredCount)),
+      containerCount: sumBy(data.map(x => x.containerCount)),
+      realCartonCount: sumBy(data.map(x => x.realCartonCount)),
+      realScatteredCount: sumBy(data.map(x => x.realScatteredCount)),
+      realContainerCount: sumBy(data.map(x => x.realContainerCount)),
       weight: sumBy(data.map(x => Number(x.weight))),
       volume: sumBy(data.map(x => Number(x.volume))),
       totalAmount: sumBy(data.map(x => Number(x.amount))),
-      deliveryPointCount: uniq(data.map(x => x.deliverypointcode)).length,
-      pickupPointCount: uniq(data.map(x => x.pickuppointname)).length,
-      ownerCount: uniq(data.map(x => x.owner)).length,
+      deliveryPointCount: uniq(data.map(x => x.deliveryPoint.code)).length,
+      pickupPointCount: uniq(data.map(x => x.pickUpPoint.code)).length,
+      ownerCount: uniq(data.map(x => x.owner.code)).length,
       companyUuid: loginCompany().uuid,
       dispatchCenterUuid: loginOrg().uuid,
     };
     save(paramBody).then(response => {
       if (response.success) {
         message.success('保存成功！');
+        this.props.refresh();
         this.hide();
       }
     });
@@ -259,7 +260,9 @@ export default class DispatchingCreatePage extends Component {
               <div className={dispatchingStyles.orderTotalCardBody}>
                 <div style={{ flex: 1 }}>
                   <div>送货点数</div>
-                  <div className={dispatchingStyles.orderTotalNumber}>{data.length}</div>
+                  <div className={dispatchingStyles.orderTotalNumber}>
+                    {uniq(data.map(x => x.deliveryPoint.code)).length}
+                  </div>
                 </div>
                 <Divider type="vertical" style={{ height: '3.5em' }} />
                 <div style={{ flex: 1 }}>

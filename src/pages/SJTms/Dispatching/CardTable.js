@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-01 08:43:48
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-25 08:47:15
+ * @LastEditTime: 2022-04-26 17:49:22
  * @Description: 嵌套子表格组件
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\CardTable.js
  */
@@ -11,44 +11,43 @@ import { Table } from 'antd';
 import cardTableStyle from './CardTableStyle.less';
 
 export default class CardTable extends Component {
-  state = {
-    selectedRowKeys: [],
-    childSelectedRowKeys: [],
-  };
-
   //表格选择
   onParentSelectChange = (record, selected) => {
-    const { selectedRowKeys, childSelectedRowKeys } = this.state;
-    const { dataSource, childTable } = this.props;
+    const {
+      dataSource,
+      hasChildTable,
+      selectedRowKeys,
+      childSelectedRowKeys,
+      changeSelectRows,
+    } = this.props;
     let patentArr = [...selectedRowKeys];
-    let childArr = [...childSelectedRowKeys];
+    let childArr = childSelectedRowKeys ? [...childSelectedRowKeys] : [];
     //选中行下的所有子选项
-    let setChildArr = childTable
+    let setChildArr = hasChildTable
       ? dataSource.find(d => d.uuid === record.uuid).details.map(item => item.uuid)
       : [];
     if (selected) {
       //父Table选中，子Table全选中
       patentArr.push(record.uuid);
-      childArr = childTable ? childArr.concat(setChildArr) : [];
+      childArr = hasChildTable ? childArr.concat(setChildArr) : [];
     } else {
       //父Table取消选中，子Table全取消选中
       patentArr.splice(patentArr.findIndex(item => item === record.uuid), 1);
-      childArr = childTable ? childArr.filter(item => !setChildArr.some(e => e === item)) : [];
+      childArr = hasChildTable ? childArr.filter(item => !setChildArr.some(e => e === item)) : [];
     }
     //设置父，子的SelectedRowKeys
-    this.setState({ selectedRowKeys: patentArr, childSelectedRowKeys: childArr });
+    changeSelectRows({ selectedRowKeys: patentArr, childSelectedRowKeys: childArr });
   };
 
   //表格全选
   onParentSelectAll = (selected, selectedRows, changeRows) => {
-    const { selectedRowKeys, childSelectedRowKeys } = this.state;
-    const { childTable } = this.props;
+    const { hasChildTable, selectedRowKeys, childSelectedRowKeys, changeSelectRows } = this.props;
     let patentArr = [...selectedRowKeys];
-    let childArr = [...childSelectedRowKeys];
+    let childArr = childSelectedRowKeys ? [...childSelectedRowKeys] : [];
     if (selected) {
       //父Table选中，子Table全选中，设置子Table的SelectedRowKeys
       patentArr = patentArr.concat(changeRows.map(item => item.uuid));
-      if (childTable) {
+      if (hasChildTable) {
         changeRows.forEach(row => {
           childArr = childArr.concat(row.details.map(item => item.uuid));
         });
@@ -59,13 +58,12 @@ export default class CardTable extends Component {
       childArr = [];
     }
     //设置父，子的SelectedRowKeys
-    this.setState({ selectedRowKeys: patentArr, childSelectedRowKeys: childArr });
+    changeSelectRows({ selectedRowKeys: patentArr, childSelectedRowKeys: childArr });
   };
 
   //子表格选择
   onChildSelectChange = (record, selected, selectedRows) => {
-    const { selectedRowKeys, childSelectedRowKeys } = this.state;
-    const { dataSource } = this.props;
+    const { dataSource, selectedRowKeys, childSelectedRowKeys, changeSelectRows } = this.props;
     let childArr = [...childSelectedRowKeys];
     let parentArr = [...selectedRowKeys];
     selected
@@ -80,13 +78,12 @@ export default class CardTable extends Component {
       parentArr.splice(parentArr.findIndex(item => item === parentRow.uuid), 1);
     }
     //设置父，子的SelectedRowKeys
-    this.setState({ selectedRowKeys: parentArr, childSelectedRowKeys: childArr });
+    changeSelectRows({ selectedRowKeys: parentArr, childSelectedRowKeys: childArr });
   };
 
   //子表格全选
   onChildSelectAll = (selected, selectedRows, changeRows) => {
-    const { selectedRowKeys, childSelectedRowKeys } = this.state;
-    const { dataSource } = this.props;
+    const { dataSource, selectedRowKeys, childSelectedRowKeys, changeSelectRows } = this.props;
     let childArr = [...childSelectedRowKeys];
     let parentArr = [...selectedRowKeys];
     //找到子Table对应的父Table的所在行
@@ -99,18 +96,19 @@ export default class CardTable extends Component {
       parentArr.splice(parentArr.findIndex(item => item === parentRow.uuid), 1);
     }
     //设置父，子的SelectedRowKeys
-    this.setState({ selectedRowKeys: parentArr, childSelectedRowKeys: childArr });
+    changeSelectRows({ selectedRowKeys: parentArr, childSelectedRowKeys: childArr });
   };
 
   //表格行点击事件
   onClickRow = record => {
-    this.onParentSelectChange(record, this.state.selectedRowKeys.indexOf(record.uuid) == -1);
+    if (this.props.clickRow == undefined) return;
+    this.onParentSelectChange(record, this.props.selectedRowKeys.indexOf(record.uuid) == -1);
   };
 
   //子表格行点击事件
   onChildClickRow = record => {
-    const { selectedRowKeys, childSelectedRowKeys } = this.state;
-    const { dataSource } = this.props;
+    if (this.props.clickRow == undefined) return;
+    const { dataSource, selectedRowKeys, childSelectedRowKeys } = this.props;
     const selected = childSelectedRowKeys.indexOf(record.uuid) == -1;
     //找到子Table对应的父Table的所在行
     const parentRow = dataSource.find(x => x.details.find(d => d.uuid === record.uuid));
@@ -126,15 +124,15 @@ export default class CardTable extends Component {
   render() {
     const {
       scrollY,
-      rowSelect,
       pagination,
       columns,
       nestColumns,
-      childTable,
+      hasChildTable,
       dataSource,
       loading,
+      selectedRowKeys,
+      childSelectedRowKeys,
     } = this.props;
-    const { selectedRowKeys, childSelectedRowKeys } = this.state;
     const childRowSelection = {
       selectedRowKeys: childSelectedRowKeys,
       onSelect: this.onChildSelectChange,
@@ -149,12 +147,12 @@ export default class CardTable extends Component {
     const expandedRowRender = mainRecord => {
       return (
         <Table
-          rowSelection={rowSelect ? childRowSelection : ''}
+          rowSelection={childSelectedRowKeys ? childRowSelection : ''}
           columns={nestColumns}
           size="small"
           rowKey={record => (record.uuid ? record.uuid : 'nestKey')}
           dataSource={mainRecord.details ? mainRecord.details : []}
-          onRowClick={rowSelect ? this.onChildClickRow : ''}
+          onRowClick={childSelectedRowKeys ? this.onChildClickRow : ''}
           indentSize={10}
           scroll={{ y: false }}
           pagination={false}
@@ -163,14 +161,14 @@ export default class CardTable extends Component {
     };
     return (
       <Table
-        rowSelection={rowSelect ? parentRowSelection : ''}
+        rowSelection={selectedRowKeys ? parentRowSelection : ''}
         columns={columns}
         loading={loading}
         size="small"
         rowKey={record => record.uuid}
         dataSource={dataSource}
-        onRowClick={rowSelect ? this.onClickRow : ''}
-        expandedRowRender={childTable ? record => expandedRowRender(record) : ''}
+        onRowClick={selectedRowKeys ? this.onClickRow : ''}
+        expandedRowRender={hasChildTable ? record => expandedRowRender(record) : ''}
         pagination={pagination || false}
         className={cardTableStyle.orderTable}
         scroll={{ y: scrollY, x: true }}

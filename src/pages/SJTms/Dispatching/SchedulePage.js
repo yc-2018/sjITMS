@@ -2,16 +2,16 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-26 09:03:13
+ * @LastEditTime: 2022-04-27 15:43:24
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
 import React, { PureComponent } from 'react';
-import { Modal, Tabs, Button, message } from 'antd';
+import { Modal, Tabs, Button, Tooltip, message } from 'antd';
 import CardTable from './CardTable';
+import EditContainerNumberPage from './EditContainerNumberPage';
 import { ScheduleColumns, ScheduleDetailColumns } from './DispatchingColumns';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { queryData } from '@/services/quick/Quick';
 import { getScheduleByStat, approve, cancelApprove, remove } from '@/services/sjitms/ScheduleBill';
 
 const { TabPane } = Tabs;
@@ -19,11 +19,15 @@ const { TabPane } = Tabs;
 export default class SchedulePage extends PureComponent {
   state = {
     loading: false,
+    savedRowKeys: [],
+    savedChildRowKeys: [],
+    approvedRowKeys: [],
+    abortedRowKeys: [],
     scheduleData: [],
     activeTab: 'Saved',
+    editPageVisible: false,
+    scheduleDetail: {},
   };
-  scheduleTable = React.createRef();
-  scheduleApprovedTable = React.createRef();
 
   componentDidMount() {
     this.getSchedules(this.state.activeTab);
@@ -34,7 +38,15 @@ export default class SchedulePage extends PureComponent {
     this.setState({ loading: true });
     getScheduleByStat(stat).then(response => {
       if (response.success) {
-        this.setState({ loading: false, scheduleData: response.data, activeTab: stat });
+        this.setState({
+          loading: false,
+          scheduleData: response.data,
+          activeTab: stat,
+          savedRowKeys: [],
+          savedChildRowKeys: [],
+          approvedRowKeys: [],
+          abortedRowKeys: [],
+        });
       }
     });
   };
@@ -43,11 +55,24 @@ export default class SchedulePage extends PureComponent {
     this.getSchedules(activeKey);
   };
 
+  //排车单编辑/排车单明细整件数量修改
+  editTable = record => {
+    return () => {
+      const { scheduleData } = this.state;
+      if (record.sourceNum) {
+        record.billNumber = scheduleData.find(x => x.uuid == record.billUuid).billNumber;
+        this.setState({ editPageVisible: true, scheduleDetail: record });
+      }
+    };
+  };
+  handleShowEditPage = () => {
+    this.editContainerNumberPageModalRef.show();
+  };
+
   //取消批准
   handleCancelApprove = () => {
-    const { scheduleData, activeTab } = this.state;
-    const { selectedRowKeys } = this.scheduleApprovedTable.current.state;
-    const schedule = scheduleData.find(x => x.uuid == selectedRowKeys[0]);
+    const { scheduleData, activeTab, approvedRowKeys } = this.state;
+    const schedule = scheduleData.find(x => x.uuid == approvedRowKeys[0]);
     cancelApprove(schedule.uuid, schedule.version).then(response => {
       if (response.success) {
         message.success('取消批准成功！');
@@ -58,9 +83,8 @@ export default class SchedulePage extends PureComponent {
 
   //批准
   handleApprove = () => {
-    const { scheduleData, activeTab } = this.state;
-    const { selectedRowKeys } = this.scheduleTable.current.state;
-    const schedule = scheduleData.find(x => x.uuid == selectedRowKeys[0]);
+    const { scheduleData, activeTab, savedRowKeys } = this.state;
+    const schedule = scheduleData.find(x => x.uuid == savedRowKeys[0]);
     approve(schedule.uuid, schedule.version).then(response => {
       if (response.success) {
         message.success('批准成功！');
@@ -74,10 +98,8 @@ export default class SchedulePage extends PureComponent {
     Modal.confirm({
       title: '是否确认删除排车单？',
       onOk: async () => {
-        const { scheduleData, activeTab } = this.state;
-        const { selectedRowKeys } = this.scheduleTable.current.state;
-        const schedule = scheduleData.find(x => x.uuid == selectedRowKeys[0]);
-        remove(schedule.uuid).then(response => {
+        const { activeTab, savedRowKeys } = this.state;
+        remove(savedRowKeys[0]).then(response => {
           if (response.success) {
             message.success('删除成功！');
             this.getSchedules(activeTab);
@@ -87,8 +109,39 @@ export default class SchedulePage extends PureComponent {
     });
   };
 
+  //表格行选择
+  tableChangeRows = tableType => {
+    return event => {
+      switch (tableType) {
+        case 'Approved':
+          this.setState({ approvedRowKeys: event.selectedRowKeys });
+          break;
+        case 'Aborted':
+          this.setState({ abortedRowKeys: event.selectedRowKeys });
+          break;
+        default:
+          this.setState({
+            savedRowKeys: event.selectedRowKeys,
+            savedChildRowKeys: event.childSelectedRowKeys,
+          });
+          break;
+      }
+    };
+  };
+
   render() {
-    const { scheduleData, loading, activeTab } = this.state;
+    const {
+      scheduleData,
+      loading,
+      savedRowKeys,
+      savedChildRowKeys,
+      approvedRowKeys,
+      abortedRowKeys,
+      activeTab,
+      editPageVisible,
+      scheduleDetail,
+    } = this.state;
+
     const buildOperations = () => {
       switch (activeTab) {
         case 'Approved':
@@ -112,9 +165,24 @@ export default class SchedulePage extends PureComponent {
           );
       }
     };
-    const edit = {
-      width: 40,
-      render: val => <a href="#"> 编辑</a>,
+    const editColumn = {
+      render: (val, record) => (
+        <Tooltip placement="topLeft" title={val}>
+          <a href="#" onClick={this.editTable(record)}>
+            {val}
+          </a>
+        </Tooltip>
+      ),
+    };
+    const billNumberColumn = {
+      title: '单号',
+      dataIndex: 'billNumber',
+      width: 150,
+    };
+    const orderNumberColumn = {
+      title: '订单号',
+      dataIndex: 'orderNumber',
+      width: 180,
     };
 
     return (
@@ -126,33 +194,46 @@ export default class SchedulePage extends PureComponent {
         <TabPane tab="排车单" key="Saved">
           <CardTable
             scrollY={540}
-            rowSelect
-            ref={this.scheduleTable}
+            selectedRowKeys={savedRowKeys}
+            childSelectedRowKeys={savedChildRowKeys}
+            changeSelectRows={this.tableChangeRows()}
             dataSource={scheduleData}
-            columns={[edit, ...ScheduleColumns]}
-            nestColumns={ScheduleDetailColumns}
-            childTable
+            columns={[{ ...billNumberColumn, ...editColumn }, ...ScheduleColumns]}
+            nestColumns={[{ ...orderNumberColumn, ...editColumn }, ...ScheduleDetailColumns]}
+            hasChildTable
             loading={loading}
+          />
+          <EditContainerNumberPage
+            modal={{ title: '修改排车数量' }}
+            refresh={this.refreshOrderPool}
+            visible={editPageVisible}
+            scheduleDetail={scheduleDetail}
+            onCancel={() => this.setState({ editPageVisible: false })}
           />
         </TabPane>
         <TabPane tab="已批准" key="Approved">
           <CardTable
             scrollY={540}
-            rowSelect
-            ref={this.scheduleApprovedTable}
+            selectedRowKeys={approvedRowKeys}
+            changeSelectRows={this.tableChangeRows('Approved')}
+            clickRow
             dataSource={scheduleData}
-            columns={ScheduleColumns}
-            nestColumns={ScheduleDetailColumns}
-            childTable
+            columns={[billNumberColumn, ...ScheduleColumns]}
+            nestColumns={[orderNumberColumn, ...ScheduleDetailColumns]}
+            hasChildTable
             loading={loading}
           />
         </TabPane>
         <TabPane tab="已作废" key="Aborted">
           <CardTable
             scrollY={540}
-            rowSelect
+            selectedRowKeys={abortedRowKeys}
+            changeSelectRows={this.tableChangeRows('Aborted')}
+            clickRow
             dataSource={scheduleData}
-            columns={ScheduleColumns}
+            columns={[billNumberColumn, ...ScheduleColumns]}
+            nestColumns={[orderNumberColumn, ...ScheduleDetailColumns]}
+            hasChildTable
             loading={loading}
           />
         </TabPane>

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-25 14:17:27
+ * @LastEditTime: 2022-04-27 14:56:18
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -22,6 +22,22 @@ export async function save(payload) {
     method: 'POST',
     body: payload,
   });
+}
+//修改
+export async function modify(payload) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/modify`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+//修改排车数量
+export async function modifyNumber(uuid, cartonCount) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/modifyNumber?uuid=${uuid}&cartonCount=${cartonCount}`,
+    {
+      method: 'POST',
+    }
+  );
 }
 
 //批准

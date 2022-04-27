@@ -2,12 +2,24 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-12 16:08:35
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-25 16:54:13
+ * @LastEditTime: 2022-04-27 17:36:31
  * @version: 1.0
  */
 import request from '@/utils/request';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { func } from 'prop-types';
+
+export async function getOrder(searchKeyValues) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/ordertms/getOrder?companyUuid=${
+      loginCompany().uuid
+    }&dcUuid=${loginOrg().uuid}`,
+    {
+      method: 'POST',
+      body: searchKeyValues,
+    }
+  );
+}
 
 export async function getOrderByStat(stat) {
   return request(
@@ -19,6 +31,7 @@ export async function getOrderByStat(stat) {
     }
   );
 }
+
 export async function getOrderInPending() {
   return request(
     `/itms-schedule/itms-schedule/sj/bill/ordertms/getOrderInPending?companyUuid=${
@@ -29,9 +42,11 @@ export async function getOrderInPending() {
     }
   );
 }
-export async function savePending(uuid) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/savePending?uuid=${uuid}`, {
+
+export async function savePending(uuids) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/savePending`, {
     method: 'POST',
+    body: uuids,
   });
 }
 
