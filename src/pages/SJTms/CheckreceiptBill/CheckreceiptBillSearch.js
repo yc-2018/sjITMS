@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-01 15:58:47
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-27 16:18:25
+ * @LastEditTime: 2022-04-27 16:20:21
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -118,6 +118,7 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
     } else if (e.column.fieldName == 'DEALMETHOD') {
       e.component = (
         <Select
+          allowClear
           value={e.val}
           style={{ width: 120 }}
           onChange={v => {
