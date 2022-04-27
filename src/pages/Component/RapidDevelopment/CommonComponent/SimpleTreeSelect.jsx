@@ -15,6 +15,7 @@ import memoize from "memoize-one";
  * {string} textField 节点文本字段 
  * {string} valueField 值字段 
  * {string} parentField 父节点字段 
+ * {string} sonField 子节点字段 
  * {string} queryParams 数据查询参数
  * {boolean} isLink    是否为联动控件 
  * {string} linkFilter   联动过滤条件 {field:val}形式
@@ -35,12 +36,12 @@ export default class SimpleTreeSelect extends Component {
         parentField: "PARENTUUID"
     }
 
-    // 在 sourceData, textField, valueField, parentField 变化时，重新运行 convertTreeData
+    // 在 sourceData, textField, valueField, parentField, sonField 变化时，重新运行 convertTreeData
     convertTreeData = memoize(
         (sourceData, textField, valueField, parentField) => convertData2TreeData(sourceData, textField, valueField, parentField)
     );
 
-    getTreeData = () => this.convertTreeData(this.state.sourceData, this.props.textField, this.props.valueField, this.props.parentField)
+    getTreeData = () => this.convertTreeData(this.state.sourceData, this.props.textField, this.props.valueField, this.props.parentField, this.props.sonField)
 
     static getDerivedStateFromProps(props, state) {
         const nextState = {};
@@ -230,15 +231,19 @@ export default class SimpleTreeSelect extends Component {
  * @param {string} textField 节点文本字段
  * @param {string} valueField 值字段
  * @param {string} parentField 父节点字段
+ * @param {string} sonField 子节点字段
  * @returns 
  */
-function convertData2TreeData(sourceData, textField, valueField, parentField) {
+function convertData2TreeData(sourceData, textField, valueField, parentField, sonField) {
     if (!sourceData) {
         return [];
     }
+    sonField = sonField || valueField;
     function convert(parentId) {
+        // 当parentId为null时，搜索parentId为null以及parentId不存在的数据作为最上级
         let parentData = sourceData
-            .filter(row => row[parentField] == parentId)
+            .filter(row => parentId != null ? row[parentField] == parentId : 
+                (row[parentField] == null || !sourceData.some(x => x[sonField] == row[parentField]) ))
             .map(row => {
                 const textShow = getFieldShow(row, textField);
                 const valueShow = getFieldShow(row, valueField);
@@ -251,7 +256,8 @@ function convertData2TreeData(sourceData, textField, valueField, parentField) {
                     }
                 }
             });
-        parentData.forEach(row => row.children = convert(row.value));
+        // 防止死循环
+        parentData.forEach(row => row.children = row.value != undefined ? convert(row.value) : []);
         return parentData;
     }
     return convert(null);
