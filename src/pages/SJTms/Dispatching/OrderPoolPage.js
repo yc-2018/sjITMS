@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-27 17:38:04
+ * @LastEditTime: 2022-04-28 08:52:59
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -34,6 +34,7 @@ const initRowKeys = {
 @Form.create()
 export default class OrderPoolPage extends Component {
   state = {
+    searchKeyValues: {},
     loading: false,
     auditedData: [],
     scheduledData: [],
@@ -43,11 +44,12 @@ export default class OrderPoolPage extends Component {
   };
 
   componentDidMount() {
-    // this.onSearch();
+    this.refreshTable();
   }
-  //刷新
+
+  //保存刷新订单池和排车单表格
   refreshOrderPool = () => {
-    this.onSearch();
+    this.refreshTable();
   };
 
   //搜索
@@ -57,18 +59,19 @@ export default class OrderPoolPage extends Component {
     event.preventDefault();
     form.validateFields((err, fieldsValue) => {
       if (err) return;
-
-      const data = {
-        ...fieldsValue,
-      };
-      console.log(fieldsValue);
-      console.log(data);
-      this.getAuditedOrders({ orderType: fieldsValue.orderType.value });
+      const searchKeyValues = { orderType: fieldsValue.orderType.value };
+      this.getAuditedOrders(searchKeyValues);
     });
   };
   //重置
   handleReset = () => {
     this.props.form.resetFields();
+    this.refreshTable();
+  };
+  //刷新
+  refreshTable = () => {
+    const searchKeyValues = { orderType: 'Delivery' };
+    this.getAuditedOrders(searchKeyValues);
   };
 
   //获取待排运输订单
@@ -77,6 +80,7 @@ export default class OrderPoolPage extends Component {
     getOrder(searchKeyValues).then(response => {
       if (response.success) {
         this.setState({
+          searchKeyValues,
           loading: false,
           auditedData: response.data,
           ...initRowKeys,
@@ -113,7 +117,6 @@ export default class OrderPoolPage extends Component {
       }
     });
   };
-
   //按送货点汇总运输订单
   groupData = data => {
     let output = groupBy(data, 'deliverypointcode');
@@ -138,6 +141,7 @@ export default class OrderPoolPage extends Component {
     });
     return deliveryPointGroupArr;
   };
+
   //标签页切换事件
   handleTabChange = activeKey => {
     switch (activeKey) {
@@ -179,6 +183,7 @@ export default class OrderPoolPage extends Component {
     }
     this.createPageModalRef.show();
   };
+
   //添加到待定池
   handleAddPending = () => {
     const { auditedRowKeys } = this.state;
@@ -301,9 +306,7 @@ export default class OrderPoolPage extends Component {
           {/* 排车modal */}
           <DispatchingCreatePage
             modal={{ title: '排车' }}
-            data={
-              scheduledData ? scheduledData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : []
-            }
+            data={auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : []}
             refresh={this.refreshOrderPool}
             onRef={node => (this.createPageModalRef = node)}
           />
