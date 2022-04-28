@@ -150,7 +150,7 @@ export const CreatePageOrderColumns = [
     },
   },
   {
-    title: '订单类型',
+    title: '单据类型',
     dataIndex: 'orderType',
     width: 80,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
@@ -175,7 +175,7 @@ export const CreatePageOrderColumns = [
   },
   {
     title: '体积',
-    dataIndex: 'weight',
+    dataIndex: 'volume',
     width: 80,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },

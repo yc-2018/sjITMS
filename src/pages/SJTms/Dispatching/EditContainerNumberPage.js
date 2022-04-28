@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-27 11:24:00
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-27 15:28:23
+ * @LastEditTime: 2022-04-28 15:27:04
  * @Description: 修改排车单 运输订单明细 整件配送数量
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\EditContainerNumberPage.js
  */
@@ -21,6 +21,7 @@ export default class EditContainerNumberPage extends Component {
       modifyNumber(scheduleDetail.uuid, fieldsValue.cartonCount).then(response => {
         if (response.success) {
           message.success('保存成功！');
+          this.props.refresh();
           onCancel();
         }
       });
@@ -45,7 +46,7 @@ export default class EditContainerNumberPage extends Component {
           <Form.Item label="整件数（估/实）">
             {scheduleDetail.realCartonCount}/{scheduleDetail.cartonCount}
           </Form.Item>
-          <Form.Item label="整件数">
+          <Form.Item label="排车整件数">
             {getFieldDecorator('cartonCount', {
               rules: [{ required: true, message: '请输入修改数量' }],
             })(

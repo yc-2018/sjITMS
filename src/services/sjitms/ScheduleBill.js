@@ -2,18 +2,30 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-27 14:56:18
+ * @LastEditTime: 2022-04-28 15:05:05
  * @version: 1.0
  */
 import request from '@/utils/request';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { func } from 'prop-types';
 
-//根据状态获取排车单
-export async function getScheduleByStat(stat) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/getScheduleByStat?Stat=${stat}`, {
+//根据uuid获取排车单
+export async function getSchedule(uuid) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/get?uuid=${uuid}`, {
     method: 'GET',
   });
+}
+
+//根据状态获取排车单
+export async function getScheduleByStat(stat) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/getScheduleByStat?companyUuid=${
+      loginCompany().uuid
+    }&dcUuid=${loginOrg().uuid}&Stat=${stat}`,
+    {
+      method: 'GET',
+    }
+  );
 }
 
 //保存

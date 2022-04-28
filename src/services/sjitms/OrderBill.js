@@ -2,16 +2,16 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-12 16:08:35
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-27 17:36:31
+ * @LastEditTime: 2022-04-28 09:37:15
  * @version: 1.0
  */
 import request from '@/utils/request';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { func } from 'prop-types';
 
-export async function getOrder(searchKeyValues) {
+export async function getAuditedOrder(searchKeyValues) {
   return request(
-    `/itms-schedule/itms-schedule/sj/bill/ordertms/getOrder?companyUuid=${
+    `/itms-schedule/itms-schedule/sj/bill/ordertms/getAuditedOrder?companyUuid=${
       loginCompany().uuid
     }&dcUuid=${loginOrg().uuid}`,
     {
