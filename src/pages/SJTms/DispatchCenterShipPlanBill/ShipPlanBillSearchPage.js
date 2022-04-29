@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-22 16:18:46
+ * @LastEditTime: 2022-04-25 15:21:29
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -19,6 +19,7 @@ import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import ShipPlanBillCreatePage from './ShipPlanBillCreatePage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import RemoveCarCreatePage from './RemoveCarCreatePage';
+import { log } from 'lodash-decorators/utils';
 
 const { Content } = Layout;
 const TabPane = Tabs.TabPane;
@@ -218,6 +219,7 @@ export default class ShipPlanBillSearchPage extends PureComponent {
                         refreshView={this.refreshView}
                         memberModalClick={this.memberModalClick}
                         removeCarModalClick={this.removeCarModalClick}
+                        onRef={node => (this.refreshTableRef = node)}
                       />
                     </div>
                     <div style={{ margin: '0px -8px 0px', height: '700px' }}>
@@ -247,7 +249,13 @@ export default class ShipPlanBillSearchPage extends PureComponent {
           onRef={node => (this.createPageModalRef = node)}
         />
         <CreatePageModal
-          modal={{ title: params.title, width: 1000 }}
+          modal={{
+            title: params.title,
+            width: 1000,
+            afterClose: () => {
+              this.refreshTableRef.queryCoulumns();
+            },
+          }}
           page={{ quickuuid: 'sj_itms_schedule_removecar', params: params }}
           customPage={RemoveCarCreatePage}
           onRef={node => (this.RemoveCarModalRef = node)}

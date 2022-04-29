@@ -13,7 +13,7 @@ export default class QuickForm extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      quickuuid: props.route.quickuuid,
+      quickuuid: props.route?.quickuuid? props.route.quickuuid:props.quickuuid,
       showPageNow: 'query',
       tableName: '',
       onlFormField: [],

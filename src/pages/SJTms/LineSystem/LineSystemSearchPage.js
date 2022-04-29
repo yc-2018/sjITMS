@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-03-09 10:31:16
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-03-31 16:56:50
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-04-26 16:34:44
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineSystemSearchPage.js
  */
@@ -18,7 +18,12 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import LineShipAddress from './LineShipAddress';
 import LineSystemCreatePage from './LineSystemCreatePage';
 import LineMap from './LineMap';
-import { dynamicqueryById, dynamicDelete,findLineSystemTree,deleteLineSystemTree } from '@/services/quick/Quick';
+import {
+  dynamicqueryById,
+  dynamicDelete,
+  findLineSystemTree,
+  deleteLineSystemTree,
+} from '@/services/quick/Quick';
 import linesStyles from './LineSystem.less';
 
 const { Content, Sider } = Layout;
@@ -85,37 +90,32 @@ export default class LineSystemSearchPage extends Component {
          
         if(data.childLines){
           this.getLineSystemTree(data.childLines,itemData,lineData);
-        }
       }
+    }
   }
-      
-    
   
+
   //查询所有线路体系
   queryLineSystem = async () => {
     await findLineSystemTree().then(async response => {
-       console.log("response",response.data);
-       let lineTreeData = [];
-       let lineData = [];
-      if(response){
-         const data= response.data;
-         data.forEach((element) =>{
-           let itemData = {};
-           this.getLineSystemTree(element,itemData,lineData)
+      let lineTreeData = [];
+      let lineData = [];
+      if (response) {
+        const data = response.data;
+        data.forEach(element => {
+          let itemData = {};
+          this.getLineSystemTree(element, itemData, lineData);
           lineTreeData.push(itemData);
-
-         })
-         console.log("data",lineTreeData);
-         this.setState({
+        });
+        this.setState({
           expandKeys: lineTreeData.map(x => x.key),
           lineTreeData,
           lineData,
           selectLineUuid: lineTreeData[0].children[0].key,
         });
         this.onSelect([this.state.selectLineUuid]);
-       }
-    })
-    
+      }
+    });
   };
   //查询线路体系下所有线路
   getSerialArchLineList = async defSchemeUuid => {
@@ -138,7 +138,7 @@ export default class LineSystemSearchPage extends Component {
         deleteAll: 'false',
       },
     ];
-    await dynamicDelete(params).then(result => {
+    await dynamicDelete({ params, code: 'woxiangyaokuaile' }).then(result => {
       if (result.success) {
         message.success('删除成功！');
         this.queryLineSystem();
@@ -168,8 +168,6 @@ export default class LineSystemSearchPage extends Component {
   onSelect = (selectedKeys, event) => {
     if (event && !event.selected) return;
     const { lineTreeData, lineData } = this.state;
-    console.log("selectedKeys",selectedKeys[0]);
-    console.log("lineTreeData",lineTreeData);
     const system = lineTreeData.find(x => x.key == selectedKeys[0]);
     this.setState({
       rightContent: system ? (
@@ -215,7 +213,7 @@ export default class LineSystemSearchPage extends Component {
               key={`Line${selectedKeys[0]}`}
               quickuuid="sj_itms_line_shipaddress"
               lineuuid={selectedKeys[0]}
-              lineTreeData = {this.state.lineTreeData}
+              lineTreeData={this.state.lineTreeData}
               linecode={
                 lineData.length > 0 ? lineData.find(x => x.uuid == selectedKeys[0]).code : ''
               }
@@ -242,7 +240,7 @@ export default class LineSystemSearchPage extends Component {
 
   //绘制左侧菜单栏
   drawSider = () => {
-    const { expandKeys,selectLineUuid } = this.state;
+    const { expandKeys, selectLineUuid } = this.state;
     var lineTreeData = JSON.parse(JSON.stringify(this.state.lineTreeData));
     const renderTreeNode = data => {
       let nodeArr = data.map(item => {
@@ -251,7 +249,7 @@ export default class LineSystemSearchPage extends Component {
             <span>{item.title}</span>
              {item.system || item.key != selectLineUuid ? (
               <span />
-            ) : ( 
+            ) : (
               <span style={{ float: 'right' }}>
                 <a style={{ marginRight: 15 }} onClick={() => this.lineEditPageModalRef.show()}>
                   编辑
@@ -260,7 +258,7 @@ export default class LineSystemSearchPage extends Component {
                   删除
                 </a>
               </span>
-           )}
+            )}
           </div>
         );
         if (item.children) {

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Modal, Card, Row, Col, Divider, Input, Select, message } from 'antd';
 import { queryAllData, dynamicQuery } from '@/services/quick/Quick';
-import { save } from '@/services/sjitms/ScheduleBill';
+import { getSchedule, save } from '@/services/sjitms/ScheduleBill';
 import CardTable from './CardTable';
 import { CreatePageOrderColumns } from './DispatchingColumns';
 import dispatchingStyles from './Dispatching.less';
@@ -29,21 +29,29 @@ export default class DispatchingCreatePage extends Component {
 
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
-    this.getVehicle();
-    this.getEmployee();
-    this.getEmployeeType();
+  };
+  //编辑排车单初始化数据
+  initData = scheduleUuid => {
+    getSchedule(scheduleUuid).then(response => {
+      let details = response.data.details.map(item => {
+        return { ...item, billNumber: item.orderNumber };
+      });
+      if (response.success) this.setState({ orders: details });
+    });
   };
 
   //显示
-  show = () => {
+  show = (isEdit, record) => {
     this.setState({ visible: true });
+    this.getVehicle();
+    this.getEmployee();
+    this.getEmployeeType();
+    isEdit ? this.initData(record.uuid) : this.setState({ orders: record });
   };
   //隐藏
   hide = () => {
     this.setState({ visible: false });
   };
-
-  //TODO 编辑排车单初始化数据
 
   //获取车辆
   getVehicle = () => {
@@ -53,7 +61,6 @@ export default class DispatchingCreatePage extends Component {
       }
     });
   };
-
   //获取人员
   getEmployee = () => {
     queryAllData({ quickuuid: 'sj_itms_employee', superQuery: { queryParams } }).then(response => {
@@ -108,9 +115,9 @@ export default class DispatchingCreatePage extends Component {
 
   //保存
   handleSave = () => {
-    const { data } = this.props;
-    const { selectVehicle, selectEmployees } = this.state;
+    const { orders, selectVehicle, selectEmployees } = this.state;
     const driver = selectEmployees.find(x => x.memberType == 'DRIVER');
+    const orderCounts = groupByOrder(orders);
     const paramBody = {
       type: 'Job',
       vehicle: {
@@ -128,7 +135,9 @@ export default class DispatchingCreatePage extends Component {
         code: driver.CODE,
         name: driver.NAME,
       },
-      orderUuids: data.map(x => x.UUID),
+      details: orders.map(item => {
+        return { ...item, orderUuid: item.uuid, orderNumber: item.billNumber };
+      }),
       memberDetails: selectEmployees.map((x, index) => {
         return {
           line: index + 1,
@@ -136,31 +145,38 @@ export default class DispatchingCreatePage extends Component {
           memberType: x.memberType,
         };
       }),
-      cartonCount: sumBy(data.map(x => x.CARTONCOUNT)),
-      scatteredCount: sumBy(data.map(x => x.SCATTEREDCOUNT)),
-      containerCount: sumBy(data.map(x => x.CONTAINERCOUNT)),
-      realCartonCount: sumBy(data.map(x => x.REALCARTONCOUNT)),
-      realScatteredCount: sumBy(data.map(x => x.REALSCATTEREDCOUNT)),
-      realContainerCount: sumBy(data.map(x => x.REALCONTAINERCOUNT)),
-      weight: sumBy(data.map(x => Number(x.REALWEIGHT))),
-      volume: sumBy(data.map(x => Number(x.REALVOLUME))),
-      totalAmount: 0,
-      deliveryPointCount: uniq(data.map(x => x.DELIVERYPOINTCODE)).length,
-      pickupPointCount: uniq(data.map(x => x.PICKUPPOINTNAME)).length,
-      ownerCount: uniq(data.map(x => x.OWNER)).length,
+      ...orderCounts,
       companyUuid: loginCompany().uuid,
       dispatchCenterUuid: loginOrg().uuid,
     };
     save(paramBody).then(response => {
       if (response.success) {
         message.success('保存成功！');
+        this.props.refresh();
         this.hide();
       }
     });
   };
+  //汇总
+  groupByOrder = data => {
+    return {
+      orderCount: data ? data.length : 0,
+      cartonCount: data ? sumBy(data.map(x => x.cartonCount)) : 0,
+      scatteredCount: data ? sumBy(data.map(x => x.scatteredCount)) : 0,
+      containerCount: data ? sumBy(data.map(x => x.containerCount)) : 0,
+      realCartonCount: data ? sumBy(data.map(x => x.realCartonCount)) : 0,
+      realScatteredCount: data ? sumBy(data.map(x => x.realScatteredCount)) : 0,
+      realContainerCount: data ? sumBy(data.map(x => x.realContainerCount)) : 0,
+      weight: data ? sumBy(data.map(x => Number(x.weight))) : 0,
+      volume: data ? sumBy(data.map(x => Number(x.volume))) : 0,
+      totalAmount: data ? sumBy(data.map(x => Number(x.amount))) : 0,
+      deliveryPointCount: data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0,
+      pickupPointCount: data ? uniq(data.map(x => x.pickUpPoint.code)).length : 0,
+      ownerCount: data ? uniq(data.map(x => x.owner.code)).length : 0,
+    };
+  };
 
   render() {
-    const { modal, data } = this.props;
     const {
       orders,
       vehicles,
@@ -169,6 +185,7 @@ export default class DispatchingCreatePage extends Component {
       selectVehicle,
       selectEmployees,
     } = this.state;
+    const totalData = this.groupByOrder(orders);
     return (
       <Modal
         visible={this.state.visible}
@@ -176,14 +193,14 @@ export default class DispatchingCreatePage extends Component {
         onCancel={() => this.hide()}
         destroyOnClose
         centered
-        {...modal}
+        {...this.props.modal}
         className={dispatchingStyles.dispatchingCreatePage}
         bodyStyle={{ margin: -17 }}
       >
         <Row gutter={[8, 0]}>
           <Col span={16}>
             <Card title="订单" bodyStyle={{ padding: 1, height: '36.8vh' }}>
-              <CardTable scrollY={'32vh'} dataSource={data} columns={CreatePageOrderColumns} />
+              <CardTable scrollY={'32vh'} dataSource={orders} columns={CreatePageOrderColumns} />
             </Card>
             <Row gutter={[8, 0]} style={{ marginTop: 8 }}>
               <Col span={12}>
@@ -257,20 +274,20 @@ export default class DispatchingCreatePage extends Component {
               <div className={dispatchingStyles.orderTotalCardBody}>
                 <div style={{ flex: 1 }}>
                   <div>送货点数</div>
-                  <div className={dispatchingStyles.orderTotalNumber}>{data.length}</div>
+                  <div className={dispatchingStyles.orderTotalNumber}>
+                    {totalData.deliveryPointCount}
+                  </div>
                 </div>
                 <Divider type="vertical" style={{ height: '3.5em' }} />
                 <div style={{ flex: 1 }}>
                   <div>订单数</div>
-                  <div className={dispatchingStyles.orderTotalNumber}>{data.length}</div>
+                  <div className={dispatchingStyles.orderTotalNumber}>{totalData.orderCount}</div>
                 </div>
                 <Divider type="vertical" style={{ height: '3.5em' }} />
                 <div style={{ flex: 1 }}>
                   <div> 总体积</div>
                   <div>
-                    <span className={dispatchingStyles.orderTotalNumber}>
-                      {sumBy(data.map(x => x.REALVOLUME)).toFixed(4)}
-                    </span>
+                    <span className={dispatchingStyles.orderTotalNumber}>{totalData.volume}</span>
                     <span>m³</span>
                   </div>
                 </div>
@@ -278,9 +295,7 @@ export default class DispatchingCreatePage extends Component {
                 <div style={{ flex: 1 }}>
                   <div>总重量</div>
                   <div>
-                    <span className={dispatchingStyles.orderTotalNumber}>
-                      {sumBy(data.map(x => x.REALWEIGHT)).toFixed(4)}
-                    </span>
+                    <span className={dispatchingStyles.orderTotalNumber}>{totalData.weight}</span>
                     <span>kg</span>
                   </div>
                 </div>
