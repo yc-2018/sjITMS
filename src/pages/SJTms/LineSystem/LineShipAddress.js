@@ -118,7 +118,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
     this.setState({
       modalVisible: true,
       modalTitle: '添加门店',
-      modalQuickuuid: 'sj_itms_store',
+      modalQuickuuid: 'sj_itms_ship_not_store',
       transferColumnsTitle: '门店',
     });
   };
@@ -251,6 +251,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
                     allowClear={true}
                     optionFilterProp="children"
                     treeData={this.props.lineTreeData}
+                    labelInValue = {true}
                     // 将value进行了一层包装，以方便日后扩展
                     value={this.state.lineValue}
                     onChange={this.handleChange}
@@ -292,13 +293,14 @@ export default class LineShipAddress extends QuickFormSearchPage {
       });
     }
   };
-  handleChange = value => {
-    this.setState({ lineValue: value });
+  handleChange = e => {
+    this.setState({ lineValue: e });
   };
   handleAddToNewLine = async () => {
     const { selectedRows, lineValue } = this.state;
+
     let params = {
-      lineuuid: lineValue,
+      lineuuid: lineValue.value,
       addressIds: selectedRows.map(e => e.UUID),
     };
     await addToNewLine(params).then(result => {

@@ -8,6 +8,7 @@ import Result from '@/components/Result';
 import { res } from '@/pages/In/Move/PlaneMovePermission';
 import { queryIdleAndThisPostionUseing } from '@/services/facility/Container';
 import { loginOrg, loginCompany, loginUser } from '@/utils/LoginContext';
+import NocheckForm from './NoCheckForm';
 import {
     SimpleTreeSelect,
     SimpleSelect,
@@ -26,7 +27,8 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
         isNotHd:true,
         pageData:[],
         reasonModalVisible:false,
-        deliveredDutyMdodalVisible:false
+        deliveredDutyMdodalVisible:false,
+        nocheckInfoVisible:false
     }
 
     constructor(props){
@@ -88,7 +90,8 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     return (<>
     {this.CreateFormReason()}
     {this.CreateUnDeliveredDuty(0)}
-    {/* <Button onClick={this.checkNoReason}>未送达原因管理</Button> */}
+    <Button onClick={this.checkNoReason}>未送达原因管理</Button>
+    {this.nocheckInfo()}
     </>)
   };
  // 该方法会覆盖所有的搜索查询
@@ -105,7 +108,7 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
   };
   //未送达原因管理
   checkNoReason =()=>{
-     
+     this.setState({nocheckInfoVisible:true})
 
   }
   //重送
@@ -169,7 +172,6 @@ checkAttribution =()=>{
     this.setState({deliveredDutyMdodalVisible:true})
 }
 deliveredChage = (records,colum,e)=>{
-  console.log("colum",colum,"records",records,"e",e);
   records[colum.fieldName] = e
 }
   CreateFormReason =()=>{
@@ -235,6 +237,15 @@ deliveredChage = (records,colum,e)=>{
       });
   
       return <CreateFormReason />;
+}
+nocheckInfo =()=>{
+  return <Modal  width ={'auto'} height ={'auto'}
+  style={{overflow:'auto'}}
+  visible={this.state.nocheckInfoVisible}
+  onCancel={()=>this.setState({nocheckInfoVisible:false})}
+  title={"批量设置原因"}>
+ <NocheckForm quickuuid='sj_pretype' location={{pathname:'/tmsbase/confirm'}}></NocheckForm>
+</Modal> ;
 }
 //批量设置责任归属
 CreateUnDeliveredDuty =()=>{

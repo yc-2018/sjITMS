@@ -50,47 +50,50 @@ export default class LineSystemSearchPage extends Component {
     this.queryLineSystem();
   }
   //遍历树
-  getLineSystemTree = (data, itemData, lineData) => {
-    let treeNode = [];
-    let ef = [];
-    if (Array.isArray(data)) {
-      data.forEach(e => {
-        let temp = {};
-        temp.value = `[${e.code}]` + e.name;
-        temp.key = e.uuid;
-        temp.title = `[${e.code}]` + e.name;
-        temp.icon = <Icon type="swap" rotate={90} />;
+  getLineSystemTree =(data,itemData,lineData)=>{
+    console.log("lineData",lineData);
+      let treeNode = [];
+      let ef = [];
+      if(Array.isArray(data)){
+        data.forEach(e =>{
+         let temp = {};
+         temp.value=e.uuid;
+         temp.key=e.uuid;
+         temp.title =  `[${e.code}]` + e.name;
+         temp.icon=<Icon type="swap" rotate={90} />;
         // temp.system=true;
-        treeNode.push(temp);
-        ef.push(e);
-        if (data.type == 'lineSystem') {
-          //temp.disabled=true;
-          temp.system = true;
-          temp.selectable = false;
-        }
-        data.type = 'line' && lineData.push(e);
-      });
-      itemData.children = treeNode;
-      ef.forEach((f, index) => {
-        this.getLineSystemTree(f, treeNode[index], lineData);
-      });
-    } else {
-      itemData.value = `[${data.code}]` + data.name;
-      itemData.key = data.uuid;
-      itemData.title = `[${data.code}]` + data.name;
-      itemData.icon = <Icon type="swap" rotate={90} />;
-      if (data.type == 'lineSystem') {
-        itemData.system = true;
-        // itemData.disabled=true;
-        itemData.selectable = false;
-      }
-      data.type = 'line' && lineData.push(data);
-
-      if (data.childLines) {
-        this.getLineSystemTree(data.childLines, itemData, lineData);
+         treeNode.push(temp);
+         ef.push(e);
+         if(data.type=='lineSystem'){
+           //temp.disabled=true;
+           temp.system=true;
+           temp.selectable = false;
+         } 
+         data.type='line' &&  lineData.push(e);
+        })
+        itemData.children = treeNode; 
+       ef.forEach((f,index)=>{
+         this.getLineSystemTree(f,treeNode[index],lineData);
+       })
+      }else{
+       itemData.value=data.uuid;
+        itemData.key=data.uuid;
+        itemData.title =  `[${data.code}]` + data.name;
+        itemData.icon=<Icon type="swap" rotate={90} />;
+        if(data.type=='lineSystem'){
+          itemData.system=true;
+         // itemData.disabled=true;
+          itemData.selectable = false;
+        } 
+        data.type='line' && lineData.push(data);
+          
+         
+        if(data.childLines){
+          this.getLineSystemTree(data.childLines,itemData,lineData);
       }
     }
-  };
+  }
+  
 
   //查询所有线路体系
   queryLineSystem = async () => {
@@ -243,8 +246,8 @@ export default class LineSystemSearchPage extends Component {
       let nodeArr = data.map(item => {
         item.title = (
           <div>
-            <span>{item.value}</span>
-            {item.system || item.key != selectLineUuid ? (
+            <span>{item.title}</span>
+             {item.system || item.key != selectLineUuid ? (
               <span />
             ) : (
               <span style={{ float: 'right' }}>
@@ -298,8 +301,12 @@ export default class LineSystemSearchPage extends Component {
   drawContent = () => {
     return this.state.rightContent;
   };
-
+  handleCancel = async ()=>{
+    this.queryLineSystem();
+   
+  }
   render() {
+    console.log("reder");
     const { createSystemModalVisible, createLineModalVisible, selectLineUuid } = this.state;
     return (
       <PageHeaderWrapper>
@@ -314,9 +321,11 @@ export default class LineSystemSearchPage extends Component {
                     title: '新建线路体系',
                     width: 500,
                     bodyStyle: { marginRight: '40px' },
+                    afterClose:this.handleCancel
                   }}
                   page={{ quickuuid: 'sj_itms_create_linesystem', noCategory: true }}
                   onRef={node => (this.lineSystemCreatePageModalRef = node)}
+
                 />
                 <CreatePageModal
                   modal={{

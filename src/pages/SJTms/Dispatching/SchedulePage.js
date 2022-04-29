@@ -2,13 +2,14 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-27 15:43:24
+ * @LastEditTime: 2022-04-28 16:02:48
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
-import React, { PureComponent } from 'react';
+import React, { Component } from 'react';
 import { Modal, Tabs, Button, Tooltip, message } from 'antd';
 import CardTable from './CardTable';
+import DispatchingCreatePage from './DispatchingCreatePage';
 import EditContainerNumberPage from './EditContainerNumberPage';
 import { ScheduleColumns, ScheduleDetailColumns } from './DispatchingColumns';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
@@ -16,7 +17,7 @@ import { getScheduleByStat, approve, cancelApprove, remove } from '@/services/sj
 
 const { TabPane } = Tabs;
 
-export default class SchedulePage extends PureComponent {
+export default class SchedulePage extends Component {
   state = {
     loading: false,
     savedRowKeys: [],
@@ -32,16 +33,17 @@ export default class SchedulePage extends PureComponent {
   componentDidMount() {
     this.getSchedules(this.state.activeTab);
   }
-
+  //刷新
+  refreshTable = () => {
+    this.getSchedules(this.state.activeTab);
+  };
   //获取排车单
   getSchedules = stat => {
-    this.setState({ loading: true });
     getScheduleByStat(stat).then(response => {
       if (response.success) {
         this.setState({
           loading: false,
           scheduleData: response.data,
-          activeTab: stat,
           savedRowKeys: [],
           savedChildRowKeys: [],
           approvedRowKeys: [],
@@ -52,6 +54,7 @@ export default class SchedulePage extends PureComponent {
   };
   //标签页切换
   handleTabChange = activeKey => {
+    this.setState({ activeTab: activeKey, loading: true });
     this.getSchedules(activeKey);
   };
 
@@ -62,9 +65,13 @@ export default class SchedulePage extends PureComponent {
       if (record.sourceNum) {
         record.billNumber = scheduleData.find(x => x.uuid == record.billUuid).billNumber;
         this.setState({ editPageVisible: true, scheduleDetail: record });
+      } else {
+        this.createPageModalRef.show(true, record);
       }
     };
   };
+
+  //显示修改排车件数Modal
   handleShowEditPage = () => {
     this.editContainerNumberPageModalRef.show();
   };
@@ -103,6 +110,7 @@ export default class SchedulePage extends PureComponent {
           if (response.success) {
             message.success('删除成功！');
             this.getSchedules(activeTab);
+            this.props.refresh();
           }
         });
       },
@@ -138,6 +146,7 @@ export default class SchedulePage extends PureComponent {
       approvedRowKeys,
       abortedRowKeys,
       activeTab,
+      editSchedule,
       editPageVisible,
       scheduleDetail,
     } = this.state;
@@ -203,9 +212,19 @@ export default class SchedulePage extends PureComponent {
             hasChildTable
             loading={loading}
           />
+          {/* 编辑排车单 */}
+          <DispatchingCreatePage
+            modal={{ title: '编辑排车单' }}
+            refresh={() => {
+              this.refreshTable();
+              this.props.refresh();
+            }}
+            onRef={node => (this.createPageModalRef = node)}
+          />
+          {/* 修改排车数量 */}
           <EditContainerNumberPage
-            modal={{ title: '修改排车数量' }}
-            refresh={this.refreshOrderPool}
+            modal={{ title: '编辑' }}
+            refresh={this.refreshTable}
             visible={editPageVisible}
             scheduleDetail={scheduleDetail}
             onCancel={() => this.setState({ editPageVisible: false })}
