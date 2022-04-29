@@ -394,7 +394,9 @@ class StandardTable extends Component {
       let warp = document.getElementsByClassName('ant-table-body')[allwarp.length - 2];
       // console.log('warp', warp, document.getElementsByClassName('ant-table-body'));
       // 添加滚动监听
-      warp.addEventListener('scroll', this.handleScroll, true);
+      if (warp) {
+        warp.addEventListener('scroll', this.handleScroll, true);
+      }
     }, 2000);
   }
 
