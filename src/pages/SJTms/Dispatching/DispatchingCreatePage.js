@@ -117,7 +117,7 @@ export default class DispatchingCreatePage extends Component {
   handleSave = () => {
     const { orders, selectVehicle, selectEmployees } = this.state;
     const driver = selectEmployees.find(x => x.memberType == 'DRIVER');
-    const orderCounts = groupByOrder(orders);
+    const orderCounts = this.groupByOrder(orders);
     const paramBody = {
       type: 'Job',
       vehicle: {
