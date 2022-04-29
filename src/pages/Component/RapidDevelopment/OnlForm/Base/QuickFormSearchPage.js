@@ -45,6 +45,7 @@ export default class QuickFormSearchPage extends SearchPage {
       key: props.quickuuid + 'quick.search.table',
       defaultSort: '',
       formConfig: {},
+      colTotal: [],
     }; //用于缓存用户配置数据
   }
 
@@ -317,6 +318,7 @@ export default class QuickFormSearchPage extends SearchPage {
     if (data?.records && data.records.length > 0 && !data.records[0].uuid) {
       data.records.forEach(row => (row.uuid = guid()));
     }
+    let colTotal = data.columnTotal;
     var data = {
       list: data.records,
       pagination: {
@@ -326,7 +328,7 @@ export default class QuickFormSearchPage extends SearchPage {
         showTotal: total => `共 ${total} 条`,
       },
     };
-    this.setState({ data, selectedRows: [] });
+    this.setState({ data, selectedRows: [], colTotal });
   };
 
   /**
