@@ -9,7 +9,7 @@ export default class xxjob extends PureComponent  {
         return (
              <Page withCollect={true}>
             <iframe style={{floatLeft:100}} id="mainframe" name="mainframe"  frameBorder="0" width="100%" scrolling="no" height="100%" 
-onload="document.all('mainframe').style.height=mainframe.document.body.scrollHeight+30;" src='http://localhost:10010/loginTms/test/123456'> </iframe>
+onload="document.all('mainframe').style.height=mainframe.document.body.scrollHeight+30;" src='http://job.timeexpress.com.cn//loginTms/test/123456'> </iframe>
              </Page> 
            
         

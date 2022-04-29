@@ -52,7 +52,7 @@ export default class LineSystemSearchPage extends Component {
       if(Array.isArray(data)){
         data.forEach(e =>{
          let temp = {};
-         temp.value=`[${e.code}]` + e.name;
+         temp.value=e.uuid;
          temp.key=e.uuid;
          temp.title =  `[${e.code}]` + e.name;
          temp.icon=<Icon type="swap" rotate={90} />;
@@ -71,7 +71,7 @@ export default class LineSystemSearchPage extends Component {
          this.getLineSystemTree(f,treeNode[index],lineData);
        })
       }else{
-        itemData.value=`[${data.code}]` + data.name;
+       itemData.value=data.uuid;
         itemData.key=data.uuid;
         itemData.title =  `[${data.code}]` + data.name;
         itemData.icon=<Icon type="swap" rotate={90} />;
@@ -248,7 +248,7 @@ export default class LineSystemSearchPage extends Component {
       let nodeArr = data.map(item => {
         item.title = (
           <div>
-            <span>{item.value}</span>
+            <span>{item.title}</span>
              {item.system || item.key != selectLineUuid ? (
               <span />
             ) : ( 
@@ -303,8 +303,12 @@ export default class LineSystemSearchPage extends Component {
   drawContent = () => {
     return this.state.rightContent;
   };
-
+  handleCancel = async ()=>{
+    this.queryLineSystem();
+   
+  }
   render() {
+    console.log("reder");
     const { createSystemModalVisible, createLineModalVisible, selectLineUuid } = this.state;
     return (
       <PageHeaderWrapper>
@@ -319,9 +323,11 @@ export default class LineSystemSearchPage extends Component {
                     title: '新建线路体系',
                     width: 500,
                     bodyStyle: { marginRight: '40px' },
+                    afterClose:this.handleCancel
                   }}
                   page={{ quickuuid: 'sj_itms_create_linesystem', noCategory: true }}
                   onRef={node => (this.lineSystemCreatePageModalRef = node)}
+
                 />
                 <CreatePageModal
                   modal={{

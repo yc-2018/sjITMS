@@ -3,7 +3,6 @@ import { Table, Button, Input, Col,Select,Icon, Row,Modal, Popconfirm, message,C
 import { colWidth } from '@/utils/ColWidth';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-//import { convertCodeName } from '@/utils/utils';
 import StoreItemConfirmModal from './StoreItemConfirmModal';
 import DeliveredNoCheck from './DeliveredNoCheck'
 import { loginOrg, loginCompany, loginUser } from '@/utils/LoginContext';
@@ -12,6 +11,7 @@ import StandardTable from '@/components/StandardTable';
 import { commonLocale, placeholderLocale, placeholderChooseLocale } from '@/utils/CommonLocale';
 import DeliveredBillCheck from './DeliveredBillCheck'
 import { TITLE_SEPARATION } from '@/utils/constants';
+import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 @connect(({ quick, deliveredConfirm,loading, }) => ({
   quick,
   deliveredConfirm,
@@ -44,11 +44,7 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
     //找到fieldName为CODE这一列 更改它的component
     if (e.column.fieldName == 'DELIVERED') {
       const component = (
-       <Select style={{width:100}} defaultValue={e.record.DELIVERED} onChange = {this.deliveredChage.bind(this, e.record,e.column)}>
-        <Select.Option key={"Pending"} value={"Pending"}>{"待处理"}</Select.Option>
-        <Select.Option key={"NotDelivered"} value={"NotDelivered"}>{"未送达"}</Select.Option>
-        <Select.Option key={"Delivered"} value={"Delivered"}>{"已送达"}</Select.Option>
-       </Select>
+        <SimpleAutoComplete  style={{width:100}} dictCode={"delivered"} value={e.record.DELIVERED} onChange = {this.deliveredChage.bind(this, e.record,e.column)} ></SimpleAutoComplete>
       );
       e.component = component;
     }
@@ -68,48 +64,9 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
           // };
 
  
-// componentWillReceiveProps(nextProps){
-//   console.log("propssdd",nextProps);
-// }
 
-  /**
-   该方法用于修改table的render
 
-   e的对象结构为{
-      column   //对应的column
-      record,  //对应的record
-      component, //render渲染的组件
-      val  //val值
-   }  
-   */
-//   drawcell = e => {
-//     //找到fieldName为CODE这一列 更改它的component
-//     if (e.column.fieldName == 'DELIVERED') {
-        
-//       // const component = <p3 style={{ color: 'red' }}>{e.val}</p3>;
-//       const component = (
-//           <Select   onChange = {this.deliveredChage.bind(this, e.record,e.column)}defaultValue={e.record.DELIVERED} style={{width:'150px'}}>
-//               <Option value='Pending'>待处理</Option>
-//               <Option value='NotDelivered'>未送达</Option>
-//               <Option value='Delivered'>已送达</Option>
-//           </Select>
-//         // <a onClick={this.onView.bind(this, e.record)} style={{ color: 'blue' }}>
-//         //   {111}
-//         // </a>
-//       );
-//       e.component = component;
-//     }
-
-//     if(e.column.fieldName=='STORECODENAME'){
-//       const component = (
-// <div onClick={()=>this.handleModal(e.record)}>
-//       <Icon style={{color:'#3B77E3',marginTop:'2%'}} type="plus-circle" />
-//       <a style={{marginLeft:'2%'}}>{e.record.STORECODENAME}</a>
-//     </div>
-//       )
-//       e.component = component;
-//     }
-//   };
+ 
   handleModal = (record)=>{
     if(record){
       this.setState({
@@ -135,13 +92,11 @@ convertCodeName = ()=>{
   };
 
   deliveredChage = (records,colum,e)=>{
-    records[colum.fieldName] = e
+    records[colum.fieldName] = e.value
   }
   //该方法用于写中间的功能按钮  <span>包裹
   drawToolsButton = () => {
-    //console.log("drawToolsButton",this.state);
-   
-  };
+};
   
 //保存门店送货
 saveDelivered = ()=>{
@@ -195,42 +150,8 @@ unDeliveredConfirmSchedule = ()=>{
         }
       }
     })
-  // let list = [];
-  // storeSelectedRows.forEach(row=>{
-  //   let e = {
-  //     line: row.line,
-  //     shipBillUuid: row.shipBillUuid,
-  //     version: row.version,
-  //     SerialArchLine:row.SerialArchLine,
-  //     orderNo:row.orderNo,
-  //     store: row.store,
-  //     storeAddress: row.storeAddress,
-  //     scheduleBillNumber:row.scheduleBillNumber,
-  //     confirmedOper: {
-  //       uuid:loginUser().uuid,
-  //       code:loginUser().code,
-  //       name:loginUser().name,
-  //     },
-  //     confirmedTime: moment().format("YYYY-MM-DD HH:mm:ss"),
-  //     delivered: row.delivered,
-  //     confirmed:row.confirmed,
-
-  //   }
-  //   list.push(e);
-  // })
-
-  // data.confirms=list;
-
-  // this.props.dispatch({
-  //   type: 'deliveredConfirm/unDeliveredConfirmSchedule',
-  //   payload: data,
-  //   callback:response=>{
-  //     if(response&&response.success){
-  //       this.refreshTable();
-  //       message.success(commonLocale.saveSuccessLocale);
-  //     }
-  //   }
-  // })
+  
+    
  
 }
 handleOk =()=>{
@@ -272,26 +193,16 @@ return (
    onOk={this.handleOk} 
    onCancel={this.handleCancel} 
    width ={1400}
+   height={500}
    style={{overflow:'auto'}}
    >
-  {/* <Button >保存票据</Button> */}
-  {/* <StandardTable
-      rowKey={storeUuid}
-      comId={targetTabKey}
-      selectedRows={billSelectedRows}
-      loading={this.props.loading}
-      data={billData ? billData : []}
-      columns={this.billColumns ? this.billColumns : []}
-      onSelectRow={this.handleBillSelectRows}
-      onChange={this.handleStandardTableChange}
-    /> */}
+  
     <DeliveredNoCheck quickuuid = 'sj_schedule_order_no_check'/>
   </Modal>
   <Button onClick={this.showNoDelivered}>回车未送达确认</Button>
     <Button onClick={this.saveDelivered}>保存门店送货</Button>
     <Button onClick={this.deliveredConfirmSchedule}>全部送达</Button>
     <Button  onClick={this.unDeliveredConfirmSchedule}>全部未送达</Button>
-    {/* <Button onClick={this.chickOrder}>票据核对</Button> */}
   </span>
 );
   };
