@@ -44,6 +44,8 @@ export default class QuickFormSearchPage extends SearchPage {
       isOrgQuery: [],
       key: props.quickuuid + 'quick.search.table',
       defaultSort: '',
+      formConfig: {},
+      colTotal: [],
     }; //用于缓存用户配置数据
   }
 
@@ -57,6 +59,7 @@ export default class QuickFormSearchPage extends SearchPage {
       callback: response => {
         if (response.result) {
           console.log('请求配置成功');
+          this.setState({ formConfig: response.result });
         }
       },
     });
@@ -177,7 +180,6 @@ export default class QuickFormSearchPage extends SearchPage {
     //let colorJson = JSON.parse(color);
     //if (!Array.isArray(colorJson)) return '';
     let colorItem = color.find(item => item.ITEM_VALUE == data);
-    console.log(colorItem, 'colorItem');
     if (!colorItem) return '';
 
     return colorItem.TEXT_COLOR;
@@ -316,6 +318,7 @@ export default class QuickFormSearchPage extends SearchPage {
     if (data?.records && data.records.length > 0 && !data.records[0].uuid) {
       data.records.forEach(row => (row.uuid = guid()));
     }
+    let colTotal = data.columnTotal;
     var data = {
       list: data.records,
       pagination: {
@@ -325,7 +328,7 @@ export default class QuickFormSearchPage extends SearchPage {
         showTotal: total => `共 ${total} 条`,
       },
     };
-    this.setState({ data, selectedRows: [] });
+    this.setState({ data, selectedRows: [], colTotal });
   };
 
   /**
@@ -394,7 +397,9 @@ export default class QuickFormSearchPage extends SearchPage {
     const { selectedRows, batchAction } = this.state;
     const { dispatch } = this.props;
     const params = [];
-    const code = this.props.onlFormField[0].onlFormHead.code;
+    const code = this.state.formConfig[0].onlFormHead.code
+      ? this.state.formConfig[0].onlFormHead.code
+      : 'woxiangyaokuaile';
     let that = this;
     if (selectedRows.length !== 0) {
       for (var i = 0; i < selectedRows.length; i++) {

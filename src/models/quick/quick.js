@@ -8,6 +8,7 @@ import {
   dynamicqueryById,
   selectCoulumns,
   getSelectField,
+  dyDelete,
 } from '@/services/quick/Quick';
 import { colWidth } from '@/utils/ColWidth';
 
@@ -68,6 +69,10 @@ export default {
     },
     *dynamicDelete({ payload, callback }, { call, put }) {
       const response = yield call(dynamicDelete, payload);
+      if (callback) callback(response);
+    },
+    *dyDelete({ payload, callback }, { call, put }) {
+      const response = yield call(dyDelete, payload);
       if (callback) callback(response);
     },
     *showPageMap({ payload }, { call, put }) {

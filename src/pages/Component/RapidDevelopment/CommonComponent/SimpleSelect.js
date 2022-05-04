@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-02-10 14:16:00
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-07 15:39:23
+ * @LastEditTime: 2022-04-11 11:58:39
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -105,7 +105,7 @@ export default class SimpleSelect extends PureComponent {
     let sourceData = new Array();
     if (result.data != null) {
       result.data.forEach(sourceDatas => {
-        sourceData.push({ NAME: sourceDatas });
+        sourceData.push({ NAME: sourceDatas, VALUE: sourceDatas });
       });
       this.setState({ sourceData: sourceData });
     }

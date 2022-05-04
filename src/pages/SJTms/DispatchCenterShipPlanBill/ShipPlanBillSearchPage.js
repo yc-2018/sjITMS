@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-03-28 17:23:59
+ * @LastEditTime: 2022-04-25 15:21:29
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -18,6 +18,8 @@ import emptySvg from '@/assets/common/img_empoty.svg';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import ShipPlanBillCreatePage from './ShipPlanBillCreatePage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
+import RemoveCarCreatePage from './RemoveCarCreatePage';
+import { log } from 'lodash-decorators/utils';
 
 const { Content } = Layout;
 const TabPane = Tabs.TabPane;
@@ -39,7 +41,6 @@ export default class ShipPlanBillSearchPage extends PureComponent {
       searchFields: [],
       advancedFields: [],
       reportCode: props.quickuuid,
-      updateMemberModalVisible: false,
       pageFilters: { quickuuid: props.quickuuid, changePage: true },
       isOrgQuery: [],
       key: props.quickuuid + 'quick.search.table',
@@ -172,14 +173,16 @@ export default class ShipPlanBillSearchPage extends PureComponent {
 
   memberModalClick = record => {
     this.setState({
-      updateMemberModalVisible: true,
       params: { entityUuid: record.UUID, title: record.BILLNUMBER },
     });
     this.createPageModalRef.show();
   };
 
-  okHandleMember = () => {
-    this.setState({ updateMemberModalVisible: false });
+  removeCarModalClick = selectedRows => {
+    this.setState({
+      params: { entityUuid: selectedRows[0].UUID, title: selectedRows[0].BILLNUMBER },
+    });
+    this.RemoveCarModalRef.show();
   };
 
   render() {
@@ -190,7 +193,6 @@ export default class ShipPlanBillSearchPage extends PureComponent {
       tabTrue,
       showCreatePage,
       selectedRows,
-      updateMemberModalVisible,
       params,
     } = this.state;
     return (
@@ -203,7 +205,6 @@ export default class ShipPlanBillSearchPage extends PureComponent {
                   <TabPane tab="查询条件" key={'1'}>
                     <SimpleQuery
                       selectFields={this.state.searchFields}
-                      // filterValue={this.state.pageFilter.filterValue}
                       refresh={this.onSearch}
                       reportCode={this.state.reportCode}
                       isOrgQuery={this.state.isOrgQuery}
@@ -217,9 +218,11 @@ export default class ShipPlanBillSearchPage extends PureComponent {
                         tabTrue={tabTrue}
                         refreshView={this.refreshView}
                         memberModalClick={this.memberModalClick}
+                        removeCarModalClick={this.removeCarModalClick}
+                        onRef={node => (this.refreshTableRef = node)}
                       />
                     </div>
-                    <div style={{ margin: '24px -8px 0px', height: '700px' }}>
+                    <div style={{ margin: '0px -8px 0px', height: '700px' }}>
                       {!showCreatePage ? (
                         <Empty
                           image={emptySvg}
@@ -227,7 +230,7 @@ export default class ShipPlanBillSearchPage extends PureComponent {
                         />
                       ) : (
                         <ShipPlanBillDtlSearch
-                          quickuuid={'v_sj_itms_schedule_order'}
+                          quickuuid={'sj_itms_schedule_order'}
                           selectedRows={selectedRows}
                         />
                       )}
@@ -244,6 +247,18 @@ export default class ShipPlanBillSearchPage extends PureComponent {
           page={{ quickuuid: 'sj_itms_schedule', params: params }}
           customPage={ShipPlanBillCreatePage}
           onRef={node => (this.createPageModalRef = node)}
+        />
+        <CreatePageModal
+          modal={{
+            title: params.title,
+            width: 1000,
+            afterClose: () => {
+              this.refreshTableRef.queryCoulumns();
+            },
+          }}
+          page={{ quickuuid: 'sj_itms_schedule_removecar', params: params }}
+          customPage={RemoveCarCreatePage}
+          onRef={node => (this.RemoveCarModalRef = node)}
         />
       </PageHeaderWrapper>
     );

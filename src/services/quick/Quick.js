@@ -45,6 +45,13 @@ export async function dynamicDelete(payload) {
   });
 }
 
+export async function dyDelete(payload) {
+  return request(`/itms-schedule/itms-schedule/devDynamicCRUD/delete`, {
+    method: 'POST',
+    body: payload.params,
+  });
+}
+
 export async function dynamicQuery(payload) {
   return request(`/itms-schedule/itms-schedule/devDynamicCRUD/query`, {
     method: 'POST',
@@ -70,4 +77,39 @@ export async function saveOrUpdateEntities(payload) {
     method: 'POST',
     body: payload,
   });
+}
+
+export async function findLineSystemTree() {
+  return request(`/itms-schedule/itms-schedule/line/LineSystemTree/findLineSystemTree`, {
+    method: 'get',
+  });
+}
+
+export async function deleteLineSystemTree(payload) {
+  return request(
+    `/itms-schedule/itms-schedule/line/LineSystemTree/deleteLineSystemTree/${payload}`,
+    {
+      method: 'get',
+    }
+  );
+}
+export async function deleteLineStoreAddressById(payload) {
+  return request(`/itms-schedule/itms-schedule/line/LineSystemTree/deleteLineAddress/${payload}`, {
+    method: 'get',
+  });
+}
+
+export async function findLineByNameLike(payload) {
+  return request(`/itms-schedule/itms-schedule/line/LineSystemTree/findLineByNameLike/${payload}`, {
+    method: 'POST',
+  });
+}
+export async function addToNewLine(payload) {
+  return request(
+    `/itms-schedule/itms-schedule/line/LineSystemTree/addToNewLine/${payload.lineuuid}`,
+    {
+      method: 'POST',
+      body: payload.addressIds,
+    }
+  );
 }

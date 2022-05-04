@@ -387,6 +387,37 @@ class StandardTable extends Component {
       optionsList: fetchOptions(this.props.columns, key), // 绘制的列
       list: getShowList(this.props.data, this.props.dataSource),
     });
+
+    setTimeout(() => {
+      let allwarp = document.getElementsByClassName('ant-table-body');
+      //加定时器 因为 可能 table还没渲染完就获取元素 防止获取不到
+      let warp = document.getElementsByClassName('ant-table-body')[allwarp.length - 2];
+      // console.log('warp', warp, document.getElementsByClassName('ant-table-body'));
+      // 添加滚动监听
+      if (warp) {
+        warp.addEventListener('scroll', this.handleScroll, true);
+      }
+    }, 2000);
+  }
+
+  //监听滚动事件
+  handleScroll = () => {
+    let allwarp = document.getElementsByClassName('ant-table-body');
+    let warp = document.getElementsByClassName('ant-table-body')[allwarp.length - 2];
+    let wrapBottom = document.getElementsByClassName('ant-table-body')[allwarp.length - 1];
+    // console.log(warp, wrapBottom, wrapBottom.scrollLeft, warp.scrollLeft);
+    warp.addEventListener(
+      'scroll',
+      () => {
+        wrapBottom.scrollLeft = warp.scrollLeft;
+      },
+      true
+    );
+  };
+
+  // 组件将要卸载，取消监听window滚动事件
+  componentWillUnmount() {
+    window.removeEventListener('scroll', this.handleScroll);
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -1020,7 +1051,7 @@ class StandardTable extends Component {
     const footerPos = footerElement ? footerElement.getBoundingClientRect() : {};
     let height = this.props.tableHeight
       ? this.props.tableHeight
-      : footerPos.top - pos.top - (this.props.overHeight ? this.props.overHeight : 90);
+      : footerPos.top - pos.top - (this.props.overHeight ? this.props.overHeight : 90) - 20;
     let dataHeight = showList ? showList.length * 30 : 0;
     let scroll = {}; //'calc(100vh - ' + top + 'px)'
     let totalWidth = this.getTotalWidth(newColumns);
@@ -1148,7 +1179,11 @@ class StandardTable extends Component {
         <IconFont style={{ fontSize: '20px', color: '#848C96' }} type="icon-setting" />
       </div>
     );
-
+    let status =
+      this.props.colTotal && this.props.colTotal.length == '0'
+        ? { display: 'none' }
+        : { display: 'block' };
+    console.log(status, 'status');
     return (
       <div className={styles.standardTable}>
         {(oriColumnLen >= SHOW_THRESH_HOLD && !noSettingColumns) || hasSettingColumns ? (
@@ -1160,6 +1195,22 @@ class StandardTable extends Component {
         />
         <DndProvider backend={HTML5Backend}>
           <Table
+            footer={() => {
+              return (
+                <Table
+                  id={'happy'}
+                  columns={showColumns}
+                  scroll={{ x: true, y: false }}
+                  rowKey={record => Math.random()}
+                  pagination={false}
+                  showHeader={false} // table 的 columns 头部隐藏
+                  dataSource={this.props.colTotal}
+                  size={this.props.size ? this.props.size : 'middle'}
+                  components={this.components}
+                  style={status}
+                />
+              );
+            }}
             className={this.props.tableClassName}
             id={this.state.key}
             rowKey={rowKey || 'key'}

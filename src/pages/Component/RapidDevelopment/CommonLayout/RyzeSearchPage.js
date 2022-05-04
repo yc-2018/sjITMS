@@ -169,68 +169,67 @@ export default class RyzeSearchPage extends Component {
       spinning: this.state.sucomIdspendLoading ? false : loading,
       indicator: LoadingIcon('default'),
     };
-    
-    return <div>
-      <NavigatorPanel
-        canFullScreen={this.state.canFullScreen}
-        title={this.state.title}
-        action={this.drawActionButton ? this.drawActionButton() : ''}
-      />
-      {this.drawSearchPanel ? this.drawSearchPanel() : ''}
-      {this.drawToolbar()}
-      {this.drawToolbarTwo()}
-      {!this.state.noTable ? (
-        <StandardTable
-          unShowRow={this.state.unShowRow ? this.state.unShowRow : false}
-          rowKey={record => record.uuid}
-          hasSettingColumns
-          selectedRows={selectedRows}
-          loading={tableLoading}
-          tableHeight={this.state.tableHeight}
-          data={data}
-          columns={this.columns}
-          noPagination={this.state.noPagination}
-          newScroll={scroll ? scroll : undefined}
-          onSelectRow={this.handleSelectRows}
-          onChange={this.handleStandardTableChange}
-          comId={key}
-          rowClassName={(record, index) => {
-            let name = '';
-            if (index % 2 === 0) {
-              name = styles.lightRow;
-            }
-            return name;
-          }}
-          noActionCol={this.state.noActionCol}
-          canDrag={this.state.canDragTable}
-          pageSize={sessionStorage.getItem('searchPageLine')}
-          noToolbarPanel={
-            !this.state.noToolbar && this.drawToolbarPanel && this.drawToolbarPanel()
-              ? false
-              : true
-          }
-          drapTableChange={this.drapTableChange}
+
+    return (
+      <div>
+        <NavigatorPanel
+          canFullScreen={this.state.canFullScreen}
+          title={this.state.title}
+          action={this.drawActionButton ? this.drawActionButton() : ''}
         />
-      ) : null}
-      {this.drawOtherCom && this.drawOtherCom()}
-    </div>
-  }
+        {this.drawSearchPanel ? this.drawSearchPanel() : ''}
+        {this.drawToolbar()}
+        {this.drawToolbarTwo()}
+        {!this.state.noTable ? (
+          <StandardTable
+            colTotal={this.state.colTotal ? this.state.colTotal : []}
+            unShowRow={this.state.unShowRow ? this.state.unShowRow : false}
+            rowKey={record => record.uuid}
+            hasSettingColumns
+            selectedRows={selectedRows}
+            loading={tableLoading}
+            tableHeight={this.state.tableHeight}
+            data={data}
+            columns={this.columns}
+            noPagination={this.state.noPagination}
+            newScroll={scroll ? scroll : undefined}
+            onSelectRow={this.handleSelectRows}
+            onChange={this.handleStandardTableChange}
+            comId={key}
+            rowClassName={(record, index) => {
+              let name = '';
+              if (index % 2 === 0) {
+                name = styles.lightRow;
+              }
+              return name;
+            }}
+            noActionCol={this.state.noActionCol}
+            canDrag={this.state.canDragTable}
+            pageSize={sessionStorage.getItem('searchPageLine')}
+            noToolbarPanel={
+              !this.state.noToolbar && this.drawToolbarPanel && this.drawToolbarPanel()
+                ? false
+                : true
+            }
+            drapTableChange={this.drapTableChange}
+          />
+        ) : null}
+        {this.drawOtherCom && this.drawOtherCom()}
+      </div>
+    );
+  };
 
   render() {
     let ret = this.state.canFullScreen ? (
-      <FreshPageHeaderWrapper>
-        {this.drawPage()}
-      </FreshPageHeaderWrapper>
+      <FreshPageHeaderWrapper>{this.drawPage()}</FreshPageHeaderWrapper>
     ) : this.state.isNotHd ? (
-      <div>
-        {this.drawPage()}
-      </div>
-      ) : (
-        <PageHeaderWrapper>
-          <Page withCollect={true} pathname={this.props.pathname}>
-            {this.drawPage()}
-          </Page>
-        </PageHeaderWrapper>
+      <div>{this.drawPage()}</div>
+    ) : (
+      <PageHeaderWrapper>
+        <Page withCollect={true} pathname={this.props.pathname}>
+          {this.drawPage()}
+        </Page>
+      </PageHeaderWrapper>
     );
     if (this.state.isDrag) {
       return <DndProvider backend={HTML5Backend}>{ret}</DndProvider>;

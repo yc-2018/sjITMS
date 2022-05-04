@@ -28,8 +28,23 @@ export default class TableTransfer extends Component {
   };
 
   componentDidMount() {
-    this.fetch();
+    this.queryCoulumns()
+
   }
+
+
+  queryCoulumns = () => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'quick/queryColumns',
+      payload: {
+        reportCode: this.props.quickuuid,
+        sysCode: 'tms',
+      },
+      callback: response => {
+        this.fetch();
+      }})
+    }
 
   fetch = (params = this.state.pagination) => {
     const { dispatch, quickuuid, handleFetch } = this.props;
