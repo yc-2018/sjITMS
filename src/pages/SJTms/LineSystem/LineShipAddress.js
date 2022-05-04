@@ -108,7 +108,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
         message.success('删除成功！');
         this.getData(pageFilters);
       } else {
-        message.error('删除失败，请刷新后再操作');
+       // message.error('删除失败，请刷新后再操作');
       }
     });
   };
@@ -274,6 +274,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
             title: '添加子路线',
             width: 500,
             bodyStyle: { marginRight: '40px' },
+            afterClose:this.props.showadfa
           }}
           page={{ quickuuid: 'sj_itms_create_lines', noCategory: true }}
           onRef={node => (this.lineCreatePageModalRef = node)}
@@ -304,10 +305,10 @@ export default class LineShipAddress extends QuickFormSearchPage {
       addressIds: selectedRows.map(e => e.UUID),
     };
     await addToNewLine(params).then(result => {
-      if (result) {
+      if (result.success) {
         message.success('添加成功');
       } else {
-        message.error('添加失败');
+       // message.error('添加失败');
       }
       this.setState({
         lineValue: undefined,

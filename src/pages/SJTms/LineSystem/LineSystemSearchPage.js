@@ -111,7 +111,7 @@ export default class LineSystemSearchPage extends Component {
           expandKeys: lineTreeData.map(x => x.key),
           lineTreeData,
           lineData,
-          selectLineUuid: lineTreeData[0].children[0].key,
+          selectLineUuid: lineTreeData ? lineTreeData[0].children ? lineTreeData[0].children[0].key : lineTreeData[0].key : undefined
         });
         this.onSelect([this.state.selectLineUuid]);
       }
@@ -214,6 +214,7 @@ export default class LineSystemSearchPage extends Component {
               quickuuid="sj_itms_line_shipaddress"
               lineuuid={selectedKeys[0]}
               lineTreeData={this.state.lineTreeData}
+              showadfa = {this.queryLineSystem}
               linecode={
                 lineData.length > 0 ? lineData.find(x => x.uuid == selectedKeys[0]).code : ''
               }
@@ -332,6 +333,7 @@ export default class LineSystemSearchPage extends Component {
                     title: '添加线路',
                     width: 500,
                     bodyStyle: { marginRight: '40px' },
+                    afterClose:this.handleCancel
                   }}
                   page={{ quickuuid: 'sj_itms_create_lines', noCategory: true }}
                   onRef={node => (this.lineCreatePageModalRef = node)}
