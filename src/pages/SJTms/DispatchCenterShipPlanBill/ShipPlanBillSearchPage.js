@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-25 15:21:29
+ * @LastEditTime: 2022-05-04 15:33:48
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -20,6 +20,7 @@ import ShipPlanBillCreatePage from './ShipPlanBillCreatePage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import RemoveCarCreatePage from './RemoveCarCreatePage';
 import { log } from 'lodash-decorators/utils';
+import EntityLogTab from '@/pages/Component/Page/inner/EntityLogTab';
 
 const { Content } = Layout;
 const TabPane = Tabs.TabPane;
@@ -34,6 +35,7 @@ export default class ShipPlanBillSearchPage extends PureComponent {
       title: 'test',
       data: [],
       keyValue: '1',
+      keyDtlVale: 'a',
       tabTrue: false,
       suspendLoading: false,
       columns: [],
@@ -151,6 +153,12 @@ export default class ShipPlanBillSearchPage extends PureComponent {
     });
   };
 
+  changeTabs = key => {
+    this.setState({
+      keyDtlVale: key,
+    });
+  };
+
   refreshView = (record, selectedRows) => {
     if (!record && selectedRows && selectedRows.length > 0) {
       this.setState({
@@ -190,6 +198,7 @@ export default class ShipPlanBillSearchPage extends PureComponent {
       reportCode,
       pageFilters,
       keyValue,
+      keyDtlVale,
       tabTrue,
       showCreatePage,
       selectedRows,
@@ -222,17 +231,24 @@ export default class ShipPlanBillSearchPage extends PureComponent {
                         onRef={node => (this.refreshTableRef = node)}
                       />
                     </div>
-                    <div style={{ margin: '0px -8px 0px', height: '700px' }}>
+                    <div style={{ height: '700px' }}>
                       {!showCreatePage ? (
                         <Empty
                           image={emptySvg}
                           description={<span>暂无数据,请先选择排车单</span>}
                         />
                       ) : (
-                        <ShipPlanBillDtlSearch
-                          quickuuid={'sj_itms_schedule_order'}
-                          selectedRows={selectedRows}
-                        />
+                        <Tabs activeKey={keyDtlVale} onChange={this.changeTabs}>
+                          <TabPane tab="排车单明细" key={'a'}>
+                            <ShipPlanBillDtlSearch
+                              quickuuid={'sj_itms_schedule_order'}
+                              selectedRows={selectedRows}
+                            />
+                          </TabPane>
+                          <TabPane tab="操作日志" key={'b'}>
+                            <EntityLogTab entityUuid={selectedRows[0].UUID} />
+                          </TabPane>
+                        </Tabs>
                       )}
                     </div>
                   </TabPane>
