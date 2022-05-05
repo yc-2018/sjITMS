@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-25 15:17:37
+ * @LastEditTime: 2022-05-05 10:45:21
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -361,7 +361,7 @@ export default class ShipPlanBillSearch extends SearchPage {
   onRollBack = (record, batch) => {
     const that = this;
     return new Promise(function(resolve, reject) {
-      shipRollback(record).then(result => {
+      shipRollback(record.UUID).then(result => {
         if (result && batch) {
           that.batchCallback(result, record);
           resolve({ success: result.success });
@@ -375,7 +375,7 @@ export default class ShipPlanBillSearch extends SearchPage {
   onAbort = (record, batch) => {
     const that = this;
     return new Promise(function(resolve, reject) {
-      aborted(record).then(result => {
+      aborted(record.UUID).then(result => {
         if (result && batch) {
           that.batchCallback(result, record);
           resolve({ success: result.success });
