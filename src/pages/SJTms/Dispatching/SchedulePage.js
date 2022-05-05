@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-28 16:02:48
+ * @LastEditTime: 2022-05-05 10:49:22
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -13,7 +13,7 @@ import DispatchingCreatePage from './DispatchingCreatePage';
 import EditContainerNumberPage from './EditContainerNumberPage';
 import { ScheduleColumns, ScheduleDetailColumns } from './DispatchingColumns';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { getScheduleByStat, approve, cancelApprove, remove } from '@/services/sjitms/ScheduleBill';
+import { getScheduleByStat, approve, cancelApprove,cancelAborted, remove } from '@/services/sjitms/ScheduleBill';
 
 const { TabPane } = Tabs;
 
@@ -75,6 +75,18 @@ export default class SchedulePage extends Component {
   handleShowEditPage = () => {
     this.editContainerNumberPageModalRef.show();
   };
+
+  //取消作废
+  handleCancelAborted = () => {
+    const { scheduleData, activeTab, abortedRowKeys } = this.state;
+    const schedule = scheduleData.find(x => x.uuid == abortedRowKeys[0]);
+    cancelAborted(schedule.uuid, schedule.version).then(response => {
+      if (response.success) {
+        message.success('取消作废成功！');
+        this.getSchedules(activeTab);
+      }
+    });
+  }
 
   //取消批准
   handleCancelApprove = () => {
@@ -160,7 +172,7 @@ export default class SchedulePage extends Component {
             </Button>
           );
         case 'Aborted':
-          return <Button style={{ marginLeft: 10 }}>取消作废</Button>;
+          return <Button style={{ marginLeft: 10 }} onClick={this.handleCancelAborted}>取消作废</Button>;
         default:
           return (
             <div>

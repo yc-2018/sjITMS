@@ -176,15 +176,75 @@ export default class DispatchingCreatePage extends Component {
     };
   };
 
+  buildSelectEmployeeCard = () => {
+    const { employees, selectEmployees } = this.state;
+    return (
+      <Card
+        title="员工"
+        style={{ height: '40vh' }}
+        bodyStyle={{ padding: 5, height: '35vh', overflowY: 'auto' }}
+        extra={
+          <Search
+            placeholder="请输入工号或姓名"
+            onChange={this.employeeFilter}
+            style={{ width: 200 }}
+          />
+        }
+      >
+        {employees.map(employee => {
+          return (
+            <a
+              href="#"
+              className={
+                selectEmployees.find(x => x.UUID == employee.UUID)
+                  ? dispatchingStyles.selectedVehicleCardWapper
+                  : dispatchingStyles.vehicleCardWapper
+              }
+              onClick={() => this.handleEmployee(employee)}
+            >
+              <span>{`[${employee.CODE}]` + employee.NAME}</span>
+            </a>
+          );
+        })}
+      </Card>
+    );
+  };
+  buildSelectVehicleCard = () => {
+    const { vehicles, selectVehicle } = this.state;
+    return (
+      <Card
+        title="车辆"
+        style={{ height: '40vh' }}
+        bodyStyle={{ padding: 5, height: '35vh', overflowY: 'auto' }}
+        extra={
+          <Search
+            placeholder="请输入车辆编号或车牌号"
+            onChange={this.vehicleFilter}
+            style={{ width: 200 }}
+          />
+        }
+      >
+        {vehicles.map(vehicle => {
+          return (
+            <a
+              href="#"
+              className={
+                vehicle == selectVehicle
+                  ? dispatchingStyles.selectedVehicleCardWapper
+                  : dispatchingStyles.vehicleCardWapper
+              }
+              onClick={() => this.handleVehicle(vehicle)}
+            >
+              <span>{vehicle.PLATENUMBER}</span>
+            </a>
+          );
+        })}
+      </Card>
+    );
+  };
+
   render() {
-    const {
-      orders,
-      vehicles,
-      employees,
-      employeeType,
-      selectVehicle,
-      selectEmployees,
-    } = this.state;
+    const { orders, employeeType, selectEmployees, selectVehicle } = this.state;
     const totalData = this.groupByOrder(orders);
     return (
       <Modal
@@ -203,66 +263,8 @@ export default class DispatchingCreatePage extends Component {
               <CardTable scrollY={'32vh'} dataSource={orders} columns={CreatePageOrderColumns} />
             </Card>
             <Row gutter={[8, 0]} style={{ marginTop: 8 }}>
-              <Col span={12}>
-                <Card
-                  title="员工"
-                  style={{ height: '40vh' }}
-                  bodyStyle={{ padding: 5, height: '35vh', overflowY: 'auto' }}
-                  extra={
-                    <Search
-                      placeholder="请输入工号或姓名"
-                      onChange={this.employeeFilter}
-                      style={{ width: 200 }}
-                    />
-                  }
-                >
-                  {employees.map(employee => {
-                    return (
-                      <a
-                        href="#"
-                        className={
-                          selectEmployees.find(x => x.UUID == employee.UUID)
-                            ? dispatchingStyles.selectedVehicleCardWapper
-                            : dispatchingStyles.vehicleCardWapper
-                        }
-                        onClick={() => this.handleEmployee(employee)}
-                      >
-                        <span>{`[${employee.CODE}]` + employee.NAME}</span>
-                      </a>
-                    );
-                  })}
-                </Card>
-              </Col>
-              <Col span={12}>
-                <Card
-                  title="车辆"
-                  style={{ height: '40vh' }}
-                  bodyStyle={{ padding: 5, height: '35vh', overflowY: 'auto' }}
-                  extra={
-                    <Search
-                      placeholder="请输入车辆编号或车牌号"
-                      onChange={this.vehicleFilter}
-                      style={{ width: 200 }}
-                    />
-                  }
-                >
-                  {vehicles.map(vehicle => {
-                    return (
-                      <a
-                        href="#"
-                        className={
-                          vehicle == selectVehicle
-                            ? dispatchingStyles.selectedVehicleCardWapper
-                            : dispatchingStyles.vehicleCardWapper
-                        }
-                        onClick={() => this.handleVehicle(vehicle)}
-                      >
-                        <span>{vehicle.PLATENUMBER}</span>
-                      </a>
-                    );
-                  })}
-                </Card>
-              </Col>
+              <Col span={12}>{this.buildSelectEmployeeCard()}</Col>
+              <Col span={12}>{this.buildSelectVehicleCard()}</Col>
             </Row>
           </Col>
           <Col span={8}>
@@ -287,7 +289,9 @@ export default class DispatchingCreatePage extends Component {
                 <div style={{ flex: 1 }}>
                   <div> 总体积</div>
                   <div>
-                    <span className={dispatchingStyles.orderTotalNumber}>{totalData.volume}</span>
+                    <span className={dispatchingStyles.orderTotalNumber}>
+                      {totalData.volume.toFixed(4)}
+                    </span>
                     <span>m³</span>
                   </div>
                 </div>
@@ -295,7 +299,9 @@ export default class DispatchingCreatePage extends Component {
                 <div style={{ flex: 1 }}>
                   <div>总重量</div>
                   <div>
-                    <span className={dispatchingStyles.orderTotalNumber}>{totalData.weight}</span>
+                    <span className={dispatchingStyles.orderTotalNumber}>
+                      {totalData.weight.toFixed(4)}
+                    </span>
                     <span>kg</span>
                   </div>
                 </div>

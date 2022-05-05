@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-28 16:01:40
+ * @LastEditTime: 2022-05-05 08:44:18
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -262,7 +262,7 @@ export default class OrderPoolPage extends Component {
             changeSelectRows={this.tableChangeRows('Scheduled')}
             selectedRowKeys={scheduledRowKeys}
             dataSource={scheduledData}
-            columns={OrderColumns}
+            columns={[{title:"排车单号",dataIndex:"scheduleNum",width:150},...OrderColumns]}
           />
         </TabPane>
         <TabPane tab="待定订单" key="Pending">

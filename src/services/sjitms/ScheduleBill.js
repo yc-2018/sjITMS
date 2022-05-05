@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-05 10:50:04
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-05-05 11:28:53
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -83,6 +83,16 @@ export async function aborted(Uuid) {
   return request(`/itms-schedule/itms-schedule/sj/bill/schedule/aborted?billUuid=${Uuid}`, {
     method: 'PUT',
   });
+}
+
+//取消作废
+export async function cancelAborted(billUuid,version) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/cancelAborted?billUuid=${billUuid}&version=${version }`,
+    {
+      method: 'PUT',
+    }
+  );
 }
 
 // 取消批准/回滚
