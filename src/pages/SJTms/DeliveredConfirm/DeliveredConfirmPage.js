@@ -17,6 +17,8 @@ import {
   SimpleAutoComplete,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { LOGIN_COMPANY } from '@/utils/constants';
+import { dynamicQuery } from '@/services/quick/Quick';
+import CommonStore from '@/map/script/modules/common/stores/commonStore';
 const { TabPane } = Tabs;
 const { Content, Sider } = Layout;
 @connect(({ quick, loading,deliveredConfirm }) => ({
@@ -51,18 +53,32 @@ export default class DeliveredConfirmPage extends SearchForm{
                 initialValue: filterValue ? filterValue[searchField.fieldName] : undefined,
                 rules: [
                   {
-                    required: '',
+                    required: true,
                     message: '排车单必填',
                   },
                 ],
-              })(<Input placeholder="请填写排车单号"/>)}
+              })(<Select 
+                showSearch = {true}
+                autoComplete ={true}
+                onSearch={this.handleSearch}
+                allowClear
+              >
+                {this.state.option}
+              </Select>)}
             </SFormItem>
           );
           cols.push(
-            <SFormItem key={"plateNumber"}label={"车辆"}>
-              {getFieldDecorator('plateNumber', {
+            <SFormItem key={"VEHICLECODENAME"}label={"车辆"}>
+              {getFieldDecorator('VEHICLECODENAME', {
                 initialValue: filterValue ? filterValue[searchField.fieldName] : undefined,
-              })(<Input placeholder="请填写排车单号"/>)}
+              })(<Select 
+                showSearch = {true}
+                autoComplete ={true}
+                onSearch={this.vehicleHandleSearch}
+                allowClear
+              >
+                {this.state.vehicleOption}
+              </Select>)}
             </SFormItem>
           );
           cols.push(
@@ -70,7 +86,14 @@ export default class DeliveredConfirmPage extends SearchForm{
               {getFieldDecorator('CARRIERCODENAME', {
                 initialValue: filterValue ? filterValue[searchField.fieldName] : undefined,
               
-              })(<Input placeholder=""/>)}
+              })(<Select 
+                showSearch = {true}
+                autoComplete ={true}
+                onSearch={this.carrperOption}
+                allowClear
+              >
+                {this.state.carrierOption}
+              </Select>)}
             </SFormItem>
           );
         if (cols.length == 0) {
@@ -83,8 +106,59 @@ export default class DeliveredConfirmPage extends SearchForm{
         return cols;
       };
      
-     
-     
+      handleSearch =async(value)=>{
+        let queryParamsJson = {
+          tableName: "V_SJ_ORDER_BILL_CHECK_UNION", condition: {
+            params: [{ field: "SCHEDULEBILLNUMBER", rule: "like", val: [value] }],
+          }
+        }
+        await dynamicQuery(queryParamsJson).then(result =>{
+          console.log(result.result)
+             if(result.success && result.result.records!='false'){
+               let data = result.result.records;
+               data = data.map(m=>m.SCHEDULEBILLNUMBER)
+               data = data.filter((item,index)=>{
+               return data.indexOf(item)==index;
+               });
+              this.setState({option:data.map(m => <Option key={m}>{m}</Option>)})
+              }
+          })
+      }
+      vehicleHandleSearch = async(value) => {
+        let queryParamsJson = {
+          tableName: "V_SJ_ORDER_BILL_CHECK_UNION", condition: {
+            params: [{ field: "VEHICLECODENAME", rule: "like", val: [value] }],
+          }
+        }
+        await dynamicQuery(queryParamsJson).then(result =>{
+          console.log(result.result)
+             if(result.success && result.result.records!='false'){
+               let data = result.result.records;
+               data = data.map(m=>m.VEHICLECODENAME)
+               data = data.filter((item,index)=>{
+               return data.indexOf(item)==index;
+               });
+              this.setState({vehicleOption:data.map(m => <Option key={m}>{m}</Option>)})
+              }
+          })
+      }
+      carrperOption = async (value) =>{
+        let queryParamsJson = {
+          tableName: "V_SJ_ORDER_BILL_CHECK_UNION", condition: {
+            params: [{ field: "CARRIERCODENAME", rule: "like", val: [value] }],
+          }
+        }
+        await dynamicQuery(queryParamsJson).then(result =>{
+             if(result.success && result.result.records!='false'){
+               let data = result.result.records;
+               data = data.map(m=>m.CARRIERCODENAME)
+               data = data.filter((item,index)=>{
+               return data.indexOf(item)==index;
+               });
+              this.setState({carrierOption:data.map(m => <Option key={m}>{m}</Option>)})
+             }
+          
+      })}
       onSearch = (pageData)=>{
         const{pageFilters } = this.state;
         pageFilters.queryParams.length=0;
@@ -99,13 +173,13 @@ export default class DeliveredConfirmPage extends SearchForm{
             }
           )
         }
-        if(pageData['plateNumber']){
+        if(pageData['VEHICLECODENAME']){
           pageFilters.queryParams.push(
             {
-              field: 'plateNumber',
+              field: 'VEHICLECODENAME',
               type: 'VarChar',
               rule: 'eq',
-              val: pageData['plateNumber'],
+              val: pageData['VEHICLECODENAME'],
             }
           )
         }

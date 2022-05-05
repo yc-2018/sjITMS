@@ -46,11 +46,12 @@ export default class CheckInAndCheckOut extends SearchPage {
       type: 'newCheckInAndCheckOut/getByCarrier',
       payload: driverCode,
       callback:response=>{
+        console.log();
         if(response&&response.success&&response.data){
           this.setState({
             shipPlanBill:response.data
           });
-          this.updateTime(response.data.billnumber);
+          this.updateTime(response.data.billNumber);
         }else{
           this.setState({
             shipBill:{},
@@ -72,10 +73,10 @@ export default class CheckInAndCheckOut extends SearchPage {
       type: 'newCheckInAndCheckOut/updateTime',
       payload: billNumber,
       callback: (response) => {
-        if (response && response.success) {
+        if (response && response.success) { 
           message.success(commonLocale.confirmSuccessLocale);
           this.setState({
-            responseMsg:response.data.returntime?`排车单号：${billNumber} 回车刷卡成功`:(response.data.dispatchtime?`排车单号：${billNumber}出车刷卡成功`:'刷卡成功'),
+            responseMsg:response.data.returnTime?`排车单号：${billNumber} 回车刷卡成功`:(response.data.dispatchTime?`排车单号：${billNumber}出车刷卡成功`:'刷卡成功'),
             responseError:false,
             shipBill:response.data?response.data:{}
           })
@@ -112,12 +113,12 @@ export default class CheckInAndCheckOut extends SearchPage {
       <CFormItem label={"排车单号"}
         key='billNumber'>
         {getFieldDecorator('billNumber')
-          (<Col>{shipBill ? shipBill.billnumber ? shipBill.billnumber : <Empty /> : <Empty />}</Col>)}
+          (<Col>{shipBill ? shipBill.billNumber ? shipBill.billNumber : <Empty /> : <Empty />}</Col>)}
       </CFormItem>,
       <CFormItem label={"车辆信息"}
         key='vehicle'>
         {getFieldDecorator('vehicle')
-          (<Col>{shipBill ? shipBill.vehiclecode ?'['+shipBill.vehiclecode+']'+shipBill.vehicleplatenumber :<Empty /> : <Empty />}</Col>)}
+          (<Col>{shipBill ? shipBill.vehicle ?'['+shipBill.vehicle.code+']'+shipBill.vehicle.name :<Empty /> : <Empty />}</Col>)}
       </CFormItem>,
       // <CFormItem label={checkInAndCheckOutLocals.carrier}
       //   key='carrier'>
@@ -171,25 +172,25 @@ export default class CheckInAndCheckOut extends SearchPage {
    <Card title="排车单信息" bordered={false} style={{ width: '100%' ,height:'640px' }}>
       <Row>
         <Col>
-        <span>排车单号:</span> <Input value={shipPlanBill.billnumber}></Input>
+        <span>排车单号:</span> <Input value={shipPlanBill.billNumber}></Input>
         </Col>
       </Row>
       <Divider/>
       <Row>
         <Col>
-        <span>明细数: </span><Input  value={shipBill.deliverypointcount}></Input>
+        <span>明细数: </span><Input  value={shipBill.deliveryPointCount}></Input>
         </Col>
       </Row>
       <Divider/>
       <Row>
         <Col>
-        <span>{checkInAndCheckOutLocals.checkOutTime}:</span> <Input  value={shipBill.dispatchtime}></Input>
+        <span>{checkInAndCheckOutLocals.checkOutTime}:</span> <Input  value={shipBill.dispatchTime}></Input>
         </Col>
       </Row>
       <Divider/>
       <Row>
         <Col>
-        <span>{checkInAndCheckOutLocals.checkInTime}:</span> <Input  value={shipBill.returntime}></Input>
+        <span>{checkInAndCheckOutLocals.checkInTime}:</span> <Input  value={shipBill.returnTime}></Input>
         </Col>
       </Row>
       <Divider/>

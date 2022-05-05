@@ -343,6 +343,7 @@ export default class LineSystemSearchPage extends Component {
                     title: '编辑线路',
                     width: 500,
                     bodyStyle: { marginRight: '40px' },
+                    afterClose:this.handleCancel
                   }}
                   page={{
                     quickuuid: 'sj_itms_create_lines',
