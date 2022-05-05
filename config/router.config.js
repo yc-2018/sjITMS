@@ -1141,8 +1141,17 @@ export default [
             authority: ['iwms.tms.serialArch'],
             divider: true,
           },
+        ],
+      },
+      {
+        path: '/operation',
+        name: 'tms',
+        org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+        authority: ['itms.base'],
+        icon: 'icon-menu_yunshuguanli1',
+        routes: [
           {
-            path: '/tmsbase/order',
+            path: '/operation/order',
             name: '运输订单',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './SJTms/Order/OrderForm',
@@ -1150,14 +1159,14 @@ export default [
             authority: ['itms.base.vehicle'],
           },
           {
-            path: '/tmsbase/dispatching',
+            path: '/operation/dispatching',
             name: '配送调度',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './SJTms/Dispatching/Dispatching',
             authority: ['itms.base.vehicle'],
           },
           {
-            path: '/tmsbase/ShipPlanBill',
+            path: '/operation/ShipPlanBill',
             name: '排车单',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './SJTms/DispatchCenterShipPlanBill/DispatchCenterShipPlanBill',
@@ -1167,16 +1176,7 @@ export default [
           },
 
           {
-            path: '/tmsbase/checkreceiptbill',
-            name: '对单回单',
-            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
-            component: './SJTms/CheckreceiptBill/CheckreceiptBillForm',
-            quickuuid: 'sj_itms_checkreceiptbill',
-            authority: ['itms.base.vehicle'],
-          },
-
-          {
-            path: '/tmsbase/chargeLoading',
+            path: '/operation/chargeLoading',
             name: '刷卡装车',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './SJTms/ChargeLoading/ChargeLoading',
@@ -1184,15 +1184,15 @@ export default [
             authority: ['itms.base.vehicle'],
           },
           {
-            path: '/tmsbase/takedeliveryconfirm',
-            name: '提货确认',
+            path: '/operation/CheckInAndCheckOut',
+            name: '出车回车登记1',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
-            component: './SJTms/TakeDeliveryConfirm/TakeDeliveryConfirmForm',
-            quickuuid: 'sj_itms_takedelivery_confirm',
+            component: './SJTms/CheckInAndCheckOut/CheckInAndCheckOut',
             authority: ['itms.base.vehicle'],
+            divider: true,
           },
           {
-            path: '/tmsbase/confirm',
+            path: '/operation/confirm',
             name: '回车送货确认',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             //component: './SJtms/DeliveredConfirm/DeliveredConfirmForm',
@@ -1201,22 +1201,34 @@ export default [
             authority: ['itms.base.vehicle'],
           },
           {
-            path: '/tmsbase/inAndOuitInfo',
+            path: '/operation/takedeliveryconfirm',
+            name: '提货确认',
+            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+            component: './SJTms/TakeDeliveryConfirm/TakeDeliveryConfirmForm',
+            quickuuid: 'sj_itms_takedelivery_confirm',
+            authority: ['itms.base.vehicle'],
+          },
+
+          {
+            path: '/operation/checkreceiptbill',
+            name: '对单回单',
+            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+            component: './SJTms/CheckreceiptBill/CheckreceiptBillForm',
+            quickuuid: 'sj_itms_checkreceiptbill',
+            authority: ['itms.base.vehicle'],
+          },
+          {
+            path: '/operation/inAndOuitInfo',
             name: '出车回车信息录入',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './SJTms/InAndOutInfo/InAndOutInfoForm',
             quickuuid: 'ITMS_SHIP_VEHICE_SJ',
             authority: ['itms.base.vehicle'],
+            divider: true,
           },
+
           {
-            path: '/tmsbase/CheckInAndCheckOut',
-            name: '出车回车登记1',
-            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
-            component: './SJTms/CheckInAndCheckOut/CheckInAndCheckOut',
-            authority: ['itms.base.vehicle'],
-          },
-          {
-            path: '/tmsbase/xxl_job',
+            path: '/operation/xxl_job',
             name: '调度平台',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './SJTms/xxjob',
