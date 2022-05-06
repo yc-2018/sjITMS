@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-05 10:49:22
+ * @LastEditTime: 2022-05-06 14:30:24
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -13,7 +13,13 @@ import DispatchingCreatePage from './DispatchingCreatePage';
 import EditContainerNumberPage from './EditContainerNumberPage';
 import { ScheduleColumns, ScheduleDetailColumns } from './DispatchingColumns';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { getScheduleByStat, approve, cancelApprove,cancelAborted, remove } from '@/services/sjitms/ScheduleBill';
+import {
+  getScheduleByStat,
+  approve,
+  cancelApprove,
+  cancelAborted,
+  remove,
+} from '@/services/sjitms/ScheduleBill';
 
 const { TabPane } = Tabs;
 
@@ -79,6 +85,10 @@ export default class SchedulePage extends Component {
   //取消作废
   handleCancelAborted = () => {
     const { scheduleData, activeTab, abortedRowKeys } = this.state;
+    if (abortedRowKeys.length == 0) {
+      message.warning('请选择排车单！');
+      return;
+    }
     const schedule = scheduleData.find(x => x.uuid == abortedRowKeys[0]);
     cancelAborted(schedule.uuid, schedule.version).then(response => {
       if (response.success) {
@@ -86,11 +96,15 @@ export default class SchedulePage extends Component {
         this.getSchedules(activeTab);
       }
     });
-  }
+  };
 
   //取消批准
   handleCancelApprove = () => {
     const { scheduleData, activeTab, approvedRowKeys } = this.state;
+    if (approvedRowKeys.length == 0) {
+      message.warning('请选择排车单！');
+      return;
+    }
     const schedule = scheduleData.find(x => x.uuid == approvedRowKeys[0]);
     cancelApprove(schedule.uuid, schedule.version).then(response => {
       if (response.success) {
@@ -103,6 +117,10 @@ export default class SchedulePage extends Component {
   //批准
   handleApprove = () => {
     const { scheduleData, activeTab, savedRowKeys } = this.state;
+    if (savedRowKeys.length == 0) {
+      message.warning('请选择排车单！');
+      return;
+    }
     const schedule = scheduleData.find(x => x.uuid == savedRowKeys[0]);
     approve(schedule.uuid, schedule.version).then(response => {
       if (response.success) {
@@ -114,10 +132,14 @@ export default class SchedulePage extends Component {
 
   //删除
   handleDelete = () => {
+    const { activeTab, savedRowKeys } = this.state;
+    if (savedRowKeys.length == 0) {
+      message.warning('请选择排车单！');
+      return;
+    }
     Modal.confirm({
       title: '是否确认删除排车单？',
       onOk: async () => {
-        const { activeTab, savedRowKeys } = this.state;
         remove(savedRowKeys[0]).then(response => {
           if (response.success) {
             message.success('删除成功！');
@@ -172,7 +194,11 @@ export default class SchedulePage extends Component {
             </Button>
           );
         case 'Aborted':
-          return <Button style={{ marginLeft: 10 }} onClick={this.handleCancelAborted}>取消作废</Button>;
+          return (
+            <Button style={{ marginLeft: 10 }} onClick={this.handleCancelAborted}>
+              取消作废
+            </Button>
+          );
         default:
           return (
             <div>

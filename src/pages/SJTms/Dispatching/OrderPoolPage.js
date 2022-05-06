@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-05 08:44:18
+ * @LastEditTime: 2022-05-06 09:27:39
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -18,6 +18,7 @@ import {
   getOrderInPending,
   savePending,
 } from '@/services/sjitms/OrderBill';
+import { addOrders } from '@/services/sjitms/ScheduleBill';
 import { groupBy, sumBy } from 'lodash';
 
 const { TabPane } = Tabs;
@@ -185,8 +186,13 @@ export default class OrderPoolPage extends Component {
       message.warning('请选择待定运输订单！');
       return;
     }
-    console.log(pendingRowKeys);
-    console.log(scheduleRowKeys);
+    addOrders({ billUuid: scheduleRowKeys[0], orderUuids: pendingRowKeys }).then(response => {
+      if (response.success) {
+        message.success('保存成功！');
+        this.refreshTable();
+        this.props.refresh();
+      }
+    });
   };
 
   render() {
@@ -204,11 +210,7 @@ export default class OrderPoolPage extends Component {
     const buildOperations = () => {
       switch (activeTab) {
         case 'Pending':
-          return (
-            <Button style={{ marginLeft: 10 }} onClick={this.handleAddOrder}>
-              添加到排车单
-            </Button>
-          );
+          return <Button onClick={this.handleAddOrder}>添加到排车单</Button>;
         case 'Scheduled':
           return undefined;
         default:
@@ -262,7 +264,7 @@ export default class OrderPoolPage extends Component {
             changeSelectRows={this.tableChangeRows('Scheduled')}
             selectedRowKeys={scheduledRowKeys}
             dataSource={scheduledData}
-            columns={[{title:"排车单号",dataIndex:"scheduleNum",width:150},...OrderColumns]}
+            columns={[{ title: '排车单号', dataIndex: 'scheduleNum', width: 150 }, ...OrderColumns]}
           />
         </TabPane>
         <TabPane tab="待定订单" key="Pending">

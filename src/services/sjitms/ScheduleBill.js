@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-05 11:28:53
+ * @LastEditTime: 2022-05-05 15:30:09
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -31,6 +31,13 @@ export async function getScheduleByStat(stat) {
 //保存
 export async function save(payload) {
   return request(`/itms-schedule/itms-schedule/sj/bill/schedule/save`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+//排车单添加运输订单
+export async function addOrders(payload) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/addOrders`, {
     method: 'POST',
     body: payload,
   });
