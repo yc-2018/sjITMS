@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-01 08:43:48
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-26 17:49:22
+ * @LastEditTime: 2022-05-06 14:36:17
  * @Description: 嵌套子表格组件
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\CardTable.js
  */
@@ -23,9 +23,8 @@ export default class CardTable extends Component {
     let patentArr = [...selectedRowKeys];
     let childArr = childSelectedRowKeys ? [...childSelectedRowKeys] : [];
     //选中行下的所有子选项
-    let setChildArr = hasChildTable
-      ? dataSource.find(d => d.uuid === record.uuid).details.map(item => item.uuid)
-      : [];
+    const details = dataSource.find(d => d.uuid === record.uuid).details;
+    let setChildArr = hasChildTable && details ? details.map(item => item.uuid) : [];
     if (selected) {
       //父Table选中，子Table全选中
       patentArr.push(record.uuid);
