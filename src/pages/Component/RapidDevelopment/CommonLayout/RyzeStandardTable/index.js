@@ -1052,10 +1052,13 @@ class StandardTable extends Component {
     let height = this.props.tableHeight
       ? this.props.tableHeight
       : footerPos.top - pos.top - (this.props.overHeight ? this.props.overHeight : 90) - 20;
-    let dataHeight = showList ? showList.length * 30 : 0;
+    // let dataHeight = showList ? showList.length * 30 : 0;
+    //修改dataHeight计算，适应重写render后控件高度问题 2022-05-06 zhangze
+    let dataHeight = showList ? showList.length * 40 : 0;
     let scroll = {}; //'calc(100vh - ' + top + 'px)'
     let totalWidth = this.getTotalWidth(newColumns);
     let tableWidth = tableElement ? tableElement.offsetWidth : 0;
+    console.log("dataHeight",dataHeight,'height',height);
     if (dataHeight > height) {
       scroll.y = height < 30 ? (this.props.minHeight ? this.props.minHeight : 30) : height;
       tableWidth = tableWidth - 120;
