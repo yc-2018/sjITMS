@@ -1185,7 +1185,7 @@ export default [
           },
           {
             path: '/operation/CheckInAndCheckOut',
-            name: '出车回车登记1',
+            name: '出车回车登记',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './SJTms/CheckInAndCheckOut/CheckInAndCheckOut',
             authority: ['itms.base.vehicle'],

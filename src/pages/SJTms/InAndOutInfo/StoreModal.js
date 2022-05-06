@@ -207,6 +207,7 @@ export default class StoreModal extends Component {
         okText={commonLocale.confirmLocale}
         cancelText={commonLocale.cancelLocale}
         width={'70%'}
+        style = {{overflow:'auto'}}
       >
         <div style={{display:'flex',justifyContent:'flex-end'}}>
           {

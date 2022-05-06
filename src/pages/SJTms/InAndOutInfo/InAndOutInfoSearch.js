@@ -94,35 +94,25 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     //出车里程
     if(fieldName=='DISPATCHMILEAGE'){
       const component =(
-        <InputNumber   step={0.01} onBlur= {this.onBlurs.bind(this,record,column.fieldName)}  min={0} max={10000} defaultValue={record.DISPATCHMILEAGE} onChange={this.onChange} />
+        <InputNumber step={0.01} onBlur= {this.onBlurs.bind(this,record,column.fieldName)}  min={0} max={10000} defaultValue={record.DISPATCHMILEAGE}/>
       );  
       e.component = component;
     }
      //回车里程
      if(fieldName=='RETURNMILEAGE'){
       const component =(
-            <InputNumber   step={0.01}  defaultValue={record.RETURNMILEAGE} onBlur= {this.onBlurs.bind(this,record,column.fieldName)} onChange={this.onChange}
-              prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
-              
-            />
+            <InputNumber step={0.01} min={0} max={10000} defaultValue={record.RETURNMILEAGE} onBlur= {this.onBlurs.bind(this,record,column.fieldName)}/>
       );  
       e.component = component;
     }
     if(fieldName=='TOTALMILEAGE'){
       const component =(
-            <InputNumber     step={0.01}  defaultValue={record.TOTALMILEAGE} onBlur= {this.onBlurs.bind(this,record,column.fieldName)}
-              prefix={<Icon type="user" style={{ color: 'rgba(0,0,0,.25)' }} />}
-            />
+            <InputNumber step={0.01}  min={0} max={10000} defaultValue={record.TOTALMILEAGE} onBlur= {this.onBlurs.bind(this,record,column.fieldName)}/>
       );  
       e.component = component;
     }
  
   };
-  handleModal = (record)=>{
-
-   
-  }
- 
   showOrderFee=(number,uuid)=>{
     console.log("number",number,uuid);
     if(uuid){
@@ -156,9 +146,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
   }
 
   }
-  onChange =(e)=>{
-   console.log(e);
-  }
+ 
 convertCodeName = ()=>{
 
 }
