@@ -157,7 +157,7 @@ export default class LineSystemSearchPage extends Component {
             message.success('删除成功！');
             this.queryLineSystem();
           } else {
-            message.error('删除失败，请刷新后再操作');
+           // message.error('删除失败，请刷新后再操作');
           }
         });
       },

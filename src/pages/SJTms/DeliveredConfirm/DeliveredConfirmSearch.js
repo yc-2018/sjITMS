@@ -160,7 +160,7 @@ handleOk =()=>{
 handleCancel = ()=>{
   this.setState({isShowStandardTable:false})
 }
-//票据核对
+//
 showNoDelivered = ()=>{
  this.setState({isShowStandardTable:true});
 }

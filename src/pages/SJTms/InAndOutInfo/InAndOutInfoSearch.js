@@ -11,7 +11,7 @@ import OtherFeeModal from './OtherFeeModal';
 import StandardTable from '@/components/StandardTable';
 import { commonLocale, placeholderLocale, placeholderChooseLocale } from '@/utils/CommonLocale';
 import OperateCol from '@/pages/Component/Form/OperateCol';
-
+import FeeTypeForm from './FeeTypeForm'
 
 @connect(({ quick,sjdispatchReturn, loading }) => ({
   quick,sjdispatchReturn,
@@ -26,6 +26,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     scheduleBillTmsUuid:"",
     scheduleBillNumber:"",
     isShowStandardTable:false,
+    feeTypeModalVisible:false,
     billData:{
       list:[]
     }, // 票据核对
@@ -58,7 +59,15 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
          scheduleBillNumber = {scheduleBillNumber}
          handleModal = {()=>this.setState({otherFeeModalVisible:false})}
        />
-        <Button>费用类型管理</Button>
+        <Button onClick={()=>this.setState({feeTypeModalVisible:true})}>费用类型管理</Button>
+        <Modal  width ={'auto'} height ={'auto'}
+          footer={null}
+          style={{overflow:'auto'}}
+          visible={this.state.feeTypeModalVisible}
+          onCancel={()=>this.setState({feeTypeModalVisible:false})}
+          title={"费用类型管理"}>
+          <FeeTypeForm quickuuid='sj_feeType' location={{pathname:window.location.pathname}}></FeeTypeForm>
+        </Modal> 
       </>
          
     );

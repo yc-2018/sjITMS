@@ -4,7 +4,7 @@ import { connect } from 'dva';
     quick,
     loading: loading.models.quick,
   }))
-export default class NocheckInfo extends QuickFormSearchPage {
+export default class FeeTypeInfo extends QuickFormSearchPage {
 
     state = {
         ...this.state,

@@ -240,11 +240,12 @@ deliveredChage = (records,colum,e)=>{
 }
 nocheckInfo =()=>{
   return <Modal  width ={'auto'} height ={'auto'}
+  footer={null}
   style={{overflow:'auto'}}
   visible={this.state.nocheckInfoVisible}
   onCancel={()=>this.setState({nocheckInfoVisible:false})}
-  title={"批量设置原因"}>
- <NocheckForm quickuuid='sj_pretype' location={{pathname:'/tmsbase/confirm'}}></NocheckForm>
+  title={"未送达原因管理"}>
+ <NocheckForm quickuuid='sj_pretype' location={{pathname:window.location.pathname}}></NocheckForm>
 </Modal> ;
 }
 //批量设置责任归属
