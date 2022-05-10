@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-06 09:27:39
+ * @LastEditTime: 2022-05-07 11:36:05
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -47,11 +47,22 @@ export default class OrderPoolPage extends Component {
     if (searchKeyValues == undefined) {
       searchKeyValues = { orderType: 'Delivery' };
     }
-    this.getAuditedOrders(searchKeyValues);
+    const { activeTab } = this.state;
+    switch (activeTab) {
+      case 'Pending':
+        this.getPendingOrders(activeTab);
+        break;
+      case 'Scheduled':
+        this.getScheduledOrders(activeTab);
+        break;
+      default:
+        this.getAuditedOrders(searchKeyValues, activeTab);
+        break;
+    }
   };
 
   //获取待排运输订单
-  getAuditedOrders = searchKeyValues => {
+  getAuditedOrders = (searchKeyValues, activeKey) => {
     this.setState({ loading: true });
     getAuditedOrder(searchKeyValues).then(response => {
       if (response.success) {
@@ -60,15 +71,15 @@ export default class OrderPoolPage extends Component {
           loading: false,
           auditedData: response.data,
           ...initRowKeys,
-          activeTab: 'Audited',
+          activeTab: activeKey,
         });
       }
     });
   };
   //获取已排运输订单
-  getScheduledOrders = () => {
-    this.setState({ loading: true });
-    getOrderByStat('Scheduled').then(response => {
+  getScheduledOrders = activeKey => {
+    this.setState({ activeTab: activeKey, loading: true });
+    getOrderByStat(activeKey).then(response => {
       if (response.success) {
         this.setState({
           loading: false,
@@ -79,8 +90,8 @@ export default class OrderPoolPage extends Component {
     });
   };
   //获取待排运输订单
-  getPendingOrders = () => {
-    this.setState({ loading: true });
+  getPendingOrders = activeKey => {
+    this.setState({ activeTab: activeKey, loading: true });
     getOrderInPending().then(response => {
       if (response.success) {
         this.setState({
@@ -118,7 +129,6 @@ export default class OrderPoolPage extends Component {
 
   //标签页切换事件
   handleTabChange = activeKey => {
-    this.setState({ activeTab: activeKey });
     switch (activeKey) {
       case 'Pending':
         this.getPendingOrders(activeKey);
@@ -127,6 +137,7 @@ export default class OrderPoolPage extends Component {
         this.getScheduledOrders(activeKey);
         break;
       default:
+        this.setState({ activeTab: activeKey });
         break;
     }
   };
@@ -175,18 +186,19 @@ export default class OrderPoolPage extends Component {
   };
 
   //添加到排车单
-  handleAddOrder = () => {
-    const { pendingRowKeys } = this.state;
+  handleAddOrder = pending => {
+    const { pendingRowKeys, auditedRowKeys } = this.state;
     const scheduleRowKeys = this.props.scheduleRowKeys();
     if (scheduleRowKeys.length == 0 || scheduleRowKeys == undefined) {
       message.warning('请选择排车单！');
       return;
     }
-    if (pendingRowKeys.length == 0 || pendingRowKeys == undefined) {
+    const rowKeys = pending ? pendingRowKeys : auditedRowKeys;
+    if (rowKeys.length == 0 || rowKeys == undefined) {
       message.warning('请选择待定运输订单！');
       return;
     }
-    addOrders({ billUuid: scheduleRowKeys[0], orderUuids: pendingRowKeys }).then(response => {
+    addOrders({ billUuid: scheduleRowKeys[0], orderUuids: rowKeys }).then(response => {
       if (response.success) {
         message.success('保存成功！');
         this.refreshTable();
@@ -210,7 +222,7 @@ export default class OrderPoolPage extends Component {
     const buildOperations = () => {
       switch (activeTab) {
         case 'Pending':
-          return <Button onClick={this.handleAddOrder}>添加到排车单</Button>;
+          return <Button onClick={() => this.handleAddOrder(true)}>添加到排车单</Button>;
         case 'Scheduled':
           return undefined;
         default:
@@ -219,12 +231,20 @@ export default class OrderPoolPage extends Component {
               <Button type={'primary'} onClick={this.dispatching}>
                 排车
               </Button>
+              <Button style={{ marginLeft: 10 }} onClick={() => this.handleAddOrder(false)}>
+                添加到排车单
+              </Button>
               <Button style={{ marginLeft: 10 }} onClick={this.handleAddPending}>
                 添加到待定池
               </Button>
             </>
           );
       }
+    };
+    const pagination = {
+      defaultPageSize: 20,
+      showSizeChanger: true,
+      pageSizeOptions: ['20', '50', '100'],
     };
     return (
       <Tabs
@@ -238,6 +258,7 @@ export default class OrderPoolPage extends Component {
           {/* 待排订单列表 */}
           <CardTable
             scrollY={540}
+            pagination={pagination}
             clickRow
             loading={loading}
             changeSelectRows={this.tableChangeRows('Audited')}
@@ -259,7 +280,7 @@ export default class OrderPoolPage extends Component {
           {/* 已排列表 */}
           <CardTable
             scrollY={540}
-            pagination
+            pagination={pagination}
             loading={loading}
             changeSelectRows={this.tableChangeRows('Scheduled')}
             selectedRowKeys={scheduledRowKeys}
@@ -271,6 +292,7 @@ export default class OrderPoolPage extends Component {
           {/* 待定列表 */}
           <CardTable
             scrollY={540}
+            pagination={pagination}
             clickRow
             loading={loading}
             changeSelectRows={this.tableChangeRows('Pending')}

@@ -6,8 +6,14 @@ export const OrderColumns = [
   {
     title: '线路',
     dataIndex: 'archLineCode',
-    width: 80,
+    width: 60,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+  },
+  {
+    title: '波次',
+    dataIndex: 'waveNum',
+    width: 100,
+    render: (val, record) => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '送货点',
@@ -133,14 +139,14 @@ export const CreatePageOrderColumns = [
   {
     title: '收货方',
     dataIndex: 'deliveryPoint',
-    width: 120,
+    width: 150,
     render: val => {
       return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
     },
   },
   {
     title: '收货方地址',
-    width: 150,
+    width: 120,
     render: (val, record) => {
       return record.deliveryPoint ? (
         <EllipsisCol colValue={record.deliveryPoint.address} />
@@ -158,31 +164,31 @@ export const CreatePageOrderColumns = [
   {
     title: '整箱数',
     dataIndex: 'realCartonCount',
-    width: 80,
+    width: 60,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '零散数',
     dataIndex: 'realScatteredCount',
-    width: 80,
+    width: 60,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '周转箱',
     dataIndex: 'realContainerCount',
-    width: 80,
+    width: 60,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '体积',
     dataIndex: 'volume',
-    width: 80,
+    width: 60,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '重量',
     dataIndex: 'weight',
-    width: 80,
+    width: 60,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
 ];

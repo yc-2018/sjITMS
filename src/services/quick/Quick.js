@@ -4,6 +4,12 @@ import { async } from 'q';
 import { func } from 'prop-types';
 import axios from 'axios';
 
+export async function queryDict(dictCode) {
+  return request(`/itms-schedule/itms-schedule/dict/findDictByDictType/${dictCode}`, {
+    method: 'GET',
+  });
+}
+
 export async function queryData(payload) {
   return request(`/itms-schedule/itms-schedule/dev/getData/${payload.quickuuid}/tms`, {
     method: 'POST',

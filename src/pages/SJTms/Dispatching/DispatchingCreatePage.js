@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Modal, Card, Row, Col, Divider, Input, Select, Spin, message } from 'antd';
-import { queryAllData, dynamicQuery } from '@/services/quick/Quick';
+import { queryDict, queryAllData, dynamicQuery } from '@/services/quick/Quick';
 import { getSchedule, save, modify } from '@/services/sjitms/ScheduleBill';
 import CardTable from './CardTable';
 import { CreatePageOrderColumns } from './DispatchingColumns';
@@ -11,6 +11,7 @@ import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { key } from 'localforage';
 
 const { Search } = Input;
+let orderType = [];
 const queryParams = [
   { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
 ];
@@ -96,14 +97,21 @@ export default class DispatchingCreatePage extends Component {
 
   //获取员工类型
   getEmployeeType = () => {
-    dynamicQuery({
-      tableName: 'V_SYS_DICT_ITEM',
-      condition: {
-        params: [{ field: 'DICT_CODE', rule: 'eq', val: ['employeeType'] }],
-      },
-    }).then(response => {
+    queryDict('employeeType').then(response => {
       if (response.success) {
-        this.setState({ employeeType: response.result.records });
+        this.setState({ employeeType: response.data });
+      }
+    });
+    queryDict('orderType').then(response => {
+      if (response.success) {
+        orderType = response.data.map(item => {
+          return {
+            [item.itemValue]: {
+              name: item.itemValue,
+              caption: item.itemText,
+            },
+          };
+        });
       }
     });
   };
@@ -205,6 +213,7 @@ export default class DispatchingCreatePage extends Component {
   };
   //汇总
   groupByOrder = data => {
+    data = data.filter(x => x.orderType !== 'OnlyBill');
     return {
       orderCount: data ? data.length : 0,
       cartonCount: data ? sumBy(data.map(x => x.cartonCount)) : 0,
@@ -257,6 +266,7 @@ export default class DispatchingCreatePage extends Component {
   };
   buildSelectVehicleCard = () => {
     const { vehicles, selectVehicle } = this.state;
+    console.log(vehicles);
     return (
       <Card
         title="车辆"
@@ -404,7 +414,7 @@ export default class DispatchingCreatePage extends Component {
                           value={employee.memberType}
                         >
                           {employeeType.map(d => (
-                            <Select.Option key={d.VALUE}>{d.NAME}</Select.Option>
+                            <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
                           ))}
                         </Select>
                       </Col>

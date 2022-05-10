@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-28 10:20:05
+ * @LastEditTime: 2022-05-07 14:18:57
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -47,7 +47,7 @@ export default class OrderPoolSearchForm extends Component {
                   textField="[%CODE%]%NAME%"
                   valueField="UUID"
                   parentField="PARENTUUID"
-                  queryParams={{ tableName: 'SJ_ITMS_LINE' }}
+                  queryParams={{ tableName: 'sj_itms_line' }}
                   treeDefaultExpandAll={true}
                   multiSave="PARENTUUID:UUID"
                 />
