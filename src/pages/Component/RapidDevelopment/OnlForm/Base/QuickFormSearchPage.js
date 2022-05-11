@@ -645,7 +645,7 @@ export default class QuickFormSearchPage extends SearchPage {
     return (
       <div>
         <Button
-          // hidden={!havePermission(this.state.reportCode + '.create')}
+          hidden={!havePermission(this.state.reportCode + '.create')}
           onClick={this.onCreate}
           type="primary"
           icon="plus"
@@ -653,21 +653,21 @@ export default class QuickFormSearchPage extends SearchPage {
           新建
         </Button>
         <Button
-          // hidden={!havePermission(this.state.reportCode + '.edit')}
+          hidden={!havePermission(this.state.reportCode + '.edit')}
           onClick={this.onUpdate}
           type="primary"
         >
           编辑
         </Button>
         <Button
-          // hidden={!havePermission(this.state.reportCode + '.view')}
+          hidden={!havePermission(this.state.reportCode + '.view')}
           onClick={this.onView}
           type="primary"
         >
           查看
         </Button>
         <Button
-          // hidden={!havePermission(this.state.reportCode + '.port')}
+          hidden={!havePermission(this.state.reportCode + '.port')}
           onClick={this.port}
           type="primary"
         >
@@ -691,11 +691,7 @@ export default class QuickFormSearchPage extends SearchPage {
           okText="确定"
           cancelText="取消"
         >
-          <Button
-          // hidden={!havePermission(this.state.reportCode + '.delete')}
-          >
-            删除
-          </Button>
+          <Button hidden={!havePermission(this.state.reportCode + '.delete')}>删除</Button>
         </Popconfirm>
         <AdvanceQuery
           searchFields={this.state.advancedFields}
