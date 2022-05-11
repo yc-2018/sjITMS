@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-11 17:30:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-18 15:29:57
+ * @LastEditTime: 2022-05-10 08:46:36
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -89,7 +89,11 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
       code: reportCode,
       entity: { SJ_ITMS_TAKEDELIVERYCONFIRM: deliveryList },
     };
-    return await saveFormData(param);
+    const response = await saveFormData(param);
+    if (response && response.success) {
+      message.success('保存成功');
+      this.refreshTable();
+    }
   };
 
   //该方法用于写中间的功能按钮 多个按钮用<span>包裹

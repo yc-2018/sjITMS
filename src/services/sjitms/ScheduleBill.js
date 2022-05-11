@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-05 15:30:09
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-05-10 11:30:05
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -93,9 +93,9 @@ export async function aborted(Uuid) {
 }
 
 //取消作废
-export async function cancelAborted(billUuid,version) {
+export async function cancelAborted(billUuid, version) {
   return request(
-    `/itms-schedule/itms-schedule/sj/bill/schedule/cancelAborted?billUuid=${billUuid}&version=${version }`,
+    `/itms-schedule/itms-schedule/sj/bill/schedule/cancelAborted?billUuid=${billUuid}&version=${version}`,
     {
       method: 'PUT',
     }
@@ -111,6 +111,14 @@ export async function shipRollback(Uuid) {
 
 export async function removeCar(payload) {
   return request(`/itms-schedule/itms-schedule/sj/bill/schedule/removeCar`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function saveOfUpdateLifecycle(payload) {
+  console.log('payload', payload);
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/saveOfUpdateLifecycle`, {
     method: 'POST',
     body: payload,
   });
