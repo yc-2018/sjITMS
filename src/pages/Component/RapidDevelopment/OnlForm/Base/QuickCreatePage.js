@@ -419,7 +419,7 @@ export default class QuickCreatePage extends CreatePage {
     for (let onlFormInfo of onlFormInfos) {
       const { tableName } = onlFormInfo.onlFormHead;
       for (let field of onlFormInfo.onlFormFields) {
-        if (loginInfo.indexOf(field.dbFieldName.toUpperCase()) != -1) {
+        if (loginInfo.indexOf(field.dbFieldName.toUpperCase()) != -1 && !field.isShowForm) {
           entity[tableName].forEach(data => {
             data[field.dbFieldName] = loginObj[field.dbFieldName.toUpperCase()];
           });
