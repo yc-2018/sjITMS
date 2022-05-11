@@ -45,6 +45,12 @@ export default class RyzeSearchPage extends Component {
         likeKeyValues: {},
       },
     };
+    let pageFilters = { quickuuid: props.quickuuid, changePage: true };
+    //查缓存中是否有搜索条件
+    if (getPageFilter(getActiveKey())) {
+      pageFilters = getPageFilter(getActiveKey());
+      //console.log('cache', pageFilters);
+    }
 
     if (getPageFilter(getActiveKey())) {
       queryFilter = getPageFilter(getActiveKey());
@@ -62,6 +68,7 @@ export default class RyzeSearchPage extends Component {
     }
 
     this.state = {
+      pageFilters,
       ...queryFilter,
       batchProcessConfirmModalVisible: false,
       isCloseFailedResultModal: false,
@@ -161,8 +168,9 @@ export default class RyzeSearchPage extends Component {
       selectedRows: this.state.selectedRows,
       pageFilter: this.state.pageFilter,
     };
+    //将查询条件存入cache
     if (!unSaveFilter) {
-      setPageFilter(getActiveKey(), tableFilter);
+      setPageFilter(getActiveKey(), this.state.pageFilters);
     }
 
     const tableLoading = {

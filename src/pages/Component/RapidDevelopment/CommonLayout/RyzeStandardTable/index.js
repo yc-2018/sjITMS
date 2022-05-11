@@ -1058,7 +1058,7 @@ class StandardTable extends Component {
     let scroll = {}; //'calc(100vh - ' + top + 'px)'
     let totalWidth = this.getTotalWidth(newColumns);
     let tableWidth = tableElement ? tableElement.offsetWidth : 0;
-    console.log("dataHeight",dataHeight,'height',height);
+    // console.log("dataHeight",dataHeight,'height',height);
     if (dataHeight > height) {
       scroll.y = height < 30 ? (this.props.minHeight ? this.props.minHeight : 30) : height;
       tableWidth = tableWidth - 120;
@@ -1186,7 +1186,7 @@ class StandardTable extends Component {
       this.props.colTotal && this.props.colTotal.length == '0'
         ? { display: 'none' }
         : { display: 'block' };
-    console.log(status, 'status');
+    // console.log(status, 'status');
     return (
       <div className={styles.standardTable}>
         {(oriColumnLen >= SHOW_THRESH_HOLD && !noSettingColumns) || hasSettingColumns ? (

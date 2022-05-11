@@ -15,6 +15,7 @@ import { routerRedux } from 'dva/router';
 import { Badge } from 'antd';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { guid } from '@/utils/utils';
+import { getActiveKey, getPageFilter, setPageFilter } from '@/utils/LoginContext';
 
 /**
  * 查询界面
@@ -26,8 +27,27 @@ export default class QuickFormSearchPage extends SearchPage {
   drawExColumns = () => {}; //table额外的列
   changeState = () => {}; //扩展state
   renderOperateCol = () => {}; //操作列
-  exSearchFilter = () => {}; //扩展查询
   drapTableChange = e => {}; //拖拽事件
+  exSearchFilter = () => {}; //扩展查询
+
+  defaultSearch = () => {
+    //默认查询
+    let ex = this.state.queryConfigColumns.filter(item => {
+      return item.searchDefVal != null && item.searchDefVal != '';
+    });
+    let defaultSearch = [];
+    for (const item of ex) {
+      let exSearchFilter = {
+        field: item.fieldName,
+        type: item.fieldType,
+        rule: item.searchCondition,
+        val: item.searchDefVal,
+      };
+      defaultSearch.push(exSearchFilter);
+    }
+
+    return defaultSearch;
+  };
 
   constructor(props) {
     super(props);
@@ -40,12 +60,12 @@ export default class QuickFormSearchPage extends SearchPage {
       searchFields: [],
       advancedFields: [],
       reportCode: props.quickuuid,
-      pageFilters: { quickuuid: props.quickuuid, changePage: true },
       isOrgQuery: [],
       key: props.quickuuid + 'quick.search.table',
       defaultSort: '',
       formConfig: {},
       colTotal: [],
+      queryConfigColumns: [],
     }; //用于缓存用户配置数据
   }
 
@@ -123,7 +143,7 @@ export default class QuickFormSearchPage extends SearchPage {
                           ? loginOrg().type.toLowerCase() + 'Uuid'
                           : 'dispatchCenterUuid',
                       type: 'VarChar',
-                      rule: 'eq',
+                      rule: 'like',
                       val: loginOrg().uuid,
                     },
                     ...this.state.isOrgQuery,
@@ -155,9 +175,26 @@ export default class QuickFormSearchPage extends SearchPage {
   };
 
   componentDidMount() {
-    this.queryCoulumns();
-    this.getCreateConfig();
-    //this.queryCoulumns();
+    console.log('params', this.props.params);
+    if (this.props.params?.fromView) {
+      this.columns = this.props.params.searchInfo.columns;
+      this.setState({
+        ...this.props.params.searchInfo,
+      });
+    } else {
+      this.queryCoulumns();
+      this.getCreateConfig();
+    }
+
+    // if (this.props?.lastState?.search?.params?.searchInfo) {
+    //   this.columns = this.props.lastState.search.params.searchInfo.columns;
+    //   this.setState({
+    //     ...this.props.lastState.search.params.searchInfo,
+    //   });
+    // } else {
+    //   this.queryCoulumns();
+    //   this.getCreateConfig();
+    // }
   }
 
   componentWillUnmount() {
@@ -234,7 +271,7 @@ export default class QuickFormSearchPage extends SearchPage {
             ? (val, record) => {
                 const component = (
                   <a
-                    onClick={this.onView.bind(this, record)}
+                    onClick={() => this.onView(record)}
                     style={{ color: this.colorChange(val, column.textColorJson) }}
                   >
                     {this.convertData(val, column.preview, record)}
@@ -309,6 +346,7 @@ export default class QuickFormSearchPage extends SearchPage {
       columns: quickColumns,
       advancedFields: columns.filter(data => data.isShow),
       searchFields: columns.filter(data => data.isSearch),
+      queryConfigColumns: queryConfig.columns,
     });
   };
 
@@ -355,16 +393,29 @@ export default class QuickFormSearchPage extends SearchPage {
   /**
    * 查看详情
    */
+
   onView = record => {
     const { onlFormField } = this.props;
     var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
     if (record.ROW_ID) {
-      this.props.switchTab('view', { entityUuid: record[field] });
+      console.log('this.state1', this.state);
+      this.props.switchTab('view', {
+        entityUuid: record[field],
+        searchInfo: {
+          ...this.state,
+          columns: this.columns,
+        },
+      });
     } else {
+      console.log('this.state2', this.state);
       const { selectedRows, batchAction } = this.state;
       if (selectedRows.length > 0) {
         this.props.switchTab('view', {
           entityUuid: selectedRows[0][field],
+          searchInfo: {
+            ...this.state,
+            columns: this.columns,
+          },
         });
       } else message.error('请至少选中一条数据！');
     }
@@ -497,12 +548,56 @@ export default class QuickFormSearchPage extends SearchPage {
   onSearch = filter => {
     let exSearchFilter = this.exSearchFilter();
     if (!exSearchFilter) exSearchFilter = [];
+
+    let defaultSearch = this.defaultSearch();
+    if (!defaultSearch) defaultSearch = [];
+
     if (typeof filter == 'undefined') {
-      //重置搜索条件
+      // console.log('this.state.pageFilters', this.state.pageFilters);
+      let queryParams = this.state.pageFilters.superQuery?.queryParams?.filter(item => {
+        return (
+          item.field != 'dispatchCenterUuid' &&
+          item.field != 'dcUuid' &&
+          item.field != 'companyuuid'
+        );
+      });
+      // console.log('queryParams', queryParams);
+      let pageFilters = this.state.pageFilters;
+      if (this.state.pageFilters.superQuery) {
+        pageFilters = {
+          ...this.state.pageFilters,
+          superQuery: {
+            ...this.state.pageFilters.superQuery,
+            queryParams: [
+              ...queryParams,
+              ...this.state.isOrgQuery,
+              ...exSearchFilter,
+              ...defaultSearch,
+            ],
+          },
+        };
+        // console.log('pageFiltersaa', pageFilters);
+        this.getData(pageFilters);
+      } else {
+        this.state.pageFilters = {
+          order: this.state.defaultSort,
+          quickuuid: this.props.quickuuid,
+          superQuery: {
+            matchType: '',
+            queryParams: [...this.state.isOrgQuery, ...exSearchFilter, ...defaultSearch],
+          },
+        }; //增加组织 公司id查询条件
+        this.getData(this.state.pageFilters);
+      }
+    } else if (filter == 'reset') {
+      //点击重置时，重置搜索条件
       this.state.pageFilters = {
         order: this.state.defaultSort,
         quickuuid: this.props.quickuuid,
-        superQuery: { matchType: '', queryParams: [...this.state.isOrgQuery, ...exSearchFilter] },
+        superQuery: {
+          matchType: '',
+          queryParams: [...this.state.isOrgQuery, ...exSearchFilter, ...defaultSearch],
+        },
       }; //增加组织 公司id查询条件
       this.getData(this.state.pageFilters);
     } else {
@@ -640,11 +735,19 @@ export default class QuickFormSearchPage extends SearchPage {
    * 绘制搜索表格
    */
   drawSearchPanel = () => {
+    //console.log('111', this.state.pageFilters);
+    const { superQuery } = this.state.pageFilters;
+    let filterValue = {};
+    if (superQuery) {
+      for (const item of superQuery.queryParams) {
+        filterValue[item.field] = item.val;
+      }
+    }
     return (
       <div>
         <SimpleQuery
           selectFields={this.state.searchFields}
-          filterValue={this.state.pageFilter.filterValue}
+          filterValue={filterValue}
           refresh={this.onSearch}
           reportCode={this.state.reportCode}
           isOrgQuery={this.state.isOrgQuery}

@@ -36,7 +36,7 @@ export default class SimpleQuery extends SearchForm {
 
   //重置
   onReset = () => {
-    this.props.refresh();
+    this.props.refresh('reset');
   };
 
   //查询console
@@ -46,7 +46,7 @@ export default class SimpleQuery extends SearchForm {
     for (let param in searchParam) {
       const field = selectFields.find(x => x.fieldName == param);
       let val = searchParam[param];
-      if(val == null || val == undefined){
+      if (val == null || val == undefined) {
         continue;
       }
       if (field.searchShowtype == 'datetime' && val instanceof Array) {

@@ -13,7 +13,7 @@ export default class QuickForm extends PureComponent {
   constructor(props) {
     super(props);
     this.state = {
-      quickuuid: props.route?.quickuuid? props.route.quickuuid:props.quickuuid,
+      quickuuid: props.route?.quickuuid ? props.route.quickuuid : props.quickuuid,
       showPageNow: 'query',
       tableName: '',
       onlFormField: [],
@@ -50,7 +50,6 @@ export default class QuickForm extends PureComponent {
   };
 
   componentWillReceiveProps(nextProps) {}
-
   //页面切换
   switchTab = (tab, param) => {
     this.setState({ showPageNow: tab });
@@ -70,7 +69,7 @@ export default class QuickForm extends PureComponent {
       params: params,
       tableName: tableName,
       pathname: location.pathname,
-      ...this.fixedProps
+      ...this.fixedProps,
     };
     let component;
     let e;

@@ -66,6 +66,7 @@ export default class QuickView extends RyzeViewPage {
   }
 
   componentDidMount() {
+    console.log('params', this.props.params);
     this.init();
   }
 
@@ -331,7 +332,8 @@ export default class QuickView extends RyzeViewPage {
    * 返回
    */
   onBack = () => {
-    this.props.switchTab('query');
+    this.props.switchTab('query', { fromView: true, searchInfo: this.props.params.searchInfo });
+    // this.props.switchTab('query');
   };
 
   /**
@@ -414,7 +416,7 @@ export default class QuickView extends RyzeViewPage {
       ? onlFormInfos[0].onlFormHead.formTemplate
       : 4;
     nums = nums == 0 ? 4 : nums;
-    console.log('nums', this.initSingleItems(singleItems).length);
+    // console.log('nums', this.initSingleItems(singleItems).length);
     let gutt = [];
     for (var i = 0; i < categories.length; i++) {
       let guttItems = [];
@@ -491,7 +493,6 @@ export default class QuickView extends RyzeViewPage {
       }
 
       if (item.onlFormHead.relationType == 0 && item.onlFormHead.tableType == 2) {
-        console.log('111');
         let catelogItems = [];
         //遍历一对多从表配置信息
         item.onlFormFields.forEach(field => {
