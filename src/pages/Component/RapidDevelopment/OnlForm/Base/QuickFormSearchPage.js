@@ -162,7 +162,7 @@ export default class QuickFormSearchPage extends SearchPage {
           }
 
           //查询条件有必填时默认不查询
-          if (queryRequired) return;
+          //if (queryRequired) return;
 
           //配置查询成功后再去查询数据
           this.onSearch();
@@ -176,25 +176,8 @@ export default class QuickFormSearchPage extends SearchPage {
 
   componentDidMount() {
     console.log('params', this.props.params);
-    if (this.props.params?.fromView) {
-      this.columns = this.props.params.searchInfo.columns;
-      this.setState({
-        ...this.props.params.searchInfo,
-      });
-    } else {
-      this.queryCoulumns();
-      this.getCreateConfig();
-    }
-
-    // if (this.props?.lastState?.search?.params?.searchInfo) {
-    //   this.columns = this.props.lastState.search.params.searchInfo.columns;
-    //   this.setState({
-    //     ...this.props.lastState.search.params.searchInfo,
-    //   });
-    // } else {
-    //   this.queryCoulumns();
-    //   this.getCreateConfig();
-    // }
+    this.queryCoulumns();
+    this.getCreateConfig();
   }
 
   componentWillUnmount() {
@@ -401,10 +384,10 @@ export default class QuickFormSearchPage extends SearchPage {
       console.log('this.state1', this.state);
       this.props.switchTab('view', {
         entityUuid: record[field],
-        searchInfo: {
-          ...this.state,
-          columns: this.columns,
-        },
+        // searchInfo: {
+        //   ...this.state,
+        //   columns: this.columns,
+        // },
       });
     } else {
       console.log('this.state2', this.state);
@@ -412,10 +395,10 @@ export default class QuickFormSearchPage extends SearchPage {
       if (selectedRows.length > 0) {
         this.props.switchTab('view', {
           entityUuid: selectedRows[0][field],
-          searchInfo: {
-            ...this.state,
-            columns: this.columns,
-          },
+          // searchInfo: {
+          //   ...this.state,
+          //   columns: this.columns,
+          // },
         });
       } else message.error('请至少选中一条数据！');
     }
@@ -635,6 +618,7 @@ export default class QuickFormSearchPage extends SearchPage {
         pageSize: filter.pageSize,
       };
     }
+    this.state.pageFilters = queryFilter;
     this.getData(queryFilter);
   };
 

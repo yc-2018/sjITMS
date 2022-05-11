@@ -332,7 +332,7 @@ export default class QuickView extends RyzeViewPage {
    * 返回
    */
   onBack = () => {
-    this.props.switchTab('query', { fromView: true, searchInfo: this.props.params.searchInfo });
+    this.props.switchTab('query');
     // this.props.switchTab('query');
   };
 
