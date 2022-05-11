@@ -551,12 +551,7 @@ export default class QuickFormSearchPage extends SearchPage {
           ...this.state.pageFilters,
           superQuery: {
             ...this.state.pageFilters.superQuery,
-            queryParams: [
-              ...queryParams,
-              ...this.state.isOrgQuery,
-              ...exSearchFilter,
-              ...defaultSearch,
-            ],
+            queryParams: [...queryParams, ...this.state.isOrgQuery, ...exSearchFilter],
           },
         };
         // console.log('pageFiltersaa', pageFilters);
