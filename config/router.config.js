@@ -1086,7 +1086,7 @@ export default [
           {
             path: '/tmsbase/lifecycle',
             name: '排车单生命周期控制',
-            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+            org: ['DISPATCH_CENTER'],
             component: './SJTms/ScheduleLifecycle/ScheduleLifecycleForm',
             quickuuid: 'sj_itms_schedule_lifecycle',
             // authority: ['itms.base.lifecycle'],
@@ -1139,7 +1139,7 @@ export default [
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
             quickuuid: 'sj_itms_owner',
-            authority: ['itms.base.owner'],
+            authority: ['sj_itms_owner'],
           },
           {
             path: '/tmsbase/lineSystem',
