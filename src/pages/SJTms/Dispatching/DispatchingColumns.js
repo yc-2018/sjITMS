@@ -129,6 +129,44 @@ export const OrderDetailColumns = [
   },
 ];
 
+const OrderType = {
+  Delivery: {
+    name: 'Delivery',
+    caption: '门店配送',
+  },
+  OnlyBill: {
+    name: 'OnlyBill',
+    caption: '单据过账',
+  },
+  TakeDelivery: {
+    name: 'TakeDelivery',
+    caption: '提货',
+  },
+  DeliveryAgain: {
+    name: 'DeliveryAgain',
+    caption: '门店配送（重送）',
+  },
+  Transshipment: {
+    name: 'Transshipment',
+    caption: '转运',
+  },
+};
+
+export const employeeType = [
+  {
+    name: 'Driver',
+    caption: '驾驶员',
+  },
+  {
+    name: 'DeliveryMan',
+    caption: '送货员',
+  },
+  {
+    name: 'Stevedore',
+    caption: '装卸员',
+  },
+];
+
 export const CreatePageOrderColumns = [
   {
     title: '订单号',
@@ -159,7 +197,7 @@ export const CreatePageOrderColumns = [
     title: '单据类型',
     dataIndex: 'orderType',
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <EllipsisCol colValue={OrderType[val].caption} /> : <Empty />),
   },
   {
     title: '整箱数',
@@ -190,6 +228,11 @@ export const CreatePageOrderColumns = [
     dataIndex: 'weight',
     width: 60,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+  },
+  {
+    title: '操作',
+    width: 60,
+    render: () => <a href="#">移除</a>,
   },
 ];
 

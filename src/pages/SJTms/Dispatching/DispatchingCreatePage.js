@@ -3,7 +3,7 @@ import { Modal, Card, Row, Col, Divider, Input, Select, Spin, message } from 'an
 import { queryDict, queryAllData, dynamicQuery } from '@/services/quick/Quick';
 import { getSchedule, save, modify } from '@/services/sjitms/ScheduleBill';
 import CardTable from './CardTable';
-import { CreatePageOrderColumns } from './DispatchingColumns';
+import { CreatePageOrderColumns, employeeType } from './DispatchingColumns';
 import dispatchingStyles from './Dispatching.less';
 import DataType from '@/pages/BillManage/DataType/DataType';
 import { sumBy, uniq, intersectionBy } from 'lodash';
@@ -25,7 +25,6 @@ export default class DispatchingCreatePage extends Component {
     orders: [],
     vehicles: [],
     employees: [],
-    employeeType: [],
     selectVehicle: {},
     selectEmployees: [],
     schedule: {},
@@ -87,7 +86,6 @@ export default class DispatchingCreatePage extends Component {
   //显示
   show = (isEdit, record) => {
     this.setState({ visible: true, isEdit, loading: true });
-    this.getEmployeeType();
     this.initData(isEdit, record);
   };
   //隐藏
@@ -95,26 +93,6 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ visible: false });
   };
 
-  //获取员工类型
-  getEmployeeType = () => {
-    queryDict('employeeType').then(response => {
-      if (response.success) {
-        this.setState({ employeeType: response.data });
-      }
-    });
-    queryDict('orderType').then(response => {
-      if (response.success) {
-        orderType = response.data.map(item => {
-          return {
-            [item.itemValue]: {
-              name: item.itemValue,
-              caption: item.itemText,
-            },
-          };
-        });
-      }
-    });
-  };
   //员工类型选择事件
   handleEmployeeTypeChange = employee => {
     const { selectEmployees } = this.state;
@@ -149,7 +127,7 @@ export default class DispatchingCreatePage extends Component {
   //保存
   handleSave = async () => {
     const { isEdit, orders, schedule, selectVehicle, selectEmployees } = this.state;
-    const driver = selectEmployees.find(x => x.memberType == 'DRIVER');
+    const driver = selectEmployees.find(x => x.memberType == 'Driver');
     const orderCounts = this.groupByOrder(orders);
     //校验容积
     const exceedVolume = orderCounts.volume - selectVehicle.BEARVOLUME;
@@ -300,7 +278,7 @@ export default class DispatchingCreatePage extends Component {
   };
 
   render() {
-    const { loading, orders, employeeType, selectEmployees, selectVehicle } = this.state;
+    const { loading, orders, selectEmployees, selectVehicle } = this.state;
     const totalData = this.groupByOrder(orders);
     return (
       <Modal
@@ -414,7 +392,7 @@ export default class DispatchingCreatePage extends Component {
                           value={employee.memberType}
                         >
                           {employeeType.map(d => (
-                            <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
+                            <Select.Option key={d.name}>{d.caption}</Select.Option>
                           ))}
                         </Select>
                       </Col>
