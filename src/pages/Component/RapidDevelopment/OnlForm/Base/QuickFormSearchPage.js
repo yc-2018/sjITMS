@@ -546,12 +546,12 @@ export default class QuickFormSearchPage extends SearchPage {
       });
       // console.log('queryParams', queryParams);
       let pageFilters = this.state.pageFilters;
-      if (this.state.pageFilters.superQuery) {
+      if (this.state.pageFilters.superQuery&&exSearchFilter.length==0) {
         pageFilters = {
           ...this.state.pageFilters,
           superQuery: {
             ...this.state.pageFilters.superQuery,
-            queryParams: [...queryParams, ...this.state.isOrgQuery, ...exSearchFilter],
+            queryParams: [...queryParams, ...this.state.isOrgQuery],
           },
         };
         // console.log('pageFiltersaa', pageFilters);

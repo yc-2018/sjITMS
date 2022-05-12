@@ -125,7 +125,7 @@ export default class ShipPlanBillSearchPage extends PureComponent {
    * 查询
    */
   onSearch = filter => {
-    if (typeof filter == 'undefined') {
+    if (typeof filter == 'undefined'||filter == 'reset') {
       this.queryCoulumns();
     } else {
       this.setState({ keyValue: '2' });
