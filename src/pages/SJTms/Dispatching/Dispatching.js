@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-29 14:03:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-28 10:38:37
+ * @LastEditTime: 2022-05-12 17:34:50
  * @Description: 配送调度主页面
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\Dispatching.js
  */
@@ -14,6 +14,7 @@ import Page from '@/pages/Component/RapidDevelopment/CommonLayout/Page/Page';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import OrderPoolPage from './OrderPoolPage';
 import SchedulePage from './SchedulePage';
+import PendingPage from './PendingPage';
 import dispatchingStyles from './Dispatching.less';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
@@ -26,6 +27,7 @@ const { Content } = Layout;
 export default class Dispatching extends Component {
   orderPoolPageRef = React.createRef();
   schedulePageRef = React.createRef();
+  pendingPageRef = React.createRef();
 
   refreshOrderTable = () => {
     this.orderPoolPageRef.refreshTable();
@@ -33,6 +35,10 @@ export default class Dispatching extends Component {
   refreshScheduleTable = () => {
     this.schedulePageRef.refreshTable();
   };
+  refreshPendingTable = () => {
+    this.pendingPageRef.refreshTable();
+  };
+
   getScheduleRowKeys = () => {
     return this.schedulePageRef.state.savedRowKeys;
   };
@@ -53,6 +59,7 @@ export default class Dispatching extends Component {
                         scheduleRowKeys={this.getScheduleRowKeys}
                         ref={ref => (this.orderPoolPageRef = ref)}
                         refresh={this.refreshScheduleTable}
+                        refreshPending={this.refreshPendingTable}
                       />
                     </div>
                   </Col>
@@ -64,6 +71,18 @@ export default class Dispatching extends Component {
                       />
                     </div>
                   </Col>
+                  <Col span={12}>
+                    <div className={dispatchingStyles.dispatchingCard}>
+                      <PendingPage
+                        scheduleRowKeys={this.getScheduleRowKeys}
+                        ref={ref => (this.pendingPageRef = ref)}
+                        refresh={this.refreshPendingTable}
+                      />
+                    </div>
+                  </Col>
+                  {/* <Col span={12}>
+                    <div className={dispatchingStyles.dispatchingCard} />
+                  </Col> */}
                 </Row>
               </Layout>
             </Content>

@@ -116,12 +116,19 @@ export default class DispatchingCreatePage extends Component {
     const { selectEmployees } = this.state;
     let employees = [...selectEmployees];
     const index = selectEmployees.findIndex(x => x.UUID == employee.UUID);
-    employee.memberType = undefined;
+    employee.memberType = employee.ROLE_TYPE;
     index == -1 ? employees.push(employee) : employees.splice(index, 1);
     this.setState({ selectEmployees: employees });
   };
   employeeFilter = event => {
     console.log(event.target.value);
+  };
+
+  //移除明细
+  removeDetail = record => {
+    const { orders } = this.state;
+    orders.splice(orders.findIndex(x => x.UUID == record.UUID), 1);
+    this.setState({ orders });
   };
 
   //保存
@@ -244,7 +251,6 @@ export default class DispatchingCreatePage extends Component {
   };
   buildSelectVehicleCard = () => {
     const { vehicles, selectVehicle } = this.state;
-    console.log(vehicles);
     return (
       <Card
         title="车辆"
@@ -280,6 +286,20 @@ export default class DispatchingCreatePage extends Component {
   render() {
     const { loading, orders, selectEmployees, selectVehicle } = this.state;
     const totalData = this.groupByOrder(orders);
+    const buildRowOperation = {
+      title: '操作',
+      width: 60,
+      render: (_, record) => (
+        <a
+          href="#"
+          onClick={() => {
+            this.removeDetail(record);
+          }}
+        >
+          移除
+        </a>
+      ),
+    };
     return (
       <Modal
         visible={this.state.visible}
@@ -295,11 +315,15 @@ export default class DispatchingCreatePage extends Component {
           <Row gutter={[8, 0]}>
             <Col span={16}>
               <Card title="订单" bodyStyle={{ padding: 1, height: '36.8vh' }}>
-                <CardTable scrollY={'32vh'} dataSource={orders} columns={CreatePageOrderColumns} />
+                <CardTable
+                  scrollY={'32vh'}
+                  dataSource={orders}
+                  columns={[...CreatePageOrderColumns, buildRowOperation]}
+                />
               </Card>
               <Row gutter={[8, 0]} style={{ marginTop: 8 }}>
-                <Col span={12}>{this.buildSelectEmployeeCard()}</Col>
                 <Col span={12}>{this.buildSelectVehicleCard()}</Col>
+                <Col span={12}>{this.buildSelectEmployeeCard()}</Col>
               </Row>
             </Col>
             <Col span={8}>
@@ -322,7 +346,7 @@ export default class DispatchingCreatePage extends Component {
                   </div>
                   <Divider type="vertical" style={{ height: '3.5em' }} />
                   <div style={{ flex: 1 }}>
-                    <div> 总体积</div>
+                    <div> 体积</div>
                     <div>
                       <span className={dispatchingStyles.orderTotalNumber}>
                         {totalData.volume.toFixed(4)}
@@ -332,12 +356,27 @@ export default class DispatchingCreatePage extends Component {
                   </div>
                   <Divider type="vertical" style={{ height: '3.5em' }} />
                   <div style={{ flex: 1 }}>
-                    <div>总重量</div>
+                    <div>重量</div>
                     <div>
                       <span className={dispatchingStyles.orderTotalNumber}>
                         {totalData.weight.toFixed(4)}
                       </span>
                       <span>kg</span>
+                    </div>
+                  </div>
+                </div>
+                <div className={dispatchingStyles.orderTotalCardBody}>
+                  <div style={{ flex: 1 }}>
+                    <div>整件</div>
+                    <div className={dispatchingStyles.orderTotalNumber}>
+                      {totalData.realCartonCount}
+                    </div>
+                  </div>
+                  <Divider type="vertical" style={{ height: '3.5em' }} />
+                  <div style={{ flex: 1 }}>
+                    <div>周转箱</div>
+                    <div className={dispatchingStyles.orderTotalNumber}>
+                      {totalData.realContainerCount}
                     </div>
                   </div>
                 </div>

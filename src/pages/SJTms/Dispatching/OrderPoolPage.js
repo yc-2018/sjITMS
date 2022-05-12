@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-07 11:36:05
+ * @LastEditTime: 2022-05-12 17:34:20
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -25,7 +25,7 @@ const { TabPane } = Tabs;
 const initRowKeys = {
   auditedRowKeys: [],
   scheduledRowKeys: [],
-  pendingRowKeys: [],
+  // pendingRowKeys: [],
 };
 export default class OrderPoolPage extends Component {
   state = {
@@ -33,7 +33,7 @@ export default class OrderPoolPage extends Component {
     loading: false,
     auditedData: [],
     scheduledData: [],
-    pendingData: [],
+    // pendingData: [],
     ...initRowKeys,
     activeTab: 'Audited',
   };
@@ -49,9 +49,9 @@ export default class OrderPoolPage extends Component {
     }
     const { activeTab } = this.state;
     switch (activeTab) {
-      case 'Pending':
-        this.getPendingOrders(activeTab);
-        break;
+      // case 'Pending':
+      //   this.getPendingOrders(activeTab);
+      //   break;
       case 'Scheduled':
         this.getScheduledOrders(activeTab);
         break;
@@ -130,9 +130,9 @@ export default class OrderPoolPage extends Component {
   //标签页切换事件
   handleTabChange = activeKey => {
     switch (activeKey) {
-      case 'Pending':
-        this.getPendingOrders(activeKey);
-        break;
+      // case 'Pending':
+      //   this.getPendingOrders(activeKey);
+      //   break;
       case 'Scheduled':
         this.getScheduledOrders(activeKey);
         break;
@@ -146,9 +146,9 @@ export default class OrderPoolPage extends Component {
   tableChangeRows = tableType => {
     return event => {
       switch (tableType) {
-        case 'Pending':
-          this.setState({ pendingRowKeys: event.selectedRowKeys });
-          break;
+        // case 'Pending':
+        //   this.setState({ pendingRowKeys: event.selectedRowKeys });
+        //   break;
         case 'Scheduled':
           this.setState({ scheduledRowKeys: event.selectedRowKeys });
           break;
@@ -181,6 +181,7 @@ export default class OrderPoolPage extends Component {
       if (response.success) {
         message.success('保存成功！');
         this.refreshTable();
+        this.props.refreshPending();
       }
     });
   };
@@ -221,8 +222,8 @@ export default class OrderPoolPage extends Component {
     } = this.state;
     const buildOperations = () => {
       switch (activeTab) {
-        case 'Pending':
-          return <Button onClick={() => this.handleAddOrder(true)}>添加到排车单</Button>;
+        // case 'Pending':
+        //   return <Button onClick={() => this.handleAddOrder(true)}>添加到排车单</Button>;
         case 'Scheduled':
           return undefined;
         default:
@@ -257,7 +258,7 @@ export default class OrderPoolPage extends Component {
           <OrderPoolSearchForm refresh={this.refreshTable} />
           {/* 待排订单列表 */}
           <CardTable
-            scrollY={540}
+            scrollY={350}
             pagination={pagination}
             clickRow
             loading={loading}
@@ -279,7 +280,7 @@ export default class OrderPoolPage extends Component {
         <TabPane tab="已排订单" key="Scheduled">
           {/* 已排列表 */}
           <CardTable
-            scrollY={540}
+            scrollY={350}
             pagination={pagination}
             loading={loading}
             changeSelectRows={this.tableChangeRows('Scheduled')}
@@ -288,10 +289,10 @@ export default class OrderPoolPage extends Component {
             columns={[{ title: '排车单号', dataIndex: 'scheduleNum', width: 150 }, ...OrderColumns]}
           />
         </TabPane>
-        <TabPane tab="待定订单" key="Pending">
-          {/* 待定列表 */}
+        {/* 待定列表 */}
+        {/* <TabPane tab="待定订单" key="Pending">
           <CardTable
-            scrollY={540}
+            scrollY={350}
             pagination={pagination}
             clickRow
             loading={loading}
@@ -300,7 +301,7 @@ export default class OrderPoolPage extends Component {
             dataSource={pendingData}
             columns={OrderColumns}
           />
-        </TabPane>
+        </TabPane> */}
       </Tabs>
     );
   }

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-06 14:30:24
+ * @LastEditTime: 2022-05-12 16:07:05
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -11,6 +11,7 @@ import { Modal, Tabs, Button, Tooltip, message } from 'antd';
 import CardTable from './CardTable';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import EditContainerNumberPage from './EditContainerNumberPage';
+import OrderPoolSearchForm from './OrderPoolSearchForm';
 import { ScheduleColumns, ScheduleDetailColumns } from './DispatchingColumns';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import {
@@ -202,7 +203,8 @@ export default class SchedulePage extends Component {
         default:
           return (
             <div>
-              <Button type={'primary'} onClick={this.handleApprove}>
+              <Button>新建排车单</Button>
+              <Button type={'primary'} style={{ marginLeft: 10 }} onClick={this.handleApprove}>
                 批准
               </Button>
               <Button style={{ marginLeft: 10 }} onClick={this.handleDelete}>
@@ -225,6 +227,7 @@ export default class SchedulePage extends Component {
       title: '单号',
       dataIndex: 'billNumber',
       width: 150,
+      sorter: true,
     };
     const orderNumberColumn = {
       title: '订单号',
@@ -239,8 +242,9 @@ export default class SchedulePage extends Component {
         tabBarExtraContent={buildOperations()}
       >
         <TabPane tab="排车单" key="Saved">
+          <OrderPoolSearchForm refresh={this.refreshTable} />
           <CardTable
-            scrollY={540}
+            scrollY={350}
             selectedRowKeys={savedRowKeys}
             childSelectedRowKeys={savedChildRowKeys}
             changeSelectRows={this.tableChangeRows()}
@@ -270,7 +274,7 @@ export default class SchedulePage extends Component {
         </TabPane>
         <TabPane tab="已批准" key="Approved">
           <CardTable
-            scrollY={540}
+            scrollY={350}
             selectedRowKeys={approvedRowKeys}
             changeSelectRows={this.tableChangeRows('Approved')}
             clickRow
@@ -283,7 +287,7 @@ export default class SchedulePage extends Component {
         </TabPane>
         <TabPane tab="已作废" key="Aborted">
           <CardTable
-            scrollY={540}
+            scrollY={350}
             selectedRowKeys={abortedRowKeys}
             changeSelectRows={this.tableChangeRows('Aborted')}
             clickRow

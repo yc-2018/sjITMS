@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-07 14:18:57
+ * @LastEditTime: 2022-05-12 16:11:45
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -74,9 +74,9 @@ export default class OrderPoolSearchForm extends Component {
             >
               查询
             </Button>
-            <Button style={{ marginLeft: 10 }} onClick={this.handleReset}>
+            {/* <Button style={{ marginLeft: 10 }} onClick={this.handleReset}>
               重置
-            </Button>
+            </Button> */}
           </Col>
         </Row>
       </Form>

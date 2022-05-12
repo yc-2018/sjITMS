@@ -229,11 +229,6 @@ export const CreatePageOrderColumns = [
     width: 60,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
-  {
-    title: '操作',
-    width: 60,
-    render: () => <a href="#">移除</a>,
-  },
 ];
 
 export const ScheduleColumns = [
