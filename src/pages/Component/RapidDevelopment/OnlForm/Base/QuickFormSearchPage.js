@@ -53,7 +53,7 @@ export default class QuickFormSearchPage extends SearchPage {
     super(props);
     this.state = {
       ...this.state,
-      title: 'test',
+      title: '',
       data: [],
       suspendLoading: false,
       columns: [],
@@ -546,7 +546,7 @@ export default class QuickFormSearchPage extends SearchPage {
       });
       // console.log('queryParams', queryParams);
       let pageFilters = this.state.pageFilters;
-      if (this.state.pageFilters.superQuery&&exSearchFilter.length==0) {
+      if (this.state.pageFilters.superQuery && exSearchFilter.length == 0) {
         pageFilters = {
           ...this.state.pageFilters,
           superQuery: {
@@ -619,7 +619,7 @@ export default class QuickFormSearchPage extends SearchPage {
 
   columns = [
     {
-      title: '过度数据',
+      title: '查询异常',
       dataIndex: 'name',
       key: 'name',
       sorter: true,
