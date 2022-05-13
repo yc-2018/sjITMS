@@ -2,15 +2,15 @@
  * @Author: guankongjin
  * @Date: 2022-04-01 08:43:48
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-06 14:36:17
+ * @LastEditTime: 2022-05-13 14:29:11
  * @Description: 嵌套子表格组件
- * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\CardTable.js
+ * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
 import React, { Component } from 'react';
 import { Table } from 'antd';
-import cardTableStyle from './CardTableStyle.less';
+import dispatchingStyles from './DispatchingTable.less';
 
-export default class CardTable extends Component {
+export default class DispatchingTable extends Component {
   //表格选择
   onParentSelectChange = (record, selected) => {
     const {
@@ -169,8 +169,8 @@ export default class CardTable extends Component {
         onRowClick={selectedRowKeys ? this.onClickRow : ''}
         expandedRowRender={hasChildTable ? record => expandedRowRender(record) : ''}
         pagination={pagination || false}
-        className={cardTableStyle.orderTable}
-        scroll={{ y: scrollY, x: true }}
+        className={dispatchingStyles.dispatchingTable}
+        scroll={{ y: scrollY, x: '100%' }}
       />
     );
   }

@@ -2,13 +2,13 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-12 16:07:05
+ * @LastEditTime: 2022-05-13 10:49:11
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
 import React, { Component } from 'react';
 import { Modal, Tabs, Button, Tooltip, message } from 'antd';
-import CardTable from './CardTable';
+import DispatchingTable from './DispatchingTable';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import EditContainerNumberPage from './EditContainerNumberPage';
 import OrderPoolSearchForm from './OrderPoolSearchForm';
@@ -243,7 +243,7 @@ export default class SchedulePage extends Component {
       >
         <TabPane tab="排车单" key="Saved">
           <OrderPoolSearchForm refresh={this.refreshTable} />
-          <CardTable
+          <DispatchingTable
             scrollY={350}
             selectedRowKeys={savedRowKeys}
             childSelectedRowKeys={savedChildRowKeys}
@@ -273,7 +273,7 @@ export default class SchedulePage extends Component {
           />
         </TabPane>
         <TabPane tab="已批准" key="Approved">
-          <CardTable
+          <DispatchingTable
             scrollY={350}
             selectedRowKeys={approvedRowKeys}
             changeSelectRows={this.tableChangeRows('Approved')}
@@ -286,7 +286,7 @@ export default class SchedulePage extends Component {
           />
         </TabPane>
         <TabPane tab="已作废" key="Aborted">
-          <CardTable
+          <DispatchingTable
             scrollY={350}
             selectedRowKeys={abortedRowKeys}
             changeSelectRows={this.tableChangeRows('Aborted')}

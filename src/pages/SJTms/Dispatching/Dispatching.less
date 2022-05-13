@@ -1,9 +1,5 @@
 @import '~antd/lib/style/themes/default.less';
 
-// .dispatchingContent {
-//   min-height: 660px;
-// }
-
 .dispatchingLayout {
   background: #ffffff;
 
@@ -15,7 +11,7 @@
 
   .dispatchingCard {
     padding: 0 5px;
-    height: 65vh;
+    height: 68vh;
     border: 1px solid #e8e8e8;
     border-radius: 4px;
   }
@@ -86,5 +82,39 @@
   }
   .orderTotalCol {
     border-right: 1px solid #e8e8e8;
+  }
+}
+
+.dispatchingTable {
+  :global {
+    .ant-table {
+      border: 1px solid #e8e8e8;
+      border-radius: 4px;
+    }
+    .ant-table colgroup > col.ant-table-selection-col {
+      width: 35px;
+    }
+    tr.ant-table-expanded-row td > .ant-table-wrapper {
+      margin: 5px 0 -5px;
+    }
+    .ant-table-thead > tr > th.ant-table-row-cell-break-word,
+    .ant-table-tbody > tr > td.ant-table-row-cell-break-word {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    .ant-table-pagination.ant-pagination {
+      float: right;
+      margin: 8px 0 0;
+    }
+    ::-webkit-scrollbar {
+      height: 10px;
+      width: 10px;
+      border-radius: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background-color: #ffffff;
+    }
   }
 }

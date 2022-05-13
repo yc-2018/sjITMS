@@ -2,13 +2,13 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-12 17:34:20
+ * @LastEditTime: 2022-05-13 14:06:51
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
 import React, { Component } from 'react';
 import { Table, Button, Tabs, message } from 'antd';
-import CardTable from './CardTable';
+import DispatchingTable from './DispatchingTable';
 import { OrderColumns, OrderDetailColumns } from './DispatchingColumns';
 import OrderPoolSearchForm from './OrderPoolSearchForm';
 import DispatchingCreatePage from './DispatchingCreatePage';
@@ -257,7 +257,7 @@ export default class OrderPoolPage extends Component {
           {/* 查询表单 */}
           <OrderPoolSearchForm refresh={this.refreshTable} />
           {/* 待排订单列表 */}
-          <CardTable
+          <DispatchingTable
             scrollY={350}
             pagination={pagination}
             clickRow
@@ -279,7 +279,7 @@ export default class OrderPoolPage extends Component {
         </TabPane>
         <TabPane tab="已排订单" key="Scheduled">
           {/* 已排列表 */}
-          <CardTable
+          <DispatchingTable
             scrollY={350}
             pagination={pagination}
             loading={loading}
@@ -291,7 +291,7 @@ export default class OrderPoolPage extends Component {
         </TabPane>
         {/* 待定列表 */}
         {/* <TabPane tab="待定订单" key="Pending">
-          <CardTable
+          <DispatchingTable
             scrollY={350}
             pagination={pagination}
             clickRow

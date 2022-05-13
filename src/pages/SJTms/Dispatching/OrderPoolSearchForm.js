@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-12 16:11:45
+ * @LastEditTime: 2022-05-13 09:36:32
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -11,6 +11,7 @@ import { Form, Button, Row, Col } from 'antd';
 import {
   SimpleTreeSelect,
   SimpleAutoComplete,
+  SimpleSelect,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 
 @Form.create()
@@ -39,7 +40,7 @@ export default class OrderPoolSearchForm extends Component {
         autoComplete="off"
       >
         <Row justify="space-around">
-          <Col span={8}>
+          <Col span={10}>
             <Form.Item label="线路">
               {getFieldDecorator('shipGroupCode', { initialValue: '' })(
                 <SimpleTreeSelect
@@ -54,7 +55,7 @@ export default class OrderPoolSearchForm extends Component {
               )}
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col span={10}>
             <Form.Item label="单据类型">
               {getFieldDecorator('orderType', { initialValue: 'Delivery' })(
                 <SimpleAutoComplete
@@ -65,7 +66,28 @@ export default class OrderPoolSearchForm extends Component {
               )}
             </Form.Item>
           </Col>
-          <Col span={8} style={{ float: 'right' }}>
+        </Row>
+        <Row justify="space-around">
+          <Col span={10}>
+            <Form.Item label="送货点">
+              {getFieldDecorator('deliveryPointCode', {})(
+                <SimpleAutoComplete
+                  placeholder="请输入送货点"
+                  dictCode="deliveryPointCode"
+                  autoComplete
+                  allowClear={false}
+                />
+              )}
+            </Form.Item>
+          </Col>
+          <Col span={10}>
+            <Form.Item label="订单号">
+              {getFieldDecorator('orderNumber', {})(
+                <SimpleSelect placeholder="请输入订单号" allowClear={false} />
+              )}
+            </Form.Item>
+          </Col>
+          <Col span={4}>
             <Button
               type={'primary'}
               style={{ marginLeft: 12 }}

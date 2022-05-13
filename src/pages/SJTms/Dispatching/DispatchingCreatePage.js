@@ -1,17 +1,13 @@
 import React, { Component } from 'react';
-import { Modal, Card, Row, Col, Divider, Input, Select, Spin, message } from 'antd';
-import { queryDict, queryAllData, dynamicQuery } from '@/services/quick/Quick';
+import { Table, Modal, Card, Row, Col, Divider, Input, Select, Spin, message } from 'antd';
+import { queryAllData, dynamicQuery } from '@/services/quick/Quick';
 import { getSchedule, save, modify } from '@/services/sjitms/ScheduleBill';
-import CardTable from './CardTable';
 import { CreatePageOrderColumns, employeeType } from './DispatchingColumns';
 import dispatchingStyles from './Dispatching.less';
-import DataType from '@/pages/BillManage/DataType/DataType';
-import { sumBy, uniq, intersectionBy } from 'lodash';
+import { sumBy, uniq, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { key } from 'localforage';
 
 const { Search } = Input;
-let orderType = [];
 const queryParams = [
   { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
 ];
@@ -104,10 +100,6 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //选车
-  // handleVehicle = vehicle => {
-  //   this.setState({ selectVehicle: vehicle });
-  // };
-  //选车
   handleVehicle = async vehicle => {
     let param = {
       tableName: 'v_sj_itms_vehicle_employee_z',
@@ -116,24 +108,17 @@ export default class DispatchingCreatePage extends Component {
       },
     };
     const response = await dynamicQuery(param);
-    let carEmp = response?.result?.records;
     const { selectEmployees } = this.state;
-    if (carEmp != 'false') {
-      //去除重复
-      let carEmpFilter = carEmp.filter(item => {
-        return !selectEmployees.some(ele => item.UUID == ele.UUID);
-      });
-      let c = carEmpFilter.map(item => {
+    let vehicleEmployees = [];
+    if (response.success && response.result.records != 'false') {
+      vehicleEmployees = uniqBy(response.result.records, 'CODE').map(item => {
         return {
           ...item,
           memberType: item.ROLE_TYPE,
         };
       });
-      this.setState({
-        selectEmployees: [...this.state.selectEmployees, ...c],
-      });
     }
-    this.setState({ selectVehicle: vehicle });
+    this.setState({ selectVehicle: vehicle, selectEmployees: [...vehicleEmployees] });
   };
   vehicleFilter = event => {
     console.log(event.target.value);
@@ -226,6 +211,8 @@ export default class DispatchingCreatePage extends Component {
   };
   //汇总
   groupByOrder = data => {
+    const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0;
+    const pickupPointCount = data ? uniq(data.map(x => x.pickUpPoint.code)).length : 0;
     data = data.filter(x => x.orderType !== 'OnlyBill');
     return {
       orderCount: data ? data.length : 0,
@@ -238,8 +225,8 @@ export default class DispatchingCreatePage extends Component {
       weight: data ? sumBy(data.map(x => Number(x.weight))) : 0,
       volume: data ? sumBy(data.map(x => Number(x.volume))) : 0,
       totalAmount: data ? sumBy(data.map(x => Number(x.amount))) : 0,
-      deliveryPointCount: data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0,
-      pickupPointCount: data ? uniq(data.map(x => x.pickUpPoint.code)).length : 0,
+      deliveryPointCount,
+      pickupPointCount,
       ownerCount: data ? uniq(data.map(x => x.owner.code)).length : 0,
     };
   };
@@ -345,10 +332,13 @@ export default class DispatchingCreatePage extends Component {
           <Row gutter={[8, 0]}>
             <Col span={16}>
               <Card title="订单" bodyStyle={{ padding: 1, height: '36.8vh' }}>
-                <CardTable
-                  scrollY={'32vh'}
-                  dataSource={orders}
+                <Table
+                  size="small"
+                  className={dispatchingStyles.dispatchingTable}
                   columns={[...CreatePageOrderColumns, buildRowOperation]}
+                  dataSource={orders}
+                  pagination={false}
+                  scroll={{ y: '32vh', x: '100%' }}
                 />
               </Card>
               <Row gutter={[8, 0]} style={{ marginTop: 8 }}>
