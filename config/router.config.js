@@ -1092,6 +1092,14 @@ export default [
             // authority: ['itms.base.lifecycle'],
           },
           {
+            path: '/tmsbase/article',
+            name: 'article',
+            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+            component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+            quickuuid: 'sj_itms_article',
+            authority: ['sj_itms_article'],
+          },
+          {
             path: '/tmsbase/vehicle',
             name: 'vehicle',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
