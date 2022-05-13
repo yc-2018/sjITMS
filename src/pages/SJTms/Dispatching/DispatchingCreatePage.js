@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Table, Modal, Card, Row, Col, Divider, Input, Select, Spin, message } from 'antd';
+import { Table, Modal, Card, Row, Col, Divider, Input, Select, Spin, message, Button } from 'antd';
 import { queryAllData, dynamicQuery } from '@/services/quick/Quick';
 import { getSchedule, save, modify } from '@/services/sjitms/ScheduleBill';
 import { CreatePageOrderColumns, employeeType } from './DispatchingColumns';
@@ -87,6 +87,10 @@ export default class DispatchingCreatePage extends Component {
   //隐藏
   hide = () => {
     this.setState({ visible: false });
+  };
+
+  exit = () => {
+    this.setState({ visible: false, selectEmployees: [], selectVehicle: [] });
   };
 
   //员工类型选择事件
@@ -329,6 +333,15 @@ export default class DispatchingCreatePage extends Component {
         {...this.props.modal}
         className={dispatchingStyles.dispatchingCreatePage}
         bodyStyle={{ margin: -17 }}
+        footer={[
+          <span>
+            <Button onClick={this.exit}>取消</Button>
+            <Button onClick={this.hide}>临时保存</Button>
+            <Button type="primary" onClick={e => this.handleSave(e)}>
+              生成排车单
+            </Button>
+          </span>,
+        ]}
       >
         <Spin spinning={loading}>
           <Row gutter={[8, 0]}>
