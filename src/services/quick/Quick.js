@@ -104,7 +104,11 @@ export async function deleteLineStoreAddressById(payload) {
     method: 'get',
   });
 }
-
+export async function approval(payload){
+  return request(`/itms-schedule/itms-schedule/line/LineSystemTree/approval/${payload}`, {
+    method: 'get',
+  });
+}
 export async function findLineByNameLike(payload) {
   return request(`/itms-schedule/itms-schedule/line/LineSystemTree/findLineByNameLike/${payload}`, {
     method: 'POST',
