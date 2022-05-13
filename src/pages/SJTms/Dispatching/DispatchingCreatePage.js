@@ -104,7 +104,35 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //选车
-  handleVehicle = vehicle => {
+  // handleVehicle = vehicle => {
+  //   this.setState({ selectVehicle: vehicle });
+  // };
+  //选车
+  handleVehicle = async vehicle => {
+    let param = {
+      tableName: 'v_sj_itms_vehicle_employee_z',
+      condition: {
+        params: [{ field: 'VEHICLEUUID', rule: 'eq', val: [vehicle.UUID] }],
+      },
+    };
+    const response = await dynamicQuery(param);
+    let carEmp = response?.result?.records;
+    const { selectEmployees } = this.state;
+    if (carEmp != 'false') {
+      //去除重复
+      let carEmpFilter = carEmp.filter(item => {
+        return !selectEmployees.some(ele => item.UUID == ele.UUID);
+      });
+      let c = carEmpFilter.map(item => {
+        return {
+          ...item,
+          memberType: item.ROLE_TYPE,
+        };
+      });
+      this.setState({
+        selectEmployees: [...this.state.selectEmployees, ...c],
+      });
+    }
     this.setState({ selectVehicle: vehicle });
   };
   vehicleFilter = event => {
@@ -243,6 +271,8 @@ export default class DispatchingCreatePage extends Component {
               onClick={() => this.handleEmployee(employee)}
             >
               <span>{`[${employee.CODE}]` + employee.NAME}</span>
+              <br />
+              <span>{employee.ROLE_TYPE2}</span>
             </a>
           );
         })}
