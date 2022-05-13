@@ -23,6 +23,8 @@ import {
   dynamicDelete,
   findLineSystemTree,
   deleteLineSystemTree,
+  saveOrUpdateEntities,
+  approval
 } from '@/services/quick/Quick';
 import linesStyles from './LineSystem.less';
 
@@ -96,7 +98,7 @@ export default class LineSystemSearchPage extends Component {
   
 
   //查询所有线路体系
-  queryLineSystem = async () => {
+  queryLineSystem = async (lineuuid) => {
     await findLineSystemTree().then(async response => {
       let lineTreeData = [];
       let lineData = [];
@@ -107,11 +109,14 @@ export default class LineSystemSearchPage extends Component {
           this.getLineSystemTree(element, itemData, lineData);
           lineTreeData.push(itemData);
         });
+        if(lineuuid==undefined){
+          lineuuid = lineTreeData ? lineTreeData[0].children ? lineTreeData[0].children[0].key : lineTreeData[0].key : undefined
+        }
         this.setState({
           expandKeys: lineTreeData.map(x => x.key),
           lineTreeData,
           lineData,
-          selectLineUuid: lineTreeData ? lineTreeData[0].children ? lineTreeData[0].children[0].key : lineTreeData[0].key : undefined
+          selectLineUuid:lineuuid
         });
         this.onSelect([this.state.selectLineUuid]);
       }
@@ -141,7 +146,7 @@ export default class LineSystemSearchPage extends Component {
     await dynamicDelete({ params, code: 'woxiangyaokuaile' }).then(result => {
       if (result.success) {
         message.success('删除成功！');
-        this.queryLineSystem();
+        this.queryLineSystem(systemUuid);
       } else {
         message.error('删除失败，请刷新后再操作');
       }
@@ -163,7 +168,25 @@ export default class LineSystemSearchPage extends Component {
       },
     });
   };
-
+  pz = async (systemUuid)=>{
+    const params = [
+      {
+        tableName: 'SJ_ITMS_LINESYSTEM',
+        condition: {
+          params: [{ field: 'UUID', rule: 'eq', val: [systemUuid] }],
+        },
+        deleteAll: 'false',
+      },
+    ];
+    await approval(systemUuid).then(result => {
+      if (result.success) {
+        message.success('批准成功！');
+        this.queryLineSystem(systemUuid);
+      } else {
+        message.error('批准失败！');
+      }
+    });
+  }
   //选中树节点
   onSelect = (selectedKeys, event) => {
     if (event && !event.selected) return;
@@ -173,9 +196,19 @@ export default class LineSystemSearchPage extends Component {
       rightContent: system ? (
         <div>
           <div className={linesStyles.navigatorPanelWrapper}>
-            <span className={linesStyles.sidertitle}>线路体系</span>
+            <span className={linesStyles.sidertitle}>线路体系</span>  
             <div className={linesStyles.action}>
               {/* <Button type="primary" icon="plus">导入门店</Button> */}
+              <Button type="primary"  onClick={() => {
+                 Modal.confirm({
+                  title: '确定批准?',
+                  onOk: () => {
+                    this.pz(selectedKeys[0]);
+                  },
+                });
+              }}>
+                批准
+              </Button>
               <Button type="primary" icon="plus" onClick={() => this.lineCreatePageModalRef.show()}>
                 添加路线
               </Button>
@@ -197,7 +230,7 @@ export default class LineSystemSearchPage extends Component {
             </div>
           </div>
           <LineSystemCreatePage
-            key={selectedKeys[0]}
+            key={new Date()}
             quickuuid="sj_itms_create_linesystem"
             showPageNow="update"
             noBorder={true}
@@ -251,8 +284,8 @@ export default class LineSystemSearchPage extends Component {
              {item.system || item.key != selectLineUuid ? (
               <span />
             ) : (
-              <span style={{ float: 'right' }}>
-                <a style={{ marginRight: 15 }} onClick={() => this.lineEditPageModalRef.show()}>
+              <span >
+                <a style={{ marginRight: 15,marginLeft:5 }} onClick={() => this.lineEditPageModalRef.show()}>
                   编辑
                 </a>
                 <a style={{ marginRight: 15 }} onClick={() => this.handleDeleteLine(item.key)}>
@@ -303,7 +336,7 @@ export default class LineSystemSearchPage extends Component {
     return this.state.rightContent;
   };
   handleCancel = async ()=>{
-    this.queryLineSystem();
+    this.queryLineSystem(this.state.selectLineUuid);
    
   }
   render() {
@@ -315,7 +348,7 @@ export default class LineSystemSearchPage extends Component {
           <Content className={linesStyles.contentWrapper}>
             <Layout>
               {/* 左侧内容 */}
-              <Sider width={300} className={linesStyles.leftWrapper}>
+              <Sider width={300} className={linesStyles.leftWrapper} style={{overflow:'auto'}}>
                 {this.drawSider()}
                 <CreatePageModal
                   modal={{
