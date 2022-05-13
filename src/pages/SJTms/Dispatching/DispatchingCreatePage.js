@@ -206,6 +206,8 @@ export default class DispatchingCreatePage extends Component {
     if (response.success) {
       message.success('保存成功！');
       this.props.refresh();
+      //保存后清空选中的车与人
+      this.setState({ selectEmployees: [], selectVehicle: [] });
       this.hide();
     }
   };
