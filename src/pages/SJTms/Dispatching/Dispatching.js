@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-29 14:03:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-12 17:34:50
+ * @LastEditTime: 2022-05-14 17:18:28
  * @Description: 配送调度主页面
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\Dispatching.js
  */
@@ -15,6 +15,7 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import OrderPoolPage from './OrderPoolPage';
 import SchedulePage from './SchedulePage';
 import PendingPage from './PendingPage';
+import ScheduleDetailPage from './ScheduleDetailPage';
 import dispatchingStyles from './Dispatching.less';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
@@ -38,10 +39,14 @@ export default class Dispatching extends Component {
   refreshPendingTable = () => {
     this.pendingPageRef.refreshTable();
   };
+  refreshSelectScheduleTable = schedule => {
+    return this.scheduleDetailPageRef.refreshTable(schedule);
+  };
 
   getScheduleRowKeys = () => {
     return this.schedulePageRef.state.savedRowKeys;
   };
+
   render() {
     if (this.props.dispatching.showPage === 'query') {
       return (
@@ -68,6 +73,7 @@ export default class Dispatching extends Component {
                       <SchedulePage
                         ref={ref => (this.schedulePageRef = ref)}
                         refresh={this.refreshOrderTable}
+                        refreshDetail={this.refreshSelectScheduleTable}
                       />
                     </div>
                   </Col>
@@ -80,9 +86,14 @@ export default class Dispatching extends Component {
                       />
                     </div>
                   </Col>
-                  {/* <Col span={12}>
-                    <div className={dispatchingStyles.dispatchingCard} />
-                  </Col> */}
+                  <Col span={12}>
+                    <div className={dispatchingStyles.dispatchingCard}>
+                      <ScheduleDetailPage
+                        refresh={this.refreshScheduleTable}
+                        ref={ref => (this.scheduleDetailPageRef = ref)}
+                      />
+                    </div>
+                  </Col>
                 </Row>
               </Layout>
             </Content>

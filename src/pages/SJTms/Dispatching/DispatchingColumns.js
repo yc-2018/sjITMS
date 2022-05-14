@@ -10,8 +10,8 @@ export const OrderColumns = [
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
-    title: '波次',
-    dataIndex: 'waveNum',
+    title: '单号',
+    dataIndex: 'billNumber',
     width: 100,
     render: (val, record) => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
@@ -294,7 +294,13 @@ export const ScheduleDetailColumns = [
   {
     title: '来源单号',
     dataIndex: 'sourceNum',
-    width: 100,
+    width: 120,
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+  },
+  {
+    title: '订单号',
+    dataIndex: 'orderNumber',
+    width: 150,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
@@ -349,3 +355,9 @@ export const ScheduleDetailColumns = [
     render: val => (val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />),
   },
 ];
+
+export const pagination = {
+  defaultPageSize: 20,
+  showSizeChanger: true,
+  pageSizeOptions: ['20', '50', '100'],
+};

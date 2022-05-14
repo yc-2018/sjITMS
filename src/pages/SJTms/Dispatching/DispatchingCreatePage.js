@@ -150,6 +150,7 @@ export default class DispatchingCreatePage extends Component {
 
   //保存
   handleSave = async () => {
+    this.setState({ loading: true });
     const { isEdit, orders, schedule, selectVehicle, selectEmployees } = this.state;
     const driver = selectEmployees.find(x => x.memberType == 'Driver');
     const orderCounts = this.groupByOrder(orders);
@@ -211,7 +212,7 @@ export default class DispatchingCreatePage extends Component {
       message.success('保存成功！');
       this.props.refresh();
       //保存后清空选中的车与人
-      this.setState({ selectEmployees: [], selectVehicle: [] });
+      this.setState({ selectEmployees: [], selectVehicle: [], loading: false });
       this.hide();
     }
   };
@@ -337,7 +338,7 @@ export default class DispatchingCreatePage extends Component {
           <span>
             <Button onClick={this.exit}>取消</Button>
             <Button onClick={this.hide}>临时保存</Button>
-            <Button type="primary" onClick={e => this.handleSave(e)}>
+            <Button type="primary" onClick={e => this.handleSave(e)} loading={loading}>
               生成排车单
             </Button>
           </span>,

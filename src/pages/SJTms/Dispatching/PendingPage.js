@@ -2,18 +2,19 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-13 14:29:37
+ * @LastEditTime: 2022-05-14 16:07:20
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
 import React, { Component } from 'react';
 import { Table, Button, Row, Col, Typography, message } from 'antd';
-import { OrderColumns } from './DispatchingColumns';
+import { OrderColumns, pagination } from './DispatchingColumns';
 import { getOrderInPending } from '@/services/sjitms/OrderBill';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
-import dispatchingStyles from './DispatchingTable.less';
+import DispatchingTable from './DispatchingTable';
+import dispatchingStyles from './Dispatching.less';
 
-const { Title } = Typography;
+const { Title, Text } = Typography;
 
 export default class PendingPage extends Component {
   state = {
@@ -45,11 +46,6 @@ export default class PendingPage extends Component {
     });
   };
 
-  //表格行点击事件
-  onClickRow = record => {
-    this.onSelectChange(record, this.state.pendingRowKeys.indexOf(record.uuid) == -1);
-  };
-
   //删除待定
   handleRemovePending = () => {};
 
@@ -74,40 +70,17 @@ export default class PendingPage extends Component {
     });
   };
 
-  onSelectChange = (record, selected) => {
-    const { pendingRowKeys } = this.state;
-    selected
-      ? pendingRowKeys.push(record.uuid)
-      : pendingRowKeys.splice(pendingRowKeys.findIndex(item => item == record.uuid), 1);
-    this.setState({ pendingRowKeys });
-  };
-
-  onSelectAll = (selected, selectedRows, changeRows) => {
-    const { pendingRowKeys } = this.state;
-    let newSelectedRowKeys = [...pendingRowKeys];
-    selected
-      ? (newSelectedRowKeys = newSelectedRowKeys.concat(changeRows.map(item => item.uuid)))
-      : (newSelectedRowKeys = []);
-    this.setState({ pendingRowKeys: newSelectedRowKeys });
+  tableChangeRows = selectedRowKeys => {
+    this.setState({ pendingRowKeys: selectedRowKeys });
   };
 
   render() {
     const { loading, pendingData, pendingRowKeys } = this.state;
-    const rowSelection = {
-      selectedRowKeys: pendingRowKeys,
-      onSelect: this.onSelectChange,
-      onSelectAll: this.onSelectAll,
-    };
-    const pagination = {
-      defaultPageSize: 20,
-      showSizeChanger: true,
-      pageSizeOptions: ['20', '50', '100'],
-    };
     return (
       <div style={{ padding: 5 }}>
-        <Row>
+        <Row style={{ marginBottom: 5, lineHeight: '28px' }}>
           <Col span={12}>
-            <Title level={4}>待定列表</Title>
+            <Text className={dispatchingStyles.cardTitle}>待定列表</Text>
           </Col>
           <Col span={12} style={{ textAlign: 'right' }}>
             <Button onClick={() => this.handleAddOrder()}>添加到排车单</Button>
@@ -116,17 +89,15 @@ export default class PendingPage extends Component {
             </Button>
           </Col>
         </Row>
-        <Table
-          size="small"
+        <DispatchingTable
+          clickRow
           pagination={pagination}
           loading={loading}
-          onRowClick={this.onClickRow}
-          rowKey={record => record.uuid}
-          rowSelection={rowSelection}
           dataSource={pendingData}
+          changeSelectRows={this.tableChangeRows}
+          selectedRowKeys={pendingRowKeys}
           columns={OrderColumns}
-          scroll={{ y: 420, x: '100%' }}
-          className={dispatchingStyles.dispatchingTable}
+          scrollY="calc(68vh - 120px)"
         />
       </div>
     );
