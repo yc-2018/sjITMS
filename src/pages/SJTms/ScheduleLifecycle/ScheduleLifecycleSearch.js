@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-09 11:05:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-11 09:59:49
+ * @LastEditTime: 2022-05-12 08:54:02
  * @version: 1.0
  */
 /*
@@ -115,7 +115,7 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
     if (!data?.records) {
       data.records = [
         {
-          FLOW: 'ship',
+          FLOW: 'Ship',
           FLOW_CN: '装车',
           SCHEDULETYPE: c.val,
           SCHEDULETYPE_CN: c.val == 'Job' ? '作业型' : '任务型',
@@ -123,7 +123,7 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
           ALLOWSTAT: '',
         },
         {
-          FLOW: 'inAndOutFactory',
+          FLOW: 'InAndOutFactory',
           FLOW_CN: '出车回车',
           SCHEDULETYPE: c.val,
           SCHEDULETYPE_CN: c.val == 'Job' ? '作业型' : '任务型',
@@ -131,7 +131,7 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
           ALLOWSTAT: '',
         },
         {
-          FLOW: c.val == 'Job' ? 'deliveredConfirm' : 'taskConfirm',
+          FLOW: c.val == 'Job' ? 'DeliveredConfirm' : 'TaskConfirm',
           FLOW_CN: c.val == 'Job' ? '送货确认' : '提货确认',
           SCHEDULETYPE: c.val,
           SCHEDULETYPE_CN: c.val == 'Job' ? '作业型' : '任务型',
@@ -165,7 +165,7 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
           key={e.record.UUID}
           onChange={v => (e.record.SKIP = v.target.checked ? '1' : '0')}
           disabled={
-            e.record.FLOW == 'deliveredConfirm' || e.record.FLOW == 'taskConfirm' ? true : false
+            e.record.FLOW == 'DeliveredConfirm' || e.record.FLOW == 'TaskConfirm' ? true : false
           }
         >
           跳过

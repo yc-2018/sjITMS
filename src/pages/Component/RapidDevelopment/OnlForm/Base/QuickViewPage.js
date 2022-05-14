@@ -378,7 +378,11 @@ export default class QuickView extends RyzeViewPage {
             {commonLocale.editLocale}
           </Button>
         ) : null} */}
-        <Button type="primary" onClick={this.onEdit}>
+        <Button
+          hidden={!havePermission(this.state.reportCode + '.edit')}
+          type="primary"
+          onClick={this.onEdit}
+        >
           {commonLocale.editLocale}
         </Button>
       </Fragment>

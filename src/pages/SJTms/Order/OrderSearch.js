@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-09 10:46:40
+ * @LastEditTime: 2022-05-14 11:13:41
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -71,6 +71,7 @@ export default class OrderSearch extends QuickFormSearchPage {
       selectedRows.forEach(data => {
         this.audit(data.BILLNUMBER);
       });
+      this.refreshTable();
     } else {
       message.error('请至少选中一条数据！');
     }
