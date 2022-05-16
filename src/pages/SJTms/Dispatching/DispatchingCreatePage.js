@@ -1,7 +1,21 @@
 import React, { Component } from 'react';
-import { Table, Modal, Card, Row, Col, Divider, Input, Select, Spin, message, Button } from 'antd';
+import {
+  Table,
+  Modal,
+  Card,
+  Row,
+  Col,
+  Divider,
+  Input,
+  Select,
+  Spin,
+  message,
+  Button,
+  Popconfirm,
+} from 'antd';
 import { queryAllData, dynamicQuery } from '@/services/quick/Quick';
 import { getSchedule, save, modify } from '@/services/sjitms/ScheduleBill';
+import EditContainerNumberPageF from './EditContainerNumberPageF';
 import { CreatePageOrderColumns, employeeType } from './DispatchingColumns';
 import dispatchingStyles from './Dispatching.less';
 import { sumBy, uniq, uniqBy } from 'lodash';
@@ -24,6 +38,8 @@ export default class DispatchingCreatePage extends Component {
     selectVehicle: {},
     selectEmployees: [],
     schedule: {},
+    editPageVisible: false,
+    scheduleDetail: {},
   };
 
   componentDidMount = () => {
@@ -150,7 +166,6 @@ export default class DispatchingCreatePage extends Component {
 
   //保存
   handleSave = async () => {
-    this.setState({ loading: true });
     const { isEdit, orders, schedule, selectVehicle, selectEmployees } = this.state;
     const driver = selectEmployees.find(x => x.memberType == 'Driver');
     const orderCounts = this.groupByOrder(orders);
@@ -307,21 +322,59 @@ export default class DispatchingCreatePage extends Component {
     );
   };
 
+  //拆单
+  editSource = record => {
+    this.setState({ editPageVisible: true, scheduleDetail: record });
+  };
+
+  updateCount = e => {
+    const { orders } = this.state;
+    for (const order of orders) {
+      if (order.billNumber == e.billNumber) {
+        order.realCartonCount -= e.count.cartonCount;
+        break;
+      }
+    }
+    this.setState({ orders, editPageVisible: false });
+  };
+
   render() {
-    const { loading, orders, selectEmployees, selectVehicle } = this.state;
+    const {
+      loading,
+      orders,
+      selectEmployees,
+      selectVehicle,
+      scheduleDetail,
+      editPageVisible,
+    } = this.state;
     const totalData = this.groupByOrder(orders);
     const buildRowOperation = {
       title: '操作',
-      width: 60,
+      width: 100,
+      className: 'tools-center',
       render: (_, record) => (
-        <a
-          href="#"
-          onClick={() => {
-            this.removeDetail(record);
-          }}
-        >
-          移除
-        </a>
+        <div>
+          <div>
+            <Popconfirm
+              title="确定移除吗?"
+              onConfirm={() => this.removeDetail(record)}
+              okText="确定"
+              cancelText="取消"
+            >
+              <a href="#">移除</a>
+            </Popconfirm>
+
+            <Divider type="vertical" style={{ height: '3.5em' }} />
+            <a
+              href="#"
+              onClick={() => {
+                this.editSource(record);
+              }}
+            >
+              拆单
+            </a>
+          </div>
+        </div>
       ),
     };
     return (
@@ -344,10 +397,17 @@ export default class DispatchingCreatePage extends Component {
           </span>,
         ]}
       >
+        <EditContainerNumberPageF
+          modal={{ title: '编辑' }}
+          updateCount={e => this.updateCount(e)}
+          visible={editPageVisible}
+          scheduleDetail={scheduleDetail}
+          onCancel={() => this.setState({ editPageVisible: false })}
+        />
         <Spin spinning={loading}>
           <Row gutter={[8, 0]}>
             <Col span={16}>
-              <Card title="订单" bodyStyle={{ padding: 1, height: '36.8vh' }}>
+              <Card title="订单" bodyStyle={{ padding: 1, height: '38.5vh' }}>
                 <Table
                   size="small"
                   className={dispatchingStyles.dispatchingTable}
@@ -417,32 +477,81 @@ export default class DispatchingCreatePage extends Component {
                   </div>
                 </div>
               </Card>
-              <Card title="车辆" style={{ height: '15vh', marginTop: 8 }}>
+              <Card
+                title={
+                  <div
+                    dangerouslySetInnerHTML={{
+                      __html: selectVehicle.PLATENUMBER
+                        ? selectVehicle.PLATENUMBER + ' &nbsp;&nbsp;' + selectVehicle.VEHICLETYPE
+                        : '车辆',
+                    }}
+                  />
+                }
+                style={{ height: '20.2vh', marginTop: 8, overflow: 'auto' }}
+              >
                 {selectVehicle.PLATENUMBER ? (
                   <Row>
-                    <Col span={6}>
-                      <div>{selectVehicle.PLATENUMBER}</div>
-                      <div>
-                        车型：
-                        {selectVehicle.VEHICLETYPE}
+                    <Col>
+                      <div className={dispatchingStyles.orderTotalCardBody2}>
+                        <div style={{ flex: 1 }}>
+                          <div>容积</div>
+                          <div className={dispatchingStyles.orderTotalNumber}>
+                            {selectVehicle.BEARVOLUME}
+                            m³
+                          </div>
+                        </div>
+                        <Divider type="vertical" style={{ height: '3.5em' }} />
+                        <div style={{ flex: 1 }}>
+                          <div>容积率</div>
+                          <div>
+                            <span className={dispatchingStyles.orderTotalNumber}>
+                              {selectVehicle.BEARVOLUMERATE}%
+                            </span>
+                          </div>
+                        </div>
+                        <Divider type="vertical" style={{ height: '3.5em' }} />
+                        <div style={{ flex: 1 }}>
+                          <div>载重</div>
+                          <div>
+                            <span className={dispatchingStyles.orderTotalNumber}>
+                              {selectVehicle.BEARWEIGHT}
+                              kg
+                            </span>
+                          </div>
+                        </div>
                       </div>
-                    </Col>
-                    <Col span={14} offset={2}>
-                      <div>
-                        <span>
-                          容积：
-                          {selectVehicle.BEARVOLUME}
-                          m³
-                        </span>
-                        <span>
-                          容积率：
-                          {selectVehicle.BEARVOLUMERATE}%
-                        </span>
-                      </div>
-                      <div>
-                        载重：
-                        {selectVehicle.BEARWEIGHT}
-                        kg
+                      <div className={dispatchingStyles.orderTotalCardBody}>
+                        <div style={{ flex: 1 }}>
+                          <div>剩余可装容积</div>
+                          <div className={dispatchingStyles.orderTotalNumber}>
+                            <span
+                              style={
+                                selectVehicle.BEARVOLUME - totalData.volume.toFixed(4) > 0
+                                  ? { color: 'green' }
+                                  : { color: 'red' }
+                              }
+                            >
+                              {selectVehicle.BEARVOLUME - totalData.volume.toFixed(4)}
+                              m³
+                            </span>
+                          </div>
+                        </div>
+                        <Divider type="vertical" style={{ height: '3.5em' }} />
+                        <div style={{ flex: 1 }}>
+                          <div>剩余可装重量</div>
+                          <div className={dispatchingStyles.orderTotalNumber}>
+                            <span
+                              style={
+                                selectVehicle.BEARWEIGHT - totalData.weight.toFixed(4) > 0
+                                  ? { color: 'green' }
+                                  : { color: 'red' }
+                              }
+                            >
+                              {selectVehicle.BEARWEIGHT - totalData.weight.toFixed(4)}
+                              kg
+                            </span>
+                          </div>
+                        </div>
                       </div>
                     </Col>
                   </Row>

@@ -171,13 +171,13 @@ export const CreatePageOrderColumns = [
   {
     title: '订单号',
     dataIndex: 'billNumber',
-    width: 150,
+    width: 140,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '收货方',
     dataIndex: 'deliveryPoint',
-    width: 150,
+    width: 120,
     render: val => {
       return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
     },
