@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import ViewPageDetail from '@/pages/Component/Page/inner/ViewPageDetail';
+// import ViewPageDetail from './RyzeView/ViewPageDetail';
 import { Spin, Tabs } from 'antd';
 import { formatMessage } from 'umi/locale';
 import EntityLogTab from '@/pages/Component/Page/inner/EntityLogTab';
@@ -176,7 +177,7 @@ export default class RyzeViewPage extends Component {
     };
 
     let ret = this.state.viewStyle ? (
-      <div>
+      <div style={{ overflow: 'auto' }}>
         <Spin
           indicator={LoadingIcon('default')}
           tip="加载中..."
@@ -188,6 +189,7 @@ export default class RyzeViewPage extends Component {
               type={this.state.viewStyle.card ? 'card' : ''}
               defaultActiveKey="1"
               onChange={this.tabsChangeCallback}
+              style={{ overflow: 'auto' }}
             >
               {this.drawTabPanes && this.drawTabPanes()}
               {this.state.viewStyle.hasOpt ? (
@@ -213,6 +215,7 @@ export default class RyzeViewPage extends Component {
             <ViewPageDetail {...viewTitleProps}>
               <div className={styles.detailContent}>
                 <Tabs
+                  style={{ overflow: 'auto' }}
                   className={styles.tabsWrapper}
                   defaultActiveKey="1"
                   onChange={this.tabsChangeCallback}

@@ -17,7 +17,8 @@ import { havePermission } from '@/utils/authority';
 import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
 import { accMul } from '@/utils/QpcStrUtil';
 import { colWidth, itemColWidth } from '@/utils/ColWidth';
-import ViewTablePanel from '@/pages/Component/Form/ViewTablePanel';
+// import ViewTablePanel from '@/pages/Component/Form/ViewTablePanel';
+import ViewTablePanel from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeView/ViewTablePanel';
 import { routerRedux } from 'dva/router';
 
 const TabPane = Tabs.TabPane;
@@ -554,6 +555,7 @@ export default class QuickView extends RyzeViewPage {
         });
         items.push(
           <ViewTablePanel
+            style={{ marginTop: '24px' }}
             title={item.onlFormHead.tableTxt}
             columns={catelogItems}
             data={this.entity[tableName] ? this.entity[tableName] : []}
