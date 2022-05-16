@@ -8,8 +8,9 @@
  */
 import { PureComponent } from 'react';
 import { connect } from 'dva';
-import LineSystemSearchPage from './LineSystemSearchPage';
+import LineSystemInfo from './LineSystemInfo';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import LineSystemSearchPage from './LineSystemSearchPage';
 
 @connect(({ lineSystem, loading }) => ({
   lineSystem,
@@ -18,7 +19,7 @@ import { loginCompany, loginOrg } from '@/utils/LoginContext';
 export default class LineSystem extends PureComponent {
   render() {
     if (this.props.lineSystem.showPage === 'query') {
-      return <LineSystemSearchPage />;
+      return <LineSystemInfo />;
     }
   }
 }

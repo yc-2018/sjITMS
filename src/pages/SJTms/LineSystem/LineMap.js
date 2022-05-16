@@ -52,7 +52,7 @@ componentDidUpdate(){
     console.log("lineuuid",this.props.lineuuid);
     const { lineuuid } = this.props;
     const param = {
-      tableName: 'SJ_ITMS_LINE_SHIPADDRESS',
+      tableName: 'V_SJ_ITMS_LINE_SHIP_ADDRESS',
       condition: {
         params: [{ field: 'LINEUUID', rule: 'eq', val: [lineuuid] }],
       },

@@ -9,7 +9,7 @@
 
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { Button, Switch, Modal, message, Form, Layout, Menu, Icon, Tree, Tabs } from 'antd';
+import { Button, Switch, Modal, message, Form, Layout, Menu, Icon, Tree, Tabs,Input } from 'antd';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { convertCodeName } from '@/utils/utils';
 import Page from '@/pages/Component/Page/inner/NewStylePage';
@@ -21,11 +21,19 @@ import LineMap from './LineMap';
 import {
   dynamicqueryById,
   dynamicDelete,
+  saveOrUpdateEntities,
+  dynamicQuery,
+} from '@/services/quick/Quick';
+
+import {
   findLineSystemTree,
   deleteLineSystemTree,
-  saveOrUpdateEntities,
-  approval
-} from '@/services/quick/Quick';
+  discard,
+  notApproval,
+  approval ,
+  backupLineSystem,
+  isEnable,
+  updateState} from '@/services/sjtms/LineSystemHis'
 import linesStyles from './LineSystem.less';
 
 const { Content, Sider } = Layout;
@@ -46,6 +54,8 @@ export default class LineSystemSearchPage extends Component {
       expandKeys: [],
       selectLineUuid: '',
       rightContent: '',
+      visible:false,
+      bfValue:""
     };
   }
   componentDidMount() {
@@ -99,12 +109,12 @@ export default class LineSystemSearchPage extends Component {
 
   //查询所有线路体系
   queryLineSystem = async (lineuuid) => {
-    await findLineSystemTree().then(async response => {
+    await findLineSystemTree({company:loginCompany().uuid,dcUuid:loginOrg().uuid}).then(async response => {
       let lineTreeData = [];
       let lineData = [];
       if (response) {
         const data = response.data;
-        data.forEach(element => {
+        data?.forEach(element => {
           let itemData = {};
           this.getLineSystemTree(element, itemData, lineData);
           lineTreeData.push(itemData);
@@ -169,16 +179,16 @@ export default class LineSystemSearchPage extends Component {
     });
   };
   pz = async (systemUuid)=>{
-    const params = [
-      {
-        tableName: 'SJ_ITMS_LINESYSTEM',
-        condition: {
-          params: [{ field: 'UUID', rule: 'eq', val: [systemUuid] }],
-        },
-        deleteAll: 'false',
-      },
-    ];
-    await approval(systemUuid).then(result => {
+    // const params = [
+    //   {
+    //     tableName: 'SJ_ITMS_LINESYSTEM',
+    //     condition: {
+    //       params: [{ field: 'UUID', rule: 'eq', val: [systemUuid] }],
+    //     },
+    //     deleteAll: 'false',
+    //   },
+    // ];
+    await updateState(systemUuid,'Approved').then(result => {
       if (result.success) {
         message.success('批准成功！');
         this.queryLineSystem(systemUuid);
@@ -187,19 +197,96 @@ export default class LineSystemSearchPage extends Component {
       }
     });
   }
+  qxpz = async (systemUuid)=>{
+    await updateState(systemUuid,'Revising').then(result => {
+      if (result.success) {
+        message.success('取消批准成功！');
+        this.queryLineSystem(systemUuid);
+      } else {
+        message.error('取消批准失败！');
+      }
+    });
+  }
+  zf = async (systemUuid)=>{
+    await updateState(systemUuid,'Discard').then(result => {
+      if (result && result.success) {
+        message.success('作废成功！');
+        this.queryLineSystem();
+      } else {
+        message.error('作废失败！');
+      }
+    });
+  }
+  bf = async ()=>{
+    let params = {
+      systemUuid :this.state.selectLineUuid,
+      note :this.state.bfValue,
+      companyUuid:loginCompany().uuid,
+      dispatchcenterUuid:loginOrg().uuid
+    }
+    await backupLineSystem(params).then(result => {
+      if (result.success) {
+        message.success('备份成功！');
+        this.setState({visible:false});
+      } else {
+        message.error('备份失败！');
+      }
+    });
+  }
+  swithChange =async(systemUuid,enable)=>{
+    isEnable(systemUuid,enable).then(result => {
+      if (result && result.success) {
+        message.success('操做成功！');
+        this.queryLineSystem(systemUuid);
+      } else {
+        message.error('操做失败！');
+      }
+    });
+     
+  }
+  swithCom  =async(system,selectedKeys)=>{
+    if(system){
+      const param = {
+        tableName: 'SJ_ITMS_LINESYSTEM',
+        condition: {
+          params: [{ field: 'UUID', rule: 'eq', val: [selectedKeys] }],
+        },
+      };
+      let isenable = await dynamicQuery(param);
+      return isenable.result?.records[0]?.ISENABLE 
+    }
+  }
   //选中树节点
-  onSelect = (selectedKeys, event) => {
+  onSelect = async (selectedKeys, event) => {
+    if(selectedKeys && selectedKeys[0]==undefined ){
+      this.setState({rightContent:<></>,selectLineUuid:undefined});
+    }
     if (event && !event.selected) return;
     const { lineTreeData, lineData } = this.state;
     const system = lineTreeData.find(x => x.key == selectedKeys[0]);
+    let enable= await this.swithCom(system,selectedKeys[0]);
     this.setState({
       rightContent: system ? (
         <div>
           <div className={linesStyles.navigatorPanelWrapper}>
             <span className={linesStyles.sidertitle}>线路体系</span>  
-            <div className={linesStyles.action}>
-              {/* <Button type="primary" icon="plus">导入门店</Button> */}
+            <div className={linesStyles.action}> 
+            <Switch checkedChildren="启用"  checked ={enable==1} unCheckedChildren="禁用"  onClick={
+              () => {            
+                Modal.confirm({
+                 title: enable==1?'确定禁用?':'确定启用',
+                 onOk: () => {
+                  this.swithChange(selectedKeys[0],enable==1?0:1);
+                 },
+               });
+             }
+            }/>  
+            <Button   type="primary" onClick={() => {
+                this.setState({visible:true}) }}>
+                备份
+              </Button>
               <Button type="primary"  onClick={() => {
+                
                  Modal.confirm({
                   title: '确定批准?',
                   onOk: () => {
@@ -209,10 +296,30 @@ export default class LineSystemSearchPage extends Component {
               }}>
                 批准
               </Button>
+              <Button type="primary"  onClick={() => {
+                 Modal.confirm({
+                  title: '确定取消批准?',
+                  onOk: () => {
+                    this.qxpz(selectedKeys[0]);
+                  },
+                });
+              }}>
+                取消批准
+              </Button>
+              <Button type="danger"  onClick={() => {
+                 Modal.confirm({
+                  title: '确定作废?',
+                  onOk: () => {
+                    this.zf(selectedKeys[0]);
+                  },
+                });
+              }}>
+                作废
+              </Button>
               <Button type="primary" icon="plus" onClick={() => this.lineCreatePageModalRef.show()}>
                 添加路线
               </Button>
-              <Button
+              {/* <Button
                 onClick={() => {
                   Modal.confirm({
                     title: '确定删除?',
@@ -223,10 +330,10 @@ export default class LineSystemSearchPage extends Component {
                 }}
               >
                 删除
-              </Button>
-              <Button type="primary" onClick={e => this.lineSystemEditPage.handleSave(e)}>
+              </Button> */}
+              {/* <Button type="primary" onClick={e => this.lineSystemEditPage.handleSave(e)}>
                 保存
-              </Button>
+              </Button> */}
             </div>
           </div>
           <LineSystemCreatePage
@@ -339,12 +446,15 @@ export default class LineSystemSearchPage extends Component {
     this.queryLineSystem(this.state.selectLineUuid);
    
   }
+  callback = ()=>{
+
+  }
   render() {
     console.log("reder");
     const { createSystemModalVisible, createLineModalVisible, selectLineUuid } = this.state;
     return (
-      <PageHeaderWrapper>
-        <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
+          // <PageHeaderWrapper>
+          <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
           <Content className={linesStyles.contentWrapper}>
             <Layout>
               {/* 左侧内容 */}
@@ -386,13 +496,27 @@ export default class LineSystemSearchPage extends Component {
                   }}
                   onRef={node => (this.lineEditPageModalRef = node)}
                 />
+
+              <Modal
+                title='备份'
+                visible={this.state.visible}
+                onOk={this.bf}
+                onCancel={()=>this.setState({visible:false})}
+                >
+                  备注：
+                    <Input style={{width:200}}  onChange={(value)=>{
+                      this.setState({bfValue:value.target.value})
+                    }}>
+
+                    </Input>
+                </Modal>
               </Sider>
               {/* 右侧内容 */}
               <Content className={linesStyles.rightWrapper}>{this.drawContent()}</Content>
             </Layout>
           </Content>
         </Page>
-      </PageHeaderWrapper>
+        // </PageHeaderWrapper>
     );
   }
 }
