@@ -15,7 +15,7 @@ import { convertCodeName } from '@/utils/utils';
 import Page from '@/pages/Component/Page/inner/NewStylePage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import LineShipAddress from './LineShipAddress';
+import LineShipAddresshis from './LineShipAddresshis';
 import LineSystemCreatePage from './LineSystemCreatePage';
 import LineMap from './LineMap';
 import {
@@ -28,6 +28,7 @@ import {
 } from '@/services/quick/Quick';
 import {findLineSystemHisTree} from '@/services/sjtms/LineSystemHis'
 import linesStyles from './LineSystem.less';
+import refundReceiveConfig from '@/models/facility/refundReceiveConfig';
 
 const { Content, Sider } = Layout;
 const Item = Menu.Item;
@@ -135,8 +136,14 @@ export default class LineSystemhisSearchPage extends Component {
   onSelect = (selectedKeys, event) => {
     if (event && !event.selected) return;
     const { lineTreeData, lineData } = this.state;
-    console.log("lineTreeData",lineTreeData);
-    const system = lineTreeData.find(x => x.key == selectedKeys[0]);
+    if(selectedKeys[0].split("-")[1]=="systemCode"){
+      this.setState({rightContent:<></>})
+      return;
+    }
+    console.log("lineTreeData",lineTreeData,selectedKeys);
+    selectedKeys = [selectedKeys[0].split("-")[0]];
+    
+    const system = lineTreeData.find(x => x.children.find(f=>f.key==selectedKeys[0]));
     console.log("select",selectedKeys);
     console.log("system",system);
     this.setState({
@@ -147,20 +154,20 @@ export default class LineSystemhisSearchPage extends Component {
           </div>
           <LineSystemCreatePage
             key={new Date()}
-            quickuuid="sj_itms_create_linesystem"
+            quickuuid="sj_itms_linesystem_his"
             showPageNow="update"
             noBorder={true}
             noCategory={true}
-            params={{ entityUuid: selectedKeys[0] }}
+            params={{ entityUuid: selectedKeys[0]}}
             onRef={node => (this.lineSystemEditPage = node)}
           />
         </div>
       ) : (
         <Tabs defaultActiveKey={`Tab${selectedKeys[0]}`}>
           <TabPane tab="线路门店" key="1">
-            <LineShipAddress
+            <LineShipAddresshis
               key={`Line${selectedKeys[0]}`}
-              quickuuid="sj_itms_line_shipaddress"
+              quickuuid="sj_itms_line_shipaddress_his"
               lineuuid={selectedKeys[0]}
               lineTreeData={this.state.lineTreeData}
               showadfa = {this.queryLineSystem}

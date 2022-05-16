@@ -258,9 +258,10 @@ export default class LineSystemSearchPage extends Component {
   }
   //选中树节点
   onSelect = async (selectedKeys, event) => {
-    if(selectedKeys && selectedKeys[0]==undefined ){
-      this.setState({rightContent:<></>,selectLineUuid:undefined});
-    }
+    console.log("select",selectedKeys);
+    // if(selectedKeys && selectedKeys[0]==undefined ){
+    //   this.setState({rightContent:<></>,selectLineUuid:undefined});
+    // }
     if (event && !event.selected) return;
     const { lineTreeData, lineData } = this.state;
     const system = lineTreeData.find(x => x.key == selectedKeys[0]);

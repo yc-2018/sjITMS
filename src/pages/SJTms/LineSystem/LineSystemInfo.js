@@ -15,18 +15,19 @@ export default class LineSystemInfo extends Component {
           expandKeys: [],
           selectLineUuid: '',
           rightContent: '',
-          isNotHd:true
+          isNotHd:true,
+          updates:''
         };
       }
     render() {
        return (
         < Page>
-            <Tabs defaultActiveKey="1">
+            <Tabs defaultActiveKey="1" onChange = {(value)=>{if(value==2)this.setState({updates:new Date()})}}>
                 <TabPane tab="当前线路" key="1">
                 <LineSystemSearchPage></LineSystemSearchPage>
                 </TabPane>
                 <TabPane tab="历史线路" key="2">
-                   <LineSystemhisSearchPage> </LineSystemhisSearchPage>
+                   <LineSystemhisSearchPage key = {this.state.updates}> </LineSystemhisSearchPage>
                 </TabPane>
         </Tabs>
         </Page>

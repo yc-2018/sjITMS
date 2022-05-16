@@ -30,7 +30,7 @@ export async function save(payload) {
 
 
 export async function findLineSystemTree(payload) {
-    return request(`/itms-schedule//itms-schedule/LineSystem/findLineSystemTree/${payload.company}/${payload.dcUuid}`, {
+    return request(`/itms-schedule/itms-schedule/LineSystem/findLineSystemTree/${payload.company}/${payload.dcUuid}`, {
       method: 'get',
     });
   }
