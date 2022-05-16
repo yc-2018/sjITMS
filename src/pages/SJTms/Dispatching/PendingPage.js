@@ -2,14 +2,14 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-14 16:07:20
+ * @LastEditTime: 2022-05-16 08:58:23
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
 import React, { Component } from 'react';
 import { Table, Button, Row, Col, Typography, message } from 'antd';
 import { OrderColumns, pagination } from './DispatchingColumns';
-import { getOrderInPending } from '@/services/sjitms/OrderBill';
+import { getOrderInPending, removePending } from '@/services/sjitms/OrderBill';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
 import DispatchingTable from './DispatchingTable';
 import dispatchingStyles from './Dispatching.less';
@@ -47,7 +47,20 @@ export default class PendingPage extends Component {
   };
 
   //删除待定
-  handleRemovePending = () => {};
+  handleRemovePending = () => {
+    const { pendingRowKeys } = this.state;
+    if (pendingRowKeys.length == 0) {
+      message.warning('请选择运输订单！');
+      return;
+    }
+    removePending(pendingRowKeys).then(response => {
+      if (response.success) {
+        message.success('保存成功！');
+        this.refreshTable();
+        this.props.refreshOrder();
+      }
+    });
+  };
 
   //添加到排车单
   handleAddOrder = () => {
@@ -65,7 +78,7 @@ export default class PendingPage extends Component {
       if (response.success) {
         message.success('保存成功！');
         this.refreshTable();
-        this.props.refresh();
+        this.props.refreshSchedule();
       }
     });
   };

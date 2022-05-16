@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-14 17:57:46
+ * @LastEditTime: 2022-05-16 14:25:40
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -12,14 +12,14 @@ import { ScheduleDetailColumns } from './DispatchingColumns';
 import EditContainerNumberPage from './EditContainerNumberPage';
 import DispatchingTable from './DispatchingTable';
 import dispatchingStyles from './Dispatching.less';
-import { addOrders } from '@/services/sjitms/ScheduleBill';
+import { removeOrders } from '@/services/sjitms/ScheduleBill';
 
 const { Title, Text } = Typography;
 
 export default class ScheduleDetailPage extends Component {
   state = {
     loading: false,
-    selectRowKeys: [],
+    selectedRowKeys: [],
     schedule: undefined,
   };
 
@@ -28,28 +28,42 @@ export default class ScheduleDetailPage extends Component {
   };
 
   //排车单明细整件数量修改
-  editTable = record => {
-    return () => {
-      const { schedule } = this.state;
-      record.billNumber = schedule.billNumber;
-      this.editPageModalRef.show(record);
-    };
+  editDetail = record => {
+    const { schedule } = this.state;
+    record.billNumber = schedule.billNumber;
+    this.editPageModalRef.show(record);
   };
 
   //删除明细
-  handleRemoveDetail = () => {};
+  handleRemoveDetail = () => {
+    const { selectedRowKeys, schedule } = this.state;
+    if (selectedRowKeys.length == 0 || selectedRowKeys == undefined) {
+      message.warning('请选择订单明细！');
+      return;
+    }
+    const orderUuids = schedule.details
+      .filter(x => selectedRowKeys.indexOf(x.uuid) != -1)
+      .map(x => x.orderUuid);
+    removeOrders({ billUuid: schedule.uuid, orderUuids }).then(response => {
+      if (response.success) {
+        message.success('保存成功！');
+        this.refreshTable();
+        this.props.refresh();
+      }
+    });
+  };
 
   tableChangeRows = selectedRowKeys => {
     this.setState({ selectedRowKeys });
   };
 
   render() {
-    const { loading, selectRowKeys, schedule } = this.state;
+    const { loading, selectedRowKeys, schedule } = this.state;
     const editColumn = {
       title: '操作',
       width: 50,
       render: (_, record) => (
-        <a href="#" onClick={this.editTable(record)}>
+        <a href="#" onClick={() => this.editDetail(record)}>
           编辑
         </a>
       ),
@@ -73,14 +87,16 @@ export default class ScheduleDetailPage extends Component {
           loading={loading}
           dataSource={schedule.details}
           changeSelectRows={this.tableChangeRows}
-          selectedRowKeys={selectRowKeys}
+          selectedRowKeys={selectedRowKeys}
           columns={[editColumn, ...ScheduleDetailColumns]}
           scrollY="calc(68vh - 120px)"
         />
         {/* 修改排车数量  */}
         <EditContainerNumberPage
           modal={{ title: '编辑' }}
-          refresh={this.props.refresh}
+          refresh={() => {
+            this.props.refresh;
+          }}
           onRef={node => (this.editPageModalRef = node)}
         />
       </div>

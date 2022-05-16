@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-10 11:30:05
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-05-16 10:44:25
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -38,6 +38,13 @@ export async function save(payload) {
 //排车单添加运输订单
 export async function addOrders(payload) {
   return request(`/itms-schedule/itms-schedule/sj/bill/schedule/addOrders`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+//删除排车单运输订单
+export async function removeOrders(payload) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/removeOrders`, {
     method: 'POST',
     body: payload,
   });

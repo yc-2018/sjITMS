@@ -68,9 +68,11 @@ export default class DispatchingCreatePage extends Component {
     isEdit
       ? getSchedule(record.uuid).then(response => {
           if (response.success) {
-            let details = response.data.details.map(item => {
-              return { ...item, billNumber: item.orderNumber };
-            });
+            let details = response.data.details
+              ? response.data.details.map(item => {
+                  return { ...item, billNumber: item.orderNumber };
+                })
+              : [];
             const selectVehicle = vehicles.find(x => x.UUID == response.data.vehicle.uuid);
             const memberList = response.data.memberDetails.map(x => x.member);
             const selectEmployees =
@@ -364,7 +366,7 @@ export default class DispatchingCreatePage extends Component {
               <a href="#">移除</a>
             </Popconfirm>
 
-            <Divider type="vertical" style={{ height: '3.5em' }} />
+            <Divider type="vertical" style={{ height: '1em' }} />
             <a
               href="#"
               onClick={() => {
@@ -559,7 +561,11 @@ export default class DispatchingCreatePage extends Component {
                   <></>
                 )}
               </Card>
-              <Card title="人员明细" style={{ height: '40vh', marginTop: 8 }}>
+              <Card
+                title="人员明细"
+                style={{ height: '40vh', marginTop: 8 }}
+                bodyStyle={{ height: '35vh', overflowY: 'scroll' }}
+              >
                 {selectEmployees.map(employee => {
                   return (
                     <Row gutter={[8, 8]}>

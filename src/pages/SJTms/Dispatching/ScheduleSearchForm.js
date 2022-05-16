@@ -2,17 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-13 15:16:51
+ * @LastEditTime: 2022-05-16 16:12:15
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleSearchForm.js
  */
 import React, { Component } from 'react';
-import { Form, Button, Row, Col } from 'antd';
-import {
-  SimpleTreeSelect,
-  SimpleAutoComplete,
-  SimpleSelect,
-} from '@/pages/Component/RapidDevelopment/CommonComponent';
+import { Form, Button, Row, Col, Input } from 'antd';
 
 @Form.create()
 export default class ScheduleSearchForm extends Component {
@@ -21,8 +16,8 @@ export default class ScheduleSearchForm extends Component {
     event.preventDefault();
     form.validateFields((err, fieldsValue) => {
       if (err) return;
-      const searchKeyValues = { orderType: fieldsValue.orderType.value };
-      this.props.refresh(searchKeyValues);
+      console.log(fieldsValue);
+      this.props.refresh(fieldsValue);
     });
   };
   //重置
@@ -42,19 +37,15 @@ export default class ScheduleSearchForm extends Component {
         <Row justify="space-around">
           <Col span={9}>
             <Form.Item label="排车单号">
-              {getFieldDecorator('deliveryPointCode', {})(
-                <SimpleAutoComplete placeholder="请输入排车单号" autoComplete allowClear={false} />
+              {getFieldDecorator('billNumber', {})(
+                <Input placeholder="请输入排车单号" autoComplete allowClear />
               )}
             </Form.Item>
           </Col>
           <Col span={12}>
             <Form.Item label="门店号/车牌号">
-              {getFieldDecorator('orderNumber', {})(
-                <SimpleAutoComplete
-                  placeholder="请输入门店号/车牌号"
-                  autoComplete
-                  allowClear={false}
-                />
+              {getFieldDecorator('number', {})(
+                <Input placeholder="请输入门店号/车牌号" autoComplete allowClear />
               )}
             </Form.Item>
           </Col>
@@ -67,9 +58,6 @@ export default class ScheduleSearchForm extends Component {
             >
               查询
             </Button>
-            {/* <Button style={{ marginLeft: 10 }} onClick={this.handleReset}>
-              重置
-            </Button> */}
           </Col>
         </Row>
       </Form>
