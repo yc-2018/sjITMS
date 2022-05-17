@@ -25,7 +25,8 @@ export default class SimpleAutoComplete extends Component {
   state = {
     sourceData: undefined,
     preQueryStr: "",
-    value: undefined
+    value: undefined,
+    searchText: undefined
   };
 
   static defaultProps = {
@@ -37,6 +38,7 @@ export default class SimpleAutoComplete extends Component {
   @Bind()
   @Debounce(300)
   onSearch(searchText) {
+    this.setState({ searchText: searchText });
     if (searchText == '') {
       return;
     }
@@ -72,15 +74,23 @@ export default class SimpleAutoComplete extends Component {
 
   componentDidMount() {
     // 非搜索直接进来就加载数据
-    if (!this.props.sourceData && !this.props.autoComplete) {
-      this.listFetchData();
+    if (!this.props.sourceData) {
+      if (this.props.autoComplete) {
+        this.autoCompleteFetchData(this.state.searchText);
+      } else {
+        this.listFetchData();
+      }
     }
   }
 
   componentDidUpdate(_, preState) {
     // 判断判断查询条件是否一致,如果一致则不加载
     if (preState.preQueryStr != this.state.preQueryStr) {
-      this.listFetchData();
+      if (this.props.autoComplete) {
+        this.autoCompleteFetchData(this.state.searchText);
+      } else {
+        this.listFetchData();
+      }
     }
   }
 
@@ -167,6 +177,15 @@ export default class SimpleAutoComplete extends Component {
   }
 
   /**
+   * 构建主键查询条件
+   */
+   getKeyCondition = () => {
+    return {
+      params: [{ field: this.props.valueField, rule: 'eq', val: [this.state.value] }]
+    };
+  }
+
+  /**
    * 下拉搜索框加载数据
    */
   listFetchData = async () => {
@@ -179,7 +198,7 @@ export default class SimpleAutoComplete extends Component {
     }
 
     await this.loadData(queryParams);
-  };
+  }
 
   /**
    * autoComlete搜索数据
@@ -197,34 +216,39 @@ export default class SimpleAutoComplete extends Component {
     // 分页查询
     queryParams.pageNo = 1;
     queryParams.pageSize = 20;
-    // 构建出or语句，使得多个查询字段都能搜索到数据
-    const searchCondition = this.getSearchCondition(searchText);
-    this.addCondition(queryParams, searchCondition);
-
+    if (searchText != undefined && searchText != '') {
+      // 构建出or语句，使得多个查询字段都能搜索到数据
+      const searchCondition = this.getSearchCondition(searchText);
+      this.addCondition(queryParams, searchCondition);
+    } else if (this.state.value != undefined) {
+      // 如果已经控件已经有值，则按值搜索，在编辑时可带出源数据
+      const keyCondition = this.getKeyCondition();
+      this.addCondition(queryParams, keyCondition);
+    } else {
+      // 两者都不存在，则不加载数据
+      return;
+    }
+    
     await this.loadData(queryParams);
-  };
+  }
 
   /**
    * 设置state的数据源
    */
   setSourceData = (sourceData) => {
     const { textField, valueField } = this.props;
-    if (this.props.onSourceDataChange) {
-      this.props.onSourceDataChange(sourceData);
-      return;
-    }
     this.setState({
       sourceData: sourceData,
     });
+    if (this.props.onSourceDataChange) {
+      this.props.onSourceDataChange(sourceData, this.getOptions().find(x => x.value == this.state.value)?.data);
+      return;
+    }
   }
 
   loadData = async (queryParams) => {
     const response = await dynamicQuery(queryParams);
     if (!response || !response.success || !Array.isArray(response.result.records)) {
-      // 非autoComplete控件请求不到数据则清除数据
-      if(this.props.autoComplete){
-        return;
-      }
       this.setSourceData([]);
     } else {
       this.setSourceData(response.result.records);
@@ -260,7 +284,7 @@ export default class SimpleAutoComplete extends Component {
         {d.label}
       </Select.Option>
     ));
-
+    
     if (autoComplete) {
       showSearch = true;
       onSearch = this.onSearch;

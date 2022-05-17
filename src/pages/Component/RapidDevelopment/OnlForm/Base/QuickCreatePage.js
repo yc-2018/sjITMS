@@ -46,6 +46,8 @@ export default class QuickCreatePage extends CreatePage {
   exHandleChange = e => {};
   drawcell = e => {};
 
+  getFieldKey = (tableName, dbFieldName, key) => tableName + '_' + dbFieldName + (key == undefined ? '' : '_' + key);
+
   /**
    * 设置字段的值
    * @param {*} tableName 表名
@@ -54,9 +56,9 @@ export default class QuickCreatePage extends CreatePage {
    * @param {*} line 行
    */
   setFieldsValue = (tableName, dbFieldName, value, line) => {
-    const fieldName = tableName + '_' + dbFieldName + (line == undefined ? '' : '_' + line);
+    const fieldKey = this.getFieldKey(tableName, dbFieldName, line);
     this.entity[tableName][line == undefined ? 0 : line][dbFieldName] = value;
-    this.props.form.setFieldsValue({ [fieldName]: value });
+    this.props.form.setFieldsValue({ [fieldKey]: value });
   };
 
   /**
@@ -65,13 +67,20 @@ export default class QuickCreatePage extends CreatePage {
    * @param {*} fieldName 字段
    * @param {*} props 属性
    * @param {*} key 一对多表格的key
+   * @param {*} reRender 是否重新渲染
    */
-  setRunTimeProps = (tableName, fieldName, props, key) => {
+  setRunTimeProps = (tableName, fieldName, props, key, reRender) => {
     const { runTimeProps } = this.state;
-    const field = tableName + '_' + fieldName + (key != undefined ? '_' + key : '');
-    runTimeProps[field] = { ...runTimeProps[field], ...props };
-    this.setState({ runTimeProps });
+    const fieldKey = this.getFieldKey(tableName, fieldName, key);
+    runTimeProps[fieldKey] = { ...runTimeProps[fieldKey], ...props };
+    if (reRender) {
+      this.setState({ runTimeProps });
+    } else {
+      this.state.runTimeProps = runTimeProps;
+    }
   };
+
+  getRunTimeProps = (tableName, fieldName, key) => this.state.runTimeProps[this.getFieldKey(tableName, fieldName, key)];
 
   constructor(props) {
     super(props);
@@ -375,9 +384,6 @@ export default class QuickCreatePage extends CreatePage {
           onlFormField: field,
         };
 
-        //控件增加组织查询
-        this.isOrgSearch(item);
-
         // 附表一对多情况
         if (tableType == 2 && relationType == 0) {
           item.categoryName = onlFormHead.tableTxt;
@@ -476,7 +482,6 @@ export default class QuickCreatePage extends CreatePage {
       ? onlFormInfos[0].onlFormHead.formTemplate
       : 4;
     nums = nums == 0 ? 4 : nums;
-    // console.log('nums', nums, categories.length, formItems);
     let gutt = [];
     for (var i = 0; i < categories.length; i++) {
       let guttItems = [];
@@ -493,7 +498,7 @@ export default class QuickCreatePage extends CreatePage {
    */
   drawFormItems = () => {
     const { getFieldDecorator } = this.props.form;
-    let { formItems, categories, runTimeProps } = this.state;
+    let { formItems, categories } = this.state;
     let formPanel = [];
     categories = categories.filter(x => x.type == 0);
     if (!categories || !this.state.onlFormInfos) {
@@ -514,20 +519,7 @@ export default class QuickCreatePage extends CreatePage {
         if (categoryName != categoryItem.category) {
           continue;
         }
-        e.props.onChange = valueEvent =>
-          this.handleChange({
-            valueEvent,
-            line: 0,
-            ...e,
-          });
-        e.props = { ...e.props, ...runTimeProps[tableName + '_' + fieldName] };
-        this.reverseMultiSave(e);
-        if (e.fieldShowType == 'auto_complete' || e.fieldShowType == 'sel_tree') {
-          e.props.onSourceDataChange = data => {
-            this.setRunTimeProps(e.tableName, e.fieldName, { sourceData: data });
-          };
-        }
-
+        this.propsSpecialTreatment(e);
         this.drawcell(e);
 
         let initialValue = this.entity[tableName][0] && this.entity[tableName][0][fieldName]; // 初始值
@@ -564,7 +556,7 @@ export default class QuickCreatePage extends CreatePage {
    */
   drawTable = () => {
     const { getFieldDecorator } = this.props.form;
-    let { tableItems, categories, runTimeProps } = this.state;
+    let { tableItems, categories } = this.state;
     categories = categories.filter(x => x.type == 1);
     if (!categories) {
       return;
@@ -589,23 +581,7 @@ export default class QuickCreatePage extends CreatePage {
           render: (text, record) => {
             const e = { ...tableItem };
             e.record = record;
-            e.props.onChange = valueEvent =>
-              this.handleChange({
-                valueEvent,
-                line: record.line - 1,
-                ...e,
-              });
-            e.props = {
-              ...e.props,
-              ...runTimeProps[tableName + '_' + fieldName + '_' + record.key],
-            };
-            this.reverseMultiSave(e);
-            if (e.fieldShowType == 'auto_complete' || e.fieldShowType == 'sel_tree') {
-              e.props.onSourceDataChange = data => {
-                this.setRunTimeProps(e.tableName, e.fieldName, { sourceData: data }, e.record.key);
-              };
-            }
-
+            this.propsSpecialTreatment(e);
             this.drawcell(e);
 
             let initialValue = this.entity[tableName][record.line - 1][fieldName]; // 初始值
@@ -650,11 +626,11 @@ export default class QuickCreatePage extends CreatePage {
   handleTableRemove = (tableName, data) => {
     let fields = {};
     for (const row of data) {
-      for (const key in row) {
-        if (key == 'line' || key == 'key') {
+      for (const field in row) {
+        if (field == 'line' || field == 'key') {
           continue;
         }
-        fields[tableName + '_' + key + '_' + (row.line - 1)] = row[key];
+        fields[this.getFieldKey(tableName, field, (row.line - 1))] = row[field];
       }
     }
     this.props.form.setFieldsValue(fields);
@@ -678,36 +654,63 @@ export default class QuickCreatePage extends CreatePage {
   };
 
   /**
-   * 多值保存反转初始化数据
+   * 特殊处理控件的props
    */
-  reverseMultiSave = e => {
-    if (!e.props.multiSave) {
-      return;
-    }
+  propsSpecialTreatment = e => {
+    // this.reverseMultiSave(e);
+    this.childComponetSourceDataSave(e);
+    this.setOrgSearch(e);
+    this.setRunTimeProps(e.tableName, e.fieldName, { onChange: valueEvent => this.handleChange({ valueEvent, line: e.record ? e.record.line - 1 : 0, ...e, }) }, e.record?.key);
+    e.props = { ...e.props, ...this.getRunTimeProps(e.tableName, e.fieldName, e.record?.key) };
+  }
+
+  /**
+   * 保存子控件的数据，重新render时可以重复使用
+   */
+  childComponetSourceDataSave = e => {
     const { fieldShowType, props, tableName, record, fieldName } = e;
-    let line = record ? record.line - 1 : 0;
-    if (fieldShowType == 'auto_complete' || e.fieldShowType == 'sel_tree') {
-      const multiSaves = props.multiSave.split(',');
-      const initialRecord = {};
-      if (this.entity[tableName][line]) {
-        for (const multiSave of multiSaves) {
-          const [value, key] = multiSave.split(':');
-          initialRecord[key] = this.entity[tableName][line][value];
+    if (fieldShowType == 'auto_complete' || fieldShowType == 'sel_tree') {
+      e.props.onSourceDataChange = (data, valueEvent) => {
+        if(!this.getRunTimeProps(tableName, fieldName, record?.key)?.sourceData){
+          this.linkField({ ...e, valueEvent });   // 触发过滤
         }
-        initialRecord[props.valueField] = this.entity[tableName][line][fieldName];
-        if (initialRecord[props.valueField] == undefined) {
-          return;
-        }
-        e.props.initialRecord = initialRecord;
-      }
+        this.setRunTimeProps(tableName, fieldName, { sourceData: data }, record?.key, true);
+      };
     }
-  };
+  }
+
+  // /**
+  //  * 多值保存反转初始化数据
+  //  */
+  // reverseMultiSave = e => {
+  //   if (!e.props.multiSave) {
+  //     return;
+  //   }
+  //   const { fieldShowType, props, tableName, record, fieldName } = e;
+  //   let line = record ? record.line - 1 : 0;
+  //   if (fieldShowType == 'auto_complete' || e.fieldShowType == 'sel_tree') {
+  //     const multiSaves = props.multiSave.split(',');
+  //     const initialRecord = {};
+  //     if (this.entity[tableName][line]) {
+  //       for (const multiSave of multiSaves) {
+  //         const [value, key] = multiSave.split(':');
+  //         initialRecord[key] = this.entity[tableName][line][value];
+  //       }
+  //       initialRecord[props.valueField] = this.entity[tableName][line][fieldName];
+  //       if (initialRecord[props.valueField] == undefined) {
+  //         return;
+  //       }
+  //       e.props.initialRecord = initialRecord;
+  //     }
+  //     this.linkField(e);
+  //   }
+  // };
 
   /**
    * 处理字段联动
    */
   linkField = e => {
-    if (!e.props.linkField) {
+    if (!e.props.linkField || !e.valueEvent) {
       return;
     }
     const { fieldShowType, props, tableName, valueEvent } = e;
@@ -719,19 +722,20 @@ export default class QuickCreatePage extends CreatePage {
         linkFilters[field] = { ...linkFilters[field], [key]: valueEvent.record[value] };
       }
       for (const field in linkFilters) {
-        this.setRunTimeProps(tableName, field, { linkFilter: linkFilters[field] }, e.record?.key);
+        const oldLinkFilter = this.getRunTimeProps(tableName, field, e.record?.key)?.linkFilter;
+        this.setRunTimeProps(tableName, field, { linkFilter: { ...oldLinkFilter, ...linkFilters[field]} }, e.record?.key);
       }
     }
-  };
+  }
 
   /**
    *判断是否增加组织查询
    */
-  isOrgSearch = e => {
+  setOrgSearch = e => {
     if (!e.props.isOrgSearch) {
       return;
     }
-    const { fieldShowType, props, tableName } = e;
+    const { fieldShowType, props, tableName, record, fieldName } = e;
     if (fieldShowType == 'auto_complete') {
       const orgFields = props.isOrgSearch.split(',');
       let loginOrgType = loginOrg().type.replace('_', '');
@@ -748,9 +752,7 @@ export default class QuickCreatePage extends CreatePage {
           [loginOrgType + 'UUID']: loginOrg().uuid,
         };
       }
-      if (props.isOrgSearch) {
-        this.setRunTimeProps(tableName, e.fieldName, { linkFilter: loginObj }, e.record?.key);
-      }
+      this.setRunTimeProps(tableName, fieldName, { linkFilter: loginObj }, record?.key);
     }
   };
 
