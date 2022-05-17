@@ -17,7 +17,8 @@ import { havePermission } from '@/utils/authority';
 import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
 import { accMul } from '@/utils/QpcStrUtil';
 import { colWidth, itemColWidth } from '@/utils/ColWidth';
-import ViewTablePanel from '@/pages/Component/Form/ViewTablePanel';
+// import ViewTablePanel from '@/pages/Component/Form/ViewTablePanel';
+import ViewTablePanel from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeView/ViewTablePanel';
 import { routerRedux } from 'dva/router';
 
 const TabPane = Tabs.TabPane;
@@ -332,7 +333,7 @@ export default class QuickView extends RyzeViewPage {
    * 返回
    */
   onBack = () => {
-    this.props.switchTab('query', { fromView: true, searchInfo: this.props.params.searchInfo });
+    this.props.switchTab('query');
     // this.props.switchTab('query');
   };
 
@@ -378,7 +379,11 @@ export default class QuickView extends RyzeViewPage {
             {commonLocale.editLocale}
           </Button>
         ) : null} */}
-        <Button type="primary" onClick={this.onEdit}>
+        <Button
+          hidden={!havePermission(this.state.reportCode + '.edit')}
+          type="primary"
+          onClick={this.onEdit}
+        >
           {commonLocale.editLocale}
         </Button>
       </Fragment>
@@ -550,6 +555,7 @@ export default class QuickView extends RyzeViewPage {
         });
         items.push(
           <ViewTablePanel
+            style={{ marginTop: '24px' }}
             title={item.onlFormHead.tableTxt}
             columns={catelogItems}
             data={this.entity[tableName] ? this.entity[tableName] : []}

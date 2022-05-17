@@ -1,7 +1,4 @@
 import React, { PureComponent } from 'react';
-import {
-  checkInAndCheckOutLocals,
-} from '@/pages/Tms/CheckInAndCheckOut/CheckInAndCheckOutLocale';
 import { Card, Col, Form, Input, message, Row, Spin ,Divider} from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
@@ -32,7 +29,7 @@ export default class CheckInAndCheckOut extends SearchPage {
 
     this.state = {
       ...this.state,
-      title: checkInAndCheckOutLocals.title,
+      title: '出车回车登记1',
       shipPlanBill: {},
       shipBill: {},
       responseError: false,
@@ -74,7 +71,7 @@ export default class CheckInAndCheckOut extends SearchPage {
       payload: billNumber,
       callback: (response) => {
         if (response && response.success) { 
-          message.success(commonLocale.confirmSuccessLocale);
+         // message.success(commonLocale.confirmSuccessLocale);
           this.setState({
             responseMsg:response.data.returnTime?`排车单号：${billNumber} 回车刷卡成功`:(response.data.dispatchTime?`排车单号：${billNumber}出车刷卡成功`:'刷卡成功'),
             responseError:false,
@@ -120,15 +117,11 @@ export default class CheckInAndCheckOut extends SearchPage {
         {getFieldDecorator('vehicle')
           (<Col>{shipBill ? shipBill.vehicle ?'['+shipBill.vehicle.code+']'+shipBill.vehicle.name :<Empty /> : <Empty />}</Col>)}
       </CFormItem>,
-      // <CFormItem label={checkInAndCheckOutLocals.carrier}
-      //   key='carrier'>
-      //   {getFieldDecorator('carrier')
-      //     (<Col>{shipBill ? convertCodeName(shipBill.carrier) : <Empty />}</Col>)}
-      // </CFormItem>,
+    
     ];
 
     return [
-      <FormPanel title={checkInAndCheckOutLocals.vehicleInfo} cols={cols} />,
+      <FormPanel title={"车辆信息"} cols={cols} />,
     ];
   }
 
@@ -143,9 +136,9 @@ export default class CheckInAndCheckOut extends SearchPage {
       wrapperCol: { span: 36 },
       colon: false,
     };
-    return ( 
+    return ( //F5222D
     <Card title="刷卡结果" bordered={false} style={{ width: '100%' ,height:'640px'}}>
-    <Input.TextArea style={responseError ? { color: '#F5222D' } : {}} value={responseMsg}  rows={28}/>
+    <Input.TextArea style={responseError ? { color: '#F5222D' ,fontSize:'50px'} : {color:'#013ADF',fontSize:'100px'}} value={responseMsg}  rows={28}/>
     </Card>
   )
   }
@@ -184,25 +177,25 @@ export default class CheckInAndCheckOut extends SearchPage {
       <Divider/>
       <Row>
         <Col>
-        <span>{checkInAndCheckOutLocals.checkOutTime}:</span> <Input  value={shipBill.dispatchTime}></Input>
+        <span>出车时间:</span> <Input  value={shipBill.dispatchTime}></Input>
         </Col>
       </Row>
       <Divider/>
       <Row>
         <Col>
-        <span>{checkInAndCheckOutLocals.checkInTime}:</span> <Input  value={shipBill.returnTime}></Input>
+        <span>回车时间:</span> <Input  value={shipBill.returnTime}></Input>
         </Col>
       </Row>
       <Divider/>
       <Row>
         <Col>
-        <span>{checkInAndCheckOutLocals.totalWeight}:</span> <Input  value={shipBill.weight}></Input>
+        <span>重量(吨):</span> <Input  value={shipBill.weight}></Input>
         </Col>
       </Row>
       <Divider/>  
       <Row>
         <Col>
-        <span>{checkInAndCheckOutLocals.volume}:</span> <Input  value={shipBill.volume}></Input>
+        <span>体积(立方米):</span> <Input  value={shipBill.volume}></Input>
         </Col>
       </Row>
    </Card>

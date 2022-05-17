@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-04 15:33:48
+ * @LastEditTime: 2022-05-16 18:07:25
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -125,7 +125,7 @@ export default class ShipPlanBillSearchPage extends PureComponent {
    * 查询
    */
   onSearch = filter => {
-    if (typeof filter == 'undefined') {
+    if (typeof filter == 'undefined' || filter == 'reset') {
       this.queryCoulumns();
     } else {
       this.setState({ keyValue: '2' });

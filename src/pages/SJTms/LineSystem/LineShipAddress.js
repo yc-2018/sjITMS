@@ -11,11 +11,15 @@ import { Table, Modal, Button, Input, message, Form, Row, Col, Select, TreeSelec
 import OperateCol from '@/pages/Component/Form/OperateCol';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
+// import {
+//   deleteLineStoreAddressById,
+//   findLineByNameLike,
+//   addToNewLine,
+// } from '@/services/quick/Quick';
 import {
   deleteLineStoreAddressById,
   findLineByNameLike,
-  addToNewLine,
-} from '@/services/quick/Quick';
+  addToNewLine,} from '@/services/sjtms/LineSystemHis'
 import { commonLocale } from '@/utils/CommonLocale';
 import TableTransfer from './TableTransfer';
 import { disable } from '@/services/account/Company';

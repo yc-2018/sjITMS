@@ -152,7 +152,7 @@ export default class SimpleQuery extends SearchForm {
     });
     if (cols.length == 0) {
       cols.push(
-        <SFormItem label="名字">
+        <SFormItem label="error">
           <Input />
         </SFormItem>
       );

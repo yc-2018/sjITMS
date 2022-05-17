@@ -2,25 +2,27 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-06 14:30:24
+ * @LastEditTime: 2022-05-17 16:25:08
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
 import React, { Component } from 'react';
-import { Modal, Tabs, Button, Tooltip, message } from 'antd';
-import CardTable from './CardTable';
+import { Modal, Tabs, Button, Tooltip, message, Typography } from 'antd';
+import DispatchingTable from './DispatchingTable';
 import DispatchingCreatePage from './DispatchingCreatePage';
-import EditContainerNumberPage from './EditContainerNumberPage';
-import { ScheduleColumns, ScheduleDetailColumns } from './DispatchingColumns';
+import ScheduleSearchForm from './ScheduleSearchForm';
+import { ScheduleColumns, ScheduleDetailColumns, pagination } from './DispatchingColumns';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import dispatchingStyles from './Dispatching.less';
 import {
-  getScheduleByStat,
+  querySchedule,
   approve,
   cancelApprove,
   cancelAborted,
   remove,
 } from '@/services/sjitms/ScheduleBill';
 
+const { Text } = Typography;
 const { TabPane } = Tabs;
 
 export default class SchedulePage extends Component {
@@ -37,15 +39,20 @@ export default class SchedulePage extends Component {
   };
 
   componentDidMount() {
+    this.setState({ loading: true });
     this.getSchedules(this.state.activeTab);
   }
   //刷新
-  refreshTable = () => {
-    this.getSchedules(this.state.activeTab);
+  refreshTable = searchKeyValues => {
+    this.setState({ loading: true });
+    this.getSchedules(this.state.activeTab, searchKeyValues);
+    this.props.refreshDetail(undefined);
   };
   //获取排车单
-  getSchedules = stat => {
-    getScheduleByStat(stat).then(response => {
+  getSchedules = (stat, searchKeyValues) => {
+    if (searchKeyValues == undefined) searchKeyValues = {};
+    searchKeyValues.stat = stat;
+    querySchedule(searchKeyValues).then(response => {
       if (response.success) {
         this.setState({
           loading: false,
@@ -55,6 +62,8 @@ export default class SchedulePage extends Component {
           approvedRowKeys: [],
           abortedRowKeys: [],
         });
+      } else {
+        this.setState({ loading: false });
       }
     });
   };
@@ -64,22 +73,11 @@ export default class SchedulePage extends Component {
     this.getSchedules(activeKey);
   };
 
-  //排车单编辑/排车单明细整件数量修改
+  //排车单编辑
   editTable = record => {
     return () => {
-      const { scheduleData } = this.state;
-      if (record.sourceNum) {
-        record.billNumber = scheduleData.find(x => x.uuid == record.billUuid).billNumber;
-        this.setState({ editPageVisible: true, scheduleDetail: record });
-      } else {
-        this.createPageModalRef.show(true, record);
-      }
+      this.createPageModalRef.show(true, record);
     };
-  };
-
-  //显示修改排车件数Modal
-  handleShowEditPage = () => {
-    this.editContainerNumberPageModalRef.show();
   };
 
   //取消作废
@@ -153,22 +151,33 @@ export default class SchedulePage extends Component {
 
   //表格行选择
   tableChangeRows = tableType => {
-    return event => {
+    return selectedRowKeys => {
       switch (tableType) {
         case 'Approved':
-          this.setState({ approvedRowKeys: event.selectedRowKeys });
+          this.setState({ approvedRowKeys: selectedRowKeys });
           break;
         case 'Aborted':
-          this.setState({ abortedRowKeys: event.selectedRowKeys });
+          this.setState({ abortedRowKeys: selectedRowKeys });
           break;
         default:
-          this.setState({
-            savedRowKeys: event.selectedRowKeys,
-            savedChildRowKeys: event.childSelectedRowKeys,
-          });
+          this.setState({ savedRowKeys: selectedRowKeys });
           break;
       }
     };
+  };
+  //表格行点击
+  onClickRow = record => {
+    const { scheduleData } = this.state;
+    let selectSchedule = {};
+    let newScheduleData = scheduleData.map(item => {
+      if (item.uuid == record.uuid) {
+        selectSchedule = item;
+      }
+      item.clicked = item.uuid == record.uuid;
+      return item;
+    });
+    this.setState({ scheduleData: newScheduleData });
+    this.props.refreshDetail(selectSchedule);
   };
 
   render() {
@@ -202,7 +211,8 @@ export default class SchedulePage extends Component {
         default:
           return (
             <div>
-              <Button type={'primary'} onClick={this.handleApprove}>
+              <Button>新建排车单</Button>
+              <Button type={'primary'} style={{ marginLeft: 10 }} onClick={this.handleApprove}>
                 批准
               </Button>
               <Button style={{ marginLeft: 10 }} onClick={this.handleDelete}>
@@ -212,24 +222,18 @@ export default class SchedulePage extends Component {
           );
       }
     };
-    const editColumn = {
-      render: (val, record) => (
-        <Tooltip placement="topLeft" title={val}>
-          <a href="#" onClick={this.editTable(record)}>
-            {val}
-          </a>
-        </Tooltip>
-      ),
-    };
+
     const billNumberColumn = {
       title: '单号',
       dataIndex: 'billNumber',
       width: 150,
     };
-    const orderNumberColumn = {
-      title: '订单号',
-      dataIndex: 'orderNumber',
-      width: 180,
+    const editRender = {
+      render: (val, record) => (
+        <a href="#" onClick={this.editTable(record)}>
+          {val}
+        </a>
+      ),
     };
 
     return (
@@ -238,17 +242,17 @@ export default class SchedulePage extends Component {
         onChange={this.handleTabChange}
         tabBarExtraContent={buildOperations()}
       >
-        <TabPane tab="排车单" key="Saved">
-          <CardTable
-            scrollY={540}
+        <TabPane tab={<Text className={dispatchingStyles.cardTitle}>排车单</Text>} key="Saved">
+          <ScheduleSearchForm refresh={this.refreshTable} />
+          <DispatchingTable
+            pagination={pagination}
+            loading={loading}
+            onClickRow={this.onClickRow}
             selectedRowKeys={savedRowKeys}
-            childSelectedRowKeys={savedChildRowKeys}
             changeSelectRows={this.tableChangeRows()}
             dataSource={scheduleData}
-            columns={[{ ...billNumberColumn, ...editColumn }, ...ScheduleColumns]}
-            nestColumns={[{ ...orderNumberColumn, ...editColumn }, ...ScheduleDetailColumns]}
-            hasChildTable
-            loading={loading}
+            columns={[{ ...billNumberColumn, ...editRender }, ...ScheduleColumns]}
+            scrollY="calc(68vh - 152px)"
           />
           {/* 编辑排车单 */}
           <DispatchingCreatePage
@@ -259,39 +263,31 @@ export default class SchedulePage extends Component {
             }}
             onRef={node => (this.createPageModalRef = node)}
           />
-          {/* 修改排车数量 */}
-          <EditContainerNumberPage
-            modal={{ title: '编辑' }}
-            refresh={this.refreshTable}
-            visible={editPageVisible}
-            scheduleDetail={scheduleDetail}
-            onCancel={() => this.setState({ editPageVisible: false })}
-          />
         </TabPane>
-        <TabPane tab="已批准" key="Approved">
-          <CardTable
-            scrollY={540}
+        <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已批准</Text>} key="Approved">
+          <ScheduleSearchForm refresh={this.refreshTable} />
+          <DispatchingTable
+            pagination={pagination}
+            loading={loading}
+            onClickRow={this.onClickRow}
             selectedRowKeys={approvedRowKeys}
             changeSelectRows={this.tableChangeRows('Approved')}
-            clickRow
             dataSource={scheduleData}
             columns={[billNumberColumn, ...ScheduleColumns]}
-            nestColumns={[orderNumberColumn, ...ScheduleDetailColumns]}
-            hasChildTable
-            loading={loading}
+            scrollY="calc(68vh - 152px)"
           />
         </TabPane>
-        <TabPane tab="已作废" key="Aborted">
-          <CardTable
-            scrollY={540}
+        <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已作废</Text>} key="Aborted">
+          <ScheduleSearchForm refresh={this.refreshTable} />
+          <DispatchingTable
+            pagination={pagination}
+            loading={loading}
+            onClickRow={this.onClickRow}
             selectedRowKeys={abortedRowKeys}
             changeSelectRows={this.tableChangeRows('Aborted')}
-            clickRow
             dataSource={scheduleData}
             columns={[billNumberColumn, ...ScheduleColumns]}
-            nestColumns={[orderNumberColumn, ...ScheduleDetailColumns]}
-            hasChildTable
-            loading={loading}
+            scrollY="calc(68vh - 152px)"
           />
         </TabPane>
       </Tabs>

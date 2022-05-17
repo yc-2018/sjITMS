@@ -11,7 +11,7 @@ import React, { Component } from 'react';
 import { Transfer, Table } from 'antd';
 import difference from 'lodash/difference';
 import uniqBy from 'lodash/uniqBy';
-
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -24,6 +24,7 @@ export default class TableTransfer extends Component {
       total: 0,
       current: 1,
       pageSize: 10,
+      superQuery:{matchType:"and",queryParams:[{field: "COMPANYUUID", rule: "eq", val: loginCompany().uuid, type: "VarChar"},{field: "DISPATCHCENTERUUID", rule: "eq", val: loginOrg().uuid, type: "VarChar"}]}
     },
   };
 

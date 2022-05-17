@@ -2,16 +2,18 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-07 11:36:05
+ * @LastEditTime: 2022-05-17 15:15:59
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
 import React, { Component } from 'react';
-import { Table, Button, Tabs, message } from 'antd';
-import CardTable from './CardTable';
-import { OrderColumns, OrderDetailColumns } from './DispatchingColumns';
+import { Table, Button, Row, Col, Tabs, message, Typography } from 'antd';
+import DispatchingTable from './DispatchingTable';
+import DispatchingChildTable from './DispatchingChildTable';
+import { OrderColumns, OrderDetailColumns, pagination } from './DispatchingColumns';
 import OrderPoolSearchForm from './OrderPoolSearchForm';
 import DispatchingCreatePage from './DispatchingCreatePage';
+import dispatchingStyles from './Dispatching.less';
 import {
   getAuditedOrder,
   getOrderByStat,
@@ -19,22 +21,19 @@ import {
   savePending,
 } from '@/services/sjitms/OrderBill';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
-import { groupBy, sumBy } from 'lodash';
+import { groupBy, sumBy, uniq } from 'lodash';
 
+const { Text } = Typography;
 const { TabPane } = Tabs;
-const initRowKeys = {
-  auditedRowKeys: [],
-  scheduledRowKeys: [],
-  pendingRowKeys: [],
-};
+
 export default class OrderPoolPage extends Component {
   state = {
     searchKeyValues: {},
     loading: false,
     auditedData: [],
     scheduledData: [],
-    pendingData: [],
-    ...initRowKeys,
+    auditedRowKeys: [],
+    scheduledRowKeys: [],
     activeTab: 'Audited',
   };
 
@@ -49,9 +48,6 @@ export default class OrderPoolPage extends Component {
     }
     const { activeTab } = this.state;
     switch (activeTab) {
-      case 'Pending':
-        this.getPendingOrders(activeTab);
-        break;
       case 'Scheduled':
         this.getScheduledOrders(activeTab);
         break;
@@ -70,7 +66,8 @@ export default class OrderPoolPage extends Component {
           searchKeyValues,
           loading: false,
           auditedData: response.data,
-          ...initRowKeys,
+          auditedRowKeys: [],
+          scheduledRowKeys: [],
           activeTab: activeKey,
         });
       }
@@ -84,24 +81,13 @@ export default class OrderPoolPage extends Component {
         this.setState({
           loading: false,
           scheduledData: response.data,
-          ...initRowKeys,
+          auditedRowKeys: [],
+          scheduledRowKeys: [],
         });
       }
     });
   };
-  //获取待排运输订单
-  getPendingOrders = activeKey => {
-    this.setState({ activeTab: activeKey, loading: true });
-    getOrderInPending().then(response => {
-      if (response.success) {
-        this.setState({
-          loading: false,
-          pendingData: response.data,
-          ...initRowKeys,
-        });
-      }
-    });
-  };
+
   //按送货点汇总运输订单
   groupData = data => {
     let output = groupBy(data, 'deliverypointcode');
@@ -130,9 +116,6 @@ export default class OrderPoolPage extends Component {
   //标签页切换事件
   handleTabChange = activeKey => {
     switch (activeKey) {
-      case 'Pending':
-        this.getPendingOrders(activeKey);
-        break;
       case 'Scheduled':
         this.getScheduledOrders(activeKey);
         break;
@@ -144,16 +127,13 @@ export default class OrderPoolPage extends Component {
 
   //表格行选择
   tableChangeRows = tableType => {
-    return event => {
+    return selectedRowKeys => {
       switch (tableType) {
-        case 'Pending':
-          this.setState({ pendingRowKeys: event.selectedRowKeys });
-          break;
         case 'Scheduled':
-          this.setState({ scheduledRowKeys: event.selectedRowKeys });
+          this.setState({ scheduledRowKeys: selectedRowKeys });
           break;
         default:
-          this.setState({ auditedRowKeys: event.selectedRowKeys });
+          this.setState({ auditedRowKeys: selectedRowKeys });
           break;
       }
     };
@@ -181,24 +161,24 @@ export default class OrderPoolPage extends Component {
       if (response.success) {
         message.success('保存成功！');
         this.refreshTable();
+        this.props.refreshPending();
       }
     });
   };
 
   //添加到排车单
-  handleAddOrder = pending => {
-    const { pendingRowKeys, auditedRowKeys } = this.state;
+  handleAddOrder = () => {
+    const { auditedRowKeys } = this.state;
     const scheduleRowKeys = this.props.scheduleRowKeys();
     if (scheduleRowKeys.length == 0 || scheduleRowKeys == undefined) {
       message.warning('请选择排车单！');
       return;
     }
-    const rowKeys = pending ? pendingRowKeys : auditedRowKeys;
-    if (rowKeys.length == 0 || rowKeys == undefined) {
+    if (auditedRowKeys.length == 0 || auditedRowKeys == undefined) {
       message.warning('请选择待定运输订单！');
       return;
     }
-    addOrders({ billUuid: scheduleRowKeys[0], orderUuids: rowKeys }).then(response => {
+    addOrders({ billUuid: scheduleRowKeys[0], orderUuids: auditedRowKeys }).then(response => {
       if (response.success) {
         message.success('保存成功！');
         this.refreshTable();
@@ -207,22 +187,81 @@ export default class OrderPoolPage extends Component {
     });
   };
 
+  //汇总数据
+  buildTitle = () => {
+    const { auditedData, auditedRowKeys } = this.state;
+    let selectAuditedData =
+      auditedRowKeys.length > 0
+        ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1)
+        : [];
+    selectAuditedData = this.groupByOrder(selectAuditedData);
+    return (
+      <Row type="flex" style={{ fontSize: 14, marginLeft: 20 }} justify="center">
+        <Col span={4}>
+          <Text> 整件：</Text>
+          <Text style={{ fontSize: 16, fontWeight: 700 }}>{selectAuditedData.realCartonCount}</Text>
+        </Col>
+        <Col span={4}>
+          <Text> 散件：</Text>
+          <Text style={{ fontSize: 16, fontWeight: 700 }}>
+            {selectAuditedData.realScatteredCount}
+          </Text>
+        </Col>
+        <Col span={4}>
+          <Text> 周转筐：</Text>
+          <Text style={{ fontSize: 16, fontWeight: 700 }}>
+            {selectAuditedData.realContainerCount}
+          </Text>
+        </Col>
+        <Col span={5}>
+          <Text> 体积：</Text>
+          <Text style={{ fontSize: 16, fontWeight: 700 }}>
+            {selectAuditedData.volume.toFixed(2)}
+          </Text>
+        </Col>
+        <Col span={5}>
+          <Text> 重量：</Text>
+          <Text style={{ fontSize: 16, fontWeight: 700 }}>
+            {selectAuditedData.weight.toFixed(2)}
+          </Text>
+        </Col>
+      </Row>
+    );
+  };
+  //计算汇总
+  groupByOrder = data => {
+    const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0;
+    const pickupPointCount = data ? uniq(data.map(x => x.pickUpPoint.code)).length : 0;
+    data = data.filter(x => x.orderType !== 'OnlyBill');
+    return {
+      orderCount: data ? data.length : 0,
+      cartonCount: data ? sumBy(data.map(x => x.cartonCount)) : 0,
+      scatteredCount: data ? sumBy(data.map(x => x.scatteredCount)) : 0,
+      containerCount: data ? sumBy(data.map(x => x.containerCount)) : 0,
+      realCartonCount: data ? sumBy(data.map(x => x.realCartonCount)) : 0,
+      realScatteredCount: data ? sumBy(data.map(x => x.realScatteredCount)) : 0,
+      realContainerCount: data ? sumBy(data.map(x => x.realContainerCount)) : 0,
+      weight: data ? sumBy(data.map(x => Number(x.weight))) : 0,
+      volume: data ? sumBy(data.map(x => Number(x.volume))) : 0,
+      totalAmount: data ? sumBy(data.map(x => Number(x.amount))) : 0,
+      deliveryPointCount,
+      pickupPointCount,
+      ownerCount: data ? uniq(data.map(x => x.owner.code)).length : 0,
+    };
+  };
+
   render() {
     const {
       loading,
       columns,
       auditedRowKeys,
       scheduledRowKeys,
-      pendingRowKeys,
       auditedData,
       scheduledData,
-      pendingData,
       activeTab,
     } = this.state;
     const buildOperations = () => {
       switch (activeTab) {
-        case 'Pending':
-          return <Button onClick={() => this.handleAddOrder(true)}>添加到排车单</Button>;
         case 'Scheduled':
           return undefined;
         default:
@@ -231,7 +270,7 @@ export default class OrderPoolPage extends Component {
               <Button type={'primary'} onClick={this.dispatching}>
                 排车
               </Button>
-              <Button style={{ marginLeft: 10 }} onClick={() => this.handleAddOrder(false)}>
+              <Button style={{ marginLeft: 10 }} onClick={() => this.handleAddOrder()}>
                 添加到排车单
               </Button>
               <Button style={{ marginLeft: 10 }} onClick={this.handleAddPending}>
@@ -241,30 +280,27 @@ export default class OrderPoolPage extends Component {
           );
       }
     };
-    const pagination = {
-      defaultPageSize: 20,
-      showSizeChanger: true,
-      pageSizeOptions: ['20', '50', '100'],
-    };
+
     return (
       <Tabs
         activeKey={activeTab}
         onChange={this.handleTabChange}
         tabBarExtraContent={buildOperations()}
       >
-        <TabPane tab="订单池" key="Audited">
+        <TabPane tab={<Text className={dispatchingStyles.cardTitle}>订单池</Text>} key="Audited">
           {/* 查询表单 */}
           <OrderPoolSearchForm refresh={this.refreshTable} />
           {/* 待排订单列表 */}
-          <CardTable
-            scrollY={540}
-            pagination={pagination}
+          <DispatchingTable
             clickRow
+            pagination={pagination}
             loading={loading}
+            dataSource={auditedData}
             changeSelectRows={this.tableChangeRows('Audited')}
             selectedRowKeys={auditedRowKeys}
-            dataSource={auditedData}
             columns={OrderColumns}
+            scrollY="calc(68vh - 220px)"
+            title={this.buildTitle}
           />
           {/* 排车modal */}
           <DispatchingCreatePage
@@ -276,29 +312,20 @@ export default class OrderPoolPage extends Component {
             onRef={node => (this.createPageModalRef = node)}
           />
         </TabPane>
-        <TabPane tab="已排订单" key="Scheduled">
+        <TabPane
+          tab={<Text className={dispatchingStyles.cardTitle}>已排订单</Text>}
+          key="Scheduled"
+        >
           {/* 已排列表 */}
-          <CardTable
-            scrollY={540}
+          <DispatchingTable
+            clickRow
             pagination={pagination}
             loading={loading}
+            dataSource={scheduledData}
             changeSelectRows={this.tableChangeRows('Scheduled')}
             selectedRowKeys={scheduledRowKeys}
-            dataSource={scheduledData}
             columns={[{ title: '排车单号', dataIndex: 'scheduleNum', width: 150 }, ...OrderColumns]}
-          />
-        </TabPane>
-        <TabPane tab="待定订单" key="Pending">
-          {/* 待定列表 */}
-          <CardTable
-            scrollY={540}
-            pagination={pagination}
-            clickRow
-            loading={loading}
-            changeSelectRows={this.tableChangeRows('Pending')}
-            selectedRowKeys={pendingRowKeys}
-            dataSource={pendingData}
-            columns={OrderColumns}
+            scrollY="calc(68vh - 115px)"
           />
         </TabPane>
       </Tabs>

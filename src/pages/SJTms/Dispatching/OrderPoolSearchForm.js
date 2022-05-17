@@ -2,16 +2,18 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-07 14:18:57
+ * @LastEditTime: 2022-05-13 18:34:26
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
 import React, { Component } from 'react';
-import { Form, Button, Row, Col } from 'antd';
+import { Form, Input, Button, Row, Col } from 'antd';
 import {
   SimpleTreeSelect,
   SimpleAutoComplete,
+  SimpleSelect,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
+import { string } from 'prop-types';
 
 @Form.create()
 export default class OrderPoolSearchForm extends Component {
@@ -20,7 +22,18 @@ export default class OrderPoolSearchForm extends Component {
     event.preventDefault();
     form.validateFields((err, fieldsValue) => {
       if (err) return;
-      const searchKeyValues = { orderType: fieldsValue.orderType.value };
+      let searchKeyValues = {};
+      for (let param in fieldsValue) {
+        let val = fieldsValue[param];
+        if (val == undefined) {
+          continue;
+        }
+        val = val.hasOwnProperty('value') ? val.value : val;
+        if (val == null || val == undefined) {
+          continue;
+        }
+        searchKeyValues[param] = val;
+      }
       this.props.refresh(searchKeyValues);
     });
   };
@@ -39,7 +52,7 @@ export default class OrderPoolSearchForm extends Component {
         autoComplete="off"
       >
         <Row justify="space-around">
-          <Col span={8}>
+          <Col span={10}>
             <Form.Item label="线路">
               {getFieldDecorator('shipGroupCode', { initialValue: '' })(
                 <SimpleTreeSelect
@@ -54,18 +67,42 @@ export default class OrderPoolSearchForm extends Component {
               )}
             </Form.Item>
           </Col>
-          <Col span={8}>
+          <Col span={10}>
             <Form.Item label="单据类型">
               {getFieldDecorator('orderType', { initialValue: 'Delivery' })(
                 <SimpleAutoComplete
                   placeholder="请选择单据类型"
                   dictCode="orderType"
-                  allowClear={false}
+                  allowClear={true}
                 />
               )}
             </Form.Item>
           </Col>
-          <Col span={8} style={{ float: 'right' }}>
+        </Row>
+        <Row justify="space-around">
+          <Col span={10}>
+            <Form.Item label="送货点">
+              {getFieldDecorator('deliveryPointCode', {})(
+                <SimpleAutoComplete
+                  placeholder="请输入送货点"
+                  textField="[%CODE%]%NAME%"
+                  valueField="CODE"
+                  searchField="CODE,NAME"
+                  queryParams={{ tableName: 'v_sj_itms_ship_store' }}
+                  autoComplete
+                  allowClear={true}
+                />
+              )}
+            </Form.Item>
+          </Col>
+          <Col span={10}>
+            <Form.Item label="订单号">
+              {getFieldDecorator('billNumber', {})(
+                <Input placeholder="请输入订单号" allowClear={true} />
+              )}
+            </Form.Item>
+          </Col>
+          <Col span={4}>
             <Button
               type={'primary'}
               style={{ marginLeft: 12 }}
@@ -74,9 +111,9 @@ export default class OrderPoolSearchForm extends Component {
             >
               查询
             </Button>
-            <Button style={{ marginLeft: 10 }} onClick={this.handleReset}>
+            {/* <Button style={{ marginLeft: 10 }} onClick={this.handleReset}>
               重置
-            </Button>
+            </Button> */}
           </Col>
         </Row>
       </Form>

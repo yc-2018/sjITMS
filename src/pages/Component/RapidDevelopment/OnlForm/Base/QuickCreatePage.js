@@ -339,9 +339,9 @@ export default class QuickCreatePage extends CreatePage {
       }
     }
     // 去重
-    categories = categories.filter(
-      (item, index, arr) => arr.findIndex(x => x.category == item.category) === index
-    );
+    categories = categories
+      .filter((item, index, arr) => arr.findIndex(x => x.category == item.category) === index)
+      .sort((a, b) => a.categorySort - b.categorySort);
     this.setState({ categories: categories });
   };
 

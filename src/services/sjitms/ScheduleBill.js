@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-05 15:30:09
+ * @LastEditTime: 2022-05-17 11:06:56
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -16,14 +16,15 @@ export async function getSchedule(uuid) {
   });
 }
 
-//根据状态获取排车单
-export async function getScheduleByStat(stat) {
+//获取排车单
+export async function querySchedule(searchKeyValues) {
   return request(
-    `/itms-schedule/itms-schedule/sj/bill/schedule/getScheduleByStat?companyUuid=${
+    `/itms-schedule/itms-schedule/sj/bill/schedule/getSchedule?companyUuid=${
       loginCompany().uuid
-    }&dcUuid=${loginOrg().uuid}&Stat=${stat}`,
+    }&dcUuid=${loginOrg().uuid}`,
     {
-      method: 'GET',
+      method: 'POST',
+      body: searchKeyValues,
     }
   );
 }
@@ -38,6 +39,13 @@ export async function save(payload) {
 //排车单添加运输订单
 export async function addOrders(payload) {
   return request(`/itms-schedule/itms-schedule/sj/bill/schedule/addOrders`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+//删除排车单运输订单
+export async function removeOrders(payload) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/removeOrders`, {
     method: 'POST',
     body: payload,
   });
@@ -93,9 +101,9 @@ export async function aborted(Uuid) {
 }
 
 //取消作废
-export async function cancelAborted(billUuid,version) {
+export async function cancelAborted(billUuid, version) {
   return request(
-    `/itms-schedule/itms-schedule/sj/bill/schedule/cancelAborted?billUuid=${billUuid}&version=${version }`,
+    `/itms-schedule/itms-schedule/sj/bill/schedule/cancelAborted?billUuid=${billUuid}&version=${version}`,
     {
       method: 'PUT',
     }
@@ -111,6 +119,14 @@ export async function shipRollback(Uuid) {
 
 export async function removeCar(payload) {
   return request(`/itms-schedule/itms-schedule/sj/bill/schedule/removeCar`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function saveOfUpdateLifecycle(payload) {
+  console.log('payload', payload);
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/saveOfUpdateLifecycle`, {
     method: 'POST',
     body: payload,
   });

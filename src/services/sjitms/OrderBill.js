@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-12 16:08:35
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-28 09:37:15
+ * @LastEditTime: 2022-05-16 08:50:06
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -42,9 +42,16 @@ export async function getOrderInPending() {
     }
   );
 }
-
+//待定运输订单
 export async function savePending(uuids) {
   return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/savePending`, {
+    method: 'POST',
+    body: uuids,
+  });
+}
+//删除待定运输订单
+export async function removePending(uuids) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/removePending`, {
     method: 'POST',
     body: uuids,
   });

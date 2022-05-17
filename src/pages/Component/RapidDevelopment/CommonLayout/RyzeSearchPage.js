@@ -47,8 +47,8 @@ export default class RyzeSearchPage extends Component {
     };
     let pageFilters = { quickuuid: props.quickuuid, changePage: true };
     //查缓存中是否有搜索条件
-    if (getPageFilter(getActiveKey())) {
-      pageFilters = getPageFilter(getActiveKey());
+    if (getPageFilter(getActiveKey() + props.quickuuid)) {
+      pageFilters = getPageFilter(getActiveKey() + props.quickuuid);
       //console.log('cache', pageFilters);
     }
 
@@ -170,7 +170,7 @@ export default class RyzeSearchPage extends Component {
     };
     //将查询条件存入cache
     if (!unSaveFilter) {
-      setPageFilter(getActiveKey(), this.state.pageFilters);
+      setPageFilter(getActiveKey() + this.props.quickuuid, this.state.pageFilters);
     }
 
     const tableLoading = {

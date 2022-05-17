@@ -53,7 +53,7 @@ export default class QuickFormSearchPage extends SearchPage {
     super(props);
     this.state = {
       ...this.state,
-      title: 'test',
+      title: '',
       data: [],
       suspendLoading: false,
       columns: [],
@@ -162,7 +162,7 @@ export default class QuickFormSearchPage extends SearchPage {
           }
 
           //查询条件有必填时默认不查询
-          if (queryRequired) return;
+          //if (queryRequired) return;
 
           //配置查询成功后再去查询数据
           this.onSearch();
@@ -176,25 +176,8 @@ export default class QuickFormSearchPage extends SearchPage {
 
   componentDidMount() {
     console.log('params', this.props.params);
-    if (this.props.params?.fromView) {
-      this.columns = this.props.params.searchInfo.columns;
-      this.setState({
-        ...this.props.params.searchInfo,
-      });
-    } else {
-      this.queryCoulumns();
-      this.getCreateConfig();
-    }
-
-    // if (this.props?.lastState?.search?.params?.searchInfo) {
-    //   this.columns = this.props.lastState.search.params.searchInfo.columns;
-    //   this.setState({
-    //     ...this.props.lastState.search.params.searchInfo,
-    //   });
-    // } else {
-    //   this.queryCoulumns();
-    //   this.getCreateConfig();
-    // }
+    this.queryCoulumns();
+    this.getCreateConfig();
   }
 
   componentWillUnmount() {
@@ -401,10 +384,10 @@ export default class QuickFormSearchPage extends SearchPage {
       console.log('this.state1', this.state);
       this.props.switchTab('view', {
         entityUuid: record[field],
-        searchInfo: {
-          ...this.state,
-          columns: this.columns,
-        },
+        // searchInfo: {
+        //   ...this.state,
+        //   columns: this.columns,
+        // },
       });
     } else {
       console.log('this.state2', this.state);
@@ -412,10 +395,10 @@ export default class QuickFormSearchPage extends SearchPage {
       if (selectedRows.length > 0) {
         this.props.switchTab('view', {
           entityUuid: selectedRows[0][field],
-          searchInfo: {
-            ...this.state,
-            columns: this.columns,
-          },
+          // searchInfo: {
+          //   ...this.state,
+          //   columns: this.columns,
+          // },
         });
       } else message.error('请至少选中一条数据！');
     }
@@ -563,17 +546,12 @@ export default class QuickFormSearchPage extends SearchPage {
       });
       // console.log('queryParams', queryParams);
       let pageFilters = this.state.pageFilters;
-      if (this.state.pageFilters.superQuery) {
+      if (this.state.pageFilters.superQuery && exSearchFilter.length == 0) {
         pageFilters = {
           ...this.state.pageFilters,
           superQuery: {
             ...this.state.pageFilters.superQuery,
-            queryParams: [
-              ...queryParams,
-              ...this.state.isOrgQuery,
-              ...exSearchFilter,
-              ...defaultSearch,
-            ],
+            queryParams: [...queryParams, ...this.state.isOrgQuery],
           },
         };
         // console.log('pageFiltersaa', pageFilters);
@@ -635,12 +613,13 @@ export default class QuickFormSearchPage extends SearchPage {
         pageSize: filter.pageSize,
       };
     }
+    this.state.pageFilters = queryFilter;
     this.getData(queryFilter);
   };
 
   columns = [
     {
-      title: '过度数据',
+      title: '查询异常',
       dataIndex: 'name',
       key: 'name',
       sorter: true,
@@ -666,7 +645,7 @@ export default class QuickFormSearchPage extends SearchPage {
     return (
       <div>
         <Button
-          // hidden={!havePermission(this.state.reportCode + '.create')}
+          hidden={!havePermission(this.state.reportCode + '.create')}
           onClick={this.onCreate}
           type="primary"
           icon="plus"
@@ -674,21 +653,21 @@ export default class QuickFormSearchPage extends SearchPage {
           新建
         </Button>
         <Button
-          // hidden={!havePermission(this.state.reportCode + '.edit')}
+          hidden={!havePermission(this.state.reportCode + '.edit')}
           onClick={this.onUpdate}
           type="primary"
         >
           编辑
         </Button>
         <Button
-          // hidden={!havePermission(this.state.reportCode + '.view')}
+          hidden={!havePermission(this.state.reportCode + '.view')}
           onClick={this.onView}
           type="primary"
         >
           查看
         </Button>
         <Button
-          // hidden={!havePermission(this.state.reportCode + '.port')}
+          hidden={!havePermission(this.state.reportCode + '.port')}
           onClick={this.port}
           type="primary"
         >
@@ -712,11 +691,7 @@ export default class QuickFormSearchPage extends SearchPage {
           okText="确定"
           cancelText="取消"
         >
-          <Button
-          // hidden={!havePermission(this.state.reportCode + '.delete')}
-          >
-            删除
-          </Button>
+          <Button hidden={!havePermission(this.state.reportCode + '.delete')}>删除</Button>
         </Popconfirm>
         <AdvanceQuery
           searchFields={this.state.advancedFields}
