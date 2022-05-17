@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-14 16:34:21
+ * @LastEditTime: 2022-05-17 11:50:49
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
@@ -95,7 +95,6 @@ export default class DispatchingTable extends Component {
         {...this.props}
         size="small"
         components={this.components}
-        pagination={pagination || false}
         rowClassName={record => {
           if (record.clicked) {
             return 'clickedStyle';
@@ -105,6 +104,8 @@ export default class DispatchingTable extends Component {
         onRowClick={this.props.onClickRow || this.onClickRow}
         rowKey={record => record.uuid}
         rowSelection={rowSelection}
+        style={{ height: this.props.scrollY }}
+        bodyStyle={{ height: this.props.scrollY }}
         scroll={{ y: this.props.scrollY, x: '100%' }}
         className={dispatchingTableStyles.dispatchingTable}
       />

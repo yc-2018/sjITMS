@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-16 10:44:25
+ * @LastEditTime: 2022-05-17 11:06:56
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -16,14 +16,15 @@ export async function getSchedule(uuid) {
   });
 }
 
-//根据状态获取排车单
-export async function getScheduleByStat(stat) {
+//获取排车单
+export async function querySchedule(searchKeyValues) {
   return request(
-    `/itms-schedule/itms-schedule/sj/bill/schedule/getScheduleByStat?companyUuid=${
+    `/itms-schedule/itms-schedule/sj/bill/schedule/getSchedule?companyUuid=${
       loginCompany().uuid
-    }&dcUuid=${loginOrg().uuid}&Stat=${stat}`,
+    }&dcUuid=${loginOrg().uuid}`,
     {
-      method: 'GET',
+      method: 'POST',
+      body: searchKeyValues,
     }
   );
 }

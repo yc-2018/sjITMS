@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-16 14:25:40
+ * @LastEditTime: 2022-05-17 11:28:52
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -84,6 +84,7 @@ export default class ScheduleDetailPage extends Component {
         </Row>
         <DispatchingTable
           onClickRow={false}
+          pagination={false}
           loading={loading}
           dataSource={schedule.details}
           changeSelectRows={this.tableChangeRows}

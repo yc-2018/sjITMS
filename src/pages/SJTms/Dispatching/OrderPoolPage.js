@@ -2,12 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-14 15:57:21
+ * @LastEditTime: 2022-05-17 10:52:43
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
 import React, { Component } from 'react';
-import { Table, Button, Tabs, message, Typography } from 'antd';
+import { Table, Button, Row, Col, Tabs, message, Typography } from 'antd';
 import DispatchingTable from './DispatchingTable';
 import DispatchingChildTable from './DispatchingChildTable';
 import { OrderColumns, OrderDetailColumns, pagination } from './DispatchingColumns';
@@ -25,17 +25,15 @@ import { groupBy, sumBy, uniq } from 'lodash';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
-const initRowKeys = {
-  auditedRowKeys: [],
-  scheduledRowKeys: [],
-};
+
 export default class OrderPoolPage extends Component {
   state = {
     searchKeyValues: {},
     loading: false,
     auditedData: [],
     scheduledData: [],
-    ...initRowKeys,
+    auditedRowKeys: [],
+    scheduledRowKeys: [],
     activeTab: 'Audited',
   };
 
@@ -68,7 +66,8 @@ export default class OrderPoolPage extends Component {
           searchKeyValues,
           loading: false,
           auditedData: response.data,
-          ...initRowKeys,
+          auditedRowKeys: [],
+          scheduledRowKeys: [],
           activeTab: activeKey,
         });
       }
@@ -82,7 +81,8 @@ export default class OrderPoolPage extends Component {
         this.setState({
           loading: false,
           scheduledData: response.data,
-          ...initRowKeys,
+          auditedRowKeys: [],
+          scheduledRowKeys: [],
         });
       }
     });
@@ -188,45 +188,44 @@ export default class OrderPoolPage extends Component {
   };
 
   //汇总数据
-  footer = () => {
+  buildTitle = () => {
     const { auditedData, auditedRowKeys } = this.state;
-    if (auditedRowKeys.length == 0) {
-      return <></>;
-    }
-    let selectAuditedData = auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1);
+    let selectAuditedData =
+      auditedRowKeys.length > 0
+        ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1)
+        : [];
     selectAuditedData = this.groupByOrder(selectAuditedData);
     return (
-      <div
-        style={{
-          height: 30,
-          lineHeight: '30px',
-          fontSize: 14,
-          marginLeft: 25,
-          alignItems: 'center',
-        }}
-      >
-        <span>合计：</span>
-        <Text level={4} style={{ marginLeft: 25 }}>
-          整件:
-          {selectAuditedData.realCartonCount}
-        </Text>
-        <Text level={4} style={{ marginLeft: 25 }}>
-          散件:
-          {selectAuditedData.realScatteredCount}
-        </Text>
-        <Text level={4} style={{ marginLeft: 25 }}>
-          周转筐:
-          {selectAuditedData.realContainerCount}
-        </Text>
-        <Text level={4} style={{ marginLeft: 25 }}>
-          体积:
-          {selectAuditedData.volume.toFixed(2)}
-        </Text>
-        <Text level={4} style={{ marginLeft: 25 }}>
-          重量:
-          {selectAuditedData.weight.toFixed(2)}
-        </Text>
-      </div>
+      <Row type="flex" style={{ fontSize: 14, marginLeft: 20 }} justify="center">
+        <Col span={4}>
+          <Text> 整件：</Text>
+          <Text style={{ fontSize: 16, fontWeight: 700 }}>{selectAuditedData.realCartonCount}</Text>
+        </Col>
+        <Col span={4}>
+          <Text> 散件：</Text>
+          <Text style={{ fontSize: 16, fontWeight: 700 }}>
+            {selectAuditedData.realScatteredCount}
+          </Text>
+        </Col>
+        <Col span={4}>
+          <Text> 周转筐：</Text>
+          <Text style={{ fontSize: 16, fontWeight: 700 }}>
+            {selectAuditedData.realContainerCount}
+          </Text>
+        </Col>
+        <Col span={5}>
+          <Text> 体积：</Text>
+          <Text style={{ fontSize: 16, fontWeight: 700 }}>
+            {selectAuditedData.volume.toFixed(2)}
+          </Text>
+        </Col>
+        <Col span={5}>
+          <Text> 重量：</Text>
+          <Text style={{ fontSize: 16, fontWeight: 700 }}>
+            {selectAuditedData.weight.toFixed(2)}
+          </Text>
+        </Col>
+      </Row>
     );
   };
   //计算汇总
@@ -300,8 +299,8 @@ export default class OrderPoolPage extends Component {
             changeSelectRows={this.tableChangeRows('Audited')}
             selectedRowKeys={auditedRowKeys}
             columns={OrderColumns}
-            scrollY="calc(68vh - 218px)"
-            footer={this.footer}
+            scrollY="calc(68vh - 220px)"
+            title={this.buildTitle}
           />
           {/* 排车modal */}
           <DispatchingCreatePage

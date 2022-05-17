@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-16 16:12:15
+ * @LastEditTime: 2022-05-17 09:39:39
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleSearchForm.js
  */
@@ -44,7 +44,7 @@ export default class ScheduleSearchForm extends Component {
           </Col>
           <Col span={12}>
             <Form.Item label="门店号/车牌号">
-              {getFieldDecorator('number', {})(
+              {getFieldDecorator('code', {})(
                 <Input placeholder="请输入门店号/车牌号" autoComplete allowClear />
               )}
             </Form.Item>
