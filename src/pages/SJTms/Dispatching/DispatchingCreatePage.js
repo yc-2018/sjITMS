@@ -74,6 +74,16 @@ export default class DispatchingCreatePage extends Component {
                 })
               : [];
             const selectVehicle = vehicles.find(x => x.UUID == response.data.vehicle.uuid);
+            //将选中车辆放到第一位
+            let obj = {};
+            vehicles.forEach((item, index) => {
+              if (item.CODE == selectVehicle.CODE) {
+                obj = item;
+                vehicles.splice(index, 1);
+                return;
+              }
+            });
+            vehicles.unshift(obj);
             const memberList = response.data.memberDetails.map(x => x.member);
             const selectEmployees =
               employees.length != 0
@@ -83,6 +93,10 @@ export default class DispatchingCreatePage extends Component {
                     return employee;
                   })
                 : [];
+
+            //选中的人放到第一位
+            employees = uniqBy([...selectEmployees, ...employees], 'CODE');
+
             this.setState({
               vehicles,
               employees,
@@ -426,7 +440,7 @@ export default class DispatchingCreatePage extends Component {
             </Col>
             <Col span={8}>
               <Card
-                title="汇总"
+                title="订单汇总"
                 className={dispatchingStyles.orderTotalCard}
                 bodyStyle={{ padding: 5 }}
               >
@@ -484,7 +498,10 @@ export default class DispatchingCreatePage extends Component {
                   <div
                     dangerouslySetInnerHTML={{
                       __html: selectVehicle.PLATENUMBER
-                        ? selectVehicle.PLATENUMBER + ' &nbsp;&nbsp;' + selectVehicle.VEHICLETYPE
+                        ? '已选车辆: ' +
+                          selectVehicle.PLATENUMBER +
+                          ' &nbsp;&nbsp;' +
+                          selectVehicle.VEHICLETYPE
                         : '车辆',
                     }}
                   />
