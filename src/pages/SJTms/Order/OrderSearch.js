@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-14 11:13:41
+ * @LastEditTime: 2022-05-17 09:35:58
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -71,7 +71,7 @@ export default class OrderSearch extends QuickFormSearchPage {
       selectedRows.forEach(data => {
         this.audit(data.BILLNUMBER);
       });
-      this.refreshTable();
+      this.onSearch();
     } else {
       message.error('请至少选中一条数据！');
     }
@@ -83,6 +83,7 @@ export default class OrderSearch extends QuickFormSearchPage {
       selectedRows.forEach(data => {
         this.cancel(data.BILLNUMBER);
       });
+      this.onSearch();
     } else {
       message.error('请至少选中一条数据！');
     }

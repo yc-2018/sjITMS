@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:14
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-16 16:28:13
+ * @LastEditTime: 2022-05-16 18:07:40
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -33,19 +33,4 @@ export default class OrderCreatePage extends QuickCreatePage {
     ...this.state,
     // articleProp: [],
   };
-
-  // beforeSave = data => {
-  //   const { SJ_ITMS_ORDER, SJ_ITMS_ORDERDTL } = this.entity;
-
-  //   if (SJ_ITMS_ORDER[0].STAT == 'Saved') {
-  //     SJ_ITMS_ORDERDTL.forEach((data, index, array) => {
-  //       data.LINE = index + 1;
-  //       data.REALCOUNT = 0;
-  //       data.REALWEIGHT = 0;
-  //       data.REALVOLUME = 0;
-  //       data.ALREADYCOUNT = 0;
-  //       data.SCHEDULED = 0;
-  //     });
-  //   }
-  // };
 }

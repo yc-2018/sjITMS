@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-16 15:30:33
+ * @LastEditTime: 2022-05-16 18:07:25
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -78,8 +78,6 @@ export default class ShipPlanBillSearchPage extends PureComponent {
               : 'dispatchcenteruuid';
           let org = response.result.columns.find(item => item.fieldName.toLowerCase() == orgName);
 
-          console.log('org', response.result.columns, orgName);
-
           if (companyuuid) {
             this.state.isOrgQuery = [
               {
@@ -127,7 +125,6 @@ export default class ShipPlanBillSearchPage extends PureComponent {
    * 查询
    */
   onSearch = filter => {
-    console.log('org', ...this.state.isOrgQuery);
     if (typeof filter == 'undefined' || filter == 'reset') {
       this.queryCoulumns();
     } else {
