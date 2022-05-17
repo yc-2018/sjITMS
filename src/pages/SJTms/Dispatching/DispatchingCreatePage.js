@@ -12,6 +12,7 @@ import {
   message,
   Button,
   Popconfirm,
+  Icon,
 } from 'antd';
 import { queryAllData, dynamicQuery } from '@/services/quick/Quick';
 import { getSchedule, save, modify } from '@/services/sjitms/ScheduleBill';
@@ -48,6 +49,16 @@ export default class DispatchingCreatePage extends Component {
 
   //初始化数据
   initData = async (isEdit, record) => {
+    console.log('record', record);
+    //组装推荐人员车辆接口入参
+    // let params = {
+    //   storeCodes: record.map(item => {
+    //     return item.deliveryPoint.code;
+    //   }),
+    //   companyUuid: loginCompany().uuid,
+    //   dUuid: loginOrg().uuid,
+    // };
+    // console.log('params', params);
     let { vehicles, employees } = this.state;
     //获取车辆
     if (vehicles.length == 0) {
@@ -176,7 +187,7 @@ export default class DispatchingCreatePage extends Component {
   //移除明细
   removeDetail = record => {
     const { orders } = this.state;
-    orders.splice(orders.findIndex(x => x.UUID == record.UUID), 1);
+    orders.splice(orders.findIndex(x => x.uuid == record.uuid), 1);
     this.setState({ orders });
   };
 
@@ -330,7 +341,11 @@ export default class DispatchingCreatePage extends Component {
               }
               onClick={() => this.handleVehicle(vehicle)}
             >
-              <span>{vehicle.PLATENUMBER}</span>
+              <span>
+                <Icon type="car" />
+                &nbsp;
+                {vehicle.PLATENUMBER}
+              </span>
             </a>
           );
         })}
@@ -368,7 +383,7 @@ export default class DispatchingCreatePage extends Component {
       title: '操作',
       width: 100,
       className: 'tools-center',
-      render: (_, record) => (
+      render: record => (
         <div>
           <div>
             <Popconfirm
