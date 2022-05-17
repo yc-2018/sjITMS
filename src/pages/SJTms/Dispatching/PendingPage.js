@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-16 08:58:23
+ * @LastEditTime: 2022-05-17 15:19:18
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -110,7 +110,7 @@ export default class PendingPage extends Component {
           changeSelectRows={this.tableChangeRows}
           selectedRowKeys={pendingRowKeys}
           columns={OrderColumns}
-          scrollY="calc(68vh - 120px)"
+          scrollY="calc(68vh - 107px)"
         />
       </div>
     );

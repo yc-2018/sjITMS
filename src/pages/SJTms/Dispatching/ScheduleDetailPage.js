@@ -2,12 +2,13 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-17 11:28:52
+ * @LastEditTime: 2022-05-17 16:26:53
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
 import React, { Component } from 'react';
 import { Table, Button, Row, Col, Typography, message, Empty } from 'antd';
+import emptySvg from '@/assets/common/img_empoty.svg';
 import { ScheduleDetailColumns } from './DispatchingColumns';
 import EditContainerNumberPage from './EditContainerNumberPage';
 import DispatchingTable from './DispatchingTable';
@@ -68,8 +69,12 @@ export default class ScheduleDetailPage extends Component {
         </a>
       ),
     };
+    let columns = ScheduleDetailColumns;
+    if (schedule != undefined && schedule.stat == 'Saved') {
+      columns = [editColumn, ...ScheduleDetailColumns];
+    }
     return schedule == undefined ? (
-      <Empty style={{ marginTop: 80 }} description="暂无数据，请选择排车单！" />
+      <Empty style={{ marginTop: 80 }} image={emptySvg} description="暂无数据，请选择排车单！" />
     ) : (
       <div style={{ padding: 5 }}>
         <Row style={{ marginBottom: 5, lineHeight: '28px' }}>
@@ -77,9 +82,13 @@ export default class ScheduleDetailPage extends Component {
             <Text className={dispatchingStyles.cardTitle}>排车单： {schedule.billNumber}</Text>
           </Col>
           <Col span={12} style={{ textAlign: 'right' }}>
-            <Button style={{ marginLeft: 10 }} onClick={() => this.handleRemoveDetail()}>
-              移除
-            </Button>
+            {schedule.stat == 'Saved' ? (
+              <Button style={{ marginLeft: 10 }} onClick={() => this.handleRemoveDetail()}>
+                移除
+              </Button>
+            ) : (
+              <></>
+            )}
           </Col>
         </Row>
         <DispatchingTable
@@ -89,8 +98,8 @@ export default class ScheduleDetailPage extends Component {
           dataSource={schedule.details}
           changeSelectRows={this.tableChangeRows}
           selectedRowKeys={selectedRowKeys}
-          columns={[editColumn, ...ScheduleDetailColumns]}
-          scrollY="calc(68vh - 120px)"
+          columns={columns}
+          scrollY="calc(68vh - 75px)"
         />
         {/* 修改排车数量  */}
         <EditContainerNumberPage

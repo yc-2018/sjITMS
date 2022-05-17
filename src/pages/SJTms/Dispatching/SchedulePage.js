@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-17 11:53:44
+ * @LastEditTime: 2022-05-17 16:25:08
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -46,12 +46,12 @@ export default class SchedulePage extends Component {
   refreshTable = searchKeyValues => {
     this.setState({ loading: true });
     this.getSchedules(this.state.activeTab, searchKeyValues);
+    this.props.refreshDetail(undefined);
   };
   //获取排车单
   getSchedules = (stat, searchKeyValues) => {
     if (searchKeyValues == undefined) searchKeyValues = {};
     searchKeyValues.stat = stat;
-    console.log(searchKeyValues);
     querySchedule(searchKeyValues).then(response => {
       if (response.success) {
         this.setState({
@@ -62,6 +62,8 @@ export default class SchedulePage extends Component {
           approvedRowKeys: [],
           abortedRowKeys: [],
         });
+      } else {
+        this.setState({ loading: false });
       }
     });
   };
@@ -250,7 +252,7 @@ export default class SchedulePage extends Component {
             changeSelectRows={this.tableChangeRows()}
             dataSource={scheduleData}
             columns={[{ ...billNumberColumn, ...editRender }, ...ScheduleColumns]}
-            scrollY="calc(68vh - 150px)"
+            scrollY="calc(68vh - 152px)"
           />
           {/* 编辑排车单 */}
           <DispatchingCreatePage
@@ -263,25 +265,29 @@ export default class SchedulePage extends Component {
           />
         </TabPane>
         <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已批准</Text>} key="Approved">
+          <ScheduleSearchForm refresh={this.refreshTable} />
           <DispatchingTable
             pagination={pagination}
             loading={loading}
+            onClickRow={this.onClickRow}
             selectedRowKeys={approvedRowKeys}
             changeSelectRows={this.tableChangeRows('Approved')}
             dataSource={scheduleData}
             columns={[billNumberColumn, ...ScheduleColumns]}
-            scrollY="calc(68vh - 150px)"
+            scrollY="calc(68vh - 152px)"
           />
         </TabPane>
         <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已作废</Text>} key="Aborted">
+          <ScheduleSearchForm refresh={this.refreshTable} />
           <DispatchingTable
             pagination={pagination}
             loading={loading}
+            onClickRow={this.onClickRow}
             selectedRowKeys={abortedRowKeys}
             changeSelectRows={this.tableChangeRows('Aborted')}
             dataSource={scheduleData}
             columns={[billNumberColumn, ...ScheduleColumns]}
-            scrollY="calc(68vh - 150px)"
+            scrollY="calc(68vh - 152px)"
           />
         </TabPane>
       </Tabs>
