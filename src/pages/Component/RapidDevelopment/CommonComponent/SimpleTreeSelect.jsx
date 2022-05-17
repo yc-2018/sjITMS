@@ -85,8 +85,7 @@ export default class SimpleTreeSelect extends Component {
         if (!queryParams) {
             return;
         }
-        queryParamsJson = queryParams instanceof Object ? queryParams : JSON.parse(queryParams);
-
+        queryParamsJson = queryParams instanceof Object ? JSON.parse(JSON.stringify(queryParams)) : JSON.parse(queryParams);
         if (linkFilter) {
             // 构建出联动筛选语句，过滤数据
             const linkFilterCondition = this.getLinkFilterCondition();
@@ -96,6 +95,7 @@ export default class SimpleTreeSelect extends Component {
             }
             this.addCondition(queryParamsJson, linkFilterCondition);
         }
+        
         return queryParamsJson;
     }
 
@@ -145,7 +145,7 @@ export default class SimpleTreeSelect extends Component {
         if (!queryParams || (isLink && !linkFilter)) {
             return;
         }
-
+        
         await this.loadData(queryParams);
     };
 

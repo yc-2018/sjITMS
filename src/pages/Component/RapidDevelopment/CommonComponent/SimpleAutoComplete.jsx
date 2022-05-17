@@ -111,7 +111,7 @@ export default class SimpleAutoComplete extends Component {
       if (!queryParams) {
         return;
       }
-      queryParamsJson = queryParams instanceof Object ? queryParams : JSON.parse(queryParams);
+      queryParamsJson = queryParams instanceof Object ? JSON.parse(JSON.stringify(queryParams)) : JSON.parse(queryParams);
     }
 
     if (linkFilter) {
@@ -284,7 +284,7 @@ export default class SimpleAutoComplete extends Component {
         {d.label}
       </Select.Option>
     ));
-    
+
     if (autoComplete) {
       showSearch = true;
       onSearch = this.onSearch;
