@@ -479,6 +479,39 @@ export default class LineSystemSearchPage extends Component {
   callback = ()=>{
 
   }
+  handleUpload = () => {
+    const { fileList } = this.state;
+    const formData = new FormData();
+    fileList.forEach(file => {
+      formData.append('files[]', file);
+    });
+
+    this.setState({
+      uploading: true,
+    });
+
+    // You can use any AJAX library you like
+    reqwest({
+      url: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+      method: 'post',
+      processData: false,
+      data: formData,
+      success: () => {
+        this.setState({
+          fileList: [],
+          uploading: false,
+        });
+        message.success('upload successfully.');
+      },
+      error: () => {
+        this.setState({
+          uploading: false,
+        });
+        message.error('upload failed.');
+      },
+    });
+    
+  };
   render() {
     const { createSystemModalVisible, createLineModalVisible, selectLineUuid } = this.state;
     const props = {
@@ -562,12 +595,16 @@ export default class LineSystemSearchPage extends Component {
                 visible={this.state.uploadVisible}
                 onOk={this.upload}
                 onCancel={()=>this.setState({uploadVisible:false})}
+                okButtonProps={{hidden:true}}
+                afterClose={()=>this.queryLineSystem()}
+                destroyOnClose= {true}
                 >
                 <Upload {...props}>
                   <Button>
                     <Icon type="upload" /> 导入
                   </Button>
                 </Upload>
+             
                 </Modal>
               </Sider>
               {/* 右侧内容 */}
