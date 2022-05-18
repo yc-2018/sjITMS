@@ -74,7 +74,7 @@ export default class SimpleTreeSelect extends Component {
             this.treeFetchData();
         }
     }
-
+    
     /**
      * 构建queryParams
      */
@@ -209,13 +209,17 @@ export default class SimpleTreeSelect extends Component {
         }
     }
 
+    onSearch = (key) => {
+
+    }
+
     render() {
         // 将父组件传过来的属性传递下去，以适应Form、getFieldDecorator等处理
         return (
             <TreeSelect
                 allowClear={true}
                 {...this.props}
-                optionFilterProp="children"
+                treeNodeFilterProp="title"      // 	输入项过滤对应的 treeNode 属性
                 treeData={this.getTreeData()}
                 // 将value进行了一层包装，以方便日后扩展
                 value={this.state.value}
