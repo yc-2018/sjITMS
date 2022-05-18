@@ -15,7 +15,7 @@ import {
   Icon,
 } from 'antd';
 import { queryAllData, dynamicQuery } from '@/services/quick/Quick';
-import { getSchedule, save, modify } from '@/services/sjitms/ScheduleBill';
+import { getSchedule, save, modify, getRecommend } from '@/services/sjitms/ScheduleBill';
 import EditContainerNumberPageF from './EditContainerNumberPageF';
 import { CreatePageOrderColumns, employeeType } from './DispatchingColumns';
 import dispatchingStyles from './Dispatching.less';
@@ -52,16 +52,6 @@ export default class DispatchingCreatePage extends Component {
 
   //初始化数据
   initData = async (isEdit, record) => {
-    console.log('record', record);
-    //组装推荐人员车辆接口入参
-    // let params = {
-    //   storeCodes: record.map(item => {
-    //     return item.deliveryPoint.code;
-    //   }),
-    //   companyUuid: loginCompany().uuid,
-    //   dUuid: loginOrg().uuid,
-    // };
-    // console.log('params', params);
     let { vehicles, employees } = this.state;
     //获取车辆
     if (vehicles.length == 0) {
@@ -314,8 +304,8 @@ export default class DispatchingCreatePage extends Component {
     return (
       <Card
         title="员工"
-        style={{ height: '40vh', fontWeight: 'bold' }}
-        bodyStyle={{ padding: 5, height: '35vh', overflowY: 'auto' }}
+        style={{ height: '36vh', fontWeight: 'bold' }}
+        bodyStyle={{ padding: 5, height: '29vh', overflowY: 'auto' }}
         extra={
           <Search
             placeholder="请输入工号或姓名"
@@ -361,8 +351,8 @@ export default class DispatchingCreatePage extends Component {
     return (
       <Card
         title="车辆"
-        style={{ height: '40vh' }}
-        bodyStyle={{ padding: 5, height: '35vh', overflowY: 'auto' }}
+        style={{ height: '36vh' }}
+        bodyStyle={{ padding: 5, height: '29vh', overflowY: 'auto' }}
         extra={
           <Search
             placeholder="请输入车辆编号或车牌号"
@@ -482,7 +472,7 @@ export default class DispatchingCreatePage extends Component {
         <Spin spinning={loading}>
           <Row gutter={[8, 0]}>
             <Col span={16}>
-              <Card title="订单" bodyStyle={{ padding: 1, height: '38.5vh' }}>
+              <Card title="订单" bodyStyle={{ padding: 1, height: '42.5vh' }}>
                 <Table
                   size="small"
                   className={dispatchingStyles.dispatchingTable}
@@ -591,7 +581,7 @@ export default class DispatchingCreatePage extends Component {
                     {selectVehicle.VEHICLETYPE} */}
                   </div>
                 }
-                style={{ height: '20.2vh', marginTop: 8, overflow: 'auto' }}
+                style={{ height: '24.2vh', marginTop: 8, overflow: 'auto' }}
               >
                 {selectVehicle.PLATENUMBER ? (
                   <Row>
@@ -689,8 +679,8 @@ export default class DispatchingCreatePage extends Component {
                     </span>
                   </div>
                 }
-                style={{ height: '40vh', marginTop: 8 }}
-                bodyStyle={{ height: '35vh', overflowY: 'scroll' }}
+                style={{ height: '36vh', marginTop: 8 }}
+                bodyStyle={{ height: '29vh', overflowY: 'scroll' }}
               >
                 {selectEmployees.map(employee => {
                   return (
