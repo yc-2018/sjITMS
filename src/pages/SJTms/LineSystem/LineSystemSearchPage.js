@@ -9,7 +9,7 @@
 
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { Button, Switch, Modal, message, Form, Layout, Menu, Icon, Tree, Tabs,Input } from 'antd';
+import { Button, Switch, Modal, message, Form, Layout, Menu, Icon, Tree, Tabs,Input,Upload } from 'antd';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { convertCodeName } from '@/utils/utils';
 import Page from '@/pages/Component/Page/inner/NewStylePage';
@@ -18,13 +18,14 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import LineShipAddress from './LineShipAddress';
 import LineSystemCreatePage from './LineSystemCreatePage';
 import LineMap from './LineMap';
+import configs from '@/utils/config';
 import {
   dynamicqueryById,
   dynamicDelete,
   saveOrUpdateEntities,
   dynamicQuery,
 } from '@/services/quick/Quick';
-
+import {cacheLoginKey, loginKey} from '@/utils/LoginContext';
 import {
   findLineSystemTree,
   deleteLineSystemTree,
@@ -55,7 +56,8 @@ export default class LineSystemSearchPage extends Component {
       selectLineUuid: '',
       rightContent: '',
       visible:false,
-      bfValue:""
+      bfValue:"",
+      uploadVisible:false
     };
   }
   componentDidMount() {
@@ -63,7 +65,6 @@ export default class LineSystemSearchPage extends Component {
   }
   //遍历树
   getLineSystemTree =(data,itemData,lineData)=>{
-    console.log("lineData",lineData);
       let treeNode = [];
       let ef = [];
       if(Array.isArray(data)){
@@ -113,14 +114,14 @@ export default class LineSystemSearchPage extends Component {
       let lineTreeData = [];
       let lineData = [];
       if (response) {
-        const data = response.data;
+        const data = response?.data;
         data?.forEach(element => {
           let itemData = {};
           this.getLineSystemTree(element, itemData, lineData);
           lineTreeData.push(itemData);
         });
         if(lineuuid==undefined){
-          lineuuid = lineTreeData ? lineTreeData[0].children ? lineTreeData[0].children[0].key : lineTreeData[0].key : undefined
+          lineuuid = lineTreeData ? lineTreeData[0]?.children ? lineTreeData[0].children[0]?.key : lineTreeData[0]?.key : undefined
         }
         this.setState({
           expandKeys: lineTreeData.map(x => x.key),
@@ -258,20 +259,39 @@ export default class LineSystemSearchPage extends Component {
   }
   //选中树节点
   onSelect = async (selectedKeys, event) => {
-    console.log("select",selectedKeys);
-    // if(selectedKeys && selectedKeys[0]==undefined ){
-    //   this.setState({rightContent:<></>,selectLineUuid:undefined});
-    // }
-    if (event && !event.selected) return;
     const { lineTreeData, lineData } = this.state;
+    const pdChildren = data => {
+      let nodeArr = data.map(item => {
+        const node =  item.key ==selectedKeys[0];
+        if(node){
+          return node;
+        }else if(item.children){
+          pdChildren(item.children)
+        }
+      })
+      return nodeArr;
+    };
+   
+    let sdf = pdChildren(lineTreeData);
+    if(selectedKeys.length==1&&selectedKeys[0]==undefined){
+      this.setState({rightContent:<></>,selectLineUuid:undefined});
+      return;
+    }
+    if (event && !event.selected) return;
+   
     const system = lineTreeData.find(x => x.key == selectedKeys[0]);
+    if(!system && sdf?.children){
+      this.setState({rightContent:<></>});
+      return;
+    }
     let enable= await this.swithCom(system,selectedKeys[0]);
+  
     this.setState({
       rightContent: system ? (
         <div>
           <div className={linesStyles.navigatorPanelWrapper}>
-            <span className={linesStyles.sidertitle}>线路体系</span>  
-            <div className={linesStyles.action}> 
+            <span className={linesStyles.sidertitle}>线路体系</span> 
+           <div className={linesStyles.action}> 
             <Switch checkedChildren="启用"  checked ={enable==1} unCheckedChildren="禁用"  onClick={
               () => {            
                 Modal.confirm({
@@ -379,11 +399,15 @@ export default class LineSystemSearchPage extends Component {
     }
     this.setState({ expandKeys });
   };
+  upload =()=>{
+
+  }
 
   //绘制左侧菜单栏
   drawSider = () => {
     const { expandKeys, selectLineUuid } = this.state;
     var lineTreeData = JSON.parse(JSON.stringify(this.state.lineTreeData));
+    
     const renderTreeNode = data => {
       let nodeArr = data.map(item => {
         item.title = (
@@ -419,9 +443,14 @@ export default class LineSystemSearchPage extends Component {
         <div className={linesStyles.navigatorPanelWrapper}>
           <span className={linesStyles.sidertitle}>线路体系</span>
           <div className={linesStyles.action}>
+       
             <Button type="primary" onClick={() => this.lineSystemCreatePageModalRef.show()}>
               新建体系
             </Button>
+            <Button type="primary" onClick={() => this.setState({uploadVisible:true})}>
+              导入
+            </Button>
+          
           </div>
         </div>
         <Tree
@@ -451,8 +480,25 @@ export default class LineSystemSearchPage extends Component {
 
   }
   render() {
-    console.log("reder");
     const { createSystemModalVisible, createLineModalVisible, selectLineUuid } = this.state;
+    const props = {
+      name: 'file',
+      action:  configs[API_ENV].API_SERVER+'/itms-schedule/itms-schedule/LineSystem/upload',
+      headers: {
+        //authorization: 'authorization-text',
+        iwmsJwt: loginKey(),
+      },
+      onChange(info) {
+        if (info.file.status !== 'uploading') {
+          console.log(info.file, info.fileList);
+        }
+        if (info.file.status === 'done') {
+          message.success(`${info.file.name} 上传成功`);
+        } else if (info.file.status === 'error') {
+          message.error(`${info.file.name} 上传失败`);
+        }
+      },
+    };
     return (
           // <PageHeaderWrapper>
           <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
@@ -510,6 +556,18 @@ export default class LineSystemSearchPage extends Component {
                     }}>
 
                     </Input>
+                </Modal>
+                <Modal
+                title='导入'
+                visible={this.state.uploadVisible}
+                onOk={this.upload}
+                onCancel={()=>this.setState({uploadVisible:false})}
+                >
+                <Upload {...props}>
+                  <Button>
+                    <Icon type="upload" /> 导入
+                  </Button>
+                </Upload>
                 </Modal>
               </Sider>
               {/* 右侧内容 */}
