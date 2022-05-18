@@ -15,7 +15,7 @@ import {
   Icon,
 } from 'antd';
 import { queryAllData, dynamicQuery } from '@/services/quick/Quick';
-import { getSchedule, save, modify } from '@/services/sjitms/ScheduleBill';
+import { getSchedule, save, modify, getRecommend } from '@/services/sjitms/ScheduleBill';
 import EditContainerNumberPageF from './EditContainerNumberPageF';
 import { CreatePageOrderColumns, employeeType } from './DispatchingColumns';
 import dispatchingStyles from './Dispatching.less';
@@ -25,9 +25,12 @@ import { loginCompany, loginOrg } from '@/utils/LoginContext';
 const { Search } = Input;
 const queryParams = [
   { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+  { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
 ];
 
 export default class DispatchingCreatePage extends Component {
+  basicEmp = [];
+  basicVeh = [];
   state = {
     loading: false,
     saving: false,
@@ -49,16 +52,6 @@ export default class DispatchingCreatePage extends Component {
 
   //初始化数据
   initData = async (isEdit, record) => {
-    console.log('record', record);
-    //组装推荐人员车辆接口入参
-    // let params = {
-    //   storeCodes: record.map(item => {
-    //     return item.deliveryPoint.code;
-    //   }),
-    //   companyUuid: loginCompany().uuid,
-    //   dUuid: loginOrg().uuid,
-    // };
-    // console.log('params', params);
     let { vehicles, employees } = this.state;
     //获取车辆
     if (vehicles.length == 0) {
@@ -120,6 +113,8 @@ export default class DispatchingCreatePage extends Component {
           }
         })
       : this.setState({ vehicles, employees, orders: record, loading: false });
+    this.basicEmp = employees;
+    this.basicVeh = vehicles;
   };
 
   //显示
@@ -168,7 +163,19 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ selectVehicle: vehicle, selectEmployees: [...vehicleEmployees] });
   };
   vehicleFilter = event => {
-    console.log(event.target.value);
+    const { vehicles } = this.state;
+    if (event.target.value != null && event.target.value != '') {
+      let serachEmp = [];
+      let val = event.target.value;
+      vehicles.forEach(item => {
+        if (JSON.stringify(item).search(val) != -1) {
+          serachEmp.push(item);
+        }
+      });
+      this.setState({ vehicles: serachEmp });
+    } else {
+      this.setState({ vehicles: this.basicVeh });
+    }
   };
 
   //选人
@@ -181,7 +188,19 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ selectEmployees: employees });
   };
   employeeFilter = event => {
-    console.log(event.target.value);
+    const { employees } = this.state;
+    if (event.target.value != null && event.target.value != '') {
+      let serachEmp = [];
+      let val = event.target.value;
+      employees.forEach(item => {
+        if (JSON.stringify(item).search(val) != -1) {
+          serachEmp.push(item);
+        }
+      });
+      this.setState({ employees: serachEmp });
+    } else {
+      this.setState({ employees: this.basicEmp });
+    }
   };
 
   //移除明细
@@ -285,8 +304,8 @@ export default class DispatchingCreatePage extends Component {
     return (
       <Card
         title="员工"
-        style={{ height: '40vh' }}
-        bodyStyle={{ padding: 5, height: '35vh', overflowY: 'auto' }}
+        style={{ height: '36vh', fontWeight: 'bold' }}
+        bodyStyle={{ padding: 5, height: '29vh', overflowY: 'auto' }}
         extra={
           <Search
             placeholder="请输入工号或姓名"
@@ -295,20 +314,32 @@ export default class DispatchingCreatePage extends Component {
           />
         }
       >
-        {employees.map(employee => {
+        {employees?.map(employee => {
           return (
             <a
               href="#"
+              style={{ fontWeight: 'bold' }}
               className={
                 selectEmployees.find(x => x.UUID == employee.UUID)
-                  ? dispatchingStyles.selectedVehicleCardWapper
-                  : dispatchingStyles.vehicleCardWapper
+                  ? dispatchingStyles.selectedEmpdWapper
+                  : dispatchingStyles.empdWapperWapper
               }
               onClick={() => this.handleEmployee(employee)}
             >
-              <span>{`[${employee.CODE}]` + employee.NAME}</span>
-              <br />
-              <span>{employee.ROLE_TYPE2}</span>
+              <span>
+                <Icon type="user" style={{ fontSize: '40px', marginLeft: '-100px' }} />
+              </span>
+              <div style={{ marginTop: '-40px', marginRight: '10px', textAlign: 'right' }}>
+                {/* <span>{`[${employee.CODE}]`}</span> */}
+                <span>{employee.CODE}</span>
+                <br />
+                <span>
+                  &nbsp;
+                  {employee.NAME}
+                </span>
+                <br />
+                <span>{employee.ROLE_TYPE2}</span>
+              </div>
             </a>
           );
         })}
@@ -320,8 +351,8 @@ export default class DispatchingCreatePage extends Component {
     return (
       <Card
         title="车辆"
-        style={{ height: '40vh' }}
-        bodyStyle={{ padding: 5, height: '35vh', overflowY: 'auto' }}
+        style={{ height: '36vh' }}
+        bodyStyle={{ padding: 5, height: '29vh', overflowY: 'auto' }}
         extra={
           <Search
             placeholder="请输入车辆编号或车牌号"
@@ -330,10 +361,11 @@ export default class DispatchingCreatePage extends Component {
           />
         }
       >
-        {vehicles.map(vehicle => {
+        {vehicles?.map(vehicle => {
           return (
             <a
               href="#"
+              style={{ fontWeight: 'bold' }}
               className={
                 vehicle.UUID == selectVehicle.UUID
                   ? dispatchingStyles.selectedVehicleCardWapper
@@ -341,11 +373,13 @@ export default class DispatchingCreatePage extends Component {
               }
               onClick={() => this.handleVehicle(vehicle)}
             >
-              <span>
-                <Icon type="car" />
-                &nbsp;
-                {vehicle.PLATENUMBER}
-              </span>
+              <Icon type="car" style={{ fontSize: '40px', margin: '-10px 0 0 -100px' }} />
+              <div style={{ marginTop: '-26px' }}>
+                <span>
+                  &nbsp;
+                  {vehicle.PLATENUMBER}
+                </span>
+              </div>
             </a>
           );
         })}
@@ -438,7 +472,7 @@ export default class DispatchingCreatePage extends Component {
         <Spin spinning={loading}>
           <Row gutter={[8, 0]}>
             <Col span={16}>
-              <Card title="订单" bodyStyle={{ padding: 1, height: '38.5vh' }}>
+              <Card title="订单" bodyStyle={{ padding: 1, height: '42.5vh' }}>
                 <Table
                   size="small"
                   className={dispatchingStyles.dispatchingTable}
@@ -455,7 +489,16 @@ export default class DispatchingCreatePage extends Component {
             </Col>
             <Col span={8}>
               <Card
-                title="订单汇总"
+                title={
+                  <div>
+                    <span
+                      style={{ backgroundColor: '#1E90FF' }}
+                      className={dispatchingStyles.selectCary}
+                    >
+                      订单汇总
+                    </span>
+                  </div>
+                }
                 className={dispatchingStyles.orderTotalCard}
                 bodyStyle={{ padding: 5 }}
               >
@@ -473,64 +516,91 @@ export default class DispatchingCreatePage extends Component {
                   </div>
                   <Divider type="vertical" style={{ height: '3.5em' }} />
                   <div style={{ flex: 1 }}>
-                    <div> 体积</div>
+                    <div> 整件</div>
                     <div>
                       <span className={dispatchingStyles.orderTotalNumber}>
-                        {totalData.volume.toFixed(4)}
+                        {totalData.realCartonCount}{' '}
                       </span>
-                      <span>m³</span>
-                    </div>
-                  </div>
-                  <Divider type="vertical" style={{ height: '3.5em' }} />
-                  <div style={{ flex: 1 }}>
-                    <div>重量</div>
-                    <div>
-                      <span className={dispatchingStyles.orderTotalNumber}>
-                        {totalData.weight.toFixed(4)}
-                      </span>
-                      <span>kg</span>
-                    </div>
-                  </div>
-                </div>
-                <div className={dispatchingStyles.orderTotalCardBody}>
-                  <div style={{ flex: 1 }}>
-                    <div>整件</div>
-                    <div className={dispatchingStyles.orderTotalNumber}>
-                      {totalData.realCartonCount}
                     </div>
                   </div>
                   <Divider type="vertical" style={{ height: '3.5em' }} />
                   <div style={{ flex: 1 }}>
                     <div>周转箱</div>
+                    <div>
+                      <span className={dispatchingStyles.orderTotalNumber}>
+                        {totalData.realContainerCount}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div className={dispatchingStyles.orderTotalCardBody}>
+                  <div style={{ flex: 1 }}>
+                    <div>体积</div>
                     <div className={dispatchingStyles.orderTotalNumber}>
-                      {totalData.realContainerCount}
+                      {Math.ceil(totalData.volume.toFixed(4))}
+                      m³
+                    </div>
+                  </div>
+                  <Divider type="vertical" style={{ height: '3.5em' }} />
+                  <div style={{ flex: 1 }}>
+                    <div>重量</div>
+                    <div className={dispatchingStyles.orderTotalNumber}>
+                      {Math.ceil(totalData.weight.toFixed(4))}
+                      kg
                     </div>
                   </div>
                 </div>
               </Card>
               <Card
+                className={dispatchingStyles.orderTotalCard}
+                bodyStyle={{ padding: 5 }}
                 title={
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: selectVehicle.PLATENUMBER
-                        ? '已选车辆: ' +
-                          selectVehicle.PLATENUMBER +
-                          ' &nbsp;&nbsp;' +
-                          selectVehicle.VEHICLETYPE
-                        : '车辆',
-                    }}
-                  />
+                  // <div
+                  //   dangerouslySetInnerHTML={{
+                  //     __html: selectVehicle.PLATENUMBER
+                  //       ? '已选车辆: ' +
+                  //         selectVehicle.PLATENUMBER +
+                  //         ' &nbsp;&nbsp;' +
+                  //         selectVehicle.VEHICLETYPE
+                  //       : '车辆',
+                  //   }}
+                  // />
+                  <div>
+                    <span
+                      className={
+                        selectVehicle.PLATENUMBER
+                          ? dispatchingStyles.selectCary
+                          : dispatchingStyles.selectCarn
+                      }
+                    >
+                      已选车辆
+                    </span>
+                    &nbsp;&nbsp;
+                    {selectVehicle.PLATENUMBER}
+                    {/* &nbsp;&nbsp;
+                    {selectVehicle.VEHICLETYPE} */}
+                  </div>
                 }
-                style={{ height: '20.2vh', marginTop: 8, overflow: 'auto' }}
+                style={{ height: '24.2vh', marginTop: 8, overflow: 'auto' }}
               >
                 {selectVehicle.PLATENUMBER ? (
                   <Row>
                     <Col>
                       <div className={dispatchingStyles.orderTotalCardBody2}>
                         <div style={{ flex: 1 }}>
+                          <div>车型</div>
+                          <div
+                            className={dispatchingStyles.orderTotalNumber}
+                            style={{ fontSize: '18px' }}
+                          >
+                            {selectVehicle.VEHICLETYPE}
+                          </div>
+                        </div>
+                        <Divider type="vertical" style={{ height: '3.5em' }} />
+                        <div style={{ flex: 1 }}>
                           <div>容积</div>
                           <div className={dispatchingStyles.orderTotalNumber}>
-                            {selectVehicle.BEARVOLUME}
+                            {Math.ceil(selectVehicle.BEARVOLUME) - 1}
                             m³
                           </div>
                         </div>
@@ -548,7 +618,7 @@ export default class DispatchingCreatePage extends Component {
                           <div>载重</div>
                           <div>
                             <span className={dispatchingStyles.orderTotalNumber}>
-                              {selectVehicle.BEARWEIGHT}
+                              {Math.ceil(selectVehicle.BEARWEIGHT) - 1}
                               kg
                             </span>
                           </div>
@@ -565,7 +635,8 @@ export default class DispatchingCreatePage extends Component {
                                   : { color: 'red' }
                               }
                             >
-                              {selectVehicle.BEARVOLUME - totalData.volume.toFixed(4)}
+                              {Math.ceil(selectVehicle.BEARVOLUME - totalData.volume.toFixed(4)) -
+                                1}
                               m³
                             </span>
                           </div>
@@ -581,7 +652,8 @@ export default class DispatchingCreatePage extends Component {
                                   : { color: 'red' }
                               }
                             >
-                              {selectVehicle.BEARWEIGHT - totalData.weight.toFixed(4)}
+                              {Math.ceil(selectVehicle.BEARWEIGHT - totalData.weight.toFixed(4)) -
+                                1}
                               kg
                             </span>
                           </div>
@@ -594,13 +666,25 @@ export default class DispatchingCreatePage extends Component {
                 )}
               </Card>
               <Card
-                title="人员明细"
-                style={{ height: '40vh', marginTop: 8 }}
-                bodyStyle={{ height: '35vh', overflowY: 'scroll' }}
+                title={
+                  <div>
+                    <span
+                      className={
+                        selectEmployees.length > 0
+                          ? dispatchingStyles.selectCary
+                          : dispatchingStyles.selectCarn
+                      }
+                    >
+                      已选人员
+                    </span>
+                  </div>
+                }
+                style={{ height: '36vh', marginTop: 8 }}
+                bodyStyle={{ height: '29vh', overflowY: 'scroll' }}
               >
                 {selectEmployees.map(employee => {
                   return (
-                    <Row gutter={[8, 8]}>
+                    <Row gutter={[8, 8]} style={{ fontWeight: 'bold' }}>
                       <Col span={8}>
                         <div style={{ lineHeight: '30px' }}>
                           {`[${employee.CODE}]` + employee.NAME}

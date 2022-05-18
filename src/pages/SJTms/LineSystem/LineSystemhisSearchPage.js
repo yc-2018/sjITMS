@@ -26,9 +26,12 @@ import {
   saveOrUpdateEntities,
   approval
 } from '@/services/quick/Quick';
-import {findLineSystemHisTree} from '@/services/sjtms/LineSystemHis'
+import configs from '@/utils/config';
+import fetch from 'dva/fetch';
+import {findLineSystemHisTree,systemHisExport} from '@/services/sjtms/LineSystemHis'
 import linesStyles from './LineSystem.less';
 import refundReceiveConfig from '@/models/facility/refundReceiveConfig';
+import ExportJsonExcel from 'js-export-excel';
 
 const { Content, Sider } = Layout;
 const Item = Menu.Item;
@@ -56,7 +59,6 @@ export default class LineSystemhisSearchPage extends Component {
   }
   //遍历树
   getLineSystemTree =(data,itemData,lineData)=>{
-    console.log("lineData",lineData);
       let treeNode = [];
       let ef = [];
       if(Array.isArray(data)){
@@ -101,13 +103,13 @@ export default class LineSystemhisSearchPage extends Component {
       let lineData = [];
       if (response) {
         const data = response.data;
-        data.forEach(element => {
+        data?.forEach(element => {
           let itemData = {};
           this.getLineSystemTree(element, itemData, lineData);
           lineTreeData.push(itemData);
         });
         if(lineuuid==undefined){
-          lineuuid = lineTreeData ? lineTreeData[0].children ? lineTreeData[0].children[0].key : lineTreeData[0].key : undefined
+          lineuuid = lineTreeData ? lineTreeData[0]?.children ? lineTreeData[0].children[0]?.key : lineTreeData[0]?.key : undefined
         }
         this.setState({
           expandKeys: lineTreeData.map(x => x.key),
@@ -130,27 +132,63 @@ export default class LineSystemhisSearchPage extends Component {
   //   return await dynamicqueryById(param);
   // };
   
-
+  export =  (selectedKeys)=>{
+    systemHisExport(selectedKeys).then(response=>{
+      if(response){
+       const system = ["版本号","体系编号","体系名称","备注","线路编号","线路名称","上级线路名称","上级线路编号"];
+       const address = ["线路编号","线路名称","送货点编号","送货点名称"];
+       var option = [];
+      const sytemCode = ["version","systemCode","systemName","note","lineCode","lineName","parentName","parentCode"];
+      const addressCode = ["lineCode","lineName","addressCode","addressName"];
+      option.fileName= response.data.tableName
+      option.datas = [
+        {
+          sheetData: response.data.systemExcelList?response.data.systemExcelList:[],
+          sheetName: response.data.sheet1, //工作表的名字
+          sheetFilter: sytemCode,
+          sheetHeader: system,
+        },
+      ];
+        option.datas.push({
+          sheetData: response.data.lineAddressHisExcels?response.data.lineAddressHisExcels:[],
+          sheetName: response.data.sheet2, //工作表的名字
+          sheetFilter: addressCode,
+          sheetHeader: address,
+        },)
+      const toExcel = new ExportJsonExcel(option);
+      toExcel.saveExcel();
+    }
+    });
+  
+  }
 
   //选中树节点
   onSelect = (selectedKeys, event) => {
     if (event && !event.selected) return;
     const { lineTreeData, lineData } = this.state;
-    if(selectedKeys[0].split("-")[1]=="systemCode"){
+    if( selectedKeys[0]==undefined || selectedKeys[0].split("-")[1]=="systemCode"){
       this.setState({rightContent:<></>})
       return;
     }
-    console.log("lineTreeData",lineTreeData,selectedKeys);
     selectedKeys = [selectedKeys[0].split("-")[0]];
-    
     const system = lineTreeData.find(x => x.children.find(f=>f.key==selectedKeys[0]));
-    console.log("select",selectedKeys);
-    console.log("system",system);
     this.setState({
       rightContent: system ? (
         <div>
           <div className={linesStyles.navigatorPanelWrapper}>
             <span className={linesStyles.sidertitle}>线路体系</span>  
+            <div className={linesStyles.action}> 
+            <Button   type="primary" onClick={
+              () => {            
+                Modal.confirm({
+                 title: '确定导出吗？',
+                 onOk: () => {
+                  this.export(selectedKeys[0]);
+                 },
+               });
+             }
+            }>导出</Button>
+            </div>
           </div>
           <LineSystemCreatePage
             key={new Date()}
@@ -216,7 +254,7 @@ export default class LineSystemhisSearchPage extends Component {
     return (
       <div>
         <div className={linesStyles.navigatorPanelWrapper}>
-          <span className={linesStyles.sidertitle}>线路体系</span>
+          <span className={linesStyles.sidertitle}>历史线路体系</span>
         </div>
         <Tree
           showLine={true}
@@ -243,7 +281,6 @@ export default class LineSystemhisSearchPage extends Component {
   }
 
   render() {
-    console.log("reder");
     const { createSystemModalVisible, createLineModalVisible, selectLineUuid } = this.state;
     return (
           <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>

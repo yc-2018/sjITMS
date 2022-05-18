@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-29 14:03:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-16 08:58:17
+ * @LastEditTime: 2022-05-18 14:23:17
  * @Description: 配送调度主页面
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\Dispatching.js
  */
@@ -63,7 +63,7 @@ export default class Dispatching extends Component {
                       <OrderPoolPage
                         scheduleRowKeys={this.getScheduleRowKeys}
                         ref={ref => (this.orderPoolPageRef = ref)}
-                        refresh={this.refreshScheduleTable}
+                        refreshSchedule={this.refreshScheduleTable}
                         refreshPending={this.refreshPendingTable}
                       />
                     </div>
@@ -72,7 +72,8 @@ export default class Dispatching extends Component {
                     <div className={dispatchingStyles.dispatchingCard}>
                       <SchedulePage
                         ref={ref => (this.schedulePageRef = ref)}
-                        refresh={this.refreshOrderTable}
+                        refreshOrder={this.refreshOrderTable}
+                        refreshPending={this.refreshPendingTable}
                         refreshDetail={this.refreshSelectScheduleTable}
                       />
                     </div>
@@ -90,8 +91,9 @@ export default class Dispatching extends Component {
                   <Col span={12}>
                     <div className={dispatchingStyles.dispatchingCard}>
                       <ScheduleDetailPage
-                        refresh={this.refreshScheduleTable}
                         ref={ref => (this.scheduleDetailPageRef = ref)}
+                        refreshSchedule={this.refreshScheduleTable}
+                        refreshPending={this.refreshPendingTable}
                       />
                     </div>
                   </Col>

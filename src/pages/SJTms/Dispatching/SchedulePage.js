@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-17 16:25:08
+ * @LastEditTime: 2022-05-18 14:22:15
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -142,7 +142,7 @@ export default class SchedulePage extends Component {
           if (response.success) {
             message.success('删除成功！');
             this.getSchedules(activeTab);
-            this.props.refresh();
+            this.props.refreshOrder();
           }
         });
       },
@@ -259,7 +259,8 @@ export default class SchedulePage extends Component {
             modal={{ title: '编辑排车单' }}
             refresh={() => {
               this.refreshTable();
-              this.props.refresh();
+              this.props.refreshOrder();
+              this.props.refreshPending();
             }}
             onRef={node => (this.createPageModalRef = node)}
           />

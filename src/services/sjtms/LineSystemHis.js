@@ -8,7 +8,12 @@ export async function findLineSystemHisTree(payload) {
     body: payload
   });
 }
-
+export  function systemHisExport(payload) {
+  return request(`/itms-schedule/itms-schedule/LineSystemHis/export/${payload}`, {
+    method: 'post'
+  });
+}
+ 
 export async function modify(payload) {
   return request(`/itms-schedule/itms-schedule/feetype/modify`, {
     method: 'POST',
