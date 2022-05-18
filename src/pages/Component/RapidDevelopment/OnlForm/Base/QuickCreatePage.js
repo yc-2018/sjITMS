@@ -413,25 +413,7 @@ export default class QuickCreatePage extends CreatePage {
       return;
     }
 
-    //插入组织uuid和企业uuid
-    let loginOrgType = loginOrg().type.replace('_', '');
-    let loginInfo = ['COMPANYUUID', loginOrgType, loginOrgType + 'UUID'];
-    let loginObj = {
-      COMPANYUUID: loginCompany().uuid,
-      [loginOrgType]: loginOrg().uuid,
-      [loginOrgType + 'UUID']: loginOrg().uuid,
-    };
-
-    for (let onlFormInfo of onlFormInfos) {
-      const { tableName } = onlFormInfo.onlFormHead;
-      for (let field of onlFormInfo.onlFormFields) {
-        if (loginInfo.indexOf(field.dbFieldName.toUpperCase()) != -1 && !field.isShowForm) {
-          entity[tableName].forEach(data => {
-            data[field.dbFieldName] = loginObj[field.dbFieldName.toUpperCase()];
-          });
-        }
-      }
-    }
+    this.onSaveSetOrg();
 
     //入参
     const param = { code: this.state.onlFormInfos[0].onlFormHead.code, entity: entity };
@@ -444,6 +426,30 @@ export default class QuickCreatePage extends CreatePage {
       message.success(commonLocale.saveSuccessLocale);
     }
   };
+
+  /**
+   * 保存时加入组织uuid和企业uuid
+   */
+  onSaveSetOrg = () => {
+    let loginOrgType = loginOrg().type.replace('_', '');
+    let loginInfo = ['COMPANYUUID', loginOrgType, loginOrgType + 'UUID'];
+    let loginObj = {
+      COMPANYUUID: loginCompany().uuid,
+      [loginOrgType]: loginOrg().uuid,
+      [loginOrgType + 'UUID']: loginOrg().uuid,
+    };
+
+    for (let onlFormInfo of this.state.onlFormInfos) {
+      const { tableName } = onlFormInfo.onlFormHead;
+      for (let field of onlFormInfo.onlFormFields) {
+        if (loginInfo.indexOf(field.dbFieldName.toUpperCase()) != -1 && !field.isShowForm) {
+          this.entity[tableName].forEach(data => {
+            data[field.dbFieldName] = loginObj[field.dbFieldName.toUpperCase()];
+          });
+        }
+      }
+    }
+  }
 
   /**
    * 处理值改变事件
@@ -468,7 +474,7 @@ export default class QuickCreatePage extends CreatePage {
     // 处理多值保存
     this.multiSave(e);
     // 字段联动
-    this.linkField(e);
+    this.handleLinkField(e);
 
     // 执行扩展代码
     this.exHandleChange(e);
@@ -672,7 +678,7 @@ export default class QuickCreatePage extends CreatePage {
     if (fieldShowType == 'auto_complete' || fieldShowType == 'sel_tree') {
       e.props.onSourceDataChange = (data, valueEvent) => {
         if(!this.getRunTimeProps(tableName, fieldName, record?.key)?.sourceData){
-          this.linkField({ ...e, valueEvent });   // 触发过滤
+          this.handleLinkField({ ...e, valueEvent });   // 触发过滤
         }
         this.setRunTimeProps(tableName, fieldName, { sourceData: data }, record?.key, true);
       };
@@ -709,7 +715,7 @@ export default class QuickCreatePage extends CreatePage {
   /**
    * 处理字段联动
    */
-  linkField = e => {
+  handleLinkField = e => {
     if (!e.props.linkField || !e.valueEvent) {
       return;
     }
@@ -722,10 +728,17 @@ export default class QuickCreatePage extends CreatePage {
         linkFilters[field] = { ...linkFilters[field], [key]: valueEvent.record[value] };
       }
       for (const field in linkFilters) {
-        const oldLinkFilter = this.getRunTimeProps(tableName, field, e.record?.key)?.linkFilter;
-        this.setRunTimeProps(tableName, field, { linkFilter: { ...oldLinkFilter, ...linkFilters[field]} }, e.record?.key);
+        this.setLinkFilter(tableName, field, e.record?.key, linkFilters[field]);
       }
     }
+  }
+
+  /**
+   * 设置字段联动
+   */
+  setLinkFilter = (tableName, field, key, linkFilter) => {
+    const oldLinkFilter = this.getRunTimeProps(tableName, field, key)?.linkFilter;
+    this.setRunTimeProps(tableName, field, { linkFilter: { ...oldLinkFilter, ...linkFilter} }, key);
   }
 
   /**
@@ -752,7 +765,7 @@ export default class QuickCreatePage extends CreatePage {
           [loginOrgType + 'UUID']: loginOrg().uuid,
         };
       }
-      this.setRunTimeProps(tableName, fieldName, { linkFilter: loginObj }, record?.key);
+      this.setLinkFilter(tableName, fieldName, record?.key, loginObj);
     }
   };
 
