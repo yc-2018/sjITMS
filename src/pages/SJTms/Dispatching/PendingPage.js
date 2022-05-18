@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-17 15:19:18
+ * @LastEditTime: 2022-05-18 14:16:50
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -29,6 +29,7 @@ export default class PendingPage extends Component {
 
   //刷新
   refreshTable = () => {
+    console.log('refreshPendingTable');
     this.getPendingOrders();
   };
 
@@ -98,7 +99,7 @@ export default class PendingPage extends Component {
           <Col span={12} style={{ textAlign: 'right' }}>
             <Button onClick={() => this.handleAddOrder()}>添加到排车单</Button>
             <Button style={{ marginLeft: 10 }} onClick={() => this.handleRemovePending()}>
-              删除
+              移除待定
             </Button>
           </Col>
         </Row>

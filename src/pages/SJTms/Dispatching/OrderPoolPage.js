@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-17 15:15:59
+ * @LastEditTime: 2022-05-18 14:23:26
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -182,7 +182,7 @@ export default class OrderPoolPage extends Component {
       if (response.success) {
         message.success('保存成功！');
         this.refreshTable();
-        this.props.refresh();
+        this.props.refreshSchedule();
       }
     });
   };
@@ -307,7 +307,7 @@ export default class OrderPoolPage extends Component {
             modal={{ title: '排车' }}
             refresh={() => {
               this.refreshTable();
-              this.props.refresh();
+              this.props.refreshSchedule();
             }}
             onRef={node => (this.createPageModalRef = node)}
           />

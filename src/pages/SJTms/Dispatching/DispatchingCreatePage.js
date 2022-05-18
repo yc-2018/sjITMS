@@ -52,7 +52,6 @@ export default class DispatchingCreatePage extends Component {
 
   //初始化数据
   initData = async (isEdit, record) => {
-    console.log('record', record);
     //组装推荐人员车辆接口入参
     // let params = {
     //   storeCodes: record.map(item => {

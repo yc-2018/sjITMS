@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-17 16:26:53
+ * @LastEditTime: 2022-05-18 14:23:52
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -49,7 +49,8 @@ export default class ScheduleDetailPage extends Component {
       if (response.success) {
         message.success('保存成功！');
         this.refreshTable();
-        this.props.refresh();
+        this.props.refreshPending();
+        this.props.refreshSchedule();
       }
     });
   };
@@ -69,10 +70,6 @@ export default class ScheduleDetailPage extends Component {
         </a>
       ),
     };
-    let columns = ScheduleDetailColumns;
-    if (schedule != undefined && schedule.stat == 'Saved') {
-      columns = [editColumn, ...ScheduleDetailColumns];
-    }
     return schedule == undefined ? (
       <Empty style={{ marginTop: 80 }} image={emptySvg} description="暂无数据，请选择排车单！" />
     ) : (
@@ -98,14 +95,14 @@ export default class ScheduleDetailPage extends Component {
           dataSource={schedule.details}
           changeSelectRows={this.tableChangeRows}
           selectedRowKeys={selectedRowKeys}
-          columns={columns}
-          scrollY="calc(68vh - 75px)"
+          columns={ScheduleDetailColumns}
+          scrollY="calc(68vh - 107px)"
         />
         {/* 修改排车数量  */}
         <EditContainerNumberPage
           modal={{ title: '编辑' }}
           refresh={() => {
-            this.props.refresh;
+            this.props.refreshSchedule;
           }}
           onRef={node => (this.editPageModalRef = node)}
         />

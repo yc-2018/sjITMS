@@ -4,16 +4,22 @@ import { convertCodeName } from '@/utils/utils';
 
 export const OrderColumns = [
   {
+    title: '单号',
+    dataIndex: 'billNumber',
+    width: 120,
+    render: (val, record) => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+  },
+  {
+    title: '作业号',
+    dataIndex: 'waveNum',
+    width: 80,
+    render: (val, record) => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+  },
+  {
     title: '线路',
     dataIndex: 'archLineCode',
     width: 60,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
-  },
-  {
-    title: '单号',
-    dataIndex: 'billNumber',
-    width: 100,
-    render: (val, record) => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '送货点',
@@ -22,6 +28,12 @@ export const OrderColumns = [
     render: val => {
       return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
     },
+  },
+  {
+    title: '来源单号',
+    dataIndex: 'sourceNum',
+    width: 120,
+    render: (val, record) => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '整件数(估/实)',
