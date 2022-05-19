@@ -2,11 +2,11 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-20 10:41:30
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-25 15:20:44
+ * @LastEditTime: 2022-05-19 16:17:55
  * @version: 1.0
  */
 import { connect } from 'dva';
-import { Form, message } from 'antd';
+import { Form, message, Input } from 'antd';
 import { loginCompany } from '@/utils/LoginContext';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import { dynamicqueryById } from '@/services/quick/Quick';
@@ -18,6 +18,15 @@ import { removeCar } from '@/services/sjitms/ScheduleBill';
 }))
 @Form.create()
 export default class RemoveCarCreatePage extends QuickCreatePage {
+  constructor(props) {
+    super(props);
+    this.state = {
+      ...this.state,
+      CCCWEIGHT: '',
+      CCCVOLUME: '',
+    };
+  }
+
   exHandleChange = async e => {
     const { tableName, fieldName, line, fieldShowType, props, valueEvent } = e;
     const { form } = this.props;
@@ -33,9 +42,17 @@ export default class RemoveCarCreatePage extends QuickCreatePage {
         },
       };
 
+      this.props.form.setFieldsValue({ ['CCCWEIGHT']: valueEvent.record.BEARWEIGHT });
+      this.props.form.setFieldsValue({ ['CCCVOLUME']: valueEvent.record.BEARVOLUME });
+      this.setState({
+        CCCWEIGHT: valueEvent.record.BEARWEIGHT,
+        CCCVOLUME: valueEvent.record.BEARVOLUME,
+      });
+
+      this.entity['SJ_ITMS_VEHICLE_EMPLOYEE'] = [];
+      form.validateFields();
       await dynamicqueryById(param).then(result => {
         if (result.success && result.result.records !== 'false') {
-          this.entity['SJ_ITMS_VEHICLE_EMPLOYEE'] = [];
           result.result.records.forEach((data, index) => {
             this.entity['SJ_ITMS_VEHICLE_EMPLOYEE'].push({
               COMPANYUUID: data.COMPANYUUID,
@@ -49,7 +66,6 @@ export default class RemoveCarCreatePage extends QuickCreatePage {
               key: this.tableKey++,
             });
           });
-
           form.validateFields();
         }
       });
@@ -65,12 +81,20 @@ export default class RemoveCarCreatePage extends QuickCreatePage {
 
   onSave = async () => {
     const { entity } = this;
+    const { CCCWEIGHT, CCCVOLUME } = this.state;
+    const schedule = entity['V_SJ_ITMS_SCHEDULE'][0];
+    const { WEIGHT, VOLUME } = schedule;
+    if (CCCWEIGHT && CCCVOLUME) {
+      if (WEIGHT > CCCWEIGHT || VOLUME > CCCVOLUME) {
+        message.error('该排车单重量或体积超出，请重新选择');
+        return;
+      }
+    }
+
     await removeCar(entity).then(result => {
       if (result.success) {
         this.onSaved(result.success);
         message.success('移车成功,已作废此排车单,生成对应的新排车单');
-      } else {
-        message.success('移车时发生错误，请联系管理员');
       }
     });
   };
@@ -82,5 +106,32 @@ export default class RemoveCarCreatePage extends QuickCreatePage {
       this.entity[item.onlFormHead.tableName] = [];
     });
     this.initUpdateEntity(onlFormInfos);
+  };
+
+  formLoaded = () => {
+    const { categories, formItems } = this.state;
+    console.log('formItems', formItems);
+
+    formItems['CCCWEIGHT'] = {
+      categoryName: '移车信息',
+      component: Input,
+      fieldName: 'CCCWEIGHT',
+      fieldShowType: 'text',
+      key: 'CCCWEIGHT',
+      label: '车辆承重',
+      tableName: 'V_SJ_ITMS_SCHEDULE',
+      props: { disabled: true },
+    };
+
+    formItems['CCCVOLUME'] = {
+      categoryName: '移车信息',
+      component: Input,
+      fieldName: 'CCCVOLUME',
+      fieldShowType: 'text',
+      key: 'CCCVOLUME',
+      label: '车辆体积',
+      tableName: 'V_SJ_ITMS_SCHEDULE',
+      props: { disabled: true },
+    };
   };
 }

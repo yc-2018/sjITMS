@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-29 17:25:56
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-04 10:22:14
+ * @LastEditTime: 2022-05-19 16:35:13
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -138,7 +138,7 @@ export default class ChargeLoadingSearch extends PureComponent {
                   </div>
                   <div>
                     <ChargeLoadingViewPage
-                      quickuuid={'v_sj_itms_schedule_loading'}
+                      quickuuid={'sj_itms_schedule_loading'}
                       params={{ entityUuid: selectedRows }}
                       pathname={this.props.pathname}
                       onRef={this.ccRef.bind(this)}

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-25 10:17:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-19 15:54:24
+ * @LastEditTime: 2022-05-19 15:58:25
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -93,7 +93,6 @@ export default class ShipPlanBillCreatePage extends QuickCreatePage {
 
   formLoaded = () => {
     const { categories, formItems } = this.state;
-    console.log('formItems', formItems);
 
     formItems['CCCWEIGHT'] = {
       categoryName: '车辆信息',
