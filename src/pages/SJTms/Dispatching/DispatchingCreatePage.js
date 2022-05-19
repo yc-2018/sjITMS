@@ -13,6 +13,8 @@ import {
   Button,
   Popconfirm,
   Icon,
+  Statistic,
+  Badge,
 } from 'antd';
 import { queryAllData, dynamicQuery } from '@/services/quick/Quick';
 import { getSchedule, save, modify, getRecommend } from '@/services/sjitms/ScheduleBill';
@@ -185,6 +187,10 @@ export default class DispatchingCreatePage extends Component {
     const index = selectEmployees.findIndex(x => x.UUID == employee.UUID);
     employee.memberType = employee.ROLE_TYPE;
     index == -1 ? employees.push(employee) : employees.splice(index, 1);
+    if (employees.filter(item => item.memberType == 'Driver').length >= 2) {
+      message.error('只允许一位驾驶员！');
+      return;
+    }
     this.setState({ selectEmployees: employees });
   };
   employeeFilter = event => {
@@ -394,10 +400,13 @@ export default class DispatchingCreatePage extends Component {
 
   updateCount = e => {
     const { orders } = this.state;
-    for (const order of orders) {
-      if (order.billNumber == e.billNumber) {
-        order.realCartonCount -= e.count.cartonCount;
-        break;
+    if (e.count.cartonCount > 0) {
+      for (const order of orders) {
+        if (order.billNumber == e.billNumber) {
+          order.realCartonCount -= e.count.cartonCount;
+          order.isSplit = 'Y';
+          break;
+        }
       }
     }
     this.setState({ orders, editPageVisible: false });
@@ -555,16 +564,6 @@ export default class DispatchingCreatePage extends Component {
                 className={dispatchingStyles.orderTotalCard}
                 bodyStyle={{ padding: 5 }}
                 title={
-                  // <div
-                  //   dangerouslySetInnerHTML={{
-                  //     __html: selectVehicle.PLATENUMBER
-                  //       ? '已选车辆: ' +
-                  //         selectVehicle.PLATENUMBER +
-                  //         ' &nbsp;&nbsp;' +
-                  //         selectVehicle.VEHICLETYPE
-                  //       : '车辆',
-                  //   }}
-                  // />
                   <div>
                     <span
                       className={
