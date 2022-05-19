@@ -2,11 +2,11 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-25 10:17:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-03-28 17:24:09
+ * @LastEditTime: 2022-05-19 15:54:24
  * @version: 1.0
  */
 import { connect } from 'dva';
-import { Form } from 'antd';
+import { Form, Input, message } from 'antd';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import { loginCompany } from '@/utils/LoginContext';
 import { saveOrUpdateEntities, dynamicqueryById } from '@/services/quick/Quick';
@@ -17,10 +17,26 @@ import { saveOrUpdateEntities, dynamicqueryById } from '@/services/quick/Quick';
 }))
 @Form.create()
 export default class ShipPlanBillCreatePage extends QuickCreatePage {
+  constructor(props) {
+    super(props);
+    this.state = {
+      ...this.state,
+      CCCWEIGHT: '',
+      CCCVOLUME: '',
+    };
+  }
+
   exHandleChange = async e => {
     const { tableName, fieldName, line, fieldShowType, props, valueEvent } = e;
     const { form } = this.props;
     if (fieldName == 'VEHICLECODE' && valueEvent) {
+      console.log('valueEvent', valueEvent);
+      this.props.form.setFieldsValue({ ['CCCWEIGHT']: valueEvent.record.BEARWEIGHT });
+      this.props.form.setFieldsValue({ ['CCCVOLUME']: valueEvent.record.BEARVOLUME });
+      this.setState({
+        CCCWEIGHT: valueEvent.record.BEARWEIGHT,
+        CCCVOLUME: valueEvent.record.BEARVOLUME,
+      });
       const param = {
         tableName: 'sj_itms_vehicle_employee',
         condition: {
@@ -31,9 +47,10 @@ export default class ShipPlanBillCreatePage extends QuickCreatePage {
         },
       };
 
+      this.entity['SJ_ITMS_SCHEDULE_MEMBER'] = [];
+      form.validateFields();
       await dynamicqueryById(param).then(result => {
         if (result.success && result.result.records !== 'false') {
-          this.entity['SJ_ITMS_SCHEDULE_MEMBER'] = [];
           const billuuid = this.entity.sj_itms_schedule[0].UUID;
           result.result.records.forEach((data, index) => {
             this.entity['SJ_ITMS_SCHEDULE_MEMBER'].push({
@@ -47,8 +64,8 @@ export default class ShipPlanBillCreatePage extends QuickCreatePage {
               key: this.tableKey++,
             });
           });
-          form.validateFields();
         }
+        form.validateFields();
       });
     }
   };
@@ -60,5 +77,44 @@ export default class ShipPlanBillCreatePage extends QuickCreatePage {
       this.entity[item.onlFormHead.tableName] = [];
     });
     this.initUpdateEntity(onlFormInfos);
+  };
+
+  beforeSave = entity => {
+    const { CCCWEIGHT, CCCVOLUME } = this.state;
+    const schedule = entity['sj_itms_schedule'][0];
+    const { WEIGHT, VOLUME } = schedule;
+    if (CCCWEIGHT && CCCVOLUME) {
+      if (WEIGHT > CCCWEIGHT || VOLUME > CCCVOLUME) {
+        message.error('该排车单重量或体积超出，请重新选择');
+        return false;
+      }
+    }
+  };
+
+  formLoaded = () => {
+    const { categories, formItems } = this.state;
+    console.log('formItems', formItems);
+
+    formItems['CCCWEIGHT'] = {
+      categoryName: '车辆信息',
+      component: Input,
+      fieldName: 'CCCWEIGHT',
+      fieldShowType: 'text',
+      key: 'CCCWEIGHT',
+      label: '车辆承重(换)',
+      tableName: 'sj_itms_schedule',
+      props: { disabled: true },
+    };
+
+    formItems['CCCVOLUME'] = {
+      categoryName: '车辆信息',
+      component: Input,
+      fieldName: 'CCCVOLUME',
+      fieldShowType: 'text',
+      key: 'CCCVOLUME',
+      label: '车辆体积(换)',
+      tableName: 'sj_itms_schedule',
+      props: { disabled: true },
+    };
   };
 }
