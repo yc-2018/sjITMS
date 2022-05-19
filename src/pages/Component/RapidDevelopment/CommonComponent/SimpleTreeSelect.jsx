@@ -38,7 +38,7 @@ export default class SimpleTreeSelect extends Component {
 
     // 在 sourceData, textField, valueField, parentField, sonField 变化时，重新运行 convertTreeData
     convertTreeData = memoize(
-        (sourceData, textField, valueField, parentField) => convertData2TreeData(sourceData, textField, valueField, parentField)
+        (sourceData, textField, valueField, parentField, sonField) => convertData2TreeData(sourceData, textField, valueField, parentField, sonField)
     );
 
     getTreeData = () => this.convertTreeData(this.state.sourceData, this.props.textField, this.props.valueField, this.props.parentField, this.props.sonField)
