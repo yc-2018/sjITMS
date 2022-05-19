@@ -91,15 +91,14 @@ export default class DispatchingCreatePage extends Component {
             });
             vehicles.unshift(obj);
             const memberList = response.data.memberDetails.map(x => x.member);
-            const selectEmployees =
-              employees.length != 0
-                ? response.data.memberDetails.map(record => {
-                    let employee = employees.find(x => x.UUID == record.member.uuid);
-                    employee.memberType = record.memberType;
-                    return employee;
-                  })
-                : [];
-
+            const selectEmployees = employees
+              .filter(
+                x => response.data.memberDetails.findIndex(m => m.member.uuid == x.UUID) != -1
+              )
+              .map(item => {
+                item.memberType = item.ROLE_TYPE;
+                return item;
+              });
             //选中的人放到第一位
             employees = uniqBy([...selectEmployees, ...employees], 'CODE');
 
@@ -403,6 +402,10 @@ export default class DispatchingCreatePage extends Component {
     if (e.count.cartonCount > 0) {
       for (const order of orders) {
         if (order.billNumber == e.billNumber) {
+          order.volume =
+            ((order.realCartonCount - e.count.cartonCount) / order.realCartonCount) * order.volume;
+          order.weight =
+            ((order.realCartonCount - e.count.cartonCount) / order.realCartonCount) * order.weight;
           order.realCartonCount -= e.count.cartonCount;
           order.isSplit = 'Y';
           break;
