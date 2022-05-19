@@ -1,6 +1,6 @@
 
 import React, { PureComponent, } from 'react';
-import {Button, Form, message, Select,Modal} from 'antd'
+import {Button, Form, message, Select,Modal,Popconfirm} from 'antd'
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import{confirmOrder} from '@/services/sjtms/DeliveredConfirm';
@@ -98,12 +98,36 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
  // drawSearchPanel=()=>{}
   //该方法会覆盖所有的中间功能按钮
   drawToolbarPanel = () => {
-    return (<>
-    <Button onClick={this.checkResend}>重送</Button>
-    <Button onClick={this.checkRejection}>拒收</Button>
+    return (
+      <>
+      <Popconfirm
+      title="确定重送?"
+      onConfirm={this.checkResend}
+      okText="确定"
+      cancelText="取消"
+      > 
+      <Button >批量重送</Button>
+      </Popconfirm>
+      <Popconfirm
+      title="确定拒收?"
+      onConfirm={this.checkRejection}
+      okText="确定"
+      cancelText="取消"
+      > 
+       <Button>批量拒收</Button>
+      </Popconfirm>
+      
     <Button onClick={this.checkReason}>批量设置原因</Button>
     <Button onClick={this.checkAttribution}>批量设置责任归属</Button>
-    <Button onClick={this.checkSave}>保存</Button>
+    <Popconfirm
+      title="确定保存?"
+      onConfirm={this.checkSave}
+      okText="确定"
+      cancelText="取消"
+      > 
+      <Button>批量保存</Button>
+      </Popconfirm>
+    
     </>)
   };
   //未送达原因管理
@@ -117,12 +141,16 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     if(selectedRows.length==0){
         message.warn("请选择记录")
     }
-    selectedRows.forEach(row=>{
-      row['UNDELIVEREDTYPE']='ReSend'
+    let rows = selectedRows.map(row=>{
+      return {
+        UNDELIVEREDTYPE:'ReSend',
+        UUID:row["UUID"]
+      }
+      
     });
   this.props.dispatch({
       type: 'deliveredConfirm1/updateNoDelivered',
-      payload: this.state.selectedRows,
+      payload: rows,
       callback:response=>{
           console.log("response",response);
         if(response&&response.success){
@@ -138,12 +166,15 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     if(selectedRows.length==0){
         message.warn("请选择记录")
     }
-    selectedRows.forEach(row=>{
-        row['UNDELIVEREDTYPE']='Reject'
+    let rows = selectedRows.map(row=>{
+        return {
+          UNDELIVEREDTYPE:'Reject',
+          UUID:row["UUID"]
+        }
       });
     this.props.dispatch({
         type: 'deliveredConfirm1/updateNoDelivered',
-        payload: this.state.selectedRows,
+        payload:rows,
         callback:response=>{
             console.log("response",response);
           if(response&&response.success){
@@ -195,13 +226,16 @@ deliveredChage = (records,colum,e)=>{
           form.validateFields((errors, fieldsValue) => {
             console.log("errors",fieldsValue);
           if (errors&&errors.UnDeliveredDuty) return;
-          selectedRows.forEach(row=>{
-            row['UNDELIVEREDREASON']= fieldsValue.UNDELIVEREDREASON.record.VALUE
+          let rows = selectedRows.map(row=>{
+            return {
+              UNDELIVEREDREASON:fieldsValue.UNDELIVEREDREASON.record.VALUE,
+              UUID:row["UUID"]
+            }
           });
-         
+        
           this.props.dispatch({
               type: 'deliveredConfirm1/updateNoDelivered',
-              payload: this.state.selectedRows,
+              payload: rows,
               callback:response=>{
                   console.log("response",response);
                 if(response&&response.success){
@@ -269,13 +303,16 @@ CreateUnDeliveredDuty =()=>{
           form.validateFields((errors, fieldsValue) => {
               console.log("errors",fieldsValue);
             if (errors&&errors.UnDeliveredDuty) return;
-            selectedRows.forEach(row=>{
-              row['UNDELIVEREDDUTY']= fieldsValue.UnDeliveredDuty.record.VALUE
+            let rows = selectedRows.map(row=>{
+              return {
+                UNDELIVEREDDUTY:fieldsValue.UnDeliveredDuty.record.VALUE,
+                UUID:row["UUID"]
+              }
             });
            
             this.props.dispatch({
                 type: 'deliveredConfirm1/updateNoDelivered',
-                payload: this.state.selectedRows,
+                payload: rows,
                 callback:response=>{
                     console.log("response",response);
                   if(response&&response.success){

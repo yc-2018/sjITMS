@@ -521,6 +521,7 @@ export default class LineSystemSearchPage extends Component {
         //authorization: 'authorization-text',
         iwmsJwt: loginKey(),
       },
+      accept:".xlsx",
       onChange(info) {
         if (info.file.status !== 'uploading') {
           console.log(info.file, info.fileList);
