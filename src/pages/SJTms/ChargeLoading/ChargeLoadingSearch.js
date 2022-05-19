@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-29 17:25:56
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-19 16:35:13
+ * @LastEditTime: 2022-05-19 18:59:15
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -131,7 +131,11 @@ export default class ChargeLoadingSearch extends PureComponent {
                     <span style={{ width: '15%' }}>{'刷卡提示:'}</span>
                     &nbsp;&nbsp;
                     <Input.TextArea
-                      style={responseError ? { color: '#F5222D', width: '80%' } : { width: '80%' }}
+                      style={
+                        responseError
+                          ? { color: '#F5222D', width: '80%', fontSize: '50px' }
+                          : { width: '80%', fontSize: '50px' }
+                      }
                       value={responseMsg}
                       rows={4}
                     />
