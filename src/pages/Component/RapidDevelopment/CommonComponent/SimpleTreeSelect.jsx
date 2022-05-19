@@ -254,6 +254,7 @@ function convertData2TreeData(sourceData, textField, valueField, parentField, so
                 return {
                     title: textShow,
                     value: valueShow,
+                    sonValue: row[sonField],
                     data: {
                         value: valueShow,
                         record: row
@@ -261,7 +262,7 @@ function convertData2TreeData(sourceData, textField, valueField, parentField, so
                 }
             });
         // 防止死循环
-        parentData.forEach(row => row.children = row.value != undefined ? convert(row.value) : []);
+        parentData.forEach(row => row.children = row.sonValue != undefined ? convert(row.sonValue) : []);
         return parentData;
     }
     return convert(null);
