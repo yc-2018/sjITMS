@@ -46,7 +46,8 @@ export default class QuickCreatePage extends CreatePage {
   exHandleChange = e => {};
   drawcell = e => {};
 
-  getFieldKey = (tableName, dbFieldName, key) => tableName + '_' + dbFieldName + (key == undefined ? '' : '_' + key);
+  getFieldKey = (tableName, dbFieldName, key) =>
+    tableName + '_' + dbFieldName + (key == undefined ? '' : '_' + key);
 
   /**
    * 设置字段的值
@@ -83,7 +84,7 @@ export default class QuickCreatePage extends CreatePage {
   getRunTimeProps = (tableName, fieldName, key) => {
     return {
       ...this.state.runTimeProps[this.getFieldKey(tableName, fieldName)],
-      ...this.state.runTimeProps[this.getFieldKey(tableName, fieldName, key)]
+      ...this.state.runTimeProps[this.getFieldKey(tableName, fieldName, key)],
     };
   };
 
@@ -454,7 +455,7 @@ export default class QuickCreatePage extends CreatePage {
         }
       }
     }
-  }
+  };
 
   /**
    * 处理值改变事件
@@ -584,9 +585,14 @@ export default class QuickCreatePage extends CreatePage {
           continue;
         }
         currentTableName = tableName;
-
+        let mustInput = tableItem.onlFormField.dbIsNull ? '' : '*';
         let tailItem = {
-          title: label,
+          title: (
+            <div>
+              <span>{label}</span>
+              <span style={{ color: 'red' }}>{mustInput}</span>
+            </div>
+          ),
           dataIndex: key,
           key: key,
           width: itemColWidth.articleEditColWidth,
@@ -642,7 +648,7 @@ export default class QuickCreatePage extends CreatePage {
         if (field == 'line' || field == 'key') {
           continue;
         }
-        fields[this.getFieldKey(tableName, field, (row.line - 1))] = row[field];
+        fields[this.getFieldKey(tableName, field, row.line - 1)] = row[field];
       }
     }
     this.props.form.setFieldsValue(fields);
@@ -672,9 +678,17 @@ export default class QuickCreatePage extends CreatePage {
     // this.reverseMultiSave(e);
     this.childComponetSourceDataSave(e);
     this.setOrgSearch(e);
-    this.setRunTimeProps(e.tableName, e.fieldName, { onChange: valueEvent => this.handleChange({ valueEvent, line: e.record ? e.record.line - 1 : 0, ...e, }) }, e.record?.key);
+    this.setRunTimeProps(
+      e.tableName,
+      e.fieldName,
+      {
+        onChange: valueEvent =>
+          this.handleChange({ valueEvent, line: e.record ? e.record.line - 1 : 0, ...e }),
+      },
+      e.record?.key
+    );
     e.props = { ...e.props, ...this.getRunTimeProps(e.tableName, e.fieldName, e.record?.key) };
-  }
+  };
 
   /**
    * 保存子控件的数据，重新render时可以重复使用
@@ -683,13 +697,13 @@ export default class QuickCreatePage extends CreatePage {
     const { fieldShowType, props, tableName, record, fieldName } = e;
     if (fieldShowType == 'auto_complete' || fieldShowType == 'sel_tree') {
       e.props.onSourceDataChange = (data, valueEvent) => {
-        if(!this.getRunTimeProps(tableName, fieldName, record?.key)?.sourceData){
-          this.handleLinkField({ ...e, valueEvent });   // 触发过滤
+        if (!this.getRunTimeProps(tableName, fieldName, record?.key)?.sourceData) {
+          this.handleLinkField({ ...e, valueEvent }); // 触发过滤
         }
         this.setRunTimeProps(tableName, fieldName, { sourceData: data }, record?.key, true);
       };
     }
-  }
+  };
 
   // /**
   //  * 多值保存反转初始化数据
@@ -732,13 +746,16 @@ export default class QuickCreatePage extends CreatePage {
       for (const linkField of linkFields) {
         let [field, key, value, tableName] = linkField.split(':');
         tableName = tableName || currentTableName;
-        if(linkFilters[tableName] == undefined){
+        if (linkFilters[tableName] == undefined) {
           linkFilters[tableName] = {};
         }
-        if(linkFilters[tableName][field] == undefined){
+        if (linkFilters[tableName][field] == undefined) {
           linkFilters[tableName][field] = {};
         }
-        linkFilters[tableName][field] = { ...linkFilters[tableName][field], [key]: valueEvent.record[value] };
+        linkFilters[tableName][field] = {
+          ...linkFilters[tableName][field],
+          [key]: valueEvent.record[value],
+        };
       }
       for (const tableName in linkFilters) {
         for (const field in linkFilters[tableName]) {
@@ -746,7 +763,7 @@ export default class QuickCreatePage extends CreatePage {
         }
       }
     }
-  }
+  };
 
   /**
    * 设置字段联动
