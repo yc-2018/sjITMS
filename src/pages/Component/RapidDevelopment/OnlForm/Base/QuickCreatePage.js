@@ -475,7 +475,6 @@ export default class QuickCreatePage extends CreatePage {
       this.entity[tableName][line][fieldName] = value;
     }
 
-    console.log('entity', this.entity);
     // 处理多值保存
     this.multiSave(e);
     // 字段联动
@@ -484,6 +483,8 @@ export default class QuickCreatePage extends CreatePage {
     // 执行扩展代码
     this.exHandleChange(e);
     this.setState({});
+    // console.log('entity', this.entity);
+    // console.log('runtime', this.state.runTimeProps);
   };
 
   getGutt = () => {
@@ -753,7 +754,7 @@ export default class QuickCreatePage extends CreatePage {
   setLinkFilter = (tableName, field, key, linkFilter) => {
     const globalLinkFilter = this.getRunTimeProps(tableName, field)?.linkFilter;
     const oldLinkFilter = this.getRunTimeProps(tableName, field, key)?.linkFilter;
-    this.setRunTimeProps(tableName, field, { linkFilter: { ...globalLinkFilter, ...oldLinkFilter, ...linkFilter} }, key);
+    this.setRunTimeProps(tableName, field, { linkFilter: { ...oldLinkFilter, ...globalLinkFilter, ...linkFilter} }, key);
   }
 
   /**
