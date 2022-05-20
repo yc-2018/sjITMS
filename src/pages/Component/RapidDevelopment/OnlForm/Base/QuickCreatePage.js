@@ -80,7 +80,12 @@ export default class QuickCreatePage extends CreatePage {
     }
   };
 
-  getRunTimeProps = (tableName, fieldName, key) => this.state.runTimeProps[this.getFieldKey(tableName, fieldName, key)];
+  getRunTimeProps = (tableName, fieldName, key) => {
+    return {
+      ...this.state.runTimeProps[this.getFieldKey(tableName, fieldName)],
+      ...this.state.runTimeProps[this.getFieldKey(tableName, fieldName, key)]
+    };
+  };
 
   constructor(props) {
     super(props);
@@ -719,16 +724,25 @@ export default class QuickCreatePage extends CreatePage {
     if (!e.props.linkField || !e.valueEvent) {
       return;
     }
-    const { fieldShowType, props, tableName, valueEvent } = e;
+    const { fieldShowType, props, tableName: currentTableName, valueEvent } = e;
     if (fieldShowType == 'auto_complete') {
       const linkFilters = {};
       const linkFields = props.linkField.split(',');
       for (const linkField of linkFields) {
-        const [field, key, value] = linkField.split(':');
-        linkFilters[field] = { ...linkFilters[field], [key]: valueEvent.record[value] };
+        let [field, key, value, tableName] = linkField.split(':');
+        tableName = tableName || currentTableName;
+        if(linkFilters[tableName] == undefined){
+          linkFilters[tableName] = {};
+        }
+        if(linkFilters[tableName][field] == undefined){
+          linkFilters[tableName][field] = {};
+        }
+        linkFilters[tableName][field] = { ...linkFilters[tableName][field], [key]: valueEvent.record[value] };
       }
-      for (const field in linkFilters) {
-        this.setLinkFilter(tableName, field, e.record?.key, linkFilters[field]);
+      for (const tableName in linkFilters) {
+        for (const field in linkFilters[tableName]) {
+          this.setLinkFilter(tableName, field, e.record?.key, linkFilters[tableName][field]);
+        }
       }
     }
   }
@@ -737,8 +751,9 @@ export default class QuickCreatePage extends CreatePage {
    * 设置字段联动
    */
   setLinkFilter = (tableName, field, key, linkFilter) => {
+    const globalLinkFilter = this.getRunTimeProps(tableName, field)?.linkFilter;
     const oldLinkFilter = this.getRunTimeProps(tableName, field, key)?.linkFilter;
-    this.setRunTimeProps(tableName, field, { linkFilter: { ...oldLinkFilter, ...linkFilter} }, key);
+    this.setRunTimeProps(tableName, field, { linkFilter: { ...globalLinkFilter, ...oldLinkFilter, ...linkFilter} }, key);
   }
 
   /**
