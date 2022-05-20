@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-18 14:23:26
+ * @LastEditTime: 2022-05-19 17:50:05
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -28,7 +28,7 @@ const { TabPane } = Tabs;
 
 export default class OrderPoolPage extends Component {
   state = {
-    searchKeyValues: {},
+    searchKeyValues: { orderType: 'Delivery' },
     loading: false,
     auditedData: [],
     scheduledData: [],
@@ -44,7 +44,7 @@ export default class OrderPoolPage extends Component {
   //刷新
   refreshTable = searchKeyValues => {
     if (searchKeyValues == undefined) {
-      searchKeyValues = { orderType: 'Delivery' };
+      searchKeyValues = this.state.searchKeyValues;
     }
     const { activeTab } = this.state;
     switch (activeTab) {
@@ -142,12 +142,13 @@ export default class OrderPoolPage extends Component {
   //排车
   dispatching = () => {
     const { auditedRowKeys, auditedData } = this.state;
-    if (auditedRowKeys.length == 0) {
+    const selectPending = this.props.selectPending();
+    if (auditedRowKeys.length + selectPending.length == 0) {
       message.warning('请选择运输订单！');
       return;
     }
     const orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
-    this.createPageModalRef.show(false, orders);
+    this.createPageModalRef.show(false, [...orders, ...selectPending]);
   };
 
   //添加到待定池
@@ -170,8 +171,8 @@ export default class OrderPoolPage extends Component {
   handleAddOrder = () => {
     const { auditedRowKeys } = this.state;
     const scheduleRowKeys = this.props.scheduleRowKeys();
-    if (scheduleRowKeys.length == 0 || scheduleRowKeys == undefined) {
-      message.warning('请选择排车单！');
+    if (scheduleRowKeys.length != 1 || scheduleRowKeys == undefined) {
+      message.warning('请选择一张排车单！');
       return;
     }
     if (auditedRowKeys.length == 0 || auditedRowKeys == undefined) {

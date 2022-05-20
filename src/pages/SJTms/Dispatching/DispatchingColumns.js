@@ -17,9 +17,11 @@ export const OrderColumns = [
   },
   {
     title: '线路',
-    dataIndex: 'archLineCode',
+    dataIndex: 'archLine',
     width: 60,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => {
+      return val ? <EllipsisCol colValue={val.name} /> : <Empty />;
+    },
   },
   {
     title: '送货点',

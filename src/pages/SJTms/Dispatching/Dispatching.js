@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-29 14:03:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-18 14:23:17
+ * @LastEditTime: 2022-05-19 10:24:30
  * @Description: 配送调度主页面
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\Dispatching.js
  */
@@ -47,6 +47,12 @@ export default class Dispatching extends Component {
     return this.schedulePageRef.state.savedRowKeys;
   };
 
+  getSelectPending = () => {
+    const pendingData = this.pendingPageRef.state.pendingData;
+    const pendingRowKeys = this.pendingPageRef.state.pendingRowKeys;
+    return pendingData ? pendingData.filter(x => pendingRowKeys.indexOf(x.uuid) != -1) : [];
+  };
+
   render() {
     if (this.props.dispatching.showPage === 'query') {
       return (
@@ -65,6 +71,7 @@ export default class Dispatching extends Component {
                         ref={ref => (this.orderPoolPageRef = ref)}
                         refreshSchedule={this.refreshScheduleTable}
                         refreshPending={this.refreshPendingTable}
+                        selectPending={this.getSelectPending}
                       />
                     </div>
                   </Col>

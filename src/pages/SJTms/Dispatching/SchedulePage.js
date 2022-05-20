@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-18 14:22:15
+ * @LastEditTime: 2022-05-18 15:00:36
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -143,6 +143,7 @@ export default class SchedulePage extends Component {
             message.success('删除成功！');
             this.getSchedules(activeTab);
             this.props.refreshOrder();
+            this.props.refreshPending();
           }
         });
       },

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-18 14:16:50
+ * @LastEditTime: 2022-05-18 17:51:19
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -29,7 +29,6 @@ export default class PendingPage extends Component {
 
   //刷新
   refreshTable = () => {
-    console.log('refreshPendingTable');
     this.getPendingOrders();
   };
 
@@ -67,8 +66,8 @@ export default class PendingPage extends Component {
   handleAddOrder = () => {
     const { pendingRowKeys } = this.state;
     const scheduleRowKeys = this.props.scheduleRowKeys();
-    if (scheduleRowKeys.length == 0 || scheduleRowKeys == undefined) {
-      message.warning('请选择排车单！');
+    if (scheduleRowKeys.length != 1 || scheduleRowKeys == undefined) {
+      message.warning('请选择一张排车单！');
       return;
     }
     if (pendingRowKeys.length == 0 || pendingRowKeys == undefined) {

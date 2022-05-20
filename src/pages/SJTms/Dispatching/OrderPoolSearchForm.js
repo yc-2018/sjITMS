@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-18 14:09:43
+ * @LastEditTime: 2022-05-19 09:49:23
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -13,7 +13,7 @@ import {
   SimpleAutoComplete,
   SimpleSelect,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
-import { string } from 'prop-types';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
 @Form.create()
 export default class OrderPoolSearchForm extends Component {
@@ -54,14 +54,19 @@ export default class OrderPoolSearchForm extends Component {
         <Row justify="space-around">
           <Col span={10}>
             <Form.Item label="线路">
-              {getFieldDecorator('shipGroupCode', { initialValue: '' })(
+              {getFieldDecorator('lineCode', { initialValue: '' })(
                 <SimpleTreeSelect
                   placeholder="请选择线路"
                   textField="[%CODE%]%NAME%"
-                  valueField="UUID"
+                  valueField="CODE"
+                  sonField="UUID"
                   parentField="PARENTUUID"
                   queryParams={{ tableName: 'v_sj_tms_line_system' }}
                   showSearch
+                  linkFilter={{
+                    COMPANYUUID: loginCompany().uuid,
+                    DISPATCHCENTERUUID: loginOrg().uuid,
+                  }}
                   multiSave="PARENTUUID:UUID"
                 />
               )}
@@ -88,6 +93,10 @@ export default class OrderPoolSearchForm extends Component {
                   textField="[%CODE%]%NAME%"
                   valueField="CODE"
                   searchField="CODE,NAME"
+                  linkFilter={{
+                    COMPANYUUID: loginCompany().uuid,
+                    DISPATCHCENTERUUID: loginOrg().uuid,
+                  }}
                   queryParams={{ tableName: 'v_sj_itms_ship_store' }}
                   autoComplete
                   allowClear={true}
@@ -111,9 +120,6 @@ export default class OrderPoolSearchForm extends Component {
             >
               查询
             </Button>
-            {/* <Button style={{ marginLeft: 10 }} onClick={this.handleReset}>
-              重置
-            </Button> */}
           </Col>
         </Row>
       </Form>

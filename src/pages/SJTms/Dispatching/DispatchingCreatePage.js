@@ -13,6 +13,8 @@ import {
   Button,
   Popconfirm,
   Icon,
+  Statistic,
+  Badge,
 } from 'antd';
 import { queryAllData, dynamicQuery } from '@/services/quick/Quick';
 import { getSchedule, save, modify, getRecommend } from '@/services/sjitms/ScheduleBill';
@@ -23,10 +25,6 @@ import { sumBy, uniq, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
 const { Search } = Input;
-const queryParams = [
-  { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
-  { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
-];
 
 export default class DispatchingCreatePage extends Component {
   basicEmp = [];
@@ -53,8 +51,12 @@ export default class DispatchingCreatePage extends Component {
   //初始化数据
   initData = async (isEdit, record) => {
     let { vehicles, employees } = this.state;
+    const queryParams = [
+      { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+      { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
+    ];
     //获取车辆
-    if (vehicles.length == 0) {
+    if (vehicles.length == 0 || vehicles[0].DISPATCHCENTERUUID != loginOrg().uuid) {
       const vehiclesData = await queryAllData({
         quickuuid: 'sj_itms_vehicle',
         superQuery: { queryParams },
@@ -62,7 +64,7 @@ export default class DispatchingCreatePage extends Component {
       vehicles = vehiclesData.data.records;
     }
     //获取人员
-    if (employees.length == 0) {
+    if (employees.length == 0 || employees[0].DISPATCHCENTERUUID != loginOrg().uuid) {
       const employeesData = await queryAllData({
         quickuuid: 'sj_itms_employee',
         superQuery: { queryParams },
@@ -79,25 +81,18 @@ export default class DispatchingCreatePage extends Component {
               : [];
             const selectVehicle = vehicles.find(x => x.UUID == response.data.vehicle.uuid);
             //将选中车辆放到第一位
-            let obj = {};
-            vehicles.forEach((item, index) => {
-              if (item.CODE == selectVehicle.CODE) {
-                obj = item;
-                vehicles.splice(index, 1);
-                return;
-              }
-            });
-            vehicles.unshift(obj);
-            const memberList = response.data.memberDetails.map(x => x.member);
-            const selectEmployees =
-              employees.length != 0
-                ? response.data.memberDetails.map(record => {
-                    let employee = employees.find(x => x.UUID == record.member.uuid);
-                    employee.memberType = record.memberType;
-                    return employee;
-                  })
-                : [];
+            selectVehicle ? vehicles.unshift(selectVehicle) : {};
+            vehicles = uniqBy(vehicles, 'CODE');
 
+            const memberList = response.data.memberDetails.map(x => x.member);
+            const selectEmployees = employees
+              .filter(
+                x => response.data.memberDetails.findIndex(m => m.member.uuid == x.UUID) != -1
+              )
+              .map(item => {
+                item.memberType = item.ROLE_TYPE;
+                return item;
+              });
             //选中的人放到第一位
             employees = uniqBy([...selectEmployees, ...employees], 'CODE');
 
@@ -185,6 +180,10 @@ export default class DispatchingCreatePage extends Component {
     const index = selectEmployees.findIndex(x => x.UUID == employee.UUID);
     employee.memberType = employee.ROLE_TYPE;
     index == -1 ? employees.push(employee) : employees.splice(index, 1);
+    if (employees.filter(item => item.memberType == 'Driver').length >= 2) {
+      message.error('只允许一位驾驶员！');
+      return;
+    }
     this.setState({ selectEmployees: employees });
   };
   employeeFilter = event => {
@@ -394,10 +393,17 @@ export default class DispatchingCreatePage extends Component {
 
   updateCount = e => {
     const { orders } = this.state;
-    for (const order of orders) {
-      if (order.billNumber == e.billNumber) {
-        order.realCartonCount -= e.count.cartonCount;
-        break;
+    if (e.count.cartonCount > 0) {
+      for (const order of orders) {
+        if (order.billNumber == e.billNumber) {
+          order.volume =
+            ((order.realCartonCount - e.count.cartonCount) / order.realCartonCount) * order.volume;
+          order.weight =
+            ((order.realCartonCount - e.count.cartonCount) / order.realCartonCount) * order.weight;
+          order.realCartonCount -= e.count.cartonCount;
+          order.isSplit = 'Y';
+          break;
+        }
       }
     }
     this.setState({ orders, editPageVisible: false });
@@ -555,16 +561,6 @@ export default class DispatchingCreatePage extends Component {
                 className={dispatchingStyles.orderTotalCard}
                 bodyStyle={{ padding: 5 }}
                 title={
-                  // <div
-                  //   dangerouslySetInnerHTML={{
-                  //     __html: selectVehicle.PLATENUMBER
-                  //       ? '已选车辆: ' +
-                  //         selectVehicle.PLATENUMBER +
-                  //         ' &nbsp;&nbsp;' +
-                  //         selectVehicle.VEHICLETYPE
-                  //       : '车辆',
-                  //   }}
-                  // />
                   <div>
                     <span
                       className={

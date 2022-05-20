@@ -29,7 +29,7 @@ import {
   SimpleRadio,
   SimpleAutoComplete,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
-
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -157,6 +157,8 @@ export default class LineShipAddress extends QuickFormSearchPage {
           LATITUDE: address.LATITUDE,
           TYPE: address.TYPE,
           ORDERNUM: orderNum,
+          COMPANYUUID:loginCompany().uuid,
+          DISPATCHCENTERUUID:loginOrg().uuid
         };
       });
     if (saveData.length > 0) {
