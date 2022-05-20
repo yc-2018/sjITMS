@@ -48,13 +48,39 @@ export default class DispatchingCreatePage extends Component {
     this.props.onRef && this.props.onRef(this);
   };
 
+  getRecommendByOrders = async (record, vehicles) => {
+    //组装推荐人员车辆接口入参;
+    let params = {
+      storeCodes: record.map(item => {
+        return item.deliveryPoint.code;
+      }),
+      companyUuid: loginCompany().uuid,
+      dUuid: loginOrg().uuid,
+    };
+    //车辆熟练度
+    let recommend = await getRecommend(params);
+    let cCountsMap = recommend.data?.cCountsMap ? recommend.data.cCountsMap : {};
+    let cCountTotal = recommend.data?.cCountTotal;
+    for (const vehicle of vehicles) {
+      if (vehicle.CODE in cCountsMap) {
+        vehicle.pro = (cCountsMap[vehicle.CODE] / cCountTotal) * 100;
+      } else {
+        vehicle.pro = 0;
+      }
+    }
+    //排序
+    vehicles = vehicles.sort((a, b) => b.pro - a.pro);
+    return vehicles;
+  };
+
   //初始化数据
   initData = async (isEdit, record) => {
     let { vehicles, employees } = this.state;
-    const queryParams = [
+    let queryParams = [
       { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
       { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
     ];
+    // let { vehicles, employees } = this.state;
     //获取车辆
     if (vehicles.length == 0 || vehicles[0].DISPATCHCENTERUUID != loginOrg().uuid) {
       const vehiclesData = await queryAllData({
@@ -63,6 +89,7 @@ export default class DispatchingCreatePage extends Component {
       });
       vehicles = vehiclesData.data.records;
     }
+
     //获取人员
     if (employees.length == 0 || employees[0].DISPATCHCENTERUUID != loginOrg().uuid) {
       const employeesData = await queryAllData({
@@ -71,16 +98,44 @@ export default class DispatchingCreatePage extends Component {
       });
       employees = employeesData.data.records;
     }
+
+    if (!isEdit) {
+      let map = new Map();
+      let uniqRecord = [];
+      record.forEach(item => {
+        if (!map.has(item.owner.uuid)) {
+          // has()用于判断map是否包为item的属性值
+          map.set(item.owner.uuid, true); // 使用set()将item设置到map中，并设置其属性值为true
+          uniqRecord.push(item);
+        }
+      });
+      console.log('uniqRecord', uniqRecord);
+      let noIn = uniqRecord.filter(item => item.is_private == '0');
+      let ownerNames = noIn
+        .map(obj => {
+          return "'" + obj.owner.name + "'";
+        })
+        .join(',')
+        .split(',');
+      // console.log('noIn', ownerNames, noIn);
+      if (record.length > 1 && uniqRecord.length > 1) {
+        message.error('货主' + ownerNames + '不可共配！');
+        this.exit();
+      }
+      vehicles = await this.getRecommendByOrders(record, vehicles);
+    }
+
     isEdit
-      ? getSchedule(record.uuid).then(response => {
+      ? getSchedule(record.uuid).then(async response => {
           if (response.success) {
             let details = response.data.details
               ? response.data.details.map(item => {
                   return { ...item, billNumber: item.orderNumber };
                 })
               : [];
+            vehicles = await this.getRecommendByOrders(details, vehicles);
             const selectVehicle = vehicles.find(x => x.UUID == response.data.vehicle.uuid);
-            //将选中车辆放到第一位
+            // //将选中车辆放到第一位
             selectVehicle ? vehicles.unshift(selectVehicle) : {};
             vehicles = uniqBy(vehicles, 'CODE');
 
@@ -203,10 +258,11 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //移除明细
-  removeDetail = record => {
+  removeDetail = async record => {
     const { orders } = this.state;
     orders.splice(orders.findIndex(x => x.uuid == record.uuid), 1);
-    this.setState({ orders });
+    let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
+    this.setState({ orders, vehicles });
   };
 
   //保存
@@ -372,12 +428,25 @@ export default class DispatchingCreatePage extends Component {
               }
               onClick={() => this.handleVehicle(vehicle)}
             >
-              <Icon type="car" style={{ fontSize: '40px', margin: '-10px 0 0 -100px' }} />
-              <div style={{ marginTop: '-26px' }}>
-                <span>
-                  &nbsp;
-                  {vehicle.PLATENUMBER}
-                </span>
+              <span>
+                <Badge
+                  style={{
+                    backgroundColor:
+                      vehicle.pro >= 40 ? '#52c41a' : vehicle.pro >= 20 ? 'orange' : 'red',
+                    margin: '-32px 0 0 120px',
+                  }}
+                  count={Math.ceil(vehicle.pro) + '%'}
+                  title="熟练度"
+                />
+              </span>
+              <div style={{ marginTop: '-20px' }}>
+                <Icon type="car" style={{ fontSize: '40px', margin: '-10px 0 0 -100px' }} />
+                <div style={{ marginTop: '-26px' }}>
+                  <span>
+                    &nbsp;
+                    {vehicle.PLATENUMBER}
+                  </span>
+                </div>
               </div>
             </a>
           );

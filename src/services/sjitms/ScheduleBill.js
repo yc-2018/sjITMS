@@ -131,3 +131,10 @@ export async function saveOfUpdateLifecycle(payload) {
     body: payload,
   });
 }
+
+export async function getRecommend(payload) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/recommend`, {
+    method: 'POST',
+    body: payload,
+  });
+}
