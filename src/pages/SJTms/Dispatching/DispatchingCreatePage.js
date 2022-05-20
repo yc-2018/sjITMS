@@ -25,10 +25,6 @@ import { sumBy, uniq, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
 const { Search } = Input;
-const queryParams = [
-  { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
-  { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
-];
 
 export default class DispatchingCreatePage extends Component {
   basicEmp = [];
@@ -55,8 +51,12 @@ export default class DispatchingCreatePage extends Component {
   //初始化数据
   initData = async (isEdit, record) => {
     let { vehicles, employees } = this.state;
+    const queryParams = [
+      { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+      { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
+    ];
     //获取车辆
-    if (vehicles.length == 0) {
+    if (vehicles.length == 0 || vehicles[0].DISPATCHCENTERUUID != loginOrg().uuid) {
       const vehiclesData = await queryAllData({
         quickuuid: 'sj_itms_vehicle',
         superQuery: { queryParams },
@@ -64,7 +64,7 @@ export default class DispatchingCreatePage extends Component {
       vehicles = vehiclesData.data.records;
     }
     //获取人员
-    if (employees.length == 0) {
+    if (employees.length == 0 || employees[0].DISPATCHCENTERUUID != loginOrg().uuid) {
       const employeesData = await queryAllData({
         quickuuid: 'sj_itms_employee',
         superQuery: { queryParams },
@@ -81,15 +81,9 @@ export default class DispatchingCreatePage extends Component {
               : [];
             const selectVehicle = vehicles.find(x => x.UUID == response.data.vehicle.uuid);
             //将选中车辆放到第一位
-            let obj = {};
-            vehicles.forEach((item, index) => {
-              if (item.CODE == selectVehicle.CODE) {
-                obj = item;
-                vehicles.splice(index, 1);
-                return;
-              }
-            });
-            vehicles.unshift(obj);
+            selectVehicle ? vehicles.unshift(selectVehicle) : {};
+            vehicles = uniqBy(vehicles, 'CODE');
+
             const memberList = response.data.memberDetails.map(x => x.member);
             const selectEmployees = employees
               .filter(
