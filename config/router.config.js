@@ -1163,7 +1163,7 @@ export default [
         path: '/operation',
         name: 'tms',
         org: ['DISPATCH_CENTER'],
-        authority: ['itms.base'],
+        authority: ['itms.msg'],
         icon: 'icon-menu_yunshuguanli1',
         routes: [
           {
@@ -1172,7 +1172,7 @@ export default [
             org: ['DISPATCH_CENTER'],
             component: './SJTms/Order/OrderForm',
             quickuuid: 'sj_itms_order',
-            // authority: ['itms.base.vehicle'],
+            authority: ['sj_itms_order'],
           },
           {
             path: '/operation/dispatching',
