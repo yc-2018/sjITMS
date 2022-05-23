@@ -491,6 +491,15 @@ export default class DispatchingCreatePage extends Component {
       editPageVisible,
     } = this.state;
     const totalData = this.groupByOrder(orders);
+    let vehicleCalc;
+    if (selectVehicle) {
+      vehicleCalc = {
+        weight: Math.ceil(selectVehicle.BEARWEIGHT) - 1, //重量
+        volume: Math.ceil((selectVehicle.BEARVOLUME - 1) * (selectVehicle.BEARVOLUMERATE * 0.01)), //容积*容积率
+        initVolume: Math.ceil(selectVehicle.BEARVOLUME - 1), //原始体积
+      };
+    }
+
     const buildRowOperation = {
       title: '操作',
       width: 100,
@@ -668,7 +677,7 @@ export default class DispatchingCreatePage extends Component {
                         <div style={{ flex: 1 }}>
                           <div>容积</div>
                           <div className={dispatchingStyles.orderTotalNumber}>
-                            {Math.ceil(selectVehicle.BEARVOLUME) - 1}
+                            {vehicleCalc.initVolume}
                             m³
                           </div>
                         </div>
@@ -698,17 +707,12 @@ export default class DispatchingCreatePage extends Component {
                           <div className={dispatchingStyles.orderTotalNumber}>
                             <span
                               style={
-                                Math.ceil(selectVehicle.BEARVOLUME) -
-                                  1 -
-                                  Math.ceil(totalData.volume.toFixed(4)) >
-                                0
+                                vehicleCalc.volume - Math.ceil(totalData.volume.toFixed(4)) > 0
                                   ? { color: 'green' }
                                   : { color: 'red' }
                               }
                             >
-                              {Math.ceil(selectVehicle.BEARVOLUME) -
-                                1 -
-                                Math.ceil(totalData.volume.toFixed(4))}
+                              {vehicleCalc.volume - Math.ceil(totalData.volume.toFixed(4))}
                               m³
                             </span>
                           </div>
