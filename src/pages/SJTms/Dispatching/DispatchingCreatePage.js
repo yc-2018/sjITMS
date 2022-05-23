@@ -102,6 +102,9 @@ export default class DispatchingCreatePage extends Component {
     if (!isEdit) {
       let map = new Map();
       let uniqRecord = [];
+      // let recordFilter = record.filter(item => {
+      //   item.orderType != 'OnlyBill';
+      // });
       record.forEach(item => {
         if (!map.has(item.owner.uuid)) {
           // has()用于判断map是否包为item的属性值
@@ -109,7 +112,7 @@ export default class DispatchingCreatePage extends Component {
           uniqRecord.push(item);
         }
       });
-      console.log('uniqRecord', uniqRecord);
+      // console.log('uniqRecord', uniqRecord);
       let noIn = uniqRecord.filter(item => item.is_private == '0');
       let ownerNames = noIn
         .map(obj => {
@@ -435,7 +438,7 @@ export default class DispatchingCreatePage extends Component {
                       vehicle.pro >= 40 ? '#52c41a' : vehicle.pro >= 20 ? 'orange' : 'red',
                     margin: '-32px 0 0 120px',
                   }}
-                  count={Math.ceil(vehicle.pro) + '%'}
+                  count={vehicle.pro > 0 ? Math.ceil(vehicle.pro) + '%' : ''}
                   title="熟练度"
                 />
               </span>
