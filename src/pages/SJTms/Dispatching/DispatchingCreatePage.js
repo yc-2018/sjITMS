@@ -698,13 +698,17 @@ export default class DispatchingCreatePage extends Component {
                           <div className={dispatchingStyles.orderTotalNumber}>
                             <span
                               style={
-                                selectVehicle.BEARVOLUME - totalData.volume.toFixed(4) > 0
+                                Math.ceil(selectVehicle.BEARVOLUME) -
+                                  1 -
+                                  Math.ceil(totalData.volume.toFixed(4)) >
+                                0
                                   ? { color: 'green' }
                                   : { color: 'red' }
                               }
                             >
-                              {Math.ceil(selectVehicle.BEARVOLUME - totalData.volume.toFixed(4)) -
-                                1}
+                              {Math.ceil(selectVehicle.BEARVOLUME) -
+                                1 -
+                                Math.ceil(totalData.volume.toFixed(4))}
                               m³
                             </span>
                           </div>
@@ -715,13 +719,15 @@ export default class DispatchingCreatePage extends Component {
                           <div className={dispatchingStyles.orderTotalNumber}>
                             <span
                               style={
-                                selectVehicle.BEARWEIGHT - totalData.weight.toFixed(4) > 0
+                                Math.ceil(selectVehicle.BEARWEIGHT - 1) -
+                                  Math.ceil(totalData.weight.toFixed(4)) >
+                                0
                                   ? { color: 'green' }
                                   : { color: 'red' }
                               }
                             >
-                              {Math.ceil(selectVehicle.BEARWEIGHT - totalData.weight.toFixed(4)) -
-                                1}
+                              {Math.ceil(selectVehicle.BEARWEIGHT - 1) -
+                                Math.ceil(totalData.weight.toFixed(4))}
                               kg
                             </span>
                           </div>
