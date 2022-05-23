@@ -7,13 +7,13 @@ export const OrderColumns = [
     title: '单号',
     dataIndex: 'billNumber',
     width: 120,
-    render: (val, record) => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '作业号',
     dataIndex: 'waveNum',
     width: 80,
-    render: (val, record) => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '线路',
@@ -22,6 +22,12 @@ export const OrderColumns = [
     render: val => {
       return val ? <EllipsisCol colValue={val.name} /> : <Empty />;
     },
+  },
+  {
+    title: '单据类型',
+    dataIndex: 'orderType',
+    width: 60,
+    render: val => (val ? <EllipsisCol colValue={OrderType[val].caption} /> : <Empty />),
   },
   {
     title: '送货点',
@@ -35,7 +41,7 @@ export const OrderColumns = [
     title: '来源单号',
     dataIndex: 'sourceNum',
     width: 120,
-    render: (val, record) => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '整件数(估/实)',
@@ -62,13 +68,13 @@ export const OrderColumns = [
     title: '体积',
     dataIndex: 'volume',
     width: 80,
-    render: (val, record) => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '重量',
     dataIndex: 'weight',
     width: 80,
-    render: (val, record) => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '货主',

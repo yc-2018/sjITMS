@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-18 15:00:36
+ * @LastEditTime: 2022-05-23 11:32:54
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -169,12 +169,13 @@ export default class SchedulePage extends Component {
   //表格行点击
   onClickRow = record => {
     const { scheduleData } = this.state;
-    let selectSchedule = {};
+    let selectSchedule = undefined;
     let newScheduleData = scheduleData.map(item => {
-      if (item.uuid == record.uuid) {
+      const selected = item.uuid == record.uuid;
+      if (selected && !item.clicked) {
         selectSchedule = item;
       }
-      item.clicked = item.uuid == record.uuid;
+      item.clicked = selected && !item.clicked;
       return item;
     });
     this.setState({ scheduleData: newScheduleData });
@@ -224,11 +225,7 @@ export default class SchedulePage extends Component {
       }
     };
 
-    const billNumberColumn = {
-      title: '单号',
-      dataIndex: 'billNumber',
-      width: 150,
-    };
+    const billNumberColumn = { title: '单号', dataIndex: 'billNumber', width: 150 };
     const editRender = {
       render: (val, record) => (
         <a href="#" onClick={this.editTable(record)}>

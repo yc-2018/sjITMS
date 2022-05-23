@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-18 14:23:52
+ * @LastEditTime: 2022-05-20 10:40:29
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -89,7 +89,7 @@ export default class ScheduleDetailPage extends Component {
           </Col>
         </Row>
         <DispatchingTable
-          onClickRow={false}
+          clickRow
           pagination={false}
           loading={loading}
           dataSource={schedule.details}
