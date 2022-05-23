@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-23 11:32:54
+ * @LastEditTime: 2022-05-23 15:17:17
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -213,7 +213,7 @@ export default class SchedulePage extends Component {
         default:
           return (
             <div>
-              <Button>新建排车单</Button>
+              <Button>新建</Button>
               <Button type={'primary'} style={{ marginLeft: 10 }} onClick={this.handleApprove}>
                 批准
               </Button>
