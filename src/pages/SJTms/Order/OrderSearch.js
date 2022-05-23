@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-23 11:16:23
+ * @LastEditTime: 2022-05-23 11:31:53
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -29,8 +29,7 @@ export default class OrderSearch extends QuickFormSearchPage {
   drawcell = e => {};
 
   onUpload = () => {
-    console.log('this.state', this.state);
-    // this.props.switchTab('import');
+    this.props.switchTab('import');
   };
 
   drawToolsButton = () => {
