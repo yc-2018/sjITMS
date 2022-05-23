@@ -2,13 +2,14 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-17 09:35:58
+ * @LastEditTime: 2022-05-23 11:31:53
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
 import { Table, Button, Input, Col, Row, Popconfirm, message, Modal, Upload } from 'antd';
 import { colWidth } from '@/utils/ColWidth';
 import { connect } from 'dva';
+import { havePermission } from '@/utils/authority';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { audit, cancel } from '@/services/sjitms/OrderBill';
 
@@ -58,7 +59,11 @@ export default class OrderSearch extends QuickFormSearchPage {
   drawTopButton = () => {
     return (
       <span>
-        <Button type="primary" onClick={this.onUpload}>
+        <Button
+          hidden={!havePermission(this.state.reportCode + '.import')}
+          type="primary"
+          onClick={this.onUpload}
+        >
           导入
         </Button>
       </span>
@@ -119,7 +124,7 @@ export default class OrderSearch extends QuickFormSearchPage {
     return (
       <div>
         <Button
-          // hidden={!havePermission(this.state.reportCode + '.create')}
+          hidden={!havePermission(this.state.reportCode + '.create')}
           onClick={this.onCreate}
           type="primary"
           icon="plus"
@@ -127,21 +132,21 @@ export default class OrderSearch extends QuickFormSearchPage {
           新建
         </Button>
         <Button
-          // hidden={!havePermission(this.state.reportCode + '.edit')}
+          hidden={!havePermission(this.state.reportCode + '.edit')}
           onClick={this.onUpdate}
           type="primary"
         >
           编辑
         </Button>
         <Button
-          // hidden={!havePermission(this.state.reportCode + '.view')}
+          hidden={!havePermission(this.state.reportCode + '.view')}
           onClick={this.onView}
           type="primary"
         >
           查看
         </Button>
         <Button
-          // hidden={!havePermission(this.state.reportCode + '.port')}
+          hidden={!havePermission(this.state.reportCode + '.port')}
           onClick={this.port}
           type="primary"
         >

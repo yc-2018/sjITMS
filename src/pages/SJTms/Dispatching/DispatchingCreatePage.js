@@ -13,6 +13,9 @@ import {
   Button,
   Popconfirm,
   Icon,
+  Statistic,
+  Badge,
+  Tooltip,
 } from 'antd';
 import { queryAllData, dynamicQuery } from '@/services/quick/Quick';
 import { getSchedule, save, modify, getRecommend } from '@/services/sjitms/ScheduleBill';
@@ -23,10 +26,6 @@ import { sumBy, uniq, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
 const { Search } = Input;
-const queryParams = [
-  { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
-  { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
-];
 
 export default class DispatchingCreatePage extends Component {
   basicEmp = [];
@@ -50,54 +49,126 @@ export default class DispatchingCreatePage extends Component {
     this.props.onRef && this.props.onRef(this);
   };
 
+  getRecommendByOrders = async (record, vehicles) => {
+    if (vehicles.length == 0) {
+      return;
+    }
+    //组装推荐人员车辆接口入参;
+    let params = {
+      storeCodes: record.map(item => {
+        return item.deliveryPoint.code;
+      }),
+      companyUuid: loginCompany().uuid,
+      dUuid: loginOrg().uuid,
+    };
+    //车辆熟练度
+    let recommend = await getRecommend(params);
+    let cCountsMap = recommend.data?.cCountsMap ? recommend.data.cCountsMap : {};
+    let cCountTotal = recommend.data?.cCountTotal;
+    for (const vehicle of vehicles) {
+      if (vehicle.CODE in cCountsMap) {
+        vehicle.pro = (cCountsMap[vehicle.CODE] / cCountTotal) * 100;
+      } else {
+        vehicle.pro = 0;
+      }
+    }
+    //排序
+    vehicles = vehicles.sort((a, b) => b.pro - a.pro);
+    return vehicles;
+  };
+
   //初始化数据
   initData = async (isEdit, record) => {
     let { vehicles, employees } = this.state;
+    let queryParams = [
+      { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+      { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
+    ];
+    // let { vehicles, employees } = this.state;
     //获取车辆
-    if (vehicles.length == 0) {
-      const vehiclesData = await queryAllData({
-        quickuuid: 'sj_itms_vehicle',
-        superQuery: { queryParams },
-      });
-      vehicles = vehiclesData.data.records;
+    if (vehicles.length == 0 || vehicles[0].DISPATCHCENTERUUID != loginOrg().uuid) {
+      let param = {
+        tableName: 'v_sj_itms_vehicle_stat',
+        condition: {
+          params: [
+            { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+            { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
+          ],
+        },
+      };
+      const vehiclesData = await dynamicQuery(param);
+      if (vehiclesData.result.records != 'false') {
+        vehicles = vehiclesData.result.records;
+      }
+
+      // const vehiclesData = await queryAllData({
+      //   quickuuid: 'sj_itms_vehicle',
+      //   superQuery: { queryParams },
+      // });
+      // vehicles = vehiclesData.data.records;
     }
+
     //获取人员
-    if (employees.length == 0) {
+    if (employees.length == 0 || employees[0].DISPATCHCENTERUUID != loginOrg().uuid) {
       const employeesData = await queryAllData({
         quickuuid: 'sj_itms_employee',
         superQuery: { queryParams },
       });
       employees = employeesData.data.records;
     }
+
+    if (!isEdit) {
+      let map = new Map();
+      let uniqRecord = [];
+      // let recordFilter = record.filter(item => {
+      //   item.orderType != 'OnlyBill';
+      // });
+      record.forEach(item => {
+        if (!map.has(item.owner.uuid)) {
+          // has()用于判断map是否包为item的属性值
+          map.set(item.owner.uuid, true); // 使用set()将item设置到map中，并设置其属性值为true
+          uniqRecord.push(item);
+        }
+      });
+      // console.log('uniqRecord', uniqRecord);
+      let noIn = uniqRecord.filter(item => item.is_private == '0');
+      let ownerNames = noIn
+        .map(obj => {
+          return "'" + obj.owner.name + "'";
+        })
+        .join(',')
+        .split(',');
+      // console.log('noIn', ownerNames, noIn);
+      if (record.length > 1 && uniqRecord.length > 1) {
+        message.error('货主' + ownerNames + '不可共配！');
+        this.exit();
+      }
+      vehicles = await this.getRecommendByOrders(record, vehicles);
+    }
+
     isEdit
-      ? getSchedule(record.uuid).then(response => {
+      ? getSchedule(record.uuid).then(async response => {
           if (response.success) {
             let details = response.data.details
               ? response.data.details.map(item => {
                   return { ...item, billNumber: item.orderNumber };
                 })
               : [];
+            vehicles = await this.getRecommendByOrders(details, vehicles);
             const selectVehicle = vehicles.find(x => x.UUID == response.data.vehicle.uuid);
-            //将选中车辆放到第一位
-            let obj = {};
-            vehicles.forEach((item, index) => {
-              if (item.CODE == selectVehicle.CODE) {
-                obj = item;
-                vehicles.splice(index, 1);
-                return;
-              }
-            });
-            vehicles.unshift(obj);
-            const memberList = response.data.memberDetails.map(x => x.member);
-            const selectEmployees =
-              employees.length != 0
-                ? response.data.memberDetails.map(record => {
-                    let employee = employees.find(x => x.UUID == record.member.uuid);
-                    employee.memberType = record.memberType;
-                    return employee;
-                  })
-                : [];
+            // //将选中车辆放到第一位
+            selectVehicle ? vehicles.unshift(selectVehicle) : {};
+            vehicles = uniqBy(vehicles, 'CODE');
 
+            const memberList = response.data.memberDetails.map(x => x.member);
+            const selectEmployees = employees
+              .filter(
+                x => response.data.memberDetails.findIndex(m => m.member.uuid == x.UUID) != -1
+              )
+              .map(item => {
+                item.memberType = item.ROLE_TYPE;
+                return item;
+              });
             //选中的人放到第一位
             employees = uniqBy([...selectEmployees, ...employees], 'CODE');
 
@@ -143,6 +214,7 @@ export default class DispatchingCreatePage extends Component {
 
   //选车
   handleVehicle = async vehicle => {
+    console.log('vehicle', vehicle);
     let param = {
       tableName: 'v_sj_itms_vehicle_employee_z',
       condition: {
@@ -185,6 +257,10 @@ export default class DispatchingCreatePage extends Component {
     const index = selectEmployees.findIndex(x => x.UUID == employee.UUID);
     employee.memberType = employee.ROLE_TYPE;
     index == -1 ? employees.push(employee) : employees.splice(index, 1);
+    if (employees.filter(item => item.memberType == 'Driver').length >= 2) {
+      message.error('只允许一位驾驶员！');
+      return;
+    }
     this.setState({ selectEmployees: employees });
   };
   employeeFilter = event => {
@@ -204,10 +280,11 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //移除明细
-  removeDetail = record => {
+  removeDetail = async record => {
     const { orders } = this.state;
     orders.splice(orders.findIndex(x => x.uuid == record.uuid), 1);
-    this.setState({ orders });
+    let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
+    this.setState({ orders, vehicles });
   };
 
   //保存
@@ -363,24 +440,52 @@ export default class DispatchingCreatePage extends Component {
       >
         {vehicles?.map(vehicle => {
           return (
-            <a
-              href="#"
-              style={{ fontWeight: 'bold' }}
-              className={
-                vehicle.UUID == selectVehicle.UUID
-                  ? dispatchingStyles.selectedVehicleCardWapper
-                  : dispatchingStyles.vehicleCardWapper
+            <Tooltip
+              placement="top"
+              title={
+                vehicle.BILLNUMBERS
+                  ? vehicle.PLATENUMBER + '在' + vehicle.BILLNUMBERS + '排车单中有未完成的任务'
+                  : ''
               }
-              onClick={() => this.handleVehicle(vehicle)}
             >
-              <Icon type="car" style={{ fontSize: '40px', margin: '-10px 0 0 -100px' }} />
-              <div style={{ marginTop: '-26px' }}>
-                <span>
-                  &nbsp;
-                  {vehicle.PLATENUMBER}
-                </span>
-              </div>
-            </a>
+              <Badge
+                count={vehicle.BILLCOUNTS > 0 ? vehicle.BILLCOUNTS : ''}
+                title={vehicle.BILLNUMBERS}
+                style={{ margin: '15px 0 0 15px', backgroundColor: 'orange' }}
+              >
+                <a
+                  href="#"
+                  style={{ fontWeight: 'bold', margin: '15px 0 0 15px' }}
+                  className={
+                    vehicle.UUID == selectVehicle.UUID
+                      ? dispatchingStyles.selectedVehicleCardWapper
+                      : dispatchingStyles.vehicleCardWapper
+                  }
+                  onClick={() => this.handleVehicle(vehicle)}
+                >
+                  <span>
+                    <Badge
+                      style={{
+                        backgroundColor:
+                          vehicle.pro >= 40 ? '#52c41a' : vehicle.pro >= 20 ? 'orange' : 'red',
+                        margin: '-25px 0 0 120px',
+                      }}
+                      count={vehicle.pro > 0 ? vehicle.pro.toFixed(0) + '%' : ''}
+                      title={'熟练度' + vehicle.pro.toFixed(0) + '%'}
+                    />
+                  </span>
+                  <div style={{ marginTop: '-10px' }}>
+                    <Icon type="car" style={{ fontSize: '40px', margin: '-10px 0 0 -100px' }} />
+                    <div style={{ marginTop: '-26px' }}>
+                      <span>
+                        &nbsp;
+                        {vehicle.PLATENUMBER}
+                      </span>
+                    </div>
+                  </div>
+                </a>
+              </Badge>
+            </Tooltip>
           );
         })}
       </Card>
@@ -394,10 +499,17 @@ export default class DispatchingCreatePage extends Component {
 
   updateCount = e => {
     const { orders } = this.state;
-    for (const order of orders) {
-      if (order.billNumber == e.billNumber) {
-        order.realCartonCount -= e.count.cartonCount;
-        break;
+    if (e.count.cartonCount > 0) {
+      for (const order of orders) {
+        if (order.billNumber == e.billNumber) {
+          order.volume =
+            ((order.realCartonCount - e.count.cartonCount) / order.realCartonCount) * order.volume;
+          order.weight =
+            ((order.realCartonCount - e.count.cartonCount) / order.realCartonCount) * order.weight;
+          order.realCartonCount -= e.count.cartonCount;
+          order.isSplit = 'Y';
+          break;
+        }
       }
     }
     this.setState({ orders, editPageVisible: false });
@@ -413,6 +525,25 @@ export default class DispatchingCreatePage extends Component {
       editPageVisible,
     } = this.state;
     const totalData = this.groupByOrder(orders);
+    //车辆可装载信息
+    let vehicleCalc;
+    if (selectVehicle) {
+      vehicleCalc = {
+        weight:
+          selectVehicle.BEARWEIGHT % 1 == 0
+            ? selectVehicle.BEARWEIGHT
+            : Math.ceil(selectVehicle.BEARWEIGHT) - 1, //重量
+        volume:
+          (selectVehicle.BEARVOLUME * (selectVehicle.BEARVOLUMERATE * 0.01)) % 1 == 0
+            ? selectVehicle.BEARVOLUME * (selectVehicle.BEARVOLUMERATE * 0.01)
+            : Math.ceil((selectVehicle.BEARVOLUME - 1) * (selectVehicle.BEARVOLUMERATE * 0.01)), //容积*容积率
+        initVolume:
+          selectVehicle.BEARVOLUME % 1 == 0
+            ? selectVehicle.BEARVOLUME
+            : Math.ceil(selectVehicle.BEARVOLUME - 1), //原始体积
+      };
+    }
+
     const buildRowOperation = {
       title: '操作',
       width: 100,
@@ -555,16 +686,6 @@ export default class DispatchingCreatePage extends Component {
                 className={dispatchingStyles.orderTotalCard}
                 bodyStyle={{ padding: 5 }}
                 title={
-                  // <div
-                  //   dangerouslySetInnerHTML={{
-                  //     __html: selectVehicle.PLATENUMBER
-                  //       ? '已选车辆: ' +
-                  //         selectVehicle.PLATENUMBER +
-                  //         ' &nbsp;&nbsp;' +
-                  //         selectVehicle.VEHICLETYPE
-                  //       : '车辆',
-                  //   }}
-                  // />
                   <div>
                     <span
                       className={
@@ -600,7 +721,7 @@ export default class DispatchingCreatePage extends Component {
                         <div style={{ flex: 1 }}>
                           <div>容积</div>
                           <div className={dispatchingStyles.orderTotalNumber}>
-                            {Math.ceil(selectVehicle.BEARVOLUME) - 1}
+                            {vehicleCalc.initVolume}
                             m³
                           </div>
                         </div>
@@ -618,7 +739,7 @@ export default class DispatchingCreatePage extends Component {
                           <div>载重</div>
                           <div>
                             <span className={dispatchingStyles.orderTotalNumber}>
-                              {Math.ceil(selectVehicle.BEARWEIGHT) - 1}
+                              {vehicleCalc.weight}
                               kg
                             </span>
                           </div>
@@ -630,13 +751,12 @@ export default class DispatchingCreatePage extends Component {
                           <div className={dispatchingStyles.orderTotalNumber}>
                             <span
                               style={
-                                selectVehicle.BEARVOLUME - totalData.volume.toFixed(4) > 0
+                                vehicleCalc.volume - Math.ceil(totalData.volume.toFixed(4)) > 0
                                   ? { color: 'green' }
                                   : { color: 'red' }
                               }
                             >
-                              {Math.ceil(selectVehicle.BEARVOLUME - totalData.volume.toFixed(4)) -
-                                1}
+                              {vehicleCalc.volume - Math.ceil(totalData.volume.toFixed(4))}
                               m³
                             </span>
                           </div>
@@ -647,13 +767,12 @@ export default class DispatchingCreatePage extends Component {
                           <div className={dispatchingStyles.orderTotalNumber}>
                             <span
                               style={
-                                selectVehicle.BEARWEIGHT - totalData.weight.toFixed(4) > 0
+                                vehicleCalc.weight - Math.ceil(totalData.weight.toFixed(4)) > 0
                                   ? { color: 'green' }
                                   : { color: 'red' }
                               }
                             >
-                              {Math.ceil(selectVehicle.BEARWEIGHT - totalData.weight.toFixed(4)) -
-                                1}
+                              {vehicleCalc.weight - Math.ceil(totalData.weight.toFixed(4))}
                               kg
                             </span>
                           </div>

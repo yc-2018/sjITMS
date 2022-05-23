@@ -380,7 +380,7 @@ export default class QuickView extends RyzeViewPage {
           </Button>
         ) : null} */}
         <Button
-          hidden={!havePermission(this.state.reportCode + '.edit')}
+          hidden={!havePermission(this.state.quickuuid + '.edit')}
           type="primary"
           onClick={this.onEdit}
         >

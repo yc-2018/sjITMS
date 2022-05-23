@@ -46,7 +46,8 @@ export default class QuickCreatePage extends CreatePage {
   exHandleChange = e => {};
   drawcell = e => {};
 
-  getFieldKey = (tableName, dbFieldName, key) => tableName + '_' + dbFieldName + (key == undefined ? '' : '_' + key);
+  getFieldKey = (tableName, dbFieldName, key) =>
+    tableName + '_' + dbFieldName + (key == undefined ? '' : '_' + key);
 
   /**
    * 设置字段的值
@@ -80,7 +81,12 @@ export default class QuickCreatePage extends CreatePage {
     }
   };
 
-  getRunTimeProps = (tableName, fieldName, key) => this.state.runTimeProps[this.getFieldKey(tableName, fieldName, key)];
+  getRunTimeProps = (tableName, fieldName, key) => {
+    return {
+      ...this.state.runTimeProps[this.getFieldKey(tableName, fieldName)],
+      ...this.state.runTimeProps[this.getFieldKey(tableName, fieldName, key)],
+    };
+  };
 
   constructor(props) {
     super(props);
@@ -449,7 +455,7 @@ export default class QuickCreatePage extends CreatePage {
         }
       }
     }
-  }
+  };
 
   /**
    * 处理值改变事件
@@ -470,7 +476,6 @@ export default class QuickCreatePage extends CreatePage {
       this.entity[tableName][line][fieldName] = value;
     }
 
-    console.log('entity', this.entity);
     // 处理多值保存
     this.multiSave(e);
     // 字段联动
@@ -479,6 +484,8 @@ export default class QuickCreatePage extends CreatePage {
     // 执行扩展代码
     this.exHandleChange(e);
     this.setState({});
+    // console.log('entity', this.entity);
+    // console.log('runtime', this.state.runTimeProps);
   };
 
   getGutt = () => {
@@ -578,9 +585,14 @@ export default class QuickCreatePage extends CreatePage {
           continue;
         }
         currentTableName = tableName;
-
+        let mustInput = tableItem.onlFormField.dbIsNull ? '' : '*';
         let tailItem = {
-          title: label,
+          title: (
+            <div>
+              <span>{label}</span>
+              <span style={{ color: 'red' }}>{mustInput}</span>
+            </div>
+          ),
           dataIndex: key,
           key: key,
           width: itemColWidth.articleEditColWidth,
@@ -636,7 +648,7 @@ export default class QuickCreatePage extends CreatePage {
         if (field == 'line' || field == 'key') {
           continue;
         }
-        fields[this.getFieldKey(tableName, field, (row.line - 1))] = row[field];
+        fields[this.getFieldKey(tableName, field, row.line - 1)] = row[field];
       }
     }
     this.props.form.setFieldsValue(fields);
@@ -666,9 +678,17 @@ export default class QuickCreatePage extends CreatePage {
     // this.reverseMultiSave(e);
     this.childComponetSourceDataSave(e);
     this.setOrgSearch(e);
-    this.setRunTimeProps(e.tableName, e.fieldName, { onChange: valueEvent => this.handleChange({ valueEvent, line: e.record ? e.record.line - 1 : 0, ...e, }) }, e.record?.key);
+    this.setRunTimeProps(
+      e.tableName,
+      e.fieldName,
+      {
+        onChange: valueEvent =>
+          this.handleChange({ valueEvent, line: e.record ? e.record.line - 1 : 0, ...e }),
+      },
+      e.record?.key
+    );
     e.props = { ...e.props, ...this.getRunTimeProps(e.tableName, e.fieldName, e.record?.key) };
-  }
+  };
 
   /**
    * 保存子控件的数据，重新render时可以重复使用
@@ -677,13 +697,13 @@ export default class QuickCreatePage extends CreatePage {
     const { fieldShowType, props, tableName, record, fieldName } = e;
     if (fieldShowType == 'auto_complete' || fieldShowType == 'sel_tree') {
       e.props.onSourceDataChange = (data, valueEvent) => {
-        if(!this.getRunTimeProps(tableName, fieldName, record?.key)?.sourceData){
-          this.handleLinkField({ ...e, valueEvent });   // 触发过滤
+        if (!this.getRunTimeProps(tableName, fieldName, record?.key)?.sourceData) {
+          this.handleLinkField({ ...e, valueEvent }); // 触发过滤
         }
         this.setRunTimeProps(tableName, fieldName, { sourceData: data }, record?.key, true);
       };
     }
-  }
+  };
 
   // /**
   //  * 多值保存反转初始化数据
@@ -719,26 +739,39 @@ export default class QuickCreatePage extends CreatePage {
     if (!e.props.linkField || !e.valueEvent) {
       return;
     }
-    const { fieldShowType, props, tableName, valueEvent } = e;
+    const { fieldShowType, props, tableName: currentTableName, valueEvent } = e;
     if (fieldShowType == 'auto_complete') {
       const linkFilters = {};
       const linkFields = props.linkField.split(',');
       for (const linkField of linkFields) {
-        const [field, key, value] = linkField.split(':');
-        linkFilters[field] = { ...linkFilters[field], [key]: valueEvent.record[value] };
+        let [field, key, value, tableName] = linkField.split(':');
+        tableName = tableName || currentTableName;
+        if (linkFilters[tableName] == undefined) {
+          linkFilters[tableName] = {};
+        }
+        if (linkFilters[tableName][field] == undefined) {
+          linkFilters[tableName][field] = {};
+        }
+        linkFilters[tableName][field] = {
+          ...linkFilters[tableName][field],
+          [key]: valueEvent.record[value],
+        };
       }
-      for (const field in linkFilters) {
-        this.setLinkFilter(tableName, field, e.record?.key, linkFilters[field]);
+      for (const tableName in linkFilters) {
+        for (const field in linkFilters[tableName]) {
+          this.setLinkFilter(tableName, field, e.record?.key, linkFilters[tableName][field]);
+        }
       }
     }
-  }
+  };
 
   /**
    * 设置字段联动
    */
   setLinkFilter = (tableName, field, key, linkFilter) => {
+    const globalLinkFilter = this.getRunTimeProps(tableName, field)?.linkFilter;
     const oldLinkFilter = this.getRunTimeProps(tableName, field, key)?.linkFilter;
-    this.setRunTimeProps(tableName, field, { linkFilter: { ...oldLinkFilter, ...linkFilter} }, key);
+    this.setRunTimeProps(tableName, field, { linkFilter: { ...oldLinkFilter, ...globalLinkFilter, ...linkFilter} }, key);
   }
 
   /**

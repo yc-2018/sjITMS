@@ -20,6 +20,9 @@ import { dynamicQuery } from '@/services/quick/Quick';
  * {array} sourceData  原始数据
  * {boolean} autoComplete 是否为下拉搜索框
  * {boolean} showSearch 是否允许文本搜索
+ * {string} mode 设置 Select 的模式为多选或标签 multiple | tags
+ * {string} multipleSplit 以什么符号去分割多选组件的 value
+ * {boolean} noRecord 控件不需要record，直接返回value
  */
 export default class SimpleAutoComplete extends Component {
   state = {
@@ -32,7 +35,8 @@ export default class SimpleAutoComplete extends Component {
   static defaultProps = {
     textField: "NAME",
     valueField: "VALUE",
-    searchField: "VALUE"
+    searchField: "VALUE",
+    multipleSplit: ","
   }
 
   @Bind()
@@ -254,30 +258,54 @@ export default class SimpleAutoComplete extends Component {
       this.setSourceData(response.result.records);
     }
     // 重新加载完数据后,看数据源中是否还有对应的value,没有则清除控件值
-    let data = this.getOptions().find(x => x.value == this.state.value)?.data;
-    if (!data && this.state.value != undefined) {
-      this.onChange(undefined);
-    }
+    // let data = this.getOptions().find(x => x.value == this.state.value)?.data;
+    // if (!data && this.state.value != undefined) {
+    //   this.onChange(undefined);
+    // }
   }
 
   /**
    * 值更新事件
    */
   onChange = (value) => {
-    if (this.props.onChange) {
-      let data = this.getOptions().find(x => x.value == value)?.data;
-      if (!data) {
-        data = {
-          value: undefined,
-          record: {}
-        };
-      }
-      this.props.onChange(data)
+    if (!this.props.onChange) {
+      return;
     }
+    const { noRecord, multipleSplit } = this.props;
+    let data = { value: undefined, record: {} };
+    // 不需要record，直接返回值
+    if (noRecord) {
+      if (value instanceof Array && multipleSplit) {
+        data = value.split(multipleSplit);
+      } else {
+        data = value;
+      }
+    } else {
+      if (!(value instanceof Array)) {
+        const findData = this.getOptions().find(x => x.value == value)?.data;
+        if (findData) {
+          data = findData;
+        }
+      } else {
+        const filterData = this.getOptions().filter(x => value.indexOf(x.value) > -1).map(x => x.data);
+        if (filterData.length > 0) {
+          if (multipleSplit) {
+            value = filterData.map(x => x.value).join(multipleSplit)
+          }
+          data = {
+            value,
+            record: filterData.map(x => x.record)
+          }
+        }
+      }
+    }
+
+    this.props.onChange(data);
   }
 
   render() {
-    let { autoComplete, showSearch } = this.props;
+    let { autoComplete, showSearch, mode, multipleSplit } = this.props;
+    let { value } = this.state;
     let onSearch;
     const options = this.getOptions().map(d => (
       <Select.Option key={d.value} textfield={d.textField}>
@@ -285,9 +313,15 @@ export default class SimpleAutoComplete extends Component {
       </Select.Option>
     ));
 
+    // autoComplete 则必须支持查询
     if (autoComplete) {
       showSearch = true;
       onSearch = this.onSearch;
+    }
+
+    // 多选情况下把 value 值进行分割
+    if (mode == "multiple" && multipleSplit) {
+      value = value?.split(multipleSplit);
     }
 
     // 将父组件传过来的属性传递下去，以适应Form、getFieldDecorator等处理
@@ -300,7 +334,7 @@ export default class SimpleAutoComplete extends Component {
         showSearch={showSearch}
         onSearch={onSearch}
         // 将value进行了一层包装，以方便日后扩展
-        value={this.state.value}
+        value={value}
         onChange={this.onChange}
       >
         {options}
