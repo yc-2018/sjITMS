@@ -3,10 +3,8 @@ import { Table, Button, Input, Col,Select,Icon, Row,Modal, Popconfirm, message,C
 import { colWidth } from '@/utils/ColWidth';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import StoreItemConfirmModal from './StoreItemConfirmModal';
 import DeliveredNoCheck from './DeliveredNoCheck'
 import { loginOrg, loginCompany, loginUser } from '@/utils/LoginContext';
-import { deliveredConfirmLocale } from './DeliveredConfirmLocale';
 import StandardTable from '@/components/StandardTable';
 import { commonLocale, placeholderLocale, placeholderChooseLocale } from '@/utils/CommonLocale';
 import DeliveredBillCheck from './DeliveredBillCheck'
@@ -179,7 +177,7 @@ showNoDelivered = ()=>{
      } = this.state;
 return (
   <span>
-     <StoreItemConfirmModal
+     {/* <StoreItemConfirmModal
   visible = {storeItemConfirmModalVisible}
   storeUuid = {storeUuid}
   storeCode = {storeCode}
@@ -187,7 +185,7 @@ return (
   storeAddress = {storeAddress}
   scheduleBillNumber = {scheduleBillNumber}
   handleModal = {this.handleModal}
-></StoreItemConfirmModal>
+></StoreItemConfirmModal> */}
   <Modal 
     visible={this.state.isShowStandardTable}
    onOk={this.handleOk} 
@@ -214,16 +212,16 @@ return (
   drawSearchPanel=()=>{}
 
   drawOtherCom = () =>{
-    const { storeSelectedRows,billSelectedRows,billData,storeData,targetTabKey,storeItemConfirmModalVisible,storeUuid,storeCode,storeName,storeAddress,scheduleBillNumber } = this.state;
-       <StoreItemConfirmModal
-        visible = {true}
-        storeUuid = {storeUuid}
-        storeCode = {storeCode}
-        storeName = {storeName}
-        storeAddress = {storeAddress}
-        scheduleBillNumber = {scheduleBillNumber}
-        handleModal = {this.handleModal}
-      ></StoreItemConfirmModal>
+    // const { storeSelectedRows,billSelectedRows,billData,storeData,targetTabKey,storeItemConfirmModalVisible,storeUuid,storeCode,storeName,storeAddress,scheduleBillNumber } = this.state;
+    //    <StoreItemConfirmModal
+    //     visible = {true}
+    //     storeUuid = {storeUuid}
+    //     storeCode = {storeCode}
+    //     storeName = {storeName}
+    //     storeAddress = {storeAddress}
+    //     scheduleBillNumber = {scheduleBillNumber}
+    //     handleModal = {this.handleModal}
+    //   ></StoreItemConfirmModal>
   }
  
 }

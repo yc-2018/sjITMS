@@ -23,6 +23,12 @@ import { accAdd } from '@/utils/QpcStrUtil';
 import { modify, query, getFeeType, saveOrUpdateFee } from '@/services/sjtms/OtherFeeService';
 import { dispatchReturnLocale } from './DispatchReturnLocale';
 import { alterBinType } from '@/services/facility/Bin';
+import {
+  SimpleTreeSelect,
+  SimpleSelect,
+  SimpleRadio,
+  SimpleAutoComplete,
+} from '@/pages/Component/RapidDevelopment/CommonComponent';
 const { TabPane } = Tabs;
 const { Option } = Select;
 // @connect(({ dispatchReturn, loading }) => ({
@@ -355,16 +361,19 @@ export default class OtherFeeModal extends Component {
                       initialValue: this.state.feeType,
                       rules: [{ required: true, message: '请选项费用类型' }],
                     })(
-                      <Select
-                        style={{ width: 120 }}
-                        onBlur={e => {
-                          this.setState({ feeType: e });
-                        }}
-                      >
-                        {this.state.feeTypeData?.map(e => {
-                          return <Option value={e.name}>{e.name}</Option>;
-                        })}
-                      </Select>
+                      <SimpleSelect style={{ width: 120 }}  onBlur={e => {this.setState({feeType:e})}} dictCode={'FeeType'}>
+
+                      </SimpleSelect>
+                      // <Select
+                      //   style={{ width: 120 }}
+                      //   onBlur={e => {
+                      //     this.setState({ feeType: e });
+                      //   }}
+                      // >
+                      //   {this.state.feeTypeData?.map(e => {
+                      //     return <Option value={e.name}>{e.name}</Option>;
+                      //   })}
+                      // </Select>
                     )}
                   </Form.Item>
                 </Col>

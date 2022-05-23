@@ -65,11 +65,9 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
       }
       if (e.column.fieldName == 'UNDELIVEREDREASON') {
         const component = (
-          <Select style={{width:100}} defaultValue={e.record.UNDELIVEREDREASON}  onChange = {this.deliveredChage.bind(this, e.record,e.column)}>
-        <Select.Option key={"车辆故障"} value={"车辆故障"}>{"车辆故障"}</Select.Option>
-        <Select.Option key={"拒收"} value={"拒收"}>{"拒收"}</Select.Option>
-        <Select.Option key={"关店"} value={"关店"}>{"关店"}</Select.Option>
-       </Select>
+          <SimpleSelect dictCode ={'UndeliveredReason'} style={{width:100}} defaultValue={e.record.UNDELIVEREDREASON}
+          onChange = {this.deliveredChage.bind(this, e.record,e.column)}
+          ></SimpleSelect>
         );
         e.component = component;
       }
@@ -77,7 +75,7 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
       //该方法用于写中间的功能按钮  <span>包裹
   drawToolsButton = () => {
     //console.log("drawToolsButton",this.state);
-    return (<><Button onClick={this.checkAndSave}>核对并保存单据</Button></>)
+    //return (<><Button onClick={this.checkAndSave}>核对并保存单据</Button></>)
    
   };
 
@@ -90,7 +88,7 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     return (<>
     {this.CreateFormReason()}
     {this.CreateUnDeliveredDuty(0)}
-    <Button onClick={this.checkNoReason}>未送达原因管理</Button>
+    {/* <Button onClick={this.checkNoReason}>未送达原因管理</Button> */}
     {this.nocheckInfo()}
     </>)
   };

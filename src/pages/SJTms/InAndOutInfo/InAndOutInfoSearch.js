@@ -59,7 +59,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
          scheduleBillNumber = {scheduleBillNumber}
          handleModal = {()=>this.setState({otherFeeModalVisible:false})}
        />
-        <Button onClick={()=>this.setState({feeTypeModalVisible:true})}>费用类型管理</Button>
+        {/* <Button onClick={()=>this.setState({feeTypeModalVisible:true})}>费用类型管理</Button>
         <Modal  width ={'auto'} height ={'auto'}
           footer={null}
           style={{overflow:'auto'}}
@@ -67,7 +67,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           onCancel={()=>this.setState({feeTypeModalVisible:false})}
           title={"费用类型管理"}>
           <FeeTypeForm quickuuid='sj_feeType' location={{pathname:window.location.pathname}}></FeeTypeForm>
-        </Modal> 
+        </Modal>  */}
       </>
          
     );
@@ -146,9 +146,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
   if(fieldName=='RETURNMILEAGE'){
     console.log("DISPATCHMILEAGE",record['DISPATCHMILEAGE']);
     if(e.target.value && record['DISPATCHMILEAGE']){
-      console.log("asdfasd",e.target.value-record['DISPATCHMILEAGE']);
       record['TOTALMILEAGE'] = e.target.value-record['DISPATCHMILEAGE'];
-      console.log("re",record);
       this.setState({});
       //this.refreshTable();
     }
