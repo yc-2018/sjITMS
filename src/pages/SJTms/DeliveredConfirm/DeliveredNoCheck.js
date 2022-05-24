@@ -36,7 +36,10 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
        
     }
 
-  
+    exSearchFilter = () => {
+      let flatt = this.props.pageFilters;
+      return flatt;
+    }; //扩展查询 
      drawTopButton = () => {
     
     }; 

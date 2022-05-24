@@ -118,17 +118,18 @@ deliveredConfirmSchedule = ()=>{
     e.companyUuid = loginCompany().uuid;
     e.dispatchCenterUuid = loginOrg().uuid;
   })
+  this.setState({selectedRows})
   //data.confirms=list;
-  this.props.dispatch({
-    type: 'deliveredConfirm1/deliveredConfirmSchedule',
-    payload: selectedRows,
-    callback:response=>{
-      if(response&&response.success){
-        this.refreshTable();
-        message.success(commonLocale.saveSuccessLocale);
-      }
-    }
-  })
+  // this.props.dispatch({
+  //   type: 'deliveredConfirm1/deliveredConfirmSchedule',
+  //   payload: selectedRows,
+  //   callback:response=>{
+  //     if(response&&response.success){
+  //       this.refreshTable();
+  //       message.success(commonLocale.saveSuccessLocale);
+  //     }
+  //   }
+  // })
 }
 // 全部未送达
 unDeliveredConfirmSchedule = ()=>{
@@ -138,16 +139,17 @@ unDeliveredConfirmSchedule = ()=>{
       e.companyUuid = loginCompany().uuid;
       e.dispatchCenterUuid = loginOrg().uuid;
     })
-    this.props.dispatch({
-      type: 'deliveredConfirm1/deliveredConfirmSchedule',
-      payload: selectedRows,
-      callback:response=>{
-        if(response&&response.success){
-          this.refreshTable();
-          message.success(commonLocale.saveSuccessLocale);
-        }
-      }
-    })
+    this.setState({selectedRows})
+    // this.props.dispatch({
+    //   type: 'deliveredConfirm1/deliveredConfirmSchedule',
+    //   payload: selectedRows,
+    //   callback:response=>{
+    //     if(response&&response.success){
+    //       this.refreshTable();
+    //       message.success(commonLocale.saveSuccessLocale);
+    //     }
+    //   }
+    // })
   
     
  
@@ -195,10 +197,10 @@ return (
    style={{overflow:'auto'}}
    >
   
-    <DeliveredNoCheck quickuuid = 'sj_schedule_order_no_check'/>
+    <DeliveredNoCheck quickuuid = 'sj_schedule_order_no_check' pageFilters={this.props.pageFilters}/>
   </Modal>
   <Button onClick={this.showNoDelivered}>回车未送达确认</Button>
-    <Button onClick={this.saveDelivered}>保存门店送货</Button>
+    <Button onClick={this.saveDelivered} type={'primary'}>保存门店送货</Button>
     <Button onClick={this.deliveredConfirmSchedule}>全部送达</Button>
     <Button  onClick={this.unDeliveredConfirmSchedule}>全部未送达</Button>
   </span>
