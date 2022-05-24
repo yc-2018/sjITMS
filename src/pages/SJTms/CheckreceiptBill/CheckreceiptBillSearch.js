@@ -2,17 +2,16 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-01 15:58:47
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-27 16:38:49
+ * @LastEditTime: 2022-05-24 14:29:25
  * @version: 1.0
  */
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import OperateCol from '@/pages/Component/Form/OperateCol';
-import { Checkbox, Select, Input, Button, Popconfirm, message } from 'antd';
+import { Checkbox, Select, Input, Button, Popconfirm, message, Dropdown, Menu, Empty } from 'antd';
 import { loginCompany } from '@/utils/LoginContext';
 import { dynamicQuery, saveFormData } from '@/services/quick/Quick';
 import { confirm } from '@/services/sjitms/Checkreceipt';
-import { isBlank, isEmptyObj } from '@/utils/utils';
 
 const { Option } = Select;
 @connect(({ quick, loading }) => ({
@@ -38,7 +37,12 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
     const { selectedRows } = this.state;
     if (selectedRows.length !== 0) {
       let list = [];
+      let msg = true;
       selectedRows.forEach(row => {
+        if ((typeof row.DEALMETHOD == 'undefined' || row.DEALMETHOD == '') && row.RECEIPTED == 0) {
+          message.error('第' + row.ROW_ID + '行，回单或处理方式为空，不能保存');
+          msg = false;
+        }
         let data = {
           receipted: row.RECEIPTED == '0' ? false : true,
           uuid: row.UUID,
@@ -47,11 +51,26 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
         };
         list.push(data);
       });
-      const result = await confirm(list);
-      if (result.success) {
-        message.success('保存成功');
-        this.refreshTable();
+      if (msg) {
+        const result = await confirm(list);
+        if (result.success) {
+          message.success('保存成功');
+          this.refreshTable();
+        }
       }
+    } else {
+      message.error('请至少选中一条数据！');
+    }
+  };
+
+  updateReceipted = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length !== 0) {
+      selectedRows.forEach(row => {
+        row.RECEIPTED = 1;
+        row.DEALMETHOD = '';
+      });
+      this.setState({ selectedRows });
     } else {
       message.error('请至少选中一条数据！');
     }
@@ -95,6 +114,39 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
     return sourceData.map(data => {
       return <Select.Option value={data.NAME}>{data.NAME}</Select.Option>;
     });
+  };
+
+  buildMenu = () => {
+    const { sourceData } = this.state;
+    if (sourceData.length > 0) {
+      return (
+        <Menu onClick={this.handleMenuClick}>
+          {sourceData.map(data => {
+            return <Menu.Item key={data.NAME}>{data.NAME}</Menu.Item>;
+          })}
+        </Menu>
+      );
+    } else {
+      return (
+        <Empty
+          style={{ textAlign: 'center' }}
+          description={<span style={{ color: '#aeb8c2' }}>没有保存任何查询</span>}
+        />
+      );
+    }
+  };
+
+  handleMenuClick = ({ key }) => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length !== 0) {
+      selectedRows.forEach(row => {
+        row.RECEIPTED = 0;
+        row.DEALMETHOD = key;
+      });
+      this.setState({ selectedRows });
+    } else {
+      message.error('请至少选中一条数据！');
+    }
   };
 
   //扩展render
@@ -160,8 +212,19 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
             okText="确定"
             cancelText="取消"
           >
-            <Button>保存</Button>
+            <Button type="primary">保存</Button>
           </Popconfirm>
+          <Popconfirm
+            title="确定选中的内容都为已回单吗?"
+            onConfirm={() => this.updateReceipted()}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button>全部回单</Button>
+          </Popconfirm>
+          <Dropdown overlay={this.buildMenu.bind()}>
+            <Button>批量设置处理方式</Button>
+          </Dropdown>
         </span>
       );
     }

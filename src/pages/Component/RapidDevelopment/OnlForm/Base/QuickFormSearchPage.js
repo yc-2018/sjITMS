@@ -381,7 +381,6 @@ export default class QuickFormSearchPage extends SearchPage {
     const { onlFormField } = this.props;
     var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
     if (record.ROW_ID) {
-      console.log('this.state1', this.state);
       this.props.switchTab('view', {
         entityUuid: record[field],
         // searchInfo: {
