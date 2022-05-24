@@ -15,6 +15,7 @@ import {
     SimpleRadio,
     SimpleAutoComplete,
   } from '@/pages/Component/RapidDevelopment/CommonComponent';
+import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchForm';
 @connect(({ quick, deliveredConfirm ,loading }) => ({
     quick,
     deliveredConfirm,
@@ -48,29 +49,32 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
      
       if (e.column.fieldName == 'UNDELIVEREDDUTY') {
         const component = (
-          <Select style={{width:100}} defaultValue={e.record.UNDELIVEREDDUTY} onChange = {this.deliveredChage.bind(this, e.record,e.column)} >
-        <Select.Option key={"Warehouse"} value={"Warehouse"}>{"仓库"}</Select.Option>
-        <Select.Option key={"Driver"} value={"Driver"}>{"司机"}</Select.Option>
-        <Select.Option key={"Store"} value={"Store"}>{"门店"}</Select.Option>
-       </Select>
+        //   <Select style={{width:100}} defaultValue={e.record.UNDELIVEREDDUTY} onChange = {this.deliveredChage.bind(this, e.record,e.column)} >
+        // <Select.Option key={"Warehouse"} value={"Warehouse"}>{"仓库"}</Select.Option>
+        // <Select.Option key={"Driver"} value={"Driver"}>{"司机"}</Select.Option>
+        // <Select.Option key={"Store"} value={"Store"}>{"门店"}</Select.Option>
+        <SimpleAutoComplete  style={{width:100}} dictCode={"UnDeliveredDuty"} value={e.record.UNDELIVEREDDUTY} onChange = {this.deliveredChage.bind(this, e.record,e.column)} ></SimpleAutoComplete>
+
+       //</Select>
 
         );
         e.component = component;
       }
       if (e.column.fieldName == 'UNDELIVEREDTYPE') {
         const component = (
-          <Select style={{width:100}} defaultValue={e.record.UNDELIVEREDTYPE} onChange = {this.deliveredChage.bind(this, e.record,e.column)} >
-        <Select.Option key={"ReSend"} value={"ReSend"}>{"重送"}</Select.Option>
-        <Select.Option key={"Reject"} value={"Reject"}>{"拒收"}</Select.Option>
-       </Select>
-        );
+      //     <Select style={{width:100}} defaultValue={e.record.UNDELIVEREDTYPE} onChange = {this.deliveredChage.bind(this, e.record,e.column)} >
+      //   <Select.Option key={"ReSend"} value={"ReSend"}>{"重送"}</Select.Option>
+      //   <Select.Option key={"Reject"} value={"Reject"}>{"拒收"}</Select.Option>
+      //  </Select>
+        <SimpleAutoComplete  style={{width:100}} dictCode={"UnDeliveredType"} value={e.record.UNDELIVEREDTYPE} onChange = {this.deliveredChage.bind(this, e.record,e.column)} ></SimpleAutoComplete>
+      );
         e.component = component;
       }
       if (e.column.fieldName == 'UNDELIVEREDREASON') {
         const component = (
-          <SimpleSelect dictCode ={'UndeliveredReason'} style={{width:100}} defaultValue={e.record.UNDELIVEREDREASON}
+          <SimpleAutoComplete dictCode ={'UndeliveredReason'} style={{width:100}} value={e.record.UNDELIVEREDREASON}
           onChange = {this.deliveredChage.bind(this, e.record,e.column)}
-          ></SimpleSelect>
+          ></SimpleAutoComplete>
         );
         e.component = component;
       }
@@ -126,7 +130,7 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
       okText="确定"
       cancelText="取消"
       > 
-      <Button>批量保存</Button>
+      <Button type={'primary'}>批量保存</Button>
       </Popconfirm>
     
     </>)
@@ -142,24 +146,26 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     if(selectedRows.length==0){
         message.warn("请选择记录")
     }
-    let rows = selectedRows.map(row=>{
-      return {
-        UNDELIVEREDTYPE:'ReSend',
-        UUID:row["UUID"]
-      }
+    // let rows = selectedRows.map(row=>{
+    //   return {
+    //     UNDELIVEREDTYPE:'ReSend',
+    //     UUID:row["UUID"]
+    //   }
       
-    });
-  this.props.dispatch({
-      type: 'deliveredConfirm1/updateNoDelivered',
-      payload: rows,
-      callback:response=>{
-          console.log("response",response);
-        if(response&&response.success){
-          this.refreshTable();
-          message.success("更新成功");
-        }
-      }
-    })
+    // });
+    selectedRows.forEach(e=>{e.UNDELIVEREDTYPE = 'ReSend'})
+    this.setState({selectedRows})
+  // this.props.dispatch({
+  //     type: 'deliveredConfirm1/updateNoDelivered',
+  //     payload: rows,
+  //     callback:response=>{
+  //         console.log("response",response);
+  //       if(response&&response.success){
+  //         this.refreshTable();
+  //         message.success("更新成功");
+  //       }
+  //     }
+  //   })
   }
    //拒收
    checkRejection =()=>{
@@ -167,23 +173,26 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     if(selectedRows.length==0){
         message.warn("请选择记录")
     }
-    let rows = selectedRows.map(row=>{
-        return {
-          UNDELIVEREDTYPE:'Reject',
-          UUID:row["UUID"]
-        }
-      });
-    this.props.dispatch({
-        type: 'deliveredConfirm1/updateNoDelivered',
-        payload:rows,
-        callback:response=>{
-            console.log("response",response);
-          if(response&&response.success){
-            this.refreshTable();
-            message.success("更新成功");
-          }
-        }
-      })
+    // let rows = selectedRows.map(row=>{
+    //     return {
+    //       UNDELIVEREDTYPE:'Reject',
+    //       UUID:row["UUID"]
+    //     }
+    //   });
+    console.log("selectRows",selectedRows);
+      selectedRows.forEach(e=>e.UNDELIVEREDTYPE='Reject')
+      this.setState({selectedRows})
+    // this.props.dispatch({
+    //     type: 'deliveredConfirm1/updateNoDelivered',
+    //     payload:rows,
+    //     callback:response=>{
+    //         console.log("response",response);
+    //       if(response&&response.success){
+    //         this.refreshTable();
+    //         message.success("更新成功");
+    //       }
+    //     }
+    //   })
 }
 
   //批量设置原因
@@ -227,27 +236,28 @@ deliveredChage = (records,colum,e)=>{
           form.validateFields((errors, fieldsValue) => {
             console.log("errors",fieldsValue);
           if (errors&&errors.UnDeliveredDuty) return;
-          let rows = selectedRows.map(row=>{
-            return {
-              UNDELIVEREDREASON:fieldsValue.UNDELIVEREDREASON.record.VALUE,
-              UUID:row["UUID"]
-            }
-          });
-        
-          this.props.dispatch({
-              type: 'deliveredConfirm1/updateNoDelivered',
-              payload: rows,
-              callback:response=>{
-                  console.log("response",response);
-                if(response&&response.success){
-                  this.refreshTable();
-                  message.success("更新成功");
-                  this.setState({
-                    reasonModalVisible:!this.state.reasonModalVisible
-                    })
-                }
-              }
-            })
+          // let rows = selectedRows.map(row=>{
+          //   return {
+          //     UNDELIVEREDREASON:fieldsValue.UNDELIVEREDREASON.record.VALUE,
+          //     UUID:row["UUID"]
+          //   }
+          // });
+          selectedRows.forEach(e=>e.UNDELIVEREDREASON = fieldsValue.UNDELIVEREDREASON.record.VALUE);
+          this.setState({selectedRows, reasonModalVisible:!this.state.reasonModalVisible})
+          // this.props.dispatch({
+          //     type: 'deliveredConfirm1/updateNoDelivered',
+          //     payload: rows,
+          //     callback:response=>{
+          //         console.log("response",response);
+          //       if(response&&response.success){
+          //         this.refreshTable();
+          //         message.success("更新成功");
+          //         this.setState({
+          //           reasonModalVisible:!this.state.reasonModalVisible
+          //           })
+          //       }
+          //     }
+          //   })
         });
         }
         return <Modal
@@ -304,27 +314,28 @@ CreateUnDeliveredDuty =()=>{
           form.validateFields((errors, fieldsValue) => {
               console.log("errors",fieldsValue);
             if (errors&&errors.UnDeliveredDuty) return;
-            let rows = selectedRows.map(row=>{
-              return {
-                UNDELIVEREDDUTY:fieldsValue.UnDeliveredDuty.record.VALUE,
-                UUID:row["UUID"]
-              }
-            });
-           
-            this.props.dispatch({
-                type: 'deliveredConfirm1/updateNoDelivered',
-                payload: rows,
-                callback:response=>{
-                    console.log("response",response);
-                  if(response&&response.success){
-                    this.refreshTable();
-                    message.success("更新成功");
-                    this.setState({
-                        deliveredDutyMdodalVisible:!this.state.deliveredDutyMdodalVisible
-                      })
-                  }
-                }
-              })
+            // let rows = selectedRows.map(row=>{
+            //   return {
+            //     UNDELIVEREDDUTY:fieldsValue.UnDeliveredDuty.record.VALUE,
+            //     UUID:row["UUID"]
+            //   }
+            // });
+            selectedRows.forEach(e=>e.UNDELIVEREDDUTY = fieldsValue.UnDeliveredDuty.record.VALUE)
+           this.setState({selectedRows,deliveredDutyMdodalVisible:!this.state.deliveredDutyMdodalVisible})
+            // this.props.dispatch({
+            //     type: 'deliveredConfirm1/updateNoDelivered',
+            //     payload: rows,
+            //     callback:response=>{
+            //         console.log("response",response);
+            //       if(response&&response.success){
+            //         this.refreshTable();
+            //         message.success("更新成功");
+            //         this.setState({
+            //             deliveredDutyMdodalVisible:!this.state.deliveredDutyMdodalVisible
+            //           })
+            //       }
+            //     }
+            //   })
           });
         }
         return <Modal

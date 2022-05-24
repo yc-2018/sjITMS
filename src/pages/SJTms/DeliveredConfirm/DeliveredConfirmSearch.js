@@ -195,7 +195,8 @@ return (
    width ={1400}
    height={500}
    style={{overflow:'auto'}}
-   >
+   okButtonProps ={{hide:'true'}}
+  >
   
     <DeliveredNoCheck quickuuid = 'sj_schedule_order_no_check' pageFilters={this.props.pageFilters}/>
   </Modal>
