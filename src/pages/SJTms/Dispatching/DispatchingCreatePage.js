@@ -525,12 +525,14 @@ export default class DispatchingCreatePage extends Component {
     const { orders } = this.state;
     if (event.count.cartonCount > 0) {
       for (const order of orders) {
-        if (order.billNumber == e.billNumber) {
+        if (order.billNumber == event.billNumber) {
           order.volume =
-            ((order.realCartonCount - e.count.cartonCount) / order.realCartonCount) * order.volume;
+            ((order.realCartonCount - event.count.cartonCount) / order.realCartonCount) *
+            order.volume;
           order.weight =
-            ((order.realCartonCount - e.count.cartonCount) / order.realCartonCount) * order.weight;
-          order.realCartonCount -= e.count.cartonCount;
+            ((order.realCartonCount - event.count.cartonCount) / order.realCartonCount) *
+            order.weight;
+          order.realCartonCount -= event.count.cartonCount;
           order.isSplit = 'Y';
           break;
         }
