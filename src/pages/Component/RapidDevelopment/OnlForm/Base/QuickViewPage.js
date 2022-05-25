@@ -67,7 +67,6 @@ export default class QuickView extends RyzeViewPage {
   }
 
   componentDidMount() {
-    console.log('params', this.props.params);
     this.init();
   }
 

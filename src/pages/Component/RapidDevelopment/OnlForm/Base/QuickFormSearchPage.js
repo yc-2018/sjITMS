@@ -16,6 +16,7 @@ import { Badge } from 'antd';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { guid } from '@/utils/utils';
 import { getActiveKey, getPageFilter, setPageFilter } from '@/utils/LoginContext';
+import moment from 'moment';
 
 /**
  * 查询界面
@@ -61,12 +62,12 @@ export default class QuickFormSearchPage extends SearchPage {
       advancedFields: [],
       reportCode: props.quickuuid,
       isOrgQuery: [],
-      key: props.quickuuid + 'quick.search.table',
+      key: props.quickuuid + 'quick.search.table', //用于缓存用户配置数据
       defaultSort: '',
       formConfig: {},
       colTotal: [],
       queryConfigColumns: [],
-    }; //用于缓存用户配置数据
+    };
   }
 
   /**
@@ -175,7 +176,6 @@ export default class QuickFormSearchPage extends SearchPage {
   };
 
   componentDidMount() {
-    console.log('params', this.props.params);
     this.queryCoulumns();
     this.getCreateConfig();
   }
@@ -381,7 +381,6 @@ export default class QuickFormSearchPage extends SearchPage {
     const { onlFormField } = this.props;
     var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
     if (record.ROW_ID) {
-      console.log('this.state1', this.state);
       this.props.switchTab('view', {
         entityUuid: record[field],
         // searchInfo: {
@@ -390,7 +389,6 @@ export default class QuickFormSearchPage extends SearchPage {
         // },
       });
     } else {
-      console.log('this.state2', this.state);
       const { selectedRows, batchAction } = this.state;
       if (selectedRows.length > 0) {
         this.props.switchTab('view', {
@@ -710,12 +708,19 @@ export default class QuickFormSearchPage extends SearchPage {
    * 绘制搜索表格
    */
   drawSearchPanel = () => {
-    //console.log('111', this.state.pageFilters);
     const { superQuery } = this.state.pageFilters;
     let filterValue = {};
     if (superQuery) {
       for (const item of superQuery.queryParams) {
-        filterValue[item.field] = item.val;
+        if (item.type == 'Date' || item.type == 'DateTime' || item.type == 'Time') {
+          let dateVal = item.val.split('||');
+          filterValue[item.field] = [
+            moment(dateVal[0], 'YYYY-MM-DD'),
+            moment(dateVal[1], 'YYYY-MM-DD'),
+          ];
+        } else {
+          filterValue[item.field] = item.val;
+        }
       }
     }
     return (

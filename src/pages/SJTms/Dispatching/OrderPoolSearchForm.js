@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-19 09:49:23
+ * @LastEditTime: 2022-05-24 14:06:40
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -89,7 +89,7 @@ export default class OrderPoolSearchForm extends Component {
             <Form.Item label="送货点">
               {getFieldDecorator('deliveryPointCode', {})(
                 <SimpleAutoComplete
-                  placeholder="请输入送货点"
+                  placeholder="请输入送货点编码"
                   textField="[%CODE%]%NAME%"
                   valueField="CODE"
                   searchField="CODE,NAME"
@@ -105,9 +105,21 @@ export default class OrderPoolSearchForm extends Component {
             </Form.Item>
           </Col>
           <Col span={10}>
-            <Form.Item label="订单号">
-              {getFieldDecorator('billNumber', {})(
-                <Input placeholder="请输入订单号" allowClear={true} />
+            <Form.Item label="货主">
+              {getFieldDecorator('ownerCode', {})(
+                <SimpleAutoComplete
+                  placeholder="请输入货主编码"
+                  textField="[%CODE%]%NAME%"
+                  valueField="CODE"
+                  searchField="CODE,NAME"
+                  linkFilter={{
+                    COMPANYUUID: loginCompany().uuid,
+                    DISPATCHCENTERUUID: loginOrg().uuid,
+                  }}
+                  queryParams={{ tableName: 'sj_itms_owner' }}
+                  autoComplete
+                  allowClear={true}
+                />
               )}
             </Form.Item>
           </Col>
