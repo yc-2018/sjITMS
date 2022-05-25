@@ -213,7 +213,8 @@ checkAttribution =()=>{
     this.setState({deliveredDutyMdodalVisible:true})
 }
 deliveredChage = (records,colum,e)=>{
-  records[colum.fieldName] = e
+  records[colum.fieldName] = e.value
+  
 }
   CreateFormReason =()=>{
     const formItemLayout = {
