@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-23 11:31:53
+ * @LastEditTime: 2022-05-25 14:43:19
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -68,6 +68,23 @@ export default class OrderSearch extends QuickFormSearchPage {
         </Button>
       </span>
     );
+  };
+
+  /**
+   * 编辑界面
+   */
+  onUpdate = () => {
+    const { selectedRows } = this.state;
+    console.log('selectedRows', selectedRows);
+    if (selectedRows.length !== 0 && selectedRows[0].STAT === 'Saved') {
+      const { onlFormField } = this.props;
+      var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
+      this.props.switchTab('update', {
+        entityUuid: selectedRows[0][field],
+      });
+    } else {
+      message.error('请至少选中一条数据或该单据状态不是保存状态，不能修改');
+    }
   };
 
   onBatchAudit = () => {
