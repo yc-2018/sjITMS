@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-05 10:45:21
+ * @LastEditTime: 2022-05-25 17:37:19
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -12,6 +12,7 @@ import { connect } from 'dva';
 import SearchPage from '@/pages/Tms/DispatchCenterShipPlanBill/SearchPage';
 import { guid } from '@/utils/utils';
 import { aborted, shipRollback } from '@/services/sjitms/ScheduleBill';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -30,7 +31,7 @@ export default class ShipPlanBillSearch extends SearchPage {
       searchFields: [],
       advancedFields: [],
       data: [],
-      tabTrue: props.tabTrue,
+      isOrgQuery: [],
       selectedRows: [],
       width: '100%',
       scrollValue: {
@@ -62,16 +63,6 @@ export default class ShipPlanBillSearch extends SearchPage {
   componentDidMount() {
     this.props.onRef && this.props.onRef(this);
     this.queryCoulumns();
-    if (!this.state.tabTrue) {
-      this.refreshTable(this.props.pageFilter ? this.props.pageFilter : null);
-    } else {
-      this.setState({
-        data: {
-          list: [],
-          pagination: {},
-        },
-      });
-    }
   }
 
   componentWillReceiveProps(nextProps) {
@@ -96,8 +87,47 @@ export default class ShipPlanBillSearch extends SearchPage {
       callback: response => {
         if (response.result) {
           this.initConfig(response.result);
-          //解决用户列展示失效问题 暂时解决方法（赋值两次）
-          // this.initConfig(response.result);
+
+          let companyuuid = response.result.columns.find(
+            item => item.fieldName.toLowerCase() == 'companyuuid'
+          );
+
+          let orgName =
+            loginOrg().type.toLowerCase() == 'dc'
+              ? loginOrg().type.toLowerCase() + 'Uuid'
+              : 'dispatchcenteruuid';
+          let org = response.result.columns.find(item => item.fieldName.toLowerCase() == orgName);
+
+          if (companyuuid) {
+            this.state.isOrgQuery = [
+              {
+                field: 'companyuuid',
+                type: 'VarChar',
+                rule: 'eq',
+                val: loginCompany().uuid,
+              },
+            ];
+          }
+
+          if (org) {
+            this.setState({
+              isOrgQuery: response.result.reportHead.organizationQuery
+                ? [
+                    {
+                      field:
+                        loginOrg().type.toLowerCase() == 'dc'
+                          ? loginOrg().type.toLowerCase() + 'Uuid'
+                          : 'dispatchCenterUuid',
+                      type: 'VarChar',
+                      rule: 'eq',
+                      val: loginOrg().uuid,
+                    },
+                    ...this.state.isOrgQuery,
+                  ]
+                : [...this.state.isOrgQuery],
+            });
+          }
+          this.refreshTable(this.props.pageFilter ? this.props.pageFilter : null);
         }
       },
     });
@@ -277,6 +307,7 @@ export default class ShipPlanBillSearch extends SearchPage {
    * 刷新/重置
    */
   refreshTable = filter => {
+    console.log('filter', filter);
     let queryFilter;
     if (filter) {
       var order = '';
@@ -284,12 +315,25 @@ export default class ShipPlanBillSearch extends SearchPage {
         var sort = filter.sortFields[key] ? 'descend' : 'ascend';
         order = key + ',' + sort;
       }
-      queryFilter = {
-        order: order,
-        ...filter,
-        page: filter.page ? filter.page + 1 : 0 + 1,
-        pageSize: filter.pageSize ? filter.pageSize : 20,
-      };
+      if (typeof filter.superQuery == 'undefined') {
+        queryFilter = {
+          order: order,
+          ...filter,
+          page: filter.page ? filter.page + 1 : 0 + 1,
+          pageSize: filter.pageSize ? filter.pageSize : 20,
+          superQuery: {
+            matchType: filter.matchType,
+            queryParams: [...this.state.isOrgQuery],
+          },
+        };
+      } else {
+        queryFilter = {
+          order: order,
+          ...filter,
+          page: filter.page ? filter.page + 1 : 0 + 1,
+          pageSize: filter.pageSize ? filter.pageSize : 20,
+        };
+      }
     }
     this.getData(queryFilter);
   };

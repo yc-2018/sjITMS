@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-16 18:07:25
+ * @LastEditTime: 2022-05-25 17:35:56
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -126,10 +126,21 @@ export default class ShipPlanBillSearchPage extends PureComponent {
    */
   onSearch = filter => {
     if (typeof filter == 'undefined' || filter == 'reset') {
+      const pageFilters = {
+        ...this.state.pageFilters,
+        page: 0,
+        pageSize: 20,
+        sortFields: {},
+        searchKeyValues: {},
+        likeKeyValues: {},
+        superQuery: {
+          matchType: filter.matchType,
+          queryParams: [...this.state.isOrgQuery],
+        },
+      };
+      this.state.pageFilters = pageFilters;
       this.queryCoulumns();
     } else {
-      this.setState({ keyValue: '2' });
-      const { dispatch } = this.props;
       const pageFilters = {
         ...this.state.pageFilters,
         page: 0,
@@ -143,6 +154,7 @@ export default class ShipPlanBillSearchPage extends PureComponent {
         },
       };
       this.state.pageFilters = pageFilters;
+      this.queryCoulumns();
     }
   };
 
@@ -203,6 +215,7 @@ export default class ShipPlanBillSearchPage extends PureComponent {
       showCreatePage,
       selectedRows,
       params,
+      isOrgQuery,
     } = this.state;
     return (
       <PageHeaderWrapper>
@@ -210,49 +223,40 @@ export default class ShipPlanBillSearchPage extends PureComponent {
           <Content className={styles.contentWrapper}>
             <div style={{ display: 'flex', flexDirection: 'row' }}>
               <div style={{ flex: 1 }} className={styles.leftWrapper}>
-                <Tabs defaultActiveKey="1" onChange={this.callback} activeKey={keyValue}>
-                  <TabPane tab="查询条件" key={'1'}>
-                    <SimpleQuery
-                      selectFields={this.state.searchFields}
-                      refresh={this.onSearch}
-                      reportCode={this.state.reportCode}
-                      isOrgQuery={this.state.isOrgQuery}
-                    />
-                  </TabPane>
-                  <TabPane tab="结果" key={'2'}>
-                    <div>
-                      <ShipPlanBillSearch
-                        reportCode={reportCode}
-                        pageFilter={pageFilters}
-                        tabTrue={tabTrue}
-                        refreshView={this.refreshView}
-                        memberModalClick={this.memberModalClick}
-                        removeCarModalClick={this.removeCarModalClick}
-                        onRef={node => (this.refreshTableRef = node)}
-                      />
-                    </div>
-                    <div style={{ height: '700px' }}>
-                      {!showCreatePage ? (
-                        <Empty
-                          image={emptySvg}
-                          description={<span>暂无数据,请先选择排车单</span>}
+                <SimpleQuery
+                  selectFields={this.state.searchFields}
+                  refresh={this.onSearch}
+                  reportCode={this.state.reportCode}
+                  isOrgQuery={this.state.isOrgQuery}
+                />
+                <div>
+                  <ShipPlanBillSearch
+                    reportCode={reportCode}
+                    pageFilter={pageFilters}
+                    isOrgQuery={isOrgQuery}
+                    refreshView={this.refreshView}
+                    memberModalClick={this.memberModalClick}
+                    removeCarModalClick={this.removeCarModalClick}
+                    onRef={node => (this.refreshTableRef = node)}
+                  />
+                </div>
+                <div style={{ height: '700px' }}>
+                  {!showCreatePage ? (
+                    <Empty image={emptySvg} description={<span>暂无数据,请先选择排车单</span>} />
+                  ) : (
+                    <Tabs activeKey={keyDtlVale} onChange={this.changeTabs}>
+                      <TabPane tab="排车单明细" key={'a'}>
+                        <ShipPlanBillDtlSearch
+                          quickuuid={'sj_itms_schedule_order'}
+                          selectedRows={selectedRows}
                         />
-                      ) : (
-                        <Tabs activeKey={keyDtlVale} onChange={this.changeTabs}>
-                          <TabPane tab="排车单明细" key={'a'}>
-                            <ShipPlanBillDtlSearch
-                              quickuuid={'sj_itms_schedule_order'}
-                              selectedRows={selectedRows}
-                            />
-                          </TabPane>
-                          <TabPane tab="操作日志" key={'b'}>
-                            <EntityLogTab entityUuid={selectedRows[0].UUID} />
-                          </TabPane>
-                        </Tabs>
-                      )}
-                    </div>
-                  </TabPane>
-                </Tabs>
+                      </TabPane>
+                      <TabPane tab="操作日志" key={'b'}>
+                        <EntityLogTab entityUuid={selectedRows[0].UUID} />
+                      </TabPane>
+                    </Tabs>
+                  )}
+                </div>
               </div>
             </div>
           </Content>
