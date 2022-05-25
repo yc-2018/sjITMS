@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-25 17:37:19
+ * @LastEditTime: 2022-05-25 18:24:56
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -66,7 +66,7 @@ export default class ShipPlanBillSearch extends SearchPage {
   }
 
   componentWillReceiveProps(nextProps) {
-    const cc = nextProps.pageFilter != this.props.pageFilter;
+    // const cc = nextProps.pageFilter != this.props.pageFilter;
     if (nextProps.pageFilter != this.props.pageFilter) {
       this.refreshTable(nextProps.pageFilter ? nextProps.pageFilter : null);
       this.setState({

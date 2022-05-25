@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-25 17:35:56
+ * @LastEditTime: 2022-05-25 18:28:50
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -126,6 +126,7 @@ export default class ShipPlanBillSearchPage extends PureComponent {
    */
   onSearch = filter => {
     if (typeof filter == 'undefined' || filter == 'reset') {
+      this.setState({ selectedRows: [], showCreatePage: false });
       const pageFilters = {
         ...this.state.pageFilters,
         page: 0,
@@ -175,7 +176,7 @@ export default class ShipPlanBillSearchPage extends PureComponent {
     if (!record && selectedRows && selectedRows.length > 0) {
       this.setState({
         showCreatePage: true,
-        selectedRows: selectedRows,
+        selectedRows: selectedRows[selectedRows.length - 1],
         // viewData: null,
       });
     } else if (record && !selectedRows) {
@@ -248,11 +249,11 @@ export default class ShipPlanBillSearchPage extends PureComponent {
                       <TabPane tab="排车单明细" key={'a'}>
                         <ShipPlanBillDtlSearch
                           quickuuid={'sj_itms_schedule_order'}
-                          selectedRows={selectedRows}
+                          selectedRows={selectedRows.UUID}
                         />
                       </TabPane>
                       <TabPane tab="操作日志" key={'b'}>
-                        <EntityLogTab entityUuid={selectedRows[0].UUID} />
+                        <EntityLogTab entityUuid={selectedRows.UUID} />
                       </TabPane>
                     </Tabs>
                   )}

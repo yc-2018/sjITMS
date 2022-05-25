@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-22 15:06:02
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-01 16:21:58
+ * @LastEditTime: 2022-05-25 18:26:51
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -24,6 +24,17 @@ export default class ShipPlanBillDtlSearch extends QuickFormSearchPage {
     },
   };
 
+  componentDidMount() {
+    this.queryCoulumns();
+    this.getCreateConfig();
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.selectedRows != this.props.selectedRows) {
+      this.onSearch();
+    }
+  }
+
   drawActionButton = () => {};
 
   drawToolbarPanel = () => {};
@@ -32,6 +43,7 @@ export default class ShipPlanBillDtlSearch extends QuickFormSearchPage {
 
   onSearch = () => {
     const { selectedRows } = this.props;
+    console.log('UUID', selectedRows);
     const pageFilters = {
       ...this.state.pageFilters,
       superQuery: {
@@ -41,7 +53,7 @@ export default class ShipPlanBillDtlSearch extends QuickFormSearchPage {
             field: 'billuuid',
             type: 'VarChar',
             rule: 'eq',
-            val: selectedRows[0].UUID,
+            val: selectedRows,
           },
         ],
       },
