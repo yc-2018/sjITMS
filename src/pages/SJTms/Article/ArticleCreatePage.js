@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-25 11:46:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-25 14:34:12
+ * @LastEditTime: 2022-05-25 18:40:12
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -34,9 +34,6 @@ export default class ArticleCreatePage extends QuickCreatePage {
       }
     }
 
-    console.log('state', this.state.runTimeProps);
-    console.log('entity', entity);
-
     const { sj_itms_article_OWNERUUID } = this.state.runTimeProps;
     const saveDispatchCenter = entity.sj_itms_article[0].DISPATCHCENTERUUID;
     const saveOwnerUuid = entity.sj_itms_article[0].OWNERUUID;
@@ -44,6 +41,9 @@ export default class ArticleCreatePage extends QuickCreatePage {
     const DISPATCHCENTERUUID = sj_itms_article_OWNERUUID.sourceData.find(
       x => x.UUID == saveOwnerUuid
     ).DISPATCHCENTERUUID;
+
+    console.log('DISPATCHCENTERUUID', DISPATCHCENTERUUID);
+    console.log('saveDispatchCenter', saveDispatchCenter);
 
     if (DISPATCHCENTERUUID !== saveDispatchCenter) {
       Modal.confirm({
@@ -57,6 +57,8 @@ export default class ArticleCreatePage extends QuickCreatePage {
           return false;
         },
       });
+    } else {
+      this.handleOk();
     }
   };
 

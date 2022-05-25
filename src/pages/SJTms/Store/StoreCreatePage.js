@@ -34,7 +34,12 @@ export default class StoreCreatePage extends QuickCreatePage {
     const DISPATCHCENTERUUID = SJ_ITMS_SHIP_ADDRESS_OWNERUUID.sourceData.find(
       x => x.UUID == saveOwner
     ).DISPATCHCENTERUUID;
+
+    console.log('DISPATCHCENTERUUID', DISPATCHCENTERUUID);
+    console.log('saveDispatchCenter', saveDispatchCenter);
+
     if (DISPATCHCENTERUUID !== saveDispatchCenter) {
+      console.log('cccc');
       Modal.confirm({
         title: '调度中心配置与货主的调度中心不匹配，是否保存?',
         content: '',
@@ -46,6 +51,8 @@ export default class StoreCreatePage extends QuickCreatePage {
           return false;
         },
       });
+    } else {
+      this.handleOk();
     }
   };
 

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-25 11:46:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-25 14:34:56
+ * @LastEditTime: 2022-05-25 18:40:18
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -42,9 +42,12 @@ export default class VehicleCreatePage extends QuickCreatePage {
       x => x.UUID == saveVehicleTypeUuid
     ).DISPATCHCENTERUUID;
 
+    console.log('DISPATCHCENTERUUID', DISPATCHCENTERUUID);
+    console.log('saveDispatchCenter', saveDispatchCenter);
+
     if (DISPATCHCENTERUUID !== saveDispatchCenter) {
       Modal.confirm({
-        title: '调度中心配置与货主的调度中心不匹配，是否保存?',
+        title: '调度中心配置与车型的调度中心不匹配，是否保存?',
         content: '',
         okText: '是',
         okType: 'primary',
@@ -54,6 +57,8 @@ export default class VehicleCreatePage extends QuickCreatePage {
           return false;
         },
       });
+    } else {
+      this.handleOk();
     }
   };
 
