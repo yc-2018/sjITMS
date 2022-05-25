@@ -160,7 +160,7 @@ export default class SimpleAutoComplete extends Component {
       if (value == null || value == undefined) {
         return;
       }
-      params.push({ field: key, rule: 'eq', val: [value] });
+      params.push({ field: key, rule: 'like', val: [value] });
     }
     return { params };
   }
