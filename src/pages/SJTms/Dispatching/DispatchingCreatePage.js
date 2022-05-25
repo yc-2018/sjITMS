@@ -13,10 +13,10 @@ import {
   Button,
   Popconfirm,
   Icon,
-  Statistic,
   Badge,
   Tooltip,
 } from 'antd';
+import { isEmptyObj } from '@/utils/utils';
 import { queryAllData, dynamicQuery } from '@/services/quick/Quick';
 import { getSchedule, save, modify, getRecommend } from '@/services/sjitms/ScheduleBill';
 import EditContainerNumberPageF from './EditContainerNumberPageF';
@@ -84,7 +84,6 @@ export default class DispatchingCreatePage extends Component {
       { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
       { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
     ];
-    // let { vehicles, employees } = this.state;
     //获取车辆
     if (vehicles.length == 0 || vehicles[0].DISPATCHCENTERUUID != loginOrg().uuid) {
       let param = {
@@ -100,12 +99,6 @@ export default class DispatchingCreatePage extends Component {
       if (vehiclesData.result.records != 'false') {
         vehicles = vehiclesData.result.records;
       }
-
-      // const vehiclesData = await queryAllData({
-      //   quickuuid: 'sj_itms_vehicle',
-      //   superQuery: { queryParams },
-      // });
-      // vehicles = vehiclesData.data.records;
     }
 
     //获取人员
@@ -120,9 +113,6 @@ export default class DispatchingCreatePage extends Component {
     if (!isEdit) {
       let map = new Map();
       let uniqRecord = [];
-      // let recordFilter = record.filter(item => {
-      //   item.orderType != 'OnlyBill';
-      // });
       record.forEach(item => {
         if (!map.has(item.owner.uuid)) {
           // has()用于判断map是否包为item的属性值
@@ -130,7 +120,6 @@ export default class DispatchingCreatePage extends Component {
           uniqRecord.push(item);
         }
       });
-      // console.log('uniqRecord', uniqRecord);
       let noIn = uniqRecord.filter(item => item.is_private == '0');
       let ownerNames = noIn
         .map(obj => {
@@ -138,7 +127,6 @@ export default class DispatchingCreatePage extends Component {
         })
         .join(',')
         .split(',');
-      // console.log('noIn', ownerNames, noIn);
       if (record.length > 1 && uniqRecord.length > 1) {
         message.error('货主' + ownerNames + '不可共配！');
         this.exit();
@@ -193,11 +181,11 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ visible: true, isEdit, loading: true });
     this.initData(isEdit, record);
   };
-  //隐藏
+  //取消隐藏
   hide = () => {
     this.setState({ visible: false });
   };
-
+  //临时保存
   exit = () => {
     this.setState({ visible: false, selectEmployees: [], selectVehicle: [] });
   };
@@ -214,7 +202,6 @@ export default class DispatchingCreatePage extends Component {
 
   //选车
   handleVehicle = async vehicle => {
-    console.log('vehicle', vehicle);
     let param = {
       tableName: 'v_sj_itms_vehicle_employee_z',
       condition: {
@@ -292,20 +279,7 @@ export default class DispatchingCreatePage extends Component {
     const { isEdit, orders, schedule, selectVehicle, selectEmployees } = this.state;
     const driver = selectEmployees.find(x => x.memberType == 'Driver');
     const orderCounts = this.groupByOrder(orders);
-    //校验容积
-    const exceedVolume = orderCounts.volume - selectVehicle.BEARVOLUME;
-    if (exceedVolume > 0) {
-      message.warning(
-        '排车体积超过车辆可装载的最大体积，超出' + exceedVolume.toFixed(2) + 'm³，请检查后重试！'
-      );
-      return;
-    }
-    //校验载重
-    const exceedWeight = orderCounts.weight - selectVehicle.BEARWEIGHT;
-    if (exceedWeight > 0) {
-      message.warning(
-        '排车重量超过车辆可运输的最大限重，超出' + exceedWeight.toFixed(2) + 'kg，请检查后重试！'
-      );
+    if (!this.verifySchedule(orderCounts, selectVehicle, driver)) {
       return;
     }
     const paramBody = {
@@ -350,10 +324,41 @@ export default class DispatchingCreatePage extends Component {
       message.success('保存成功！');
       this.props.refresh();
       //保存后清空选中的车与人
-      this.setState({ selectEmployees: [], selectVehicle: [], loading: false });
-      this.hide();
+      this.setState({ visible: false, selectEmployees: [], selectVehicle: [], loading: false });
     }
   };
+
+  //保存数据校验
+  verifySchedule = (orderCounts, selectVehicle, driver) => {
+    //校验车辆必选
+    if (isEmptyObj(selectVehicle)) {
+      message.warning('请选择车辆！');
+      return false;
+    }
+    //校验司机必选
+    if (driver == undefined) {
+      message.warning('请选择司机！');
+      return false;
+    }
+    //校验容积
+    const exceedVolume = orderCounts.volume - selectVehicle.BEARVOLUME;
+    if (exceedVolume > 0) {
+      message.warning(
+        '排车体积超过车辆可装载的最大体积，超出' + exceedVolume.toFixed(2) + 'm³，请检查后重试！'
+      );
+      return false;
+    }
+    //校验载重
+    const exceedWeight = orderCounts.weight - selectVehicle.BEARWEIGHT;
+    if (exceedWeight > 0) {
+      message.warning(
+        '排车重量超过车辆可运输的最大限重，超出' + exceedWeight.toFixed(2) + 'kg，请检查后重试！'
+      );
+      return false;
+    }
+    return true;
+  };
+
   //汇总
   groupByOrder = data => {
     const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0;
@@ -382,7 +387,7 @@ export default class DispatchingCreatePage extends Component {
       <Card
         title="员工"
         style={{ height: '36vh', fontWeight: 'bold' }}
-        bodyStyle={{ padding: 5, height: '29vh', overflowY: 'auto' }}
+        bodyStyle={{ padding: '15px 0 0 0', height: '29vh', overflowY: 'auto' }}
         extra={
           <Search
             placeholder="请输入工号或姓名"
@@ -391,35 +396,56 @@ export default class DispatchingCreatePage extends Component {
           />
         }
       >
-        {employees?.map(employee => {
-          return (
-            <a
-              href="#"
-              style={{ fontWeight: 'bold' }}
-              className={
-                selectEmployees.find(x => x.UUID == employee.UUID)
-                  ? dispatchingStyles.selectedEmpdWapper
-                  : dispatchingStyles.empdWapperWapper
-              }
-              onClick={() => this.handleEmployee(employee)}
-            >
-              <span>
-                <Icon type="user" style={{ fontSize: '40px', marginLeft: '-100px' }} />
-              </span>
-              <div style={{ marginTop: '-40px', marginRight: '10px', textAlign: 'right' }}>
-                {/* <span>{`[${employee.CODE}]`}</span> */}
-                <span>{employee.CODE}</span>
-                <br />
-                <span>
-                  &nbsp;
-                  {employee.NAME}
-                </span>
-                <br />
-                <span>{employee.ROLE_TYPE2}</span>
-              </div>
-            </a>
-          );
-        })}
+        {isEmptyObj(employees)
+          ? null
+          : employees.map(employee => {
+              return (
+                <Tooltip
+                  placement="top"
+                  title={
+                    employee.BILLCOUNTS
+                      ? `[${employee.CODE}]` +
+                        employee.NAME +
+                        '在' +
+                        employee.BILLNUMBERS +
+                        '排车单中有未完成的任务'
+                      : ''
+                  }
+                >
+                  <Badge count={employee.BILLCOUNTS} style={{ backgroundColor: 'orange' }}>
+                    <a
+                      href="#"
+                      className={
+                        selectEmployees.find(x => x.UUID == employee.UUID)
+                          ? dispatchingStyles.selectedCehicleCardWapper
+                          : dispatchingStyles.vehicleCardWapper
+                      }
+                      onClick={() => this.handleEmployee(employee)}
+                    >
+                      <Row justify="space-between" style={{ height: '100%' }}>
+                        <Col span={10} className={dispatchingStyles.employeeCardContent}>
+                          <Icon type="user" style={{ fontSize: '40px' }} />
+                        </Col>
+                        <Col span={14} className={dispatchingStyles.employeeCardContent}>
+                          <div
+                            style={{
+                              width: '100%',
+                              lineHeight: '24px',
+                              textAlign: 'end',
+                              marginRight: 15,
+                            }}
+                          >
+                            <div>{employee.CODE}</div>
+                            <div>{employee.NAME}</div>
+                            <div>{employee.ROLE_TYPE2}</div>
+                          </div>
+                        </Col>
+                      </Row>
+                    </a>
+                  </Badge>
+                </Tooltip>
+              );
+            })}
       </Card>
     );
   };
@@ -429,7 +455,7 @@ export default class DispatchingCreatePage extends Component {
       <Card
         title="车辆"
         style={{ height: '36vh' }}
-        bodyStyle={{ padding: 5, height: '29vh', overflowY: 'auto' }}
+        bodyStyle={{ padding: '15px 0 0 0', height: '29vh', overflowY: 'auto' }}
         extra={
           <Search
             placeholder="请输入车辆编号或车牌号"
@@ -448,41 +474,39 @@ export default class DispatchingCreatePage extends Component {
                   : ''
               }
             >
-              <Badge
-                count={vehicle.BILLCOUNTS > 0 ? vehicle.BILLCOUNTS : ''}
-                title={vehicle.BILLNUMBERS}
-                style={{ margin: '15px 0 0 15px', backgroundColor: 'orange' }}
-              >
+              <Badge count={vehicle.BILLCOUNTS} style={{ backgroundColor: 'orange' }}>
                 <a
                   href="#"
-                  style={{ fontWeight: 'bold', margin: '15px 0 0 15px' }}
                   className={
                     vehicle.UUID == selectVehicle.UUID
-                      ? dispatchingStyles.selectedVehicleCardWapper
+                      ? dispatchingStyles.selectedCehicleCardWapper
                       : dispatchingStyles.vehicleCardWapper
                   }
                   onClick={() => this.handleVehicle(vehicle)}
                 >
-                  <span>
-                    <Badge
-                      style={{
-                        backgroundColor:
-                          vehicle.pro >= 40 ? '#52c41a' : vehicle.pro >= 20 ? 'orange' : 'red',
-                        margin: '-25px 0 0 120px',
-                      }}
-                      count={vehicle.pro > 0 ? vehicle.pro.toFixed(0) + '%' : ''}
-                      title={'熟练度' + vehicle.pro.toFixed(0) + '%'}
-                    />
-                  </span>
-                  <div style={{ marginTop: '-10px' }}>
-                    <Icon type="car" style={{ fontSize: '40px', margin: '-10px 0 0 -100px' }} />
-                    <div style={{ marginTop: '-26px' }}>
-                      <span>
-                        &nbsp;
-                        {vehicle.PLATENUMBER}
-                      </span>
-                    </div>
-                  </div>
+                  <Row>
+                    <Col
+                      span={vehicle.pro > 0 ? 18 : 24}
+                      className={dispatchingStyles.vehicleCardContent}
+                    >
+                      <Icon type="car" style={{ fontSize: '40px' }} />
+                      <span style={{ marginLeft: 5 }}> {vehicle.PLATENUMBER}</span>
+                    </Col>
+                    {vehicle.pro > 0 ? (
+                      <Col span={6} style={{ marginTop: 10 }}>
+                        <Badge
+                          style={{
+                            backgroundColor:
+                              vehicle.pro >= 40 ? '#52c41a' : vehicle.pro >= 20 ? 'orange' : 'red',
+                          }}
+                          count={vehicle.pro.toFixed(0) + '%'}
+                          title={'熟练度' + vehicle.pro.toFixed(0) + '%'}
+                        />
+                      </Col>
+                    ) : (
+                      <></>
+                    )}
+                  </Row>
                 </a>
               </Badge>
             </Tooltip>
@@ -496,10 +520,10 @@ export default class DispatchingCreatePage extends Component {
   editSource = record => {
     this.setState({ editPageVisible: true, scheduleDetail: record });
   };
-
-  updateCount = e => {
+  //更新state订单整件排车件数
+  updateCount = event => {
     const { orders } = this.state;
-    if (e.count.cartonCount > 0) {
+    if (event.count.cartonCount > 0) {
       for (const order of orders) {
         if (order.billNumber == e.billNumber) {
           order.volume =
@@ -582,15 +606,15 @@ export default class DispatchingCreatePage extends Component {
         centered
         {...this.props.modal}
         className={dispatchingStyles.dispatchingCreatePage}
-        bodyStyle={{ margin: -17 }}
+        bodyStyle={{ margin: -24 }}
         footer={[
-          <span>
+          <div>
             <Button onClick={this.exit}>取消</Button>
             <Button onClick={this.hide}>临时保存</Button>
             <Button type="primary" onClick={e => this.handleSave(e)} loading={loading}>
               生成排车单
             </Button>
-          </span>,
+          </div>,
         ]}
       >
         <EditContainerNumberPageF
@@ -619,51 +643,12 @@ export default class DispatchingCreatePage extends Component {
               </Row>
             </Col>
             <Col span={8}>
+              {/* 订单汇总 */}
               <Card
-                title={
-                  <div>
-                    <span
-                      style={{ backgroundColor: '#1E90FF' }}
-                      className={dispatchingStyles.selectCary}
-                    >
-                      订单汇总
-                    </span>
-                  </div>
-                }
+                title={<div className={dispatchingStyles.selectCary}>订单汇总</div>}
                 className={dispatchingStyles.orderTotalCard}
                 bodyStyle={{ padding: 5 }}
               >
-                <div className={dispatchingStyles.orderTotalCardBody}>
-                  <div style={{ flex: 1 }}>
-                    <div>送货点数</div>
-                    <div className={dispatchingStyles.orderTotalNumber}>
-                      {totalData.deliveryPointCount}
-                    </div>
-                  </div>
-                  <Divider type="vertical" style={{ height: '3.5em' }} />
-                  <div style={{ flex: 1 }}>
-                    <div>订单数</div>
-                    <div className={dispatchingStyles.orderTotalNumber}>{totalData.orderCount}</div>
-                  </div>
-                  <Divider type="vertical" style={{ height: '3.5em' }} />
-                  <div style={{ flex: 1 }}>
-                    <div> 整件</div>
-                    <div>
-                      <span className={dispatchingStyles.orderTotalNumber}>
-                        {totalData.realCartonCount}{' '}
-                      </span>
-                    </div>
-                  </div>
-                  <Divider type="vertical" style={{ height: '3.5em' }} />
-                  <div style={{ flex: 1 }}>
-                    <div>周转箱</div>
-                    <div>
-                      <span className={dispatchingStyles.orderTotalNumber}>
-                        {totalData.realContainerCount}
-                      </span>
-                    </div>
-                  </div>
-                </div>
                 <div className={dispatchingStyles.orderTotalCardBody}>
                   <div style={{ flex: 1 }}>
                     <div>体积</div>
@@ -681,7 +666,39 @@ export default class DispatchingCreatePage extends Component {
                     </div>
                   </div>
                 </div>
+                <div className={dispatchingStyles.orderTotalCardBody}>
+                  <div style={{ flex: 1 }}>
+                    <div>送货点数</div>
+                    <div className={dispatchingStyles.orderTotalNumber}>
+                      {totalData.deliveryPointCount}
+                    </div>
+                  </div>
+                  <Divider type="vertical" style={{ height: '3.5em' }} />
+                  <div style={{ flex: 1 }}>
+                    <div>订单数</div>
+                    <div className={dispatchingStyles.orderTotalNumber}>{totalData.orderCount}</div>
+                  </div>
+                  <Divider type="vertical" style={{ height: '3.5em' }} />
+                  <div style={{ flex: 1 }}>
+                    <div> 整件</div>
+                    <div>
+                      <span className={dispatchingStyles.orderTotalNumber}>
+                        {totalData.realCartonCount}
+                      </span>
+                    </div>
+                  </div>
+                  <Divider type="vertical" style={{ height: '3.5em' }} />
+                  <div style={{ flex: 1 }}>
+                    <div>周转箱</div>
+                    <div>
+                      <span className={dispatchingStyles.orderTotalNumber}>
+                        {totalData.realContainerCount}
+                      </span>
+                    </div>
+                  </div>
+                </div>
               </Card>
+              {/* 已选车辆 */}
               <Card
                 className={dispatchingStyles.orderTotalCard}
                 bodyStyle={{ padding: 5 }}
@@ -696,10 +713,7 @@ export default class DispatchingCreatePage extends Component {
                     >
                       已选车辆
                     </span>
-                    &nbsp;&nbsp;
-                    {selectVehicle.PLATENUMBER}
-                    {/* &nbsp;&nbsp;
-                    {selectVehicle.VEHICLETYPE} */}
+                    <span style={{ marginLeft: 5 }}>{selectVehicle.PLATENUMBER}</span>
                   </div>
                 }
                 style={{ height: '24.2vh', marginTop: 8, overflow: 'auto' }}
@@ -707,6 +721,39 @@ export default class DispatchingCreatePage extends Component {
                 {selectVehicle.PLATENUMBER ? (
                   <Row>
                     <Col>
+                      <div className={dispatchingStyles.orderTotalCardBody}>
+                        <div style={{ flex: 1 }}>
+                          <div>剩余可装容积</div>
+                          <div className={dispatchingStyles.orderTotalNumber}>
+                            <span
+                              style={
+                                vehicleCalc.volume - Math.ceil(totalData.volume.toFixed(4)) > 0
+                                  ? { color: 'green' }
+                                  : { color: 'red' }
+                              }
+                            >
+                              {vehicleCalc.volume - Math.ceil(totalData.volume.toFixed(4))}
+                              m³
+                            </span>
+                          </div>
+                        </div>
+                        <Divider type="vertical" style={{ height: '3.5em' }} />
+                        <div style={{ flex: 1 }}>
+                          <div>剩余可装重量</div>
+                          <div className={dispatchingStyles.orderTotalNumber}>
+                            <span
+                              style={
+                                vehicleCalc.weight - Math.ceil(totalData.weight.toFixed(4)) > 0
+                                  ? { color: 'green' }
+                                  : { color: 'red' }
+                              }
+                            >
+                              {vehicleCalc.weight - Math.ceil(totalData.weight.toFixed(4))}
+                              kg
+                            </span>
+                          </div>
+                        </div>
+                      </div>
                       <div className={dispatchingStyles.orderTotalCardBody2}>
                         <div style={{ flex: 1 }}>
                           <div>车型</div>
@@ -745,57 +792,24 @@ export default class DispatchingCreatePage extends Component {
                           </div>
                         </div>
                       </div>
-                      <div className={dispatchingStyles.orderTotalCardBody}>
-                        <div style={{ flex: 1 }}>
-                          <div>剩余可装容积</div>
-                          <div className={dispatchingStyles.orderTotalNumber}>
-                            <span
-                              style={
-                                vehicleCalc.volume - Math.ceil(totalData.volume.toFixed(4)) > 0
-                                  ? { color: 'green' }
-                                  : { color: 'red' }
-                              }
-                            >
-                              {vehicleCalc.volume - Math.ceil(totalData.volume.toFixed(4))}
-                              m³
-                            </span>
-                          </div>
-                        </div>
-                        <Divider type="vertical" style={{ height: '3.5em' }} />
-                        <div style={{ flex: 1 }}>
-                          <div>剩余可装重量</div>
-                          <div className={dispatchingStyles.orderTotalNumber}>
-                            <span
-                              style={
-                                vehicleCalc.weight - Math.ceil(totalData.weight.toFixed(4)) > 0
-                                  ? { color: 'green' }
-                                  : { color: 'red' }
-                              }
-                            >
-                              {vehicleCalc.weight - Math.ceil(totalData.weight.toFixed(4))}
-                              kg
-                            </span>
-                          </div>
-                        </div>
-                      </div>
                     </Col>
                   </Row>
                 ) : (
                   <></>
                 )}
               </Card>
+
+              {/* 已选人员 */}
               <Card
                 title={
-                  <div>
-                    <span
-                      className={
-                        selectEmployees.length > 0
-                          ? dispatchingStyles.selectCary
-                          : dispatchingStyles.selectCarn
-                      }
-                    >
-                      已选人员
-                    </span>
+                  <div
+                    className={
+                      selectEmployees.length > 0
+                        ? dispatchingStyles.selectCary
+                        : dispatchingStyles.selectCarn
+                    }
+                  >
+                    已选人员
                   </div>
                 }
                 style={{ height: '36vh', marginTop: 8 }}
@@ -803,13 +817,20 @@ export default class DispatchingCreatePage extends Component {
               >
                 {selectEmployees.map(employee => {
                   return (
-                    <Row gutter={[8, 8]} style={{ fontWeight: 'bold' }}>
-                      <Col span={8}>
-                        <div style={{ lineHeight: '30px' }}>
-                          {`[${employee.CODE}]` + employee.NAME}
-                        </div>
+                    <Row gutter={[8, 8]} style={{ fontWeight: 'bold', lineHeight: '30px' }}>
+                      <Col
+                        span={10}
+                        style={{
+                          overflow: 'hidden',
+                          whiteSpace: 'nowrap',
+                          textOverflow: 'ellipsis',
+                        }}
+                      >
+                        <Tooltip placement="topLeft" title={`[${employee.CODE}]` + employee.NAME}>
+                          <span>{`[${employee.CODE}]` + employee.NAME}</span>
+                        </Tooltip>
                       </Col>
-                      <Col span={10}>
+                      <Col span={9}>
                         <Select
                           placeholder="请选择员工类型"
                           onChange={this.handleEmployeeTypeChange(employee)}
@@ -821,10 +842,9 @@ export default class DispatchingCreatePage extends Component {
                           ))}
                         </Select>
                       </Col>
-                      <Col span={4} offset={2}>
+                      <Col span={4} offset={1}>
                         <a
                           href="#"
-                          style={{ lineHeight: '30px' }}
                           onClick={() => {
                             this.handleEmployee(employee);
                           }}
