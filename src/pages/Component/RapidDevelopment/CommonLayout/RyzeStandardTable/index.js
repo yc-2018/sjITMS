@@ -13,6 +13,7 @@ import { HTML5Backend } from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
 import { func } from 'prop-types';
 import ToolbarPanel from '@/pages/Component/Page/inner/ToolbarPanel';
+import { T } from 'antd/lib/upload/utils';
 
 const SHOW_THRESH_HOLD = 5;
 
@@ -397,7 +398,7 @@ class StandardTable extends Component {
       if (warp) {
         warp.addEventListener('scroll', this.handleScroll, true);
       }
-    }, 2000);
+    }, 1000);
   }
 
   //监听滚动事件
@@ -1064,6 +1065,7 @@ class StandardTable extends Component {
       tableWidth = tableWidth - 120;
     }
 
+    // console.log('totalWidth', totalWidth, 'tableWidth', tableWidth);
     // 固定列滚动
     if (totalWidth > tableWidth) {
       let firstCol = newColumns[0];
@@ -1177,6 +1179,19 @@ class StandardTable extends Component {
       }
     });
     showColumns = this.adjustColumns(showColumns);
+    let footerColumns = [];
+    for (const item of showColumns) {
+      footerColumns.push({
+        title: item.title,
+        dataIndex: item.dataIndex,
+        key: item.key + 'footer',
+        sorter: item.sorter,
+        width: item.width,
+        render: (val, record) => {
+          return val ? val : '<空>';
+        },
+      });
+    }
     let settingIcon = (
       <div className={styles.setting} onClick={() => this.handleSettingModalVisible(true)}>
         <IconFont style={{ fontSize: '20px', color: '#848C96' }} type="icon-setting" />
@@ -1202,7 +1217,7 @@ class StandardTable extends Component {
               return (
                 <Table
                   id={'happy'}
-                  columns={showColumns}
+                  columns={footerColumns}
                   scroll={{ x: true, y: false }}
                   rowKey={record => Math.random()}
                   pagination={false}
