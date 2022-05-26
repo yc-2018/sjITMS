@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-25 18:28:50
+ * @LastEditTime: 2022-05-26 11:20:04
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -157,6 +157,7 @@ export default class ShipPlanBillSearchPage extends PureComponent {
       this.state.pageFilters = pageFilters;
       this.queryCoulumns();
     }
+    this.setState({ showCreatePage: false });
   };
 
   callback = key => {
@@ -173,17 +174,11 @@ export default class ShipPlanBillSearchPage extends PureComponent {
   };
 
   refreshView = (record, selectedRows) => {
-    if (!record && selectedRows && selectedRows.length > 0) {
+    if (!record && selectedRows) {
       this.setState({
         showCreatePage: true,
-        selectedRows: selectedRows[selectedRows.length - 1],
+        selectedRows: selectedRows,
         // viewData: null,
-      });
-    } else if (record && !selectedRows) {
-      this.setState({
-        showCreatePage: true,
-        // viewData: record,
-        selectedRows: [],
       });
     } else {
       this.setState({

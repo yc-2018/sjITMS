@@ -2,14 +2,14 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-25 18:24:56
+ * @LastEditTime: 2022-05-26 11:19:33
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
 import { Form, Badge, Button, message } from 'antd';
 import { colWidth } from '@/utils/ColWidth';
 import { connect } from 'dva';
-import SearchPage from '@/pages/Tms/DispatchCenterShipPlanBill/SearchPage';
+import SearchPage from './SearchPage';
 import { guid } from '@/utils/utils';
 import { aborted, shipRollback } from '@/services/sjitms/ScheduleBill';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
@@ -33,6 +33,7 @@ export default class ShipPlanBillSearch extends SearchPage {
       data: [],
       isOrgQuery: [],
       selectedRows: [],
+      historyRows: {},
       width: '100%',
       scrollValue: {
         x: 4100,
@@ -66,7 +67,6 @@ export default class ShipPlanBillSearch extends SearchPage {
   }
 
   componentWillReceiveProps(nextProps) {
-    // const cc = nextProps.pageFilter != this.props.pageFilter;
     if (nextProps.pageFilter != this.props.pageFilter) {
       this.refreshTable(nextProps.pageFilter ? nextProps.pageFilter : null);
       this.setState({
@@ -307,7 +307,6 @@ export default class ShipPlanBillSearch extends SearchPage {
    * 刷新/重置
    */
   refreshTable = filter => {
-    console.log('filter', filter);
     let queryFilter;
     if (filter) {
       var order = '';
@@ -371,7 +370,14 @@ export default class ShipPlanBillSearch extends SearchPage {
   };
 
   changeSelectedRows = selectedRows => {
-    this.props.refreshView(null, selectedRows);
+    const { historyRows } = this.state;
+    if (historyRows.UUID == selectedRows.UUID) {
+      this.props.refreshView(true, selectedRows);
+      this.setState({ historyRows: {} });
+    } else {
+      this.props.refreshView(false, selectedRows);
+      this.setState({ historyRows: selectedRows });
+    }
   };
 
   /**
@@ -396,7 +402,7 @@ export default class ShipPlanBillSearch extends SearchPage {
 
   onMoveCar = () => {
     const { selectedRows } = this.state;
-    console.log('selectedRows', selectedRows);
+    // console.log('selectedRows', selectedRows);
     if (selectedRows.length === 1) {
       this.props.removeCarModalClick(selectedRows);
     } else message.error('请选中一条数据！');
@@ -434,7 +440,7 @@ export default class ShipPlanBillSearch extends SearchPage {
     const { selectedRows, batchAction } = this.state;
     const that = this;
     let bacth = i => {
-      console.log(i);
+      // console.log(i);
       if (i < selectedRows.length) {
         if (batchAction === '回滚') {
           if (selectedRows[i].STAT == 'Approved') {
