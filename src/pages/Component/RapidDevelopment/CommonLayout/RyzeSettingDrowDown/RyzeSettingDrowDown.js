@@ -490,7 +490,10 @@ export default class RyzeSettingDrowDown extends Component {
   changeWidth = (e, record) => {
     // console.log('record', record, e.target.value);
     const { optionsList } = this.state;
-    record.width = parseInt(e.target.value);
+    let width = parseInt(e.target.value);
+    //NaN自己与自己不相等
+    if (width != width) width = '';
+    record.width = width;
     this.setState(
       {
         optionsList: optionsList,
