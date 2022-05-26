@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-02-10 14:16:00
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-11 11:58:39
+ * @LastEditTime: 2022-05-26 11:54:06
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -86,7 +86,7 @@ export default class SimpleSelect extends PureComponent {
     this.initData();
   };
 
-  onSearch = value => {
+  onSearch = async value => {
     const searchField = this.props.searchField;
     let params = new Array();
     params.push({
@@ -96,10 +96,10 @@ export default class SimpleSelect extends PureComponent {
       val: value,
     });
     params = [...params, ...this.props.isOrgQuery];
-    this.getCoulumns({ queryParams: params });
+    this.getCoulumns({ queryParams: params }, value);
   };
 
-  getCoulumns = async pageFilters => {
+  getCoulumns = async (pageFilters, value) => {
     const payload = { superQuery: pageFilters, quickuuid: this.props.reportCode };
     const result = await selectCoulumns(payload);
     let sourceData = new Array();
@@ -107,8 +107,10 @@ export default class SimpleSelect extends PureComponent {
       result.data.forEach(sourceDatas => {
         sourceData.push({ NAME: sourceDatas, VALUE: sourceDatas });
       });
-      this.setState({ sourceData: sourceData });
+    } else {
+      sourceData.push({ NAME: value, VALUE: value });
     }
+    this.setState({ sourceData: sourceData });
   };
 
   render() {
