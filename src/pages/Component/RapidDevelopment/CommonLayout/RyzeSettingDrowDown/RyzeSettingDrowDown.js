@@ -504,6 +504,20 @@ export default class RyzeSettingDrowDown extends Component {
     );
   };
 
+  handleWidth = (index, width) => {
+    const { optionsList } = this.state;
+    let newOptionsList = optionsList;
+    newOptionsList[index].width = width;
+    this.setState(
+      {
+        optionsList: newOptionsList,
+      },
+      () => {
+        this.handleOK();
+      }
+    );
+  };
+
   settingColumns = [
     {
       title: 'checked',
