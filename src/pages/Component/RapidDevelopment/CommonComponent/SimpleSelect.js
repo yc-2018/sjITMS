@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-02-10 14:16:00
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-26 11:54:06
+ * @LastEditTime: 2022-05-26 11:55:57
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -86,7 +86,7 @@ export default class SimpleSelect extends PureComponent {
     this.initData();
   };
 
-  onSearch = async value => {
+  onSearch = value => {
     const searchField = this.props.searchField;
     let params = new Array();
     params.push({
