@@ -244,7 +244,6 @@ export default class DispatchingCreatePage extends Component {
     if (event.target.value != null && event.target.value != '') {
       let serachEmp = [];
       let val = event.target.value;
-      console.log('val', val);
       this.basicVeh.forEach(item => {
         if (JSON.stringify(item).search(val) != -1) {
           serachEmp.push(item);
