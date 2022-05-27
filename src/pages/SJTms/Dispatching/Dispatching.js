@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-29 14:03:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-19 10:24:30
+ * @LastEditTime: 2022-05-27 09:36:53
  * @Description: 配送调度主页面
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\Dispatching.js
  */
@@ -29,6 +29,10 @@ export default class Dispatching extends Component {
   orderPoolPageRef = React.createRef();
   schedulePageRef = React.createRef();
   pendingPageRef = React.createRef();
+
+  state = {
+    selectOrders: [],
+  };
 
   refreshOrderTable = () => {
     this.orderPoolPageRef.refreshTable();

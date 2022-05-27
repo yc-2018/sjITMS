@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-18 17:51:19
+ * @LastEditTime: 2022-05-26 15:43:43
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -11,6 +11,7 @@ import { Table, Button, Row, Col, Typography, message } from 'antd';
 import { OrderColumns, pagination } from './DispatchingColumns';
 import { getOrderInPending, removePending } from '@/services/sjitms/OrderBill';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
+import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
 import DispatchingTable from './DispatchingTable';
 import dispatchingStyles from './Dispatching.less';
 
@@ -19,11 +20,13 @@ const { Title, Text } = Typography;
 export default class PendingPage extends Component {
   state = {
     loading: false,
+    pendingOrderColumns: [...OrderColumns],
     pendingData: [],
     pendingRowKeys: [],
   };
 
   componentDidMount() {
+    this.pendingOrderColSetting.handleOK();
     this.refreshTable();
   }
 
@@ -74,7 +77,10 @@ export default class PendingPage extends Component {
       message.warning('请选择待定运输订单！');
       return;
     }
-    addOrders({ billUuid: scheduleRowKeys[0], orderUuids: pendingRowKeys }).then(response => {
+    addOrders({
+      billUuid: scheduleRowKeys[0],
+      orderUuids: pendingRowKeys,
+    }).then(response => {
       if (response.success) {
         message.success('保存成功！');
         this.refreshTable();
@@ -87,8 +93,14 @@ export default class PendingPage extends Component {
     this.setState({ pendingRowKeys: selectedRowKeys });
   };
 
+  //更新列配置
+  setColumns = (pendingOrderColumns, index, width) => {
+    index ? this.pendingOrderColSetting.handleWidth(index, width) : {};
+    this.setState({ pendingOrderColumns });
+  };
+
   render() {
-    const { loading, pendingData, pendingRowKeys } = this.state;
+    const { loading, pendingOrderColumns, pendingData, pendingRowKeys } = this.state;
     return (
       <div style={{ padding: 5 }}>
         <Row style={{ marginBottom: 5, lineHeight: '28px' }}>
@@ -105,12 +117,22 @@ export default class PendingPage extends Component {
         <DispatchingTable
           clickRow
           pagination={pagination}
+          setColumns={this.setColumns}
+          children={
+            <RyzeSettingDrowDown
+              noToolbarPanel
+              columns={OrderColumns}
+              comId={'PendingOrderColumns'}
+              getNewColumns={this.setColumns}
+              onRef={ref => (this.pendingOrderColSetting = ref)}
+            />
+          }
           loading={loading}
           dataSource={pendingData}
           changeSelectRows={this.tableChangeRows}
           selectedRowKeys={pendingRowKeys}
-          columns={OrderColumns}
-          scrollY="calc(68vh - 107px)"
+          columns={pendingOrderColumns}
+          scrollY="calc(68vh - 130px)"
         />
       </div>
     );

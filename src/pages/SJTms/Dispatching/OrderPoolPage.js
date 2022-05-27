@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-24 15:08:14
+ * @LastEditTime: 2022-05-26 15:41:53
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -12,6 +12,7 @@ import DispatchingTable from './DispatchingTable';
 import DispatchingChildTable from './DispatchingChildTable';
 import { OrderColumns, OrderDetailColumns, pagination } from './DispatchingColumns';
 import OrderPoolSearchForm from './OrderPoolSearchForm';
+import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import dispatchingStyles from './Dispatching.less';
 import {
@@ -30,6 +31,7 @@ export default class OrderPoolPage extends Component {
   state = {
     searchKeyValues: { orderType: 'Delivery' },
     loading: false,
+    orderPoolColumns: [...OrderColumns],
     auditedData: [],
     scheduledData: [],
     auditedRowKeys: [],
@@ -38,6 +40,7 @@ export default class OrderPoolPage extends Component {
   };
 
   componentDidMount() {
+    this.orderColSetting.handleOK();
     this.refreshTable();
   }
 
@@ -244,10 +247,16 @@ export default class OrderPoolPage extends Component {
     };
   };
 
+  //更新列配置
+  setColumns = (orderPoolColumns, index, width) => {
+    index ? this.orderColSetting.handleWidth(index, width) : {};
+    this.setState({ orderPoolColumns });
+  };
+
   render() {
     const {
       loading,
-      columns,
+      orderPoolColumns,
       auditedRowKeys,
       scheduledRowKeys,
       auditedData,
@@ -275,6 +284,15 @@ export default class OrderPoolPage extends Component {
       }
     };
 
+    const settingColumn = (
+      <RyzeSettingDrowDown
+        columns={OrderColumns}
+        comId={'OrderPoolColumns'}
+        getNewColumns={this.setColumns}
+        onRef={ref => (this.orderColSetting = ref)}
+      />
+    );
+
     return (
       <Tabs
         activeKey={activeTab}
@@ -288,11 +306,13 @@ export default class OrderPoolPage extends Component {
           <DispatchingTable
             clickRow
             pagination={pagination}
+            setColumns={this.setColumns}
+            children={settingColumn}
             loading={loading}
             dataSource={auditedData}
             changeSelectRows={this.tableChangeRows('Audited')}
             selectedRowKeys={auditedRowKeys}
-            columns={OrderColumns}
+            columns={orderPoolColumns}
             scrollY="calc(68vh - 220px)"
             title={this.buildTitle}
           />
@@ -315,11 +335,16 @@ export default class OrderPoolPage extends Component {
           <DispatchingTable
             clickRow
             pagination={pagination}
+            setColumns={this.setColumns}
+            children={settingColumn}
             loading={loading}
             dataSource={scheduledData}
             changeSelectRows={this.tableChangeRows('Scheduled')}
             selectedRowKeys={scheduledRowKeys}
-            columns={[{ title: '排车单号', dataIndex: 'scheduleNum', width: 150 }, ...OrderColumns]}
+            columns={[
+              { title: '排车单号', dataIndex: 'scheduleNum', width: 150 },
+              ...orderPoolColumns,
+            ]}
             scrollY="calc(68vh - 115px)"
           />
         </TabPane>

@@ -16,7 +16,7 @@ import {
   Badge,
   Tooltip,
 } from 'antd';
-import { isEmptyObj } from '@/utils/utils';
+import { isEmptyObj, guid } from '@/utils/utils';
 import { queryAllData, dynamicQuery } from '@/services/quick/Quick';
 import { getSchedule, save, modify, getRecommend } from '@/services/sjitms/ScheduleBill';
 import EditContainerNumberPageF from './EditContainerNumberPageF';
@@ -173,6 +173,7 @@ export default class DispatchingCreatePage extends Component {
               )
               .map(item => {
                 item.memberType = item.ROLE_TYPE;
+                item.memberUuid = guid();
                 return item;
               });
             //选中的人放到第一位
@@ -209,13 +210,15 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //员工类型选择事件
-  handleEmployeeTypeChange = employee => {
+  handleEmployeeTypeChange = (employee, val) => {
     const { selectEmployees } = this.state;
-    return val => {
-      employee.memberType = val;
-      selectEmployees.splice(selectEmployees.indexOf(employee), 1, employee);
-      this.setState({ selectEmployees });
-    };
+    employee.memberType = val;
+    selectEmployees.splice(
+      selectEmployees.findIndex(x => x.memberUuid == employee.memberUuid),
+      1,
+      employee
+    );
+    this.setState({ selectEmployees });
   };
 
   //选车
@@ -259,8 +262,9 @@ export default class DispatchingCreatePage extends Component {
   handleEmployee = employee => {
     const { selectEmployees } = this.state;
     let employees = [...selectEmployees];
-    const index = selectEmployees.findIndex(x => x.UUID == employee.UUID);
+    const index = selectEmployees.findIndex(x => x.memberUuid == employee.memberUuid);
     employee.memberType = employee.ROLE_TYPE;
+    employee.memberUuid = guid();
     index == -1 ? employees.push(employee) : employees.splice(index, 1);
     if (employees.filter(item => item.memberType == 'Driver').length >= 2) {
       message.error('只允许一位驾驶员！');
@@ -282,6 +286,15 @@ export default class DispatchingCreatePage extends Component {
     } else {
       this.setState({ employees: this.basicEmp });
     }
+  };
+  //添加工种
+  addWorkType = emp => {
+    const { selectEmployees } = this.state;
+    let employee = { ...emp };
+    employee.memberUuid = guid();
+    employee.memberType = '';
+    selectEmployees.push(employee);
+    this.setState({ selectEmployees });
   };
 
   //移除明细
@@ -350,26 +363,26 @@ export default class DispatchingCreatePage extends Component {
   verifySchedule = (orderCounts, selectVehicle, driver) => {
     //校验车辆必选
     if (isEmptyObj(selectVehicle)) {
-      message.warning('请选择车辆！');
+      message.error('请选择车辆！');
       return false;
     }
     //校验司机必选
     if (driver == undefined) {
-      message.warning('请选择司机！');
+      message.error('请选择司机！');
       return false;
     }
     //校验容积
-    const exceedVolume = orderCounts.volume - selectVehicle.BEARVOLUME;
-    if (exceedVolume > 0) {
-      message.warning(
-        '排车体积超过车辆可装载的最大体积，超出' + exceedVolume.toFixed(2) + 'm³，请检查后重试！'
-      );
-      return false;
-    }
+    // const exceedVolume = orderCounts.volume - selectVehicle.BEARVOLUME;
+    // if (exceedVolume > 0) {
+    //   message.error(
+    //     '排车体积超过车辆可装载的最大体积，超出' + exceedVolume.toFixed(2) + 'm³，请检查后重试！'
+    //   );
+    //   return false;
+    // }
     //校验载重
     const exceedWeight = orderCounts.weight - selectVehicle.BEARWEIGHT;
     if (exceedWeight > 0) {
-      message.warning(
+      message.error(
         '排车重量超过车辆可运输的最大限重，超出' + exceedWeight.toFixed(2) + 'kg，请检查后重试！'
       );
       return false;
@@ -839,7 +852,7 @@ export default class DispatchingCreatePage extends Component {
                   return (
                     <Row gutter={[8, 8]} style={{ fontWeight: 'bold', lineHeight: '30px' }}>
                       <Col
-                        span={10}
+                        span={8}
                         style={{
                           overflow: 'hidden',
                           whiteSpace: 'nowrap',
@@ -850,10 +863,10 @@ export default class DispatchingCreatePage extends Component {
                           <span>{`[${employee.CODE}]` + employee.NAME}</span>
                         </Tooltip>
                       </Col>
-                      <Col span={9}>
+                      <Col span={8}>
                         <Select
                           placeholder="请选择员工类型"
-                          onChange={this.handleEmployeeTypeChange(employee)}
+                          onChange={val => this.handleEmployeeTypeChange(employee, val)}
                           style={{ width: '100%' }}
                           value={employee.memberType}
                         >
@@ -862,7 +875,7 @@ export default class DispatchingCreatePage extends Component {
                           ))}
                         </Select>
                       </Col>
-                      <Col span={4} offset={1}>
+                      <Col span={6} offset={1}>
                         <a
                           href="#"
                           onClick={() => {
@@ -870,6 +883,15 @@ export default class DispatchingCreatePage extends Component {
                           }}
                         >
                           移除
+                        </a>
+                        <a
+                          href="#"
+                          onClick={() => {
+                            this.addWorkType(employee);
+                          }}
+                          style={{ marginLeft: 10 }}
+                        >
+                          添加
                         </a>
                       </Col>
                     </Row>

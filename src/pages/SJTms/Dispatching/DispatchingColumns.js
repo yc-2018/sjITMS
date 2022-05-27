@@ -253,6 +253,11 @@ export const CreatePageOrderColumns = [
 
 export const ScheduleColumns = [
   {
+    title: '单号',
+    dataIndex: 'billNumber',
+    width: 150,
+  },
+  {
     title: '送货点',
     dataIndex: 'deliveryPointCount',
     width: 80,

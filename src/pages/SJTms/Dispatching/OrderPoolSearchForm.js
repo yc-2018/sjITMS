@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-24 14:06:40
+ * @LastEditTime: 2022-05-27 15:37:17
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -61,12 +61,9 @@ export default class OrderPoolSearchForm extends Component {
                   valueField="CODE"
                   sonField="UUID"
                   parentField="PARENTUUID"
+                  isOrgSearch="Company,Org"
                   queryParams={{ tableName: 'v_sj_tms_line_system' }}
                   showSearch
-                  linkFilter={{
-                    COMPANYUUID: loginCompany().uuid,
-                    DISPATCHCENTERUUID: loginOrg().uuid,
-                  }}
                   multiSave="PARENTUUID:UUID"
                 />
               )}
@@ -93,10 +90,7 @@ export default class OrderPoolSearchForm extends Component {
                   textField="[%CODE%]%NAME%"
                   valueField="CODE"
                   searchField="CODE,NAME"
-                  linkFilter={{
-                    COMPANYUUID: loginCompany().uuid,
-                    DISPATCHCENTERUUID: loginOrg().uuid,
-                  }}
+                  isOrgSearch="Company,Org"
                   queryParams={{ tableName: 'v_sj_itms_ship_store' }}
                   autoComplete
                   allowClear={true}
@@ -112,10 +106,7 @@ export default class OrderPoolSearchForm extends Component {
                   textField="[%CODE%]%NAME%"
                   valueField="CODE"
                   searchField="CODE,NAME"
-                  linkFilter={{
-                    COMPANYUUID: loginCompany().uuid,
-                    DISPATCHCENTERUUID: loginOrg().uuid,
-                  }}
+                  isOrgSearch="Company,Org"
                   queryParams={{ tableName: 'sj_itms_owner' }}
                   autoComplete
                   allowClear={true}
