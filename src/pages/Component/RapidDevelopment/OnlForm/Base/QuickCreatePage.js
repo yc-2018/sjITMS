@@ -768,7 +768,7 @@ export default class QuickCreatePage extends CreatePage {
         let { field, outField, inField, table, valueSplit, rule } = linkField;
         table = table || currentTableName;
         inField = inField || props.valueField;
-        rule = rule || "eq";
+        rule = rule || 'eq';
         if (linkFilters[table] == undefined) {
           linkFilters[table] = {};
         }
@@ -836,7 +836,7 @@ export default class QuickCreatePage extends CreatePage {
         loginParmas.push({ field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] });
       }
       if (orgFields.indexOf('Org') != -1) {
-        loginParmas.push({ field: loginOrgType + 'UUID', rule: 'eq', val: [loginOrg().uuid] });
+        loginParmas.push({ field: loginOrgType + 'UUID', rule: 'like', val: [loginOrg().uuid] });
       }
       // 把权限控制加到props的queryParams中
       addCondition(e.props.queryParams, { params: loginParmas });
