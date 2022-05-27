@@ -504,6 +504,21 @@ export default class RyzeSettingDrowDown extends Component {
     );
   };
 
+  handleWidth = (index, width) => {
+    if (index <= 0) return;
+    const { optionsList } = this.state;
+    let newOptionsList = optionsList;
+    newOptionsList[index - 1].width = width;
+    this.setState(
+      {
+        optionsList: newOptionsList,
+      },
+      () => {
+        this.handleOK();
+      }
+    );
+  };
+
   settingColumns = [
     {
       title: 'checked',
@@ -580,14 +595,13 @@ export default class RyzeSettingDrowDown extends Component {
 
   render() {
     let style =
-      this.props.comId && this.props.comId.indexOf('search') != -1 && !this.props.noToolbarPanel
+      this.props.comId && !this.props.noToolbarPanel
         ? {
             display: 'flex',
             justifyContent: 'flex-end',
-            width: '10%',
-            marginTop: '-28px',
-            marginBottom: '5px',
-            marginLeft: '50%',
+            position: 'absolute',
+            right: '2px',
+            top: '-20px',
           }
         : {
             display: 'flex',
@@ -606,7 +620,6 @@ export default class RyzeSettingDrowDown extends Component {
           id={this.state.settingKey}
           style={{ borderBottom: '1px solid transparent !important' }}
         />
-        ;
       </div>
     );
   }
