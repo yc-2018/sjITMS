@@ -24,7 +24,7 @@ import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
 import { convertCodeName } from '@/utils/utils';
 import { colWidth, itemColWidth } from '@/utils/ColWidth';
 import Address from '@/pages/Component/Form/Address';
-import { addCondition, getFieldShow } from '@/utils/ryzeUtils'
+import { addCondition, getFieldShow } from '@/utils/ryzeUtils';
 
 /**
  * 新增编辑界面
@@ -371,8 +371,8 @@ export default class QuickCreatePage extends CreatePage {
 
         const rules = this.getFormRules(field);
         const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
-        if(typeof fieldExtendJson.queryParams == "string"){
-          fieldExtendJson.queryParams = JSON.parse(fieldExtendJson.queryParams)
+        if (typeof fieldExtendJson.queryParams == 'string') {
+          fieldExtendJson.queryParams = JSON.parse(fieldExtendJson.queryParams);
         }
         const commonPropertis = {
           disabled: this.isReadOnly(field.isReadOnly),
@@ -774,10 +774,10 @@ export default class QuickCreatePage extends CreatePage {
         if (linkFilters[table][field] == undefined) {
           linkFilters[table][field] = [];
         }
-        const filter = { field: outField, rule: "eq", val: [""] };
+        const filter = { field: outField, rule: 'eq', val: [''] };
         // 多选的控件联动
         if (valueEvent.record instanceof Array) {
-          filter.rule = "in";
+          filter.rule = 'in';
           if (valueSplit) {
             const val = [];
             for (const item of valueEvent.record) {
@@ -788,7 +788,12 @@ export default class QuickCreatePage extends CreatePage {
             filter.val = valueEvent.record.map(x => x[inField]);
           }
         } else {
-          filter.val = valueSplit ? valueEvent.record[inField]?.split(valueSplit) : valueEvent.record[inField];
+          if (valueSplit) {
+            filter.rule = 'in';
+          }
+          filter.val = valueSplit
+            ? valueEvent.record[inField]?.split(valueSplit)
+            : valueEvent.record[inField];
         }
         linkFilters[table][field].push(filter);
       }
@@ -808,9 +813,11 @@ export default class QuickCreatePage extends CreatePage {
     const oldLinkFilter = this.getRunTimeProps(tableName, field, key)?.linkFilter || [];
     // 去重，只要第一次匹配到的字段
     let newLinkFilter = [...linkFilter, ...oldLinkFilter, ...globalLinkFilter];
-    newLinkFilter = newLinkFilter.filter((item, index, arr) => arr.findIndex(x => x.field == item.field) === index);
+    newLinkFilter = newLinkFilter.filter(
+      (item, index, arr) => arr.findIndex(x => x.field == item.field) === index
+    );
     this.setRunTimeProps(tableName, field, { linkFilter: newLinkFilter }, key);
-  }
+  };
 
   /**
    *判断是否增加组织查询
@@ -825,10 +832,10 @@ export default class QuickCreatePage extends CreatePage {
       let loginOrgType = loginOrg().type.replace('_', '');
       let loginParmas = [];
       if (orgFields.indexOf('Company') != -1) {
-        loginParmas.push({ field: "COMPANYUUID", rule: "eq", val: [loginCompany().uuid] });
+        loginParmas.push({ field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] });
       }
       if (orgFields.indexOf('Org') != -1) {
-        loginParmas.push({ field: loginOrgType + 'UUID', rule: "eq", val: [loginOrg().uuid] });
+        loginParmas.push({ field: loginOrgType + 'UUID', rule: 'eq', val: [loginOrg().uuid] });
       }
       // 把权限控制加到props的queryParams中
       addCondition(e.props.queryParams, { params: loginParmas });
