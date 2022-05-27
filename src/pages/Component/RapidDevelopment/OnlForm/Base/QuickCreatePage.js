@@ -24,6 +24,7 @@ import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
 import { convertCodeName } from '@/utils/utils';
 import { colWidth, itemColWidth } from '@/utils/ColWidth';
 import Address from '@/pages/Component/Form/Address';
+import { addCondition, getFieldShow } from '@/utils/ryzeUtils'
 
 /**
  * 新增编辑界面
@@ -370,6 +371,9 @@ export default class QuickCreatePage extends CreatePage {
 
         const rules = this.getFormRules(field);
         const fieldExtendJson = field.fieldExtendJson ? JSON.parse(field.fieldExtendJson) : {}; // 扩展属性
+        if(typeof fieldExtendJson.queryParams == "string"){
+          fieldExtendJson.queryParams = JSON.parse(fieldExtendJson.queryParams)
+        }
         const commonPropertis = {
           disabled: this.isReadOnly(field.isReadOnly),
           style: { width: field.fieldLength == 0 ? '100%' : field.fieldLength },
@@ -389,6 +393,7 @@ export default class QuickCreatePage extends CreatePage {
           onlFormInfo,
           onlFormField: field,
         };
+        this.setOrgSearch(item);
 
         // 附表一对多情况
         if (tableType == 2 && relationType == 0) {
@@ -665,11 +670,29 @@ export default class QuickCreatePage extends CreatePage {
     if (fieldShowType == 'auto_complete' || e.fieldShowType == 'sel_tree') {
       const multiSaves = props.multiSave.split(',');
       for (const multiSave of multiSaves) {
-        const [key, value] = multiSave.split(':');
-        this.entity[tableName][line][key] = getFieldShow(valueEvent.record, value);
+        const [outField, inField] = multiSave.split(':');
+        this.entity[tableName][line][outField] = getFieldShow(valueEvent.record, inField);
       }
     }
   };
+
+  // /**
+  //  * 在保存实体之前，对实体进行特殊处理
+  //  */
+  // beforeSaveEntitySpecialTreatment = () => {
+  //   const { formItems, tableItems, entity } = this.state;
+  //   for(const  ){
+
+  //   }
+  //   //保存前对address字段做处理 不进行保存
+  //   for (const formItem of formItems) {
+  //     formItem.props?.multipleSplit
+  //     let addItem = onlFormInfo.onlFormFields.find(item => item.fieldShowType == 'address');
+  //     if (addItem) {
+  //       delete this.entity[onlFormInfo.onlFormHead.tableName][0][addItem.dbFieldName];
+  //     }
+  //   }
+  // }
 
   /**
    * 特殊处理控件的props
@@ -677,7 +700,6 @@ export default class QuickCreatePage extends CreatePage {
   propsSpecialTreatment = e => {
     // this.reverseMultiSave(e);
     this.childComponetSourceDataSave(e);
-    this.setOrgSearch(e);
     this.setRunTimeProps(
       e.tableName,
       e.fieldName,
@@ -736,26 +758,39 @@ export default class QuickCreatePage extends CreatePage {
    * 处理字段联动
    */
   handleLinkField = e => {
-    if (!e.props.linkField || !e.valueEvent) {
+    if (!e.props.linkFields || !e.valueEvent) {
       return;
     }
     const { fieldShowType, props, tableName: currentTableName, valueEvent } = e;
     if (fieldShowType == 'auto_complete') {
       const linkFilters = {};
-      const linkFields = props.linkField.split(',');
-      for (const linkField of linkFields) {
-        let [field, key, value, tableName] = linkField.split(':');
-        tableName = tableName || currentTableName;
-        if (linkFilters[tableName] == undefined) {
-          linkFilters[tableName] = {};
+      for (const linkField of props.linkFields) {
+        let { field, outField, inField, table, valueSplit } = linkField;
+        table = table || currentTableName;
+        inField = inField || props.valueField;
+        if (linkFilters[table] == undefined) {
+          linkFilters[table] = {};
         }
-        if (linkFilters[tableName][field] == undefined) {
-          linkFilters[tableName][field] = {};
+        if (linkFilters[table][field] == undefined) {
+          linkFilters[table][field] = [];
         }
-        linkFilters[tableName][field] = {
-          ...linkFilters[tableName][field],
-          [key]: valueEvent.record[value],
-        };
+        const filter = { field: outField, rule: "eq", val: [""] };
+        // 多选的控件联动
+        if (valueEvent.record instanceof Array) {
+          filter.rule = "in";
+          if (valueSplit) {
+            const val = [];
+            for (const item of valueEvent.record) {
+              val = [...val, ...item[inField]?.split(inField)];
+            }
+            filter.val = val;
+          } else {
+            filter.val = valueEvent.record.map(x => x[inField]);
+          }
+        } else {
+          filter.val = valueSplit ? valueEvent.record[inField]?.split(valueSplit) : valueEvent.record[inField];
+        }
+        linkFilters[table][field].push(filter);
       }
       for (const tableName in linkFilters) {
         for (const field in linkFilters[tableName]) {
@@ -769,9 +804,12 @@ export default class QuickCreatePage extends CreatePage {
    * 设置字段联动
    */
   setLinkFilter = (tableName, field, key, linkFilter) => {
-    const globalLinkFilter = this.getRunTimeProps(tableName, field)?.linkFilter;
-    const oldLinkFilter = this.getRunTimeProps(tableName, field, key)?.linkFilter;
-    this.setRunTimeProps(tableName, field, { linkFilter: { ...oldLinkFilter, ...globalLinkFilter, ...linkFilter} }, key);
+    const globalLinkFilter = this.getRunTimeProps(tableName, field)?.linkFilter || [];
+    const oldLinkFilter = this.getRunTimeProps(tableName, field, key)?.linkFilter || [];
+    // 去重，只要第一次匹配到的字段
+    let newLinkFilter = [...linkFilter, ...oldLinkFilter, ...globalLinkFilter];
+    newLinkFilter = newLinkFilter.filter((item, index, arr) => arr.findIndex(x => x.field == item.field) === index);
+    this.setRunTimeProps(tableName, field, { linkFilter: newLinkFilter }, key);
   }
 
   /**
@@ -781,24 +819,19 @@ export default class QuickCreatePage extends CreatePage {
     if (!e.props.isOrgSearch) {
       return;
     }
-    const { fieldShowType, props, tableName, record, fieldName } = e;
+    const { fieldShowType, props, tableName, fieldName } = e;
     if (fieldShowType == 'auto_complete') {
       const orgFields = props.isOrgSearch.split(',');
       let loginOrgType = loginOrg().type.replace('_', '');
-      let loginInfo = ['COMPANYUUID', loginOrgType, loginOrgType + 'UUID'];
-      let loginObj = {};
+      let loginParmas = [];
       if (orgFields.indexOf('Company') != -1) {
-        loginObj = {
-          COMPANYUUID: loginCompany().uuid,
-        };
+        loginParmas.push({ field: "COMPANYUUID", rule: "eq", val: [loginCompany().uuid] });
       }
       if (orgFields.indexOf('Org') != -1) {
-        loginObj = {
-          ...loginObj,
-          [loginOrgType + 'UUID']: loginOrg().uuid,
-        };
+        loginParmas.push({ field: loginOrgType + 'UUID', rule: "eq", val: [loginOrg().uuid] });
       }
-      this.setLinkFilter(tableName, fieldName, record?.key, loginObj);
+      // 把权限控制加到props的queryParams中
+      addCondition(e.props.queryParams, { params: loginParmas });
     }
   };
 
@@ -905,26 +938,4 @@ export default class QuickCreatePage extends CreatePage {
       return e;
     }
   };
-}
-
-/**
- * 获取定义字段的显示，允许通过 %字段名% 的方式插入值
- * @param {Map} rowData 原始数据
- * @param {String} str 用户定义的字段文本
- */
-function getFieldShow(rowData, str) {
-  if (!rowData || !str) {
-    return;
-  }
-  var reg = /%\w+%/g;
-  var matchFields = str.match(reg);
-  if (matchFields) {
-    for (const replaceText of matchFields) {
-      var field = replaceText.replaceAll('%', '');
-      str = str.replaceAll(replaceText, rowData[field]);
-    }
-    return str;
-  } else {
-    return rowData[str];
-  }
 }

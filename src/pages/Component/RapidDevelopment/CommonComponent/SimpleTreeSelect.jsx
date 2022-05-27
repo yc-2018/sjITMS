@@ -9,6 +9,7 @@ import React, { Component } from 'react';
 import { TreeSelect } from 'antd';
 import { dynamicQuery } from "@/services/quick/Quick";
 import memoize from "memoize-one";
+import { addCondition, getFieldShow } from '@/utils/ryzeUtils'
 
 /**
  * 下拉树选择控件，可传入props同antd TreeSelect控件
@@ -85,53 +86,14 @@ export default class SimpleTreeSelect extends Component {
         if (!queryParams) {
             return;
         }
-        queryParamsJson = queryParams instanceof Object ? JSON.parse(JSON.stringify(queryParams)) : JSON.parse(queryParams);
+        queryParamsJson = JSON.parse(JSON.stringify(queryParams));
         if (linkFilter) {
             // 构建出联动筛选语句，过滤数据
-            const linkFilterCondition = this.getLinkFilterCondition();
-            // 构建失败,退出
-            if (!linkFilterCondition) {
-                return;
-            }
-            this.addCondition(queryParamsJson, linkFilterCondition);
+            const linkFilterCondition = { params: JSON.parse(JSON.stringify(linkFilter)) };
+            addCondition(queryParamsJson, linkFilterCondition);
         }
         
         return queryParamsJson;
-    }
-
-    /**
-     * 增加condition
-     */
-    addCondition = (queryParams, condition) => {
-        if (!queryParams.condition) {
-            // 如果数据源本身查询不带条件，则condition直接作为查询的条件
-            queryParams.condition = condition;
-        } else if (!queryParams.condition.matchType || queryParams.condition.matchType == "and") {
-            // 如果是and连接,则进行条件追加
-            queryParams.condition.params.push({ nestCondition: condition });
-        } else {
-            // 否则将原本的查询条件与condition作为两个子查询进行and拼接
-            queryParams.condition = {
-                params: [{ nestCondition: queryParams.condition }, { nestCondition: condition }],
-            };
-        }
-    }
-
-    /**
-     * 构建联动筛选的条件
-     */
-    getLinkFilterCondition = () => {
-        const { linkFilter } = this.props;
-        const params = [];
-        for (const key in linkFilter) {
-            const value = linkFilter[key];
-            // 值为空的情况为异常
-            if (value == null || value == undefined) {
-                return;
-            }
-            params.push({ field: key, rule: 'eq', val: [value] });
-        }
-        return { params };
     }
 
     /**
@@ -266,27 +228,4 @@ function convertData2TreeData(sourceData, textField, valueField, parentField, so
         return parentData;
     }
     return convert(null);
-}
-
-
-/**
- * 获取定义字段的显示，允许通过 %字段名% 的方式插入值
- * @param {Map} rowData 原始数据
- * @param {String} str 用户定义的字段文本
- */
-function getFieldShow(rowData, str) {
-    if (!rowData || !str) {
-        return;
-    }
-    var reg = /%\w+%/g;
-    var matchFields = str.match(reg);
-    if (matchFields) {
-        for (const replaceText of matchFields) {
-            var field = replaceText.replaceAll('%', '');
-            str = str.replaceAll(replaceText, rowData[field]);
-        }
-        return str;
-    } else {
-        return rowData[str];
-    }
 }

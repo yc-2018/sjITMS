@@ -3,8 +3,8 @@ import { Select, Spin } from 'antd';
 import Debounce from 'lodash-decorators/debounce';
 import Bind from 'lodash-decorators/bind';
 import memoize from "memoize-one";
-
 import { dynamicQuery } from '@/services/quick/Quick';
+import { addCondition, getFieldShow } from '@/utils/ryzeUtils'
 
 /**
  * 下拉列表输入框控件，可传入props同antd select
@@ -14,7 +14,7 @@ import { dynamicQuery } from '@/services/quick/Quick';
  * {string} queryParams 数据查询参数
  * {string} dictCode 字典编码,与queryParams冲突,字典编码优先
  * {boolean} isLink    是否为联动控件 
- * {string} linkFilter   联动过滤条件 {field:val}形式
+ * {string} linkFilter   联动过滤条件 {field:string, rule:string, val:array}形式
  * {object} initialRecord  初始行记录，用作显示
  * {function} onSourceDataChange  查询数据发生变化事件
  * {array} sourceData  原始数据
@@ -115,54 +115,15 @@ export default class SimpleAutoComplete extends Component {
       if (!queryParams) {
         return;
       }
-      queryParamsJson = queryParams instanceof Object ? JSON.parse(JSON.stringify(queryParams)) : JSON.parse(queryParams);
+      queryParamsJson = JSON.parse(JSON.stringify(queryParams));
     }
 
     if (linkFilter) {
       // 构建出联动筛选语句，过滤数据
-      const linkFilterCondition = this.getLinkFilterCondition();
-      // 构建失败,退出
-      if(!linkFilterCondition){
-        return;
-      }
-      this.addCondition(queryParamsJson, linkFilterCondition);
+      const linkFilterCondition = { params: JSON.parse(JSON.stringify(linkFilter)) };
+      addCondition(queryParamsJson, linkFilterCondition);
     }
     return queryParamsJson;
-  }
-
-  /**
-   * 增加condition
-   */
-  addCondition = (queryParams, condition) => {
-    if (!queryParams.condition) {
-      // 如果数据源本身查询不带条件，则condition直接作为查询的条件
-      queryParams.condition = condition;
-    } else if (!queryParams.condition.matchType || queryParams.condition.matchType == "and") {
-      // 如果是and连接,则进行条件追加
-      queryParams.condition.params.push({ nestCondition: condition });
-    } else {
-      // 否则将原本的查询条件与condition作为两个子查询进行and拼接
-      queryParams.condition = {
-        params: [{ nestCondition: queryParams.condition }, { nestCondition: condition }],
-      };
-    }
-  }
-
-  /**
-   * 构建联动筛选的条件
-   */
-  getLinkFilterCondition = () => {
-    const { linkFilter } = this.props;
-    const params = [];
-    for (const key in linkFilter) {
-      const value = linkFilter[key];
-      // 值为空的情况为异常
-      if (value == null || value == undefined) {
-        return;
-      }
-      params.push({ field: key, rule: 'like', val: [value] });
-    }
-    return { params };
   }
 
   /**
@@ -223,16 +184,15 @@ export default class SimpleAutoComplete extends Component {
     if (searchText != undefined && searchText != '') {
       // 构建出or语句，使得多个查询字段都能搜索到数据
       const searchCondition = this.getSearchCondition(searchText);
-      this.addCondition(queryParams, searchCondition);
+      addCondition(queryParams, searchCondition);
     } else if (this.state.value != undefined) {
       // 如果已经控件已经有值，则按值搜索，在编辑时可带出源数据
       const keyCondition = this.getKeyCondition();
-      this.addCondition(queryParams, keyCondition);
+      addCondition(queryParams, keyCondition);
     } else {
       // 两者都不存在，则不加载数据
       return;
     }
-    
     await this.loadData(queryParams);
   }
 
@@ -367,26 +327,4 @@ function convertData2Options(sourceData, textField, valueField) {
       }
     }
   });
-}
-
-/**
- * 获取定义字段的显示，允许通过 %字段名% 的方式插入值
- * @param {Map} rowData 原始数据
- * @param {String} str 用户定义的字段文本
- */
-function getFieldShow(rowData, str) {
-  if (!rowData || !str) {
-    return;
-  }
-  var reg = /%\w+%/g;
-  var matchFields = str.match(reg);
-  if (matchFields) {
-    for (const replaceText of matchFields) {
-      var field = replaceText.replaceAll('%', '');
-      str = str.replaceAll(replaceText, rowData[field]);
-    }
-    return str;
-  } else {
-    return rowData[str];
-  }
 }
