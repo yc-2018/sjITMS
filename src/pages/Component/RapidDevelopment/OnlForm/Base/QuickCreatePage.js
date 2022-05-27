@@ -765,16 +765,17 @@ export default class QuickCreatePage extends CreatePage {
     if (fieldShowType == 'auto_complete') {
       const linkFilters = {};
       for (const linkField of props.linkFields) {
-        let { field, outField, inField, table, valueSplit } = linkField;
+        let { field, outField, inField, table, valueSplit, rule } = linkField;
         table = table || currentTableName;
         inField = inField || props.valueField;
+        rule = rule || "eq";
         if (linkFilters[table] == undefined) {
           linkFilters[table] = {};
         }
         if (linkFilters[table][field] == undefined) {
           linkFilters[table][field] = [];
         }
-        const filter = { field: outField, rule: 'eq', val: [''] };
+        const filter = { field: outField, rule: rule, val: [''] };
         // 多选的控件联动
         if (valueEvent.record instanceof Array) {
           filter.rule = 'in';
@@ -790,10 +791,10 @@ export default class QuickCreatePage extends CreatePage {
         } else {
           if (valueSplit) {
             filter.rule = 'in';
+            filter.val = valueEvent.record[inField]?.split(valueSplit);
+          } else {
+            filter.val = [valueEvent.record[inField]];
           }
-          filter.val = valueSplit
-            ? valueEvent.record[inField]?.split(valueSplit)
-            : valueEvent.record[inField];
         }
         linkFilters[table][field].push(filter);
       }
