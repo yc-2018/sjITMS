@@ -332,7 +332,27 @@ export default class QuickFormSearchPage extends SearchPage {
                   );
                 }
               : (val, record) => {
-                  if (column.textColorJson) {
+                  if (
+                    column.reportRender &&
+                    column.reportRender == 1 &&
+                    loginOrg().type == 'COMPANY'
+                  ) {
+                    const component = (
+                      <Switch
+                        checkedChildren="启用"
+                        unCheckedChildren="禁用"
+                        checked={val == 1 ? true : false}
+                        onClick={e => this.changeOpenState(e, record, column)}
+                        // size="small"
+                      />
+                    );
+                    return this.customize(
+                      record,
+                      this.convertData(val, column.preview, record),
+                      component,
+                      column
+                    );
+                  } else if (column.textColorJson) {
                     const component = (
                       <div>
                         <Badge
@@ -348,31 +368,13 @@ export default class QuickFormSearchPage extends SearchPage {
                       column
                     );
                   } else {
-                    if (column.reportRender && column.reportRender == 1) {
-                      const component = (
-                        <Switch
-                          checkedChildren="启用"
-                          unCheckedChildren="禁用"
-                          checked={val == 1 ? true : false}
-                          onClick={e => this.changeOpenState(e, record, column)}
-                          // size="small"
-                        />
-                      );
-                      return this.customize(
-                        record,
-                        this.convertData(val, column.preview, record),
-                        component,
-                        column
-                      );
-                    } else {
-                      const component = <p3>{this.convertData(val, column.preview, record)}</p3>;
-                      return this.customize(
-                        record,
-                        this.convertData(val, column.preview, record),
-                        component,
-                        column
-                      );
-                    }
+                    const component = <p3>{this.convertData(val, column.preview, record)}</p3>;
+                    return this.customize(
+                      record,
+                      this.convertData(val, column.preview, record),
+                      component,
+                      column
+                    );
                   }
                 },
       };
