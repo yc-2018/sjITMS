@@ -84,3 +84,10 @@ export async function saveOrUpdateEntities(payload) {
     body: payload,
   });
 }
+
+export async function updateEntity(payload) {
+  return request('/itms-schedule/itms-schedule/devDynamicCRUD/update', {
+    method: 'POST',
+    body: payload,
+  });
+}

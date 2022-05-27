@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react';
-import { Table, Button, Input, Col, Row, message, Popconfirm } from 'antd';
+import { Table, Button, Input, Col, Row, message, Popconfirm, Switch, Badge } from 'antd';
 import { connect } from 'dva';
-import { Route, Switch } from 'react-router-dom';
+import { Route } from 'react-router-dom';
 import { havePermission } from '@/utils/authority';
 import axios from 'axios';
 // import SearchPage from '@/pages/Component/Page/SearchPage';
@@ -12,11 +12,11 @@ import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQ
 import SearchMoreAction from '@/pages/Component/Form/SearchMoreAction';
 import ExportJsonExcel from 'js-export-excel';
 import { routerRedux } from 'dva/router';
-import { Badge } from 'antd';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { guid } from '@/utils/utils';
 import { getActiveKey, getPageFilter, setPageFilter } from '@/utils/LoginContext';
 import moment from 'moment';
+import { updateEntity } from '@/services/quick/Quick';
 
 /**
  * 查询界面
@@ -37,13 +37,30 @@ export default class QuickFormSearchPage extends SearchPage {
       return item.searchDefVal != null && item.searchDefVal != '';
     });
     let defaultSearch = [];
+    let exSearchFilter;
     for (const item of ex) {
-      let exSearchFilter = {
-        field: item.fieldName,
-        type: item.fieldType,
-        rule: item.searchCondition,
-        val: item.searchDefVal,
-      };
+      if (item.fieldType == 'Date') {
+        let days = parseInt(item.searchDefVal);
+        if (days != days) days = 0;
+        let endDate = moment(new Date()).format('YYYY-MM-DD');
+        let startDate = moment(new Date())
+          .add(-item.searchDefVal, 'days')
+          .format('YYYY-MM-DD');
+        exSearchFilter = {
+          field: item.fieldName,
+          type: item.fieldType,
+          rule: item.searchCondition,
+          val: `${startDate}||${endDate}`,
+        };
+      } else {
+        exSearchFilter = {
+          field: item.fieldName,
+          type: item.fieldType,
+          rule: item.searchCondition,
+          val: item.searchDefVal,
+        };
+      }
+
       defaultSearch.push(exSearchFilter);
     }
 
@@ -67,6 +84,7 @@ export default class QuickFormSearchPage extends SearchPage {
       formConfig: {},
       colTotal: [],
       queryConfigColumns: [],
+      tableName: '',
     };
   }
 
@@ -221,6 +239,35 @@ export default class QuickFormSearchPage extends SearchPage {
     return e.component;
   }
 
+  //开关控件update
+  changeOpenState = async (e, record, column) => {
+    let field = this.state.formConfig[0]?.onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
+    let sets = {};
+    sets[column.fieldName] = e ? 1 : 0;
+    let param = {
+      tableName: this.state.tableName,
+      sets,
+      condition: {
+        params: [
+          {
+            field,
+            rule: 'eq',
+            val: [record[field]],
+          },
+        ],
+      },
+      updateAll: false,
+    };
+    let result = await updateEntity(param);
+    if (result.success) {
+      record[column.fieldName] = sets[column.fieldName];
+      this.setState({});
+      e ? message.success('启用成功') : message.success('禁用成功');
+    } else {
+      e ? message.error('启用失败') : message.error('禁用失败');
+    }
+  };
+
   //初始化配置
   initConfig = queryConfig => {
     const columns = queryConfig.columns;
@@ -301,13 +348,31 @@ export default class QuickFormSearchPage extends SearchPage {
                       column
                     );
                   } else {
-                    const component = <p3>{this.convertData(val, column.preview, record)}</p3>;
-                    return this.customize(
-                      record,
-                      this.convertData(val, column.preview, record),
-                      component,
-                      column
-                    );
+                    if (column.reportRender && column.reportRender == 1) {
+                      const component = (
+                        <Switch
+                          checkedChildren="启用"
+                          unCheckedChildren="禁用"
+                          checked={val == 1 ? true : false}
+                          onClick={e => this.changeOpenState(e, record, column)}
+                          // size="small"
+                        />
+                      );
+                      return this.customize(
+                        record,
+                        this.convertData(val, column.preview, record),
+                        component,
+                        column
+                      );
+                    } else {
+                      const component = <p3>{this.convertData(val, column.preview, record)}</p3>;
+                      return this.customize(
+                        record,
+                        this.convertData(val, column.preview, record),
+                        component,
+                        column
+                      );
+                    }
                   }
                 },
       };
@@ -324,12 +389,15 @@ export default class QuickFormSearchPage extends SearchPage {
     };
     quickColumns.push(OptColumn);
     this.columns = quickColumns;
+    let tableNameSplit = queryConfig.sql.split(' ');
+    let tableName = tableNameSplit[tableNameSplit.length - 1];
     this.setState({
       title: queryConfig.reportHeadName,
       columns: quickColumns,
       advancedFields: columns.filter(data => data.isShow),
       searchFields: columns.filter(data => data.isSearch),
       queryConfigColumns: queryConfig.columns,
+      tableName,
     });
   };
 
