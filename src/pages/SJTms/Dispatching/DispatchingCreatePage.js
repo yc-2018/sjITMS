@@ -85,30 +85,48 @@ export default class DispatchingCreatePage extends Component {
       { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
     ];
     //获取车辆
-    if (vehicles.length == 0 || vehicles[0].DISPATCHCENTERUUID != loginOrg().uuid) {
-      let param = {
-        tableName: 'v_sj_itms_vehicle_stat',
-        condition: {
-          params: [
-            { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
-            { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
-          ],
-        },
-      };
-      const vehiclesData = await dynamicQuery(param);
-      if (vehiclesData.result.records != 'false') {
-        vehicles = vehiclesData.result.records;
-      }
+    // if (vehicles.length == 0 || vehicles[0].DISPATCHCENTERUUID != loginOrg().uuid) {
+    //   let param = {
+    //     tableName: 'v_sj_itms_vehicle_stat',
+    //     condition: {
+    //       params: [
+    //         { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+    //         { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
+    //       ],
+    //     },
+    //   };
+    //   const vehiclesData = await dynamicQuery(param);
+    //   if (vehiclesData.result.records != 'false') {
+    //     vehicles = vehiclesData.result.records;
+    //   }
+    // }
+    let param = {
+      tableName: 'v_sj_itms_vehicle_stat',
+      condition: {
+        params: [
+          { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+          { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
+        ],
+      },
+    };
+    const vehiclesData = await dynamicQuery(param);
+    if (vehiclesData.result.records != 'false') {
+      vehicles = vehiclesData.result.records;
     }
 
     //获取人员
-    if (employees.length == 0 || employees[0].DISPATCHCENTERUUID != loginOrg().uuid) {
-      const employeesData = await queryAllData({
-        quickuuid: 'sj_itms_employee',
-        superQuery: { queryParams },
-      });
-      employees = employeesData.data.records;
-    }
+    // if (employees.length == 0 || employees[0].DISPATCHCENTERUUID != loginOrg().uuid) {
+    //   const employeesData = await queryAllData({
+    //     quickuuid: 'sj_itms_employee',
+    //     superQuery: { queryParams },
+    //   });
+    //   employees = employeesData.data.records;
+    // }
+    const employeesData = await queryAllData({
+      quickuuid: 'sj_itms_employee',
+      superQuery: { queryParams },
+    });
+    employees = employeesData.data.records;
 
     if (!isEdit) {
       let map = new Map();
@@ -226,7 +244,8 @@ export default class DispatchingCreatePage extends Component {
     if (event.target.value != null && event.target.value != '') {
       let serachEmp = [];
       let val = event.target.value;
-      vehicles.forEach(item => {
+      console.log('val', val);
+      this.basicVeh.forEach(item => {
         if (JSON.stringify(item).search(val) != -1) {
           serachEmp.push(item);
         }
@@ -255,7 +274,7 @@ export default class DispatchingCreatePage extends Component {
     if (event.target.value != null && event.target.value != '') {
       let serachEmp = [];
       let val = event.target.value;
-      employees.forEach(item => {
+      this.basicEmp.forEach(item => {
         if (JSON.stringify(item).search(val) != -1) {
           serachEmp.push(item);
         }
