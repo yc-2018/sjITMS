@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-27 15:37:17
+ * @LastEditTime: 2022-05-27 15:50:26
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -61,8 +61,15 @@ export default class OrderPoolSearchForm extends Component {
                   valueField="CODE"
                   sonField="UUID"
                   parentField="PARENTUUID"
-                  isOrgSearch="Company,Org"
-                  queryParams={{ tableName: 'v_sj_tms_line_system' }}
+                  queryParams={{
+                    tableName: 'v_sj_tms_line_system',
+                    condition: {
+                      params: [
+                        { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+                        { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
+                      ],
+                    },
+                  }}
                   showSearch
                   multiSave="PARENTUUID:UUID"
                 />
@@ -90,8 +97,15 @@ export default class OrderPoolSearchForm extends Component {
                   textField="[%CODE%]%NAME%"
                   valueField="CODE"
                   searchField="CODE,NAME"
-                  isOrgSearch="Company,Org"
-                  queryParams={{ tableName: 'v_sj_itms_ship_store' }}
+                  queryParams={{
+                    tableName: 'v_sj_itms_ship_store',
+                    condition: {
+                      params: [
+                        { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+                        { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
+                      ],
+                    },
+                  }}
                   autoComplete
                   allowClear={true}
                 />
@@ -106,8 +120,15 @@ export default class OrderPoolSearchForm extends Component {
                   textField="[%CODE%]%NAME%"
                   valueField="CODE"
                   searchField="CODE,NAME"
-                  isOrgSearch="Company,Org"
-                  queryParams={{ tableName: 'sj_itms_owner' }}
+                  queryParams={{
+                    tableName: 'sj_itms_owner',
+                    condition: {
+                      params: [
+                        { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+                        { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
+                      ],
+                    },
+                  }}
                   autoComplete
                   allowClear={true}
                 />
