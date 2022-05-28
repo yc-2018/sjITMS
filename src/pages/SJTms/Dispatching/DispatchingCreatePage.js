@@ -24,6 +24,7 @@ import { CreatePageOrderColumns, employeeType } from './DispatchingColumns';
 import dispatchingStyles from './Dispatching.less';
 import { sumBy, uniq, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 
 const { Search } = Input;
 
@@ -43,6 +44,10 @@ export default class DispatchingCreatePage extends Component {
     schedule: {},
     editPageVisible: false,
     scheduleDetail: {},
+    employeesParam: [],
+    vehicleParam: [],
+    employeeValue: undefined,
+    vehicleValue: undefined,
   };
 
   componentDidMount = () => {
@@ -242,20 +247,54 @@ export default class DispatchingCreatePage extends Component {
     }
     this.setState({ selectVehicle: vehicle, selectEmployees: [...vehicleEmployees] });
   };
-  vehicleFilter = event => {
-    const { vehicles } = this.state;
-    if (event.target.value != null && event.target.value != '') {
-      let serachEmp = [];
-      let val = event.target.value;
+  vehicleFilter = () => {
+    const { vehicles, vehicleParam } = this.state;
+    const { changeVehicle, changeVehicleType } = vehicleParam;
+    let serachVeh = [];
+    if (typeof changeVehicle != 'undefined' && changeVehicle != '') {
       this.basicVeh.forEach(item => {
-        if (JSON.stringify(item).search(val) != -1) {
-          serachEmp.push(item);
+        if (item.PLATENUMBER.search(changeVehicle) != -1 || item.CODE.search(changeVehicle) != -1) {
+          serachVeh.push(item);
         }
       });
-      this.setState({ vehicles: serachEmp });
-    } else {
-      this.setState({ vehicles: this.basicVeh });
     }
+    if (typeof changeVehicleType != 'undefined' && changeVehicleType != '') {
+      if (serachVeh != '') {
+        let searchVehicleType = [];
+        serachVeh.forEach(item => {
+          if (item.OWNER != null && item.OWNER.search(changeVehicleType) != -1) {
+            searchVehicleType.push(item);
+          }
+        });
+        serachVeh = searchVehicleType;
+      } else {
+        this.basicVeh.forEach(item => {
+          if (item.OWNER != null && item.OWNER.search(changeVehicleType) != -1) {
+            serachVeh.push(item);
+          }
+        });
+      }
+    }
+    this.setState({ vehicles: serachVeh });
+  };
+
+  changeVehicle = event => {
+    const { vehicleParam } = this.state;
+    vehicleParam.changeVehicle = event.target.value;
+    this.setState({
+      vehicleParam,
+    });
+    this.vehicleFilter();
+  };
+
+  changeVehicleType = value => {
+    const { vehicleParam } = this.state;
+    vehicleParam.changeVehicleType = typeof value == 'undefined' ? '' : value.record.VALUE;
+    this.setState({
+      vehicleParam,
+      vehicleValue: value.record.VALUE,
+    });
+    this.vehicleFilter();
   };
 
   //选人
@@ -272,21 +311,57 @@ export default class DispatchingCreatePage extends Component {
     }
     this.setState({ selectEmployees: employees });
   };
-  employeeFilter = event => {
-    const { employees } = this.state;
-    if (event.target.value != null && event.target.value != '') {
-      let serachEmp = [];
-      let val = event.target.value;
+
+  employeeFilter = () => {
+    const { employees, employeesParam } = this.state;
+    const { changeParam, changeWorkType } = employeesParam;
+    let serachEmp = [];
+    if (typeof changeParam != 'undefined' && changeParam != '') {
       this.basicEmp.forEach(item => {
-        if (JSON.stringify(item).search(val) != -1) {
+        if (item.CODE.search(changeParam) != -1 || item.NAME.search(changeParam) != -1) {
           serachEmp.push(item);
         }
       });
-      this.setState({ employees: serachEmp });
-    } else {
-      this.setState({ employees: this.basicEmp });
     }
+    if (typeof changeWorkType != 'undefined' && changeWorkType != '') {
+      if (serachEmp != '') {
+        let searchWorkType = [];
+        serachEmp.forEach(item => {
+          if (item.ROLE_TYPE.search(changeWorkType) != -1) {
+            searchWorkType.push(item);
+          }
+        });
+        serachEmp = searchWorkType;
+      } else {
+        this.basicEmp.forEach(item => {
+          if (item.ROLE_TYPE.search(changeWorkType) != -1) {
+            serachEmp.push(item);
+          }
+        });
+      }
+    }
+    this.setState({ employees: serachEmp });
   };
+
+  changeEmployee = event => {
+    const { employeesParam } = this.state;
+    employeesParam.changeParam = event.target.value;
+    this.setState({
+      employeesParam,
+    });
+    this.employeeFilter();
+  };
+
+  changeWorkType = value => {
+    const { employeesParam } = this.state;
+    employeesParam.changeWorkType = typeof value == 'undefined' ? '' : value.record.VALUE;
+    this.setState({
+      employeesParam,
+      employeeValue: value.record.VALUE,
+    });
+    this.employeeFilter();
+  };
+
   //添加工种
   addWorkType = emp => {
     const { selectEmployees } = this.state;
@@ -310,7 +385,7 @@ export default class DispatchingCreatePage extends Component {
     const { isEdit, orders, schedule, selectVehicle, selectEmployees } = this.state;
     const driver = selectEmployees.find(x => x.memberType == 'Driver');
     const orderCounts = this.groupByOrder(orders);
-    if (!this.verifySchedule(orderCounts, selectVehicle, driver)) {
+    if (!this.verifySchedule(orderCounts, selectVehicle, driver, selectEmployees)) {
       return;
     }
     const paramBody = {
@@ -360,7 +435,7 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //保存数据校验
-  verifySchedule = (orderCounts, selectVehicle, driver) => {
+  verifySchedule = (orderCounts, selectVehicle, driver, selectEmployees) => {
     //校验车辆必选
     if (isEmptyObj(selectVehicle)) {
       message.error('请选择车辆！');
@@ -387,6 +462,20 @@ export default class DispatchingCreatePage extends Component {
       );
       return false;
     }
+
+    let selectEmpLength = [];
+    selectEmployees.forEach(item => {
+      let length = selectEmployees.filter(
+        x => x.UUID == item.UUID && x.memberType == item.memberType
+      ).length;
+      selectEmpLength.push({ length: length });
+    });
+    let checkRepeat = selectEmpLength.find(x => x.length > 1);
+    if (checkRepeat != undefined) {
+      message.error('排车随车人员存在相同人员重复职位，请检查后重试！');
+      return false;
+    }
+
     return true;
   };
 
@@ -413,18 +502,29 @@ export default class DispatchingCreatePage extends Component {
   };
 
   buildSelectEmployeeCard = () => {
-    const { employees, selectEmployees } = this.state;
+    const { employees, selectEmployees, employeeValue } = this.state;
     return (
       <Card
         title="员工"
         style={{ height: '36vh', fontWeight: 'bold' }}
         bodyStyle={{ padding: '15px 0 0 0', height: '29vh', overflowY: 'auto' }}
         extra={
-          <Search
-            placeholder="请输入工号或姓名"
-            onChange={this.employeeFilter}
-            style={{ width: 200 }}
-          />
+          <div>
+            <SimpleAutoComplete
+              placeholder="请选择工种"
+              dictCode="employeeType"
+              onChange={this.changeWorkType.bind()}
+              allowClear={true}
+              value={employeeValue}
+              style={{ width: 150 }}
+            />
+
+            <Search
+              placeholder="请输入工号或姓名"
+              onChange={this.changeEmployee.bind()}
+              style={{ width: 150 }}
+            />
+          </div>
         }
       >
         {isEmptyObj(employees)
@@ -481,18 +581,29 @@ export default class DispatchingCreatePage extends Component {
     );
   };
   buildSelectVehicleCard = () => {
-    const { vehicles, selectVehicle } = this.state;
+    const { vehicles, selectVehicle, vehicleValue } = this.state;
     return (
       <Card
         title="车辆"
         style={{ height: '36vh' }}
         bodyStyle={{ padding: '15px 0 0 0', height: '29vh', overflowY: 'auto' }}
         extra={
-          <Search
-            placeholder="请输入车辆编号或车牌号"
-            onChange={this.vehicleFilter}
-            style={{ width: 200 }}
-          />
+          <div>
+            <SimpleAutoComplete
+              placeholder="请选择车辆归属"
+              dictCode="vehicleOwner"
+              onChange={this.changeVehicleType.bind()}
+              value={vehicleValue}
+              allowClear={true}
+              style={{ width: 150 }}
+            />
+
+            <Search
+              placeholder="请输入车辆编号或车牌号"
+              onChange={this.changeVehicle.bind()}
+              style={{ width: 150 }}
+            />
+          </div>
         }
       >
         {vehicles?.map(vehicle => {
