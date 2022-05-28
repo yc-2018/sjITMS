@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-26 15:41:53
+ * @LastEditTime: 2022-05-28 11:50:20
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -136,6 +136,11 @@ export default class OrderPoolPage extends Component {
           this.setState({ scheduledRowKeys: selectedRowKeys });
           break;
         default:
+          const { auditedData } = this.state;
+          this.props.refreshSelectRowOrder(
+            auditedData.filter(x => selectedRowKeys.indexOf(x.uuid) != -1),
+            'Audited'
+          );
           this.setState({ auditedRowKeys: selectedRowKeys });
           break;
       }
@@ -193,34 +198,37 @@ export default class OrderPoolPage extends Component {
 
   //汇总数据
   buildTitle = () => {
-    const { auditedData, auditedRowKeys } = this.state;
-    let selectAuditedData =
-      auditedRowKeys.length > 0
-        ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1)
-        : [];
-    selectAuditedData = this.groupByOrder(selectAuditedData);
+    const { auditedRowKeys } = this.state;
+    const { totalOrder } = this.props;
+    let selectOrders = this.groupByOrder(totalOrder);
     const totalTextStyle = { fontSize: 16, fontWeight: 700 };
     return (
-      <Row type="flex" style={{ fontSize: 14, marginLeft: 20 }} justify="center">
+      <Row type="flex" style={{ fontSize: 14, marginLeft: 5 }}>
+        <Col span={3} style={{ textAlign: 'left' }}>
+          <Text>
+            已选：
+            {auditedRowKeys.length}
+          </Text>
+        </Col>
         <Col span={4}>
           <Text> 整件：</Text>
-          <Text style={totalTextStyle}>{selectAuditedData.realCartonCount}</Text>
+          <Text style={totalTextStyle}>{selectOrders.realCartonCount}</Text>
         </Col>
         <Col span={4}>
           <Text> 散件：</Text>
-          <Text style={totalTextStyle}>{selectAuditedData.realScatteredCount}</Text>
+          <Text style={totalTextStyle}>{selectOrders.realScatteredCount}</Text>
         </Col>
-        <Col span={4}>
+        <Col span={3}>
           <Text> 周转筐：</Text>
-          <Text style={totalTextStyle}>{selectAuditedData.realContainerCount}</Text>
+          <Text style={totalTextStyle}>{selectOrders.realContainerCount}</Text>
         </Col>
         <Col span={5}>
           <Text> 体积：</Text>
-          <Text style={totalTextStyle}>{selectAuditedData.volume.toFixed(2)}</Text>
+          <Text style={totalTextStyle}>{selectOrders.volume.toFixed(2)}</Text>
         </Col>
         <Col span={5}>
           <Text> 重量：</Text>
-          <Text style={totalTextStyle}>{selectAuditedData.weight.toFixed(2)}</Text>
+          <Text style={totalTextStyle}>{selectOrders.weight.toFixed(2)}</Text>
         </Col>
       </Row>
     );

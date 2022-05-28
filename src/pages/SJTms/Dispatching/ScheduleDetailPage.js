@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-26 16:03:40
+ * @LastEditTime: 2022-05-28 12:05:32
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -60,6 +60,15 @@ export default class ScheduleDetailPage extends Component {
 
   //更新选中行
   tableChangeRows = selectedRowKeys => {
+    const { schedule } = this.state;
+    let orders = schedule.details;
+    orders = orders.map(item => {
+      return { ...item, billNumber: item.orderNumber, stat: 'Schedule' };
+    });
+    this.props.refreshSelectRowOrder(
+      orders.filter(x => selectedRowKeys.indexOf(x.uuid) != -1),
+      'Schedule'
+    );
     this.setState({ selectedRowKeys });
   };
 

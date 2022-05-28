@@ -635,6 +635,7 @@ export default class DispatchingCreatePage extends Component {
         visible={this.state.visible}
         onOk={e => this.handleSave(e)}
         onCancel={() => this.hide()}
+        closable={false}
         destroyOnClose
         centered
         {...this.props.modal}
