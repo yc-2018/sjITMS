@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-28 12:05:32
+ * @LastEditTime: 2022-05-28 12:09:33
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -28,6 +28,9 @@ export default class ScheduleDetailPage extends Component {
 
   refreshTable = schedule => {
     this.setState({ schedule });
+    if (schedule == undefined) {
+      this.tableChangeRows([]);
+    }
     this.scheduleDetailColSetting ? this.scheduleDetailColSetting.handleOK() : {};
   };
 
