@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-26 15:43:43
+ * @LastEditTime: 2022-05-28 11:51:23
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -90,7 +90,16 @@ export default class PendingPage extends Component {
   };
 
   tableChangeRows = selectedRowKeys => {
+    const { pendingData } = this.state;
+    this.props.refreshSelectRowOrder(
+      pendingData.filter(x => selectedRowKeys.indexOf(x.uuid) != -1),
+      'Pending'
+    );
     this.setState({ pendingRowKeys: selectedRowKeys });
+  };
+  //取消选中
+  handleCancelRow = () => {
+    this.setState({ pendingRowKeys: [] });
   };
 
   //更新列配置
@@ -119,13 +128,26 @@ export default class PendingPage extends Component {
           pagination={pagination}
           setColumns={this.setColumns}
           children={
-            <RyzeSettingDrowDown
-              noToolbarPanel
-              columns={OrderColumns}
-              comId={'PendingOrderColumns'}
-              getNewColumns={this.setColumns}
-              onRef={ref => (this.pendingOrderColSetting = ref)}
-            />
+            <Row>
+              <Col span={12}>
+                <span style={{ fontSize: 14 }}>
+                  已选：
+                  {pendingRowKeys.length}
+                </span>
+                <Button style={{ marginLeft: 20 }} onClick={this.handleCancelRow}>
+                  取消
+                </Button>
+              </Col>
+              <Col span={12}>
+                <RyzeSettingDrowDown
+                  noToolbarPanel
+                  columns={OrderColumns}
+                  comId={'PendingOrderColumns'}
+                  getNewColumns={this.setColumns}
+                  onRef={ref => (this.pendingOrderColSetting = ref)}
+                />
+              </Col>
+            </Row>
           }
           loading={loading}
           dataSource={pendingData}

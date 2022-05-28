@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-27 15:09:04
+ * @LastEditTime: 2022-05-27 18:27:57
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -22,6 +22,7 @@ import {
   approve,
   cancelApprove,
   cancelAborted,
+  aborted,
   remove,
 } from '@/services/sjitms/ScheduleBill';
 import { SELFTACKSHIP_RES } from '@/pages/Tms/SelfTackShip/SelfTackShipPermission';
@@ -83,6 +84,35 @@ export default class SchedulePage extends Component {
     return () => {
       this.createPageModalRef.show(true, record);
     };
+  };
+
+  //作废
+  handleAborted = () => {
+    const { activeTab, savedRowKeys } = this.state;
+    if (savedRowKeys.length == 0) {
+      message.warning('请选择排车单！');
+      return;
+    }
+    if (savedRowKeys.length == 1) {
+      this.abortedSchedule(savedRowKeys[0]).then(response => {
+        if (response.success) {
+          message.success('作废成功！');
+          this.getSchedules(activeTab);
+        }
+      });
+    } else {
+      this.setState({ task: this.abortedSchedule }, () =>
+        this.batchProcessConfirmRef.show('作废', savedRowKeys)
+      );
+    }
+  };
+  abortedSchedule = async uuid => {
+    const { scheduleData } = this.state;
+    const schedule = scheduleData.find(x => x.uuid == uuid);
+    if (schedule.stat != 'Saved') {
+      return null;
+    }
+    return await aborted(schedule.uuid);
   };
 
   //取消作废
@@ -176,7 +206,7 @@ export default class SchedulePage extends Component {
   handleDelete = () => {
     const { activeTab, savedRowKeys } = this.state;
     if (savedRowKeys.length != 1) {
-      message.warning('请选择一张排车单！');
+      message.error('一次只允许删除一张排车单！');
       return;
     }
     Modal.confirm({
@@ -267,8 +297,8 @@ export default class SchedulePage extends Component {
               <Button type={'primary'} style={{ marginLeft: 10 }} onClick={this.handleApprove}>
                 批准
               </Button>
-              <Button style={{ marginLeft: 10 }} onClick={this.handleDelete}>
-                删除
+              <Button style={{ marginLeft: 10 }} onClick={this.handleAborted}>
+                作废
               </Button>
             </div>
           );

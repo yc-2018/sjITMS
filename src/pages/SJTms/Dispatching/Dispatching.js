@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-29 14:03:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-27 09:36:53
+ * @LastEditTime: 2022-05-28 12:05:16
  * @Description: 配送调度主页面
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\Dispatching.js
  */
@@ -51,10 +51,21 @@ export default class Dispatching extends Component {
     return this.schedulePageRef.state.savedRowKeys;
   };
 
+  //获取选中待定订单
   getSelectPending = () => {
     const pendingData = this.pendingPageRef.state.pendingData;
     const pendingRowKeys = this.pendingPageRef.state.pendingRowKeys;
     return pendingData ? pendingData.filter(x => pendingRowKeys.indexOf(x.uuid) != -1) : [];
+  };
+
+  //保存选中订单，用于选中订单汇总
+  refreshSelectRowOrder = (orders, stat) => {
+    const { selectOrders } = this.state;
+    let tempSelectOrders =
+      stat == 'Pending'
+        ? selectOrders.filter(x => x.pendingTag != stat)
+        : selectOrders.filter(x => x.stat != stat);
+    this.setState({ selectOrders: [...tempSelectOrders, ...orders] });
   };
 
   render() {
@@ -76,6 +87,8 @@ export default class Dispatching extends Component {
                         refreshSchedule={this.refreshScheduleTable}
                         refreshPending={this.refreshPendingTable}
                         selectPending={this.getSelectPending}
+                        refreshSelectRowOrder={this.refreshSelectRowOrder}
+                        totalOrder={this.state.selectOrders}
                       />
                     </div>
                   </Col>
@@ -96,6 +109,7 @@ export default class Dispatching extends Component {
                         ref={ref => (this.pendingPageRef = ref)}
                         refreshOrder={this.refreshOrderTable}
                         refreshSchedule={this.refreshScheduleTable}
+                        refreshSelectRowOrder={this.refreshSelectRowOrder}
                       />
                     </div>
                   </Col>
@@ -105,6 +119,7 @@ export default class Dispatching extends Component {
                         ref={ref => (this.scheduleDetailPageRef = ref)}
                         refreshSchedule={this.refreshScheduleTable}
                         refreshPending={this.refreshPendingTable}
+                        refreshSelectRowOrder={this.refreshSelectRowOrder}
                       />
                     </div>
                   </Col>
