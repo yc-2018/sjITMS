@@ -1001,60 +1001,20 @@ class StandardTable extends Component {
       tableWidth = tableWidth - 120;
     }
 
-    // 固定列滚动
-    if (totalWidth > tableWidth) {
-      let firstCol = newColumns[0];
-      let lastCol = newColumns[newColumns.length - 1];
-      newColumns[0] = {
-        ...firstCol,
-        fixed: 'left',
+    let firstCol = newColumns[0];
+    let lastCol = newColumns[newColumns.length - 1];
+    newColumns[0] = {
+      ...firstCol,
+      fixed: 'left',
+    };
+    if (this.isFixedEdge(lastCol)) {
+      newColumns[newColumns.length - 1] = {
+        ...lastCol,
+        fixed: 'right',
       };
-      if (this.isFixedEdge(lastCol)) {
-        newColumns[newColumns.length - 1] = {
-          ...lastCol,
-          fixed: 'right',
-        };
-      }
-      scroll.x = tableWidth;
-    } else {
-      // 自适应宽度扩展填充
-      let moreWidth = tableWidth - totalWidth;
-      let newTotalWidth = 0;
-      for (let i = 0; i < newColumns.length; i++) {
-        let column = newColumns[i];
-        if (this.isExpandedWidth(oriColumnLen, newColumns.length, column, i)) {
-          totalWidth = totalWidth - column.width * 0.8;
-          newTotalWidth = newTotalWidth + column.width * 0.8;
-        } else if (this.isFixedWidth(oriColumnLen, newColumns.length, column, i)) {
-          totalWidth = totalWidth - column.width;
-          newTotalWidth = newTotalWidth + column.width;
-        }
-      }
-      let expandRatio = 1 + this.strip(moreWidth / totalWidth);
-      for (let idx = columns.length - 1; idx >= 0; idx--) {
-        if (this.isExpandedWidth(oriColumnLen, newColumns.length, newColumns[idx], idx)) {
-          newColumns[idx].width = newColumns[idx].width * 1.2;
-          continue;
-        }
-        if (this.isFixedWidth(oriColumnLen, newColumns.length, newColumns[idx], idx)) {
-          continue;
-        }
-        if (newColumns[idx].invisible) {
-          continue;
-        }
-        let newWidth =
-          idx === columns.length - 1 && columns.length < SHOW_THRESH_HOLD
-            ? this.strip(newColumns[idx].width * expandRatio) - 10
-            : this.strip(newColumns[idx].width * expandRatio);
-        newColumns[idx].width = newWidth;
-        if (newWidth + newTotalWidth > tableWidth) {
-          newColumns[idx].width = newWidth;
-        } else {
-          newColumns[idx].width = newWidth;
-        }
-        newTotalWidth = this.strip(newTotalWidth + newColumns[idx].width);
-      }
     }
+    scroll.x = tableWidth;
+
     const rowSelection = {
       selectedRowKeys,
       columnWidth: '35px',
