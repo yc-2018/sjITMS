@@ -671,7 +671,14 @@ export default class QuickCreatePage extends CreatePage {
       const multiSaves = props.multiSave.split(',');
       for (const multiSave of multiSaves) {
         const [outField, inField] = multiSave.split(':');
-        this.entity[tableName][line][outField] = getFieldShow(valueEvent.record, inField);
+        // 多选情况下，也要对应的进行联合多比记录保存
+        if (valueEvent.record instanceof Array) {
+          this.entity[tableName][line][outField] = valueEvent.record
+            .map(record => getFieldShow(record, inField))
+            .join(props.multipleSplit || ",");
+        } else {
+          this.entity[tableName][line][outField] = getFieldShow(valueEvent.record, inField);
+        }
       }
     }
   };
