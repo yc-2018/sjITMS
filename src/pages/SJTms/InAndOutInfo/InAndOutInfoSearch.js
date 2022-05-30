@@ -72,6 +72,8 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
          
     );
   };
+
+
   /**
    该方法用于修改table的render
 
@@ -103,23 +105,32 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     //出车里程
     if(fieldName=='DISPATCHMILEAGE'){
       const component =(
-        <InputNumber step={0.01} onBlur= {this.onBlurs.bind(this,record,column.fieldName)}  min={0} max={10000} defaultValue={record.DISPATCHMILEAGE}/>
+        <Input className = {e.record.ROW_ID+"DISPATCHMILEAGE"}  step={0.01} 
+        style={{width:100}}
+        onFocus={()=>{
+          document.getElementsByClassName(e.record.ROW_ID+"DISPATCHMILEAGE")[0].select();
+      }}
+        onBlur= {this.onBlurs.bind(this,record,column.fieldName)}  min={0} max={10000} defaultValue={record.DISPATCHMILEAGE}/>
       );  
       e.component = component;
     }
      //回车里程
      if(fieldName=='RETURNMILEAGE'){
       const component =(
-            <InputNumber step={0.01} min={0} max={10000} defaultValue={record.RETURNMILEAGE} onBlur= {this.onBlurs.bind(this,record,column.fieldName)}/>
+            <Input  className = {e.record.ROW_ID+"RETURNMILEAGE"}  onFocus={()=>{
+              document.getElementsByClassName(e.record.ROW_ID+"RETURNMILEAGE")[0].select();
+          }}  step={0.00} min={0} max={10000} defaultValue={record.RETURNMILEAGE} style={{width:100}}  onBlur= {this.onBlurs.bind(this,record,column.fieldName)}/>  
       );  
       e.component = component;
     }
-    if(fieldName=='TOTALMILEAGE'){
-      const component =(
-            <InputNumber step={0.01}  min={0} max={10000} defaultValue={record.TOTALMILEAGE} onBlur= {this.onBlurs.bind(this,record,column.fieldName)}/>
-      );  
-      e.component = component;
-    }
+    // if(fieldName=='TOTALMILEAGE'){
+    //   const component =(
+    //         <Input step={0.00}  disabled
+    //         style={{width:100}}
+    //          min={0}  value={record.TOTALMILEAGE} onBlur= {this.onBlurs.bind(this,record,column.fieldName)}/>
+    //   );  
+    //   e.component = component;
+    // }
  
   };
   showOrderFee=(number,uuid)=>{
@@ -142,15 +153,27 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     
   }
   onBlurs =(record,fieldName,e)=>{
-  record[fieldName] = e.target.value;
-  if(fieldName=='RETURNMILEAGE'){
-    console.log("DISPATCHMILEAGE",record['DISPATCHMILEAGE']);
-    if(e.target.value && record['DISPATCHMILEAGE']){
-      record['TOTALMILEAGE'] = e.target.value-record['DISPATCHMILEAGE'];
-      this.setState({});
-      //this.refreshTable();
-    }
-  }
+      const{data} = this.state;
+      if(fieldName=='RETURNMILEAGE'){
+        
+        data.list.forEach(element => {
+            if(element.ROW_ID == record.ROW_ID ){
+                element.TOTALMILEAGE = e.target.value - record.DISPATCHMILEAGE
+                this.setState({data})
+                return ;
+            }
+          });
+      }
+      if(fieldName =='DISPATCHMILEAGE'){
+        data.list.forEach(element => {
+          if(element.ROW_ID == record.ROW_ID){
+            element.DISPATCHMILEAGE = e.target.value
+            element.TOTALMILEAGE =  record.RETURNMILEAGE - e.target.value
+              this.setState({data})
+              return ;
+          }
+        });
+      }
 
   }
  
