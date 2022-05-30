@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-28 11:51:23
+ * @LastEditTime: 2022-05-30 10:05:04
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -99,7 +99,7 @@ export default class PendingPage extends Component {
   };
   //取消选中
   handleCancelRow = () => {
-    this.setState({ pendingRowKeys: [] });
+    this.tableChangeRows([]);
   };
 
   //更新列配置

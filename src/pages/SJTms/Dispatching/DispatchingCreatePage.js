@@ -519,13 +519,13 @@ export default class DispatchingCreatePage extends Component {
               onChange={this.changeWorkType.bind()}
               allowClear={true}
               value={employeeValue}
-              style={{ width: 150 }}
+              style={{ width: 120 }}
             />
 
             <Search
               placeholder="请输入工号或姓名"
               onChange={this.changeEmployee.bind()}
-              style={{ width: 150 }}
+              style={{ width: 150, marginLeft: 10 }}
             />
           </div>
         }
@@ -598,13 +598,13 @@ export default class DispatchingCreatePage extends Component {
               onChange={this.changeVehicleType.bind()}
               value={vehicleValue}
               allowClear={true}
-              style={{ width: 150 }}
+              style={{ width: 120 }}
             />
 
             <Search
               placeholder="请输入车辆编号或车牌号"
               onChange={this.changeVehicle.bind()}
-              style={{ width: 150 }}
+              style={{ width: 150, marginLeft: 10 }}
             />
           </div>
         }
