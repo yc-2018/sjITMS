@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-29 17:25:56
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-19 18:59:15
+ * @LastEditTime: 2022-05-25 14:51:15
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -45,14 +45,13 @@ export default class ChargeLoadingSearch extends PureComponent {
 
   //根据司机代码查排车单装车单信息
   getInfoByCarrier = async driverCode => {
-    console.log('driverCode', driverCode);
     await getByCarrier(driverCode).then(response => {
       if (response && response.success && response.data) {
         if (response.data.stat === 'Approved') {
-          this.getChargeMessageStart(response.data.uuid);
+          this.getChargeMessageStart(response.data);
         }
         if (response.data.stat === 'Shipping') {
-          this.getChargeMessageEnd(response.data.uuid);
+          this.getChargeMessageEnd(response.data);
         }
       } else {
         this.setState({
@@ -65,16 +64,14 @@ export default class ChargeLoadingSearch extends PureComponent {
   };
 
   //刷卡装车
-  getChargeMessageStart = async uuid => {
-    if (!uuid) return;
-    console.log('开始装车', uuid);
-    await beginloading(uuid).then(response => {
-      console.log('response', response);
+  getChargeMessageStart = async data => {
+    if (!data) return;
+    await beginloading(data.uuid).then(response => {
       if (response && response.success) {
         this.setState({
-          responseMsg: '开始装车',
+          responseMsg: '排车单:' + data.billNumber + ',开始装车',
           responseError: false,
-          selectedRows: uuid,
+          selectedRows: data.uuid,
         });
         this.child.onSearch();
         this.cc.init();
@@ -87,16 +84,14 @@ export default class ChargeLoadingSearch extends PureComponent {
     });
   };
 
-  getChargeMessageEnd = async uuid => {
-    if (!uuid) return;
-    console.log('结束装车');
-    await finishloading(uuid).then(response => {
-      console.log('response', response);
+  getChargeMessageEnd = async data => {
+    if (!data) return;
+    await finishloading(data.uuid).then(response => {
       if (response && response.success) {
         this.setState({
-          responseMsg: '结束装车',
+          responseMsg: '排车单:' + data.billNumber + ',结束装车',
           responseError: false,
-          selectedRows: uuid,
+          selectedRows: data.uuid,
         });
         this.child.onSearch();
         this.cc.init();
@@ -116,7 +111,7 @@ export default class ChargeLoadingSearch extends PureComponent {
         <Page>
           <Content className={styles.contentWrapper}>
             <div>
-              <div style={{ width: '30%', float: 'left' }}>
+              <div style={{ width: '45%', float: 'left' }}>
                 <div style={{ width: '100%' }}>
                   <div className={styles.marginTop}>
                     <span style={{ marginLeft: '13px', width: '15%' }}>{'刷卡人:'}</span>
@@ -150,7 +145,7 @@ export default class ChargeLoadingSearch extends PureComponent {
                   </div>
                 </div>
               </div>
-              <div style={{ width: '70%', float: 'left' }}>
+              <div style={{ width: '55%', float: 'left' }}>
                 <SearchPage
                   quickuuid={'v_sj_itms_scheduledtl'}
                   onRef={this.bindRef.bind(this)}

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-25 10:17:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-19 15:58:25
+ * @LastEditTime: 2022-05-27 09:02:58
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -84,8 +84,8 @@ export default class ShipPlanBillCreatePage extends QuickCreatePage {
     const schedule = entity['sj_itms_schedule'][0];
     const { WEIGHT, VOLUME } = schedule;
     if (CCCWEIGHT && CCCVOLUME) {
-      if (WEIGHT > CCCWEIGHT || VOLUME > CCCVOLUME) {
-        message.error('该排车单重量或体积超出，请重新选择');
+      if (WEIGHT > CCCWEIGHT) {
+        message.error('该排车单重量超出，请重新选择');
         return false;
       }
     }

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-23 17:45:55
+ * @LastEditTime: 2022-05-28 11:50:20
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -12,6 +12,7 @@ import DispatchingTable from './DispatchingTable';
 import DispatchingChildTable from './DispatchingChildTable';
 import { OrderColumns, OrderDetailColumns, pagination } from './DispatchingColumns';
 import OrderPoolSearchForm from './OrderPoolSearchForm';
+import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import dispatchingStyles from './Dispatching.less';
 import {
@@ -30,6 +31,7 @@ export default class OrderPoolPage extends Component {
   state = {
     searchKeyValues: { orderType: 'Delivery' },
     loading: false,
+    orderPoolColumns: [...OrderColumns],
     auditedData: [],
     scheduledData: [],
     auditedRowKeys: [],
@@ -38,6 +40,7 @@ export default class OrderPoolPage extends Component {
   };
 
   componentDidMount() {
+    this.orderColSetting.handleOK();
     this.refreshTable();
   }
 
@@ -133,6 +136,11 @@ export default class OrderPoolPage extends Component {
           this.setState({ scheduledRowKeys: selectedRowKeys });
           break;
         default:
+          const { auditedData } = this.state;
+          this.props.refreshSelectRowOrder(
+            auditedData.filter(x => selectedRowKeys.indexOf(x.uuid) != -1),
+            'Audited'
+          );
           this.setState({ auditedRowKeys: selectedRowKeys });
           break;
       }
@@ -190,41 +198,37 @@ export default class OrderPoolPage extends Component {
 
   //汇总数据
   buildTitle = () => {
-    const { auditedData, auditedRowKeys } = this.state;
-    let selectAuditedData =
-      auditedRowKeys.length > 0
-        ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1)
-        : [];
-    selectAuditedData = this.groupByOrder(selectAuditedData);
+    const { auditedRowKeys } = this.state;
+    const { totalOrder } = this.props;
+    let selectOrders = this.groupByOrder(totalOrder);
+    const totalTextStyle = { fontSize: 16, fontWeight: 700 };
     return (
-      <Row type="flex" style={{ fontSize: 14, marginLeft: 20 }} justify="center">
+      <Row type="flex" style={{ fontSize: 14, marginLeft: 5 }}>
+        <Col span={3} style={{ textAlign: 'left' }}>
+          <Text>
+            已选：
+            {auditedRowKeys.length}
+          </Text>
+        </Col>
         <Col span={4}>
           <Text> 整件：</Text>
-          <Text style={{ fontSize: 16, fontWeight: 700 }}>{selectAuditedData.realCartonCount}</Text>
+          <Text style={totalTextStyle}>{selectOrders.realCartonCount}</Text>
         </Col>
         <Col span={4}>
           <Text> 散件：</Text>
-          <Text style={{ fontSize: 16, fontWeight: 700 }}>
-            {selectAuditedData.realScatteredCount}
-          </Text>
+          <Text style={totalTextStyle}>{selectOrders.realScatteredCount}</Text>
         </Col>
-        <Col span={4}>
+        <Col span={3}>
           <Text> 周转筐：</Text>
-          <Text style={{ fontSize: 16, fontWeight: 700 }}>
-            {selectAuditedData.realContainerCount}
-          </Text>
+          <Text style={totalTextStyle}>{selectOrders.realContainerCount}</Text>
         </Col>
         <Col span={5}>
           <Text> 体积：</Text>
-          <Text style={{ fontSize: 16, fontWeight: 700 }}>
-            {selectAuditedData.volume.toFixed(2)}
-          </Text>
+          <Text style={totalTextStyle}>{selectOrders.volume.toFixed(2)}</Text>
         </Col>
         <Col span={5}>
           <Text> 重量：</Text>
-          <Text style={{ fontSize: 16, fontWeight: 700 }}>
-            {selectAuditedData.weight.toFixed(2)}
-          </Text>
+          <Text style={totalTextStyle}>{selectOrders.weight.toFixed(2)}</Text>
         </Col>
       </Row>
     );
@@ -251,10 +255,16 @@ export default class OrderPoolPage extends Component {
     };
   };
 
+  //更新列配置
+  setColumns = (orderPoolColumns, index, width) => {
+    index ? this.orderColSetting.handleWidth(index, width) : {};
+    this.setState({ orderPoolColumns });
+  };
+
   render() {
     const {
       loading,
-      columns,
+      orderPoolColumns,
       auditedRowKeys,
       scheduledRowKeys,
       auditedData,
@@ -282,6 +292,15 @@ export default class OrderPoolPage extends Component {
       }
     };
 
+    const settingColumn = (
+      <RyzeSettingDrowDown
+        columns={OrderColumns}
+        comId={'OrderPoolColumns'}
+        getNewColumns={this.setColumns}
+        onRef={ref => (this.orderColSetting = ref)}
+      />
+    );
+
     return (
       <Tabs
         activeKey={activeTab}
@@ -295,11 +314,13 @@ export default class OrderPoolPage extends Component {
           <DispatchingTable
             clickRow
             pagination={pagination}
+            setColumns={this.setColumns}
+            children={settingColumn}
             loading={loading}
             dataSource={auditedData}
             changeSelectRows={this.tableChangeRows('Audited')}
             selectedRowKeys={auditedRowKeys}
-            columns={OrderColumns}
+            columns={orderPoolColumns}
             scrollY="calc(68vh - 220px)"
             title={this.buildTitle}
           />
@@ -322,11 +343,16 @@ export default class OrderPoolPage extends Component {
           <DispatchingTable
             clickRow
             pagination={pagination}
+            setColumns={this.setColumns}
+            children={settingColumn}
             loading={loading}
             dataSource={scheduledData}
             changeSelectRows={this.tableChangeRows('Scheduled')}
             selectedRowKeys={scheduledRowKeys}
-            columns={[{ title: '排车单号', dataIndex: 'scheduleNum', width: 150 }, ...OrderColumns]}
+            columns={[
+              { title: '排车单号', dataIndex: 'scheduleNum', width: 150 },
+              ...orderPoolColumns,
+            ]}
             scrollY="calc(68vh - 115px)"
           />
         </TabPane>

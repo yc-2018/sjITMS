@@ -2,16 +2,17 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-05 10:45:21
+ * @LastEditTime: 2022-05-26 11:19:33
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
 import { Form, Badge, Button, message } from 'antd';
 import { colWidth } from '@/utils/ColWidth';
 import { connect } from 'dva';
-import SearchPage from '@/pages/Tms/DispatchCenterShipPlanBill/SearchPage';
+import SearchPage from './SearchPage';
 import { guid } from '@/utils/utils';
 import { aborted, shipRollback } from '@/services/sjitms/ScheduleBill';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -30,8 +31,9 @@ export default class ShipPlanBillSearch extends SearchPage {
       searchFields: [],
       advancedFields: [],
       data: [],
-      tabTrue: props.tabTrue,
+      isOrgQuery: [],
       selectedRows: [],
+      historyRows: {},
       width: '100%',
       scrollValue: {
         x: 4100,
@@ -62,20 +64,9 @@ export default class ShipPlanBillSearch extends SearchPage {
   componentDidMount() {
     this.props.onRef && this.props.onRef(this);
     this.queryCoulumns();
-    if (!this.state.tabTrue) {
-      this.refreshTable(this.props.pageFilter ? this.props.pageFilter : null);
-    } else {
-      this.setState({
-        data: {
-          list: [],
-          pagination: {},
-        },
-      });
-    }
   }
 
   componentWillReceiveProps(nextProps) {
-    const cc = nextProps.pageFilter != this.props.pageFilter;
     if (nextProps.pageFilter != this.props.pageFilter) {
       this.refreshTable(nextProps.pageFilter ? nextProps.pageFilter : null);
       this.setState({
@@ -96,8 +87,47 @@ export default class ShipPlanBillSearch extends SearchPage {
       callback: response => {
         if (response.result) {
           this.initConfig(response.result);
-          //解决用户列展示失效问题 暂时解决方法（赋值两次）
-          // this.initConfig(response.result);
+
+          let companyuuid = response.result.columns.find(
+            item => item.fieldName.toLowerCase() == 'companyuuid'
+          );
+
+          let orgName =
+            loginOrg().type.toLowerCase() == 'dc'
+              ? loginOrg().type.toLowerCase() + 'Uuid'
+              : 'dispatchcenteruuid';
+          let org = response.result.columns.find(item => item.fieldName.toLowerCase() == orgName);
+
+          if (companyuuid) {
+            this.state.isOrgQuery = [
+              {
+                field: 'companyuuid',
+                type: 'VarChar',
+                rule: 'eq',
+                val: loginCompany().uuid,
+              },
+            ];
+          }
+
+          if (org) {
+            this.setState({
+              isOrgQuery: response.result.reportHead.organizationQuery
+                ? [
+                    {
+                      field:
+                        loginOrg().type.toLowerCase() == 'dc'
+                          ? loginOrg().type.toLowerCase() + 'Uuid'
+                          : 'dispatchCenterUuid',
+                      type: 'VarChar',
+                      rule: 'eq',
+                      val: loginOrg().uuid,
+                    },
+                    ...this.state.isOrgQuery,
+                  ]
+                : [...this.state.isOrgQuery],
+            });
+          }
+          this.refreshTable(this.props.pageFilter ? this.props.pageFilter : null);
         }
       },
     });
@@ -284,12 +314,25 @@ export default class ShipPlanBillSearch extends SearchPage {
         var sort = filter.sortFields[key] ? 'descend' : 'ascend';
         order = key + ',' + sort;
       }
-      queryFilter = {
-        order: order,
-        ...filter,
-        page: filter.page ? filter.page + 1 : 0 + 1,
-        pageSize: filter.pageSize ? filter.pageSize : 20,
-      };
+      if (typeof filter.superQuery == 'undefined') {
+        queryFilter = {
+          order: order,
+          ...filter,
+          page: filter.page ? filter.page + 1 : 0 + 1,
+          pageSize: filter.pageSize ? filter.pageSize : 20,
+          superQuery: {
+            matchType: filter.matchType,
+            queryParams: [...this.state.isOrgQuery],
+          },
+        };
+      } else {
+        queryFilter = {
+          order: order,
+          ...filter,
+          page: filter.page ? filter.page + 1 : 0 + 1,
+          pageSize: filter.pageSize ? filter.pageSize : 20,
+        };
+      }
     }
     this.getData(queryFilter);
   };
@@ -327,7 +370,14 @@ export default class ShipPlanBillSearch extends SearchPage {
   };
 
   changeSelectedRows = selectedRows => {
-    this.props.refreshView(null, selectedRows);
+    const { historyRows } = this.state;
+    if (historyRows.UUID == selectedRows.UUID) {
+      this.props.refreshView(true, selectedRows);
+      this.setState({ historyRows: {} });
+    } else {
+      this.props.refreshView(false, selectedRows);
+      this.setState({ historyRows: selectedRows });
+    }
   };
 
   /**
@@ -352,7 +402,7 @@ export default class ShipPlanBillSearch extends SearchPage {
 
   onMoveCar = () => {
     const { selectedRows } = this.state;
-    console.log('selectedRows', selectedRows);
+    // console.log('selectedRows', selectedRows);
     if (selectedRows.length === 1) {
       this.props.removeCarModalClick(selectedRows);
     } else message.error('请选中一条数据！');
@@ -390,7 +440,7 @@ export default class ShipPlanBillSearch extends SearchPage {
     const { selectedRows, batchAction } = this.state;
     const that = this;
     let bacth = i => {
-      console.log(i);
+      // console.log(i);
       if (i < selectedRows.length) {
         if (batchAction === '回滚') {
           if (selectedRows[i].STAT == 'Approved') {

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-17 11:50:49
+ * @LastEditTime: 2022-05-26 15:46:10
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
@@ -32,6 +32,13 @@ const ResizeableTitle = props => {
 
 export default class DispatchingTable extends Component {
   state = { columns: this.props.columns };
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.columns && nextProps.columns != this.props.columns) {
+      this.setState({ columns: nextProps.columns });
+    }
+  }
+
   components = {
     header: {
       cell: ResizeableTitle,
@@ -64,15 +71,15 @@ export default class DispatchingTable extends Component {
   };
 
   //修改宽度
-  handleResize = index => (e, { size }) => {
-    this.setState(({ columns }) => {
-      const nextColumns = [...columns];
-      nextColumns[index] = {
-        ...nextColumns[index],
-        width: size.width,
-      };
-      return { columns: nextColumns };
-    });
+  handleResize = index => (_, { size }) => {
+    const nextColumns = [...this.state.columns];
+    nextColumns[index] = {
+      ...nextColumns[index],
+      width: size.width,
+    };
+    this.props.setColumns
+      ? this.props.setColumns(nextColumns, index, size.width)
+      : this.setState({ columns: nextColumns });
   };
 
   render() {
@@ -91,24 +98,27 @@ export default class DispatchingTable extends Component {
     }));
 
     return (
-      <Table
-        {...this.props}
-        size="small"
-        components={this.components}
-        rowClassName={record => {
-          if (record.clicked) {
-            return 'clickedStyle';
-          }
-        }}
-        columns={columns}
-        onRowClick={this.props.onClickRow || this.onClickRow}
-        rowKey={record => record.uuid}
-        rowSelection={rowSelection}
-        style={{ height: this.props.scrollY }}
-        bodyStyle={{ height: this.props.scrollY }}
-        scroll={{ y: this.props.scrollY, x: '100%' }}
-        className={dispatchingTableStyles.dispatchingTable}
-      />
+      <div style={{ position: 'relative' }}>
+        {this.props.children}
+        <Table
+          {...this.props}
+          size="small"
+          components={this.components}
+          rowClassName={record => {
+            if (record.clicked) {
+              return 'clickedStyle';
+            }
+          }}
+          columns={columns}
+          onRowClick={this.props.onClickRow || this.onClickRow}
+          rowKey={record => record.uuid}
+          rowSelection={rowSelection}
+          style={{ height: this.props.scrollY }}
+          bodyStyle={{ height: this.props.scrollY }}
+          scroll={{ y: this.props.scrollY, x: '100%' }}
+          className={dispatchingTableStyles.dispatchingTable}
+        />
+      </div>
     );
   }
 }

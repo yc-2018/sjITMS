@@ -7,13 +7,12 @@ import { commonLocale } from '@/utils/CommonLocale';
 import { guid, isEmpty, isEmptyObj } from '@/utils/utils';
 import { cacheTableColumns, getTableColumns, removeTableColumns } from '@/utils/LoginContext';
 import { Resizable } from 'react-resizable';
-import IconFont from '../RyzeIconFont';
+import IconFont from '@/components/IconFont';
 import { DndProvider, DragSource, DropTarget } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import update from 'immutability-helper';
 import { func } from 'prop-types';
 import ToolbarPanel from '@/pages/Component/Page/inner/ToolbarPanel';
-import { T } from 'antd/lib/upload/utils';
 
 const SHOW_THRESH_HOLD = 5;
 
@@ -388,37 +387,6 @@ class StandardTable extends Component {
       optionsList: fetchOptions(this.props.columns, key), // 绘制的列
       list: getShowList(this.props.data, this.props.dataSource),
     });
-
-    setTimeout(() => {
-      let allwarp = document.getElementsByClassName('ant-table-body');
-      //加定时器 因为 可能 table还没渲染完就获取元素 防止获取不到
-      let warp = document.getElementsByClassName('ant-table-body')[allwarp.length - 2];
-      // console.log('warp', warp, document.getElementsByClassName('ant-table-body'));
-      // 添加滚动监听
-      if (warp) {
-        warp.addEventListener('scroll', this.handleScroll, true);
-      }
-    }, 1000);
-  }
-
-  //监听滚动事件
-  handleScroll = () => {
-    let allwarp = document.getElementsByClassName('ant-table-body');
-    let warp = document.getElementsByClassName('ant-table-body')[allwarp.length - 2];
-    let wrapBottom = document.getElementsByClassName('ant-table-body')[allwarp.length - 1];
-    // console.log(warp, wrapBottom, wrapBottom.scrollLeft, warp.scrollLeft);
-    warp.addEventListener(
-      'scroll',
-      () => {
-        wrapBottom.scrollLeft = warp.scrollLeft;
-      },
-      true
-    );
-  };
-
-  // 组件将要卸载，取消监听window滚动事件
-  componentWillUnmount() {
-    window.removeEventListener('scroll', this.handleScroll);
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -487,35 +455,17 @@ class StandardTable extends Component {
     );
   };
 
-  handleRowSelectChange = (selectedRowKeys, selectedRows) => {
+  handleRowSelectionChange = (selectedRowKeys, selectedRows) => {
     let { needTotalList, selectedAllRows } = this.state;
     needTotalList = needTotalList.map(item => ({
       ...item,
       total: selectedRows.reduce((sum, val) => sum + parseFloat(val[item.dataIndex], 10), 0),
     }));
-    const { onSelectRow } = this.props;
+    const { onRowSelection } = this.props;
     let selectedRowArr = [];
-    if (selectedRows.length == selectedRowKeys.length) {
-      //只操作一页数据
-      selectedRowArr = selectedRows;
-    } else {
-      //操作至少两页数据
-      selectedRowKeys.forEach(item => {
-        let row = selectedRows.find(ele => {
-          return ele.uuid == item;
-        });
-        if (!row) {
-          row = selectedAllRows.find(ele => {
-            return ele.uuid == item;
-          });
-        }
-        if (row) {
-          selectedRowArr.push(row);
-        }
-      });
-    }
-    if (onSelectRow) {
-      onSelectRow(selectedRowArr, selectedRowKeys);
+    selectedRowArr = selectedRows;
+    if (onRowSelection) {
+      onRowSelection(selectedRowArr, selectedRowKeys);
     }
     this.setState({ selectedRowKeys, needTotalList, selectedAllRows: selectedRowArr });
   };
@@ -818,22 +768,11 @@ class StandardTable extends Component {
     );
   };
 
-  onClickRow = (record, key, e) => {
-    let { selectedRowKeys, selectedAllRows } = this.state;
-    if (!selectedRowKeys) {
-      selectedRowKeys = [];
-      selectedAllRows = [];
+  onClickRow = record => {
+    const { onSelectRow } = this.props;
+    if (onSelectRow) {
+      onSelectRow(record);
     }
-    let rowKey = key && typeof key === 'function' ? key(record) : key;
-    let idx = selectedRowKeys.indexOf(rowKey);
-    if (idx > -1) {
-      selectedRowKeys.splice(idx, 1);
-      selectedAllRows.splice(idx, 1);
-    } else {
-      selectedRowKeys.push(rowKey);
-      selectedAllRows.push(record);
-    }
-    this.handleRowSelectChange(selectedRowKeys, selectedAllRows);
   };
 
   strip(number) {
@@ -917,6 +856,7 @@ class StandardTable extends Component {
   moveRow = (dragIndex, hoverIndex) => {
     const { list } = this.state;
     const dragRow = list[dragIndex];
+
     // adjust data
     this.setState(
       update(this.state, {
@@ -928,7 +868,6 @@ class StandardTable extends Component {
         // this.handleOK();
       }
     );
-    this.props.drapTableChange(this.state.list);
   };
 
   renderDragTable() {
@@ -1047,33 +986,21 @@ class StandardTable extends Component {
       newColumns.push({ ...e });
     });
     const tableElement = document.getElementById(this.state.key);
-    // console.log('tableElement', tableElement);
     const pos = tableElement ? tableElement.getBoundingClientRect() : {};
     const footerElement = document.getElementById('footer');
     const footerPos = footerElement ? footerElement.getBoundingClientRect() : {};
     let height = this.props.tableHeight
       ? this.props.tableHeight
-      : footerPos.top - pos.top - (this.props.overHeight ? this.props.overHeight : 90) - 20;
-    // let dataHeight = showList ? showList.length * 30 : 0;
-    //修改dataHeight计算，适应重写render后控件高度问题 2022-05-06 zhangze
-    let dataHeight = showList ? showList.length * 40 : 0;
+      : footerPos.top - pos.top - (this.props.overHeight ? this.props.overHeight : 90);
+    let dataHeight = showList ? showList.length * 30 : 0;
     let scroll = {}; //'calc(100vh - ' + top + 'px)'
     let totalWidth = this.getTotalWidth(newColumns);
-    let tableWidth = 0;
-    for (const item of this.props.columns) {
-      tableWidth += item.width;
-    }
-    // let tableWidth = tableElement ? tableElement.offsetWidth : 0;
-    // console.log('tableWidth', tableWidth);
-    // console.log("dataHeight",dataHeight,'height',height);
+    let tableWidth = tableElement ? tableElement.offsetWidth : 0;
     if (dataHeight > height) {
       scroll.y = height < 30 ? (this.props.minHeight ? this.props.minHeight : 30) : height;
       tableWidth = tableWidth - 120;
     }
 
-    // scroll.x = tableWidth;
-
-    //默认第一列与最后一列操作列固定
     let firstCol = newColumns[0];
     let lastCol = newColumns[newColumns.length - 1];
     newColumns[0] = {
@@ -1088,64 +1015,10 @@ class StandardTable extends Component {
     }
     scroll.x = tableWidth;
 
-    // 固定列滚动
-    // if (totalWidth > tableWidth) {
-    //   let firstCol = newColumns[0];
-    //   let lastCol = newColumns[newColumns.length - 1];
-    //   newColumns[0] = {
-    //     ...firstCol,
-    //     fixed: 'left',
-    //   };
-    //   if (this.isFixedEdge(lastCol)) {
-    //     newColumns[newColumns.length - 1] = {
-    //       ...lastCol,
-    //       fixed: 'right',
-    //     };
-    //   }
-    //   scroll.x = tableWidth;
-    // } else {
-    //   // 自适应宽度扩展填充
-    //   let moreWidth = tableWidth - totalWidth;
-    //   let newTotalWidth = 0;
-    //   for (let i = 0; i < newColumns.length; i++) {
-    //     let column = newColumns[i];
-    //     if (this.isExpandedWidth(oriColumnLen, newColumns.length, column, i)) {
-    //       totalWidth = totalWidth - column.width * 0.8;
-    //       newTotalWidth = newTotalWidth + column.width * 0.8;
-    //     } else if (this.isFixedWidth(oriColumnLen, newColumns.length, column, i)) {
-    //       totalWidth = totalWidth - column.width;
-    //       newTotalWidth = newTotalWidth + column.width;
-    //     }
-    //   }
-    //   let expandRatio = 1 + this.strip(moreWidth / totalWidth);
-    //   for (let idx = columns.length - 1; idx >= 0; idx--) {
-    //     if (this.isExpandedWidth(oriColumnLen, newColumns.length, newColumns[idx], idx)) {
-    //       newColumns[idx].width = newColumns[idx].width * 1.2;
-    //       continue;
-    //     }
-    //     if (this.isFixedWidth(oriColumnLen, newColumns.length, newColumns[idx], idx)) {
-    //       continue;
-    //     }
-    //     if (newColumns[idx].invisible) {
-    //       continue;
-    //     }
-    //     let newWidth =
-    //       idx === columns.length - 1 && columns.length < SHOW_THRESH_HOLD
-    //         ? this.strip(newColumns[idx].width * expandRatio) - 10
-    //         : this.strip(newColumns[idx].width * expandRatio);
-    //     newColumns[idx].width = newWidth;
-    //     if (newWidth + newTotalWidth > tableWidth) {
-    //       newColumns[idx].width = newWidth;
-    //     } else {
-    //       newColumns[idx].width = newWidth;
-    //     }
-    //     newTotalWidth = this.strip(newTotalWidth + newColumns[idx].width);
-    //   }
-    // }
     const rowSelection = {
       selectedRowKeys,
       columnWidth: '35px',
-      onChange: this.handleRowSelectChange,
+      onChange: this.handleRowSelectionChange,
       getCheckboxProps: record => ({
         disabled: record.disabled,
       }),
@@ -1201,29 +1074,12 @@ class StandardTable extends Component {
       }
     });
     showColumns = this.adjustColumns(showColumns);
-    let footerColumns = [];
-    for (const item of showColumns) {
-      footerColumns.push({
-        title: item.title,
-        dataIndex: item.dataIndex,
-        key: item.key + 'footer',
-        sorter: item.sorter,
-        width: item.width,
-        render: (val, record) => {
-          return val ? val : '<空>';
-        },
-      });
-    }
     let settingIcon = (
       <div className={styles.setting} onClick={() => this.handleSettingModalVisible(true)}>
         <IconFont style={{ fontSize: '20px', color: '#848C96' }} type="icon-setting" />
       </div>
     );
-    let status =
-      this.props.colTotal && this.props.colTotal.length == '0'
-        ? { display: 'none' }
-        : { display: 'block' };
-    // console.log(status, 'status');
+
     return (
       <div className={styles.standardTable}>
         {(oriColumnLen >= SHOW_THRESH_HOLD && !noSettingColumns) || hasSettingColumns ? (
@@ -1233,73 +1089,57 @@ class StandardTable extends Component {
           id={this.state.settingKey}
           style={{ borderBottom: '1px solid transparent !important' }}
         />
-        <DndProvider backend={HTML5Backend}>
-          <Table
-            footer={() => {
-              return (
-                <Table
-                  id={'happy'}
-                  columns={footerColumns}
-                  scroll={{ x: true, y: false }}
-                  rowKey={record => Math.random()}
-                  pagination={false}
-                  showHeader={false} // table 的 columns 头部隐藏
-                  dataSource={this.props.colTotal}
-                  size={this.props.size ? this.props.size : 'middle'}
-                  components={this.components}
-                  style={status}
-                />
-              );
-            }}
-            className={this.props.tableClassName}
-            id={this.state.key}
-            rowKey={rowKey || 'key'}
-            rowSelection={
-              this.props.unShowRow
-                ? undefined
-                : this.props.rowSelection
-                  ? this.props.rowSelection
-                  : rowSelection
-            }
-            dataSource={showList}
-            size={this.props.size ? this.props.size : 'middle'}
-            pagination={paginationProps}
-            onChange={this.handleTableChange}
-            rowClassName={
-              this.props.rowClassName
-                ? this.props.rowClassName
-                : (record, index) => this.rowClassName(record, index)
-            }
-            components={this.components}
-            loading={this.props.loading}
-            columns={showColumns}
-            bordered={bordered}
-            scroll={this.props.newScroll ? this.props.newScroll : scroll}
-            onRow={
-              this.props.onRow
-                ? this.props.onRow
-                : this.props.unShowRow
-                  ? (record, index) => {
-                      return {
-                        index,
-                        moveRow: this.props.moveRow ? this.props.moveRow : this.moveRow,
-                      };
-                    }
-                  : (record, index) => {
-                      return {
-                        index,
-                        moveRow:
-                          this.props.canDrag && this.props.moveRow
-                            ? this.props.moveRow
-                            : this.moveRow,
-                        onClick: e => this.onClickRow(record, rowKey || 'key', e),
-                        ...this.props.onRow,
-                      };
-                    }
-            }
-            {...rest}
-          />
-        </DndProvider>
+        <Table
+          className={this.props.tableClassName}
+          id={this.state.key}
+          rowKey={rowKey || 'key'}
+          //控制多选框
+          rowSelection={
+            this.props.unShowRow
+              ? undefined
+              : this.props.rowSelection
+                ? this.props.rowSelection
+                : rowSelection
+          }
+          dataSource={showList}
+          size={this.props.size ? this.props.size : 'middle'}
+          pagination={paginationProps}
+          onChange={this.handleTableChange}
+          rowClassName={
+            this.props.rowClassName
+              ? this.props.rowClassName
+              : (record, index) => this.rowClassName(record, index)
+          }
+          components={this.components}
+          loading={this.props.loading}
+          columns={showColumns}
+          bordered={bordered}
+          scroll={this.props.newScroll ? this.props.newScroll : scroll}
+          //控制行
+          onRow={
+            this.props.onRow
+              ? this.props.onRow
+              : this.props.unShowRow
+                ? (record, index) => {
+                    return {
+                      index,
+                      moveRow: this.props.moveRow ? this.props.moveRow : this.moveRow,
+                    };
+                  }
+                : (record, index) => {
+                    return {
+                      index,
+                      moveRow:
+                        this.props.canDrag && this.props.moveRow
+                          ? this.props.moveRow
+                          : this.moveRow,
+                      onClick: e => this.onClickRow(record, rowKey || 'key', e),
+                      ...this.props.onRow,
+                    };
+                  }
+          }
+          {...rest}
+        />
       </div>
     );
   }

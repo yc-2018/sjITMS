@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-20 10:41:30
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-19 16:17:55
+ * @LastEditTime: 2022-05-27 09:02:36
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -85,8 +85,8 @@ export default class RemoveCarCreatePage extends QuickCreatePage {
     const schedule = entity['V_SJ_ITMS_SCHEDULE'][0];
     const { WEIGHT, VOLUME } = schedule;
     if (CCCWEIGHT && CCCVOLUME) {
-      if (WEIGHT > CCCWEIGHT || VOLUME > CCCVOLUME) {
-        message.error('该排车单重量或体积超出，请重新选择');
+      if (WEIGHT > CCCWEIGHT) {
+        message.error('该排车单重量超出，请重新选择');
         return;
       }
     }

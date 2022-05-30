@@ -2,9 +2,9 @@ import React, { Component } from 'react';
 import { Select, Spin } from 'antd';
 import Debounce from 'lodash-decorators/debounce';
 import Bind from 'lodash-decorators/bind';
-import memoize from "memoize-one";
-
+import memoize from 'memoize-one';
 import { dynamicQuery } from '@/services/quick/Quick';
+import { addCondition, getFieldShow } from '@/utils/ryzeUtils';
 
 /**
  * 下拉列表输入框控件，可传入props同antd select
@@ -13,8 +13,8 @@ import { dynamicQuery } from '@/services/quick/Quick';
  * {string} searchField 查询字段  默认值：VALUE
  * {string} queryParams 数据查询参数
  * {string} dictCode 字典编码,与queryParams冲突,字典编码优先
- * {boolean} isLink    是否为联动控件 
- * {string} linkFilter   联动过滤条件 {field:val}形式
+ * {boolean} isLink    是否为联动控件
+ * {string} linkFilter   联动过滤条件 {field:string, rule:string, val:array}形式
  * {object} initialRecord  初始行记录，用作显示
  * {function} onSourceDataChange  查询数据发生变化事件
  * {array} sourceData  原始数据
@@ -25,19 +25,14 @@ import { dynamicQuery } from '@/services/quick/Quick';
  * {boolean} noRecord 控件不需要record，直接返回value
  */
 export default class SimpleAutoComplete extends Component {
-  state = {
-    sourceData: undefined,
-    preQueryStr: "",
-    value: undefined,
-    searchText: undefined
-  };
+  state = { sourceData: undefined, preQueryStr: '', value: undefined, searchText: undefined };
 
   static defaultProps = {
-    textField: "NAME",
-    valueField: "VALUE",
-    searchField: "VALUE",
-    multipleSplit: ","
-  }
+    textField: 'NAME',
+    valueField: 'VALUE',
+    searchField: 'VALUE',
+    multipleSplit: ',',
+  };
 
   @Bind()
   @Debounce(300)
@@ -50,29 +45,30 @@ export default class SimpleAutoComplete extends Component {
   }
 
   // 在 sourceData, textField, valueField 变化时，重新运行 getOptions
-  convertOptions = memoize(
-    (sourceData, textField, valueField) => convertData2Options(sourceData, textField, valueField)
+  convertOptions = memoize((sourceData, textField, valueField) =>
+    convertData2Options(sourceData, textField, valueField)
   );
 
-  getOptions = () => this.convertOptions(this.state.sourceData, this.props.textField, this.props.valueField)
+  getOptions = () =>
+    this.convertOptions(this.state.sourceData, this.props.textField, this.props.valueField);
 
   static getDerivedStateFromProps(props, state) {
     const nextState = {};
     const nextQueryStr = JSON.stringify({
       dictCode: props.dictCode,
       queryParams: props.queryParams,
-      linkFilter: props.linkFilter
+      linkFilter: props.linkFilter,
     });
     if (nextQueryStr != state.preQueryStr) {
       nextState.preQueryStr = nextQueryStr;
     }
-    if (props.sourceData){
+    if (props.sourceData) {
       nextState.sourceData = props.sourceData;
     }
     if (props.initialRecord && !props.sourceData && !state.sourceData) {
       nextState.sourceData = [props.initialRecord];
     }
-    nextState.value = typeof props.value == "object" ? props.value.value : props.value;
+    nextState.value = typeof props.value == 'object' ? props.value.value : props.value;
     return nextState;
   }
 
@@ -107,69 +103,46 @@ export default class SimpleAutoComplete extends Component {
     // 字典查询优先
     if (dictCode) {
       queryParamsJson = {
-        tableName: "V_SYS_DICT_ITEM", condition: {
-          params: [{ field: "DICT_CODE", rule: "eq", val: [dictCode] }],
-        }
-      }
+        tableName: 'V_SYS_DICT_ITEM',
+        condition: { params: [{ field: 'DICT_CODE', rule: 'eq', val: [dictCode] }] },
+      };
     } else {
       if (!queryParams) {
         return;
       }
-      queryParamsJson = queryParams instanceof Object ? JSON.parse(JSON.stringify(queryParams)) : JSON.parse(queryParams);
+      queryParamsJson = JSON.parse(JSON.stringify(queryParams));
     }
 
     if (linkFilter) {
       // 构建出联动筛选语句，过滤数据
       const linkFilterCondition = this.getLinkFilterCondition();
-      // 构建失败,退出
-      if(!linkFilterCondition){
+      if (!linkFilterCondition) {
         return;
       }
-      this.addCondition(queryParamsJson, linkFilterCondition);
+      addCondition(queryParamsJson, linkFilterCondition);
     }
     return queryParamsJson;
-  }
-
-  /**
-   * 增加condition
-   */
-  addCondition = (queryParams, condition) => {
-    if (!queryParams.condition) {
-      // 如果数据源本身查询不带条件，则condition直接作为查询的条件
-      queryParams.condition = condition;
-    } else if (!queryParams.condition.matchType || queryParams.condition.matchType == "and") {
-      // 如果是and连接,则进行条件追加
-      queryParams.condition.params.push({ nestCondition: condition });
-    } else {
-      // 否则将原本的查询条件与condition作为两个子查询进行and拼接
-      queryParams.condition = {
-        params: [{ nestCondition: queryParams.condition }, { nestCondition: condition }],
-      };
-    }
-  }
+  };
 
   /**
    * 构建联动筛选的条件
    */
   getLinkFilterCondition = () => {
     const { linkFilter } = this.props;
-    const params = [];
-    for (const key in linkFilter) {
-      const value = linkFilter[key];
-      // 值为空的情况为异常
-      if (value == null || value == undefined) {
+    // 不允许有空查询
+    for (const filter of linkFilter) {
+      if (filter.val[0] == undefined) {
         return;
       }
-      params.push({ field: key, rule: 'eq', val: [value] });
     }
-    return { params };
-  }
+    return { params: JSON.parse(JSON.stringify(linkFilter)) };
+  };
 
   /**
    * 构建查询筛选的条件
    * @param {*} searchText 查询值
    */
-  getSearchCondition = (searchText) => {
+  getSearchCondition = searchText => {
     const { searchField } = this.props;
     // 构建出or语句，使得多个查询字段都能搜索到数据
     return {
@@ -178,16 +151,14 @@ export default class SimpleAutoComplete extends Component {
         return { field: field, rule: 'like', val: [searchText] };
       }),
     };
-  }
+  };
 
   /**
    * 构建主键查询条件
    */
-   getKeyCondition = () => {
-    return {
-      params: [{ field: this.props.valueField, rule: 'eq', val: [this.state.value] }]
-    };
-  }
+  getKeyCondition = () => {
+    return { params: [{ field: this.props.valueField, rule: 'eq', val: [this.state.value] }] };
+  };
 
   /**
    * 下拉搜索框加载数据
@@ -202,13 +173,13 @@ export default class SimpleAutoComplete extends Component {
     }
 
     await this.loadData(queryParams);
-  }
+  };
 
   /**
    * autoComlete搜索数据
    * @param {string} searchText 查询键
    */
-  autoCompleteFetchData = async (searchText) => {
+  autoCompleteFetchData = async searchText => {
     const { isLink, linkFilter } = this.props;
     const queryParams = this.getQueryParams();
 
@@ -223,34 +194,34 @@ export default class SimpleAutoComplete extends Component {
     if (searchText != undefined && searchText != '') {
       // 构建出or语句，使得多个查询字段都能搜索到数据
       const searchCondition = this.getSearchCondition(searchText);
-      this.addCondition(queryParams, searchCondition);
+      addCondition(queryParams, searchCondition);
     } else if (this.state.value != undefined) {
       // 如果已经控件已经有值，则按值搜索，在编辑时可带出源数据
       const keyCondition = this.getKeyCondition();
-      this.addCondition(queryParams, keyCondition);
+      addCondition(queryParams, keyCondition);
     } else {
       // 两者都不存在，则不加载数据
       return;
     }
-    
     await this.loadData(queryParams);
-  }
+  };
 
   /**
    * 设置state的数据源
    */
-  setSourceData = (sourceData) => {
+  setSourceData = sourceData => {
     const { textField, valueField } = this.props;
-    this.setState({
-      sourceData: sourceData,
-    });
+    this.setState({ sourceData: sourceData });
     if (this.props.onSourceDataChange) {
-      this.props.onSourceDataChange(sourceData, this.getOptions().find(x => x.value == this.state.value)?.data);
+      this.props.onSourceDataChange(
+        sourceData,
+        this.getOptions().find(x => x.value == this.state.value)?.data
+      );
       return;
     }
-  }
+  };
 
-  loadData = async (queryParams) => {
+  loadData = async queryParams => {
     const response = await dynamicQuery(queryParams);
     if (!response || !response.success || !Array.isArray(response.result.records)) {
       this.setSourceData([]);
@@ -262,12 +233,12 @@ export default class SimpleAutoComplete extends Component {
     // if (!data && this.state.value != undefined) {
     //   this.onChange(undefined);
     // }
-  }
+  };
 
   /**
    * 值更新事件
    */
-  onChange = (value) => {
+  onChange = value => {
     if (!this.props.onChange) {
       return;
     }
@@ -287,21 +258,20 @@ export default class SimpleAutoComplete extends Component {
           data = findData;
         }
       } else {
-        const filterData = this.getOptions().filter(x => value.indexOf(x.value) > -1).map(x => x.data);
+        const filterData = this.getOptions()
+          .filter(x => value.indexOf(x.value) > -1)
+          .map(x => x.data);
         if (filterData.length > 0) {
           if (multipleSplit) {
-            value = filterData.map(x => x.value).join(multipleSplit)
+            value = filterData.map(x => x.value).join(multipleSplit);
           }
-          data = {
-            value,
-            record: filterData.map(x => x.record)
-          }
+          data = { value, record: filterData.map(x => x.record) };
         }
       }
     }
 
     this.props.onChange(data);
-  }
+  };
 
   render() {
     let { autoComplete, showSearch, mode, multipleSplit } = this.props;
@@ -320,7 +290,7 @@ export default class SimpleAutoComplete extends Component {
     }
 
     // 多选情况下把 value 值进行分割
-    if (mode == "multiple" && multipleSplit) {
+    if (mode == 'multiple' && multipleSplit) {
       value = value?.split(multipleSplit);
     }
 
@@ -329,11 +299,10 @@ export default class SimpleAutoComplete extends Component {
       <Select
         allowClear={true}
         {...this.props}
-        optionLabelProp="textfield"     // 指定回填到选择框的 Option 属性
+        optionLabelProp="textfield" // 指定回填到选择框的 Option 属性
         optionFilterProp="children"
         showSearch={showSearch}
-        onSearch={onSearch}
-        // 将value进行了一层包装，以方便日后扩展
+        onSearch={onSearch} // 将value进行了一层包装，以方便日后扩展
         value={value}
         onChange={this.onChange}
       >
@@ -363,30 +332,8 @@ function convertData2Options(sourceData, textField, valueField) {
       textField: textShow,
       data: {
         value: valueShow,
-        record: row
-      }
-    }
+        record: row,
+      },
+    };
   });
-}
-
-/**
- * 获取定义字段的显示，允许通过 %字段名% 的方式插入值
- * @param {Map} rowData 原始数据
- * @param {String} str 用户定义的字段文本
- */
-function getFieldShow(rowData, str) {
-  if (!rowData || !str) {
-    return;
-  }
-  var reg = /%\w+%/g;
-  var matchFields = str.match(reg);
-  if (matchFields) {
-    for (const replaceText of matchFields) {
-      var field = replaceText.replaceAll('%', '');
-      str = str.replaceAll(replaceText, rowData[field]);
-    }
-    return str;
-  } else {
-    return rowData[str];
-  }
 }
