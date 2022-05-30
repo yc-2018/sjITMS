@@ -46,8 +46,10 @@ export default class DispatchingCreatePage extends Component {
     scheduleDetail: {},
     employeesParam: [],
     vehicleParam: [],
+    relationParam: [],
     employeeValue: undefined,
     vehicleValue: undefined,
+    relationValue: undefined,
   };
 
   componentDidMount = () => {
@@ -317,7 +319,7 @@ export default class DispatchingCreatePage extends Component {
 
   employeeFilter = () => {
     const { employees, employeesParam } = this.state;
-    const { changeParam, changeWorkType } = employeesParam;
+    const { changeParam, changeWorkType, changeRelationType } = employeesParam;
     let serachEmp = [];
     if (typeof changeParam != 'undefined' && changeParam != '') {
       this.basicEmp.forEach(item => {
@@ -330,19 +332,39 @@ export default class DispatchingCreatePage extends Component {
       if (serachEmp != '') {
         let searchWorkType = [];
         serachEmp.forEach(item => {
-          if (item.ROLE_TYPE.search(changeWorkType) != -1) {
+          if (item.ROLE_TYPE != undefined && item.ROLE_TYPE.search(changeWorkType) != -1) {
             searchWorkType.push(item);
           }
         });
         serachEmp = searchWorkType;
       } else {
         this.basicEmp.forEach(item => {
-          if (item.ROLE_TYPE.search(changeWorkType) != -1) {
+          if (item.ROLE_TYPE != undefined && item.ROLE_TYPE.search(changeWorkType) != -1) {
             serachEmp.push(item);
           }
         });
       }
     }
+
+    if (typeof changeRelationType != 'undefined' && changeRelationType != '') {
+      console.log('this.basicEmp', this.basicEmp);
+      if (serachEmp != '') {
+        let searchWorkType = [];
+        serachEmp.forEach(item => {
+          if (item.HIRED_TYPE != undefined && item.HIRED_TYPE.search(changeRelationType) != -1) {
+            searchWorkType.push(item);
+          }
+        });
+        serachEmp = searchWorkType;
+      } else {
+        this.basicEmp.forEach(item => {
+          if (item.HIRED_TYPE != undefined && item.HIRED_TYPE.search(changeRelationType) != -1) {
+            serachEmp.push(item);
+          }
+        });
+      }
+    }
+
     this.setState({ employees: serachEmp });
   };
 
@@ -361,6 +383,16 @@ export default class DispatchingCreatePage extends Component {
     this.setState({
       employeesParam,
       employeeValue: value.record.VALUE,
+    });
+    this.employeeFilter();
+  };
+
+  changeRelationType = value => {
+    const { employeesParam } = this.state;
+    employeesParam.changeRelationType = typeof value == 'undefined' ? '' : value.record.VALUE;
+    this.setState({
+      employeesParam,
+      relationValue: value.record.VALUE,
     });
     this.employeeFilter();
   };
@@ -505,7 +537,7 @@ export default class DispatchingCreatePage extends Component {
   };
 
   buildSelectEmployeeCard = () => {
-    const { employees, selectEmployees, employeeValue } = this.state;
+    const { employees, selectEmployees, employeeValue, relationValue } = this.state;
     return (
       <Card
         title="员工"
@@ -514,12 +546,21 @@ export default class DispatchingCreatePage extends Component {
         extra={
           <div>
             <SimpleAutoComplete
+              placeholder="请选择归属类型"
+              dictCode="relation"
+              onChange={this.changeRelationType.bind()}
+              allowClear={true}
+              value={relationValue}
+              style={{ width: 120 }}
+            />
+
+            <SimpleAutoComplete
               placeholder="请选择工种"
               dictCode="employeeType"
               onChange={this.changeWorkType.bind()}
               allowClear={true}
               value={employeeValue}
-              style={{ width: 120 }}
+              style={{ width: 120, marginLeft: 10 }}
             />
 
             <Search
@@ -964,6 +1005,7 @@ export default class DispatchingCreatePage extends Component {
                 bodyStyle={{ height: '29vh', overflowY: 'scroll' }}
               >
                 {selectEmployees.map(employee => {
+                  console.log('employee', employee);
                   return (
                     <Row gutter={[8, 8]} style={{ fontWeight: 'bold', lineHeight: '30px' }}>
                       <Col
