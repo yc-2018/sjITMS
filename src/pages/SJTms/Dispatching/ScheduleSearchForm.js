@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-17 15:26:13
+ * @LastEditTime: 2022-05-27 15:15:59
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleSearchForm.js
  */
@@ -16,7 +16,6 @@ export default class ScheduleSearchForm extends Component {
     event.preventDefault();
     form.validateFields((err, fieldsValue) => {
       if (err) return;
-      console.log(fieldsValue);
       this.props.refresh(fieldsValue);
     });
   };
@@ -30,7 +29,7 @@ export default class ScheduleSearchForm extends Component {
     return (
       <Form onSubmit={this.onSearch} autoComplete="off">
         <Row justify="space-around">
-          <Col span={9}>
+          <Col span={8}>
             <Form.Item label="排车单号" labelCol={{ span: 10 }} wrapperCol={{ span: 14 }}>
               {getFieldDecorator('billNumber', {})(
                 <Input placeholder="请输入排车单号" autoComplete allowClear />
@@ -44,7 +43,7 @@ export default class ScheduleSearchForm extends Component {
               )}
             </Form.Item>
           </Col>
-          <Col span={3}>
+          <Col span={4}>
             <Button
               type={'primary'}
               style={{ marginLeft: 12 }}
