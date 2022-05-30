@@ -65,6 +65,7 @@ export default class DispatchingCreatePage extends Component {
       }),
       companyUuid: loginCompany().uuid,
       dUuid: loginOrg().uuid,
+      state: 1,
     };
     //车辆熟练度
     let recommend = await getRecommend(params);
@@ -88,6 +89,7 @@ export default class DispatchingCreatePage extends Component {
     let queryParams = [
       { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
       { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
+      { field: 'state', type: 'Integer', rule: 'eq', val: 1 },
     ];
     //获取车辆
     // if (vehicles.length == 0 || vehicles[0].DISPATCHCENTERUUID != loginOrg().uuid) {
@@ -111,6 +113,7 @@ export default class DispatchingCreatePage extends Component {
         params: [
           { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
           { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
+          { field: 'state', rule: 'eq', val: [1] },
         ],
       },
     };
