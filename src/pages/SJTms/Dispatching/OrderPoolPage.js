@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-28 11:50:20
+ * @LastEditTime: 2022-05-31 14:28:50
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -22,7 +22,7 @@ import {
   savePending,
 } from '@/services/sjitms/OrderBill';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
-import { groupBy, sumBy, uniq } from 'lodash';
+import { groupBy, sumBy, uniq, uniqBy } from 'lodash';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
@@ -156,6 +156,17 @@ export default class OrderPoolPage extends Component {
       return;
     }
     const orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
+    //不可共配校验
+    let owners = [...orders, ...selectPending].map(x => {
+      const is_private = x.is_private == '0' ? 0 : -1;
+      return { ...x.owner, is_private };
+    });
+    owners = uniqBy(owners, 'uuid');
+    let noMixtureShip = owners.filter(item => item.is_private == 0).map(x => x.name);
+    if (owners.length > 1 && noMixtureShip) {
+      message.error('货主 ' + noMixtureShip.join(',') + ' 不可共配！');
+      return;
+    }
     this.createPageModalRef.show(false, [...orders, ...selectPending]);
   };
 

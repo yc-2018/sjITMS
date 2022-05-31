@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-30 10:05:04
+ * @LastEditTime: 2022-05-30 14:25:44
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -92,7 +92,10 @@ export default class PendingPage extends Component {
   tableChangeRows = selectedRowKeys => {
     const { pendingData } = this.state;
     this.props.refreshSelectRowOrder(
-      pendingData.filter(x => selectedRowKeys.indexOf(x.uuid) != -1),
+      pendingData.filter(x => selectedRowKeys.indexOf(x.uuid) != -1).map(item => {
+        item.stat = 'Pending';
+        return item;
+      }),
       'Pending'
     );
     this.setState({ pendingRowKeys: selectedRowKeys });

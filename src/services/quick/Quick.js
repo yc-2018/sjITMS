@@ -9,6 +9,11 @@ export async function queryDict(dictCode) {
     method: 'GET',
   });
 }
+export async function queryDictByCode(dictCodes) {
+  return request(`/itms-schedule/itms-schedule/dict/findDictByDictCode?dictCodes=${dictCodes}`, {
+    method: 'GET',
+  });
+}
 
 export async function queryData(payload) {
   return request(`/itms-schedule/itms-schedule/dev/getData/${payload.quickuuid}/tms`, {
