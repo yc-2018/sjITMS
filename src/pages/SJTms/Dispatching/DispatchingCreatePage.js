@@ -17,20 +17,20 @@ import {
   Tooltip,
 } from 'antd';
 import { isEmptyObj, guid } from '@/utils/utils';
-import { queryAllData, dynamicQuery } from '@/services/quick/Quick';
+import { queryAllData, dynamicQuery, queryDictByCode } from '@/services/quick/Quick';
 import { getSchedule, save, modify, getRecommend } from '@/services/sjitms/ScheduleBill';
 import EditContainerNumberPageF from './EditContainerNumberPageF';
-import { CreatePageOrderColumns, employeeType } from './DispatchingColumns';
+import { CreatePageOrderColumns } from './DispatchingColumns';
 import dispatchingStyles from './Dispatching.less';
 import { sumBy, uniq, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 
 const { Search } = Input;
 
 export default class DispatchingCreatePage extends Component {
-  basicEmp = [];
-  basicVeh = [];
+  basicEmployee = [];
+  basicVehicle = [];
+  dict = [];
   state = {
     loading: false,
     saving: false,
@@ -39,17 +39,13 @@ export default class DispatchingCreatePage extends Component {
     orders: [],
     vehicles: [],
     employees: [],
+    empParams: [],
+    vehicleParam: [],
     selectVehicle: {},
     selectEmployees: [],
     schedule: {},
     editPageVisible: false,
     scheduleDetail: {},
-    employeesParam: [],
-    vehicleParam: [],
-    relationParam: [],
-    employeeValue: undefined,
-    vehicleValue: undefined,
-    relationValue: undefined,
   };
 
   componentDidMount = () => {
@@ -88,27 +84,12 @@ export default class DispatchingCreatePage extends Component {
   //初始化数据
   initData = async (isEdit, record) => {
     let { vehicles, employees } = this.state;
-    let queryParams = [
-      { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
-      { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
-      { field: 'state', type: 'Integer', rule: 'eq', val: 1 },
-    ];
+    // 查询字典
+    queryDictByCode(['vehicleOwner', 'employeeType', 'relation']).then(
+      res => (this.dict = res.data)
+    );
+
     //获取车辆
-    // if (vehicles.length == 0 || vehicles[0].DISPATCHCENTERUUID != loginOrg().uuid) {
-    //   let param = {
-    //     tableName: 'v_sj_itms_vehicle_stat',
-    //     condition: {
-    //       params: [
-    //         { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
-    //         { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
-    //       ],
-    //     },
-    //   };
-    //   const vehiclesData = await dynamicQuery(param);
-    //   if (vehiclesData.result.records != 'false') {
-    //     vehicles = vehiclesData.result.records;
-    //   }
-    // }
     let param = {
       tableName: 'v_sj_itms_vehicle_stat',
       condition: {
@@ -120,89 +101,62 @@ export default class DispatchingCreatePage extends Component {
       },
     };
     const vehiclesData = await dynamicQuery(param);
-    if (vehiclesData.result.records != 'false') {
+    if (vehiclesData.success && vehiclesData.result.records != 'false') {
       vehicles = vehiclesData.result.records;
     }
-
     //获取人员
-    // if (employees.length == 0 || employees[0].DISPATCHCENTERUUID != loginOrg().uuid) {
-    //   const employeesData = await queryAllData({
-    //     quickuuid: 'sj_itms_employee',
-    //     superQuery: { queryParams },
-    //   });
-    //   employees = employeesData.data.records;
-    // }
+    let queryParams = [
+      { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+      { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
+      { field: 'state', type: 'Integer', rule: 'eq', val: 1 },
+    ];
     const employeesData = await queryAllData({
       quickuuid: 'sj_itms_employee',
       superQuery: { queryParams },
     });
     employees = employeesData.data.records;
 
-    if (!isEdit) {
-      let map = new Map();
-      let uniqRecord = [];
-      record.forEach(item => {
-        if (!map.has(item.owner.uuid)) {
-          // has()用于判断map是否包为item的属性值
-          map.set(item.owner.uuid, true); // 使用set()将item设置到map中，并设置其属性值为true
-          uniqRecord.push(item);
+    if (isEdit) {
+      //编辑初始化排车单
+      getSchedule(record.uuid).then(async response => {
+        if (response.success) {
+          let details = response.data.details
+            ? response.data.details.map(item => {
+                return { ...item, billNumber: item.orderNumber };
+              })
+            : [];
+          vehicles = await this.getRecommendByOrders(details, vehicles);
+          const selectVehicle = vehicles.find(x => x.UUID == response.data.vehicle.uuid);
+          //将选中车辆放到第一位
+          selectVehicle ? vehicles.unshift(selectVehicle) : {};
+          vehicles = uniqBy(vehicles, 'UUID');
+          //选中的人放到第一位
+          const memberList = response.data.memberDetails;
+          const selectEmployees = memberList.map(item => {
+            const emp = employees.find(x => x.UUID == item.member.uuid);
+            return { ...emp, memberType: item.memberType };
+          });
+          employees = uniqBy([...selectEmployees, ...employees], 'CODE');
+
+          this.basicEmployee = employees;
+          this.basicVehicle = vehicles;
+          this.setState({
+            vehicles,
+            employees,
+            orders: details,
+            schedule: response.data,
+            selectVehicle: selectVehicle == undefined ? {} : selectVehicle,
+            selectEmployees,
+            loading: false,
+          });
         }
       });
-      let noIn = uniqRecord.filter(item => item.is_private == '0');
-      let ownerNames = noIn
-        .map(obj => {
-          return "'" + obj.owner.name + "'";
-        })
-        .join(',')
-        .split(',');
-      if (record.length > 1 && uniqRecord.length > 1) {
-        message.error('货主' + ownerNames + '不可共配！');
-        this.exit();
-      }
+    } else {
       vehicles = await this.getRecommendByOrders(record, vehicles);
+      this.basicEmployee = employees;
+      this.basicVehicle = vehicles;
+      this.setState({ vehicles, employees, orders: record, loading: false });
     }
-
-    isEdit
-      ? getSchedule(record.uuid).then(async response => {
-          if (response.success) {
-            let details = response.data.details
-              ? response.data.details.map(item => {
-                  return { ...item, billNumber: item.orderNumber };
-                })
-              : [];
-            vehicles = await this.getRecommendByOrders(details, vehicles);
-            const selectVehicle = vehicles.find(x => x.UUID == response.data.vehicle.uuid);
-            // //将选中车辆放到第一位
-            selectVehicle ? vehicles.unshift(selectVehicle) : {};
-            vehicles = uniqBy(vehicles, 'CODE');
-
-            const memberList = response.data.memberDetails.map(x => x.member);
-            const selectEmployees = employees
-              .filter(
-                x => response.data.memberDetails.findIndex(m => m.member.uuid == x.UUID) != -1
-              )
-              .map(item => {
-                item.memberType = item.ROLE_TYPE;
-                item.memberUuid = guid();
-                return item;
-              });
-            //选中的人放到第一位
-            employees = uniqBy([...selectEmployees, ...employees], 'CODE');
-
-            this.setState({
-              vehicles,
-              employees,
-              orders: details,
-              schedule: response.data,
-              selectVehicle: selectVehicle == undefined ? {} : selectVehicle,
-              selectEmployees,
-              loading: false,
-            });
-          }
-        })
-      : this.setState({ vehicles, employees, orders: record, loading: false });
-    this.basicEmp = employees;
-    this.basicVeh = vehicles;
   };
 
   //显示
@@ -217,18 +171,6 @@ export default class DispatchingCreatePage extends Component {
   //临时保存
   exit = () => {
     this.setState({ visible: false, selectEmployees: [], selectVehicle: [] });
-  };
-
-  //员工类型选择事件
-  handleEmployeeTypeChange = (employee, val) => {
-    const { selectEmployees } = this.state;
-    employee.memberType = val;
-    selectEmployees.splice(
-      selectEmployees.findIndex(x => x.memberUuid == employee.memberUuid),
-      1,
-      employee
-    );
-    this.setState({ selectEmployees });
   };
 
   //选车
@@ -252,149 +194,68 @@ export default class DispatchingCreatePage extends Component {
     }
     this.setState({ selectVehicle: vehicle, selectEmployees: [...vehicleEmployees] });
   };
-  vehicleFilter = () => {
+  //车辆筛选
+  vehicleFilter = (key, value) => {
     const { vehicles, vehicleParam } = this.state;
-    const { changeVehicle, changeVehicleType } = vehicleParam;
-    let serachVeh = [];
-    if (typeof changeVehicle != 'undefined' && changeVehicle != '') {
-      this.basicVeh.forEach(item => {
-        if (item.PLATENUMBER.search(changeVehicle) != -1 || item.CODE.search(changeVehicle) != -1) {
-          serachVeh.push(item);
-        }
-      });
+    let serachVeh = [...this.basicVehicle];
+    vehicleParam[key] = value;
+    if (vehicleParam.searchKey) {
+      serachVeh = serachVeh.filter(
+        item =>
+          item.CODE.search(vehicleParam.searchKey) != -1 ||
+          item.PLATENUMBER.search(vehicleParam.searchKey) != -1
+      );
     }
-    if (typeof changeVehicleType != 'undefined' && changeVehicleType != '') {
-      if (serachVeh != '') {
-        let searchVehicleType = [];
-        serachVeh.forEach(item => {
-          if (item.OWNER != null && item.OWNER.search(changeVehicleType) != -1) {
-            searchVehicleType.push(item);
-          }
-        });
-        serachVeh = searchVehicleType;
-      } else {
-        this.basicVeh.forEach(item => {
-          if (item.OWNER != null && item.OWNER.search(changeVehicleType) != -1) {
-            serachVeh.push(item);
-          }
-        });
-      }
+    if (vehicleParam.vehicleOwner) {
+      serachVeh = serachVeh.filter(x => x.OWNER == vehicleParam.vehicleOwner);
     }
     this.setState({ vehicles: serachVeh });
   };
-
-  changeVehicle = event => {
-    const { vehicleParam } = this.state;
-    vehicleParam.changeVehicle = event.target.value;
-    this.setState({
-      vehicleParam,
-    });
-    this.vehicleFilter();
-  };
-
-  changeVehicleType = value => {
-    const { vehicleParam } = this.state;
-    vehicleParam.changeVehicleType = typeof value == 'undefined' ? '' : value.record.VALUE;
-    this.setState({
-      vehicleParam,
-      vehicleValue: value.record.VALUE,
-    });
-    this.vehicleFilter();
-  };
-
   //选人
   handleEmployee = employee => {
     const { selectEmployees } = this.state;
     let employees = [...selectEmployees];
-    const index = selectEmployees.findIndex(x => x.memberUuid == employee.memberUuid);
+    const index = selectEmployees.findIndex(x => x.UUID == employee.UUID);
     employee.memberType = employee.ROLE_TYPE;
-    employee.memberUuid = guid();
-    index == -1 ? employees.push(employee) : employees.splice(index, 1);
+    index == -1
+      ? employees.push(employee)
+      : (employees = employees.filter(x => x.UUID != employee.UUID));
     if (employees.filter(item => item.memberType == 'Driver').length >= 2) {
       message.error('只允许一位驾驶员！');
       return;
     }
     this.setState({ selectEmployees: employees });
   };
-
-  employeeFilter = () => {
-    const { employees, employeesParam } = this.state;
-    const { changeParam, changeWorkType, changeRelationType } = employeesParam;
-    let serachEmp = [];
-    if (typeof changeParam != 'undefined' && changeParam != '') {
-      this.basicEmp.forEach(item => {
-        if (item.CODE.search(changeParam) != -1 || item.NAME.search(changeParam) != -1) {
-          serachEmp.push(item);
-        }
-      });
+  //人员筛选
+  employeeFilter = (key, value) => {
+    const { employees, empParams } = this.state;
+    let searchEmp = [...this.basicEmployee];
+    empParams[key] = value;
+    if (empParams.searchKey) {
+      searchEmp = searchEmp.filter(
+        item =>
+          item.CODE.search(empParams.searchKey) != -1 || item.NAME.search(empParams.searchKey) != -1
+      );
     }
-    if (typeof changeWorkType != 'undefined' && changeWorkType != '') {
-      if (serachEmp != '') {
-        let searchWorkType = [];
-        serachEmp.forEach(item => {
-          if (item.ROLE_TYPE != undefined && item.ROLE_TYPE.search(changeWorkType) != -1) {
-            searchWorkType.push(item);
-          }
-        });
-        serachEmp = searchWorkType;
-      } else {
-        this.basicEmp.forEach(item => {
-          if (item.ROLE_TYPE != undefined && item.ROLE_TYPE.search(changeWorkType) != -1) {
-            serachEmp.push(item);
-          }
-        });
-      }
+    if (empParams.employeeType) {
+      searchEmp = searchEmp.filter(x => x.ROLE_TYPE == empParams.employeeType);
     }
-
-    if (typeof changeRelationType != 'undefined' && changeRelationType != '') {
-      console.log('this.basicEmp', this.basicEmp);
-      if (serachEmp != '') {
-        let searchWorkType = [];
-        serachEmp.forEach(item => {
-          if (item.HIRED_TYPE != undefined && item.HIRED_TYPE.search(changeRelationType) != -1) {
-            searchWorkType.push(item);
-          }
-        });
-        serachEmp = searchWorkType;
-      } else {
-        this.basicEmp.forEach(item => {
-          if (item.HIRED_TYPE != undefined && item.HIRED_TYPE.search(changeRelationType) != -1) {
-            serachEmp.push(item);
-          }
-        });
-      }
+    if (empParams.relation) {
+      searchEmp = searchEmp.filter(x => x.HIRED_TYPE == empParams.relation);
     }
-
-    this.setState({ employees: serachEmp });
+    this.setState({ employees: searchEmp, empParams });
   };
 
-  changeEmployee = event => {
-    const { employeesParam } = this.state;
-    employeesParam.changeParam = event.target.value;
-    this.setState({
-      employeesParam,
-    });
-    this.employeeFilter();
-  };
-
-  changeWorkType = value => {
-    const { employeesParam } = this.state;
-    employeesParam.changeWorkType = typeof value == 'undefined' ? '' : value.record.VALUE;
-    this.setState({
-      employeesParam,
-      employeeValue: value.record.VALUE,
-    });
-    this.employeeFilter();
-  };
-
-  changeRelationType = value => {
-    const { employeesParam } = this.state;
-    employeesParam.changeRelationType = typeof value == 'undefined' ? '' : value.record.VALUE;
-    this.setState({
-      employeesParam,
-      relationValue: value.record.VALUE,
-    });
-    this.employeeFilter();
+  //员工类型选择事件
+  handleEmployeeTypeChange = (employee, val) => {
+    const { selectEmployees } = this.state;
+    employee.memberType = val;
+    selectEmployees.splice(
+      selectEmployees.findIndex(x => x.memberUuid == employee.memberUuid),
+      1,
+      employee
+    );
+    this.setState({ selectEmployees });
   };
 
   //添加工种
@@ -537,7 +398,7 @@ export default class DispatchingCreatePage extends Component {
   };
 
   buildSelectEmployeeCard = () => {
-    const { employees, selectEmployees, employeeValue, relationValue } = this.state;
+    const { employees, selectEmployees } = this.state;
     return (
       <Card
         title="员工"
@@ -545,28 +406,32 @@ export default class DispatchingCreatePage extends Component {
         bodyStyle={{ padding: '15px 0 0 0', height: '29vh', overflowY: 'auto' }}
         extra={
           <div>
-            <SimpleAutoComplete
-              placeholder="请选择归属类型"
-              dictCode="relation"
-              onChange={this.changeRelationType.bind()}
+            <Select
+              placeholder="员工归属"
+              onChange={value => this.employeeFilter('relation', value)}
               allowClear={true}
-              value={relationValue}
-              style={{ width: 120 }}
-            />
-
-            <SimpleAutoComplete
-              placeholder="请选择工种"
-              dictCode="employeeType"
-              onChange={this.changeWorkType.bind()}
+              style={{ width: 100 }}
+            >
+              {this.dict.filter(x => x.dictCode == 'relation').map(d => (
+                <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
+              ))}
+            </Select>
+            <Select
+              placeholder="工种"
+              onChange={value => this.employeeFilter('employeeType', value)}
               allowClear={true}
-              value={employeeValue}
-              style={{ width: 120, marginLeft: 10 }}
-            />
+              style={{ width: 100, marginLeft: 5 }}
+            >
+              {this.dict.filter(x => x.dictCode == 'employeeType').map(d => (
+                <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
+              ))}
+            </Select>
 
             <Search
-              placeholder="请输入工号或姓名"
-              onChange={this.changeEmployee.bind()}
-              style={{ width: 150, marginLeft: 10 }}
+              placeholder="请输入工号/姓名"
+              allowClear
+              onChange={event => this.employeeFilter('searchKey', event.target.value)}
+              style={{ width: 150, marginLeft: 5 }}
             />
           </div>
         }
@@ -625,7 +490,7 @@ export default class DispatchingCreatePage extends Component {
     );
   };
   buildSelectVehicleCard = () => {
-    const { vehicles, selectVehicle, vehicleValue } = this.state;
+    const { vehicles, selectVehicle } = this.state;
     return (
       <Card
         title="车辆"
@@ -633,19 +498,21 @@ export default class DispatchingCreatePage extends Component {
         bodyStyle={{ padding: '15px 0 0 0', height: '29vh', overflowY: 'auto' }}
         extra={
           <div>
-            <SimpleAutoComplete
-              placeholder="请选择车辆归属"
-              dictCode="vehicleOwner"
-              onChange={this.changeVehicleType.bind()}
-              value={vehicleValue}
+            <Select
+              placeholder="车辆归属"
+              onChange={value => this.vehicleFilter('vehicleOwner', value)}
               allowClear={true}
-              style={{ width: 120 }}
-            />
+              style={{ width: 100 }}
+            >
+              {this.dict.filter(x => x.dictCode == 'vehicleOwner').map(d => (
+                <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
+              ))}
+            </Select>
 
             <Search
-              placeholder="请输入车辆编号或车牌号"
-              onChange={this.changeVehicle.bind()}
-              style={{ width: 150, marginLeft: 10 }}
+              placeholder="请输入车牌号/编号"
+              onChange={event => this.vehicleFilter('searchKey', event.target.value)}
+              style={{ width: 150, marginLeft: 5 }}
             />
           </div>
         }
@@ -987,7 +854,6 @@ export default class DispatchingCreatePage extends Component {
                   <></>
                 )}
               </Card>
-
               {/* 已选人员 */}
               <Card
                 title={
@@ -1005,7 +871,6 @@ export default class DispatchingCreatePage extends Component {
                 bodyStyle={{ height: '29vh', overflowY: 'scroll' }}
               >
                 {selectEmployees.map(employee => {
-                  console.log('employee', employee);
                   return (
                     <Row gutter={[8, 8]} style={{ fontWeight: 'bold', lineHeight: '30px' }}>
                       <Col
@@ -1027,8 +892,8 @@ export default class DispatchingCreatePage extends Component {
                           style={{ width: '100%' }}
                           value={employee.memberType}
                         >
-                          {employeeType.map(d => (
-                            <Select.Option key={d.name}>{d.caption}</Select.Option>
+                          {this.dict.filter(x => x.dictCode == 'employeeType').map(d => (
+                            <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
                           ))}
                         </Select>
                       </Col>

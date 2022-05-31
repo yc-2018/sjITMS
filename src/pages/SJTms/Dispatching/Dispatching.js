@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-29 14:03:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-28 12:05:16
+ * @LastEditTime: 2022-05-30 14:23:25
  * @Description: 配送调度主页面
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\Dispatching.js
  */
@@ -61,10 +61,7 @@ export default class Dispatching extends Component {
   //保存选中订单，用于选中订单汇总
   refreshSelectRowOrder = (orders, stat) => {
     const { selectOrders } = this.state;
-    let tempSelectOrders =
-      stat == 'Pending'
-        ? selectOrders.filter(x => x.pendingTag != stat)
-        : selectOrders.filter(x => x.stat != stat);
+    let tempSelectOrders = selectOrders.filter(x => x.stat != stat);
     this.setState({ selectOrders: [...tempSelectOrders, ...orders] });
   };
 

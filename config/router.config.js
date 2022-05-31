@@ -1077,6 +1077,21 @@ export default [
         ],
       },
       {
+        path: '/costbasic',
+        name: 'cost',
+        org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+        authority: ['itms.base'],
+        icon: 'icon-cangchuguanli_uncheck',
+        routes: [
+          {
+            path: '/costbasic/basic',
+            name: '数据源',
+            org: ['DISPATCH_CENTER'],
+            component: './Cost/BasicSource/BasicSource',
+          },
+        ],
+      },
+      {
         path: '/tmsbase',
         name: 'basic',
         org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
