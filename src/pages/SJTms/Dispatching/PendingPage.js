@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-30 14:25:44
+ * @LastEditTime: 2022-05-31 15:16:11
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -120,6 +120,13 @@ export default class PendingPage extends Component {
             <Text className={dispatchingStyles.cardTitle}>待定列表</Text>
           </Col>
           <Col span={12} style={{ textAlign: 'right' }}>
+            <Button
+              onClick={() => this.refreshTable()}
+              icon={loading ? 'loading' : 'sync'}
+              style={{ marginRight: 10 }}
+            >
+              刷新
+            </Button>
             <Button onClick={() => this.handleAddOrder()}>添加到排车单</Button>
             <Button style={{ marginLeft: 10 }} onClick={() => this.handleRemovePending()}>
               移除待定
@@ -137,7 +144,7 @@ export default class PendingPage extends Component {
                   已选：
                   {pendingRowKeys.length}
                 </span>
-                <Button style={{ marginLeft: 20 }} onClick={this.handleCancelRow}>
+                <Button style={{ marginLeft: 20 }} size="small" onClick={this.handleCancelRow}>
                   取消
                 </Button>
               </Col>
