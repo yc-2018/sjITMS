@@ -158,6 +158,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
         
         data.list.forEach(element => {
             if(element.ROW_ID == record.ROW_ID ){
+                element.RETURNMILEAGE = e.target.value
                 element.TOTALMILEAGE = e.target.value - record.DISPATCHMILEAGE
                 this.setState({data})
                 return ;

@@ -297,12 +297,12 @@ export default class OtherFeeModal extends Component {
       width: colWidth.billNumberColWidth + 50,
       render: val => (val ? val : 0),
     },
-    {
-      title: '是否审核',
-      dataIndex: 'checked',
-      width: colWidth.billNumberColWidth + 50,
-      render: val => (val ? '是' : '否'),
-    },
+    // {
+    //   title: '是否审核',
+    //   dataIndex: 'checked',
+    //   width: colWidth.billNumberColWidth + 50,
+    //   render: val => (val ? '是' : '否'),
+    // },
   ];
   render() {
     console.log('render', this.state);
