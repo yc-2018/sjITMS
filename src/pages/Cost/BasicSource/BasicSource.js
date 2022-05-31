@@ -8,7 +8,7 @@
 import { PureComponent } from 'react';
 import { connect } from 'dva';
 // import LineSystemSearchPage from '@/pages/SJTms/LineSystem/LineSystemSearchPage';
-import BasicSourceSearchPage from './BasicSourceSearchPage';
+// import BasicSourceSearchPage from './BasicSourceSearchPage';
 
 // @connect(({ lineSystem, loading }) => ({
 //   lineSystem,
@@ -17,6 +17,7 @@ import BasicSourceSearchPage from './BasicSourceSearchPage';
 export default class BasicSource extends PureComponent {
   render() {
     // return <LineSystemSearchPage />;
-    return <BasicSourceSearchPage />;
+    // return <BasicSourceSearchPage />;
+    return null
   }
 }
