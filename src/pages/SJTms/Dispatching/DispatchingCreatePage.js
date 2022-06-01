@@ -132,9 +132,12 @@ export default class DispatchingCreatePage extends Component {
           vehicles = uniqBy(vehicles, 'UUID');
           //选中的人放到第一位
           const memberList = response.data.memberDetails;
-          const selectEmployees = memberList.map(item => {
-            const emp = employees.find(x => x.UUID == item.member.uuid);
-            return { ...emp, memberType: item.memberType };
+          let selectEmployees = [];
+          memberList.forEach(item => {
+            let emp = employees.find(x => x.UUID == item.member.uuid);
+            if (emp) {
+              selectEmployees.push({ ...emp, memberType: item.memberType, memberUuid: item.uuid });
+            }
           });
           employees = uniqBy([...selectEmployees, ...employees], 'CODE');
 
@@ -217,6 +220,7 @@ export default class DispatchingCreatePage extends Component {
     let employees = [...selectEmployees];
     const index = selectEmployees.findIndex(x => x.UUID == employee.UUID);
     employee.memberType = employee.ROLE_TYPE;
+    employee.memberUuid = guid();
     index == -1
       ? employees.push(employee)
       : (employees = employees.filter(x => x.UUID != employee.UUID));
