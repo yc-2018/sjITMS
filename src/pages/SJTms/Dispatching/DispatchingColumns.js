@@ -172,21 +172,6 @@ const OrderType = {
   },
 };
 
-export const employeeType = [
-  {
-    name: 'Driver',
-    caption: '驾驶员',
-  },
-  {
-    name: 'DeliveryMan',
-    caption: '送货员',
-  },
-  {
-    name: 'Stevedore',
-    caption: '装卸员',
-  },
-];
-
 export const CreatePageOrderColumns = [
   {
     title: '订单号',

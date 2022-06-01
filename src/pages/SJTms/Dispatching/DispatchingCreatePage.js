@@ -283,11 +283,11 @@ export default class DispatchingCreatePage extends Component {
   //保存
   handleSave = async () => {
     const { isEdit, orders, schedule, selectVehicle, selectEmployees } = this.state;
-    const driver = selectEmployees.find(x => x.memberType == 'Driver');
     const orderCounts = this.groupByOrder(orders);
-    if (!this.verifySchedule(orderCounts, selectVehicle, driver, selectEmployees)) {
+    if (!this.verifySchedule(orderCounts, selectVehicle, selectEmployees)) {
       return;
     }
+    const driver = selectEmployees.find(x => x.memberType == 'Driver');
     const paramBody = {
       type: 'Job',
       vehicle: {
@@ -335,15 +335,20 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //保存数据校验
-  verifySchedule = (orderCounts, selectVehicle, driver, selectEmployees) => {
+  verifySchedule = (orderCounts, selectVehicle, selectEmployees) => {
+    const driver = selectEmployees.filter(x => x.memberType == 'Driver');
     //校验车辆必选
     if (isEmptyObj(selectVehicle)) {
       message.error('请选择车辆！');
       return false;
     }
+    if (driver.length > 1) {
+      message.error('只允许一位驾驶员！');
+      return false;
+    }
     //校验司机必选
-    if (driver == undefined) {
-      message.error('请选择司机！');
+    if (driver.length == 0) {
+      message.error('请选择驾驶员！');
       return false;
     }
     //校验容积

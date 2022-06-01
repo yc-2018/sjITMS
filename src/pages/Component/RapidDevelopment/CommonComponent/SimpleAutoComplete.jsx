@@ -247,7 +247,7 @@ export default class SimpleAutoComplete extends Component {
     // 不需要record，直接返回值
     if (noRecord) {
       if (value instanceof Array && multipleSplit) {
-        data = value.split(multipleSplit);
+        data = value.length == 0 ? undefined : value.join(multipleSplit);
       } else {
         data = value;
       }
