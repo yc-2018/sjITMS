@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-27 18:27:57
+ * @LastEditTime: 2022-06-01 16:28:03
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -343,6 +343,9 @@ export default class SchedulePage extends Component {
               selectedRowKeys={savedRowKeys}
               changeSelectRows={this.tableChangeRows()}
               dataSource={scheduleData}
+              refreshDataSource={scheduleData => {
+                this.setState({ scheduleData });
+              }}
               columns={columns}
               setColumns={this.setColumns}
               children={settingColumns}
@@ -368,6 +371,9 @@ export default class SchedulePage extends Component {
               selectedRowKeys={approvedRowKeys}
               changeSelectRows={this.tableChangeRows('Approved')}
               dataSource={scheduleData}
+              refreshDataSource={scheduleData => {
+                this.setState({ scheduleData });
+              }}
               columns={columns}
               setColumns={this.setColumns}
               children={settingColumns}
@@ -383,6 +389,9 @@ export default class SchedulePage extends Component {
               selectedRowKeys={abortedRowKeys}
               changeSelectRows={this.tableChangeRows('Aborted')}
               dataSource={scheduleData}
+              refreshDataSource={scheduleData => {
+                this.setState({ scheduleData });
+              }}
               columns={columns}
               setColumns={this.setColumns}
               children={settingColumns}

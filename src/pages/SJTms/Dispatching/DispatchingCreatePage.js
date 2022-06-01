@@ -283,8 +283,8 @@ export default class DispatchingCreatePage extends Component {
   //保存
   handleSave = async () => {
     const { isEdit, orders, schedule, selectVehicle, selectEmployees } = this.state;
-    const orderCounts = this.groupByOrder(orders);
-    if (!this.verifySchedule(orderCounts, selectVehicle, selectEmployees)) {
+    const orderSummary = this.groupByOrder(orders);
+    if (!this.verifySchedule(orderSummary, selectVehicle, selectEmployees)) {
       return;
     }
     const driver = selectEmployees.find(x => x.memberType == 'Driver');
@@ -319,7 +319,7 @@ export default class DispatchingCreatePage extends Component {
           memberType: x.memberType,
         };
       }),
-      ...orderCounts,
+      ...orderSummary,
       companyUuid: loginCompany().uuid,
       dispatchCenterUuid: loginOrg().uuid,
     };
@@ -335,7 +335,12 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //保存数据校验
-  verifySchedule = (orderCounts, selectVehicle, selectEmployees) => {
+  verifySchedule = (orderSummary, selectVehicle, selectEmployees) => {
+    //校验订单
+    if (orderSummary.orderCount == 0) {
+      message.error('请选择运输订单！');
+      return false;
+    }
     const driver = selectEmployees.filter(x => x.memberType == 'Driver');
     //校验车辆必选
     if (isEmptyObj(selectVehicle)) {
@@ -360,7 +365,8 @@ export default class DispatchingCreatePage extends Component {
     //   return false;
     // }
     //校验载重
-    const exceedWeight = orderCounts.weight - selectVehicle.BEARWEIGHT;
+    const exceedWeight =
+      orderSummary.weight - (selectVehicle.BEARWEIGHT ? selectVehicle.BEARWEIGHT : 0);
     if (exceedWeight > 0) {
       message.error(
         '排车重量超过车辆可运输的最大限重，超出' + exceedWeight.toFixed(2) + 'kg，请检查后重试！'
@@ -583,21 +589,22 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ editPageVisible: true, scheduleDetail: record });
   };
   //更新state订单整件排车件数
-  updateCount = event => {
+  updateCartonCount = event => {
     const { orders } = this.state;
-    if (event.count.cartonCount > 0) {
-      for (const order of orders) {
-        if (order.billNumber == event.billNumber) {
-          order.volume =
-            ((order.realCartonCount - event.count.cartonCount) / order.realCartonCount) *
-            order.volume;
-          order.weight =
-            ((order.realCartonCount - event.count.cartonCount) / order.realCartonCount) *
-            order.weight;
-          order.realCartonCount -= event.count.cartonCount;
-          order.isSplit = 'Y';
-          break;
-        }
+    if (event.count.cartonCount <= 0) {
+      return;
+    }
+    for (const order of orders) {
+      if (order.billNumber == event.billNumber) {
+        order.volume =
+          Math.round((event.count.cartonCount / order.realCartonCount) * order.volume * 1000) /
+          1000;
+        order.weight =
+          Math.round((event.count.cartonCount / order.realCartonCount) * order.weight * 1000) /
+          1000;
+        order.realCartonCount = event.count.cartonCount;
+        order.isSplit = 'Y';
+        break;
       }
     }
     this.setState({ orders, editPageVisible: false });
@@ -617,18 +624,16 @@ export default class DispatchingCreatePage extends Component {
     let vehicleCalc;
     if (selectVehicle) {
       vehicleCalc = {
-        weight:
-          selectVehicle.BEARWEIGHT % 1 == 0
-            ? selectVehicle.BEARWEIGHT
-            : Math.ceil(selectVehicle.BEARWEIGHT) - 1, //重量
-        volume:
-          (selectVehicle.BEARVOLUME * (selectVehicle.BEARVOLUMERATE * 0.01)) % 1 == 0
-            ? selectVehicle.BEARVOLUME * (selectVehicle.BEARVOLUMERATE * 0.01)
-            : Math.ceil((selectVehicle.BEARVOLUME - 1) * (selectVehicle.BEARVOLUMERATE * 0.01)), //容积*容积率
-        initVolume:
-          selectVehicle.BEARVOLUME % 1 == 0
-            ? selectVehicle.BEARVOLUME
-            : Math.ceil(selectVehicle.BEARVOLUME - 1), //原始体积
+        weight: Math.round(selectVehicle.BEARWEIGHT * 100) / 100, //车辆载重
+        remainWeight: Math.round((selectVehicle.BEARWEIGHT - totalData.weight) * 100) / 100, //剩余载重
+        volume: Math.round(selectVehicle.BEARVOLUME * 100) / 100, //车辆容积
+        usableVolume:
+          Math.round(selectVehicle.BEARVOLUME * (selectVehicle.BEARVOLUMERATE / 100) * 100) / 100, //车辆容积*容积率=可装容积
+        remainVolume:
+          Math.round(
+            (selectVehicle.BEARVOLUME * (selectVehicle.BEARVOLUMERATE / 100) - totalData.volume) *
+              100
+          ) / 100, //剩余可装容积
       };
     }
 
@@ -683,10 +688,10 @@ export default class DispatchingCreatePage extends Component {
         ]}
       >
         <EditContainerNumberPageF
-          modal={{ title: '编辑' }}
-          updateCount={e => this.updateCount(e)}
+          modal={{ title: '拆单' }}
+          updateCartonCount={e => this.updateCartonCount(e)}
           visible={editPageVisible}
-          scheduleDetail={scheduleDetail}
+          order={scheduleDetail}
           onCancel={() => this.setState({ editPageVisible: false })}
         />
         <Spin spinning={loading}>
@@ -718,7 +723,7 @@ export default class DispatchingCreatePage extends Component {
                   <div style={{ flex: 1 }}>
                     <div>体积</div>
                     <div className={dispatchingStyles.orderTotalNumber}>
-                      {Math.ceil(totalData.volume.toFixed(4))}
+                      {Math.round(totalData.volume * 1000) / 1000}
                       m³
                     </div>
                   </div>
@@ -726,7 +731,7 @@ export default class DispatchingCreatePage extends Component {
                   <div style={{ flex: 1 }}>
                     <div>重量</div>
                     <div className={dispatchingStyles.orderTotalNumber}>
-                      {Math.ceil(totalData.weight.toFixed(4))}
+                      {Math.round(totalData.weight * 1000) / 1000}
                       kg
                     </div>
                   </div>
@@ -784,81 +789,85 @@ export default class DispatchingCreatePage extends Component {
                 style={{ height: '24.2vh', marginTop: 8, overflow: 'auto' }}
               >
                 {selectVehicle.PLATENUMBER ? (
-                  <Row>
-                    <Col>
-                      <div className={dispatchingStyles.orderTotalCardBody}>
-                        <div style={{ flex: 1 }}>
-                          <div>剩余可装容积</div>
-                          <div className={dispatchingStyles.orderTotalNumber}>
-                            <span
-                              style={
-                                vehicleCalc.volume - Math.ceil(totalData.volume.toFixed(4)) > 0
-                                  ? { color: 'green' }
-                                  : { color: 'red' }
-                              }
+                  selectVehicle.BEARWEIGHT ? (
+                    <Row>
+                      <Col>
+                        <div className={dispatchingStyles.orderTotalCardBody}>
+                          <div style={{ flex: 1 }}>
+                            <div>剩余可装容积</div>
+                            <div className={dispatchingStyles.orderTotalNumber}>
+                              <span
+                                style={
+                                  vehicleCalc.remainVolume > 0
+                                    ? { color: 'green' }
+                                    : { color: 'red' }
+                                }
+                              >
+                                {vehicleCalc.remainVolume}
+                                m³
+                              </span>
+                            </div>
+                          </div>
+                          <Divider type="vertical" style={{ height: '3.5em' }} />
+                          <div style={{ flex: 1 }}>
+                            <div>剩余可装重量</div>
+                            <div className={dispatchingStyles.orderTotalNumber}>
+                              <span
+                                style={
+                                  vehicleCalc.remainWeight > 0
+                                    ? { color: 'green' }
+                                    : { color: 'red' }
+                                }
+                              >
+                                {vehicleCalc.remainWeight}
+                                kg
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className={dispatchingStyles.orderTotalCardBody2}>
+                          <div style={{ flex: 1 }}>
+                            <div>车型</div>
+                            <div
+                              className={dispatchingStyles.orderTotalNumber}
+                              style={{ fontSize: '18px' }}
                             >
-                              {vehicleCalc.volume - Math.ceil(totalData.volume.toFixed(4))}
+                              {selectVehicle.VEHICLETYPE}
+                            </div>
+                          </div>
+                          <Divider type="vertical" style={{ height: '3.5em' }} />
+                          <div style={{ flex: 1 }}>
+                            <div>容积</div>
+                            <div className={dispatchingStyles.orderTotalNumber}>
+                              {vehicleCalc.volume}
                               m³
-                            </span>
+                            </div>
+                          </div>
+                          <Divider type="vertical" style={{ height: '3.5em' }} />
+                          <div style={{ flex: 1 }}>
+                            <div>容积率</div>
+                            <div>
+                              <span className={dispatchingStyles.orderTotalNumber}>
+                                {selectVehicle.BEARVOLUMERATE}%
+                              </span>
+                            </div>
+                          </div>
+                          <Divider type="vertical" style={{ height: '3.5em' }} />
+                          <div style={{ flex: 1 }}>
+                            <div>载重</div>
+                            <div>
+                              <span className={dispatchingStyles.orderTotalNumber}>
+                                {vehicleCalc.weight}
+                                kg
+                              </span>
+                            </div>
                           </div>
                         </div>
-                        <Divider type="vertical" style={{ height: '3.5em' }} />
-                        <div style={{ flex: 1 }}>
-                          <div>剩余可装重量</div>
-                          <div className={dispatchingStyles.orderTotalNumber}>
-                            <span
-                              style={
-                                vehicleCalc.weight - Math.ceil(totalData.weight.toFixed(4)) > 0
-                                  ? { color: 'green' }
-                                  : { color: 'red' }
-                              }
-                            >
-                              {vehicleCalc.weight - Math.ceil(totalData.weight.toFixed(4))}
-                              kg
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className={dispatchingStyles.orderTotalCardBody2}>
-                        <div style={{ flex: 1 }}>
-                          <div>车型</div>
-                          <div
-                            className={dispatchingStyles.orderTotalNumber}
-                            style={{ fontSize: '18px' }}
-                          >
-                            {selectVehicle.VEHICLETYPE}
-                          </div>
-                        </div>
-                        <Divider type="vertical" style={{ height: '3.5em' }} />
-                        <div style={{ flex: 1 }}>
-                          <div>容积</div>
-                          <div className={dispatchingStyles.orderTotalNumber}>
-                            {vehicleCalc.initVolume}
-                            m³
-                          </div>
-                        </div>
-                        <Divider type="vertical" style={{ height: '3.5em' }} />
-                        <div style={{ flex: 1 }}>
-                          <div>容积率</div>
-                          <div>
-                            <span className={dispatchingStyles.orderTotalNumber}>
-                              {selectVehicle.BEARVOLUMERATE}%
-                            </span>
-                          </div>
-                        </div>
-                        <Divider type="vertical" style={{ height: '3.5em' }} />
-                        <div style={{ flex: 1 }}>
-                          <div>载重</div>
-                          <div>
-                            <span className={dispatchingStyles.orderTotalNumber}>
-                              {vehicleCalc.weight}
-                              kg
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </Col>
-                  </Row>
+                      </Col>
+                    </Row>
+                  ) : (
+                    <div>请设置车辆车型！</div>
+                  )
                 ) : (
                   <></>
                 )}
