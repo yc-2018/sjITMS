@@ -1049,7 +1049,10 @@ class StandardTable extends Component {
     const tableElement = document.getElementById(this.state.key);
     // console.log('tableElement', tableElement);
     const pos = tableElement ? tableElement.getBoundingClientRect() : {};
-    const footerElement = document.getElementById('footer');
+    //获取当前页签的footer
+    const footerElement = document
+      .getElementById(this.state.pathname)
+      .getElementsByTagName('footer')[1];
     const footerPos = footerElement ? footerElement.getBoundingClientRect() : {};
     let height = this.props.tableHeight
       ? this.props.tableHeight
