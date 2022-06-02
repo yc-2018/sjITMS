@@ -189,9 +189,22 @@ convertCodeName = ()=>{
    
    
   return ( <span>
-    <Button onClick={this.audits}>审核</Button>
-    <Button onClick={this.save}>保存</Button>
-  
+    <Popconfirm
+     title="确定审核?"
+     onConfirm={this.audits}
+     okText="确定"
+     cancelText="取消"
+    >
+  <Button type='primary'>保存审核</Button>
+    </Popconfirm>
+    <Popconfirm
+     title="确定保存?"
+     onConfirm={this.save}
+     okText="确定"
+     cancelText="取消"
+    >
+    <Button>保存</Button>
+    </Popconfirm>
   </span>);
   };
   
