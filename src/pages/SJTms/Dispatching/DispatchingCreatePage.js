@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import {
-  Table,
   Modal,
   Card,
   Row,
@@ -20,6 +19,7 @@ import { isEmptyObj, guid } from '@/utils/utils';
 import { queryAllData, dynamicQuery, queryDictByCode } from '@/services/quick/Quick';
 import { getSchedule, save, modify, getRecommend } from '@/services/sjitms/ScheduleBill';
 import EditContainerNumberPageF from './EditContainerNumberPageF';
+import DispatchingTable from './DispatchingTable';
 import { CreatePageOrderColumns } from './DispatchingColumns';
 import dispatchingStyles from './Dispatching.less';
 import { sumBy, uniq, uniqBy } from 'lodash';
@@ -697,14 +697,16 @@ export default class DispatchingCreatePage extends Component {
         <Spin spinning={loading}>
           <Row gutter={[8, 0]}>
             <Col span={16}>
-              <Card title="订单" bodyStyle={{ padding: 1, height: '42.5vh' }}>
-                <Table
-                  size="small"
+              <Card bodyStyle={{ padding: 1, height: '42.5vh' }}>
+                <DispatchingTable
                   className={dispatchingStyles.dispatchingTable}
                   columns={[...CreatePageOrderColumns, buildRowOperation]}
                   dataSource={orders}
+                  refreshDataSource={orders => {
+                    this.setState({ orders });
+                  }}
                   pagination={false}
-                  scroll={{ y: '32vh', x: '100%' }}
+                  scrollY="37vh"
                 />
               </Card>
               <Row gutter={[8, 0]} style={{ marginTop: 8 }}>
@@ -789,7 +791,7 @@ export default class DispatchingCreatePage extends Component {
                 style={{ height: '24.2vh', marginTop: 8, overflow: 'auto' }}
               >
                 {selectVehicle.PLATENUMBER ? (
-                  selectVehicle.BEARWEIGHT ? (
+                  selectVehicle.VEHICLETYPE != '[]' ? (
                     <Row>
                       <Col>
                         <div className={dispatchingStyles.orderTotalCardBody}>

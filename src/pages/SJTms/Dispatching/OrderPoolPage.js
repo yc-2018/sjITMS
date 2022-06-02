@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-01 16:19:29
+ * @LastEditTime: 2022-06-02 11:14:33
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -335,7 +335,7 @@ export default class OrderPoolPage extends Component {
             changeSelectRows={this.tableChangeRows('Audited')}
             selectedRowKeys={auditedRowKeys}
             columns={orderPoolColumns}
-            scrollY="calc(68vh - 220px)"
+            scrollY="calc(68vh - 230px)"
             title={this.buildTitle}
           />
           {/* 排车modal */}

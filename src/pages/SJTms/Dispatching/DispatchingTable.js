@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-01 16:23:14
+ * @LastEditTime: 2022-06-02 09:26:49
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
@@ -95,11 +95,13 @@ export default class DispatchingTable extends Component {
 
   render() {
     const { selectedRowKeys, pagination } = this.props;
-    const rowSelection = {
-      selectedRowKeys,
-      onSelect: this.onSelectChange,
-      onSelectAll: this.onSelectAll,
-    };
+    const rowSelection = selectedRowKeys
+      ? {
+          selectedRowKeys,
+          onSelect: this.onSelectChange,
+          onSelectAll: this.onSelectAll,
+        }
+      : undefined;
     const columns = this.state.columns.map((col, index) => ({
       ...col,
       onHeaderCell: column => ({
@@ -128,7 +130,7 @@ export default class DispatchingTable extends Component {
           style={{ height: this.props.scrollY }}
           bodyStyle={{ height: this.props.scrollY }}
           scroll={{ y: this.props.scrollY, x: '100%' }}
-          className={dispatchingTableStyles.dispatchingTable}
+          className={this.props.className || dispatchingTableStyles.dispatchingTable}
         />
       </div>
     );

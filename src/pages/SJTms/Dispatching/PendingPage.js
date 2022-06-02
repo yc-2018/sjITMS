@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-01 16:27:32
+ * @LastEditTime: 2022-06-02 10:16:13
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -144,7 +144,11 @@ export default class PendingPage extends Component {
                   已选：
                   {pendingRowKeys.length}
                 </span>
-                <Button style={{ marginLeft: 20 }} size="small" onClick={this.handleCancelRow}>
+                <Button
+                  style={{ marginLeft: 20, marginBottom: 5 }}
+                  size="small"
+                  onClick={this.handleCancelRow}
+                >
                   取消
                 </Button>
               </Col>

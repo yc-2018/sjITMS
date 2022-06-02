@@ -237,12 +237,14 @@ export const CreatePageOrderColumns = [
     title: '体积',
     dataIndex: 'volume',
     width: 60,
+    sorter: true,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '重量',
     dataIndex: 'weight',
     width: 60,
+    sorter: true,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
 ];

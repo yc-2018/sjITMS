@@ -45,12 +45,17 @@ export default class SimpleAutoComplete extends Component {
   }
 
   // 在 sourceData, textField, valueField 变化时，重新运行 getOptions
-  convertOptions = memoize((sourceData, textField, valueField) =>
-    convertData2Options(sourceData, textField, valueField)
+  convertOptions = memoize((sourceData, textField, valueField, label) =>
+    convertData2Options(sourceData, textField, valueField, label)
   );
 
   getOptions = () =>
-    this.convertOptions(this.state.sourceData, this.props.textField, this.props.valueField);
+    this.convertOptions(
+      this.state.sourceData,
+      this.props.textField,
+      this.props.valueField,
+      this.props.label
+    );
 
   static getDerivedStateFromProps(props, state) {
     const nextState = {};
@@ -319,17 +324,18 @@ export default class SimpleAutoComplete extends Component {
  * @param {string} valueField 值字段
  * @returns
  */
-function convertData2Options(sourceData, textField, valueField) {
+function convertData2Options(sourceData, textField, valueField, label) {
   if (!sourceData) {
     return [];
   }
   return sourceData.map(row => {
+    const labelShow = getFieldShow(row, label);
     const textShow = getFieldShow(row, textField);
     const valueShow = getFieldShow(row, valueField);
     return {
       label: textShow,
       value: valueShow,
-      textField: textShow,
+      textField: labelShow || textShow,
       data: {
         value: valueShow,
         record: row,

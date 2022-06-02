@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-01 17:08:15
+ * @LastEditTime: 2022-06-02 11:04:07
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -123,6 +123,7 @@ export default class OrderPoolSearchForm extends Component {
                 <SimpleAutoComplete
                   placeholder="请输入货主编码"
                   textField="[%CODE%]%NAME%"
+                  label="CODE"
                   valueField="CODE"
                   searchField="CODE,NAME"
                   queryParams={{
