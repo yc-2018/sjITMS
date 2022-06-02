@@ -25,6 +25,7 @@ import { convertCodeName } from '@/utils/utils';
 import { colWidth, itemColWidth } from '@/utils/ColWidth';
 import Address from '@/pages/Component/Form/Address';
 import { addCondition, getFieldShow } from '@/utils/ryzeUtils';
+import { dynamicQuery } from '@/services/quick/Quick';
 
 /**
  * 新增编辑界面
@@ -352,6 +353,32 @@ export default class QuickCreatePage extends CreatePage {
     this.setState({ categories: categories });
   };
 
+  //校验唯一
+  uniqueCheck = async (rule, value, callback, field) => {
+    let params = [
+      // { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+      // { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
+      { field: field.dbFieldName, rule: 'eq', val: [value] },
+    ];
+
+    let param = {
+      tableName: field.tableName,
+      condition: {
+        params: params,
+      },
+    };
+    const response = await dynamicQuery(param);
+    if (
+      response.result.records != 'false' &&
+      response.result.records[0][field.tableNameKey.dbFieldName] !=
+        this.entity[field.tableName][0][field.tableNameKey.dbFieldName]
+    ) {
+      callback('该' + field.dbFieldTxt + '已被使用');
+    } else {
+      callback();
+    }
+  };
+
   /**
    * 初始化字段控件
    */
@@ -363,10 +390,15 @@ export default class QuickCreatePage extends CreatePage {
     for (const onlFormInfo of onlFormInfos) {
       const { onlFormHead, onlFormFields } = onlFormInfo;
       let { tableName, tableType, relationType } = onlFormHead;
-
+      let tableNameKey = onlFormFields.find(item => item.dbIsKey);
       for (const field of onlFormFields) {
         if (!field.isShowForm) {
           continue;
+        }
+        //字段唯一增加参数便于查询数据库
+        if (field.fieldMustInput) {
+          field.tableName = tableName;
+          field.tableNameKey = tableNameKey;
         }
 
         const rules = this.getFormRules(field);
@@ -378,7 +410,6 @@ export default class QuickCreatePage extends CreatePage {
           disabled: this.isReadOnly(field.isReadOnly),
           style: { width: field.fieldLength == 0 ? '100%' : field.fieldLength },
         }; // 通用属性
-
         let item = {
           categoryName: field.category ? field.category : onlFormHead.tableTxt,
           key: tableName + '_' + field.dbFieldName,
@@ -675,7 +706,7 @@ export default class QuickCreatePage extends CreatePage {
         if (valueEvent.record instanceof Array) {
           this.entity[tableName][line][outField] = valueEvent.record
             .map(record => getFieldShow(record, inField))
-            .join(props.multipleSplit || ",");
+            .join(props.multipleSplit || ',');
         } else {
           this.entity[tableName][line][outField] = getFieldShow(valueEvent.record, inField);
         }
@@ -876,6 +907,12 @@ export default class QuickCreatePage extends CreatePage {
         });
       }
     }
+    //增加自定义校验 校验唯一性
+    if (field.fieldMustInput) {
+      rules.push({
+        validator: (rule, value, callback) => this.uniqueCheck(rule, value, callback, field),
+      });
+    }
 
     if (['text', 'textarea'].indexOf(field.fieldShowType) > -1) {
       rules.push({
@@ -883,6 +920,7 @@ export default class QuickCreatePage extends CreatePage {
         message: `${field.dbFieldTxt}字段长度不能超过${field.dbLength}`,
       });
     }
+
     return rules;
   };
 

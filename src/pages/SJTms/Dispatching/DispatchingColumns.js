@@ -6,18 +6,21 @@ export const OrderColumns = [
   {
     title: '单号',
     dataIndex: 'billNumber',
+    sorter: true,
     width: 120,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '作业号',
     dataIndex: 'waveNum',
+    sorter: true,
     width: 80,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '线路',
     dataIndex: 'archLine',
+    sorter: true,
     width: 60,
     render: val => {
       return val ? <EllipsisCol colValue={val.name} /> : <Empty />;
@@ -26,6 +29,7 @@ export const OrderColumns = [
   {
     title: '单据类型',
     dataIndex: 'orderType',
+    sorter: true,
     width: 60,
     render: val => (val ? <EllipsisCol colValue={OrderType[val].caption} /> : <Empty />),
   },
@@ -40,12 +44,14 @@ export const OrderColumns = [
   {
     title: '来源单号',
     dataIndex: 'sourceNum',
+    sorter: true,
     width: 120,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '整件数(估/实)',
     dataIndex: 'realCartonCount',
+    sorter: true,
     width: 80,
     render: (val, record) =>
       val != undefined ? <span>{record.cartonCount + '/' + val}</span> : <Empty />,
@@ -53,6 +59,7 @@ export const OrderColumns = [
   {
     title: '散件数(估/实)',
     dataIndex: 'realScatteredCount',
+    sorter: true,
     width: 80,
     render: (val, record) =>
       val != undefined ? <span>{record.scatteredCount + '/' + val}</span> : <Empty />,
@@ -60,6 +67,7 @@ export const OrderColumns = [
   {
     title: '周转箱(估/实)',
     dataIndex: 'realContainerCount',
+    sorter: true,
     width: 80,
     render: (val, record) =>
       val != undefined ? <span>{record.containerCount + '/' + val}</span> : <Empty />,
@@ -67,18 +75,21 @@ export const OrderColumns = [
   {
     title: '体积',
     dataIndex: 'volume',
+    sorter: true,
     width: 80,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '重量',
     dataIndex: 'weight',
+    sorter: true,
     width: 80,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '货主',
     dataIndex: 'owner',
+    sorter: true,
     width: 100,
     render: val => (val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />),
   },
@@ -172,21 +183,6 @@ const OrderType = {
   },
 };
 
-export const employeeType = [
-  {
-    name: 'Driver',
-    caption: '驾驶员',
-  },
-  {
-    name: 'DeliveryMan',
-    caption: '送货员',
-  },
-  {
-    name: 'Stevedore',
-    caption: '装卸员',
-  },
-];
-
 export const CreatePageOrderColumns = [
   {
     title: '订单号',
@@ -256,6 +252,7 @@ export const ScheduleColumns = [
     title: '单号',
     dataIndex: 'billNumber',
     width: 150,
+    sorter: true,
   },
   {
     title: '送货点',

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-26 15:46:10
+ * @LastEditTime: 2022-06-01 16:23:14
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
@@ -10,6 +10,7 @@ import React, { Component } from 'react';
 import { Resizable } from 'react-resizable';
 import { Table } from 'antd';
 import dispatchingTableStyles from './DispatchingTable.less';
+import { orderBy } from 'lodash';
 
 const ResizeableTitle = props => {
   const { onResize, width, ...restProps } = props;
@@ -70,6 +71,16 @@ export default class DispatchingTable extends Component {
     this.props.changeSelectRows(newSelectedRowKeys);
   };
 
+  handleStandardTableChange = (pagination, filtersArg, sorter) => {
+    //排序
+    if (sorter.field && this.props.refreshDataSource) {
+      let { dataSource } = this.props;
+      const sortType = sorter.order === 'descend' ? 'desc' : 'asc';
+      dataSource = orderBy(dataSource, [sorter.field], [sortType]);
+      this.props.refreshDataSource(dataSource);
+    }
+  };
+
   //修改宽度
   handleResize = index => (_, { size }) => {
     const nextColumns = [...this.state.columns];
@@ -111,6 +122,7 @@ export default class DispatchingTable extends Component {
           }}
           columns={columns}
           onRowClick={this.props.onClickRow || this.onClickRow}
+          onChange={this.handleStandardTableChange}
           rowKey={record => record.uuid}
           rowSelection={rowSelection}
           style={{ height: this.props.scrollY }}

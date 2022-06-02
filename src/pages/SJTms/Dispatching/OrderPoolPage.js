@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-31 14:28:50
+ * @LastEditTime: 2022-06-01 16:19:29
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -329,6 +329,9 @@ export default class OrderPoolPage extends Component {
             children={settingColumn}
             loading={loading}
             dataSource={auditedData}
+            refreshDataSource={auditedData => {
+              this.setState({ auditedData });
+            }}
             changeSelectRows={this.tableChangeRows('Audited')}
             selectedRowKeys={auditedRowKeys}
             columns={orderPoolColumns}
@@ -358,6 +361,9 @@ export default class OrderPoolPage extends Component {
             children={settingColumn}
             loading={loading}
             dataSource={scheduledData}
+            refreshDataSource={scheduledData => {
+              this.setState({ scheduledData });
+            }}
             changeSelectRows={this.tableChangeRows('Scheduled')}
             selectedRowKeys={scheduledRowKeys}
             columns={[

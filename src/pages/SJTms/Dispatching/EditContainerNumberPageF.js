@@ -2,9 +2,9 @@
  * @Author: guankongjin
  * @Date: 2022-04-27 11:24:00
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-10 16:33:14
+ * @LastEditTime: 2022-06-01 14:15:04
  * @Description: 修改排车单 运输订单明细 整件配送数量
- * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\EditContainerNumberPage.js
+ * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\EditContainerNumberPageF.js
  */
 import React, { Component } from 'react';
 import { Modal, Form, InputNumber, Select, message } from 'antd';
@@ -15,16 +15,16 @@ import { modifyNumber } from '@/services/sjitms/ScheduleBill';
 export default class EditContainerNumberPageF extends Component {
   //保存
   handleSave = () => {
-    const { scheduleDetail, onCancel, form, updateCount } = this.props;
+    const { order, onCancel, form, updateCartonCount } = this.props;
 
     form.validateFields((err, fieldsValue) => {
       if (err) return;
-      updateCount({ billNumber: this.props.scheduleDetail.billNumber, count: fieldsValue });
+      updateCartonCount({ billNumber: order.billNumber, count: fieldsValue });
     });
   };
 
   render() {
-    const { modal, scheduleDetail, visible, onCancel } = this.props;
+    const { modal, order, visible, onCancel } = this.props;
     const { getFieldDecorator } = this.props.form;
     return (
       <Modal
@@ -36,20 +36,20 @@ export default class EditContainerNumberPageF extends Component {
         {...modal}
       >
         <Form labelCol={{ span: 8 }} wrapperCol={{ span: 12 }} autoComplete="off">
-          <Form.Item label="排车单号">{scheduleDetail.billNumber}</Form.Item>
-          <Form.Item label="门店">{convertCodeName(scheduleDetail.deliveryPoint)}</Form.Item>
+          <Form.Item label="运输单号">{order.billNumber}</Form.Item>
+          <Form.Item label="送货点">{convertCodeName(order.deliveryPoint)}</Form.Item>
           <Form.Item label="整件数（估/实）">
-            {scheduleDetail.cartonCount}/{scheduleDetail.realCartonCount}
+            {order.cartonCount}/{order.realCartonCount}
           </Form.Item>
-          <Form.Item label="排车整件数">
+          <Form.Item label="本次排车整件数">
             {getFieldDecorator('cartonCount', {
-              rules: [{ required: true, message: '请输入修改数量' }],
+              rules: [{ required: true, message: '请输入排车件数' }],
             })(
               <InputNumber
-                placeholder="请输入修改数量"
+                placeholder="请输入排车件数"
                 min={0}
                 style={{ width: '100%' }}
-                max={scheduleDetail.realCartonCount}
+                max={order.realCartonCount}
               />
             )}
           </Form.Item>

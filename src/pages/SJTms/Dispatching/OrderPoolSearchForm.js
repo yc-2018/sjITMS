@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-27 16:52:58
+ * @LastEditTime: 2022-06-01 17:08:15
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -82,6 +82,7 @@ export default class OrderPoolSearchForm extends Component {
                 <SimpleAutoComplete
                   placeholder="请选择单据类型"
                   dictCode="orderType"
+                  noRecord
                   allowClear={true}
                 />
               )}
@@ -109,6 +110,7 @@ export default class OrderPoolSearchForm extends Component {
                       ],
                     },
                   }}
+                  noRecord
                   autoComplete
                   allowClear={true}
                 />
@@ -132,6 +134,9 @@ export default class OrderPoolSearchForm extends Component {
                       ],
                     },
                   }}
+                  noRecord
+                  mode="multiple"
+                  multipleSplit=","
                   autoComplete
                   allowClear={true}
                 />
