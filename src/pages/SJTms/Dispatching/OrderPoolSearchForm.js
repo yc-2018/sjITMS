@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-02 11:04:07
+ * @LastEditTime: 2022-06-02 15:32:33
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -13,10 +13,12 @@ import {
   SimpleAutoComplete,
   SimpleSelect,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
+import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
 @Form.create()
 export default class OrderPoolSearchForm extends Component {
+  state = { pageFilter: {}, advancedFields: [] };
   onSearch = event => {
     const { form } = this.props;
     event.preventDefault();
@@ -37,6 +39,8 @@ export default class OrderPoolSearchForm extends Component {
       this.props.refresh(searchKeyValues);
     });
   };
+  //高级查询
+  onAdvanceSearch = () => {};
   //重置
   handleReset = () => {
     this.props.form.resetFields();
@@ -46,8 +50,8 @@ export default class OrderPoolSearchForm extends Component {
     const { getFieldDecorator } = this.props.form;
     return (
       <Form
-        labelCol={{ span: 8 }}
-        wrapperCol={{ span: 16 }}
+        labelCol={{ span: 6 }}
+        wrapperCol={{ span: 18 }}
         onSubmit={this.onSearch}
         autoComplete="off"
       >
@@ -88,8 +92,14 @@ export default class OrderPoolSearchForm extends Component {
               )}
             </Form.Item>
           </Col>
-          <Col span={4}>
-            <Button style={{ marginLeft: 12 }}>高级查询</Button>
+          <Col span={4} style={{ paddingLeft: 12 }}>
+            <AdvanceQuery
+              searchFields={this.state.advancedFields}
+              filterValue={this.state.pageFilter.searchKeyValues}
+              refresh={this.onAdvanceSearch}
+              reportCode="orderpool"
+            />
+            {/* <Button style={{ marginLeft: 12 }}>高级查询</Button> */}
           </Col>
         </Row>
         <Row justify="space-around">
@@ -126,6 +136,7 @@ export default class OrderPoolSearchForm extends Component {
                   label="CODE"
                   valueField="CODE"
                   searchField="CODE,NAME"
+                  maxTagCount={2}
                   queryParams={{
                     tableName: 'sj_itms_owner',
                     condition: {
