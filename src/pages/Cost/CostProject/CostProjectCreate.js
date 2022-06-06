@@ -93,6 +93,7 @@ export default class CostProjectCreate extends QuickCreatePage {
     this.state.filelist.forEach(element => {
       formDatas.append("files",element)
     });
+    console.log();
    let res = await save(formDatas);
   };
 
