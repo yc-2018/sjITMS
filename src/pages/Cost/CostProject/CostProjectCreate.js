@@ -2,7 +2,6 @@ import { connect } from 'dva';
 import { Form, Input, Upload, Button, Icon } from 'antd';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import { save } from '@/services/cost/Cost';
-import ReactFileReader from "react-file-reader";
 
 
 function makeFormData(obj, form_data){
