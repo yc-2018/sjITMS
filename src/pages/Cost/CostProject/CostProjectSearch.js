@@ -80,13 +80,13 @@ export default class CostProjectSearch extends QuickFormSearchPage {
   };
 
   download = async (item, index) => {
-    console.log(item, index);
     let parma = {
       uuid: item.uuid,
       index: index,
+      fileName:item.download
     };
-    let res = await getFile(parma);
-    console.log(res);
+    getFile(parma);
+   
   };
   //该方法用于写最上层的按钮 多个按钮用<span>包裹
   drawTopButton = () => {
