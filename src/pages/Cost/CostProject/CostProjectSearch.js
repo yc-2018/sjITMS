@@ -92,7 +92,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     ];
   };
   test = (a, b) => {
-    console.log(a, b);
+    console.log(a,b);
   };
 
   //该方法用于拖拽后触发事件 拖拽需要在state中canDragTable: true
