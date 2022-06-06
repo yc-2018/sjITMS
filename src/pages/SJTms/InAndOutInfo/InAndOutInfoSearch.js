@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Table, Form ,Button, Input,InputNumber, Col,Select,Icon, Row,Modal, Popconfirm, message,Checkbox } from 'antd';
+import { Table, Form ,Button, Input,InputNumber, Col,Select,Icon, Row,Modal, Popconfirm, message,Checkbox, Upload } from 'antd';
 
 import { colWidth } from '@/utils/ColWidth';
 import { ArraytoReplaceKeyLow } from '@/utils/utils';
@@ -30,7 +30,10 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     billData:{
       list:[]
     }, // 票据核对
-    otherFeeModalVisible:false
+    otherFeeModalVisible:false,
+    filelist:[],
+    previewImage:"",
+
   }
   
   /**
@@ -185,6 +188,20 @@ convertCodeName = ()=>{
   drawTopButton = () => {
     
   };
+  onPreview  = async(file)=>{
+    let src = file.url ;
+    if (!src) {
+      src = await new Promise(resolve => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file.originFileObj );
+        reader.onload = () => resolve(reader.result);
+      });
+    }
+    const image = new Image();
+    image.src = src;
+    const imgWindow = window.open(src);
+    imgWindow?.document.write(image.outerHTML);
+  }
   drawToolbarPanel = () => {
    
    
@@ -205,6 +222,14 @@ convertCodeName = ()=>{
     >
     <Button>保存</Button>
     </Popconfirm>
+    <Upload name='file' beforeUpload = {()=>{return false}} listType= 'picture'
+    defaultFileList=  {[...this.state.filelist]} className= 'upload-list-inline'
+    onPreview = {this.onPreview}
+    >
+    <Button>
+      <Icon type="upload" /> Click to Upload
+    </Button>
+    </Upload>
   </span>);
   };
   
