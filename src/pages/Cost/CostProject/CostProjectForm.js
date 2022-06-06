@@ -33,8 +33,12 @@ export default class CostProjectForm extends QuickForm {
     if (e.showPageNow == 'query') {
       const component = <QuickFormSearchPage {...e.props} />;
       e.component = component;
-    } 
+    }
     if (e.showPageNow == 'create') {
+      const component = <CostProjectCreate {...e.props} />;
+      e.component = component;
+    }
+    if (e.showPageNow == 'update') {
       const component = <CostProjectCreate {...e.props} />;
       e.component = component;
     }

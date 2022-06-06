@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Table, Button, Input, Col, Row, Popconfirm, message, Modal } from 'antd';
+import { Table, Button, Input, Col, Row, Popconfirm, message, Modal, List } from 'antd';
 import { colWidth } from '@/utils/ColWidth';
 import OperateCol from '@/pages/Component/Form/OperateCol';
 import { connect } from 'dva';
@@ -12,6 +12,7 @@ import FormPanel from '@/pages/Component/Form/FormPanel';
 import CFormItem from '@/pages/Component/Form/CFormItem';
 // import CreatePageModal from '../Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 // import QuickView from '../Component/RapidDevelopment/OnlForm/QuickViewPageDefault';
+import { getFile } from '@/services/cost/Cost';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -20,7 +21,7 @@ import CFormItem from '@/pages/Component/Form/CFormItem';
 //继承QuickFormSearchPage Search页面扩展
 export default class CostProjectSearch extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
-  //   state = { ...this.state, noActionCol: false, isShow: false, canDragTable: true };
+  state = { ...this.state, isShow: false, canDragTable: true, downloads: [] }; // noActionCol: false
 
   //该方法用于扩展查询
   exSearchFilter = () => {};
@@ -48,7 +49,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     if (e.column.fieldName == 'ACCESSORY_NAME') {
       // const component = <p3 style={{ color: 'red' }}>{e.val}</p3>;
       const component = (
-        <a onClick={this.test.bind(this, e.record)} style={{ color: 'red' }}>
+        <a onClick={this.isShow.bind(this, e.record)} style={{ color: 'red' }}>
           {e.val}
         </a>
       );
@@ -60,11 +61,65 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     this.aa.show();
   };
 
-  bbb = () => {
+  isShow = item => {
+    console.log(item);
+    if (item != 'false') {
+      let downloadsName = item.ACCESSORY_NAME.split(',');
+      let downloads = [];
+      downloadsName.map(c => {
+        let param = {
+          download: c,
+          uuid: item.UUID,
+        };
+        downloads.push(param);
+      });
+      this.setState({ downloads: downloads });
+    }
+
     this.setState({ isShow: !this.state.isShow });
   };
+
+  download = async (item, index) => {
+    console.log(item, index);
+    let parma = {
+      uuid: item.uuid,
+      index: index,
+    };
+    let res = await getFile(parma);
+    console.log(res);
+  };
   //该方法用于写最上层的按钮 多个按钮用<span>包裹
-  drawTopButton = () => {};
+  drawTopButton = () => {
+    const { downloads } = this.state;
+    return (
+      <Modal
+        title="附件列表"
+        visible={this.state.isShow}
+        //  onOk={this.handleOk}
+        onCancel={() => this.isShow('false')}
+        footer={[<Button onClick={() => this.isShow('false')}>返回</Button>]}
+      >
+        <div style={{ overflow: 'scroll', height: '300px' }}>
+          <List
+            bordered
+            dataSource={downloads}
+            renderItem={(item, index) => (
+              <List.Item
+                actions={[
+                  <a onClick={() => this.download(item, index)} key="list-loadmore-edit">
+                    下载
+                  </a>,
+                  // <a key="list-loadmore-more">more</a>,
+                ]}
+              >
+                {item.download}
+              </List.Item>
+            )}
+          />
+        </div>
+      </Modal>
+    );
+  };
 
   //该方法用于写中间的功能按钮 多个按钮用<span>包裹
   drawToolsButton = () => {};
@@ -92,7 +147,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     ];
   };
   test = (a, b) => {
-    console.log(a,b);
+    console.log(a, b);
   };
 
   //该方法用于拖拽后触发事件 拖拽需要在state中canDragTable: true
