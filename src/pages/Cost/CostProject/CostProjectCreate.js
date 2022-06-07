@@ -1,7 +1,7 @@
 import { connect } from 'dva';
-import { Form, Input, Upload, Button, Icon } from 'antd';
+import { Form, Input, Upload, Button, Icon, message } from 'antd';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
-import { save } from '@/services/cost/Cost';
+import { save, deleteFile } from '@/services/cost/Cost';
 
 function makeFormData(obj, form_data) {
   var data = [];
@@ -43,6 +43,46 @@ function makeFormData(obj, form_data) {
 @Form.create()
 export default class CostProjectCreate extends QuickCreatePage {
   state = { ...this.state, filelist: [], fileList: [] };
+
+  /**
+   * 初始化表单数据
+   */
+  initEntity = async () => {
+    const { onlFormInfos } = this.state;
+    //初始化entity
+    onlFormInfos.forEach(item => {
+      this.entity[item.onlFormHead.tableName] = [];
+    });
+    if (this.props.showPageNow == 'update') {
+      await this.initUpdateEntity(onlFormInfos);
+      this.initFile();
+    } else {
+      this.initCreateEntity(onlFormInfos);
+    }
+  };
+
+  initFile = () => {
+    let savedList = [];
+    if (this.entity.COST_PROJECT[0]?.ACCESSORY_NAME) {
+      let entity = this.entity.COST_PROJECT[0];
+      let entitys = this.entity.COST_PROJECT[0].ACCESSORY_NAME.split(',');
+      let filePaths = this.entity.COST_PROJECT[0].ACCESSORY.split(',');
+      entitys.forEach((item, index) => {
+        let file = {
+          uuid: entity.UUID,
+          uid: index,
+          name: item,
+          status: 'saved',
+          ACCESSORY: filePaths[index],
+          ACCESSORY_NAME: item,
+          isSaved: true,
+        };
+        savedList.push(file);
+        this.setState({ filelist: savedList });
+      });
+    }
+  };
+
   drawcell = e => {
     if (e.fieldName == 'CALCULATION_RULES') {
       const component = Input.TextArea;
@@ -55,27 +95,6 @@ export default class CostProjectCreate extends QuickCreatePage {
       e.props = { ...e.props, style: { width: '100%', height: '200px' } };
     }
     if (e.fieldName == 'ACCESSORY') {
-      console.log(this.entity);
-      let savedList = [];
-      if (this.entity.COST_PROJECT[0].UUID) {
-        let entity = this.entity.COST_PROJECT[0];
-        console.log(entity);
-        let entitys = this.entity.COST_PROJECT[0].ACCESSORY_NAME.split(',');
-        let filePaths = this.entity.COST_PROJECT[0].ACCESSORY.split(',');
-        entitys.forEach((item, index) => {
-          let file = {
-            uid: index,
-            name: item,
-            status: 'done',
-            filesPath: filePaths[index],
-            fileName: item,
-            // response: 'Server Error 500', // custom error message to show
-            //url: 'http://www.baidu.com/xxx.png',
-          };
-          savedList.push(file);
-        });
-      }
-
       let item = () => {
         return (
           <Upload
@@ -84,14 +103,21 @@ export default class CostProjectCreate extends QuickCreatePage {
               return false;
             }}
             //listType="picture"
-            defaultFileList={[...savedList, ...this.state.filelist]}
+            defaultFileList={[...this.state.filelist]}
+            // fileList={[...this.state.filelist]}
             className="upload-list-inline"
             // onPreview={this.onPreview}
             onChange={file => {
               this.setState({ filelist: file.fileList });
             }}
-            onRemove={(file, index) => {
-              console.log(file, index);
+            onRemove={file => {
+              console.log('file', file);
+              if (file.uuid) {
+                let res = deleteFile(file);
+                if (res.success) {
+                  message.success('删除成功！');
+                }
+              }
             }}
           >
             <Button>
@@ -111,15 +137,19 @@ export default class CostProjectCreate extends QuickCreatePage {
     var formDatas = new FormData();
     makeFormData(this.entity.COST_PROJECT[0], formDatas);
     this.state.filelist.forEach(element => {
-      formDatas.append('files', element.originFileObj);
+      console.log('element', element);
+      if (!element.isSaved) {
+        formDatas.append('files', element.originFileObj);
+      }
+      // formDatas.append('files', element.originFileObj);
     });
     let res = await save(formDatas);
     console.log('res', res);
-    const success = res.success == true;
+    const success = res.data.success == true;
     this.afterSave(success);
     this.onSaved(success);
     if (success) {
-      message.success(commonLocale.saveSuccessLocale);
+      message.success('保存成功！');
     }
   };
 }
