@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 17:46:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-07 10:48:49
+ * @LastEditTime: 2022-06-07 15:16:28
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -11,7 +11,7 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import { Button, Popconfirm, message, Modal, Table } from 'antd';
 import { flow } from 'lodash-decorators';
 import { dynamicDelete } from '@/services/quick/Quick';
-import { getTableInfo, onSave } from '@/services/sjtms/BasicSource';
+import { getTableInfo, onSave, getUnAddInfo } from '@/services/sjtms/BasicSource';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -135,18 +135,24 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
   handleAdd = async () => {
     const { data } = this.state;
     const tableName = this.props.selectedNodes.props.tableName;
-    await getTableInfo(tableName).then(response => {
-      const newColumn = response.data.filter(
-        x => !data.list.map(x => x.DB_FIELD_NAME).includes(x.columnName)
-      );
-      let dataSource = [];
-      newColumn.forEach(data => {
-        dataSource.push({
-          ...data,
-          key: data.columnName,
+    let payload = {
+      tableName: this.props.selectedNodes.props.tableName,
+      formUuid: this.props.selectedNodes.key,
+    };
+    await getUnAddInfo(payload).then(response => {
+      if (response.success && response.data) {
+        const newColumn = response.data;
+        let dataSource = [];
+        newColumn.forEach(data => {
+          dataSource.push({
+            ...data,
+            key: data.columnName,
+          });
         });
-      });
-      this.setState({ isModalVisible: true, dataSource, newColumn });
+        this.setState({ isModalVisible: true, dataSource, newColumn });
+      } else {
+        this.setState({ isModalVisible: true });
+      }
     });
   };
 

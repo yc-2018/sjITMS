@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-07 11:25:30
+ * @LastEditTime: 2022-06-07 15:39:44
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -105,7 +105,9 @@ export default class BasicSourceSearchPage extends Component {
         rightContent: system ? (
           <div>
             <div className={sourceStyle.navigatorPanelWrapper}>
-              <span className={sourceStyle.sidertitle}>费用分类</span>
+              <span className={sourceStyle.sidertitle}>
+                {event.selectedNodes[0].props.tableNameCN}
+              </span>
               <div className={sourceStyle.action}>
                 <Button type="primary" onClick={e => this.basicHeadCreatPage.onSave(e)}>
                   保存
@@ -120,6 +122,7 @@ export default class BasicSourceSearchPage extends Component {
               noCategory={true}
               params={{ entityUuid: selectedKeys[0] }}
               onRef={node => (this.basicHeadCreatPage = node)}
+              refresh={this.queryTree.bind()}
             />
           </div>
         ) : (
