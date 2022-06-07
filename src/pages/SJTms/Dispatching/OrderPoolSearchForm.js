@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-02 15:32:33
+ * @LastEditTime: 2022-06-06 11:15:30
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -13,12 +13,25 @@ import {
   SimpleAutoComplete,
   SimpleSelect,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
+import { queryColumns } from '@/services/quick/Quick';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { queryIdleAndThisPostionUseing } from '@/services/facility/Container';
 
 @Form.create()
 export default class OrderPoolSearchForm extends Component {
   state = { pageFilter: {}, advancedFields: [] };
+
+  componentDidMount() {
+    queryColumns({
+      reportCode: 'sj_itms_dispatching_orderpool',
+      sysCode: 'tms',
+    }).then(response => {
+      if (response.success) {
+        this.setState({ advancedFields: response.result.columns.filter(data => data.isShow) });
+      }
+    });
+  }
   onSearch = event => {
     const { form } = this.props;
     event.preventDefault();
@@ -40,7 +53,18 @@ export default class OrderPoolSearchForm extends Component {
     });
   };
   //高级查询
-  onAdvanceSearch = () => {};
+  onAdvanceSearch = async filter => {
+    let { pageFilters } = this.state;
+    pageFilters = {
+      ...pageFilters,
+      superQuery: {
+        matchType: filter.matchType,
+        queryParams: filter.queryParams,
+      },
+    };
+    this.setState({ pageFilters });
+    await this.props.refreshOrderPool(pageFilters);
+  };
   //重置
   handleReset = () => {
     this.props.form.resetFields();

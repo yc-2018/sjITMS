@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-02 11:14:33
+ * @LastEditTime: 2022-06-06 11:14:55
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -16,6 +16,7 @@ import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout
 import DispatchingCreatePage from './DispatchingCreatePage';
 import dispatchingStyles from './Dispatching.less';
 import {
+  queryAuditedOrder,
   getAuditedOrder,
   getOrderByStat,
   getOrderInPending,
@@ -58,6 +59,20 @@ export default class OrderPoolPage extends Component {
         this.getAuditedOrders(searchKeyValues, activeTab);
         break;
     }
+  };
+
+  refreshOrderPool = params => {
+    this.setState({ loading: true });
+    queryAuditedOrder(params).then(response => {
+      if (response.success) {
+        this.setState({
+          loading: false,
+          auditedData: response.data,
+          auditedRowKeys: [],
+          scheduledRowKeys: [],
+        });
+      }
+    });
   };
 
   //获取待排运输订单
@@ -320,7 +335,10 @@ export default class OrderPoolPage extends Component {
       >
         <TabPane tab={<Text className={dispatchingStyles.cardTitle}>订单池</Text>} key="Audited">
           {/* 查询表单 */}
-          <OrderPoolSearchForm refresh={this.refreshTable} />
+          <OrderPoolSearchForm
+            refresh={this.refreshTable}
+            refreshOrderPool={this.refreshOrderPool}
+          />
           {/* 待排订单列表 */}
           <DispatchingTable
             clickRow
@@ -335,7 +353,7 @@ export default class OrderPoolPage extends Component {
             changeSelectRows={this.tableChangeRows('Audited')}
             selectedRowKeys={auditedRowKeys}
             columns={orderPoolColumns}
-            scrollY="calc(68vh - 230px)"
+            scrollY="calc(68vh - 220px)"
             title={this.buildTitle}
           />
           {/* 排车modal */}
