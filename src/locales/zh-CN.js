@@ -409,6 +409,7 @@ export default {
   'menu.wcs.sorter': '分拣机',
   'menu.wcs.agv': 'AGV',
   'menu.wcs.asrs': 'AS/RS',
+  'menu.cost': '基础配置',
   'menu.tms': '运输管理',
   'menu.tms.serialArch': '线路体系',
   'menu.tms.lineMaintenance': '线路维护',
