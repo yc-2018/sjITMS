@@ -83,10 +83,9 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     let parma = {
       uuid: item.uuid,
       index: index,
-      fileName:item.download
+      fileName: item.download,
     };
     getFile(parma);
-   
   };
   //该方法用于写最上层的按钮 多个按钮用<span>包裹
   drawTopButton = () => {
@@ -99,7 +98,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
         onCancel={() => this.isShow('false')}
         footer={[<Button onClick={() => this.isShow('false')}>返回</Button>]}
       >
-        <div style={{ overflow: 'scroll', height: '300px' }}>
+        <div style={{ overflow: 'auto', height: '300px' }}>
           <List
             bordered
             dataSource={downloads}

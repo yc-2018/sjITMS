@@ -55,6 +55,27 @@ export default class CostProjectCreate extends QuickCreatePage {
       e.props = { ...e.props, style: { width: '100%', height: '200px' } };
     }
     if (e.fieldName == 'ACCESSORY') {
+      console.log(this.entity);
+      let savedList = [];
+      if (this.entity.COST_PROJECT[0].UUID) {
+        let entity = this.entity.COST_PROJECT[0];
+        console.log(entity);
+        let entitys = this.entity.COST_PROJECT[0].ACCESSORY_NAME.split(',');
+        let filePaths = this.entity.COST_PROJECT[0].ACCESSORY.split(',');
+        entitys.forEach((item, index) => {
+          let file = {
+            uid: index,
+            name: item,
+            status: 'done',
+            filesPath: filePaths[index],
+            fileName: item,
+            // response: 'Server Error 500', // custom error message to show
+            //url: 'http://www.baidu.com/xxx.png',
+          };
+          savedList.push(file);
+        });
+      }
+
       let item = () => {
         return (
           <Upload
@@ -63,11 +84,14 @@ export default class CostProjectCreate extends QuickCreatePage {
               return false;
             }}
             //listType="picture"
-            defaultFileList={[...this.state.filelist]}
+            defaultFileList={[...savedList, ...this.state.filelist]}
             className="upload-list-inline"
             // onPreview={this.onPreview}
             onChange={file => {
               this.setState({ filelist: file.fileList });
+            }}
+            onRemove={(file, index) => {
+              console.log(file, index);
             }}
           >
             <Button>
