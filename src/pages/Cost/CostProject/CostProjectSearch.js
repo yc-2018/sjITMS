@@ -57,13 +57,8 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     }
   };
 
-  aaaa = () => {
-    this.aa.show();
-  };
-
   isShow = item => {
-    console.log(item);
-    if (item != 'false') {
+    if (item != 'false' && item.ACCESSORY_NAME) {
       let downloadsName = item.ACCESSORY_NAME.split(',');
       let downloads = [];
       downloadsName.map(c => {
@@ -74,6 +69,8 @@ export default class CostProjectSearch extends QuickFormSearchPage {
         downloads.push(param);
       });
       this.setState({ downloads: downloads });
+    } else {
+      this.setState({ downloads: [] });
     }
 
     this.setState({ isShow: !this.state.isShow });
@@ -131,23 +128,6 @@ export default class CostProjectSearch extends QuickFormSearchPage {
 
   // 该方法会覆盖所有的搜索查询
   // drawSearchPanel=()=>{}
-
-  //该方法用于写操作列的render
-  renderOperateCol = record => {
-    return <OperateCol menus={this.fetchOperatePropsCommon(record)} />;
-  };
-  //操作列举例 具体看OperateCol内介绍
-  fetchOperatePropsCommon = record => {
-    return [
-      {
-        name: '111',
-        onClick: this.test.bind(this, record),
-      },
-    ];
-  };
-  test = (a, b) => {
-    console.log(a, b);
-  };
 
   //该方法用于拖拽后触发事件 拖拽需要在state中canDragTable: true
   drapTableChange = list => {

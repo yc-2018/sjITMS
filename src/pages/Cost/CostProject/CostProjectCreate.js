@@ -1,7 +1,7 @@
 import { connect } from 'dva';
-import { Form, Input, Upload, Button, Icon, message } from 'antd';
+import { Form, Input, Upload, Button, Icon, message, Select } from 'antd';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
-import { save, deleteFile } from '@/services/cost/Cost';
+import { save, deleteFile, analysisSql } from '@/services/cost/Cost';
 
 function makeFormData(obj, form_data) {
   var data = [];
@@ -42,7 +42,7 @@ function makeFormData(obj, form_data) {
 }))
 @Form.create()
 export default class CostProjectCreate extends QuickCreatePage {
-  state = { ...this.state, filelist: [], fileList: [] };
+  state = { ...this.state, filelist: [], fileList: [], sqlFileds: [] };
 
   /**
    * 初始化表单数据
@@ -83,54 +83,88 @@ export default class CostProjectCreate extends QuickCreatePage {
     }
   };
 
+  parseSql = async () => {
+    let sql = this.entity.COST_PROJECT[0].SQL;
+    let param = {
+      sql: sql,
+    };
+    let res = await analysisSql(param);
+    console.log('res', res);
+    if (res.success) {
+      this.setState({ sqlFileds: res.data });
+    }
+  };
+
+  sqlComponent = props => {
+    return (
+      <div style={{ textAlign: 'center' }}>
+        <Input.TextArea {...props} style={{ width: '100%', height: '200px' }} />
+        <Button type="primary" onClick={this.parseSql}>
+          解析sql
+        </Button>
+      </div>
+    );
+  };
+
+  selectComponent = props => {
+    const { sqlFileds } = this.state;
+    return (
+      <Select {...props}>
+        {sqlFileds.map(item => {
+          return <Option value={item}>{item}</Option>;
+        })}
+      </Select>
+    );
+  };
+
+  uploadComponent = props => {
+    return (
+      <Upload
+        name="file"
+        beforeUpload={() => {
+          return false;
+        }}
+        //listType="picture"
+        defaultFileList={[...this.state.filelist]}
+        // fileList={[...this.state.filelist]}
+        className="upload-list-inline"
+        // onPreview={this.onPreview}
+        onChange={file => {
+          this.setState({ filelist: file.fileList });
+        }}
+        onRemove={file => {
+          console.log('file', file);
+          if (file.uuid) {
+            let res = deleteFile(file);
+            if (res.success) {
+              message.success('删除成功！');
+            }
+          }
+        }}
+      >
+        <Button>
+          <Icon type="upload" />
+          上传
+        </Button>
+      </Upload>
+    );
+  };
+
+  formLoaded = () => {
+    const { formItems } = this.state;
+    formItems.COST_PROJECT_SQL.component = this.sqlComponent;
+    formItems.COST_PROJECT_ACCESSORY.component = this.uploadComponent;
+    formItems.COST_PROJECT_CYCLE_FIELD.component = this.selectComponent;
+    formItems.COST_PROJECT_CYCLE_BODY_FIELD.component = this.selectComponent;
+    formItems.COST_PROJECT_BILLING_FIELD.component = this.selectComponent;
+  };
+
   drawcell = e => {
-    if (e.fieldName == 'CALCULATION_RULES') {
-      const component = Input.TextArea;
-      e.component = component;
-      e.props = { ...e.props, style: { width: '100%', height: '200px' } };
-    }
-    if (e.fieldName == 'NOTE') {
-      const component = Input.TextArea;
-      e.component = component;
-      e.props = { ...e.props, style: { width: '100%', height: '200px' } };
-    }
-    if (e.fieldName == 'ACCESSORY') {
-      let item = () => {
-        return (
-          <Upload
-            name="file"
-            beforeUpload={() => {
-              return false;
-            }}
-            //listType="picture"
-            defaultFileList={[...this.state.filelist]}
-            // fileList={[...this.state.filelist]}
-            className="upload-list-inline"
-            // onPreview={this.onPreview}
-            onChange={file => {
-              this.setState({ filelist: file.fileList });
-            }}
-            onRemove={file => {
-              console.log('file', file);
-              if (file.uuid) {
-                let res = deleteFile(file);
-                if (res.success) {
-                  message.success('删除成功！');
-                }
-              }
-            }}
-          >
-            <Button>
-              <Icon type="upload" />
-              上传
-            </Button>
-          </Upload>
-        );
-      };
-      const component = item;
-      e.component = component;
-      // e.props = { ...e.props, style: { width: '100%', height: '200px' } };
-    }
+    // if (e.fieldName == 'CYCLE_FIELD') {
+    //   const component = this.selectComponent;
+    //   e.component = component;
+    //   e.props = { ...e.props, style: { width: '100%', height: '200px' } };
+    // }
   };
 
   onSave = async e => {

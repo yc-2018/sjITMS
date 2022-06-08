@@ -51,3 +51,10 @@ export async function deleteFile(payload) {
     body: payload,
   });
 }
+
+export async function analysisSql(payload) {
+  return request(`/itms-cost/itms-cost/costProject/analysisSql`, {
+    method: 'POST',
+    body: payload,
+  });
+}
