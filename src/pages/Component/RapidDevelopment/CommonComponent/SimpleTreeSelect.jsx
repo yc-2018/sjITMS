@@ -7,9 +7,8 @@
  */
 import React, { Component } from 'react';
 import { TreeSelect } from 'antd';
-import { dynamicQuery } from '@/services/quick/Quick';
 import memoize from 'memoize-one';
-import { addCondition, getFieldShow } from '@/utils/ryzeUtils';
+import { addCondition, getFieldShow, memoizeDynamicQuery } from '@/utils/ryzeUtils';
 
 /**
  * 下拉树选择控件，可传入props同antd TreeSelect控件
@@ -136,7 +135,7 @@ export default class SimpleTreeSelect extends Component {
   };
 
   loadData = async queryParams => {
-    const response = await dynamicQuery(queryParams);
+    const response = await memoizeDynamicQuery(queryParams);
     if (!response || !response.success || !Array.isArray(response.result.records)) {
       this.setSourceData([]);
     } else {

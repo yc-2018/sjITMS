@@ -3,8 +3,7 @@ import { Select, Spin } from 'antd';
 import Debounce from 'lodash-decorators/debounce';
 import Bind from 'lodash-decorators/bind';
 import memoize from 'memoize-one';
-import { dynamicQuery } from '@/services/quick/Quick';
-import { addCondition, getFieldShow } from '@/utils/ryzeUtils';
+import { addCondition, getFieldShow, memoizeDynamicQuery } from '@/utils/ryzeUtils';
 
 /**
  * 下拉列表输入框控件，可传入props同antd select
@@ -227,7 +226,7 @@ export default class SimpleAutoComplete extends Component {
   };
 
   loadData = async queryParams => {
-    const response = await dynamicQuery(queryParams);
+    const response = await memoizeDynamicQuery(queryParams);
     if (!response || !response.success || !Array.isArray(response.result.records)) {
       this.setSourceData([]);
     } else {

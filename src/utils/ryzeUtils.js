@@ -1,3 +1,6 @@
+import memoizeOne from 'async-memoize-one';
+import { dynamicQuery } from '@/services/quick/Quick';
+
 /**
  * 获取定义字段的显示，允许通过 %字段名% 的方式插入值
  * @param {Map} rowData 原始数据
@@ -38,3 +41,8 @@ export function addCondition(queryParams, condition) {
         };
     }
 }
+
+/**
+ * 微缓存动态查询
+ */
+export const memoizeDynamicQuery = memoizeOne(queryParams => dynamicQuery(queryParams));
