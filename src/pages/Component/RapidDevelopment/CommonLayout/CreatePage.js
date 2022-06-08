@@ -242,16 +242,18 @@ export default class CreatePage extends Component {
     )
   }
 
+  drawForm = () => {
+    return (
+      <Form onChange={this.onChange} autoComplete="off">
+        {this.drawFormItems()}
+        {this.drawTable && this.drawTable()}
+      </Form>
+    );
+  };
+
   render() {
     const { noBorder } = this.props;
     const Wrapper = noBorder ? this.NoBorderWrapper : this.PanelWrapper;
-    return (
-      <Wrapper>
-        <Form onChange={this.onChange} autoComplete="off">
-          {this.drawFormItems()}
-          {this.drawTable && this.drawTable()}
-        </Form>
-      </Wrapper>
-    );
+    return <Wrapper>{this.drawForm()}</Wrapper>;
   }
 }
