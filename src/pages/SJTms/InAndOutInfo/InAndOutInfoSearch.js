@@ -222,14 +222,6 @@ convertCodeName = ()=>{
     >
     <Button>保存</Button>
     </Popconfirm>
-    <Upload name='file' beforeUpload = {()=>{return false}} listType= 'picture'
-    defaultFileList=  {[...this.state.filelist]} className= 'upload-list-inline'
-    onPreview = {this.onPreview}
-    >
-    <Button>
-      <Icon type="upload" /> Click to Upload
-    </Button>
-    </Upload>
   </span>);
   };
   
