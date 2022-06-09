@@ -58,3 +58,17 @@ export async function analysisSql(payload) {
     body: payload,
   });
 }
+
+export async function savePlan(payload) {
+  return axios(configs[API_ENV].API_SERVER + `/itms-cost/itms-cost/costplan/onSave`, {
+    method: 'post',
+    data: payload,
+    headers: {
+      iwmsJwt: loginKey(),
+      'Content-Type': 'multipart/form-data',
+      Accept: '*/*',
+    },
+  }).then(e => {
+    return e;
+  });
+}
