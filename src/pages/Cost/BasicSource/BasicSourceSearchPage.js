@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-07 15:39:44
+ * @LastEditTime: 2022-06-08 17:28:03
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -115,7 +115,6 @@ export default class BasicSourceSearchPage extends Component {
               </div>
             </div>
             <BasicHeadCreatPage
-              key={new Date()}
               quickuuid="cost_form_head"
               showPageNow="update"
               noBorder={true}

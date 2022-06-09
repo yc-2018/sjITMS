@@ -69,7 +69,7 @@ export default class CostProjectCreate extends QuickCreatePage {
       let filePaths = this.entity.COST_PROJECT[0].ACCESSORY.split(',');
       entitys.forEach((item, index) => {
         let file = {
-          uuid: entity.UUID,
+          UUID: entity.UUID,
           uid: index,
           name: item,
           status: 'saved',
@@ -134,7 +134,7 @@ export default class CostProjectCreate extends QuickCreatePage {
         }}
         onRemove={file => {
           console.log('file', file);
-          if (file.uuid) {
+          if (file.UUID) {
             let res = deleteFile(file);
             if (res.success) {
               message.success('删除成功！');
