@@ -1089,6 +1089,24 @@ export default [
             org: ['DISPATCH_CENTER'],
             component: './Cost/BasicSource/BasicSource',
           },
+          {
+                        path: '/costbasic/costproject',
+                        name: '计费项目',
+                        org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+                        // component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                        component: './Cost/CostProject/CostProjectForm',
+                        quickuuid: 'COST_PROJECT',
+                        // authority: ['itms.base.vehicleType'],
+                      },
+            {
+                          path: '/costbasic/plan',
+                          name: '计费方案',
+                          org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+                          // component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                          component: './Cost/CostPlan/CostPlanFrom',
+                          quickuuid: 'cost_plan',
+                          // authority: ['itms.base.vehicleType'],
+                        },
         ],
       },
       {
@@ -1264,6 +1282,7 @@ export default [
             component: './SJTms/xxjob',
             // authority: ['itms.base.vehicle'],
           },
+           
         ],
       },
     ],
