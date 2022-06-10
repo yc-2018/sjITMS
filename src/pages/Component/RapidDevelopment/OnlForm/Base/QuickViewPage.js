@@ -65,6 +65,7 @@ export default class QuickView extends RyzeViewPage {
       singleItems: [],
       oddItems: [],
       noActionCol: true,
+      notNote: true,
     };
   }
 
@@ -444,7 +445,7 @@ export default class QuickView extends RyzeViewPage {
   drawQuickInfoTab = () => {
     const { entity } = this.state;
     // const { onlFormInfos } = this.state;
-    const { singleItems, oddItems, onlFormInfos, noActionCol } = this.state;
+    const { singleItems, oddItems, onlFormInfos, noActionCol, notNote } = this.state;
     //没数据直接return
     if (!onlFormInfos) return <TabPane key="1" tab="" />;
 
@@ -551,7 +552,6 @@ export default class QuickView extends RyzeViewPage {
                       );
                     },
           };
-
           catelogItems.push(itemInfo);
         });
         let OptColumn = {
@@ -562,6 +562,7 @@ export default class QuickView extends RyzeViewPage {
         catelogItems.push(OptColumn);
         items.push(
           <ViewTablePanel
+            notNote={notNote}
             style={{ marginTop: '24px' }}
             title={item.onlFormHead.tableTxt}
             columns={catelogItems}

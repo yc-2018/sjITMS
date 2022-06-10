@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-10 09:30:40
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-10 11:24:51
+ * @LastEditTime: 2022-06-10 15:05:21
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -17,7 +17,7 @@ import { message } from 'antd';
 }))
 //View界面扩展
 export default class CostPlanDefView extends QuickViewPage {
-  state = { ...this.state, noActionCol: false }; // noActionCol: false
+  state = { ...this.state, noActionCol: false, notNote: false }; // noActionCol: false
   renderOperateCol = record => {
     return (
       <a
