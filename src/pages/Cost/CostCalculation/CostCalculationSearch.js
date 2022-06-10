@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-10 11:42:22
+ * @LastEditTime: 2022-06-10 15:36:33
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -26,7 +26,6 @@ export default class CostProjectSearch extends QuickFormSearchPage {
   };
 
   checkData = () => {
-    console.log('props', this.props);
     this.props.switchTab('update', {
       entityUuid: this.props.params.entityUuid,
     });
@@ -39,9 +38,8 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       return;
     }
     const uuid = this.props.params.entityUuid;
-    console.log('uuid', uuid);
     let params = {
-      uuid: uuid,
+      planUuid: uuid,
       month: dateString,
     };
     await calculatePlan(params).then(response => {
