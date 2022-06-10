@@ -146,10 +146,10 @@ export default class CostPlanSearch extends QuickFormSearchPage {
   
   //该方法会覆盖所有的中间功能按钮
   drawToolbarPanel = () => {
-    return <>
+    return   <div style={{ margin: '10px 0 10px 0' }}>
     <Button onClick = {()=>this.clieckItem()}>添加项目</Button>
     <Button onClick = {()=>this.delItem()}>删除</Button>
-    </>
+    </div>
   };
 
    该方法会覆盖所有的搜索查询

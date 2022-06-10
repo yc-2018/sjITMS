@@ -2,7 +2,8 @@ import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
 import CostPlanDefCreate from './CostPlanDefCreate';
-//import CostProjectCreate from './CostProjectCreate';
+import CostPlanFromSearch from './CostPlanFromSearch';
+import CostPlanView from './CostPlanView';
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
 
 @connect(({ quick, loading }) => ({
@@ -30,11 +31,10 @@ export default class CostPlanFrom extends QuickForm {
    * }
    */
   drawTab = e => {
-    // if (e.showPageNow == 'query') {
-    //   const component = <QuickFormSearchPage {...e.props} />;
-    //   e.component = component;
-    // }
-    console.log("e",e);
+    if (e.showPageNow == 'query') {
+      const component = <CostPlanFromSearch {...e.props} />;
+      e.component = component;
+    }
     if (e.showPageNow == 'create') {
       const component = <CostPlanDefCreate {...e.props} />;
       e.component = component;
@@ -43,6 +43,9 @@ export default class CostPlanFrom extends QuickForm {
       const component = <CostPlanDefCreate {...e.props} />;
       e.component = component;
     }
-    
+    if (e.showPageNow == 'view') {
+      const component = <CostPlanView {...e.props} />;
+      e.component = component;
+    }
   };
 }
