@@ -10,6 +10,7 @@ import { addCondition, getFieldShow, memoizeDynamicQuery } from '@/utils/ryzeUti
  * {string} textField 节点文本字段 默认值：NAME
  * {string} valueField 值字段     默认值：VALUE
  * {string} searchField 查询字段  默认值：VALUE
+ * {string} label 回填到文本框的字段  默认为textField
  * {string} queryParams 数据查询参数
  * {string} dictCode 字典编码,与queryParams冲突,字典编码优先
  * {boolean} isLink    是否为联动控件
@@ -294,8 +295,11 @@ export default class SimpleAutoComplete extends Component {
     }
 
     // 多选情况下把 value 值进行分割
+    // toString是为了处理value和数据源数据格式不一致问题
     if (mode == 'multiple' && multipleSplit) {
-      value = value?.split(multipleSplit);
+      value = value?.split(multipleSplit).map(x => x?.toString());
+    } else {
+      value = value?.toString();
     }
 
     // 将父组件传过来的属性传递下去，以适应Form、getFieldDecorator等处理
