@@ -47,8 +47,8 @@ export default class CostPlanSearch extends QuickFormSearchPage {
    if (e.column.fieldName == 'ACCESSORY_NAME') {
      // const component = <p3 style={{ color: 'red' }}>{e.val}</p3>;
      const component = (
-       <a onClick={this.isShow.bind(this, e.record)} style={{ color: 'red' }}>
-         {e.val}
+       <a onClick={this.isShow.bind(this, e.record)} style={{ color: 'blue' }}>
+         {'查看'}
        </a>
      );
      e.component = component;

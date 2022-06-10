@@ -54,7 +54,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       }
       const component = (
         <span>
-          <Button onClick={this.isShow.bind(this, e.record)} type="primary">
+          <Button size="small" onClick={this.isShow.bind(this, e.record)} type="primary">
             查看(
             {downloadsName.length})
           </Button>
