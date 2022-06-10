@@ -603,7 +603,7 @@ export default class DispatchingCreatePage extends Component {
           Math.round((event.count.cartonCount / order.realCartonCount) * order.weight * 1000) /
           1000;
         order.realCartonCount = event.count.cartonCount;
-        order.isSplit = 'Y';
+        order.unDispatchCarton = order.cartonCount - order.realCartonCount;
         break;
       }
     }
