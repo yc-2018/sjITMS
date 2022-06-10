@@ -31,6 +31,31 @@ export function getFile(param) {
   });
 }
 
+export function getPlanFile(param) {
+  axios(
+    configs[API_ENV].API_SERVER +
+      `/itms-cost/itms-cost/costplan/download/${param.uuid}/${param.index}`,
+    {
+      method: 'post',
+      responseType: 'blob', //data: payload,
+      headers: {
+        iwmsJwt: loginKey(),
+        'Content-Type': 'multipart/form-data',
+        Accept: '*/*',
+      },
+    }
+  ).then(res => {
+    console.log(res);
+    const { data, headers } = res;
+    const url = window.URL.createObjectURL(new Blob([res.data]));
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', param.fileName);
+    document.body.appendChild(link);
+    link.click();
+  });
+}
+
 export async function save(payload) {
   return axios(configs[API_ENV].API_SERVER + `/itms-cost/itms-cost/costProject/onSave`, {
     method: 'post',
