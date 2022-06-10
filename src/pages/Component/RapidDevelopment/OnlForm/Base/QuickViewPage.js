@@ -29,6 +29,7 @@ const TabPane = Tabs.TabPane;
 export default class QuickView extends RyzeViewPage {
   entity = {};
   drawcell = e => {}; //扩展component
+  renderOperateCol = () => {}; //操作列
   //初始化表单数据
   initonlFormField = () => {
     const { onlFormInfos } = this.state;
@@ -63,6 +64,7 @@ export default class QuickView extends RyzeViewPage {
       onlFormInfos: props.onlFormField,
       singleItems: [],
       oddItems: [],
+      noActionCol: true,
     };
   }
 
@@ -442,7 +444,7 @@ export default class QuickView extends RyzeViewPage {
   drawQuickInfoTab = () => {
     const { entity } = this.state;
     // const { onlFormInfos } = this.state;
-    const { singleItems, oddItems, onlFormInfos } = this.state;
+    const { singleItems, oddItems, onlFormInfos, noActionCol } = this.state;
     //没数据直接return
     if (!onlFormInfos) return <TabPane key="1" tab="" />;
 
@@ -552,11 +554,18 @@ export default class QuickView extends RyzeViewPage {
 
           catelogItems.push(itemInfo);
         });
+        let OptColumn = {
+          title: '操作',
+          width: itemColWidth.operateColWidth,
+          render: record => this.renderOperateCol(record),
+        };
+        catelogItems.push(OptColumn);
         items.push(
           <ViewTablePanel
             style={{ marginTop: '24px' }}
             title={item.onlFormHead.tableTxt}
             columns={catelogItems}
+            noActionCol={noActionCol}
             data={this.entity[tableName] ? this.entity[tableName] : []}
             key={item.onlFormHead.tableTxt + index}
           />

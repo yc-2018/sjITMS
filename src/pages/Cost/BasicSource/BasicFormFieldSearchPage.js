@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 17:46:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-07 15:16:28
+ * @LastEditTime: 2022-06-10 11:28:48
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -11,7 +11,7 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import { Button, Popconfirm, message, Modal, Table } from 'antd';
 import { flow } from 'lodash-decorators';
 import { dynamicDelete } from '@/services/quick/Quick';
-import { getTableInfo, onSave, getUnAddInfo } from '@/services/sjtms/BasicSource';
+import { getTableInfo, onSave, getUnAddInfo } from '@/services/cost/BasicSource';
 
 @connect(({ quick, loading }) => ({
   quick,
