@@ -3,6 +3,7 @@ import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
 import QuickFormSearchPage from './CostProjectSearch';
 import CostProjectCreate from './CostProjectCreate';
+import CostProjectView from './CostProjectView';
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
 
 @connect(({ quick, loading }) => ({
@@ -40,6 +41,10 @@ export default class CostProjectForm extends QuickForm {
     }
     if (e.showPageNow == 'update') {
       const component = <CostProjectCreate {...e.props} />;
+      e.component = component;
+    }
+    if (e.showPageNow == 'view') {
+      const component = <CostProjectView {...e.props} />;
       e.component = component;
     }
   };

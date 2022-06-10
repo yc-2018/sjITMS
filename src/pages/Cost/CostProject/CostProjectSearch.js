@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Table, Button, Input, Col, Row, Popconfirm, message, Modal, List } from 'antd';
+import { Table, Button, Input, Col, Row, Popconfirm, message, Modal, List, Badge } from 'antd';
 import { colWidth } from '@/utils/ColWidth';
 import OperateCol from '@/pages/Component/Form/OperateCol';
 import { connect } from 'dva';
@@ -48,10 +48,17 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     //找到fieldName为CODE这一列 更改它的component
     if (e.column.fieldName == 'ACCESSORY_NAME') {
       // const component = <p3 style={{ color: 'red' }}>{e.val}</p3>;
+      let downloadsName = [];
+      if (e.record != 'false' && e.record.ACCESSORY_NAME) {
+        downloadsName = e.record.ACCESSORY_NAME.split(',');
+      }
       const component = (
-        <a onClick={this.isShow.bind(this, e.record)} style={{ color: 'red' }}>
-          {e.val}
-        </a>
+        <span>
+          <Button onClick={this.isShow.bind(this, e.record)} type="primary">
+            查看(
+            {downloadsName.length})
+          </Button>
+        </span>
       );
       e.component = component;
     }
