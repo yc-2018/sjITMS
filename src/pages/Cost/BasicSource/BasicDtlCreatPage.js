@@ -2,13 +2,13 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-20 10:41:30
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-07 11:38:50
+ * @LastEditTime: 2022-06-10 11:28:44
  * @version: 1.0
  */
 import { connect } from 'dva';
 import { Form, message, Input } from 'antd';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
-import { getTableInfo } from '@/services/sjtms/BasicSource';
+import { getTableInfo } from '@/services/cost/BasicSource';
 import { commonLocale } from '@/utils/CommonLocale';
 
 @connect(({ quick, loading }) => ({
