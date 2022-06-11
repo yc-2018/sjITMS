@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-10 11:29:27
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-10 15:36:37
+ * @LastEditTime: 2022-06-11 14:56:15
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -16,6 +16,15 @@ export async function calculatePlan(payload) {
     }`,
     {
       method: 'POST',
+    }
+  );
+}
+
+export async function getBill(payload) {
+  return request(
+    `/itms-cost/itms-cost/costbill/getBill?planUuid=${payload.planUuid}&month=${payload.month}`,
+    {
+      method: 'GET',
     }
   );
 }
