@@ -1,4 +1,3 @@
-import memoizeOne from 'async-memoize-one';
 import { dynamicQuery } from '@/services/quick/Quick';
 
 /**
@@ -45,4 +44,22 @@ export function addCondition(queryParams, condition) {
 /**
  * 微缓存动态查询
  */
-export const memoizeDynamicQuery = memoizeOne(queryParams => dynamicQuery(queryParams));
+let dynamicQueryCache = {};     // 存的是Promise对象
+export const memoizeDynamicQuery = async queryParams => {
+  const key = JSON.stringify(queryParams);
+  let lastResult = dynamicQueryCache[key];
+  if (lastResult != undefined) {
+    return lastResult;
+  }
+
+  lastResult = dynamicQuery(queryParams);
+
+  if (lastResult.catch) {
+    lastResult.catch(() => (dynamicQueryCache[key] = undefined));
+  }
+
+  dynamicQueryCache[key] = lastResult;
+  console.log(dynamicQueryCache)
+
+  return lastResult;
+};
