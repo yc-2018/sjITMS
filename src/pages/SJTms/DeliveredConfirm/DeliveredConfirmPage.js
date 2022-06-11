@@ -1,24 +1,11 @@
 import React, { Component } from 'react';
-import {
-  Form,
-  Button,
-  message,
-  Tabs,
-  Checkbox,
-  Select,
-  Icon,
-  Layout,
-  DatePicker,
-  Input,
-} from 'antd';
-import Page from '@/pages/Component/RapidDevelopment/CommonLayout/Page/Page';
+import { Form, message, Tabs, Select, Layout, Input } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
+import Page from '@/pages/Component/Page/inner/Page';
 import DeliveredConfirmSearch from './DeliveredConfirmSearch';
 import DeliveredBillCheck from './DeliveredBillCheck';
-import { notNullLocale } from '@/utils/CommonLocale';
 import SearchForm from '@/pages/Component/Form/SearchForm';
 import SFormItem from '@/pages/Component/Form/SFormItem';
-import Address from '@/pages/Component/Form/Address';
 import { connect } from 'dva';
 import {
   SimpleTreeSelect,
@@ -26,9 +13,7 @@ import {
   SimpleRadio,
   SimpleAutoComplete,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
-import { LOGIN_COMPANY } from '@/utils/constants';
 import { dynamicQuery } from '@/services/quick/Quick';
-import CommonStore from '@/map/script/modules/common/stores/commonStore';
 const { TabPane } = Tabs;
 const { Content, Sider } = Layout;
 @connect(({ quick, loading, deliveredConfirm }) => ({
@@ -38,19 +23,12 @@ const { Content, Sider } = Layout;
 }))
 @Form.create()
 export default class DeliveredConfirmPage extends SearchForm {
-  static pagess = { matchType: '', queryParams: [] };
   constructor(props) {
     super(props);
     this.state = {
       toggle: undefined,
       pageFilters: { matchType: '', queryParams: [] },
-      tableList: (
-        <DeliveredConfirmSearch
-          key={Date.now()}
-          quickuuid="ITMS_SHIP_ORDER_STORE_CONFIRM"
-          pageFilters={[]}
-        />
-      ),
+      tableList: <DeliveredConfirmSearch quickuuid="ITMS_SHIP_ORDER_STORE_CONFIRM" />,
       tableList2: <DeliveredBillCheck quickuuid="sj_schedule_order_bill_check" />,
     };
   }
@@ -59,7 +37,6 @@ export default class DeliveredConfirmPage extends SearchForm {
     const { form, filterValue, selectFields } = this.props;
     const { getFieldDecorator } = this.props.form;
     const { toggle } = this.state;
-    // const showSelectFields = toggle ? selectFields : selectFields.slice(0, 3);
     let cols = new Array();
 
     cols.push(
@@ -116,6 +93,7 @@ export default class DeliveredConfirmPage extends SearchForm {
     return cols;
   };
 
+  //查询排车单
   handleSearch = async value => {
     let queryParamsJson = {
       tableName: 'V_SJ_ORDER_BILL_CHECK_UNION',
@@ -222,12 +200,11 @@ export default class DeliveredConfirmPage extends SearchForm {
     });
   };
   render() {
-    const pageFilters = JSON.parse(JSON.stringify(this.state.pageFilters));
     return (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
-          <Content style={{ minHeight: '80vh' }}>
-            <Form onSubmit={this.handlerSearch} autoComplete="off">
+          <Content style={{ height: 'calc(100vh - 120px)' }}>
+            <Form style={{ marginTop: 15 }} onSubmit={this.handlerSearch} autoComplete="off">
               {this.drawRows()}
             </Form>
             <Tabs defaultActiveKey="store">
