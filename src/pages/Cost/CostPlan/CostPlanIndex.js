@@ -48,7 +48,7 @@ export default class CostPlanIndex extends PureComponent {
                     fontWeight: 'bolder',
                     fontSize: '18px',
                     padding: '0 10px',
-                    borderBottom: '',
+                    borderBottom: '0px',
                   }}
                   bodyStyle={{ padding: '24px 10px 10px' }}
                   title={e.SCHEME_NAME}
