@@ -426,6 +426,7 @@ export default class ViewTablePanel extends PureComponent {
                 expandedRowRender={
                   this.props.expandedRowRender ? this.props.expandedRowRender : undefined
                 }
+                noActionCol={this.props.noActionCol}
                 onExpand={this.props.onExpand ? this.props.onExpand : undefined}
                 comId={this.props.tableId}
                 canDrag={this.props.canDragTable}

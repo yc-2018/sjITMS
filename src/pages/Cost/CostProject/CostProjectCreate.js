@@ -49,6 +49,12 @@ export default class CostProjectCreate extends QuickCreatePage {
    */
   initEntity = async () => {
     const { onlFormInfos } = this.state;
+    if (this.props.readOnly != undefined && this.props.readOnly) {
+      onlFormInfos[0].onlFormFields.forEach(data => {
+        data.isReadOnly = 0;
+      });
+    }
+
     //初始化entity
     onlFormInfos.forEach(item => {
       this.entity[item.onlFormHead.tableName] = [];

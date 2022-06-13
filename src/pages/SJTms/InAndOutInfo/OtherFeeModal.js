@@ -66,12 +66,9 @@ export default class OtherFeeModal extends Component {
     };
   }
   componentWillMount() {
-    //if(this.state.storeUuid){
     this.refresh();
-    // }
   }
   componentWillReceiveProps(nextProps) {
-    console.log('componentWillReceiveProps', nextProps, this.props);
     if (nextProps.scheduleBillNumber != this.props.scheduleBillNumber) {
       this.state.pageFilter.searchKeyValues.scheduleBillNumber = nextProps.scheduleBillNumber;
       this.setState(
@@ -100,7 +97,6 @@ export default class OtherFeeModal extends Component {
   }
 
   refresh = async value => {
-    console.log('refresh', value, this.state.pageFilter);
     const pageFilter = value ? value : this.state.pageFilter;
     await query(pageFilter).then(response => {
       const payload = {
@@ -212,7 +208,6 @@ export default class OtherFeeModal extends Component {
   };
 
   callback = key => {
-    console.log('key', key);
     if (key == 1) {
       this.setState({ isView: true, defaultActiveKey: '1' });
       this.refresh();
@@ -239,7 +234,6 @@ export default class OtherFeeModal extends Component {
       companyuuid: loginCompany().uuid,
       dispatchcenteruuid: loginOrg().uuid,
     };
-    console.log('parms', params);
     await saveOrUpdateFee(params).then(result => {
       if (result && result.data > 0) {
         message.success('保存成功');
@@ -305,7 +299,6 @@ export default class OtherFeeModal extends Component {
     // },
   ];
   render() {
-    console.log('render', this.state);
     const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = this.props.form;
     const { selectedRows, visible, data, isView } = this.state;
     let totalAmountSelect = 0;
@@ -331,11 +324,11 @@ export default class OtherFeeModal extends Component {
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           {isView ? (
             <Button type="primary" onClick={() => this.modify()}>
-              {'编辑'}
+              编辑
             </Button>
           ) : (
             <Button type="primary" onClick={() => this.save()}>
-              {'保存'}
+              保存
             </Button>
           )}
         </div>
@@ -361,9 +354,13 @@ export default class OtherFeeModal extends Component {
                       initialValue: this.state.feeType,
                       rules: [{ required: true, message: '请选项费用类型' }],
                     })(
-                      <SimpleSelect style={{ width: 120 }}  onBlur={e => {this.setState({feeType:e})}} dictCode={'FeeType'}>
-
-                      </SimpleSelect>
+                      <SimpleSelect
+                        style={{ width: 120 }}
+                        onBlur={e => {
+                          this.setState({ feeType: e });
+                        }}
+                        dictCode={'FeeType'}
+                      />
                       // <Select
                       //   style={{ width: 120 }}
                       //   onBlur={e => {

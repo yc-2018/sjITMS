@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-10 11:28:47
+ * @LastEditTime: 2022-06-13 14:46:32
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -18,6 +18,7 @@ import { res } from '@/pages/In/Move/PlaneMovePermission';
 import emptySvg from '@/assets/common/img_empoty.svg';
 
 const { Content, Sider } = Layout;
+const { TreeNode } = Tree;
 export default class BasicSourceSearchPage extends Component {
   constructor(props) {
     super(props);
@@ -34,7 +35,7 @@ export default class BasicSourceSearchPage extends Component {
   };
 
   queryTree = async () => {
-    await findSourceTree().then(async response => {
+    await findSourceTree().then(response => {
       if (response && response.success) {
         this.setState({ treeData: response.data });
       }
@@ -42,7 +43,37 @@ export default class BasicSourceSearchPage extends Component {
   };
 
   drawSider = () => {
-    const { treeData, selectedKeys } = this.state;
+    const { selectedKeys } = this.state;
+    var treeData = JSON.parse(JSON.stringify(this.state.treeData));
+
+    const renderTreeNode = data => {
+      let nodeArr = data.map(item => {
+        item.title = (
+          <div>
+            <span>{item.title}</span>
+            {item.system || item.key != selectedKeys ? (
+              <span />
+            ) : (
+              <span>
+                <a style={{ float: 'right' }} onClick={() => this.updateDtlModalRef.show()}>
+                  编辑
+                </a>
+              </span>
+            )}
+          </div>
+        );
+        if (item.children) {
+          return (
+            <TreeNode title={item.title} key={item.key} dataRef={item}>
+              {renderTreeNode(item.children)}
+            </TreeNode>
+          );
+        }
+        return <TreeNode title={item.title} key={item.key} />;
+      });
+      return nodeArr;
+    };
+
     return (
       <div>
         <div className={sourceStyle.navigatorPanelWrapper}>
@@ -62,8 +93,9 @@ export default class BasicSourceSearchPage extends Component {
           selectable
           selectedKeys={[selectedKeys]}
           onSelect={this.onSelect}
-          treeData={treeData}
-        />
+        >
+          {renderTreeNode(treeData)}
+        </Tree>
       </div>
     );
   };
@@ -136,8 +168,6 @@ export default class BasicSourceSearchPage extends Component {
         ),
         selectedKeys: selectedKeys[0],
       });
-    } else {
-      this.setState({ rightContent: <></>, selectedKeys: selectedKeys[0] });
     }
   };
 
@@ -146,6 +176,7 @@ export default class BasicSourceSearchPage extends Component {
   };
 
   render() {
+    const { selectedKeys } = this.state;
     return (
       <Page>
         <Content className={sourceStyle.contentWrapper}>
@@ -181,6 +212,22 @@ export default class BasicSourceSearchPage extends Component {
           page={{ quickuuid: 'cost_form_children', noCategory: true }}
           customPage={BasicDtlCreatPage}
           onRef={node => (this.dtlModalRef = node)}
+        />
+        <CreatePageModal
+          modal={{
+            title: '编辑数据源',
+            width: 500,
+            afterClose: () => {
+              this.queryTree();
+            },
+          }}
+          page={{
+            quickuuid: 'cost_form_children',
+            noCategory: true,
+            showPageNow: 'update',
+            params: { entityUuid: selectedKeys },
+          }}
+          onRef={node => (this.updateDtlModalRef = node)}
         />
       </Page>
     );
