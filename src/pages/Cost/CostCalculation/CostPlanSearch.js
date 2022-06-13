@@ -2,34 +2,36 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:55:46
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-09 11:19:52
+ * @LastEditTime: 2022-06-13 17:18:20
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
-import { Table, Button, Input, Col, Row, Popconfirm, message, Modal, List } from 'antd';
+import { Form, Button } from 'antd';
 import { colWidth } from '@/utils/ColWidth';
 import OperateCol from '@/pages/Component/Form/OperateCol';
 import { connect } from 'dva';
-import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import StandardTable from '@/components/StandardTable';
-
+import CostPlanIndex from '@/pages/Cost/CostPlan/CostPlanIndex';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
-//继承QuickFormSearchPage Search页面扩展
-export default class CostPlanSearch extends QuickFormSearchPage {
+@Form.create()
+export default class CostPlanSearch extends CostPlanIndex {
   //需要操作列的显示 将noActionCol设置为false
-  state = { ...this.state, noActionCol: false, downloads: [] }; // noActionCol: false
+  state = { ...this.state, title: '费用计算' }; // noActionCol: false
+  drawButtion = () => {};
 
-  //该方法会覆盖所有的中间功能按钮
-  drawToolbarPanel = () => {};
+  onView = UUID => {
+    this.props.switchTab('view', { entityUuid: UUID });
+  };
 
-  renderOperateCol = record => {
+  drawButton = UUID => {
     return (
-      <a onClick={this.onView.bind(this, record)} style={{ color: '#3B77E3' }}>
-        核算
-      </a>
+      <div style={{ float: 'right' }}>
+        <Button type="primary" style={{ marginRight: '10px' }} onClick={() => this.onView(UUID)}>
+          核算
+        </Button>
+      </div>
     );
   };
 }

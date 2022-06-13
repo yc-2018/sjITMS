@@ -5,7 +5,7 @@ import CostPlanDefCreate from './CostPlanDefCreate';
 import CostPlanFromSearch from './CostPlanFromSearch';
 import CostPlanView from './CostPlanView';
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
-import CostPlanIndex from './CostPlanIndex';
+import CostPlanIndexSearch from './CostPlanIndexSearch';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -32,7 +32,7 @@ export default class CostPlanFrom extends QuickForm {
    */
   drawTab = e => {
     if (e.showPageNow == 'query') {
-      const component = <CostPlanIndex {...e.props} />;
+      const component = <CostPlanIndexSearch {...e.props} />;
       e.component = component;
     }
     if (e.showPageNow == 'create') {
