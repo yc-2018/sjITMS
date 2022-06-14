@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-13 14:46:32
+ * @LastEditTime: 2022-06-14 09:33:00
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -51,7 +51,7 @@ export default class BasicSourceSearchPage extends Component {
         item.title = (
           <div>
             <span>{item.title}</span>
-            {item.system || item.key != selectedKeys ? (
+            {item.parentUuid == undefined || item.key != selectedKeys ? (
               <span />
             ) : (
               <span>
@@ -147,6 +147,7 @@ export default class BasicSourceSearchPage extends Component {
               </div>
             </div>
             <BasicHeadCreatPage
+              key={selectedKeys[0]}
               quickuuid="cost_form_head"
               showPageNow="update"
               noBorder={true}
