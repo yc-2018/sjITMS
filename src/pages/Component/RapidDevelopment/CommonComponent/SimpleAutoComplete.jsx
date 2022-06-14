@@ -297,7 +297,7 @@ export default class SimpleAutoComplete extends Component {
     // 多选情况下把 value 值进行分割
     // toString是为了处理value和数据源数据格式不一致问题
     if (mode == 'multiple' && multipleSplit) {
-      value = value?.split(multipleSplit).map(x => x?.toString());
+      value = value?.toString().split(multipleSplit).map(x => x?.toString());
     } else {
       value = value?.toString();
     }
