@@ -115,7 +115,7 @@ export default class CostProjectCreate extends QuickCreatePage {
   selectComponent = props => {
     const { sqlFileds } = this.state;
     return (
-      <Select {...props}>
+      <Select {...props} allowClear>
         {sqlFileds.map(item => {
           return <Option value={item}>{item}</Option>;
         })}
