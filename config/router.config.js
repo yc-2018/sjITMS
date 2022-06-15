@@ -1120,14 +1120,14 @@ export default [
         icon: 'icon-menu_info',
         routes: [
           {
-            path: '/basic/dc',
+            path: '/tmsbase/dc',
             name: 'dc',
             org: ['COMPANY'],
             component: './Basic/DC/DC',
             authority: ['iwms.basic.dc'],
           },
           {
-            path: '/basic/dispatchCenter',
+            path: '/tmsbase/dispatchCenter',
             name: 'dispatchCenter',
             org: ['COMPANY'],
             component: './Basic/DispatchCenter/DispatchCenter',
