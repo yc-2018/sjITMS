@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-16 17:22:23
+ * @LastEditTime: 2022-06-16 17:38:29
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -163,15 +163,15 @@ export default class BasicSourceDataSearchPage extends SearchPage {
     console.log('filter', filter);
     let queryFilter;
     if (filter) {
-      var order = '';
+      var order = [];
       for (var key in filter.sortFields) {
         var sort = filter.sortFields[key] ? '-' : '+';
-        order = key + sort;
+        order.push(key + sort);
       }
       queryFilter = {
         tableName: tableName,
         searchCount: true,
-        orderBy: [order],
+        orderBy: order,
         pageNo: filter.page + 1,
         pageSize: filter.pageSize,
       };
