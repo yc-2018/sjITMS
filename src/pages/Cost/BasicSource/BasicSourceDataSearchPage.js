@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-16 15:34:34
+ * @LastEditTime: 2022-06-16 15:39:15
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -192,7 +192,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
    */
   drawToolbarPanel = () => {
     return (
-      <div>
+      <div style={{ marginTop: '10px' }}>
         <AdvanceQuery
           searchFields={this.state.searchFields}
           fieldInfos={this.columns}
