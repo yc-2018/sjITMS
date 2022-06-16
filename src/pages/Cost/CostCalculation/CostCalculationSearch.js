@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-15 16:05:45
+ * @LastEditTime: 2022-06-16 11:35:16
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -20,7 +20,10 @@ import moment from 'moment';
 //继承QuickFormSearchPage Search页面扩展
 export default class CostProjectSearch extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
-  state = { ...this.state, dateString: '', downloads: [] }; // noActionCol: false
+  state = {
+    ...this.state,
+    dateString: this.props.params.dateString,
+  };
 
   comeBack = () => {
     this.props.switchTab('query');
@@ -52,6 +55,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       entityUuid: this.props.params.entityUuid,
       dateString,
       dateInterval: [startDate, endDate],
+      e,
     });
   };
 
@@ -108,11 +112,16 @@ export default class CostProjectSearch extends QuickFormSearchPage {
   };
 
   drawSearchPanel = () => {
+    const { dateString } = this.state;
     return (
       <Row style={{ marginTop: '10px' }}>
         <Col>
           费用所属月：
           <MonthPicker
+            defaultValue={moment(
+              dateString == undefined ? moment().format('YYYY-MM') : dateString,
+              'YYYY-MM'
+            )}
             onChange={(date, dateString) => this.monthChange(date, dateString)}
             style={{ width: '15%' }}
           />

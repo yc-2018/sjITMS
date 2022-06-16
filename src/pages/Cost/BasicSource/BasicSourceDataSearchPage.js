@@ -2,13 +2,14 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-16 10:26:52
+ * @LastEditTime: 2022-06-16 15:34:34
  * @version: 1.0
  */
 import React, { Component } from 'react';
 import { connect } from 'dva';
 import { Form, message } from 'antd';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
+import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import SearchPage from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSearchPage';
 import { dynamicQuery } from '@/services/quick/Quick';
 import { colWidth } from '@/utils/ColWidth';
@@ -61,6 +62,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
 
   initConfig = queryConfig => {
     let quickColumns = new Array();
+    let quickSearchFields = new Array();
     queryConfig.filter(data => data.SHOW).forEach(data => {
       const qiuckcolumn = {
         title: data.DB_FIELD_TXT,
@@ -71,32 +73,69 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         fieldType: data.DB_TYPE,
       };
       quickColumns.push(qiuckcolumn);
+
+      const quickSearchField = {
+        fieldName: data.DB_FIELD_NAME,
+        fieldTxt: data.DB_FIELD_TXT,
+        fieldType: data.DB_TYPE,
+        searchCondition: 'eq',
+      };
+      quickSearchFields.push(quickSearchField);
     });
     if (quickColumns.length == 0) {
       message.error(this.state.title + '数据源展示列为空');
       return;
     }
+
     this.columns = quickColumns;
     this.setState({
       columns: quickColumns,
+      searchFields: quickSearchFields,
     });
   };
 
   getData = async pageFilters => {
     const result = await dynamicQuery(pageFilters);
-    if (result && result.success) {
+    if (result && result.result.records != 'false') {
       this.initData(result.result);
+    } else {
+      message.error('查无数据');
+      return;
     }
   };
 
   onSearch = async filter => {
     const { tableName } = this.state;
-    let param = {
-      pageNo: 1,
-      pageSize: 20,
-      searchCount: true,
-      tableName: tableName,
-    };
+    let param;
+    if (filter == undefined) {
+      param = {
+        pageNo: 1,
+        pageSize: 20,
+        searchCount: true,
+        tableName: tableName,
+      };
+    } else {
+      const queryParams = params => {
+        let param = params.map(data => {
+          return {
+            field: data.field,
+            rule: data.rule,
+            type: data.type,
+            val: [data.val],
+          };
+        });
+        return param;
+      };
+      param = {
+        pageNo: 1,
+        pageSize: 20,
+        searchCount: true,
+        tableName: tableName,
+        condition: {
+          params: queryParams(filter.queryParams),
+        },
+      };
+    }
     this.getData(param);
   };
 
@@ -147,4 +186,22 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       width: colWidth.codeColWidth,
     },
   ];
+
+  /**
+   * 绘制批量工具栏
+   */
+  drawToolbarPanel = () => {
+    return (
+      <div>
+        <AdvanceQuery
+          searchFields={this.state.searchFields}
+          fieldInfos={this.columns}
+          // filterValue={this.state.pageFilter.searchKeyValues}
+          refresh={this.onSearch}
+          reportCode={this.state.tableName}
+          // isOrgQuery={this.state.isOrgQuery}
+        />
+      </div>
+    );
+  };
 }

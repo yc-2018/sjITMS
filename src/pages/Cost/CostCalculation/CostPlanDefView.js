@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-10 09:30:40
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-15 16:05:59
+ * @LastEditTime: 2022-06-16 15:35:36
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -34,8 +34,11 @@ export default class CostPlanDefView extends QuickViewPage {
   }; // noActionCol: false
 
   onBack = () => {
+    const { e, dateString } = this.props.params;
     this.props.switchTab('view', {
       entityUuid: this.props.params.entityUuid,
+      e,
+      dateString,
     });
   };
 
@@ -82,6 +85,7 @@ export default class CostPlanDefView extends QuickViewPage {
     dataSource.forEach(data => {
       arr.push(
         <BasicSourceDataSearchPage
+          key={new Date()}
           title={data.TABLENAME_CN}
           tableName={data.TABLENAME}
           scroll={{
