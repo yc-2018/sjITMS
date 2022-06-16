@@ -54,7 +54,7 @@ export default class CostPlanIndex extends PureComponent {
                   title={e.SCHEME_NAME}
                   style={{ width: 300, border: '0.5px solid #3B77E3' }}
                 >
-                  {this.drawButton(e.UUID)}
+                  {this.drawButton(e)}
                 </Card>
               </Col>
             );
@@ -66,10 +66,10 @@ export default class CostPlanIndex extends PureComponent {
     }
   };
 
-  drawButton = UUID => {
+  drawButton = e => {
     return (
       <div style={{ float: 'right' }}>
-        <Button style={{ marginRight: '10px' }} onClick={() => this.onClickPlan(UUID)}>
+        <Button style={{ marginRight: '10px' }} onClick={() => this.onClickPlan(e.UUID)}>
           编辑
         </Button>
         <Button>停用</Button>

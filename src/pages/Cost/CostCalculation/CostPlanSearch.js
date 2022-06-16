@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:55:46
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-13 17:18:20
+ * @LastEditTime: 2022-06-15 15:23:16
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -21,14 +21,14 @@ export default class CostPlanSearch extends CostPlanIndex {
   state = { ...this.state, title: '费用计算' }; // noActionCol: false
   drawButtion = () => {};
 
-  onView = UUID => {
-    this.props.switchTab('view', { entityUuid: UUID });
+  onView = e => {
+    this.props.switchTab('view', { entityUuid: e.UUID, e });
   };
 
-  drawButton = UUID => {
+  drawButton = e => {
     return (
       <div style={{ float: 'right' }}>
-        <Button type="primary" style={{ marginRight: '10px' }} onClick={() => this.onView(UUID)}>
+        <Button type="primary" style={{ marginRight: '10px' }} onClick={() => this.onView(e)}>
           核算
         </Button>
       </div>

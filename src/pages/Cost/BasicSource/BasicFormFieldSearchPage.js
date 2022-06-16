@@ -2,16 +2,16 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 17:46:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-10 11:28:48
+ * @LastEditTime: 2022-06-16 09:59:15
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { Button, Popconfirm, message, Modal, Table } from 'antd';
+import { Button, Popconfirm, message, Modal, Table, Input, Checkbox } from 'antd';
 import { flow } from 'lodash-decorators';
 import { dynamicDelete } from '@/services/quick/Quick';
-import { getTableInfo, onSave, getUnAddInfo } from '@/services/cost/BasicSource';
+import { getTableInfo, addDtl, getUnAddInfo, updateDtl } from '@/services/cost/BasicSource';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -64,6 +64,9 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
         <Button type="primary" onClick={this.handleAdd.bind()}>
           新增
         </Button>
+        <Button style={{ marginLeft: '12px' }} onClick={this.handleOnSave.bind()}>
+          保存
+        </Button>
         <Popconfirm
           title="你确定要删除所选中的内容吗?"
           onConfirm={() => this.handleDelete()}
@@ -91,6 +94,26 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
     });
   };
 
+  drawcell = e => {
+    if (e.column.fieldName == 'SHOW') {
+      const component = (
+        <Checkbox
+          defaultChecked={e.val}
+          onChange={v => (e.record.SHOW = v.target.checked ? 1 : 0)}
+        />
+      );
+      e.component = component;
+    } else if (e.column.fieldName !== 'LINE') {
+      const component = (
+        <Input
+          defaultValue={e.val}
+          onChange={v => (e.record[e.column.fieldName] = v.target.value)}
+        />
+      );
+      e.component = component;
+    }
+  };
+
   handleOk = async () => {
     const { newColumn, selectedRowKeys } = this.state;
     const { selectedNodes } = this.props;
@@ -99,7 +122,7 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
       params: cc,
       formUuid: selectedNodes.key,
     };
-    await onSave(payload).then(response => {
+    await addDtl(payload).then(response => {
       if (response && response.success) {
         message.success('保存成功');
         this.queryCoulumns();
@@ -134,9 +157,8 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
 
   handleAdd = async () => {
     const { data } = this.state;
-    const tableName = this.props.selectedNodes.props.tableName;
     let payload = {
-      tableName: this.props.selectedNodes.props.tableName,
+      tableName: this.props.selectedNodes.props.dataRef.tableName,
       formUuid: this.props.selectedNodes.key,
     };
     await getUnAddInfo(payload).then(response => {
@@ -154,6 +176,15 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
         this.setState({ isModalVisible: true });
       }
     });
+  };
+
+  handleOnSave = async () => {
+    const payload = this.state.data.list;
+    const response = await updateDtl(payload);
+    if (response && response.success) {
+      message.success('保存成功');
+      this.queryCoulumns();
+    }
   };
 
   /**

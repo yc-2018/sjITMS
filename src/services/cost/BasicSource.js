@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-01 16:01:34
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-07 15:12:21
+ * @LastEditTime: 2022-06-16 09:31:37
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -36,9 +36,16 @@ export async function getUnAddInfo(payload) {
   );
 }
 
-export async function onSave(payload) {
-  return request(`/itms-cost/itms-cost/source/save/${payload.formUuid}`, {
+export async function addDtl(payload) {
+  return request(`/itms-cost/itms-cost/source/addDtl/${payload.formUuid}`, {
     method: 'POST',
     body: payload.params,
+  });
+}
+
+export async function updateDtl(payload) {
+  return request(`/itms-cost/itms-cost/source/updateDtl`, {
+    method: 'POST',
+    body: payload,
   });
 }

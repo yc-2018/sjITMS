@@ -2,11 +2,11 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-14 09:33:00
+ * @LastEditTime: 2022-06-16 10:17:03
  * @version: 1.0
  */
 import React, { Component } from 'react';
-import { Layout, Button, Tree, message, Modal, Empty } from 'antd';
+import { Layout, Button, Tree, message, Modal, Empty, Tabs } from 'antd';
 import Page from '@/pages/Component/Page/inner/NewStylePage';
 import sourceStyle from './BasicSource.less';
 import FormFieldSearchPage from './BasicFormFieldSearchPage';
@@ -16,9 +16,11 @@ import BasicDtlCreatPage from './BasicDtlCreatPage';
 import { findSourceTree, deleteSourceTree } from '@/services/cost/BasicSource';
 import { res } from '@/pages/In/Move/PlaneMovePermission';
 import emptySvg from '@/assets/common/img_empoty.svg';
+import BasicSourceDataSearchPage from './BasicSourceDataSearchPage';
 
 const { Content, Sider } = Layout;
 const { TreeNode } = Tree;
+const { TabPane } = Tabs;
 export default class BasicSourceSearchPage extends Component {
   constructor(props) {
     super(props);
@@ -69,7 +71,7 @@ export default class BasicSourceSearchPage extends Component {
             </TreeNode>
           );
         }
-        return <TreeNode title={item.title} key={item.key} />;
+        return <TreeNode title={item.title} key={item.key} dataRef={item} />;
       });
       return nodeArr;
     };
@@ -130,7 +132,7 @@ export default class BasicSourceSearchPage extends Component {
   };
 
   onSelect = (selectedKeys, event) => {
-    const { treeData } = this.state;
+    const { treeData, tabsKey } = this.state;
     const system = treeData.find(x => x.uuid == selectedKeys[0]);
     if (selectedKeys.length == 1) {
       this.setState({
@@ -138,7 +140,7 @@ export default class BasicSourceSearchPage extends Component {
           <div>
             <div className={sourceStyle.navigatorPanelWrapper}>
               <span className={sourceStyle.sidertitle}>
-                {event.selectedNodes[0].props.tableNameCN}
+                {event.selectedNodes[0].props.dataRef.tableNameCN}
               </span>
               <div className={sourceStyle.action}>
                 <Button type="primary" onClick={e => this.basicHeadCreatPage.onSave(e)}>
@@ -158,14 +160,24 @@ export default class BasicSourceSearchPage extends Component {
             />
           </div>
         ) : (
-          <div>
-            <FormFieldSearchPage
-              key={`Line${selectedKeys[0]}`}
-              quickuuid={'cost_form_field'}
-              selectedRows={selectedKeys[0]}
-              selectedNodes={event.selectedNodes[0]}
-            />
-          </div>
+          <Tabs defaultActiveKey="structure">
+            <TabPane tab={'表结构'} key="structure">
+              <FormFieldSearchPage
+                key={`Line${selectedKeys[0]}`}
+                quickuuid={'cost_form_field'}
+                selectedRows={selectedKeys[0]}
+                selectedNodes={event.selectedNodes[0]}
+              />
+            </TabPane>
+            <TabPane tab={'表数据'} key="data">
+              <BasicSourceDataSearchPage
+                title={event.selectedNodes[0].props.dataRef.tableNameCN}
+                tableName={event.selectedNodes[0].props.dataRef.tableName}
+                key={`Line${selectedKeys[0]}`}
+                selectedRows={selectedKeys[0]}
+              />
+            </TabPane>
+          </Tabs>
         ),
         selectedKeys: selectedKeys[0],
       });

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-11 17:09:41
+ * @LastEditTime: 2022-06-15 16:05:45
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -11,6 +11,7 @@ import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { calculatePlan, getBill } from '@/services/cost/CostCalculation';
 const { MonthPicker } = DatePicker;
+import moment from 'moment';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -26,8 +27,31 @@ export default class CostProjectSearch extends QuickFormSearchPage {
   };
 
   checkData = () => {
+    const { dateString } = this.state;
+    const { e } = this.props.params;
+    if (dateString == '') {
+      message.error('请选择费用所属月');
+      return;
+    }
+
+    const startDate =
+      moment(dateString)
+        .add(e.START_DATE, 'month')
+        .format('YYYY-MM') +
+      '-' +
+      e.START_DAY;
+
+    const endDate =
+      moment(dateString)
+        .add(e.END_DATE, 'month')
+        .format('YYYY-MM') +
+      '-' +
+      e.END_DAY;
+
     this.props.switchTab('update', {
       entityUuid: this.props.params.entityUuid,
+      dateString,
+      dateInterval: [startDate, endDate],
     });
   };
 
@@ -43,7 +67,6 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       month: dateString,
     };
     const response = await getBill(params);
-    console.log(response);
     if (response && response.success) {
       const { struct, data } = response.data;
       let newColumns = [];

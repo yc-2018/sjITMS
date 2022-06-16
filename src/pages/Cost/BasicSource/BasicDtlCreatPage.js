@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-20 10:41:30
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-10 11:28:44
+ * @LastEditTime: 2022-06-16 09:19:06
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -44,6 +44,7 @@ export default class BasicDtlCreatPage extends QuickCreatePage {
         DB_FIELD_TXT: data.comments,
         DB_TYPE: data.dataType,
         DB_LENGTH: data.dataLength,
+        SHOW: 0,
       });
       line = line + 1;
     });
