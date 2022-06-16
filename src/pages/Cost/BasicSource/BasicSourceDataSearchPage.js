@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-16 15:39:15
+ * @LastEditTime: 2022-06-16 17:22:23
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -95,8 +95,9 @@ export default class BasicSourceDataSearchPage extends SearchPage {
   };
 
   getData = async pageFilters => {
+    console.log('pageFilters', pageFilters);
     const result = await dynamicQuery(pageFilters);
-    if (result && result.result.records != 'false') {
+    if (result && result.result && result.result.records != 'false') {
       this.initData(result.result);
     } else {
       message.error('查无数据');
@@ -159,16 +160,18 @@ export default class BasicSourceDataSearchPage extends SearchPage {
 
   refreshTable = filter => {
     const { tableName } = this.state;
+    console.log('filter', filter);
     let queryFilter;
     if (filter) {
       var order = '';
       for (var key in filter.sortFields) {
-        var sort = filter.sortFields[key] ? 'descend' : 'ascend';
-        order = key + ',' + sort;
+        var sort = filter.sortFields[key] ? '-' : '+';
+        order = key + sort;
       }
       queryFilter = {
         tableName: tableName,
         searchCount: true,
+        orderBy: [order],
         pageNo: filter.page + 1,
         pageSize: filter.pageSize,
       };
