@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-26 11:20:04
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-06-16 14:33:54
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -10,8 +10,7 @@ import { Tabs, Layout, Empty, Modal } from 'antd';
 import { connect } from 'dva';
 import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuery/SimpleQuery';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import Page from '@/components/MyComponent/Page';
-import styles from './DispatchCenterShipPlanBill.less';
+import Page from '@/pages/Component/RapidDevelopment/CommonLayout/Page/Page';
 import ShipPlanBillSearch from './ShipPlanBillSearch';
 import ShipPlanBillDtlSearch from './ShipPlanBillDtlSearch';
 import emptySvg from '@/assets/common/img_empoty.svg';
@@ -215,67 +214,60 @@ export default class ShipPlanBillSearchPage extends PureComponent {
     } = this.state;
     return (
       <PageHeaderWrapper>
-        <Page>
-          <Content className={styles.contentWrapper}>
-            <div style={{ display: 'flex', flexDirection: 'row' }}>
-              <div style={{ flex: 1 }} className={styles.leftWrapper}>
-                <SimpleQuery
-                  selectFields={this.state.searchFields}
-                  refresh={this.onSearch}
-                  reportCode={this.state.reportCode}
-                  isOrgQuery={this.state.isOrgQuery}
-                />
-                <div>
-                  <ShipPlanBillSearch
-                    reportCode={reportCode}
-                    pageFilter={pageFilters}
-                    isOrgQuery={isOrgQuery}
-                    refreshView={this.refreshView}
-                    memberModalClick={this.memberModalClick}
-                    removeCarModalClick={this.removeCarModalClick}
-                    onRef={node => (this.refreshTableRef = node)}
-                  />
-                </div>
-                <div style={{ height: '700px' }}>
-                  {!showCreatePage ? (
-                    <Empty image={emptySvg} description={<span>暂无数据,请先选择排车单</span>} />
-                  ) : (
-                    <Tabs activeKey={keyDtlVale} onChange={this.changeTabs}>
-                      <TabPane tab="排车单明细" key={'a'}>
-                        <ShipPlanBillDtlSearch
-                          quickuuid={'sj_itms_schedule_order'}
-                          selectedRows={selectedRows.UUID}
-                        />
-                      </TabPane>
-                      <TabPane tab="操作日志" key={'b'}>
-                        <EntityLogTab entityUuid={selectedRows.UUID} />
-                      </TabPane>
-                    </Tabs>
-                  )}
-                </div>
-              </div>
+        <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
+          <Content style={{ padding: '0 10px' }}>
+            <SimpleQuery
+              selectFields={this.state.searchFields}
+              refresh={this.onSearch}
+              reportCode={this.state.reportCode}
+              isOrgQuery={this.state.isOrgQuery}
+            />
+            <ShipPlanBillSearch
+              reportCode={reportCode}
+              pageFilter={pageFilters}
+              isOrgQuery={isOrgQuery}
+              refreshView={this.refreshView}
+              memberModalClick={this.memberModalClick}
+              removeCarModalClick={this.removeCarModalClick}
+              onRef={node => (this.refreshTableRef = node)}
+            />
+            <div style={{ height: 700 }}>
+              {!showCreatePage ? (
+                <Empty image={emptySvg} description={<span>暂无数据,请先选择排车单</span>} />
+              ) : (
+                <Tabs activeKey={keyDtlVale} onChange={this.changeTabs}>
+                  <TabPane tab="排车单明细" key={'a'}>
+                    <ShipPlanBillDtlSearch
+                      quickuuid={'sj_itms_schedule_order'}
+                      selectedRows={selectedRows.UUID}
+                    />
+                  </TabPane>
+                  <TabPane tab="操作日志" key={'b'}>
+                    <EntityLogTab entityUuid={selectedRows.UUID} />
+                  </TabPane>
+                </Tabs>
+              )}
             </div>
+            <CreatePageModal
+              modal={{ title: params.title, width: 1000 }}
+              page={{ quickuuid: 'sj_itms_schedule', params: params }}
+              customPage={ShipPlanBillCreatePage}
+              onRef={node => (this.createPageModalRef = node)}
+            />
+            <CreatePageModal
+              modal={{
+                title: params.title,
+                width: 1000,
+                afterClose: () => {
+                  this.refreshTableRef.queryCoulumns();
+                },
+              }}
+              page={{ quickuuid: 'sj_itms_schedule_removecar', params: params }}
+              customPage={RemoveCarCreatePage}
+              onRef={node => (this.RemoveCarModalRef = node)}
+            />
           </Content>
         </Page>
-
-        <CreatePageModal
-          modal={{ title: params.title, width: 1000 }}
-          page={{ quickuuid: 'sj_itms_schedule', params: params }}
-          customPage={ShipPlanBillCreatePage}
-          onRef={node => (this.createPageModalRef = node)}
-        />
-        <CreatePageModal
-          modal={{
-            title: params.title,
-            width: 1000,
-            afterClose: () => {
-              this.refreshTableRef.queryCoulumns();
-            },
-          }}
-          page={{ quickuuid: 'sj_itms_schedule_removecar', params: params }}
-          customPage={RemoveCarCreatePage}
-          onRef={node => (this.RemoveCarModalRef = node)}
-        />
       </PageHeaderWrapper>
     );
   }

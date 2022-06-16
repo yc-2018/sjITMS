@@ -7,7 +7,7 @@ export const OrderColumns = [
     title: '单号',
     dataIndex: 'billNumber',
     sorter: true,
-    width: 120,
+    width: 130,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {

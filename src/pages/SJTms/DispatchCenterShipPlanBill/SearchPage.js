@@ -323,7 +323,7 @@ export default class SearchPage extends Component {
     };
 
     return (
-      <div style={{ width: this.state.width ? this.state.width : '100%', paddingTop: '2%' }}>
+      <div style={{ width: this.state.width ? this.state.width : '100%' }}>
         <div>
           {this.drawSearchPanel ? this.drawSearchPanel() : null}
           {this.drawBussiness ? this.drawBussiness() : null}

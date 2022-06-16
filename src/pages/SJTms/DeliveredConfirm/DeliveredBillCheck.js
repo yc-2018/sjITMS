@@ -21,6 +21,11 @@ export default class DeliveredBillCheck extends QuickFormSearchPage {
   drawTopButton = () => {};
   drawToolsButton = () => {};
   drawSearchPanel = () => {};
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.pageFilters != this.props.pageFilters) {
+      this.onSearch(nextProps.pageFilters);
+    }
+  }
 
   //该方法会覆盖所有的上层按钮
   drawActionButton = () => {

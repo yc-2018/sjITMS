@@ -1,26 +1,10 @@
 import React, { PureComponent } from 'react';
-import {
-  Table,
-  Button,
-  Input,
-  Col,
-  Select,
-  Icon,
-  Row,
-  Modal,
-  Popconfirm,
-  message,
-  Checkbox,
-} from 'antd';
-import { colWidth } from '@/utils/ColWidth';
+import { Button, Modal } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import DeliveredNoCheck from './DeliveredNoCheck';
-import { loginOrg, loginCompany, loginUser } from '@/utils/LoginContext';
-import StandardTable from '@/components/StandardTable';
-import { commonLocale, placeholderLocale, placeholderChooseLocale } from '@/utils/CommonLocale';
-import DeliveredBillCheck from './DeliveredBillCheck';
-import { TITLE_SEPARATION } from '@/utils/constants';
+import { loginOrg, loginCompany } from '@/utils/LoginContext';
+import { commonLocale } from '@/utils/CommonLocale';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 @connect(({ quick, deliveredConfirm, loading }) => ({
   quick,
@@ -33,22 +17,18 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
     ...this.state,
     storeItemConfirmModalVisible: false,
     isShowStandardTable: false,
-    billData: {
-      list: [],
-    }, // 票据核对
+    billData: { list: [] }, // 票据核对
     isNotHd: true,
   };
-
-  /**
-   * 该方法用于自定义扩展列
-     e={
-       column:column
-     }
-   */
-
-  // drawExColumns = e => {
-
-  // };
+  drawTopButton = () => {};
+  drawToolsButton = () => {};
+  drawToolbarPanel = () => {};
+  drawSearchPanel = () => {};
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.pageFilters != this.props.pageFilters) {
+      this.onSearch(nextProps.pageFilters);
+    }
+  }
 
   drawcell = e => {
     //找到fieldName为CODE这一列 更改它的component
@@ -64,18 +44,6 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
       e.component = component;
     }
   };
-
-  // onUpdate = (e, val) => {
-  //   console.log('e', e, 'val', val);
-  // };
-  exSearchFilter = () => {
-    return this.props.pageFilters;
-  };
-
-  //该方法用于更改State
-  // changeState = () => {
-  //   this.setState({ title: '' });
-  // };
 
   handleModal = record => {
     if (record) {
@@ -93,15 +61,10 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
       storeItemConfirmModalVisible: !this.state.storeItemConfirmModalVisible,
     });
   };
-  convertCodeName = () => {};
-  //该方法用于写最上层的按钮 多个按钮用<span>包裹
-  drawTopButton = () => {};
 
   deliveredChage = (records, colum, e) => {
     records[colum.fieldName] = e.value;
   };
-  //该方法用于写中间的功能按钮  <span>包裹
-  drawToolsButton = () => {};
 
   //保存门店送货
   saveDelivered = () => {
@@ -116,6 +79,7 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
       },
     });
   };
+
   // 全部送达
   deliveredConfirmSchedule = () => {
     const { selectedRows } = this.state;
@@ -126,18 +90,8 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
       e.dispatchCenterUuid = loginOrg().uuid;
     });
     this.setState({ selectedRows });
-    //data.confirms=list;
-    // this.props.dispatch({
-    //   type: 'deliveredConfirm1/deliveredConfirmSchedule',
-    //   payload: selectedRows,
-    //   callback:response=>{
-    //     if(response&&response.success){
-    //       this.refreshTable();
-    //       message.success(commonLocale.saveSuccessLocale);
-    //     }
-    //   }
-    // })
   };
+
   // 全部未送达
   unDeliveredConfirmSchedule = () => {
     const { selectedRows } = this.state;
@@ -147,28 +101,16 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
       e.dispatchCenterUuid = loginOrg().uuid;
     });
     this.setState({ selectedRows });
-    // this.props.dispatch({
-    //   type: 'deliveredConfirm1/deliveredConfirmSchedule',
-    //   payload: selectedRows,
-    //   callback:response=>{
-    //     if(response&&response.success){
-    //       this.refreshTable();
-    //       message.success(commonLocale.saveSuccessLocale);
-    //     }
-    //   }
-    // })
   };
-  handleOk = () => {
-    this.handleCancel();
-  };
+  //取消
   handleCancel = () => {
     this.setState({ isShowStandardTable: false });
   };
-  //
+  //显示回车未送达确认弹出框
   showNoDelivered = () => {
     this.setState({ isShowStandardTable: true });
   };
-  //该方法会覆盖所有的上层按钮
+
   drawActionButton = () => {
     const {
       storeSelectedRows,
@@ -185,10 +127,10 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
       selectedRows,
     } = this.state;
     return (
-      <span>
+      <>
         <Modal
           visible={this.state.isShowStandardTable}
-          onOk={this.handleOk}
+          onOk={this.handleCancel}
           onCancel={this.handleCancel}
           centered
           width={1200}
@@ -205,26 +147,7 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
         </Button>
         <Button onClick={this.deliveredConfirmSchedule}>全部送达</Button>
         <Button onClick={this.unDeliveredConfirmSchedule}>全部未送达</Button>
-      </span>
+      </>
     );
-  };
-
-  //该方法会覆盖所有的中间功能按钮
-  drawToolbarPanel = () => {};
-
-  // 该方法会覆盖所有的搜索查询
-  drawSearchPanel = () => {};
-
-  drawOtherCom = () => {
-    // const { storeSelectedRows,billSelectedRows,billData,storeData,targetTabKey,storeItemConfirmModalVisible,storeUuid,storeCode,storeName,storeAddress,scheduleBillNumber } = this.state;
-    //    <StoreItemConfirmModal
-    //     visible = {true}
-    //     storeUuid = {storeUuid}
-    //     storeCode = {storeCode}
-    //     storeName = {storeName}
-    //     storeAddress = {storeAddress}
-    //     scheduleBillNumber = {scheduleBillNumber}
-    //     handleModal = {this.handleModal}
-    //   ></StoreItemConfirmModal>
   };
 }
