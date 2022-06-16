@@ -2,12 +2,12 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-16 10:06:01
+ * @LastEditTime: 2022-06-16 10:26:52
  * @version: 1.0
  */
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { Form } from 'antd';
+import { Form, message } from 'antd';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import SearchPage from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSearchPage';
 import { dynamicQuery } from '@/services/quick/Quick';
@@ -72,6 +72,10 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       };
       quickColumns.push(qiuckcolumn);
     });
+    if (quickColumns.length == 0) {
+      message.error(this.state.title + '数据源展示列为空');
+      return;
+    }
     this.columns = quickColumns;
     this.setState({
       columns: quickColumns,
