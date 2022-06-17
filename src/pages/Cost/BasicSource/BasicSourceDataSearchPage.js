@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-16 17:38:29
+ * @LastEditTime: 2022-06-17 15:35:33
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -95,7 +95,6 @@ export default class BasicSourceDataSearchPage extends SearchPage {
   };
 
   getData = async pageFilters => {
-    console.log('pageFilters', pageFilters);
     const result = await dynamicQuery(pageFilters);
     if (result && result.result && result.result.records != 'false') {
       this.initData(result.result);
@@ -160,7 +159,6 @@ export default class BasicSourceDataSearchPage extends SearchPage {
 
   refreshTable = filter => {
     const { tableName } = this.state;
-    console.log('filter', filter);
     let queryFilter;
     if (filter) {
       var order = [];

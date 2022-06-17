@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-17 14:23:36
+ * @LastEditTime: 2022-06-17 14:32:50
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -153,4 +153,8 @@ export default class CostProjectSearch extends QuickFormSearchPage {
 
   //该方法会覆盖所有的中间功能按钮
   drawToolbarPanel = () => {};
+
+  changeState = () => {
+    this.setState({ title: this.props.params.e.SCHEME_NAME });
+  };
 }

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-10 09:30:40
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-16 15:35:36
+ * @LastEditTime: 2022-06-17 15:34:09
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -80,7 +80,6 @@ export default class CostPlanDefView extends QuickViewPage {
   dataSourceModal = () => {
     const { dataSource } = this.state;
     const { dateInterval } = this.props.params;
-
     let arr = [];
     dataSource.forEach(data => {
       arr.push(
@@ -100,11 +99,11 @@ export default class CostPlanDefView extends QuickViewPage {
   };
 
   handleOk = () => {
-    this.setState({ isModalVisible: false, dataSourceName: [], dataSourceUuid: [] });
+    this.setState({ isModalVisible: false, dataSource: [] });
   };
 
   handleCancel = () => {
-    this.setState({ isModalVisible: false, dataSourceName: [], dataSourceUuid: [] });
+    this.setState({ isModalVisible: false, dataSource: [] });
   };
 
   renderOperateCol = record => {
@@ -141,7 +140,7 @@ export default class CostPlanDefView extends QuickViewPage {
           onOk={this.handleOk.bind()}
           onCancel={this.handleCancel.bind()}
           width={'80%'}
-          bodyStyle={{ height: '800px', overflowY: 'auto' }}
+          bodyStyle={{ height: 'calc(80vh)', overflowY: 'auto' }}
         >
           {this.dataSourceModal()}
         </Modal>
