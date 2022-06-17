@@ -118,8 +118,10 @@ export default class CostPlanDefCreate extends QuickCreatePage {
     }
   };
   onSave = async (e) => {
-    const {list} = this.setting.state.data
-  console.log("s",this.setting.state);
+    e.preventDefault();
+     this.props.form.validateFields(async(err,values)=>{
+      if(!err){
+        const {list} = this.setting.state.data
     var formDatas = new FormData();
     this.makeFormData(this.entity.cost_plan[0], formDatas);
     if(list!=undefined && list.length>0){
@@ -134,8 +136,6 @@ export default class CostPlanDefCreate extends QuickCreatePage {
         paramList.push(param);
 
       })
-      console.log("111",JSON.stringify(paramList));
-
       formDatas.append("costPlans",JSON.stringify(paramList));
     }
      
@@ -155,7 +155,8 @@ export default class CostPlanDefCreate extends QuickCreatePage {
     if (success) {
       message.success('保存成功！');
     }
-
+      }
+    });
   }
   formLoaded = () => {
     const { formItems } = this.state;
@@ -197,9 +198,9 @@ export default class CostPlanDefCreate extends QuickCreatePage {
   };
   render() {
     return <Layout style={{ backgroundColor: "white" }}>
-      <div style={{ "padding-bottom": 10 }}>
-        <Button type='primary' style={{ float: 'right' }} onClick={this.onSave}>保存</Button>
-        <Button style={{ float: 'right' }} onClick={() => { this.props.switchTab("query") }}>返回</Button>
+      <div style={{paddingTop:20}}>
+        <Button type='primary' style={{float:'right',marginLeft:10,marginRight:10}} onClick={this.onSave}>保存</Button>
+        <Button style={{float:'right'}} onClick={() => { this.props.switchTab("query") }}>返回</Button>
       </div>
       <Content>{this.drawForm()}</Content>
       <Footer style={{ backgroundColor: "white",height:300}}> <CostPlanSearch quickuuid ="cost_plan_item" PLAN_UUID = {this.props?.params?.entityUuid} 

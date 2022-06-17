@@ -29,6 +29,9 @@ function makeFormData(obj, form_data) {
   if (!!form_data) {
     // 封装
     for (var i = 0, len = data.length; i < len; i++) {
+      if(data[i].value == undefined){
+        continue;
+      }
       form_data.append(data[i].key, data[i].value);
     }
   } else {
@@ -175,7 +178,11 @@ export default class CostProjectCreate extends QuickCreatePage {
 
   onSave = async e => {
     var formDatas = new FormData();
+    console.log("this.",this.entity.COST_PROJECT[0]);
+    this.entity.COST_PROJECT[0]
     makeFormData(this.entity.COST_PROJECT[0], formDatas);
+    console.log("this.2",formDatas);
+    formDatas.forEach(item => console.log(item));
     this.state.filelist.forEach(element => {
       console.log('element', element);
       if (!element.isSaved) {

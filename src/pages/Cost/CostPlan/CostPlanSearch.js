@@ -31,10 +31,9 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     scrollValue: {
       y: 'calc(400vh)',
     },
+    tableHeight:'calc(800vh)'
   }
-  clieckItem = ()=>{
-    this.setState({visible:true})
-  }
+
   delItem = ()=>{
    const{selectedRows,data}  = this.state;
   if(selectedRows.length==0){
@@ -113,12 +112,12 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     onOk={this.handleOks}
     onCancel={()=>this.setState({visible:false})}
   >
-    <Form>
+   <Form>
       <Form.Item>
           {getFieldDecorator('UUID', {})(
             <SimpleAutoComplete
             placeholder=""
-            textField="%ITEM_NAME%"
+            textField="[%CLASSIFY%]%ITEM_NAME%"
             valueField="UUID"
             searchField="ITEM_NAME"
             queryParams={{
@@ -133,7 +132,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
           }
           onChange = {(e)=>this.setState({itemValue:e})}
             noRecord
-            autoComplete
+           // autoComplete
             allowClear={true}
 
           />
@@ -147,8 +146,8 @@ export default class CostPlanSearch extends QuickFormSearchPage {
   //该方法会覆盖所有的中间功能按钮
   drawToolbarPanel = () => {
     return   <div style={{ margin: '10px 0 10px 0' }}>
-    <Button onClick = {()=>this.clieckItem()}>添加项目</Button>
-    <Button onClick = {()=>this.delItem()}>删除</Button>
+    <Button  type ='primary' onClick = {()=>this.setState({visible:!this.state.visible})}>添加项目</Button>
+    <Button onClick = {()=>this.delItem()} style={{marginLeft:10}}>删除</Button>
     </div>
   };
 
