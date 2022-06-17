@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-16 11:35:16
+ * @LastEditTime: 2022-06-17 14:23:36
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -22,7 +22,10 @@ export default class CostProjectSearch extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
   state = {
     ...this.state,
-    dateString: this.props.params.dateString,
+    dateString:
+      this.props.params.dateString == undefined
+        ? moment().format('YYYY-MM')
+        : this.props.params.dateString,
   };
 
   comeBack = () => {
@@ -71,7 +74,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       month: dateString,
     };
     const response = await getBill(params);
-    if (response && response.success) {
+    if (response.data && response.success) {
       const { struct, data } = response.data;
       let newColumns = [];
       struct.forEach(data => {
@@ -88,6 +91,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       this.initConfig({ columns: newColumns, sql: ' ccc', reportHeadName: '费用计算' });
     } else {
       message.error('查询无数据,请核实后再操作');
+      this.setState({ data: [] });
     }
   };
 
@@ -102,8 +106,11 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       planUuid: uuid,
       month: dateString,
     };
-    await calculatePlan(params).then(cc => {
-      console.log('cc', cc);
+    await calculatePlan(params).then(response => {
+      if (response && response.success) {
+        message.success('计算成功');
+        this.handleOnSertch();
+      }
     });
   };
 
