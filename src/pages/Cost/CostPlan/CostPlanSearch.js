@@ -31,7 +31,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     scrollValue: {
       y: 'calc(400vh)',
     },
-    tableHeight:'calc(800vh)'
+    tableHeight:'80%'
   }
 
   delItem = ()=>{

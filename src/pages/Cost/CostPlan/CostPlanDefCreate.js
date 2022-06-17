@@ -197,13 +197,13 @@ export default class CostPlanDefCreate extends QuickCreatePage {
     );
   };
   render() {
-    return <Layout style={{ backgroundColor: "white" }}>
+    return <Layout style={{ backgroundColor: "white", height:'100%'}}>
       <div style={{paddingTop:20}}>
         <Button type='primary' style={{float:'right',marginLeft:10,marginRight:10}} onClick={this.onSave}>保存</Button>
         <Button style={{float:'right'}} onClick={() => { this.props.switchTab("query") }}>返回</Button>
       </div>
-      <Content>{this.drawForm()}</Content>
-      <Footer style={{ backgroundColor: "white",height:300}}> <CostPlanSearch quickuuid ="cost_plan_item" PLAN_UUID = {this.props?.params?.entityUuid} 
+      <Content style={{marginLeft:'4.6%'}}>{this.drawForm()}</Content>
+      <Footer style={{ backgroundColor: "white"}}> <CostPlanSearch quickuuid ="cost_plan_item" PLAN_UUID = {this.props?.params?.entityUuid} 
     onRef={c => (this.setting = c)}></CostPlanSearch></Footer>
     </Layout>
   }

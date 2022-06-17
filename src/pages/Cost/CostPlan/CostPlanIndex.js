@@ -61,7 +61,7 @@ export default class CostPlanIndex extends PureComponent {
   drawButton = e => {
     return (
       <div style={{ float: 'right' }}>
-        <Button style={{ marginRight: '10px' }} onClick={() => this.onClickPlan(e.UUID)}>
+        <Button style={{ marginRight: '10px' }} onClick={() => this.onClickPlan(e)}>
           编辑
         </Button>
         <Button>停用</Button>
@@ -118,7 +118,7 @@ export default class CostPlanIndex extends PureComponent {
         <Form layout="inline" onSubmit={this.handleSarch}>
           <Form.Item label="方案名称">
             {getFieldDecorator('SCHEM_ENAME', { initialValue: this.state.SCHEM_ENAME })(
-              <Input placeholder="请填写方案名称" />
+              <Input placeholder="请填写方案名称" onChange={(e)=>{this.setState({SCHEM_ENAME:e.target.value})}} />
             )}
           </Form.Item>
           {/* <Form.Item labelCol={{span:8}} wrapperCol={{span:8,offset:5}} label="Nickname">
@@ -148,6 +148,7 @@ export default class CostPlanIndex extends PureComponent {
     const layout = {
       width: '100%',
       height: '100%',
+      backgroundColor: '#ffffff'
     };
     return (
       <PageHeaderWrapper>
@@ -155,8 +156,8 @@ export default class CostPlanIndex extends PureComponent {
           <Page withCollect={true}>
             <NavigatorPanel title={this.state.title} action={this.drawButtion()} />
             <Layout style={layout}>
-              <Header style={{ backgroundColor: 'white', height: '30%' }}>{this.drawForm()}</Header>
-              <Content style={{ overflow: 'auto', backgroundColor: 'white', height: '20%' }}>
+              <Header style={{  backgroundColor: '#ffffff',height: '10%',marginTop:'2%' }}>{this.drawForm()}</Header>
+              <Content style={{ overflow: 'auto', height: '20%' }}>
                 {this.drowe()}
               </Content>
               <Footer />
