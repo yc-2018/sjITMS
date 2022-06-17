@@ -4,10 +4,8 @@ def git_url = 'git@192.168.111.123:iwms-group/iwms-web.git'
 
 //Harbor信息
 def harbor_url = "192.168.111.81:85" 
-def harbor_project_name = "iwms" 
+def harbor_project_name = "itms" 
 def harbor_auth = "ab5ed645-b3d7-41f2-b066-ed748ff4e209"
-
-def server = '192.168.111.82'
 
 node {
 	def rollback = true;
