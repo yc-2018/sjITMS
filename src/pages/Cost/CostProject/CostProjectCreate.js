@@ -3,7 +3,7 @@ import { Form, Input, Upload, Button, Icon, message, Select } from 'antd';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import { save, deleteFile, analysisSql } from '@/services/cost/Cost';
 
-function makeFormData(obj, form_data) {
+export function makeFormData(obj, form_data) {
   var data = [];
   if (obj instanceof File) {
     data.push({ key: '', value: obj });
@@ -98,7 +98,6 @@ export default class CostProjectCreate extends QuickCreatePage {
       sql: sql,
     };
     let res = await analysisSql(param);
-    console.log('res', res);
     if (res.success) {
       this.setState({ sqlFileds: res.data });
     }
@@ -142,7 +141,6 @@ export default class CostProjectCreate extends QuickCreatePage {
           this.setState({ filelist: file.fileList });
         }}
         onRemove={file => {
-          console.log('file', file);
           if (file.UUID) {
             let res = deleteFile(file);
             if (res.success) {
@@ -178,20 +176,15 @@ export default class CostProjectCreate extends QuickCreatePage {
 
   onSave = async e => {
     var formDatas = new FormData();
-    console.log("this.",this.entity.COST_PROJECT[0]);
     this.entity.COST_PROJECT[0]
     makeFormData(this.entity.COST_PROJECT[0], formDatas);
-    console.log("this.2",formDatas);
-    formDatas.forEach(item => console.log(item));
     this.state.filelist.forEach(element => {
-      console.log('element', element);
       if (!element.isSaved) {
         formDatas.append('files', element.originFileObj);
       }
       // formDatas.append('files', element.originFileObj);
     });
     let res = await save(formDatas);
-    console.log('res', res);
     const success = res.data.success == true;
     this.afterSave(success);
     this.onSaved(success);

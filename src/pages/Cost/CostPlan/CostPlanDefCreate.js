@@ -3,8 +3,7 @@ import { connect } from 'dva';
 import { Route, Switch } from 'react-router-dom';
 import { Form, Input, Upload, Button, Icon, message, Select, Tabs, Layout } from 'antd';
 import { savePlan } from '@/services/cost/Cost';
-// import QuickFormSearchPage from './CostProjectSearch';
-// import CostProjectCreate from './CostProjectCreate';
+import {makeFormData} from '@/pages/Cost/CostProject/CostProjectCreate'
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
 import CreatePage from '@/pages/Component/RapidDevelopment/CommonLayout/CreatePage';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
@@ -46,38 +45,6 @@ export default class CostPlanDefCreate extends QuickCreatePage {
   constructor(props){
     super(props)
     props.onRef && props.onRef(this);
-  }
-  makeFormData(obj, form_data) {
-    var data = [];
-    if (obj instanceof File) {
-      data.push({ key: '', value: obj });
-    } else if (obj instanceof Array) {
-      for (var j = 0, len = obj.length; j < len; j++) {
-        var arr = this.makeFormData(obj[j]);
-        for (var k = 0, l = arr.length; k < l; k++) {
-          var key = !!form_data ? j + arr[k].key : '[' + j + ']' + arr[k].key;
-          data.push({ key: key, value: arr[k].value });
-        }
-      }
-    } else if (typeof obj == 'object') {
-      for (var j in obj) {
-        var arr = this.makeFormData(obj[j]);
-        for (var k = 0, l = arr.length; k < l; k++) {
-          var key = !!form_data ? j + arr[k].key : '.' + j + '' + arr[k].key;
-          data.push({ key: key, value: arr[k].value });
-        }
-      }
-    } else {
-      data.push({ key: '', value: obj });
-    }
-    if (!!form_data) {
-      // 封装
-      for (var i = 0, len = data.length; i < len; i++) {
-        form_data.append(data[i].key, data[i].value);
-      }
-    } else {
-      return data;
-    }
   }
   /**
      * 初始化表单数据
@@ -123,7 +90,7 @@ export default class CostPlanDefCreate extends QuickCreatePage {
       if(!err){
         const {list} = this.setting.state.data
     var formDatas = new FormData();
-    this.makeFormData(this.entity.cost_plan[0], formDatas);
+    makeFormData(this.entity.cost_plan[0], formDatas);
     if(list!=undefined && list.length>0){
       let paramList = []
       list.map(item=>{
@@ -140,15 +107,12 @@ export default class CostPlanDefCreate extends QuickCreatePage {
     }
      
     this.state.filelist.forEach(element => {
-      console.log('element', element);
       if (!element.isSaved) {
         formDatas.append('files', element.originFileObj);
       }
       // formDatas.append('files', element.originFileObj);
     });
-    console.log('formDatas', formDatas);
     let res = await savePlan(formDatas);
-    console.log('res', res);
     const success = res.data.success == true;
     this.afterSave(success);
     this.onSaved(success);
@@ -160,7 +124,6 @@ export default class CostPlanDefCreate extends QuickCreatePage {
   }
   formLoaded = () => {
     const { formItems } = this.state;
-    console.log("formItems", formItems, "entity", this.entity)
     formItems.cost_plan_ACCESSORY.component = this.uploadComponent;
     this.setState({})
   };
@@ -180,7 +143,6 @@ export default class CostPlanDefCreate extends QuickCreatePage {
           this.setState({ filelist: file.fileList });
         }}
         onRemove={file => {
-          console.log('file', file);
           if (file.UUID) {
             let res = deleteFile(file);
             if (res.success) {
