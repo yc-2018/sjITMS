@@ -42,7 +42,6 @@ export default class CostPlanIndex extends PureComponent {
       },
       updateAll: false,
     };
-    debugger;
     const result = updateEntity(param).then(e=>{
      if(e.result>0){
       this.handleSarch();
