@@ -2,11 +2,12 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 17:46:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-16 09:59:15
+ * @LastEditTime: 2022-06-20 10:02:03
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
+import { colWidth } from '@/utils/ColWidth';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { Button, Popconfirm, message, Modal, Table, Input, Checkbox } from 'antd';
 import { flow } from 'lodash-decorators';
@@ -103,7 +104,17 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
         />
       );
       e.component = component;
-    } else if (e.column.fieldName !== 'LINE') {
+    } else if (e.column.fieldName == 'SUBJECT_FIELD') {
+      const component = (
+        <Checkbox
+          defaultChecked={e.val != '<空>' ? true : false}
+          onChange={v => {
+            e.record.SUBJECT_FIELD = v.target.checked ? e.record.DB_FIELD_NAME : null;
+          }}
+        />
+      );
+      e.component = component;
+    } else if (e.column.fieldName != 'LINE') {
       const component = (
         <Input
           defaultValue={e.val}

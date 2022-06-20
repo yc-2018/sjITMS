@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-17 14:32:50
+ * @LastEditTime: 2022-06-17 15:43:14
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -87,8 +87,15 @@ export default class CostProjectSearch extends QuickFormSearchPage {
           isShow: true,
         });
       });
-      this.setState({ key: this.props.quickuuid + new Date(), data: data });
-      this.initConfig({ columns: newColumns, sql: ' ccc', reportHeadName: '费用计算' });
+      this.setState({
+        key: this.props.quickuuid + new Date(),
+        data: data,
+      });
+      this.initConfig({
+        columns: newColumns,
+        sql: ' ccc',
+        reportHeadName: this.props.params.e.SCHEME_NAME,
+      });
     } else {
       message.error('查询无数据,请核实后再操作');
       this.setState({ data: [] });
