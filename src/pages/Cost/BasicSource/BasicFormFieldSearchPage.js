@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 17:46:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-20 10:02:03
+ * @LastEditTime: 2022-06-21 17:15:56
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -107,9 +107,20 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
     } else if (e.column.fieldName == 'SUBJECT_FIELD') {
       const component = (
         <Checkbox
-          defaultChecked={e.val != '<空>' ? true : false}
+          defaultChecked={e.val != '<空>' && e.val == e.record.DB_FIELD_NAME ? true : false}
           onChange={v => {
             e.record.SUBJECT_FIELD = v.target.checked ? e.record.DB_FIELD_NAME : null;
+          }}
+        />
+      );
+      e.component = component;
+    } else if (e.column.fieldName == 'PERIOD_FIELD') {
+      console.log('val', e);
+      const component = (
+        <Checkbox
+          defaultChecked={e.val != '<空>' && e.val == e.record.DB_FIELD_NAME ? true : false}
+          onChange={v => {
+            e.record.PERIOD_FIELD = v.target.checked ? e.record.DB_FIELD_NAME : null;
           }}
         />
       );

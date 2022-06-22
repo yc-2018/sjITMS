@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:55:46
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-15 15:23:16
+ * @LastEditTime: 2022-06-20 16:22:15
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -28,7 +28,12 @@ export default class CostPlanSearch extends CostPlanIndex {
   drawButton = e => {
     return (
       <div style={{ float: 'right' }}>
-        <Button type="primary" style={{ marginRight: '10px' }} onClick={() => this.onView(e)}>
+        <Button
+          type="primary"
+          disabled={e.NOT_ENABLE != 0 ? true : false}
+          style={{ marginRight: '10px' }}
+          onClick={() => this.onView(e)}
+        >
           核算
         </Button>
       </div>

@@ -2,18 +2,19 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-17 15:35:33
+ * @LastEditTime: 2022-06-21 15:10:15
  * @version: 1.0
  */
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { Form, message } from 'antd';
+import { Button, Form, message } from 'antd';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import SearchPage from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSearchPage';
 import { dynamicQuery } from '@/services/quick/Quick';
 import { colWidth } from '@/utils/ColWidth';
 import { guid } from '@/utils/utils';
+import ExportJsonExcel from 'js-export-excel';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -33,6 +34,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       columns: [],
       searchFields: [],
       isOrgQuery: [],
+      pageFilters: [],
       // queryParams: this.props.params,
       tableName: this.props.tableName,
     };
@@ -95,6 +97,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
   };
 
   getData = async pageFilters => {
+    this.state.pageFilters = pageFilters;
     const result = await dynamicQuery(pageFilters);
     if (result && result.result && result.result.records != 'false') {
       this.initData(result.result);
@@ -174,7 +177,6 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         pageSize: filter.pageSize,
       };
     }
-    // this.state.pageFilters = queryFilter;
     this.getData(queryFilter);
   };
 
@@ -187,6 +189,36 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       width: colWidth.codeColWidth,
     },
   ];
+
+  port = async () => {
+    const { pageFilters, title } = this.state;
+    let pageFilter = {
+      tableName: pageFilters.tableName,
+      condition: pageFilters.condition,
+    };
+    const result = await dynamicQuery(pageFilter);
+    if (result && result.success) {
+      let columns = this.state.columns;
+      var option = [];
+      let sheetfilter = []; //对应列表数据中的key值数组，就是上面resdata中的 name，address
+      let sheetheader = []; //对应key值的表头，即excel表头
+      columns.map(a => {
+        sheetfilter.push(a.key);
+        sheetheader.push(a.title);
+      });
+      option.fileName = title; //导出的Excel文件名
+      option.datas = [
+        {
+          sheetData: result.result.records,
+          sheetName: title, //工作表的名字
+          sheetFilter: sheetfilter,
+          sheetHeader: sheetheader,
+        },
+      ];
+      var toExcel = new ExportJsonExcel(option);
+      toExcel.saveExcel();
+    }
+  };
 
   /**
    * 绘制批量工具栏
@@ -202,6 +234,9 @@ export default class BasicSourceDataSearchPage extends SearchPage {
           reportCode={this.state.tableName}
           // isOrgQuery={this.state.isOrgQuery}
         />
+        <Button onClick={this.port} type="primary" style={{ marginLeft: '10px' }}>
+          导出
+        </Button>
       </div>
     );
   };
