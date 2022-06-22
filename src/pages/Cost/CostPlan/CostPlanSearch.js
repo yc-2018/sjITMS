@@ -81,11 +81,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
       message.error("项目已经存在");
       return ;
     }
-     let list = data.list.map(e=>{
-       return e.CALC_SORT
-     })
-     list =  list.sort().reverse()[0]
-     result.CALC_SORT = list+1;
+    result.CALC_SORT= data.list.map(e=>e.CALC_SORT).sort((a,b)=>{return b-a})[0]+1;
     data.list.push(result)
    }
   this.setState({data,visible:false})
