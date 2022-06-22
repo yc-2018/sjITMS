@@ -30,6 +30,7 @@ export function makeFormData(obj, form_data) {
     // 封装
     for (var i = 0, len = data.length; i < len; i++) {
       if(data[i].value == undefined){
+        form_data.append(data[i].key,'');
         continue;
       }
       form_data.append(data[i].key, data[i].value);
