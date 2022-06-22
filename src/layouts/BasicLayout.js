@@ -13,7 +13,15 @@ import { enquireScreen, unenquireScreen } from 'enquire-js';
 import { formatMessage } from 'umi/locale';
 import SiderMenu from '@/components/SiderMenu';
 import Authorized from '@/utils/Authorized';
-import { loginOrg, loginUser, loginCompany, setActiveKey, getMenuLayout, isLogin, setUserBreadcrumb } from '@/utils/LoginContext';
+import {
+  loginOrg,
+  loginUser,
+  loginCompany,
+  setActiveKey,
+  getMenuLayout,
+  isLogin,
+  setUserBreadcrumb,
+} from '@/utils/LoginContext';
 import SettingDrawer from '@/components/SettingDrawer';
 import logo from '../assets/logo.svg';
 import Footer from './Footer';
@@ -24,7 +32,7 @@ import styles from './BasicLayout.less';
 import ReportPage from '@/pages/Report/ReportPage';
 import defaultSettings from '../defaultSettings';
 import IToolTip from '@/pages/Component/IToolTip';
-import {listenerData} from '@/utils/serial/SerialPort';
+import { listenerData } from '@/utils/serial/SerialPort';
 
 const { Content } = Layout;
 const { TabPane } = Tabs;
@@ -38,8 +46,7 @@ const formatter = (data, parentAuthority, parentName) => {
       }
 
       if (loginOrg() && item.org) {
-        if (item.org.indexOf(loginOrg().type) === -1)
-          return null;
+        if (item.org.indexOf(loginOrg().type) === -1) return null;
       }
 
       let locale = 'menu';
@@ -64,7 +71,7 @@ const formatter = (data, parentAuthority, parentName) => {
       return result;
     })
     .filter(item => item);
-}
+};
 
 const query = {
   'screen-xs': {
@@ -108,23 +115,25 @@ class BasicLayout extends React.Component {
     locations: {},
     reportUrls: {},
     activeKey: '',
-    tabsVisible: 'none'
+    tabsVisible: 'none',
   };
 
   componentDidMount() {
     listenerData((result, err) => {
       console.log(err);
     });
-    console.log('链接id：' + sessionStorage.getItem("serialConnectionId"));
+    console.log('链接id：' + sessionStorage.getItem('serialConnectionId'));
 
     const { dispatch } = this.props;
     if (isLogin() == false) {
-      dispatch(routerRedux.push({
-        pathname: '/user/login',
-        search: stringify({
-          redirect: window.location.href,
-        }),
-      }));
+      dispatch(
+        routerRedux.push({
+          pathname: '/user/login',
+          search: stringify({
+            redirect: window.location.href,
+          }),
+        })
+      );
       return;
     }
     dispatch({
@@ -135,14 +144,15 @@ class BasicLayout extends React.Component {
         rendering: false,
       });
     });
-    this.enquireHandler = () => enquireScreen(mobile => {
-      const { isMobile } = this.state;
-      if (isMobile !== mobile) {
-        this.setState({
-          isMobile: mobile,
-        });
-      }
-    });
+    this.enquireHandler = () =>
+      enquireScreen(mobile => {
+        const { isMobile } = this.state;
+        if (isMobile !== mobile) {
+          this.setState({
+            isMobile: mobile,
+          });
+        }
+      });
     if (sessionStorage.currentLocation) {
       dispatch(routerRedux.push(sessionStorage.currentLocation));
     }
@@ -152,20 +162,22 @@ class BasicLayout extends React.Component {
       this.refreshNotice();
       this.fetchOwner();
       this.getUserConfig();
-      this.fetchQueryBillDays();
+      // this.fetchQueryBillDays();
     }
     dispatch({
       type: 'setting/changeSetting',
       payload: {
         layout: getMenuLayout(),
-      }
+      },
     });
 
     // 如果 最后一个界面是大数据，刷新后回到首页
     if (this.props.location.pathname.indexOf('bigdata') > -1) {
-      dispatch(routerRedux.push({
-        pathname: '/',
-      }));
+      dispatch(
+        routerRedux.push({
+          pathname: '/',
+        })
+      );
     }
   }
 
@@ -173,67 +185,68 @@ class BasicLayout extends React.Component {
     this.props.dispatch({
       type: 'queryBillDateConfig/getByCompanyUuidAndDcUuid',
     });
-  }
-  
+  };
+
   getUserConfig = () => {
     this.props.dispatch({
       type: 'userConfig/getByUserUuid',
       payload: {
         userUuid: loginUser().uuid,
-        companyUuid: loginCompany().uuid
+        companyUuid: loginCompany().uuid,
       },
       callback: res => {
-        sessionStorage.setItem("searchPageLine", res.data.searchPageLine);
-        sessionStorage.setItem("viewPageLine", res.data.viewPageLine);
-      }
+        sessionStorage.setItem('searchPageLine', res.data.searchPageLine);
+        sessionStorage.setItem('viewPageLine', res.data.viewPageLine);
+      },
     });
-  }
+  };
 
   fetchOwner = () => {
     this.props.dispatch({
       type: 'owner/getDefOwner',
-      payload: loginCompany().uuid
+      payload: loginCompany().uuid,
     });
-  }
+  };
 
   fetchReportMenu = () => {
     const { menuData } = this.state;
     this.props.dispatch({
       type: 'report/getReportMenu',
     });
-  }
+  };
 
   refreshNotice = () => {
     this.props.dispatch({
-      type: 'unRead/getUnReadedNotice'
+      type: 'unRead/getUnReadedNotice',
     });
     this.props.dispatch({
-      type: 'unRead/getUnReadedReplition'
+      type: 'unRead/getUnReadedReplition',
     });
-  }
+  };
 
   clearTabPanes = () => {
     this.state.tabPanes.length = 0;
     this.setState({
       activeKey: '',
       tabPanes: this.state.tabPanes,
-      tabsVisible: 'none'
-    })
-  }
+      tabsVisible: 'none',
+    });
+  };
 
   componentWillReceiveProps(nextProps) {
     let menuData = this.getMenuData();
     let { reportMenu } = nextProps;
     const reportUrls = {};
     if (Array.isArray(reportMenu) && reportMenu.length >= 1) {
-      reportMenu.forEach(function (menu) {
+      reportMenu.forEach(function(menu) {
         menu.path = '/bigdata/' + menu.uuid;
-        menu.children && menu.children.forEach(function (submenu) {
-          submenu.path = '/bigdata/' + menu.uuid + '/' + submenu.uuid;
-          reportUrls[submenu.path] = submenu.url;
-        });
+        menu.children &&
+          menu.children.forEach(function(submenu) {
+            submenu.path = '/bigdata/' + menu.uuid + '/' + submenu.uuid;
+            reportUrls[submenu.path] = submenu.url;
+          });
       });
-      menuData.forEach(function (menu) {
+      menuData.forEach(function(menu) {
         if (menu.path === '/bigdata') {
           menu.children = reportMenu;
         }
@@ -241,13 +254,13 @@ class BasicLayout extends React.Component {
     }
     this.setState({
       menuData: [...menuData],
-      reportUrls: reportUrls
+      reportUrls: reportUrls,
     });
     this.breadcrumbNameMap = this.getBreadcrumbNameMap();
 
     if (this.props.location != nextProps.location) {
       this.setState({
-        activeKey: nextProps.location.pathname
+        activeKey: nextProps.location.pathname,
       });
     }
   }
@@ -312,14 +325,18 @@ class BasicLayout extends React.Component {
     const currRouterData = this.matchParamsPath(pathname);
 
     if (!currRouterData) {
-      window.parent && window.parent.changeTitle && window.parent.changeTitle('HEADING Intelligence WMS');
+      window.parent &&
+        window.parent.changeTitle &&
+        window.parent.changeTitle('HEADING Intelligence WMS');
       return 'HEADING Intelligence WMS';
     }
     const message = formatMessage({
       id: currRouterData.locale || currRouterData.name,
       defaultMessage: currRouterData.name,
     });
-    window.parent  && window.parent.changeTitle && window.parent.changeTitle(`${message} - HEADING Intelligence WMS`);
+    window.parent &&
+      window.parent.changeTitle &&
+      window.parent.changeTitle(`${message} - HEADING Intelligence WMS`);
     return `${message} - HEADING Intelligence WMS`;
   };
 
@@ -328,7 +345,9 @@ class BasicLayout extends React.Component {
     const { fixSiderbar, collapsed, layout } = this.props;
     if (fixSiderbar && layout !== 'topmenu' && !isMobile) {
       return {
-        paddingLeft: collapsed ? defaultSettings.closeSiderNavigatorWidth : defaultSettings.openSiderNavigatorWidth,
+        paddingLeft: collapsed
+          ? defaultSettings.closeSiderNavigatorWidth
+          : defaultSettings.openSiderNavigatorWidth,
       };
     }
     return null;
@@ -372,18 +391,22 @@ class BasicLayout extends React.Component {
       top: '46px',
       right: 0,
       // width: '100%',
-      'zIndex': '10',
+      zIndex: '10',
       transition: 'width 0.2s',
-      left: getMenuLayout() === 'topmenu' ? '0px' : (this.props.collapsed ? defaultSettings.closeSiderNavigatorWidth
-        : defaultSettings.openSiderNavigatorWidth)
-    }
-  }
+      left:
+        getMenuLayout() === 'topmenu'
+          ? '0px'
+          : this.props.collapsed
+            ? defaultSettings.closeSiderNavigatorWidth
+            : defaultSettings.openSiderNavigatorWidth,
+    };
+  };
 
   handleMenuCollapse = collapsed => {
     const { dispatch } = this.props;
     this.setState({
-      isCollapsed: collapsed
-    })
+      isCollapsed: collapsed,
+    });
 
     dispatch({
       type: 'global/changeLayoutCollapsed',
@@ -417,52 +440,51 @@ class BasicLayout extends React.Component {
     let panes = this.state.tabPanes.filter(pane => pane.key !== targetKey);
     if (panes.length && activeKey === targetKey) {
       if (lastIndex > panes.length) {
-        activeKey = panes[panes.length - 1].key
+        activeKey = panes[panes.length - 1].key;
       } else if (lastIndex == panes.length && panes.length == 1) {
-        activeKey = panes[0].key
+        activeKey = panes[0].key;
       } else if (lastIndex == panes.length && panes.length != 1) {
-        activeKey = panes[panes.length - 1].key
+        activeKey = panes[panes.length - 1].key;
       } else {
-        activeKey = panes[lastIndex].key
+        activeKey = panes[lastIndex].key;
       }
     }
     if (panes.length == 1) {
       this.setState({
-        activeKey: activeKey
-      })
+        activeKey: activeKey,
+      });
     }
     this.setState({
       tabPanes: [...panes],
-      activeKey: activeKey
+      activeKey: activeKey,
     });
 
-    this.props.dispatch(routerRedux.push({
-      pathname: activeKey,
-    }));
-
+    this.props.dispatch(
+      routerRedux.push({
+        pathname: activeKey,
+      })
+    );
   };
 
-  tabsOnchange = (activeKey) => {
-
+  tabsOnchange = activeKey => {
     this.setState({
       activeKey: activeKey,
     });
     setActiveKey(activeKey);
-    this.props.dispatch(routerRedux.push({
-      pathname: activeKey,
-    }));
+    this.props.dispatch(
+      routerRedux.push({
+        pathname: activeKey,
+      })
+    );
+  };
 
-  }
-
-  drawTabPaneTitle = (title) => {
+  drawTabPaneTitle = title => {
     // let name = title;
     // if (title.length > 8) {
     //   name = title.substring(0, 8) + '...';
     // }
-    return <IToolTip>
-      {title}
-    </IToolTip>
-  }
+    return <IToolTip>{title}</IToolTip>;
+  };
 
   render() {
     const {
@@ -480,11 +502,11 @@ class BasicLayout extends React.Component {
 
     let currentActiceKey = activeKey;
 
-    var currentPanes = tabPanes.filter(function (t) {
+    var currentPanes = tabPanes.filter(function(t) {
       return t.key === pathname;
     });
     if (currentPanes.length == 0 && routerConfig) {
-      this.state.tabsVisible = 'block'
+      this.state.tabsVisible = 'block';
       this.state.tabPanes.push(
         <TabPane tab={this.drawTabPaneTitle(routerConfig.name)} key={currentActiceKey}>
           <div className={styles.content} id={currentActiceKey}>
@@ -492,8 +514,11 @@ class BasicLayout extends React.Component {
               authority={routerConfig && routerConfig.authority}
               noMatch={<Exception403 />}
             >
-              {activeKey.indexOf('bigdata') > -1 ?
-                <ReportPage url={reportUrls[activeKey]} /> : children}
+              {activeKey.indexOf('bigdata') > -1 ? (
+                <ReportPage url={reportUrls[activeKey]} />
+              ) : (
+                children
+              )}
             </Authorized>
             <Footer />
           </div>
@@ -503,8 +528,7 @@ class BasicLayout extends React.Component {
       currentActiceKey = pathname;
       locations[pathname] = { ...this.props.location };
       this.state.activeKey = pathname;
-    }
-    else {
+    } else {
       if (currentPanes.length > 0) {
         currentActiceKey = currentPanes[0].key;
       }
@@ -551,13 +575,14 @@ class BasicLayout extends React.Component {
           />
           <Content style={this.getContentStyle()}>
             <div className={styles.tabsBody} style={{ display: this.state.tabsVisible }}>
-              <Tabs activeKey={currentActiceKey}
-                    tabBarStyle={this.getTabsStyle()}
-                    tabBarGutter={1}
-                    type="editable-card"
-                    hideAdd
-                    onChange={this.tabsOnchange}
-                    onEdit={this.onEdit}
+              <Tabs
+                activeKey={currentActiceKey}
+                tabBarStyle={this.getTabsStyle()}
+                tabBarGutter={1}
+                type="editable-card"
+                hideAdd
+                onChange={this.tabsOnchange}
+                onEdit={this.onEdit}
               >
                 {tabPanes}
               </Tabs>
