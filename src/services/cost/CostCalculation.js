@@ -20,12 +20,16 @@ export async function calculatePlan(payload) {
   );
 }
 
-export async function getBill(planUuid,payload) { 
-  return request(
-    `/itms-cost/itms-cost/costbill/getBill?planUuid=${planUuid}`,
-    {
-      method: 'POST',
-      body:payload
-    }
-  );
+export async function getBill(planUuid, payload) {
+  return request(`/itms-cost/itms-cost/costbill/getBill?planUuid=${planUuid}`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function getBillLogs(billUuid, payload) {
+  return request(`/itms-cost/itms-cost/costbill/getBillLogs?billUuid=${billUuid}`, {
+    method: 'POST',
+    body: payload,
+  });
 }

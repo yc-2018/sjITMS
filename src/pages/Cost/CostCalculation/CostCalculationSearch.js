@@ -18,6 +18,7 @@ import {
   List,
   DatePicker,
   Spin,
+  Collapse,
 } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
@@ -25,9 +26,10 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
 import { DndProvider } from 'react-dnd';
-import { calculatePlan, getBill } from '@/services/cost/CostCalculation';
+import { calculatePlan, getBill, getBillLogs } from '@/services/cost/CostCalculation';
 const { MonthPicker } = DatePicker;
 import moment from 'moment';
+const { Panel } = Collapse;
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -44,6 +46,9 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       this.props.params.dateString == undefined
         ? moment().format('YYYY-MM')
         : this.props.params.dateString,
+    bill: null,
+    isShowLogs: false,
+    billLogs: [],
   };
 
   comeBack = () => {
@@ -103,7 +108,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     }
     const response = await getBill(uuid, params);
     if (response.data && response.success) {
-      const { struct, data } = response.data.records[0];
+      const { struct, data, bill } = response.data.records[0];
       let newColumns = [];
       struct.forEach(data => {
         newColumns.push({
@@ -128,6 +133,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
         key: this.props.quickuuid + new Date(),
         data: datas,
         searchLoading: false,
+        bill: bill,
       });
       this.initConfig({
         columns: newColumns,
@@ -163,12 +169,28 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     });
   };
 
+  getcalcLog = async () => {
+    this.changeLogsModal();
+    await getBillLogs(this.state.bill.UUID).then(response => {
+      if (response && response.success) {
+        this.setState({ billLogs: response.data.logsDetail });
+        console.log('222', response);
+      }
+    });
+  };
+
+  changeLogsModal = () => {
+    this.setState({ isShowLogs: !this.state.isShowLogs });
+  };
+
   monthChange = (date, dateString) => {
     this.setState({ dateString });
   };
 
   drawSearchPanel = () => {
-    const { dateString, searchLoading } = this.state;
+    const { dateString, searchLoading, billLogs } = this.state;
+    console.log('billLogs', billLogs);
+
     return (
       <Row style={{ marginTop: '10px' }}>
         <Col>
@@ -191,6 +213,37 @@ export default class CostProjectSearch extends QuickFormSearchPage {
           <Button type="primary" onClick={this.calculate.bind()}>
             计算
           </Button>
+          <Button
+            style={{ marginLeft: '10px' }}
+            hidden={!this.state.bill}
+            type="primary"
+            onClick={this.getcalcLog}
+          >
+            结果日志
+          </Button>
+          <Modal
+            title="结果日志"
+            visible={this.state.isShowLogs}
+            onOk={this.state.isShowLogs}
+            onCancel={this.changeLogsModal}
+            width={1000}
+          >
+            <div style={{ overflow: 'scroll', height: '500px' }}>
+              <Collapse>
+                {billLogs.map((item, index) => {
+                  //  let logs = item.costLog.replace(/\n/g, '&#10;');
+                  let logs = item.costLog.split('\n');
+                  return (
+                    <Panel header={item.costTitle} key={index}>
+                      {logs.map(item => {
+                        return <p>{item}</p>;
+                      })}
+                    </Panel>
+                  );
+                })}
+              </Collapse>
+            </div>
+          </Modal>
           <Button style={{ margin: '0px 10px' }} type="primary" onClick={this.checkData.bind()}>
             检查数据
           </Button>
