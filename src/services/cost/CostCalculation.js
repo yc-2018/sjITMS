@@ -20,11 +20,12 @@ export async function calculatePlan(payload) {
   );
 }
 
-export async function getBill(payload) {
+export async function getBill(planUuid,payload) { 
   return request(
-    `/itms-cost/itms-cost/costbill/getBill?planUuid=${payload.planUuid}&month=${payload.month}`,
+    `/itms-cost/itms-cost/costbill/getBill?planUuid=${planUuid}`,
     {
-      method: 'GET',
+      method: 'POST',
+      body:payload
     }
   );
 }

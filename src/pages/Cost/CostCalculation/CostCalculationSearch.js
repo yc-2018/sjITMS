@@ -62,20 +62,30 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     });
   };
 
-  handleOnSertch = async () => {
+  handleOnSertch = async (data) => {
     const { dateString } = this.state;
     if (dateString == '') {
       message.error('请选择费用所属月');
       return;
     }
     const uuid = this.props.params.entityUuid;
-    let params = {
-      planUuid: uuid,
-      month: dateString,
-    };
-    const response = await getBill(params);
+    let params ={};
+    if(data){
+      data.searchKeyValues = {month:dateString,...data.searchKeyValues}
+      params = data;
+    }else{
+      params = {
+        page:1,
+        pageSize:20,
+        sortFields:{},
+        searchKeyValues:{month:dateString},
+        likeKeyValues:{}
+       
+      };
+    }
+    const response = await getBill(uuid,params);
     if (response.data && response.success) {
-      const { struct, data } = response.data;
+      const { struct, data } = response.data.records[0];
       let newColumns = [];
       struct.forEach(data => {
         newColumns.push({
@@ -87,9 +97,19 @@ export default class CostProjectSearch extends QuickFormSearchPage {
           isShow: true,
         });
       });
+      var datas = {
+        list: data,
+        pagination: {
+          total: response.data.pageCount,
+          pageSize:response.data.pageSize,
+          current: response.data.page,
+          showTotal: total => `共 ${total} 条`,
+        },
+      };
       this.setState({
         key: this.props.quickuuid + new Date(),
-        data: data,
+        data: datas,
+        sucomIdspendLoading:true
       });
       this.initConfig({
         columns: newColumns,
@@ -101,7 +121,12 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       this.setState({ data: [] });
     }
   };
-
+  refreshTable =(data)=>{
+   
+    data.page = data.page+1;
+   this.handleOnSertch(data);
+    
+  }
   calculate = async () => {
     const { dateString } = this.state;
     if (dateString == '') {
@@ -142,7 +167,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
           <Button
             style={{ margin: '0px 10px' }}
             type="primary"
-            onClick={this.handleOnSertch.bind()}
+            onClick={()=>this.handleOnSertch()}
           >
             查询
           </Button>
