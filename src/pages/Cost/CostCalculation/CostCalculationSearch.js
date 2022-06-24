@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-17 15:43:14
+ * @LastEditTime: 2022-06-23 15:00:17
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -22,6 +22,8 @@ export default class CostProjectSearch extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
   state = {
     ...this.state,
+    searchLoading: false,
+    calculateLoading: false,
     dateString:
       this.props.params.dateString == undefined
         ? moment().format('YYYY-MM')
@@ -68,6 +70,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       message.error('请选择费用所属月');
       return;
     }
+    this.setState({ searchLoading: true });
     const uuid = this.props.params.entityUuid;
     let params ={};
     if(data){
@@ -109,7 +112,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       this.setState({
         key: this.props.quickuuid + new Date(),
         data: datas,
-        sucomIdspendLoading:true
+        searchLoading: false,
       });
       this.initConfig({
         columns: newColumns,
@@ -118,7 +121,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       });
     } else {
       message.error('查询无数据,请核实后再操作');
-      this.setState({ data: [] });
+      this.setState({ data: [], searchLoading: false });
     }
   };
   refreshTable =(data)=>{
@@ -133,6 +136,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       message.error('请选择费用所属月');
       return;
     }
+    this.setState({ calculateLoading: true });
     const uuid = this.props.params.entityUuid;
     let params = {
       planUuid: uuid,
@@ -141,8 +145,9 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     await calculatePlan(params).then(response => {
       if (response && response.success) {
         message.success('计算成功');
-        this.handleOnSertch();
+        this.handleOnSearch();
       }
+      this.setState({ calculateLoading: false });
     });
   };
 
@@ -151,7 +156,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
   };
 
   drawSearchPanel = () => {
-    const { dateString } = this.state;
+    const { dateString, searchLoading, calculateLoading } = this.state;
     return (
       <Row style={{ marginTop: '10px' }}>
         <Col>
@@ -168,10 +173,11 @@ export default class CostProjectSearch extends QuickFormSearchPage {
             style={{ margin: '0px 10px' }}
             type="primary"
             onClick={()=>this.handleOnSertch()}
+            loading={searchLoading}
           >
             查询
           </Button>
-          <Button type="primary" onClick={this.calculate.bind()}>
+          <Button type="primary" onClick={this.calculate.bind()} loading={calculateLoading}>
             计算
           </Button>
           <Button style={{ margin: '0px 10px' }} type="primary" onClick={this.checkData.bind()}>
