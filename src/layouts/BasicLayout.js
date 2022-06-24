@@ -325,10 +325,8 @@ class BasicLayout extends React.Component {
     const currRouterData = this.matchParamsPath(pathname);
 
     if (!currRouterData) {
-      window.parent &&
-        window.parent.changeTitle &&
-        window.parent.changeTitle('HEADING Intelligence WMS');
-      return 'HEADING Intelligence WMS';
+      window.parent && window.parent.changeTitle && window.parent.changeTitle('TimeExpress TMS');
+      return 'TimeExpress TMS';
     }
     const message = formatMessage({
       id: currRouterData.locale || currRouterData.name,
@@ -336,8 +334,8 @@ class BasicLayout extends React.Component {
     });
     window.parent &&
       window.parent.changeTitle &&
-      window.parent.changeTitle(`${message} - HEADING Intelligence WMS`);
-    return `${message} - HEADING Intelligence WMS`;
+      window.parent.changeTitle(`${message} - TimeExpress TMS`);
+    return `${message} - TimeExpress TMS`;
   };
 
   getLayoutStyle = () => {

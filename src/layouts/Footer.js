@@ -4,11 +4,11 @@ import GlobalFooter from '@/components/GlobalFooter';
 
 const { Footer } = Layout;
 const FooterView = () => (
-  <Footer style={{ padding: 0, background: '#EDF1F5', overflow:'hidden' }}>
+  <Footer style={{ padding: 0, background: '#EDF1F5', overflow: 'hidden' }}>
     <GlobalFooter
       copyright={
         <Fragment>
-           Copyright <Icon type="copyright" /> {new Date().getFullYear()} 海鼎信息工程股份有限公司
+          Copyright <Icon type="copyright" /> {new Date().getFullYear()} 广东时捷物流有限公司
         </Fragment>
       }
     />

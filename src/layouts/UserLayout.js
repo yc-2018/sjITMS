@@ -36,11 +36,11 @@ class UserLayout extends React.PureComponent {
   getPageTitle() {
     const { routerData, location } = this.props;
     const { pathname } = location;
-    let title = 'HEADING Intelligence WMS';
+    let title = 'TimeExpress TMS';
     if (pathname.indexOf('login') > 0) {
-      title = `${formatMessage({ id: 'app.login.title' })} - HEADING Intelligence WMS`;
+      title = `${formatMessage({ id: 'app.login.title' })} - TimeExpress TMS`;
     } else {
-      title = `${formatMessage({ id: 'app.forget.title' })} - HEADING Intelligence WMS`;
+      title = `${formatMessage({ id: 'app.forget.title' })} - TimeExpress TMS`;
     }
     return title;
   }
@@ -54,9 +54,7 @@ class UserLayout extends React.PureComponent {
             <SelectLang />
           </div>
           <div className={styles.container}>
-            <div className={styles.content}>
-              {children}
-            </div>
+            <div className={styles.content}>{children}</div>
           </div>
         </div>
       </DocumentTitle>
