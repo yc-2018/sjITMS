@@ -145,7 +145,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     await calculatePlan(params).then(response => {
       if (response && response.success) {
         message.success('计算成功');
-        this.handleOnSearch();
+        this.handleOnSertch();
       }
       this.setState({ calculateLoading: false });
     });
