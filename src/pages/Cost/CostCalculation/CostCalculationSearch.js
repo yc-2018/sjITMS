@@ -2,13 +2,29 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-23 15:00:17
+ * @LastEditTime: 2022-06-24 11:16:38
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
-import { Table, Button, Input, Col, Row, Popconfirm, message, Modal, List, DatePicker } from 'antd';
+import {
+  Table,
+  Button,
+  Input,
+  Col,
+  Row,
+  Popconfirm,
+  message,
+  Modal,
+  List,
+  DatePicker,
+  Spin,
+} from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
+import PageHeaderWrapper from '@/components/PageHeaderWrapper';
+import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
+import Page from '@/pages/Component/Page/inner/Page';
+import { DndProvider } from 'react-dnd';
 import { calculatePlan, getBill } from '@/services/cost/CostCalculation';
 const { MonthPicker } = DatePicker;
 import moment from 'moment';
@@ -64,7 +80,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     });
   };
 
-  handleOnSertch = async (data) => {
+  handleOnSertch = async data => {
     const { dateString } = this.state;
     if (dateString == '') {
       message.error('请选择费用所属月');
@@ -72,21 +88,20 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     }
     this.setState({ searchLoading: true });
     const uuid = this.props.params.entityUuid;
-    let params ={};
-    if(data){
-      data.searchKeyValues = {month:dateString,...data.searchKeyValues}
+    let params = {};
+    if (data) {
+      data.searchKeyValues = { month: dateString, ...data.searchKeyValues };
       params = data;
-    }else{
+    } else {
       params = {
-        page:1,
-        pageSize:20,
-        sortFields:{},
-        searchKeyValues:{month:dateString},
-        likeKeyValues:{}
-       
+        page: 1,
+        pageSize: 20,
+        sortFields: {},
+        searchKeyValues: { month: dateString },
+        likeKeyValues: {},
       };
     }
-    const response = await getBill(uuid,params);
+    const response = await getBill(uuid, params);
     if (response.data && response.success) {
       const { struct, data } = response.data.records[0];
       let newColumns = [];
@@ -104,7 +119,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
         list: data,
         pagination: {
           total: response.data.pageCount,
-          pageSize:response.data.pageSize,
+          pageSize: response.data.pageSize,
           current: response.data.page,
           showTotal: total => `共 ${total} 条`,
         },
@@ -124,19 +139,17 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       this.setState({ data: [], searchLoading: false });
     }
   };
-  refreshTable =(data)=>{
-   
-    data.page = data.page+1;
-   this.handleOnSertch(data);
-    
-  }
+  refreshTable = data => {
+    data.page = data.page + 1;
+    this.handleOnSertch(data);
+  };
   calculate = async () => {
     const { dateString } = this.state;
     if (dateString == '') {
       message.error('请选择费用所属月');
       return;
     }
-    this.setState({ calculateLoading: true });
+    this.setState({ searchLoading: true });
     const uuid = this.props.params.entityUuid;
     let params = {
       planUuid: uuid,
@@ -147,7 +160,6 @@ export default class CostProjectSearch extends QuickFormSearchPage {
         message.success('计算成功');
         this.handleOnSertch();
       }
-      this.setState({ calculateLoading: false });
     });
   };
 
@@ -156,7 +168,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
   };
 
   drawSearchPanel = () => {
-    const { dateString, searchLoading, calculateLoading } = this.state;
+    const { dateString, searchLoading } = this.state;
     return (
       <Row style={{ marginTop: '10px' }}>
         <Col>
@@ -172,12 +184,11 @@ export default class CostProjectSearch extends QuickFormSearchPage {
           <Button
             style={{ margin: '0px 10px' }}
             type="primary"
-            onClick={()=>this.handleOnSertch()}
-            loading={searchLoading}
+            onClick={() => this.handleOnSertch()}
           >
             查询
           </Button>
-          <Button type="primary" onClick={this.calculate.bind()} loading={calculateLoading}>
+          <Button type="primary" onClick={this.calculate.bind()}>
             计算
           </Button>
           <Button style={{ margin: '0px 10px' }} type="primary" onClick={this.checkData.bind()}>
@@ -195,4 +206,21 @@ export default class CostProjectSearch extends QuickFormSearchPage {
   changeState = () => {
     this.setState({ title: this.props.params.e.SCHEME_NAME });
   };
+
+  render() {
+    let ret = this.state.canFullScreen ? (
+      <FreshPageHeaderWrapper>{this.drawPage()}</FreshPageHeaderWrapper>
+    ) : (
+      <PageHeaderWrapper>
+        <Page withCollect={true} pathname={this.props.pathname}>
+          <Spin spinning={this.state.searchLoading}>{this.drawPage()}</Spin>
+        </Page>
+      </PageHeaderWrapper>
+    );
+    if (this.state.isDrag) {
+      return <DndProvider backend={HTML5Backend}>{ret}</DndProvider>;
+    } else {
+      return ret;
+    }
+  }
 }
