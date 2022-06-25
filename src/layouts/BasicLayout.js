@@ -447,19 +447,12 @@ class BasicLayout extends React.Component {
         activeKey = panes[lastIndex].key;
       }
     }
-    if (panes.length == 1) {
-      this.setState({
-        activeKey: activeKey,
-      });
-    }
-    this.setState({
-      tabPanes: [...panes],
-      activeKey: activeKey,
-    });
+
+    this.setState({ tabPanes: [...panes], activeKey: panes.length == 0 ? '/' : activeKey });
 
     this.props.dispatch(
       routerRedux.push({
-        pathname: activeKey,
+        pathname: panes.length == 0 ? '/' : activeKey,
       })
     );
   };

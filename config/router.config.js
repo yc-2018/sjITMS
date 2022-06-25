@@ -888,50 +888,50 @@ export default [
       //     },
       //   ],
       // },
-      {
-        path: '/billmanage',
-        name: 'billManage',
-        org: ['COMPANY'],
-        icon: 'icon-cangchuguanli_uncheck',
-        routes: [
-          {
-            path: '/billmanage/dataImport',
-            name: 'dataImport',
-            component: './BillManage/DataImport/DataImport',
-            // authority: ['']
-          },
-          {
-            path: '/billmanage/billType',
-            name: 'billType',
-            component: './BillManage/DataType/DataType',
-            // authority: ['']
-          },
-          {
-            path: '/billmanage/billSort',
-            name: 'sort',
-            component: './BillManage/BillSort/BillSort',
-            // authority: ['']
-          },
-          {
-            path: '/billmanage/unitConversion',
-            name: 'unitConversion',
-            component: './BillManage/UnitConversion/UnitConversion',
-            // authority: ['']
-            divider: true,
-          },
-          {
-            path: '/billmanage/billList',
-            name: 'billList',
-            component: './BillManage/BillList/BillList',
-            // authority: ['']
-          },
-          // {
-          //   path: '/billmanage/contract',
-          //   name: 'contract',
-          //   component: './Tms/Contract/Contract',
-          // },
-        ],
-      },
+      // {
+      //   path: '/billmanage',
+      //   name: 'billManage',
+      //   org: ['COMPANY'],
+      //   icon: 'icon-cangchuguanli_uncheck',
+      //   routes: [
+      //     {
+      //       path: '/billmanage/dataImport',
+      //       name: 'dataImport',
+      //       component: './BillManage/DataImport/DataImport',
+      //       authority: ['']
+      //     },
+      //     {
+      //       path: '/billmanage/billType',
+      //       name: 'billType',
+      //       component: './BillManage/DataType/DataType',
+      //       authority: ['']
+      //     },
+      //     {
+      //       path: '/billmanage/billSort',
+      //       name: 'sort',
+      //       component: './BillManage/BillSort/BillSort',
+      //       authority: ['']
+      //     },
+      //     {
+      //       path: '/billmanage/unitConversion',
+      //       name: 'unitConversion',
+      //       component: './BillManage/UnitConversion/UnitConversion',
+      //       authority: [''],
+      //       divider: true,
+      //     },
+      //     {
+      //       path: '/billmanage/billList',
+      //       name: 'billList',
+      //       component: './BillManage/BillList/BillList',
+      //       authority: ['']
+      //     },
+      //     {
+      //       path: '/billmanage/contract',
+      //       name: 'contract',
+      //       component: './Tms/Contract/Contract',
+      //     },
+      //   ],
+      // },
       {
         path: '/call',
         name: 'call',
@@ -1042,24 +1042,6 @@ export default [
         ],
       },
       {
-        path: '/bigdata',
-        name: 'bigData',
-        icon: 'icon-menu_data1',
-        routes: [
-          {
-            path: '/bigdata/:folder/:report',
-            component: './Report/ReportPage',
-          },
-        ],
-      },
-      {
-        path: '/notice',
-        name: 'notice',
-        icon: 'icon-menu_notice',
-        component: './Basic/Notice/Notice',
-        authority: ['iwms.system.notice'],
-      },
-      {
         path: '/account',
         name: 'account',
         hideInMenu: true,
@@ -1078,7 +1060,7 @@ export default [
       },
       {
         path: '/costbasic',
-        name: 'cost',
+        name: 'billManage',
         org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
         authority: ['itms.base'],
         icon: 'icon-cangchuguanli_uncheck',
@@ -1241,7 +1223,6 @@ export default [
             authority: ['sjtms.core.schedule'],
             divider: true,
           },
-
           {
             path: '/sjtms/core/cardLoading',
             name: 'cardLoading',
@@ -1291,7 +1272,6 @@ export default [
             authority: ['sjtms.core.return'],
             divider: true,
           },
-
           {
             path: '/sjtms/core/taskCenter',
             name: 'taskCenter',
@@ -1300,6 +1280,24 @@ export default [
             authority: ['sjtms.core.taskCenter'],
           },
         ],
+      },
+      {
+        path: '/bigdata',
+        name: 'bigData',
+        icon: 'icon-menu_data1',
+        routes: [
+          {
+            path: '/bigdata/:folder/:report',
+            component: './Report/ReportPage',
+          },
+        ],
+      },
+      {
+        path: '/notice',
+        name: 'notice',
+        icon: 'icon-menu_notice',
+        component: './Basic/Notice/Notice',
+        authority: ['iwms.system.notice'],
       },
     ],
   },
