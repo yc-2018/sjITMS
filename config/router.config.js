@@ -1229,14 +1229,14 @@ export default [
             org: ['DISPATCH_CENTER'],
             component: './SJTms/ChargeLoading/ChargeLoading',
             quickuuid: 'sj_itms_schedule',
-            authority: ['cardLoading'],
+            authority: ['sjtms.core.cardLoading'],
           },
           {
             path: '/sjtms/core/checkin',
             name: 'checkin',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/CheckInAndCheckOut/CheckInAndCheckOut',
-            authority: ['checkin'],
+            authority: ['sjtms.core.checkin'],
             divider: true,
           },
           {
