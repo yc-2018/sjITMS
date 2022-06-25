@@ -18,6 +18,7 @@ import {
   List,
   DatePicker,
   Spin,
+  Form
 } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
@@ -25,15 +26,17 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
 import { DndProvider } from 'react-dnd';
-import { calculatePlan, getBill } from '@/services/cost/CostCalculation';
+import { calculatePlan, getBill ,findCostFormFieldByPlanUuid} from '@/services/cost/CostCalculation';
 const { MonthPicker } = DatePicker;
 import moment from 'moment';
+import { throttleSetter } from 'lodash-decorators';
 
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
 //继承QuickFormSearchPage Search页面扩展
+@Form.create()
 export default class CostProjectSearch extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
   state = {
@@ -45,11 +48,9 @@ export default class CostProjectSearch extends QuickFormSearchPage {
         ? moment().format('YYYY-MM')
         : this.props.params.dateString,
   };
-
   comeBack = () => {
     this.props.switchTab('query');
   };
-
   checkData = () => {
     const { dateString } = this.state;
     const { e } = this.props.params;
@@ -81,23 +82,30 @@ export default class CostProjectSearch extends QuickFormSearchPage {
   };
 
   handleOnSertch = async data => {
+    let values = this.props.form.getFieldsValue()
     const { dateString } = this.state;
     if (dateString == '') {
       message.error('请选择费用所属月');
       return;
     }
+    values.dateString = dateString;
+    for(const i in values){
+      if(values[i]==''){
+        delete values[i];
+      }
+    }
     this.setState({ searchLoading: true });
     const uuid = this.props.params.entityUuid;
     let params = {};
     if (data) {
-      data.searchKeyValues = { month: dateString, ...data.searchKeyValues };
+      data.searchKeyValues = { ...values, ...data.searchKeyValues };
       params = data;
     } else {
       params = {
         page: 1,
         pageSize: 20,
         sortFields: {},
-        searchKeyValues: { month: dateString },
+        searchKeyValues: { ...values},
         likeKeyValues: {},
       };
     }
@@ -167,46 +175,73 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     this.setState({ dateString });
   };
 
-  drawSearchPanel = () => {
+  drawSearchPanel =() => {
+    const { getFieldDecorator } = this.props.form;
     const { dateString, searchLoading } = this.state;
-    return (
-      <Row style={{ marginTop: '10px' }}>
-        <Col>
-          费用所属月：
+    let node = [];
+    
+    node.push(<Form.Item label="费用所属月">
+        {getFieldDecorator('dateString', { initialValue:  moment(
+          dateString == undefined ? moment().format('YYYY-MM') : dateString,
+          'YYYY-MM'
+        )})(
           <MonthPicker
-            defaultValue={moment(
-              dateString == undefined ? moment().format('YYYY-MM') : dateString,
-              'YYYY-MM'
-            )}
+            placeholder=""
             onChange={(date, dateString) => this.monthChange(date, dateString)}
-            style={{ width: '15%' }}
           />
-          <Button
-            style={{ margin: '0px 10px' }}
-            type="primary"
-            onClick={() => this.handleOnSertch()}
-          >
-            查询
-          </Button>
-          <Button type="primary" onClick={this.calculate.bind()}>
-            计算
-          </Button>
-          <Button style={{ margin: '0px 10px' }} type="primary" onClick={this.checkData.bind()}>
-            检查数据
-          </Button>
-          <Button onClick={this.comeBack.bind()}>返回</Button>
-        </Col>
-      </Row>
-    );
+        )}
+      </Form.Item>);
+    let datade = this.state.dataSources?this.state.dataSources.map(item=>{
+      return  <Form.Item label={item.DB_FIELD_TXT}>
+           {getFieldDecorator(item.DB_FIELD_NAME, { initialValue:""})(<Input/>)}
+           </Form.Item>
+      }):[];
+      node = [...node,...datade];
+      node.push( <Form.Item>
+        <Button
+        style={{ margin: '0px 10px' }}
+        type="primary"
+        onClick={() => this.handleOnSertch()}
+      >
+        查询
+      </Button>
+      </Form.Item>) ;
+        
+        node.push(<Form.Item>
+      <Button type="primary" onClick={this.calculate.bind()}>
+        计算
+      </Button>
+      </Form.Item>);
+      node.push( <Form.Item>
+      <Button style={{ margin: '0px 10px' }} type="primary" onClick={this.checkData.bind()}>
+        检查数据
+      </Button>
+      <Button onClick={this.comeBack.bind()}>返回</Button>
+      </Form.Item>);
+     
+      return (<Row style={{ marginTop: '10px' }}>
+      <Col>
+        <Form layout="inline">
+          {node.map(e=>{return e})}
+        </Form>
+      </Col>
+    </Row>);
+    
   };
-
+  getDatas =async ()=>{
+   await findCostFormFieldByPlanUuid(this.props.params.entityUuid).then(result =>{
+        this.setState({dataSources:result.data})
+      });
+  }
   //该方法会覆盖所有的中间功能按钮
   drawToolbarPanel = () => {};
 
   changeState = () => {
     this.setState({ title: this.props.params.e.SCHEME_NAME });
   };
-
+  componentWillReceiveProps() {
+    this.getDatas();
+  }
   render() {
     let ret = this.state.canFullScreen ? (
       <FreshPageHeaderWrapper>{this.drawPage()}</FreshPageHeaderWrapper>

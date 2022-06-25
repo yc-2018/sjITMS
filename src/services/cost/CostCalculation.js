@@ -29,3 +29,12 @@ export async function getBill(planUuid,payload) {
     }
   );
 }
+export   function findCostFormFieldByPlanUuid(planUuid) { 
+  return request(
+    `/itms-cost/itms-cost/source/findCostFormFieldByPlanUuid?planUuid=${planUuid}`,
+    {
+      method: 'POST'
+      
+    }
+  );
+}
