@@ -159,7 +159,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       });
     } else {
       message.error('查询无数据,请核实后再操作');
-      this.setState({ data: [], searchLoading: false });
+      this.setState({ data: [], searchLoading: false, bill: null });
     }
   };
   refreshTable = data => {
@@ -192,7 +192,8 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     await getBillLogs(this.state.bill.UUID).then(response => {
       if (response && response.success) {
         this.setState({ billLogs: response.data.logsDetail });
-        console.log('222', response);
+      } else {
+        message.error('查询日志失败，请重新计算后再查询');
       }
     });
   };
