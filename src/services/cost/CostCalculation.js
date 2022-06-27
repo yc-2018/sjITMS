@@ -33,11 +33,29 @@ export async function getBillLogs(billUuid, payload) {
     body: payload,
   });
 }
-export   function findCostFormFieldByPlanUuid(planUuid) { 
+export async  function findCostFormFieldByPlanUuid(planUuid) { 
   return request(
     `/itms-cost/itms-cost/source/findCostFormFieldByPlanUuid?planUuid=${planUuid}`,
     {
       method: 'POST'
+      
+    }
+  );
+}
+export async  function onLock(planUuid,month) { 
+  return request(
+    `/itms-cost/itms-cost/costbill/onLock?planUuid=${planUuid}&dateString=${month}`,
+    {
+      method: 'GET'
+      
+    }
+  );
+}
+export async  function isLock(planUuid,month) { 
+  return request(
+    `/itms-cost/itms-cost/costbill/isLock?planUuid=${planUuid}&dateString=${month}`,
+    {
+      method: 'GET'
       
     }
   );
