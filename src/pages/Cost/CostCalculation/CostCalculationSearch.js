@@ -19,7 +19,7 @@ import {
   DatePicker,
   Spin,
   Form,
-  Collapse
+  Collapse,
 } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
@@ -27,7 +27,14 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
 import { DndProvider } from 'react-dnd';
-import { calculatePlan, getBill ,findCostFormFieldByPlanUuid,getBillLogs,onLock,isLock} from '@/services/cost/CostCalculation';
+import {
+  calculatePlan,
+  getBill,
+  findCostFormFieldByPlanUuid,
+  getBillLogs,
+  onLock,
+  isLock,
+} from '@/services/cost/CostCalculation';
 const { MonthPicker } = DatePicker;
 import moment from 'moment';
 const { Panel } = Collapse;
@@ -52,9 +59,9 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     bill: null,
     isShowLogs: false,
     billLogs: [],
-    isLock:false
+    isLock: false,
   };
-  month=moment().format('YYYY-MM');
+  month = moment().format('YYYY-MM');
   comeBack = () => {
     this.props.switchTab('query');
   };
@@ -89,15 +96,15 @@ export default class CostProjectSearch extends QuickFormSearchPage {
   };
 
   handleOnSertch = async data => {
-    let values = this.props.form.getFieldsValue()
+    let values = this.props.form.getFieldsValue();
     const { dateString } = this.state;
     if (dateString == '') {
       message.error('请选择费用所属月');
       return;
     }
     values.dateString = dateString;
-    for(const i in values){
-      if(values[i]==''){
+    for (const i in values) {
+      if (values[i] == '') {
         delete values[i];
       }
     }
@@ -112,7 +119,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
         page: 1,
         pageSize: 20,
         sortFields: {},
-        searchKeyValues: { ...values},
+        searchKeyValues: { ...values },
         likeKeyValues: {},
       };
     }
@@ -172,7 +179,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       month: dateString,
     };
     await calculatePlan(params).then(response => {
-      this.setState({searchLoading:false})
+      this.setState({ searchLoading: false });
       if (response && response.success) {
         message.success('计算成功');
         this.handleOnSertch();
@@ -197,125 +204,137 @@ export default class CostProjectSearch extends QuickFormSearchPage {
   monthChange = (date, dateString) => {
     this.month = dateString;
     this.setState({ dateString });
-   // this.isLock(dateString);
-    
+    // this.isLock(dateString);
   };
-  onLock = async ()=>{
-   await onLock( this.props.params.entityUuid,this.state.dateString).then(e=>{
-      if(e.data==0){
-        this.setState({isLock:false})
-        message.success("解锁成功")
-      }else if(e.data==1){
-        this.setState({isLock:true})
-        message.success("锁定成功")
-      }else{
-        this.setState({isLock:false})
-        message.info("未找到数据!");
+  onLock = async () => {
+    await onLock(this.props.params.entityUuid, this.state.dateString).then(e => {
+      if (e.data == 0) {
+        this.setState({ isLock: false });
+        message.success('解锁成功');
+      } else if (e.data == 1) {
+        this.setState({ isLock: true });
+        message.success('锁定成功');
+      } else {
+        this.setState({ isLock: false });
+        message.info('未找到数据!');
       }
     });
-  }
-  drawSearchPanel =() => {
+  };
+  drawSearchPanel = () => {
     const { getFieldDecorator } = this.props.form;
     const { dateString, searchLoading, billLogs } = this.state;
     let node = [];
 
-    node.push(<Form.Item label="费用所属月">
-        {getFieldDecorator('dateString', { initialValue:  moment(
-          dateString == undefined ? moment().format('YYYY-MM') : dateString,
-          'YYYY-MM'
-        )})(
+    node.push(
+      <Form.Item label="费用所属月">
+        {getFieldDecorator('dateString', {
+          initialValue: moment(
+            dateString == undefined ? moment().format('YYYY-MM') : dateString,
+            'YYYY-MM'
+          ),
+        })(
           <MonthPicker
             placeholder=""
             onChange={(date, dateString) => this.monthChange(date, dateString)}
           />
         )}
-      </Form.Item>);
-    let datade = this.state.dataSources?this.state.dataSources.map(item=>{
-      return  <Form.Item label={item.DB_FIELD_TXT}>
-           {getFieldDecorator(item.DB_FIELD_NAME, { initialValue:""})(<Input/>)}
-           </Form.Item>
-      }):[];
-      node = [...node,...datade];
-      node.push( <Form.Item>
-        <Button
-        style={{ margin: '0px 10px' }}
-        type="primary"
-        onClick={() => this.handleOnSertch()}
-      >
-        查询
-      </Button>
-      </Form.Item>) ;
+      </Form.Item>
+    );
+    let datade = this.state.dataSources
+      ? this.state.dataSources.map(item => {
+          return (
+            <Form.Item label={item.DB_FIELD_TXT}>
+              {getFieldDecorator(item.DB_FIELD_NAME, { initialValue: '' })(<Input />)}
+            </Form.Item>
+          );
+        })
+      : [];
+    node = [...node, ...datade];
+    node.push(
+      <Form.Item>
+        <Button style={{ margin: '0px 10px' }} type="primary" onClick={() => this.handleOnSertch()}>
+          查询
+        </Button>
+      </Form.Item>
+    );
 
-        node.push(<Form.Item>
-      <Button type="primary" onClick={this.calculate.bind()}>
-        计算
-      </Button>
-      </Form.Item>);
-      node.push(<Form.Item> <Button
-        type={this.state.isLock?"danger":"primary"}
-        onClick={()=>this.onLock()}
-      >
-        {this.state.isLock?'解锁(已锁定)':'锁定(未锁定)'}
-      </Button></Form.Item>)
-      node.push(<Form.Item>
+    node.push(
+      <Form.Item>
+        <Button type="primary" onClick={this.calculate.bind()}>
+          计算
+        </Button>
+      </Form.Item>
+    );
+    node.push(
+      <Form.Item>
+        <Button type={this.state.isLock ? 'danger' : 'primary'} onClick={() => this.onLock()}>
+          {this.state.isLock ? '解锁(已锁定)' : '锁定(未锁定)'}
+        </Button>
+      </Form.Item>
+    );
+    node.push(
+      <Form.Item>
+        <Button hidden={!this.state.bill} type="primary" onClick={this.getcalcLog}>
+          结果日志
+        </Button>
+        <Modal
+          title="结果日志"
+          visible={this.state.isShowLogs}
+          onOk={this.changeLogsModal}
+          onCancel={this.changeLogsModal}
+          width={1000}
+        >
+          <div style={{ overflow: 'scroll', height: '500px' }}>
+            <Collapse>
+              {billLogs.map((item, index) => {
+                //  let logs = item.costLog.replace(/\n/g, '&#10;');
+                let logs = item.costLog.split('\n');
+                return (
+                  <Panel header={item.costTitle} key={index}>
+                    {logs.map(item => {
+                      return <p>{item}</p>;
+                    })}
+                  </Panel>
+                );
+              })}
+            </Collapse>
+          </div>
+        </Modal>
+      </Form.Item>
+    );
+    node.push(
+      <Form.Item>
+        <Button style={{ margin: '0px 8px' }} type="primary" onClick={this.checkData.bind()}>
+          检查数据
+        </Button>
+        <Button onClick={this.comeBack.bind()}>返回</Button>
+      </Form.Item>
+    );
 
-           <Button
-            hidden={!this.state.bill}
-            type="primary"
-            onClick={this.getcalcLog}
-          >
-            结果日志
-          </Button>
-          <Modal
-            title="结果日志"
-            visible={this.state.isShowLogs}
-            onOk={this.state.isShowLogs}
-            onCancel={this.changeLogsModal}
-            width={1000}
-          >
-            <div style={{ overflow: 'scroll', height: '500px' }}>
-              <Collapse>
-                {billLogs.map((item, index) => {
-                  //  let logs = item.costLog.replace(/\n/g, '&#10;');
-                  let logs = item.costLog.split('\n');
-                  return (
-                    <Panel header={item.costTitle} key={index}>
-                      {logs.map(item => {
-                        return <p>{item}</p>;
-                      })}
-                    </Panel>
-                  );
-                })}
-              </Collapse>
-            </div>
-          </Modal>
-      </Form.Item>)
-      node.push( <Form.Item>
-      <Button style={{ margin: '0px 8px' }} type="primary" onClick={this.checkData.bind()}>
-        检查数据
-      </Button>
-      <Button onClick={this.comeBack.bind()}>返回</Button>
-      </Form.Item>);
-
-      return (<Row style={{ marginTop: '10px' }}>
-      <Col>
-        <Form layout="inline">
-          {node.map(e=>{return e})}
-        </Form>
-      </Col>
-    </Row>);
-
+    return (
+      <Row style={{ marginTop: '10px' }}>
+        <Col>
+          <Form layout="inline">
+            {node.map(e => {
+              return e;
+            })}
+          </Form>
+        </Col>
+      </Row>
+    );
   };
-  getDatas =async ()=>{
-   await findCostFormFieldByPlanUuid(this.props.params.entityUuid).then(result =>{
-        this.setState({dataSources:result.data})
-      });
-  }
-  isLock =async (date) =>{
-    await isLock(this.props.params.entityUuid,date==undefined?this.month:date).then(result=>{
-      this.setState({isLock:result.data});
+  getDatas = async () => {
+    await findCostFormFieldByPlanUuid(this.props.params.entityUuid).then(result => {
+      this.setState({ dataSources: result.data });
     });
-  }
+  };
+  isLock = async date => {
+    await isLock(this.props.params.entityUuid, date == undefined ? this.month : date).then(
+      result => {
+        this.setState({ isLock: result.data });
+      }
+    );
+  };
   //该方法会覆盖所有的中间功能按钮
   drawToolbarPanel = () => {};
 
@@ -323,11 +342,8 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     this.setState({ title: this.props.params.e.SCHEME_NAME });
   };
   componentWillReceiveProps(nextprops) {
-      this.isLock();
-      this.getDatas();
-    
-    
-    
+    this.isLock();
+    this.getDatas();
   }
   render() {
     let ret = this.state.canFullScreen ? (
