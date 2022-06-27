@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 17:46:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-27 11:42:48
+ * @LastEditTime: 2022-06-27 16:51:50
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -103,6 +103,14 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
         <Checkbox
           defaultChecked={e.val}
           onChange={v => (e.record.SHOW = v.target.checked ? 1 : 0)}
+        />
+      );
+      e.component = component;
+    } else if (e.column.fieldName == 'QUERY') {
+      const component = (
+        <Checkbox
+          defaultChecked={e.val}
+          onChange={v => (e.record.QUERY = v.target.checked ? 1 : 0)}
         />
       );
       e.component = component;

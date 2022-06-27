@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-27 15:36:17
+ * @LastEditTime: 2022-06-27 15:37:18
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -33,7 +33,6 @@ export default class ShipPlanBillSearchPage extends PureComponent {
     this.state = {
       title: 'test',
       data: [],
-      keyValue: '1',
       keyDtlVale: 'a',
       tabTrue: false,
       suspendLoading: false,
@@ -153,13 +152,6 @@ export default class ShipPlanBillSearchPage extends PureComponent {
       this.setState({ pageFilters });
     }
     this.setState({ showCreatePage: false });
-  };
-
-  callback = key => {
-    this.setState({
-      keyValue: key,
-      tabTrue: true,
-    });
   };
 
   changeTabs = key => {
