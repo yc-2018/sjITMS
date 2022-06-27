@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-16 14:33:54
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-06-27 15:14:53
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -42,7 +42,15 @@ export default class ShipPlanBillSearchPage extends PureComponent {
       searchFields: [],
       advancedFields: [],
       reportCode: props.quickuuid,
-      pageFilters: { quickuuid: props.quickuuid, changePage: true },
+      pageFilters: {
+        quickuuid: props.quickuuid,
+        changePage: true,
+        page: 0,
+        pageSize: 20,
+        sortFields: {},
+        searchKeyValues: {},
+        likeKeyValues: {},
+      },
       isOrgQuery: [],
       key: props.quickuuid + 'quick.search.table',
       showCreatePage: false,
@@ -128,33 +136,21 @@ export default class ShipPlanBillSearchPage extends PureComponent {
       this.setState({ selectedRows: [], showCreatePage: false });
       const pageFilters = {
         ...this.state.pageFilters,
-        page: 0,
-        pageSize: 20,
-        sortFields: {},
-        searchKeyValues: {},
-        likeKeyValues: {},
         superQuery: {
           matchType: filter.matchType,
           queryParams: [...this.state.isOrgQuery],
         },
       };
-      this.state.pageFilters = pageFilters;
-      this.queryCoulumns();
+      this.setState({ pageFilters });
     } else {
       const pageFilters = {
         ...this.state.pageFilters,
-        page: 0,
-        pageSize: 20,
-        sortFields: {},
-        searchKeyValues: {},
-        likeKeyValues: {},
         superQuery: {
           matchType: filter.matchType,
           queryParams: [...filter.queryParams, ...this.state.isOrgQuery],
         },
       };
-      this.state.pageFilters = pageFilters;
-      this.queryCoulumns();
+      this.setState({ pageFilters });
     }
     this.setState({ showCreatePage: false });
   };
@@ -211,16 +207,18 @@ export default class ShipPlanBillSearchPage extends PureComponent {
       selectedRows,
       params,
       isOrgQuery,
+      searchFields,
     } = this.state;
+    console.log('pageFilters', pageFilters);
     return (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
           <Content style={{ padding: '0 10px' }}>
             <SimpleQuery
-              selectFields={this.state.searchFields}
+              selectFields={searchFields}
               refresh={this.onSearch}
-              reportCode={this.state.reportCode}
-              isOrgQuery={this.state.isOrgQuery}
+              reportCode={reportCode}
+              isOrgQuery={isOrgQuery}
             />
             <ShipPlanBillSearch
               reportCode={reportCode}
