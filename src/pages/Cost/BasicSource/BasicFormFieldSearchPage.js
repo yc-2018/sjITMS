@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 17:46:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-25 11:24:29
+ * @LastEditTime: 2022-06-27 09:04:02
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -248,7 +248,6 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
   drapTableChange = list => {
     const { data, pageFilters } = this.state;
     let pageSize = (pageFilters.page - 1) * pageFilters.pageSize;
-    pageSize = pageSize == NaN ? pageSize : 0;
     data.list = list.map((record, index) => {
       record.LINE = pageSize + index + 1;
       return record;
