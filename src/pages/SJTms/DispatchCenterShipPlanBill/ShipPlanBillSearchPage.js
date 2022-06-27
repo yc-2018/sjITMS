@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-19 17:18:03
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-27 15:14:53
+ * @LastEditTime: 2022-06-27 15:36:17
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -209,7 +209,6 @@ export default class ShipPlanBillSearchPage extends PureComponent {
       isOrgQuery,
       searchFields,
     } = this.state;
-    console.log('pageFilters', pageFilters);
     return (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
