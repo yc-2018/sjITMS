@@ -12,6 +12,7 @@ import CostPlanSearchPage from './CostPlanSearch';
 import CostCalculationSearchPage from './CostCalculationSearch';
 // import CostPlanDefCreate from '@/pages/Cost/CostPlan/CostPlanDefCreate';
 import CostPlanDefView from './CostPlanDefView';
+import CostBillEdit from './CostBillEdit';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -38,6 +39,7 @@ export default class CostProjectForm extends QuickForm {
    * }
    */
   drawTab = e => {
+    console.log(e)
     if (e.showPageNow == 'query') {
       const component = <CostPlanSearchPage {...e.props} />;
       e.component = component;
@@ -48,6 +50,9 @@ export default class CostProjectForm extends QuickForm {
     } else if (e.showPageNow == 'update') {
       e.props.quickuuid = 'cost_plan';
       const component = <CostPlanDefView {...e.props} />;
+      e.component = component;
+    } else if (e.showPageNow == 'create') {
+      const component = <CostBillEdit {...e.props} />;
       e.component = component;
     }
   };

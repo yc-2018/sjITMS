@@ -28,3 +28,23 @@ export async function getBill(payload) {
     }
   );
 }
+
+export async function getSubjectBill(payload) {
+  return request(
+    `/itms-cost/itms-cost/costbill/getSubjectBill?billUuid=${payload.billUuid}&subjectUuid=${payload.subjectUuid}`,
+    {
+      method: 'GET',
+    }
+  );
+}
+
+
+export async function updateSubjectBill(payload) {
+  return request(
+    `/itms-cost/itms-cost/costbill/updateSubjectBill?billUuid=${payload.billUuid}&subjectUuid=${payload.subjectUuid}`,
+    {
+      method: 'POST',
+      body: payload.updateMap
+    }
+  );
+}

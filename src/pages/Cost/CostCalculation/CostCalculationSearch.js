@@ -62,6 +62,17 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     });
   };
 
+  edit = () => {
+    const { selectedRows } = this.state;
+    console.log(this.state);
+    // if (selectedRows.length == 0) {
+    //   message.error('请选择一条数据');
+    //   return;
+    // }
+    // 拿到主键
+    this.props.switchTab('create');
+  };
+
   handleOnSertch = async () => {
     const { dateString } = this.state;
     if (dateString == '') {
@@ -151,6 +162,9 @@ export default class CostProjectSearch extends QuickFormSearchPage {
           </Button>
           <Button style={{ margin: '0px 10px' }} type="primary" onClick={this.checkData.bind()}>
             检查数据
+          </Button>
+          <Button style={{ margin: '0px 10px' }} type="primary" onClick={this.edit.bind()}>
+            编辑
           </Button>
           <Button onClick={this.comeBack.bind()}>返回</Button>
         </Col>
