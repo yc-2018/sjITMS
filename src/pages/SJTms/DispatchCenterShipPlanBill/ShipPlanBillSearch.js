@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-16 14:42:10
+ * @LastEditTime: 2022-06-25 11:25:33
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -616,9 +616,9 @@ const drawPrintPage = (schedule, scheduleDetails) => {
               return (
                 <tr style={{ textAlign: 'center' }}>
                   <td>{index + 1}</td>
-                  <td width={120}>{item.ORDERNUMBER.trim()}</td>
-                  <td>{item.DELIVERYPOINTCODE.trim()}</td>
-                  <td>{item.DELIVERYPOINTNAME.trim()}</td>
+                  <td width={120}>{item.ORDERNUMBER}</td>
+                  <td>{item.DELIVERYPOINTCODE}</td>
+                  <td>{item.DELIVERYPOINTNAME}</td>
                   <td>{item.REALCARTONCOUNT}</td>
                   <td>{item.REALSCATTEREDCOUNT}</td>
                   <td />

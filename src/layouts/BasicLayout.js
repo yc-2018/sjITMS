@@ -325,10 +325,8 @@ class BasicLayout extends React.Component {
     const currRouterData = this.matchParamsPath(pathname);
 
     if (!currRouterData) {
-      window.parent &&
-        window.parent.changeTitle &&
-        window.parent.changeTitle('HEADING Intelligence WMS');
-      return 'HEADING Intelligence WMS';
+      window.parent && window.parent.changeTitle && window.parent.changeTitle('TimeExpress TMS');
+      return 'TimeExpress TMS';
     }
     const message = formatMessage({
       id: currRouterData.locale || currRouterData.name,
@@ -336,8 +334,8 @@ class BasicLayout extends React.Component {
     });
     window.parent &&
       window.parent.changeTitle &&
-      window.parent.changeTitle(`${message} - HEADING Intelligence WMS`);
-    return `${message} - HEADING Intelligence WMS`;
+      window.parent.changeTitle(`${message} - TimeExpress TMS`);
+    return `${message} - TimeExpress TMS`;
   };
 
   getLayoutStyle = () => {
@@ -449,19 +447,12 @@ class BasicLayout extends React.Component {
         activeKey = panes[lastIndex].key;
       }
     }
-    if (panes.length == 1) {
-      this.setState({
-        activeKey: activeKey,
-      });
-    }
-    this.setState({
-      tabPanes: [...panes],
-      activeKey: activeKey,
-    });
+
+    this.setState({ tabPanes: [...panes], activeKey: panes.length == 0 ? '/' : activeKey });
 
     this.props.dispatch(
       routerRedux.push({
-        pathname: activeKey,
+        pathname: panes.length == 0 ? '/' : activeKey,
       })
     );
   };

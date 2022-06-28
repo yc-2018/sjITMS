@@ -20,11 +20,43 @@ export async function calculatePlan(payload) {
   );
 }
 
-export async function getBill(payload) {
+export async function getBill(planUuid, payload) {
+  return request(`/itms-cost/itms-cost/costbill/getBill?planUuid=${planUuid}`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function getBillLogs(billUuid, payload) {
+  return request(`/itms-cost/itms-cost/costbill/getBillLogs?billUuid=${billUuid}`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+export async  function findCostFormFieldByPlanUuid(planUuid) { 
   return request(
-    `/itms-cost/itms-cost/costbill/getBill?planUuid=${payload.planUuid}&month=${payload.month}`,
+    `/itms-cost/itms-cost/source/findCostFormFieldByPlanUuid?planUuid=${planUuid}`,
     {
-      method: 'GET',
+      method: 'POST'
+      
+    }
+  );
+}
+export async  function onLock(planUuid,month) { 
+  return request(
+    `/itms-cost/itms-cost/costbill/onLock?planUuid=${planUuid}&dateString=${month}`,
+    {
+      method: 'GET'
+      
+    }
+  );
+}
+export async  function isLock(planUuid,month) { 
+  return request(
+    `/itms-cost/itms-cost/costbill/isLock?planUuid=${planUuid}&dateString=${month}`,
+    {
+      method: 'GET'
+      
     }
   );
 }

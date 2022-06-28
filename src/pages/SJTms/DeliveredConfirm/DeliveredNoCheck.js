@@ -33,9 +33,15 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
   };
 
   exSearchFilter = () => {
-    let flatt = this.props.pageFilters;
-    return flatt;
+    if (this.props.pageFilters) {
+      return this.props.pageFilters.queryParams;
+    }
   };
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.pageFilters != this.props.pageFilters) {
+      this.onSearch(nextProps.pageFilters);
+    }
+  }
 
   drawcell = e => {
     //找到fieldName为CODE这一列 更改它的component
@@ -151,6 +157,7 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
       message.warn('请选择记录');
+      return;
     }
     this.setState({ reasonModalVisible: true });
   };
@@ -160,6 +167,7 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
       message.warn('请选择记录');
+      return;
     }
     this.setState({ deliveredDutyMdodalVisible: true });
   };

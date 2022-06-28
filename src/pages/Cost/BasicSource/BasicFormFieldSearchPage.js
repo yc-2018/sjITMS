@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 17:46:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-21 17:15:56
+ * @LastEditTime: 2022-06-27 16:51:50
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -13,6 +13,7 @@ import { Button, Popconfirm, message, Modal, Table, Input, Checkbox } from 'antd
 import { flow } from 'lodash-decorators';
 import { dynamicDelete } from '@/services/quick/Quick';
 import { getTableInfo, addDtl, getUnAddInfo, updateDtl } from '@/services/cost/BasicSource';
+import { MapApiLoaderHOC } from 'react-bmapgl';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -24,6 +25,7 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
     ...this.state,
     isNotHd: true,
     isModalVisible: false,
+    canDragTable: true,
     selectedRowKeys: [],
     dataSource: [],
     newColumn: [],
@@ -104,6 +106,14 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
         />
       );
       e.component = component;
+    } else if (e.column.fieldName == 'QUERY') {
+      const component = (
+        <Checkbox
+          defaultChecked={e.val}
+          onChange={v => (e.record.QUERY = v.target.checked ? 1 : 0)}
+        />
+      );
+      e.component = component;
     } else if (e.column.fieldName == 'SUBJECT_FIELD') {
       const component = (
         <Checkbox
@@ -115,7 +125,6 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
       );
       e.component = component;
     } else if (e.column.fieldName == 'PERIOD_FIELD') {
-      console.log('val', e);
       const component = (
         <Checkbox
           defaultChecked={e.val != '<空>' && e.val == e.record.DB_FIELD_NAME ? true : false}
@@ -242,6 +251,17 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
     };
     this.state.pageFilters = pageFilters;
     this.refreshTable();
+  };
+
+  drapTableChange = list => {
+    const { data, pageFilters } = this.state;
+    let pageSize = (pageFilters.page - 1) * pageFilters.pageSize;
+    let size = isNaN(pageSize) ? 0 : pageSize;
+    data.list = list.map((record, index) => {
+      record.LINE = size + index + 1;
+      return record;
+    });
+    this.setState(data);
   };
 
   drawSearchPanel = () => {};

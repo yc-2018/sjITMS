@@ -90,7 +90,7 @@ export default class SiderMenu extends PureComponent {
   render() {
     const { logo, collapsed, onCollapse, fixSiderbar, theme } = this.props;
     const { openKeys } = this.state;
-    const defaultProps = collapsed ? {} : {  };
+    const defaultProps = collapsed ? {} : {};
 
     const siderClassName = classNames(styles.sider, {
       [styles.fixSiderbar]: fixSiderbar,
@@ -118,8 +118,8 @@ export default class SiderMenu extends PureComponent {
       >
         <div className={styles.logo} id="logo">
           <Link to="/">
-            <img src={logo} style={{width: collapsed ? '20px' : ''}} alt="logo" />
-            <h1>HDiWMS</h1>
+            <img src={logo} style={{ width: collapsed ? '20px' : '' }} alt="logo" />
+            <h1>时捷TMS</h1>
           </Link>
         </div>
         <BaseMenu

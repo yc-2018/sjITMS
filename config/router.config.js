@@ -5,7 +5,7 @@ export default [
     component: '../layouts/UserLayout',
     routes: [
       { path: '/user', redirect: '/user/login' },
-      { path: '/user/login', component: './Account/Login/Login' },
+      { path: '/user/login', component: './SJTms/Login/Login' },
     ],
   },
   {
@@ -888,50 +888,50 @@ export default [
       //     },
       //   ],
       // },
-      {
-        path: '/billmanage',
-        name: 'billManage',
-        org: ['COMPANY'],
-        icon: 'icon-cangchuguanli_uncheck',
-        routes: [
-          {
-            path: '/billmanage/dataImport',
-            name: 'dataImport',
-            component: './BillManage/DataImport/DataImport',
-            // authority: ['']
-          },
-          {
-            path: '/billmanage/billType',
-            name: 'billType',
-            component: './BillManage/DataType/DataType',
-            // authority: ['']
-          },
-          {
-            path: '/billmanage/billSort',
-            name: 'sort',
-            component: './BillManage/BillSort/BillSort',
-            // authority: ['']
-          },
-          {
-            path: '/billmanage/unitConversion',
-            name: 'unitConversion',
-            component: './BillManage/UnitConversion/UnitConversion',
-            // authority: ['']
-            divider: true,
-          },
-          {
-            path: '/billmanage/billList',
-            name: 'billList',
-            component: './BillManage/BillList/BillList',
-            // authority: ['']
-          },
-          // {
-          //   path: '/billmanage/contract',
-          //   name: 'contract',
-          //   component: './Tms/Contract/Contract',
-          // },
-        ],
-      },
+      // {
+      //   path: '/billmanage',
+      //   name: 'billManage',
+      //   org: ['COMPANY'],
+      //   icon: 'icon-cangchuguanli_uncheck',
+      //   routes: [
+      //     {
+      //       path: '/billmanage/dataImport',
+      //       name: 'dataImport',
+      //       component: './BillManage/DataImport/DataImport',
+      //       authority: ['']
+      //     },
+      //     {
+      //       path: '/billmanage/billType',
+      //       name: 'billType',
+      //       component: './BillManage/DataType/DataType',
+      //       authority: ['']
+      //     },
+      //     {
+      //       path: '/billmanage/billSort',
+      //       name: 'sort',
+      //       component: './BillManage/BillSort/BillSort',
+      //       authority: ['']
+      //     },
+      //     {
+      //       path: '/billmanage/unitConversion',
+      //       name: 'unitConversion',
+      //       component: './BillManage/UnitConversion/UnitConversion',
+      //       authority: [''],
+      //       divider: true,
+      //     },
+      //     {
+      //       path: '/billmanage/billList',
+      //       name: 'billList',
+      //       component: './BillManage/BillList/BillList',
+      //       authority: ['']
+      //     },
+      //     {
+      //       path: '/billmanage/contract',
+      //       name: 'contract',
+      //       component: './Tms/Contract/Contract',
+      //     },
+      //   ],
+      // },
       {
         path: '/call',
         name: 'call',
@@ -1042,24 +1042,6 @@ export default [
         ],
       },
       {
-        path: '/bigdata',
-        name: 'bigData',
-        icon: 'icon-menu_data1',
-        routes: [
-          {
-            path: '/bigdata/:folder/:report',
-            component: './Report/ReportPage',
-          },
-        ],
-      },
-      {
-        path: '/notice',
-        name: 'notice',
-        icon: 'icon-menu_notice',
-        component: './Basic/Notice/Notice',
-        authority: ['iwms.system.notice'],
-      },
-      {
         path: '/account',
         name: 'account',
         hideInMenu: true,
@@ -1078,7 +1060,7 @@ export default [
       },
       {
         path: '/costbasic',
-        name: 'cost',
+        name: 'billManage',
         org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
         authority: ['itms.base'],
         icon: 'icon-cangchuguanli_uncheck',
@@ -1113,21 +1095,21 @@ export default [
         ],
       },
       {
-        path: '/sjtms/basic',
+        path: '/tmsbasic',
         name: 'sjtms.basic',
         org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
         authority: ['sjtms.basic'],
         icon: 'icon-menu_info',
         routes: [
           {
-            path: '/sjtms/basic/dc',
+            path: '/tmsbasic/dc',
             name: 'dc',
             org: ['COMPANY'],
             component: './Basic/DC/DC',
             authority: ['iwms.basic.dc'],
           },
           {
-            path: '/sjtms/basic/dispatchCenter',
+            path: '/tmsbasic/dispatchCenter',
             name: 'dispatchCenter',
             org: ['COMPANY'],
             component: './Basic/DispatchCenter/DispatchCenter',
@@ -1135,7 +1117,7 @@ export default [
             authority: ['iwms.basic.dispatchcenter'],
           },
           {
-            path: '/sjtms/basic/article',
+            path: '/tmsbasic/article',
             name: 'article',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './SJTms/Article/ArticleForm',
@@ -1143,7 +1125,7 @@ export default [
             authority: ['sjtms.basic.article'],
           },
           {
-            path: '/sjtms/basic/vehicle',
+            path: '/tmsbasic/vehicle',
             name: 'vehicle',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './SJTms/Vehicle/VehicleForm',
@@ -1151,7 +1133,7 @@ export default [
             authority: ['sjtms.basic.vehicle'],
           },
           {
-            path: '/sjtms/basic/vehicleType',
+            path: '/tmsbasic/vehicleType',
             name: 'vehicleType',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
@@ -1160,7 +1142,7 @@ export default [
             divider: true,
           },
           {
-            path: '/sjtms/basic/store',
+            path: '/tmsbasic/store',
             name: 'store',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './SJTms/Store/StoreForm',
@@ -1168,7 +1150,7 @@ export default [
             authority: ['sjtms.basic.store'],
           },
           {
-            path: '/sjtms/basic/vendor',
+            path: '/tmsbasic/vendor',
             name: 'vendor',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
@@ -1177,7 +1159,7 @@ export default [
             divider: true,
           },
           {
-            path: '/sjtms/basic/employee',
+            path: '/tmsbasic/employee',
             name: 'employee',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
@@ -1185,7 +1167,7 @@ export default [
             authority: ['sjtms.basic.employee'],
           },
           {
-            path: '/sjtms/basic/owner',
+            path: '/tmsbasic/owner',
             name: 'owner',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
@@ -1193,7 +1175,7 @@ export default [
             authority: ['sjtms.basic.owner'],
           },
           {
-            path: '/sjtms/basic/line',
+            path: '/tmsbasic/line',
             name: 'line',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/LineSystem/LineSystem',
@@ -1201,7 +1183,7 @@ export default [
             divider: true,
           },
           {
-            path: '/sjtms/basic/lifecycle',
+            path: '/tmsbasic/lifecycle',
             name: 'lifecycle',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/ScheduleLifecycle/ScheduleLifecycleForm',
@@ -1211,14 +1193,14 @@ export default [
         ],
       },
       {
-        path: '/sjtms/core',
+        path: '/tmscode',
         name: 'sjtms.core',
         org: ['DISPATCH_CENTER'],
         authority: ['sjtms.core'],
         icon: 'icon-menu_yunshuguanli1',
         routes: [
           {
-            path: '/sjtms/core/order',
+            path: '/tmscode/order',
             name: 'order',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/Order/OrderForm',
@@ -1226,14 +1208,14 @@ export default [
             authority: ['sjtms.core.order'],
           },
           {
-            path: '/sjtms/core/dispatch',
+            path: '/tmscode/dispatch',
             name: 'dispatch',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/Dispatching/Dispatching',
             authority: ['sjtms.core.dispatch'],
           },
           {
-            path: '/sjtms/core/schedule',
+            path: '/tmscode/schedule',
             name: 'schedule',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/DispatchCenterShipPlanBill/DispatchCenterShipPlanBill',
@@ -1241,25 +1223,24 @@ export default [
             authority: ['sjtms.core.schedule'],
             divider: true,
           },
-
           {
-            path: '/sjtms/core/cardLoading',
+            path: '/tmscode/cardLoading',
             name: 'cardLoading',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/ChargeLoading/ChargeLoading',
             quickuuid: 'sj_itms_schedule',
-            authority: ['cardLoading'],
+            authority: ['sjtms.core.cardLoading'],
           },
           {
-            path: '/sjtms/core/checkin',
+            path: '/tmscode/checkin',
             name: 'checkin',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/CheckInAndCheckOut/CheckInAndCheckOut',
-            authority: ['checkin'],
+            authority: ['sjtms.core.checkin'],
             divider: true,
           },
           {
-            path: '/sjtms/core/confirm',
+            path: '/tmscode/confirm',
             name: 'confirm',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/DeliveredConfirm/DeliveredConfirmPage',
@@ -1267,7 +1248,7 @@ export default [
             authority: ['sjtms.core.confirm'],
           },
           {
-            path: '/sjtms/core/takeConfirm',
+            path: '/tmscode/takeConfirm',
             name: 'takeConfirm',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/TakeDeliveryConfirm/TakeDeliveryConfirmForm',
@@ -1275,7 +1256,7 @@ export default [
             authority: ['sjtms.core.takeConfirm'],
           },
           {
-            path: '/sjtms/core/receipt',
+            path: '/tmscode/receipt',
             name: 'receipt',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/CheckreceiptBill/CheckreceiptBillForm',
@@ -1283,7 +1264,7 @@ export default [
             authority: ['sjtms.core.receipt'],
           },
           {
-            path: '/sjtms/core/return',
+            path: '/tmscode/return',
             name: 'return',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/InAndOutInfo/InAndOutInfoForm',
@@ -1291,15 +1272,32 @@ export default [
             authority: ['sjtms.core.return'],
             divider: true,
           },
-
           {
-            path: '/sjtms/core/taskCenter',
+            path: '/tmscode/taskCenter',
             name: 'taskCenter',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/xxjob',
             authority: ['sjtms.core.taskCenter'],
           },
         ],
+      },
+      {
+        path: '/bigdata',
+        name: 'bigData',
+        icon: 'icon-menu_data1',
+        routes: [
+          {
+            path: '/bigdata/:folder/:report',
+            component: './Report/ReportPage',
+          },
+        ],
+      },
+      {
+        path: '/notice',
+        name: 'notice',
+        icon: 'icon-menu_notice',
+        component: './Basic/Notice/Notice',
+        authority: ['iwms.system.notice'],
       },
     ],
   },

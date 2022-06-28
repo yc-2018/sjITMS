@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-03-30 15:20:52
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-04 09:16:40
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-06-25 15:55:44
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -19,14 +19,14 @@ export async function getByCarrier(payload) {
   );
 }
 
-export async function beginloading(payload) {
-  return request(`/itms-schedule/itms-schedule/sjbeginloading?scheduleBillUuid=${payload}`, {
+export async function beginloading(uuid, version) {
+  return request(`/itms-schedule/itms-schedule/sjbeginloading?uuid=${uuid}&version=${version}`, {
     method: 'POST',
   });
 }
 
-export async function finishloading(payload) {
-  return request(`/itms-schedule/itms-schedule/sjfinishloading?scheduleBillUuid=${payload}`, {
+export async function finishloading(uuid, version) {
+  return request(`/itms-schedule/itms-schedule/sjfinishloading?uuid=${uuid}&version=${version}`, {
     method: 'POST',
   });
 }

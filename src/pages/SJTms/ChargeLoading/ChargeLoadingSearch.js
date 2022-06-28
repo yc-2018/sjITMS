@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-03-29 17:25:56
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-25 14:51:15
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-06-25 15:54:59
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -66,7 +66,7 @@ export default class ChargeLoadingSearch extends PureComponent {
   //刷卡装车
   getChargeMessageStart = async data => {
     if (!data) return;
-    await beginloading(data.uuid).then(response => {
+    await beginloading(data.uuid, data.version).then(response => {
       if (response && response.success) {
         this.setState({
           responseMsg: '排车单:' + data.billNumber + ',开始装车',
@@ -86,7 +86,7 @@ export default class ChargeLoadingSearch extends PureComponent {
 
   getChargeMessageEnd = async data => {
     if (!data) return;
-    await finishloading(data.uuid).then(response => {
+    await finishloading(data.uuid, data.version).then(response => {
       if (response && response.success) {
         this.setState({
           responseMsg: '排车单:' + data.billNumber + ',结束装车',

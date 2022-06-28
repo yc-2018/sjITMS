@@ -2,13 +2,17 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-21 15:10:15
+ * @LastEditTime: 2022-06-25 11:24:46
  * @version: 1.0
  */
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { Button, Form, message } from 'antd';
+import { Button, Form, message, Spin } from 'antd';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
+import PageHeaderWrapper from '@/components/PageHeaderWrapper';
+import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
+import Page from '@/pages/Component/Page/inner/Page';
+import { DndProvider } from 'react-dnd';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import SearchPage from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSearchPage';
 import { dynamicQuery } from '@/services/quick/Quick';
@@ -37,6 +41,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       pageFilters: [],
       // queryParams: this.props.params,
       tableName: this.props.tableName,
+      searchLoading: false,
     };
   }
 
@@ -48,6 +53,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
   queryColumns = async () => {
     let param = {
       tableName: 'cost_form_field',
+      orderBy: ['LINE+'],
       condition: {
         params: [{ field: 'FORMUUID', rule: 'eq', val: [this.props.selectedRows] }],
       },
@@ -97,12 +103,14 @@ export default class BasicSourceDataSearchPage extends SearchPage {
   };
 
   getData = async pageFilters => {
+    this.setState({ searchLoading: true });
     this.state.pageFilters = pageFilters;
     const result = await dynamicQuery(pageFilters);
     if (result && result.result && result.result.records != 'false') {
       this.initData(result.result);
     } else {
       message.error('查无数据');
+      this.setState({ searchLoading: false });
       return;
     }
   };
@@ -157,7 +165,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         showTotal: total => `共 ${total} 条`,
       },
     };
-    this.setState({ data, selectedRows: [] });
+    this.setState({ data, selectedRows: [], searchLoading: false });
   };
 
   refreshTable = filter => {
@@ -240,4 +248,23 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       </div>
     );
   };
+
+  render() {
+    let ret = this.state.canFullScreen ? (
+      <FreshPageHeaderWrapper>{this.drawPage()}</FreshPageHeaderWrapper>
+    ) : this.state.isNotHd ? (
+      <div>{this.drawPage()}</div>
+    ) : (
+      <PageHeaderWrapper>
+        <Page withCollect={true} pathname={this.props.pathname}>
+          {this.drawPage()}
+        </Page>
+      </PageHeaderWrapper>
+    );
+    if (this.state.isDrag) {
+      return <DndProvider backend={HTML5Backend}>{ret}</DndProvider>;
+    } else {
+      return <Spin spinning={this.state.searchLoading}>{ret}</Spin>;
+    }
+  }
 }

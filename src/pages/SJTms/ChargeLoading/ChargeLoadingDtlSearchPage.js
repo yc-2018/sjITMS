@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-04-01 11:30:00
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-12 11:45:11
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-06-25 14:58:30
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -18,10 +18,6 @@ export default class ChargeLoadingDtlSearchPage extends QuickFormSearchPage {
   state = {
     ...this.state,
     isNotHd: true,
-    scroll: {
-      x: 4000,
-      y: 'calc(50vh)',
-    },
   };
 
   componentDidMount = () => {

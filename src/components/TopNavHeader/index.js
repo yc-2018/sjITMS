@@ -10,18 +10,19 @@ export default class TopNavHeader extends PureComponent {
   };
 
   componentDidMount() {
-    window.addEventListener('resize', this.handleResize.bind(this)) //监听窗口大小改变
+    window.addEventListener('resize', this.handleResize.bind(this)); //监听窗口大小改变
   }
 
-  componentWillUnmount() { //一定要最后移除监听器，以防多个组件之间导致this的指向紊乱
-    window.removeEventListener('resize', this.handleResize.bind(this))
+  componentWillUnmount() {
+    //一定要最后移除监听器，以防多个组件之间导致this的指向紊乱
+    window.removeEventListener('resize', this.handleResize.bind(this));
   }
 
   handleResize = e => {
     this.setState({
-      minWidth: e.target.innerWidth * 0.7 + 'px'
-    })
-  }
+      minWidth: e.target.innerWidth * 0.7 + 'px',
+    });
+  };
 
   // static getDerivedStateFromProps(props) {
   //   console.log(window.innerWidth)
@@ -34,14 +35,14 @@ export default class TopNavHeader extends PureComponent {
   onMenuSearchChange = open => {
     if (open) {
       this.setState({
-        minWidth: document.body.clientWidth * 0.5 + 'px'
+        minWidth: document.body.clientWidth * 0.5 + 'px',
       });
     } else {
       this.setState({
-        minWidth: document.body.clientWidth * 0.7 + 'px'
+        minWidth: document.body.clientWidth * 0.7 + 'px',
       });
     }
-  }
+  };
 
   render() {
     const { theme, contentWidth, logo } = this.props;
@@ -58,7 +59,7 @@ export default class TopNavHeader extends PureComponent {
             <div className={styles.logo} key="logo" id="logo">
               <Link to="/" className={styles.linkStyle}>
                 <img src={logo} alt="logo" />
-                <h1>HDiWMS</h1>
+                <h1>时捷TMS</h1>
               </Link>
             </div>
             <div

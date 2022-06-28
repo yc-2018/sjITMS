@@ -106,6 +106,29 @@ export default {
   'menu.account.logout': 'Logout',
   'menu.account.modify': 'Modify password',
   'menu.account.switch': 'Switch organization',
+  'menu.sjtms.basic': 'Basic',
+  'menu.sjtms.basic.dc': 'Distribution Center',
+  'menu.sjtms.basic.dispatchCenter': 'Dispatch Center',
+  'menu.sjtms.basic.article': 'Article',
+  'menu.sjtms.basic.vehicle': 'Vehicle',
+  'menu.sjtms.basic.vehicleType': 'Vehicle Type',
+  'menu.sjtms.basic.store': 'Store',
+  'menu.sjtms.basic.vendor': 'Vendor',
+  'menu.sjtms.basic.employee': 'Employee',
+  'menu.sjtms.basic.owner': 'Owner',
+  'menu.sjtms.basic.line': 'Line',
+  'menu.sjtms.basic.lifecycle': 'Schedule Life Cycle',
+  'menu.sjtms.core': 'Transport',
+  'menu.sjtms.core.order': 'Order',
+  'menu.sjtms.core.dispatch': 'Dispatch',
+  'menu.sjtms.core.schedule': 'Schedule',
+  'menu.sjtms.core.cardLoading': 'Card Loading',
+  'menu.sjtms.core.checkin': 'Check In',
+  'menu.sjtms.core.confirm': 'Comfirm',
+  'menu.sjtms.core.takeConfirm': 'Take Comfirm',
+  'menu.sjtms.core.receipt': 'Check Receipt',
+  'menu.sjtms.core.return': 'Return',
+  'menu.sjtms.core.taskCenter': 'Task Center',
   'app.login.message-invalid-credentials': 'Invalid username or password',
   'app.login.message-invalid-verification-code': 'Invalid verification code',
   'app.login.tab-login-credentials': 'Credentials',
@@ -295,17 +318,19 @@ export default {
   'app.setting.production.hint':
     'Setting panel shows in development environment only, please manually modify',
 
-
   'app.desc': '好看的仓库千篇一律，海鼎的系统百里挑一',
   'app.desc.front': '好看的仓库千篇一律',
   'app.desc.end': '海鼎的系统百里挑一',
   'app.login.userName': 'Please enter username',
+  'app.login.user': 'Please enter username',
   'app.login.password': 'Please enter password',
   'app.login.againPassword': 'The confirm password must be 6-16 digit number，case-sensitive',
   'app.login.ckeckPassword': 'The password must be 6-16 digit number, letter, symbol combination!',
   'validation.againPassword.required': 'Confirm password can not be null!',
   'validation.loginAccount.required': 'The phone can not be null!',
   'validation.password.required': 'The passowrd can not be null!',
+  'validation.user.required': 'The username can not be null!',
+  'validation.verification-code.required': 'The verification code can not be null!',
   'form.get-captcha': 'Get captcha',
   'form.captcha.second': 'Seconds',
 
@@ -340,23 +365,30 @@ export default {
   'common.excelImport.select.excelLimit': 'Only support xls、xlsx file',
   'common.excelImport.select.fileSizeLimit': 'The file must smaller than 2MB',
   'common.excelImport.select.nextTips': 'Please click the next button for batch import',
-  'common.excelImport.select.ossErrorTips': 'An error occurred while the file was stored in OSS. The import cannot continue. Please try again',
+  'common.excelImport.select.ossErrorTips':
+    'An error occurred while the file was stored in OSS. The import cannot continue. Please try again',
   'common.excelImport.select.templateEmptyTips': 'The template is empty, download failed',
-  'common.excelImport.select.templateTips': 'Import file specific format specification, please download the template for reference',
+  'common.excelImport.select.templateTips':
+    'Import file specific format specification, please download the template for reference',
 
   'common.excelImport.select.button.downloadTemplate': 'Download template',
   'common.excelImport.select.button.downloadTemplate.errror': 'Gets template failed',
   'common.excelImport.select.button.next': 'Next step',
   'common.excelImport.select.uploadText': 'Click or drag file to this area to upload',
-  'common.excelImport.select.uploadTips': 'Only support xls、xlsx file, suggested that the file must smaller than 2MB',
+  'common.excelImport.select.uploadTips':
+    'Only support xls、xlsx file, suggested that the file must smaller than 2MB',
   'common.excelImport.select.tips.title': 'Tips:',
-  'common.excelImport.select.tips.1': '1. It is suggested that the number of pieces should be less than or equal to 1000. If there are too many pieces, they can be imported in batches；',
+  'common.excelImport.select.tips.1':
+    '1. It is suggested that the number of pieces should be less than or equal to 1000. If there are too many pieces, they can be imported in batches；',
   'common.excelImport.select.tips.2': '2. The column heading in red is mandatory in the template；',
-  'common.excelImport.select.tips.3': '3. After selecting the file, it will be cached in the back end. Click next to do bulk import;',
-  'common.excelImport.select.tips.4': '4. If the bulk import fails to import data, you can download the specific import failure data (including the reason for the import failure).',
+  'common.excelImport.select.tips.3':
+    '3. After selecting the file, it will be cached in the back end. Click next to do bulk import;',
+  'common.excelImport.select.tips.4':
+    '4. If the bulk import fails to import data, you can download the specific import failure data (including the reason for the import failure).',
 
   'common.excelImport.result.message.success.import': 'Successful bulk import',
-  'common.excelImport.result.message.success.someError': ', Partial failure, please download the failed file to view',
+  'common.excelImport.result.message.success.someError':
+    ', Partial failure, please download the failed file to view',
   'common.excelImport.result.message.error.import': 'Failed bulk import',
   'common.excelImport.result.message.error.noData': 'No data in excel file',
 
@@ -536,7 +568,7 @@ export default {
   'company.detail.used.VendorUser': 'Vendor User',
   'company.detail.used.CarrierUser': 'Carrier User',
   'company.detail.used.DcCount': 'Dc Count',
-  'company.detail.used.DispatchCenterCount':'DispatchCenter Count',
+  'company.detail.used.DispatchCenterCount': 'DispatchCenter Count',
 
   // 企业注册-详情页-操作信息
   'company.detail.operate': 'Operating Information',
@@ -577,7 +609,7 @@ export default {
   'company.create.form.item.maxDcUserCount.name': 'Max Dc User',
   'company.create.form.item.maxCompanyUserCount.name': 'Max Company User',
   'company.create.form.item.maxDcCount.name': 'Max Dc',
-  'company.create.form.item.maxDispatchCenterCount.name':'Max DispatchCenter Count ',
+  'company.create.form.item.maxDispatchCenterCount.name': 'Max DispatchCenter Count ',
 
   'company.create.form.item.placeholder.code': 'Please enter 4 character or number',
   'company.create.form.item.placeholder.name': 'Please enter 4 ~ 30 character',
@@ -589,14 +621,18 @@ export default {
   // 企业注册 - 新增修改 - 验证信息
   'company.create.form.item.code.validate.message.notNull': 'The code is not null!',
   'company.create.form.item.code.validate.message.limitLength': 'The maximal length of code is 30!',
-  'company.create.form.item.code.validate.message.integrality': 'The Code must be 4 bits, alphanumeric combination, pure number, pure letter.',
+  'company.create.form.item.code.validate.message.integrality':
+    'The Code must be 4 bits, alphanumeric combination, pure number, pure letter.',
   'company.create.form.item.name.validate.message.notNull': 'The name is not null!',
   'company.create.form.item.name.validate.message.limitLength': 'The maximal length of name is 30!',
   'company.create.form.item.adminName.validate.message.notNull': 'The admin name is not null!',
-  'company.create.form.item.adminName.validate.message.limitLength': 'The maximal length of admin name is 30!',
+  'company.create.form.item.adminName.validate.message.limitLength':
+    'The maximal length of admin name is 30!',
   'company.create.form.item.adminPhone.validate.message.notNull': 'The admin phone is not null!',
-  'company.create.form.item.adminPhone.validate.message.integrality': 'Please enter the correct phone number.',
-  'company.create.form.item.maxUserCount.validate.message.notNull': 'The maximal user count is not null!',
+  'company.create.form.item.adminPhone.validate.message.integrality':
+    'Please enter the correct phone number.',
+  'company.create.form.item.maxUserCount.validate.message.notNull':
+    'The maximal user count is not null!',
   'company.create.form.item.validDate.validate.message.notNull': 'The validDate is not null !',
 
   // 个人中心 - 基本设置
@@ -614,21 +650,25 @@ export default {
 
   // 个人中心 - 基本设置 - 表单验证
   'account.center.setting.form.item.name.validate.message.notNull': 'The name is not null',
-  'account.center.setting.form.item.name.validate.message.limitLength': 'The maximal length of name is 30',
+  'account.center.setting.form.item.name.validate.message.limitLength':
+    'The maximal length of name is 30',
   'account.center.setting.form.item.phone.validate.message.notNull': 'The phone is not null',
-  'account.center.setting.form.item.phone.validate.message.integrality': 'Please enter the correct phone number',
+  'account.center.setting.form.item.phone.validate.message.integrality':
+    'Please enter the correct phone number',
 
   // 个人中心 -基本设置 - 头像
   'account.center.setting.avatar.title': 'Avatar',
   'account.center.setting.avatar.button': 'Change avatar',
-  'account.center.setting.avatar.validate.message.notImage': 'We only support PNG, GIF, or JPG picture',
+  'account.center.setting.avatar.validate.message.notImage':
+    'We only support PNG, GIF, or JPG picture',
   'account.center.setting.avatar.validate.message.Limit2M': 'Image must smaller than 2MB',
 
   'account.center.setting.button.updateInfo': 'Confirm update',
 
   // 个人中心 - 提示信息 - 成功
   'account.center.setting.message.success.changeAvatar': 'Successful change your Avatar',
-  'account.center.setting.message.success.changeBasicInfo': 'Successful change your basic information',
+  'account.center.setting.message.success.changeBasicInfo':
+    'Successful change your basic information',
 
   // 角色
   'role.title': 'role',
@@ -662,7 +702,8 @@ export default {
   'role.edit.title': 'Edit role',
   'role.create.form.item.code.validate.message.notNull': 'The code cannot be null',
   'role.create.form.item.code.validate.message.limitLength': 'The maximum code length is 30',
-  'role.create.form.item.code.validate.message.integrality': 'Code must be 4 bits, alphanumeric combination, pure number, pure letter',
+  'role.create.form.item.code.validate.message.integrality':
+    'Code must be 4 bits, alphanumeric combination, pure number, pure letter',
   'role.create.form.item.name.validate.message.notNull': 'The name cannot be null',
   'role.create.form.item.name.validate.message.limitLength': 'The maximum length of the name is 30',
   'role.create.form.item.placeholder': 'Please enter',
@@ -721,7 +762,8 @@ export default {
   'user.create.form.item.name.validate.message.notNull': 'The name is not null!',
   'user.create.form.item.name.validate.message.limitLength': 'The maximal length of name is 30!',
   'user.create.form.item.phone.validate.message.notNull': 'The phone number is not null!',
-  'user.create.form.item.phone.validate.message.integrality': 'Please enter the correct phone number.',
+  'user.create.form.item.phone.validate.message.integrality':
+    'Please enter the correct phone number.',
   'user.create.form.item.org.validate.message.required': 'The organization is required!',
   'user.create.form.item.role.validate.message.required': 'The role is required!',
   'user.create.form.item.input.placeholder': 'Please enter',
@@ -782,7 +824,8 @@ export default {
   'user.modify.old.password.label': 'Old password',
   'user.modify.new.password.label': 'New password',
   'user.modify.twice.pwd.not.same': 'The two passwords do not same',
-  'user.modify.ckeckPassword': 'Password must be 6-16 digit combination of Numbers, letters and symbols',
+  'user.modify.ckeckPassword':
+    'Password must be 6-16 digit combination of Numbers, letters and symbols',
   'user.modify.password.success': 'Password changed successfully',
 
   // 用户-切换组织
@@ -867,18 +910,25 @@ export default {
 
   // 供应商 - 新增修改 - 验证信息
   'vendor.create.form.item.code.validate.message.notNull': 'The code is not null!',
-  'vendor.create.form.item.code.validate.message.integrality': 'The Code must be 4 bits, alphanumeric combination, pure number, pure letter.',
+  'vendor.create.form.item.code.validate.message.integrality':
+    'The Code must be 4 bits, alphanumeric combination, pure number, pure letter.',
   'vendor.create.form.item.name.validate.message.notNull': 'The name is not null!',
   'vendor.create.form.item.name.validate.message.limitLength': 'The maximal length of name is 30!',
   'vendor.create.form.item.contactor.validate.message.notNull': 'The contactor is not null!',
-  'vendor.create.form.item.contactor.validate.message.limitLength': 'The maximal length of contactor is 30!',
+  'vendor.create.form.item.contactor.validate.message.limitLength':
+    'The maximal length of contactor is 30!',
   'vendor.create.form.item.contactPhone.validate.message.notNull': 'The contact phone is not null!',
-  'vendor.create.form.item.contactPhone.validate.message.limitLength': 'The maximal length of contactor phone is 30!',
-  'vendor.create.form.item.shortName.validate.message.limitLength': 'The maximal length of short name is 30!',
+  'vendor.create.form.item.contactPhone.validate.message.limitLength':
+    'The maximal length of contactor phone is 30!',
+  'vendor.create.form.item.shortName.validate.message.limitLength':
+    'The maximal length of short name is 30!',
   'vendor.create.form.item.owner.validate.message.notNull': 'The short name is not null!',
-  'vendor.create.form.item.owner.validate.message.limitLength': 'The maximal length of owmer name is 30!',
-  'vendor.create.form.item.zipCode.validate.message.limitLength': 'The maximal length of zip code is 30!',
-  'vendor.create.form.item.homeUrl.validate.message.limitLength': 'The maximal length of home url is 100!',
+  'vendor.create.form.item.owner.validate.message.limitLength':
+    'The maximal length of owmer name is 30!',
+  'vendor.create.form.item.zipCode.validate.message.limitLength':
+    'The maximal length of zip code is 30!',
+  'vendor.create.form.item.homeUrl.validate.message.limitLength':
+    'The maximal length of home url is 100!',
   'vendor.create.form.item.note.validate.message.limitLength': 'The maximal length of note is 255!',
   'vendor.create.form.item.input.placeholder': 'Please enter',
 
@@ -937,27 +987,34 @@ export default {
   // 配送中心 - 新增修改 - 验证信息
   'dc.create.form.item.code.validate.message.notNull': 'The code cannot be null！',
   'dc.create.form.item.code.validate.message.limitLength': 'The maximum code length is 30！',
-  'dc.create.form.item.code.validate.message.integrality': 'Code must be 4 bits, alphanumeric combination, pure number, pure letter',
+  'dc.create.form.item.code.validate.message.integrality':
+    'Code must be 4 bits, alphanumeric combination, pure number, pure letter',
   'dc.create.form.item.name.validate.message.notNull': 'The name cannot be null！',
   'dc.create.form.item.name.validate.message.limitLength': 'The maximum name length is 30！',
   'dc.create.form.item.contactor.validate.message.notNull': 'The contactor cannot be null！',
-  'dc.create.form.item.contactor.validate.message.limitLength': 'The maximum contactor length is 30！',
+  'dc.create.form.item.contactor.validate.message.limitLength':
+    'The maximum contactor length is 30！',
   'dc.create.form.item.contactPhone.validate.message.notNull': 'The contactPhone cannot be null！',
-  'dc.create.form.item.contactPhone.validate.message.integrality': 'Please enter your real mobile phone number',
+  'dc.create.form.item.contactPhone.validate.message.integrality':
+    'Please enter your real mobile phone number',
   'dc.create.form.item.address.validate.message.notNull': 'The address cannot be null！',
   'dc.create.form.item.address.validate.message.limitLength': 'The maximum address length is 100！',
   'dc.create.form.item.placeholder': 'Please enter',
   'dc.create.form.item.shortName.name': 'Short name',
-  'dc.create.form.item.shortName.validate.message.limitLength': 'The maximal length of short name is 30!！',
+  'dc.create.form.item.shortName.validate.message.limitLength':
+    'The maximal length of short name is 30!！',
   'dc.create.form.item.owner.name': 'owner',
   'dc.create.form.item.useWMS.validate.message.notNull': 'The useWMS is not null!',
   'dc.create.form.item.zipCode.name': 'Zip code',
-  'dc.create.form.item.zipCode.validate.message.limitLength': 'The maximal length of zip code is 30!',
+  'dc.create.form.item.zipCode.validate.message.limitLength':
+    'The maximal length of zip code is 30!',
   'dc.create.form.item.operatingArea.name': 'OperatingArea(m²)',
-  'dc.create.form.item.operatingArea.validate.message.greaterThanZero': 'The operating area must be greater than or equal to 0!',
+  'dc.create.form.item.operatingArea.validate.message.greaterThanZero':
+    'The operating area must be greater than or equal to 0!',
   'dc.create.form.item.note.name': 'Note',
   'dc.create.form.item.note.validate.message.limitLength': 'The maximal length of note is 255!',
-  'dc.create.form.item.contactPhone.validate.limitLength': 'The maximal length of phone number is 30',
+  'dc.create.form.item.contactPhone.validate.limitLength':
+    'The maximal length of phone number is 30',
 
   // 门店
   'store.title': 'Store Management',
@@ -1039,28 +1096,39 @@ export default {
 
   // 门店 - 新增修改 - 验证信息
   'store.create.form.item.code.validate.message.notNull': 'The code is not null!',
-  'store.create.form.item.code.validate.message.integrality': 'The Code must be 4 bits, alphanumeric combination, pure number, pure letter.',
+  'store.create.form.item.code.validate.message.integrality':
+    'The Code must be 4 bits, alphanumeric combination, pure number, pure letter.',
   'store.create.form.item.name.validate.message.notNull': 'The name is not null!',
   'store.create.form.item.name.validate.message.limitLength': 'The maximal length of name is 30!',
   'store.create.form.item.contactor.validate.message.notNull': 'The contactor is not null!',
-  'store.create.form.item.contactor.validate.message.limitLength': 'The maximal length of contactor is 30!',
+  'store.create.form.item.contactor.validate.message.limitLength':
+    'The maximal length of contactor is 30!',
   'store.create.form.item.contactPhone.validate.message.notNull': 'The contact phone is not null!',
-  'store.create.form.item.contactPhone.validate.message.limitLength': 'The maximal length of contact phone is 30!',
+  'store.create.form.item.contactPhone.validate.message.limitLength':
+    'The maximal length of contact phone is 30!',
   'store.create.form.item.address.validate.message.notNull': 'The Address is not null!',
-  'store.create.form.item.address.validate.message.limitLength': 'The maximal length of address is 100!',
-  'store.create.form.item.shortName.validate.message.limitLength': 'The maximal length of short name is 30!',
+  'store.create.form.item.address.validate.message.limitLength':
+    'The maximal length of address is 100!',
+  'store.create.form.item.shortName.validate.message.limitLength':
+    'The maximal length of short name is 30!',
   'store.create.form.item.shortName.validate.message.notNull': 'The shortName is not null!',
   'store.create.form.item.storeType.validate.message.notNull': 'The store type is not null!',
-  'store.create.form.item.storeType.validate.message.limitLength': 'The maximal length of store type is 30!',
-  'store.create.form.item.operatingArea.validate.message.greaterThanZero': 'The operating area must be greater than 0!',
-  'store.create.form.item.distance.validate.message.greaterThanZero': 'The distance must be greater than 0!',
+  'store.create.form.item.storeType.validate.message.limitLength':
+    'The maximal length of store type is 30!',
+  'store.create.form.item.operatingArea.validate.message.greaterThanZero':
+    'The operating area must be greater than 0!',
+  'store.create.form.item.distance.validate.message.greaterThanZero':
+    'The distance must be greater than 0!',
   'store.create.form.item.owner.validate.message.notNull': 'The owner is not null!',
   'store.create.form.item.zipCode.validate.message.notNull': 'The zipCode is not null!',
   'store.create.form.item.owner.validate.message.limitLength': 'The maximal length of owner is 30!',
-  'store.create.form.item.zipCode.validate.message.limitLength': 'The maximal length of zip code is 30!',
+  'store.create.form.item.zipCode.validate.message.limitLength':
+    'The maximal length of zip code is 30!',
   'store.create.form.item.note.validate.message.limitLength': 'The maximal length of note is 255!',
-  'store.create.form.item.homeUrl.validate.message.limitLength': 'The maximal length of homeUrl is 100！',
-  'store.create.form.item.operatingType.validate.message.notNull': 'The operating type is not null!',
+  'store.create.form.item.homeUrl.validate.message.limitLength':
+    'The maximal length of homeUrl is 100！',
+  'store.create.form.item.operatingType.validate.message.notNull':
+    'The operating type is not null!',
   'store.create.form.item.input.placeholder': 'Please enter',
   'store.create.form.item.select.placeholder': 'Please select',
   'store.create.form.item.input.placeholder.code': 'Please enter 4 character or number',
@@ -1071,12 +1139,17 @@ export default {
   'store.create.form.item.input.placeholder.contactPhone': 'Please enter contactPhone',
   'store.create.form.item.select.placeholder.storeType': 'Please select storeType',
   'store.create.form.item.input.placeholder.inputNumber': 'Please enter a number greater than 0',
-  'store.create.form.item.input.placeholder.zipCode': 'Please enter the postcode of the store address',
-  'store.create.form.item.input.placeholder.addressChoose': 'Please select country/province/city/district',
-  'store.create.form.item.input.placeholder.address': 'Please enter the specific address of the store',
-  'store.create.form.item.input.placeholder.note': 'Please enter additional remarks of the store, no more than 255 words',
+  'store.create.form.item.input.placeholder.zipCode':
+    'Please enter the postcode of the store address',
+  'store.create.form.item.input.placeholder.addressChoose':
+    'Please select country/province/city/district',
+  'store.create.form.item.input.placeholder.address':
+    'Please enter the specific address of the store',
+  'store.create.form.item.input.placeholder.note':
+    'Please enter additional remarks of the store, no more than 255 words',
   'store.create.form.item.input.placeholder.distance': 'Please enter the distance to the owner',
-  'store.create.form.item.input.placeholder.operatingArea': 'Please enter the operatingArea of the store',
+  'store.create.form.item.input.placeholder.operatingArea':
+    'Please enter the operatingArea of the store',
   'store.create.form.item.input.placeholder.homeUrl': 'Please enter the homeUrl',
   'store.create.form.item.select.placeholder.operatingType': 'Please select operating type',
 
@@ -1122,7 +1195,6 @@ export default {
   'pretype.create.form.item.name.validate.message.notNull': 'PreType name not null！',
   'pretype.create.form.item.input.placeholder.name': 'Please enter 4 characters or less',
   'pretype.create.form.item.input.placeholder.note': 'Enter note, not more than 30 characters',
-
 
   // 承运商
   'carrier.title': 'Carrier',
@@ -1171,10 +1243,10 @@ export default {
   'carrier.popup.shortName.validate.limitLength': 'The maximal length of shortName is 30',
   'carrier.popup.zipCode.validate.limitLength': 'The maximal length of zipCode is 30',
   'carrier.popup.note.validate.limitLength': 'The maximal length of note is 30',
-  'carrier.create.form.item.homeUrl.validate.message.limitLength': 'The maximal length of note is 100',
+  'carrier.create.form.item.homeUrl.validate.message.limitLength':
+    'The maximal length of note is 100',
   // 承运商 - 查看
   'carrier.detail.tab.basicInfo': 'Carrier Info',
-
 
   // 货主
   'owner.title': '货主',
@@ -1188,7 +1260,6 @@ export default {
   'owner.message.error.disbale': 'Disenable owner failed',
   'owner.message.error.create': 'Create owner failed',
   'owner.message.error.update': 'Update owner failed',
-
 
   // 货主-主页-表格-列名
   'owner.index.table.column.code': 'Code',
@@ -1243,19 +1314,26 @@ export default {
 
   // 货主 - 新增修改 - 验证信息
   'owner.create.form.item.code.validate.message.notNull': 'The code is not null!',
-  'owner.create.form.item.code.validate.message.integrality': 'The Code must be 4 bits, alphanumeric combination, pure number, pure letter.',
+  'owner.create.form.item.code.validate.message.integrality':
+    'The Code must be 4 bits, alphanumeric combination, pure number, pure letter.',
   'owner.create.form.item.name.validate.message.notNull': 'The name is not null!',
   'owner.create.form.item.name.validate.message.limitLength': 'The maximal length of name is 30!',
   'owner.create.form.item.contactor.validate.message.notNull': 'The contactor is not null!',
-  'owner.create.form.item.contactor.validate.message.limitLength': 'The maximal length of contactor is 30!',
+  'owner.create.form.item.contactor.validate.message.limitLength':
+    'The maximal length of contactor is 30!',
   'owner.create.form.item.contactPhone.validate.message.notNull': 'The contact phone is not null!',
-  'owner.create.form.item.contactPhone.validate.message.limitLength': 'The maximal length of contact phone is 30!',
+  'owner.create.form.item.contactPhone.validate.message.limitLength':
+    'The maximal length of contact phone is 30!',
   'owner.create.form.item.address.validate.message.notNull': 'The Address is not null!',
-  'owner.create.form.item.address.validate.message.limitLength': 'The maximal length of address is 100!',
+  'owner.create.form.item.address.validate.message.limitLength':
+    'The maximal length of address is 100!',
   'owner.create.form.item.note.validate.message.limitLength': 'The maximal length of note is 255!',
-  'owner.create.form.item.zipCode.validate.message.limitLength': 'The maximal length of zipCode is 30!',
-  'owner.create.form.item.shortName.validate.message.limitLength': 'The maximal length of shortName is 30!',
-  'owner.create.form.item.homePage.validate.message.limitLength': 'The maximal length of homePage is 255!',
+  'owner.create.form.item.zipCode.validate.message.limitLength':
+    'The maximal length of zipCode is 30!',
+  'owner.create.form.item.shortName.validate.message.limitLength':
+    'The maximal length of shortName is 30!',
+  'owner.create.form.item.homePage.validate.message.limitLength':
+    'The maximal length of homePage is 255!',
   'owner.create.form.item.input.placeholder': 'Please enter',
   'owner.create.form.item.input.placeholder.code': 'Please enter code',
   'owner.create.form.item.input.placeholder.name': 'Please enter between 4 and 30 bits',
@@ -1315,7 +1393,8 @@ export default {
   'notice.create.title.validate.integrality': 'The maximal length of title is 30',
   'notice.create.receiver': 'Receiver',
   'notice.create.receiver.validate': 'Please select the target user',
-  'notice.create.receiver.placeholder': 'Please choose,you can choose HEADING,STORE,DC,VENDOR and Carrier',
+  'notice.create.receiver.placeholder':
+    'Please choose,you can choose HEADING,STORE,DC,VENDOR and Carrier',
   'notice.create.text': 'Text',
   'notice.create.text.validate.notNull': 'Enter text',
   'notice.create.text.validate.integrality': 'The maximal length of text is 255',
@@ -1353,7 +1432,6 @@ export default {
   'category.create.from.level.select.placeholder': 'Please choose level',
   'category.create.from.note.select.placeholder': 'Length does not more than 255',
 
-
   // 商品类别 - 新增校验
   'category.create.form.item.code.validate.message.notNull': 'Category code is not null',
   'category.create.form.item.name.validate.message.notNull': 'Category name is not null',
@@ -1390,13 +1468,16 @@ export default {
 
   'report.baisc.directory.name': 'Directory name',
   'report.basic.directory.name.validate.message.notNull': 'Directory name cannot be null',
-  'report.basic.directory.name.validate.message.limitLength': 'The maximal length of directory name is 30',
+  'report.basic.directory.name.validate.message.limitLength':
+    'The maximal length of directory name is 30',
 
   'report.basic.report.name': 'Report name',
   'report.basic.report.name.validate.message.notNull': 'Report name cannot be null',
-  'report.basic.report.name.validate.message.limitLength': 'The maximal length of report name is 30',
+  'report.basic.report.name.validate.message.limitLength':
+    'The maximal length of report name is 30',
   'report.basic.report.path': 'Third-party path',
-  'report.basic.report.path.validate.message.limitLength': 'The maximal length of third-party path is 30',
+  'report.basic.report.path.validate.message.limitLength':
+    'The maximal length of third-party path is 30',
 
   //最高最低库存
   'highLowStock.title': 'Highest and lowest stock',
@@ -1410,16 +1491,20 @@ export default {
   'highLowStock.lowStockQty': 'Minimum stock quantity',
   'highLowStock.lowStockExplain': 'Minimum stock(box/package/part)',
   'highLowStock.lowStockQty.validate.message.notNull': 'Minimum stock quantity cannot be null',
-  'highLowStock.lowStockQty.validate.message.integrality': 'Minimum stock quantity is only allowed to enter integers',
+  'highLowStock.lowStockQty.validate.message.integrality':
+    'Minimum stock quantity is only allowed to enter integers',
 
   'highLowStock.highStockQtyStr': 'Maximum stock',
   'highLowStock.highStockQty': 'Maximum stock quantity',
   'highLowStock.highStockExplain': 'Maximum stock(box/package/part)',
   'highLowStock.highStockQty.validate.message.notNull': 'Maximum stock quantity cannot be null',
-  'highLowStock.highStockQty.validate.message.integrality': 'Maximum stock quantity is only allowed to enter integers',
+  'highLowStock.highStockQty.validate.message.integrality':
+    'Maximum stock quantity is only allowed to enter integers',
 
-  'highLowStock.lowAndHighStock.validate.message.notNull': 'Minimum stock and maximum stock cannot be null at the same time',
-  'highLowStock.binTypeAndRange.validate.message.notNull': 'Bin type and range cannot be null at the same time',
+  'highLowStock.lowAndHighStock.validate.message.notNull':
+    'Minimum stock and maximum stock cannot be null at the same time',
+  'highLowStock.binTypeAndRange.validate.message.notNull':
+    'Bin type and range cannot be null at the same time',
 
   'highLowStock.select.placeholder': 'All',
   'highLowStock.select.fixValue': 'Fixed value',
@@ -1517,7 +1602,7 @@ export default {
 
   //损溢配置
   'decincConfig.title': 'DecincConfig',
-  'lockConfig.title' : 'LockConfig',
+  'lockConfig.title': 'LockConfig',
 
   'decincConfig.column.binUsage': 'BinUsage',
   'decincConfig.column.configType': 'ConfigType',
@@ -1532,9 +1617,8 @@ export default {
 
   //容器绑定/拆并配置
   'bindConfig.title': 'BindConfig',
-  'bindConfig.BINDING' : 'Binding',
-  'bindConfig.SPLITSAND' : 'Splitsand',
-
+  'bindConfig.BINDING': 'Binding',
+  'bindConfig.SPLITSAND': 'Splitsand',
 
   //移库配置
   'moveruleConfig.title': 'MoveruleConfig',
@@ -1546,8 +1630,8 @@ export default {
 
   'moveruleConfig.modify': 'Modify',
   'moveruleConfig.not.modify': 'Dont modify',
-  'moveruleConfig.column.toBin':'ToBin',
-  'moveruleConfig.column.fromBin':'Frombin',
+  'moveruleConfig.column.toBin': 'ToBin',
+  'moveruleConfig.column.fromBin': 'Frombin',
   'moveruleConfig.create.form.item.input.placeholder.fromBinUsage': 'Please enter fromBinUsage',
   'moveruleConfig.create.form.item.input.placeholder.toBinUsage': 'Please enter toBinUsage',
 
@@ -1558,8 +1642,8 @@ export default {
   'bookTimeConfig.column.startTime': 'Start time',
   'bookTimeConfig.column.endTime': 'End time',
   'bookTimeConfig.column.timeRange': 'Time range(minute)',
-  'bookTimeConfigPattern.column.preDays':'preDays must more than 0',
-  'bookTimeConfigPattern.column.time':'time must more than 0',
+  'bookTimeConfigPattern.column.preDays': 'preDays must more than 0',
+  'bookTimeConfigPattern.column.time': 'time must more than 0',
 
   //盘点配置
   'config.stockTakeConfig.maxBins': 'maxBins',
@@ -1669,7 +1753,6 @@ export default {
   'wrh.message.error.create': 'Create new wrh failed',
   'wrh.message.error.update': 'Update wrh failed',
 
-
   // 仓位-主页-表格-列名
   'wrh.index.table.column.code': 'code',
   'wrh.index.table.column.name': 'name',
@@ -1707,10 +1790,12 @@ export default {
 
   // 仓位 - 新增修改 - 验证信息
   'wrh.create.form.item.code.validate.message.notNull': 'Code is not null',
-  'wrh.create.form.item.code.validate.message.integrality': 'Code must be 7 digits or a combination of letters',
+  'wrh.create.form.item.code.validate.message.integrality':
+    'Code must be 7 digits or a combination of letters',
   'wrh.create.form.item.name.validate.message.notNull': 'Name is not null',
   'wrh.create.form.item.name.validate.message.limitLength': 'The maximum length of the name is 30',
-  'wrh.create.form.item.sourceWrhCode.validate.message.limitLength': 'The maximum length of the sourceWrhCode is 30',
+  'wrh.create.form.item.sourceWrhCode.validate.message.limitLength':
+    'The maximum length of the sourceWrhCode is 30',
   'wrh.create.form.item.dc.validate.message.notNull': 'dc is not null',
   'wrh.create.form.item.note.validate.message.limitLength': 'The maximum length of the note is 255',
   'wrh.create.form.item.option.placeholder': 'placeholder',
@@ -1727,7 +1812,7 @@ export default {
   'wrh.detail.label.edit': 'edit',
   'wrh.detail.basic': 'basic info',
 
-  'bin.code':'code',
+  'bin.code': 'code',
   //货位类型
   'bintype.title': 'binType',
   // 新增 修改表单
@@ -1751,9 +1836,11 @@ export default {
 
   // 货位类型 - 新增修改 - 验证信息
   'bintype.create.form.item.code.validate.message.notNull': 'Code is not null',
-  'bintype.create.form.item.code.validate.message.integrality': 'The code must be a 2-7 digit letter, number or alphanumeric combination',
+  'bintype.create.form.item.code.validate.message.integrality':
+    'The code must be a 2-7 digit letter, number or alphanumeric combination',
   'bintype.create.form.item.name.validate.message.notNull': 'Name is not null',
-  'bintype.create.form.item.name.validate.message.limitLength': 'The maximum length of the name is 30',
+  'bintype.create.form.item.name.validate.message.limitLength':
+    'The maximum length of the name is 30',
   'bintype.create.form.item.dc.validate.message.notNull': 'Dc is not null',
   'bintype.create.form.item.length.validate.message.notNull': 'The length is not null',
   'bintype.create.form.item.length.validate.length': 'Up to 12 digits in length',
@@ -1764,8 +1851,10 @@ export default {
   'bintype.create.form.item.weight.validate.message.notNull': 'The weight is not null',
   'bintype.create.form.item.weight.validate.length': 'Up to 12 digits in weight',
   'bintype.create.form.item.plotratio.validate.message.notNull': 'The plotratio is not null',
-  'bintype.create.form.item.storageNumber.validate.message.notNull': 'The storageNumber is not null',
-  'bintype.create.form.item.storageNumber.validate.int': 'StorageNumber must be an integer greater than 0',
+  'bintype.create.form.item.storageNumber.validate.message.notNull':
+    'The storageNumber is not null',
+  'bintype.create.form.item.storageNumber.validate.int':
+    'StorageNumber must be an integer greater than 0',
   'bintype.create.form.item.note.validate.message.limitLength': 'note maximum length 255',
   'bintype.create.form.item.option.placeholder': 'placeholder',
   'bintype.create.form.item.input.placeholder.code': 'placeholder code',
