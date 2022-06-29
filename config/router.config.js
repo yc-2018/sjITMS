@@ -1223,14 +1223,14 @@ export default [
             authority: ['sjtms.core.schedule'],
             divider: true,
           },
-          {
-            path: '/tmscode/cardLoading',
-            name: 'cardLoading',
-            org: ['DISPATCH_CENTER'],
-            component: './SJTms/ChargeLoading/ChargeLoading',
-            quickuuid: 'sj_itms_schedule',
-            authority: ['sjtms.core.cardLoading'],
-          },
+          // {
+          //   path: '/tmscode/cardLoading',
+          //   name: 'cardLoading',
+          //   org: ['DISPATCH_CENTER'],
+          //   component: './SJTms/ChargeLoading/ChargeLoading',
+          //   quickuuid: 'sj_itms_schedule',
+          //   authority: ['sjtms.core.cardLoading'],
+          // },
           {
             path: '/tmscode/checkin',
             name: 'checkin',

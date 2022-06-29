@@ -16,6 +16,8 @@ import { convertCodeName } from '@/utils/utils';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
 import { State } from '@/pages/Tms/ShipBill/ShipBillContants';
 import SearchPage from '@/pages/Component/Page/SearchPage';
+import { autoHideHeader } from '@/defaultSettings';
+import { getByCarrier, beginloading, finishloading } from '@/services/sjitms/ChargeLoading';
 
 @connect(({ newCheckInAndCheckOut }) => ({
   newCheckInAndCheckOut,
@@ -28,11 +30,12 @@ export default class CheckInAndCheckOut extends SearchPage {
 
     this.state = {
       ...this.state,
-      title: '出车回车登记',
+      title: '司机刷卡',
       shipPlanBill: {},
       shipBill: {},
       responseError: false,
       responseMsg: '',
+      colorChange:false,
     };
   }
 
@@ -44,24 +47,64 @@ export default class CheckInAndCheckOut extends SearchPage {
       callback: response => {
         console.log();
         if (response && response.success && response.data) {
-          this.setState({
-            shipPlanBill: response.data,
-          });
-          this.updateTime(response.data.billNumber);
+         //debugger;
+          if(response.data.result){
+            this.updateTime(response.data.data.billNumber);
+          }else{
+            this.getPlanInfo(driverCode);
+          }
+         
+          
         } else {
-          this.setState({
-            shipBill: {},
-            shipPlanBill: {},
-            responseMsg: response.message
-              ? response.message
-              : '当前没有已批准的排车单或装车单不存在',
-            responseError: true,
-          });
+            
+          // this.setState({
+          //   shipBill: {},
+          //   shipPlanBill: {},
+          //   responseMsg: response.message
+          //     ? response.message
+          //     : '当前没有已批准的排车单或装车单不存在',
+          //   responseError: true,
+          // });
         }
       },
     });
   };
 
+    //根据司机代码查排车单装车单信息
+    getPlanInfo = async driverCode => {
+      await getByCarrier(driverCode).then(response => {
+        if (response && response.success && response.data) {
+         //Shipping
+         this.getChargeMessage(response.data);
+        } else {
+          this.setState({
+            shipPlanBill: response.data,
+            responseMsg: response.message ? response.message : '当前没有已批准的排车单或装车单不存在',
+            responseError: true,
+          });
+        }
+      });
+    };
+  //刷卡装车
+  getChargeMessage = async data => {
+    console.log("ss",data);
+    if (!data) return;
+    await beginloading(data.uuid, data.version).then(response => {
+      if (response && response.success) {
+        this.setState({
+          shipPlanBill: data,
+          responseMsg: data.stat==='Approved'? `${data.vehicle.name},开始装车!`:`${data.vehicle.name},结束装车!`,
+          responseError: false,
+          colorChange:true,
+        });
+      } else {
+        this.setState({
+          responseMsg: response.message,
+          responseError: true,
+        });
+      }
+    });
+  };
   updateTime = billNumber => {
     // const { shipBill } = this.state;
     if (!billNumber) return;
@@ -70,17 +113,25 @@ export default class CheckInAndCheckOut extends SearchPage {
       type: 'newCheckInAndCheckOut/updateTime',
       payload: billNumber,
       callback: response => {
-        if (response && response.success) {
-          // message.success(commonLocale.confirmSuccessLocale);
-          this.setState({
-            responseMsg: response.data.returnTime
-              ? `排车单号：${billNumber} 回车刷卡成功`
-              : response.data.dispatchTime
-                ? `排车单号：${billNumber}出车刷卡成功`
-                : '刷卡成功',
-            responseError: false,
-            shipBill: response.data ? response.data : {},
-          });
+        if (response && response.success ) {
+          if(response.data.result){
+            this.setState({
+              responseMsg: response.data.data.stat==='Returned'
+                ? `${response.data.data.vehicle.name},回车刷卡成功!`
+                :`${response.data.data.vehicle.name},出车刷卡成功!`,
+              responseError: false,
+              colorChange:false,
+              shipBill: response.data.data ? response.data.data : {},
+            });
+          }else{
+            this.setState({
+              responseMsg:response.data.data,
+              responseError: true,
+            shipBill: {},
+            shipPlanBill: {},
+            })
+          }
+        
         } else {
           this.setState({
             responseMsg: response.message,
@@ -100,38 +151,7 @@ export default class CheckInAndCheckOut extends SearchPage {
    * 车辆信息
    */
   drawVehicleInfo() {
-    const { getFieldDecorator } = this.props.form;
-    const { shipBill } = this.state;
-    console.log('shipBill', shipBill);
-    let cols = [
-      <CFormItem label={'员工'} key="driver">
-        {getFieldDecorator('driver', {
-          initialValue: '',
-        })(<Input onPressEnter={this.onSubmit} placeholder={'输入员工代码'} />)}
-      </CFormItem>,
-      <CFormItem label={'排车单号'} key="billNumber">
-        {getFieldDecorator('billNumber')(
-          <Col>{shipBill ? shipBill.billNumber ? shipBill.billNumber : <Empty /> : <Empty />}</Col>
-        )}
-      </CFormItem>,
-      <CFormItem label={'车辆信息'} key="vehicle">
-        {getFieldDecorator('vehicle')(
-          <Col>
-            {shipBill ? (
-              shipBill.vehicle ? (
-                '[' + shipBill.vehicle.code + ']' + shipBill.vehicle.name
-              ) : (
-                <Empty />
-              )
-            ) : (
-              <Empty />
-            )}
-          </Col>
-        )}
-      </CFormItem>,
-    ];
-
-    return [<FormPanel title={'车辆信息'} cols={cols} />];
+    return <div style={{height:'7%', fontSize: '15px',textAlign:'center' ,width:'100%',margin:'auto'}}>工号：<Input style={{width:218,height:35,boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'}} onPressEnter={this.onSubmit} placeholder={'输入员工代码'} /></div>
   }
 
   /**
@@ -139,7 +159,7 @@ export default class CheckInAndCheckOut extends SearchPage {
    */
   drawNoticeMessage() {
     const { form } = this.props;
-    const { responseError, responseMsg, shipBill } = this.state;
+    const { responseError, responseMsg, shipBill,colorChange } = this.state;
     const noteItemLayout = {
       labelCol: { span: 0 },
       wrapperCol: { span: 36 },
@@ -147,16 +167,16 @@ export default class CheckInAndCheckOut extends SearchPage {
     };
     return (
       //F5222D
-      <Card title="刷卡结果" bordered={false} style={{ width: '100%', height: '640px' }}>
-        <Input.TextArea
-          style={
-            responseError
-              ? { color: '#F5222D', fontSize: '50px' }
-              : { color: '#013ADF', fontSize: '100px' }
-          }
-          value={responseMsg}
-          rows={28}
-        />
+        <Card   title="刷卡结果" bordered={true}   
+        style={{ width: '100%', height: '42%',marginBottom:'1%',boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'}}
+        bodyStyle ={{ margin:'4.6% auto',  position: 'relative',width:'100%',padding:'0 0 0 0',textAlign:'center'
+
+      }}
+        >
+          {responseError?<div style={{ color:'#F5222D', fontSize: '40px',margin: 'auto'}} >{this.state.responseMsg}</div> 
+          :colorChange?<div style={{ color:'#00DD00' , fontSize:'40px',margin:'auto'}}>{this.state.responseMsg}</div>:
+          <div style={{ color:'#1354DA' , fontSize: '40px',margin: 'auto'}} >{this.state.responseMsg}</div>} 
+           
       </Card>
     );
   }
@@ -179,42 +199,33 @@ export default class CheckInAndCheckOut extends SearchPage {
       },
     };
     return (
-      <Card title="排车单信息" bordered={false} style={{ width: '100%', height: '640px' }}>
-        <Row>
-          <Col>
-            <span>排车单号:</span> <Input value={shipPlanBill.billNumber} />
+      
+      <Card title="排车单信息" style={{ width: '100%', height: '34%',boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'}}
+      bodyStyle={{width:'100%',height:'78%'}}
+      >
+         <Row gutter={[4,28]}> 
+          <Col  span={6}>
+           <span style={{fontSize:15}}>排车单号：{shipPlanBill?.billNumber?shipPlanBill.billNumber:<Empty/>}</span>
+           </Col>
+           <Col   span={6}>
+          <span style={{fontSize:15}}>车牌号：{shipPlanBill?.vehicle?shipPlanBill.vehicle.name:<Empty/>}</span>
           </Col>
-        </Row>
-        <Divider />
-        <Row>
-          <Col>
-            <span>明细数: </span>
-            <Input value={shipBill.deliveryPointCount} />
+          <Col   span={6}>
+          <span style={{fontSize:15}}>重量(t)：{shipPlanBill?.weight?shipPlanBill.weight:<Empty/>}</span>
           </Col>
-        </Row>
-        <Divider />
-        <Row>
-          <Col>
-            <span>出车时间:</span> <Input value={shipBill.dispatchTime} />
+          <Col  span={6} >
+          <span style={{fontSize:15}}>体积(m³)：{shipPlanBill?.volume?shipPlanBill.volume:<Empty/>}</span>
           </Col>
-        </Row>
-        <Divider />
-        <Row>
-          <Col>
-            <span>回车时间:</span> <Input value={shipBill.returnTime} />
+          <Col  span={6} >
+          <span style={{fontSize:15}}>驾驶员：{shipPlanBill?.carrier?"["+shipPlanBill.carrier.code+"]"+shipPlanBill.carrier.name:<Empty/>}</span>
           </Col>
-        </Row>
-        <Divider />
-        <Row>
-          <Col>
-            <span>重量(吨):</span> <Input value={shipBill.weight} />
+          <Col   span={6}>
+          <span style={{fontSize:15}}>出车时间：{shipPlanBill?.dispatchTime?shipPlanBill.dispatchTime:<Empty/>}</span>
           </Col>
-        </Row>
-        <Divider />
-        <Row>
-          <Col>
-            <span>体积(立方米):</span> <Input value={shipBill.volume} />
+          <Col  span={6} >
+          <span style={{fontSize:15}}>回车时间：{shipPlanBill?.returnTime?shipPlanBill.returnTime:<Empty/>}</span>
           </Col>
+          
         </Row>
       </Card>
     );
@@ -222,43 +233,26 @@ export default class CheckInAndCheckOut extends SearchPage {
 
   render() {
     return (
-      <div>
+     
         <PageHeaderWrapper>
           <Spin indicator={LoadingIcon('default')} delay={5} spinning={this.props.loading}>
-            <Page withCollect={true}>
-              <Card bordered={false}>
+            <Page withCollect={true} >
+          
                 <NavigatorPanel
-                  style={{ marginTop: '-24px', marginLeft: '-22px' }}
                   title={this.state.title}
+                  style={{marginBottom:10}}
                 />
-                <div>
-                  <div>{this.drawVehicleInfo()}</div>
-                  <div
-                    style={{
-                      float: 'left',
-                      width: '35%',
-                      border: '1px solid  #908B8B',
-                      borderRadius: '5px',
-                    }}
-                  >
-                    {this.drawBillInfo()}
-                  </div>
-                  <div
-                    style={{
-                      float: 'right',
-                      width: '64.5%',
-                      border: '1px solid #908B8B ',
-                      borderRadius: '5px',
-                    }}
-                  >
-                    {this.drawNoticeMessage()}
-                  </div>
+                <div style={{overflow:'scroll', height:'100%'}}>
+                {this.drawVehicleInfo()}
+                {this.drawNoticeMessage()}
+                {this.drawBillInfo()}
                 </div>
-              </Card>
+               
+               
             </Page>
           </Spin>
         </PageHeaderWrapper>
-      </div>
+      
     );
   }
 }
