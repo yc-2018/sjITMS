@@ -25,7 +25,12 @@ export default class CostBillEdit extends CreatePage {
   componentDidMount() {
     const { billUuid, subjectUuid } = this.props.params;
     getSubjectBill({ billUuid, subjectUuid }).then(response => {
-      this.setState({ loading: false, billInfo: response.data, billUuid, subjectUuid });
+      const billInfo = response.data;
+      billInfo.projects.map(project => {
+        const planItem = billInfo.planItems.find(planItem => planItem.projectUuid == project.UUID);
+        project.calcSort = planItem.calcSort;
+      });
+      this.setState({ loading: false, billInfo, billUuid, subjectUuid });
       // 初始化费用
       response.data.billDetail.map(x => (this.entity[x.projectCode] = x.amount));
     });
@@ -44,13 +49,14 @@ export default class CostBillEdit extends CreatePage {
    * 联动计算
    */
   linkCalculate = key => {
-    const { projects, billDetail } = this.state.billInfo;
+    const { projects, billDetail, planItems } = this.state.billInfo;
     const calculateProject = projects.find(x => x.CODE == key);
-    // TODO 存在顺序问题、依赖问题
     // 筛选出费用内计算的项目
-    const linkProjects = projects.filter(
-      x => x.FORMULA_TYPE == 1 && x.SQL.indexOf(calculateProject.ITEM_NAME) > -1
-    );
+    const linkProjects = projects.filter(x => 
+      x.FORMULA_TYPE == 1 && 
+      x.CODE != key && 
+      x.calcSort > calculateProject.calcSort &&
+      x.SQL.indexOf(calculateProject.ITEM_NAME) > -1);
     for (const linkProject of linkProjects) {
       let sql = linkProject.SQL;
       // 匹配到对应项且将其替换成值
@@ -62,6 +68,8 @@ export default class CostBillEdit extends CreatePage {
       eval(sql);
       // 通知表单更新页面
       this.props.form.setFieldsValue({ [linkProject.CODE]: this.entity[linkProject.CODE] });
+      // 处理其下级依赖
+      this.linkCalculate(linkProject.CODE);
     }
   };
 
