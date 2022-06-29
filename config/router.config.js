@@ -1218,7 +1218,7 @@ export default [
             path: '/tmscode/schedule',
             name: 'schedule',
             org: ['DISPATCH_CENTER'],
-            component: './SJTms/DispatchCenterShipPlanBill/DispatchCenterShipPlanBill',
+            component: './SJTms/Schedule/SchedulePage',
             quickuuid: 'sj_itms_schedule',
             authority: ['sjtms.core.schedule'],
             divider: true,
