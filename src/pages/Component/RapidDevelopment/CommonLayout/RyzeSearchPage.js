@@ -30,6 +30,7 @@ import styles from '@/pages/Tms/TransportOrder/transportOrder.less';
  */
 export default class RyzeSearchPage extends Component {
   drapTableChange = () => {}; //拖拽事件
+  afterhandleSelectRows = row => {};
   constructor(props) {
     super(props);
 
@@ -105,6 +106,7 @@ export default class RyzeSearchPage extends Component {
       selectedRows: rows,
     });
     this.changeSelectedRows && this.changeSelectedRows(rows);
+    this.afterhandleSelectRows(rows);
   };
 
   /**
