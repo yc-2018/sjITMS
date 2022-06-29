@@ -232,7 +232,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
 
   getcalcLog = async () => {
     this.changeLogsModal();
-    await getBillLogs(this.state.bill.UUID).then(response => {
+    await getBillLogs(this.state.bill.uuid).then(response => {
       if (response && response.success) {
         this.setState({ billLogs: response.data.logsDetail });
       } else {
@@ -301,11 +301,15 @@ export default class CostProjectSearch extends QuickFormSearchPage {
         )}
       </Form.Item>
     );
-    let searchFields = this.state.subjectFields ? this.state.subjectFields.map(item => {
-          return <Form.Item label={item.DB_FIELD_TXT}>
+    let searchFields = this.state.subjectFields
+      ? this.state.subjectFields.map(item => {
+          return (
+            <Form.Item label={item.DB_FIELD_TXT}>
               {getFieldDecorator(item.DB_FIELD_NAME, { initialValue: '' })(<Input />)}
-            </Form.Item>;
-        }) : [];
+            </Form.Item>
+          );
+        })
+      : [];
     node = [...node, ...searchFields];
     node.push(
       <Form.Item>
