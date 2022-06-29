@@ -5,8 +5,15 @@ import React, { Component } from 'react';
 import { getSubjectBill, updateSubjectBill } from '@/services/cost/CostCalculation';
 import { Form, Input, InputNumber, message } from 'antd';
 
-const billUuid = 'b64595de103f40059ffadf78523c47c7';
-const subjectUuid = 'B666';
+const costTypes = [
+  { DICT_CODE: 'costType', SORT_ORDER: 1, VALUE: '0', NAME: '税前加项' },
+  { DICT_CODE: 'costType', SORT_ORDER: 2, VALUE: '1', NAME: '税前减项' },
+  { DICT_CODE: 'costType', SORT_ORDER: 3, VALUE: '2', NAME: '税费项' },
+  { DICT_CODE: 'costType', SORT_ORDER: 4, VALUE: '3', NAME: '税后减项' },
+  { DICT_CODE: 'costType', SORT_ORDER: 5, VALUE: '4', NAME: '税后加项' },
+  { DICT_CODE: 'costType', SORT_ORDER: 6, VALUE: '5', NAME: '汇总项' },
+  { DICT_CODE: 'costType', SORT_ORDER: 7, VALUE: '6', NAME: '其他' },
+];
 
 @Form.create()
 export default class CostBillEdit extends CreatePage {
@@ -16,15 +23,17 @@ export default class CostBillEdit extends CreatePage {
   entity = {};
 
   componentDidMount() {
+    const { billUuid, subjectUuid } = this.props.params;
     getSubjectBill({ billUuid, subjectUuid }).then(response => {
-      this.setState({ loading: false, billInfo: response.data });
+      this.setState({ loading: false, billInfo: response.data, billUuid, subjectUuid });
+      // 初始化费用
+      response.data.billDetail.map(x => (this.entity[x.projectCode] = x.amount));
     });
   }
 
   handleChange = (key, value) => {
     this.entity[key] = value;
-    this.linkCalculate(key, value);
-    console.log(this.entity);
+    this.linkCalculate(key);
   };
 
   onCancel = () => {
@@ -34,45 +43,58 @@ export default class CostBillEdit extends CreatePage {
   /**
    * 联动计算
    */
-  linkCalculate = () => {};
+  linkCalculate = key => {
+    const { projects, billDetail } = this.state.billInfo;
+    const calculateProject = projects.find(x => x.CODE == key);
+    // TODO 存在顺序问题、依赖问题
+    // 筛选出费用内计算的项目
+    const linkProjects = projects.filter(
+      x => x.FORMULA_TYPE == 1 && x.SQL.indexOf(calculateProject.ITEM_NAME) > -1
+    );
+    for (const linkProject of linkProjects) {
+      let sql = linkProject.SQL;
+      // 匹配到对应项且将其替换成值
+      for (const project of projects) {
+        sql = sql.replace(project.ITEM_NAME, this.entity[project.CODE]);
+      }
+      // 使用动态js命令更新关联项目
+      sql = 'this.entity.' + linkProject.CODE + '=' + sql;
+      eval(sql);
+      // 通知表单更新页面
+      this.props.form.setFieldsValue({ [linkProject.CODE]: this.entity[linkProject.CODE] });
+    }
+  };
 
   onSave = async () => {
+    const { billUuid, subjectUuid } = this.state;
     const response = await updateSubjectBill({ billUuid, subjectUuid, updateMap: this.entity });
     if (response.success) {
       message.success('保存成功');
-      this.props.switchTab('view', {params:{}});
+      this.props.switchTab('view', { params: {} });
     }
   };
 
   drawFormItems = () => {
     const { getFieldDecorator } = this.props.form;
     const { billInfo } = this.state;
-    const costTypes = [
-      { DICT_CODE: 'costType', SORT_ORDER: 1, VALUE: '0', NAME: '税前加项' },
-      { DICT_CODE: 'costType', SORT_ORDER: 2, VALUE: '1', NAME: '税前减项' },
-      { DICT_CODE: 'costType', SORT_ORDER: 3, VALUE: '2', NAME: '税费项' },
-      { DICT_CODE: 'costType', SORT_ORDER: 4, VALUE: '3', NAME: '税后减项' },
-      { DICT_CODE: 'costType', SORT_ORDER: 5, VALUE: '4', NAME: '税后加项' },
-      { DICT_CODE: 'costType', SORT_ORDER: 6, VALUE: '5', NAME: '汇总项' },
-      { DICT_CODE: 'costType', SORT_ORDER: 7, VALUE: '6', NAME: '其他' },
-    ];
     let formPanel = [];
     let baseCols = [];
     if (!billInfo?.billSubject || !billInfo?.billDetail) {
       return;
     }
+    // 基础资料
     for (const subject of billInfo.billSubject) {
       baseCols.push(
         <CFormItem key={subject.fieldName} label={subject.fieldTxt}>
           {getFieldDecorator(subject.fieldName, {
             initialValue: subject.fieldValue,
-            // rules: e.rules,
           })(<Input readOnly />)}
         </CFormItem>
       );
     }
     formPanel.push(<FormPanel key="base" title="基础资料" cols={baseCols} />);
 
+    // 根据不同计费项类型渲染出多个panel
     for (const costType of costTypes) {
       let calcCols = [];
       for (const detail of billInfo.billDetail) {
@@ -86,7 +108,7 @@ export default class CostBillEdit extends CreatePage {
           <CFormItem key={detail.projectCode} label={detail.projectName}>
             {getFieldDecorator(detail.projectCode, {
               initialValue: detail.amount,
-              // rules: e.rules,
+              rules: [{ required: true, message: `字段不能为空` }],
             })(
               <InputNumber
                 controls={false}
