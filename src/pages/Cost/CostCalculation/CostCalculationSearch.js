@@ -56,15 +56,36 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       this.props.params.dateString == undefined
         ? moment().format('YYYY-MM')
         : this.props.params.dateString,
+    plan: null,
     bill: null,
     isShowLogs: false,
     billLogs: [],
     isLock: false,
   };
+
   month = moment().format('YYYY-MM');
+
+  componentWillReceiveProps(nextprops) {
+    this.getLockStatus();
+    this.getCostFormFields();
+  }
+
+  getCostFormFields = () => {
+    findCostFormFieldByPlanUuid(this.props.params.entityUuid).then(result => {
+      this.setState({ subjectFields: result.data });
+    });
+  };
+
+  getLockStatus = date => {
+    isLock(this.props.params.entityUuid, date == undefined ? this.month : date).then(result => {
+      this.setState({ isLock: result.data });
+    });
+  };
+
   comeBack = () => {
     this.props.switchTab('query');
   };
+
   checkData = () => {
     const { dateString } = this.state;
     const { e } = this.props.params;
@@ -95,17 +116,27 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     });
   };
 
+  /**
+   * 跳转到编辑页面
+   */
   edit = () => {
-    const { selectedRows } = this.state;
-    console.log(this.state);
-    // if (selectedRows.length == 0) {
-    //   message.error('请选择一条数据');
-    //   return;
-    // }
+    const {
+      selectedRows,
+      plan: { subjectKeyField },
+      bill: { uuid: billUuid },
+    } = this.state;
+    if (selectedRows.length == 0) {
+      message.error('请选择一条数据');
+      return;
+    }
     // 拿到主键
-    this.props.switchTab('create');
+    const subjectUuid = selectedRows[0][subjectKeyField];
+    this.props.switchTab('create', { billUuid, subjectUuid });
   };
 
+  /**
+   * 查询处理
+   */
   handleOnSertch = async data => {
     let values = this.props.form.getFieldsValue();
     const { dateString } = this.state;
@@ -136,12 +167,12 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     }
     const response = await getBill(uuid, params);
     if (response.data && response.success) {
-      const { struct, data, bill } = response.data.records[0];
+      const { structs, data, plan, bill } = response.data.records[0];
       let newColumns = [];
-      struct.forEach(data => {
+      structs.forEach(struct => {
         newColumns.push({
-          fieldName: data,
-          fieldTxt: data,
+          fieldName: struct.fieldName,
+          fieldTxt: struct.fieldTxt,
           fieldType: 'VarChar',
           fieldWidth: 100,
           isSearch: false,
@@ -161,7 +192,8 @@ export default class CostProjectSearch extends QuickFormSearchPage {
         key: this.props.quickuuid + new Date(),
         data: datas,
         searchLoading: false,
-        bill: bill,
+        bill,
+        plan,
       });
       this.initConfig({
         columns: newColumns,
@@ -173,10 +205,10 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       this.setState({ data: [], searchLoading: false, bill: null });
     }
   };
-  refreshTable = data => {
-    data.page = data.page + 1;
-    this.handleOnSertch(data);
-  };
+
+  /**
+   * 费用计算
+   */
   calculate = async () => {
     const { dateString } = this.state;
     if (dateString == '') {
@@ -213,11 +245,20 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     this.setState({ isShowLogs: !this.state.isShowLogs });
   };
 
+  refreshTable = data => {
+    data.page = data.page + 1;
+    this.handleOnSertch(data);
+  };
+
   monthChange = (date, dateString) => {
     this.month = dateString;
     this.setState({ dateString });
     // this.isLock(dateString);
   };
+
+  /**
+   * 版本锁定
+   */
   onLock = async () => {
     await onLock(this.props.params.entityUuid, this.state.dateString).then(e => {
       if (e.data == 0) {
@@ -232,6 +273,14 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       }
     });
   };
+
+  //该方法会覆盖所有的中间功能按钮
+  drawToolbarPanel = () => {};
+
+  changeState = () => {
+    this.setState({ title: this.props.params.e.SCHEME_NAME });
+  };
+
   drawSearchPanel = () => {
     const { getFieldDecorator } = this.props.form;
     const { dateString, searchLoading, billLogs } = this.state;
@@ -252,16 +301,12 @@ export default class CostProjectSearch extends QuickFormSearchPage {
         )}
       </Form.Item>
     );
-    let datade = this.state.dataSources
-      ? this.state.dataSources.map(item => {
-          return (
-            <Form.Item label={item.DB_FIELD_TXT}>
+    let searchFields = this.state.subjectFields ? this.state.subjectFields.map(item => {
+          return <Form.Item label={item.DB_FIELD_TXT}>
               {getFieldDecorator(item.DB_FIELD_NAME, { initialValue: '' })(<Input />)}
-            </Form.Item>
-          );
-        })
-      : [];
-    node = [...node, ...datade];
+            </Form.Item>;
+        }) : [];
+    node = [...node, ...searchFields];
     node.push(
       <Form.Item>
         <Button style={{ margin: '0px 10px' }} type="primary" onClick={() => this.handleOnSertch()}>
@@ -338,28 +383,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       </Row>
     );
   };
-  getDatas = async () => {
-    await findCostFormFieldByPlanUuid(this.props.params.entityUuid).then(result => {
-      this.setState({ dataSources: result.data });
-    });
-  };
-  isLock = async date => {
-    await isLock(this.props.params.entityUuid, date == undefined ? this.month : date).then(
-      result => {
-        this.setState({ isLock: result.data });
-      }
-    );
-  };
-  //该方法会覆盖所有的中间功能按钮
-  drawToolbarPanel = () => {};
 
-  changeState = () => {
-    this.setState({ title: this.props.params.e.SCHEME_NAME });
-  };
-  componentWillReceiveProps(nextprops) {
-    this.isLock();
-    this.getDatas();
-  }
   render() {
     let ret = this.state.canFullScreen ? (
       <FreshPageHeaderWrapper>{this.drawPage()}</FreshPageHeaderWrapper>
