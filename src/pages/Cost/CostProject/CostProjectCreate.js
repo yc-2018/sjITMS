@@ -29,8 +29,8 @@ export function makeFormData(obj, form_data) {
   if (!!form_data) {
     // 封装
     for (var i = 0, len = data.length; i < len; i++) {
-      if(data[i].value == undefined){
-        form_data.append(data[i].key,'');
+      if (data[i].value == undefined) {
+        form_data.append(data[i].key, '');
         continue;
       }
       form_data.append(data[i].key, data[i].value);
@@ -175,9 +175,38 @@ export default class CostProjectCreate extends QuickCreatePage {
     // }
   };
 
+  exHandleChange = e => {
+    let { formItems, categories } = this.state;
+    if (e.fieldName == 'FORMULA_TYPE') {
+      if (e.valueEvent.record.VALUE == '3') {
+        for (const formItemKey in formItems) {
+          const formItem = formItems[formItemKey];
+          if (formItem.categoryName == '公式设定' && formItem.fieldName != 'FORMULA_TYPE') {
+            formItem.categoryName = 'hidden';
+          }
+        }
+      } else if (e.valueEvent.record.VALUE == '1' || e.valueEvent.record.VALUE == '2') {
+        for (const formItemKey in formItems) {
+          const formItem = formItems[formItemKey];
+          if (formItem.categoryName != '基本设定' && formItem.fieldName != 'FORMULA_TYPE') {
+            formItem.categoryName = 'hidden';
+          }
+        }
+        formItems['COST_PROJECT_SQL'].categoryName = '公式设定';
+      } else {
+        for (const formItemKey in formItems) {
+          const formItem = formItems[formItemKey];
+          if (formItem.categoryName == 'hidden') {
+            formItem.categoryName = '公式设定';
+          }
+        }
+      }
+    }
+  };
+
   onSave = async e => {
     var formDatas = new FormData();
-    this.entity.COST_PROJECT[0]
+    this.entity.COST_PROJECT[0];
     makeFormData(this.entity.COST_PROJECT[0], formDatas);
     this.state.filelist.forEach(element => {
       if (!element.isSaved) {

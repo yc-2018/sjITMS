@@ -42,7 +42,12 @@ export default class CostBillEdit extends CreatePage {
   };
 
   onCancel = () => {
-    this.props.switchTab('view', {});
+    const { dateString, e } = this.props.params;
+    this.props.switchTab('view', {
+      entityUuid: this.props.params.entityUuid,
+      dateString,
+      e,
+    });
   };
 
   /**
@@ -52,11 +57,13 @@ export default class CostBillEdit extends CreatePage {
     const { projects, billDetail, planItems } = this.state.billInfo;
     const calculateProject = projects.find(x => x.CODE == key);
     // 筛选出费用内计算的项目
-    const linkProjects = projects.filter(x => 
-      x.FORMULA_TYPE == 1 && 
-      x.CODE != key && 
-      x.calcSort > calculateProject.calcSort &&
-      x.SQL.indexOf(calculateProject.ITEM_NAME) > -1);
+    const linkProjects = projects.filter(
+      x =>
+        x.FORMULA_TYPE == 1 &&
+        x.CODE != key &&
+        x.calcSort > calculateProject.calcSort &&
+        x.SQL.indexOf(calculateProject.ITEM_NAME) > -1
+    );
     for (const linkProject of linkProjects) {
       let sql = linkProject.SQL;
       // 匹配到对应项且将其替换成值

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-24 11:16:38
+ * @LastEditTime: 2022-06-29 17:35:32
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -70,6 +70,10 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     this.getCostFormFields();
   }
 
+  componentDidMount() {
+    this.handleOnSertch();
+  }
+
   getCostFormFields = () => {
     findCostFormFieldByPlanUuid(this.props.params.entityUuid).then(result => {
       this.setState({ subjectFields: result.data });
@@ -94,24 +98,24 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       return;
     }
 
-    const startDate =
-      moment(dateString)
-        .add(e.START_DATE, 'month')
-        .format('YYYY-MM') +
-      '-' +
-      e.START_DAY;
+    // const startDate =
+    //   moment(dateString)
+    //     .add(e.START_DATE, 'month')
+    //     .format('YYYY-MM') +
+    //   '-' +
+    //   e.START_DAY;
 
-    const endDate =
-      moment(dateString)
-        .add(e.END_DATE, 'month')
-        .format('YYYY-MM') +
-      '-' +
-      e.END_DAY;
+    // const endDate =
+    //   moment(dateString)
+    //     .add(e.END_DATE, 'month')
+    //     .format('YYYY-MM') +
+    //   '-' +
+    //   e.END_DAY;
 
     this.props.switchTab('update', {
       entityUuid: this.props.params.entityUuid,
       dateString,
-      dateInterval: [startDate, endDate],
+      // dateInterval: [startDate, endDate],
       e,
     });
   };
@@ -120,6 +124,8 @@ export default class CostProjectSearch extends QuickFormSearchPage {
    * 跳转到编辑页面
    */
   edit = () => {
+    const { dateString } = this.state;
+    const { e } = this.props.params;
     const {
       selectedRows,
       plan: { subjectKeyField },
@@ -131,7 +137,13 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     }
     // 拿到主键
     const subjectUuid = selectedRows[0][subjectKeyField];
-    this.props.switchTab('create', { billUuid, subjectUuid });
+    this.props.switchTab('create', {
+      billUuid,
+      subjectUuid,
+      dateString,
+      entityUuid: this.props.params.entityUuid,
+      e,
+    });
   };
 
   /**
@@ -201,7 +213,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
         reportHeadName: this.props.params.e.SCHEME_NAME,
       });
     } else {
-      message.error('查询无数据,请核实后再操作');
+      message.error('当前查询无数据,请计算后再操作');
       this.setState({ data: [], searchLoading: false, bill: null });
     }
   };
