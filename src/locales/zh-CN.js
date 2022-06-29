@@ -479,7 +479,7 @@ export default {
   'menu.sjtms.core.dispatch': '配送调度',
   'menu.sjtms.core.schedule': '排车单',
   'menu.sjtms.core.cardLoading': '刷卡装车',
-  'menu.sjtms.core.checkin': '出车回车登记',
+  'menu.sjtms.core.checkin': '司机刷卡',
   'menu.sjtms.core.confirm': '回车送货确认',
   'menu.sjtms.core.takeConfirm': '提货确认',
   'menu.sjtms.core.receipt': '对单回单',
