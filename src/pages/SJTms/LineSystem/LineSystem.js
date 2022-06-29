@@ -2,24 +2,36 @@
  * @Author: guankongjin
  * @Date: 2022-03-09 10:08:34
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-03-10 16:31:07
+ * @LastEditTime: 2022-06-28 15:22:16
  * @Description: file content
- * @FilePath: \iwms-web\src\pages\Tms\LineSystem\LineSystem.js
+ * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineSystem.js
  */
 import { PureComponent } from 'react';
 import { connect } from 'dva';
-import LineSystemInfo from './LineSystemInfo';
-import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { Tabs } from 'antd';
+import Page from '@/pages/Component/Page/inner/Page';
+import PageHeaderWrapper from '@/components/PageHeaderWrapper';
+import LineSystemhisSearchPage from './LineSystemhisSearchPage';
 import LineSystemSearchPage from './LineSystemSearchPage';
-
-@connect(({ lineSystem, loading }) => ({
-  lineSystem,
+const { TabPane } = Tabs;
+@connect(({ loading }) => ({
   loading: loading.models.lineSystem,
 }))
 export default class LineSystem extends PureComponent {
   render() {
-    if (this.props.lineSystem.showPage === 'query') {
-      return <LineSystemInfo />;
-    }
+    return (
+      <PageHeaderWrapper>
+        <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
+          <Tabs defaultActiveKey="LineSystemPage" style={{ height: '100%' }}>
+            <TabPane tab="当前线路" key="LineSystemPage">
+              <LineSystemSearchPage />
+            </TabPane>
+            <TabPane tab="历史线路" key="HisLineSystemPage">
+              <LineSystemhisSearchPage />
+            </TabPane>
+          </Tabs>
+        </Page>
+      </PageHeaderWrapper>
+    );
   }
 }

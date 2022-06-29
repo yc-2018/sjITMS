@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-23 11:40:41
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-24 15:04:32
+ * @LastEditTime: 2022-06-29 14:45:02
  * @Description: 登录页
  * @FilePath: \iwms-web\src\pages\SJTms\Login\Login.js
  */
@@ -143,23 +143,41 @@ export default class LoginPage extends PureComponent {
         }}
       >
         <Col span={14} />
-        <Col span={10} style={{ backgroundColor: 'rgba(255,255,255,0.7)', fontSize: 14 }}>
+        <Col span={10} style={{ backgroundColor: 'rgba(255,255,255,0.5)', fontSize: 14 }}>
           <div
             style={{
-              height: 80,
+              height: 100,
               marginTop: 50,
               display: 'flex',
+              flexDirection: 'column',
               justifyContent: 'center',
               alignItems: 'center',
               textAlign: 'center',
-              fontSize: 32,
-              fontFamily: 'HYQiHei-EZS, PingFang SC, Arial, Microsoft YaHei, Sans Serif',
-              fontWeight: 'bold',
             }}
           >
-            时捷运输管理系统
+            <div
+              style={{
+                fontSize: 36,
+                fontFamily: '华文中宋,PingFang SC',
+                fontWeight: 'bold',
+              }}
+            >
+              时捷运输管理系统
+            </div>
+            <div
+              style={{
+                fontSize: 18,
+                userSelect: 'none',
+                backgroundImage: 'linear-gradient(to right,#2857bd,#f5222d)',
+                backgroundClip: 'text',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+              }}
+            >
+              Transport Management System
+            </div>
           </div>
-          <Form onSubmit={this.handleSubmit} style={{ height: 400, margin: '20px 50px 0' }}>
+          <Form onSubmit={this.handleSubmit} style={{ height: 380, margin: '20px 50px 0' }}>
             <Form.Item>
               {getFieldDecorator('loginAccount', {
                 rules: [

@@ -2,33 +2,22 @@
  * @Author: guankongjin
  * @Date: 2022-03-10 09:59:43
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-04-22 14:36:26
+ * @LastEditTime: 2022-06-28 14:36:08
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineShipAddress.js
  */
 import { connect } from 'dva';
-import { Table, Modal, Button, Input, message, Form, Row, Col, Select, TreeSelect } from 'antd';
+import { Modal, Button, Input, message, Form, Row, Col, Select, TreeSelect } from 'antd';
 import OperateCol from '@/pages/Component/Form/OperateCol';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
-// import {
-//   deleteLineStoreAddressById,
-//   findLineByNameLike,
-//   addToNewLine,
-// } from '@/services/quick/Quick';
 import {
   deleteLineStoreAddressById,
   findLineByNameLike,
-  addToNewLine,} from '@/services/sjtms/LineSystemHis'
+  addToNewLine,
+} from '@/services/sjtms/LineSystemHis';
 import { commonLocale } from '@/utils/CommonLocale';
 import TableTransfer from './TableTransfer';
-import { disable } from '@/services/account/Company';
-import {
-  SimpleTreeSelect,
-  SimpleSelect,
-  SimpleRadio,
-  SimpleAutoComplete,
-} from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 @connect(({ quick, loading }) => ({
   quick,
@@ -112,7 +101,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
         message.success('删除成功！');
         this.getData(pageFilters);
       } else {
-       // message.error('删除失败，请刷新后再操作');
+        // message.error('删除失败，请刷新后再操作');
       }
     });
   };
@@ -157,8 +146,8 @@ export default class LineShipAddress extends QuickFormSearchPage {
           LATITUDE: address.LATITUDE,
           TYPE: address.TYPE,
           ORDERNUM: orderNum,
-          COMPANYUUID:loginCompany().uuid,
-          DISPATCHCENTERUUID:loginOrg().uuid
+          COMPANYUUID: loginCompany().uuid,
+          DISPATCHCENTERUUID: loginOrg().uuid,
         };
       });
     if (saveData.length > 0) {
@@ -257,7 +246,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
                     allowClear={true}
                     optionFilterProp="children"
                     treeData={this.props.lineTreeData}
-                    labelInValue = {true}
+                    labelInValue={true}
                     // 将value进行了一层包装，以方便日后扩展
                     value={this.state.lineValue}
                     onChange={this.handleChange}
@@ -280,7 +269,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
             title: '添加子路线',
             width: 500,
             bodyStyle: { marginRight: '40px' },
-            afterClose:this.props.showadfa
+            afterClose: this.props.showadfa,
           }}
           page={{ quickuuid: 'sj_itms_create_lines', noCategory: true }}
           onRef={node => (this.lineCreatePageModalRef = node)}
@@ -314,7 +303,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
       if (result.success) {
         message.success('添加成功');
       } else {
-       // message.error('添加失败');
+        // message.error('添加失败');
       }
       this.setState({
         lineValue: undefined,

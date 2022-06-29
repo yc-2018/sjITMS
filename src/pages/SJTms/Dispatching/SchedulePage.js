@@ -2,20 +2,19 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-01 16:28:03
+ * @LastEditTime: 2022-06-28 11:58:04
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
 import React, { Component } from 'react';
-import { Modal, Tabs, Button, Tooltip, message, Typography } from 'antd';
+import { Modal, Tabs, Button, message, Typography } from 'antd';
 import DispatchingTable from './DispatchingTable';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import ScheduleSearchForm from './ScheduleSearchForm';
 import BatchProcessConfirm from './BatchProcessConfirm';
 import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
 import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
-import { ScheduleColumns, ScheduleDetailColumns, pagination } from './DispatchingColumns';
-import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { ScheduleColumns, pagination } from './DispatchingColumns';
 import dispatchingStyles from './Dispatching.less';
 import {
   querySchedule,
@@ -25,7 +24,6 @@ import {
   aborted,
   remove,
 } from '@/services/sjitms/ScheduleBill';
-import { SELFTACKSHIP_RES } from '@/pages/Tms/SelfTackShip/SelfTackShipPermission';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
