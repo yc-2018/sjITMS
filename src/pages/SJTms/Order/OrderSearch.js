@@ -1,17 +1,16 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-25 14:43:19
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-06-29 15:20:05
  * @version: 1.0
  */
-import React, { PureComponent } from 'react';
-import { Table, Button, Input, Col, Row, Popconfirm, message, Modal, Upload } from 'antd';
-import { colWidth } from '@/utils/ColWidth';
+import React from 'react';
+import { Button, Popconfirm, message } from 'antd';
 import { connect } from 'dva';
 import { havePermission } from '@/utils/authority';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { audit, cancel } from '@/services/sjitms/OrderBill';
+import { batchAudit, audit, cancel } from '@/services/sjitms/OrderBill';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -42,6 +41,14 @@ export default class OrderSearch extends QuickFormSearchPage {
           cancelText="取消"
         >
           <Button>审核</Button>
+        </Popconfirm>
+        <Popconfirm
+          title="你确定要审全部的内容吗?"
+          onConfirm={() => this.onBatchAllAudit()}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Button>批量审核</Button>
         </Popconfirm>
         <Popconfirm
           title="你确定要取消所选中的内容吗?"
@@ -75,7 +82,6 @@ export default class OrderSearch extends QuickFormSearchPage {
    */
   onUpdate = () => {
     const { selectedRows } = this.state;
-    console.log('selectedRows', selectedRows);
     if (selectedRows.length !== 0 && selectedRows[0].STAT === 'Saved') {
       const { onlFormField } = this.props;
       var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
@@ -87,6 +93,7 @@ export default class OrderSearch extends QuickFormSearchPage {
     }
   };
 
+  //批量审核（多选）
   onBatchAudit = () => {
     const { selectedRows } = this.state;
     if (selectedRows.length !== 0) {
@@ -96,6 +103,14 @@ export default class OrderSearch extends QuickFormSearchPage {
       this.onSearch();
     } else {
       message.error('请至少选中一条数据！');
+    }
+  };
+  //批量审核（查询结果）
+  onBatchAllAudit = async () => {
+    const response = await batchAudit(this.state.pageFilters);
+    if (response.success) {
+      message.success('审核成功!');
+      this.onSearch();
     }
   };
 
