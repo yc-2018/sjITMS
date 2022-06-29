@@ -206,7 +206,6 @@ export default class CreatePage extends Component {
 
   PanelWrapper = (props) => {
     const FormConfirmLeave = this.FormConfirmLeave;
-    const { auditButton } = this.state;
 
     return (
       <PageHeaderWrapper>
