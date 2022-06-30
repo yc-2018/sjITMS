@@ -2,16 +2,18 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-29 18:54:43
+ * @LastEditTime: 2022-06-30 10:02:22
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
 import { connect } from 'dva';
-import { Button, message } from 'antd';
+import { Button, message, Popconfirm } from 'antd';
 import { convertDateToTime } from '@/utils/utils';
 import { loginUser } from '@/utils/LoginContext';
+import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { queryAllData } from '@/services/quick/Quick';
+import { aborted, shipRollback } from '@/services/sjitms/ScheduleBill';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 
 @connect(({ quick, loading }) => ({
@@ -22,6 +24,8 @@ import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 export default class ScheduleSearchPage extends QuickFormSearchPage {
   state = {
     ...this.state,
+    showRollBackPop: false,
+    showAbortPop: false,
     scroll: {
       x: 'auto',
       y: '50vh',
@@ -68,15 +72,50 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
 
   //按钮面板
   drawToolbarPanel = () => {
-    const { printPage } = this.state;
+    const { printPage, selectedRows, showRollBackPop, showAbortPop } = this.state;
     return (
       <div style={{ marginBottom: 10 }}>
-        <Button style={{ marginBottom: -5 }} onClick={() => this.onBatchRollBack()}>
-          取消批准
-        </Button>
-        <Button style={{ marginLeft: 12 }} onClick={() => this.onBatchAbort()}>
-          作废
-        </Button>
+        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
+        <Popconfirm
+          title="确定取消批准选中排车单?"
+          visible={showRollBackPop}
+          onCancel={() => {
+            this.setState({ showRollBackPop: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showRollBackPop: false });
+            this.onRollBack(selectedRows[0]).then(response => {
+              if (response.success) {
+                message.success('取消批准成功！');
+                this.queryCoulumns();
+              }
+            });
+          }}
+        >
+          <Button style={{ marginBottom: -5 }} onClick={() => this.onBatchRollBack()}>
+            取消批准
+          </Button>
+        </Popconfirm>
+        <Popconfirm
+          title="确定作废选中排车单?"
+          visible={showAbortPop}
+          onCancel={() => {
+            this.setState({ showAbortPop: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showAbortPop: false });
+            this.onAbort(selectedRows[0]).then(response => {
+              if (response.success) {
+                message.success('作废成功！');
+                this.queryCoulumns();
+              }
+            });
+          }}
+        >
+          <Button style={{ marginLeft: 12 }} onClick={() => this.onBatchAbort()}>
+            作废
+          </Button>
+        </Popconfirm>
         <Button style={{ marginLeft: 12 }} onClick={() => this.onMoveCar()}>
           移车
         </Button>
@@ -90,20 +129,33 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     );
   };
 
-  //批量回滚
+  //批量取消批准
   onBatchRollBack = () => {
-    this.setState({
-      batchAction: '回滚',
-    });
-    this.handleBatchProcessConfirmModalVisible(true);
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.warn('请选中一条数据！');
+      return;
+    }
+    selectedRows.length == 1
+      ? this.setState({ showRollBackPop: true })
+      : this.batchProcessConfirmRef.show(
+          '取消批准',
+          selectedRows,
+          this.onRollBack,
+          this.queryCoulumns
+        );
   };
 
   //批量作废
   onBatchAbort = () => {
-    this.setState({
-      batchAction: '作废',
-    });
-    this.handleBatchProcessConfirmModalVisible(true);
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.warn('请选中一条数据！');
+      return;
+    }
+    selectedRows.length == 1
+      ? this.setState({ showAbortPop: true })
+      : this.batchProcessConfirmRef.show('作废', selectedRows, this.onAbort, this.queryCoulumns);
   };
 
   //移车
@@ -111,78 +163,24 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     const { selectedRows } = this.state;
     if (selectedRows.length === 1) {
       this.props.removeCarModalClick(selectedRows);
-    } else message.error('请选中一条数据！');
+    } else message.warn('请选中一条数据！');
   };
 
   //回滚
-  onRollBack = (record, batch) => {
-    const that = this;
-    return new Promise(function(resolve, reject) {
-      shipRollback(record.UUID).then(result => {
-        if (result && batch) {
-          that.batchCallback(result, record);
-          resolve({ success: result.success });
-          that.refreshTable(that.props.pageFilter ? that.props.pageFilter : null);
-          return;
-        }
-      });
-    });
+  onRollBack = async record => {
+    return await shipRollback(record.UUID);
   };
 
   //作废
-  onAbort = (record, batch) => {
-    const that = this;
-    return new Promise(function(resolve, reject) {
-      aborted(record.UUID).then(result => {
-        if (result && batch) {
-          that.batchCallback(result, record);
-          resolve({ success: result.success });
-          that.refreshTable(that.props.pageFilter ? that.props.pageFilter : null);
-          return;
-        }
-      });
-    });
-  };
-
-  //批量操作
-  onBatchProcess = () => {
-    const { selectedRows, batchAction } = this.state;
-    const that = this;
-    let bacth = i => {
-      if (i < selectedRows.length) {
-        if (batchAction === '回滚') {
-          if (selectedRows[i].STAT == 'Approved') {
-            this.onRollBack(selectedRows[i], true).then(res => {
-              bacth(i + 1);
-            });
-          } else {
-            that.refs.batchHandle.calculateTaskSkipped();
-            bacth(i + 1);
-          }
-        } else if (batchAction === '作废') {
-          if (
-            selectedRows[i].STAT == 'Approved' ||
-            selectedRows[i].STAT == 'Delivering' ||
-            selectedRows[i].STAT == 'Shiped'
-          ) {
-            this.onAbort(selectedRows[i], true).then(res => {
-              bacth(i + 1);
-            });
-          } else {
-            that.refs.batchHandle.calculateTaskSkipped();
-            bacth(i + 1);
-          }
-        }
-      }
-    };
-    bacth(0);
+  onAbort = async record => {
+    return await aborted(record.UUID);
   };
 
   //打印
   handlePrint = async () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
-      message.warn('请选择需要打印的排车单');
+      message.warn('请选择需要打印的排车单！');
       return;
     }
     const hide = message.loading('加载中...', 0);
