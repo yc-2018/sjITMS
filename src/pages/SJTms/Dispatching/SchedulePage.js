@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-28 11:58:04
+ * @LastEditTime: 2022-06-30 09:52:35
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -39,7 +39,6 @@ export default class SchedulePage extends Component {
     activeTab: 'Saved',
     editPageVisible: false,
     scheduleDetail: {},
-    task: {},
   };
 
   componentDidMount() {
@@ -99,8 +98,11 @@ export default class SchedulePage extends Component {
         }
       });
     } else {
-      this.setState({ task: this.abortedSchedule }, () =>
-        this.batchProcessConfirmRef.show('作废', savedRowKeys)
+      this.batchProcessConfirmRef.show(
+        '作废',
+        savedRowKeys,
+        this.abortedSchedule,
+        this.refreshTable
       );
     }
   };
@@ -128,8 +130,11 @@ export default class SchedulePage extends Component {
         }
       });
     } else {
-      this.setState({ task: this.cancelAbortedSchedule }, () =>
-        this.batchProcessConfirmRef.show('取消作废', abortedRowKeys)
+      this.batchProcessConfirmRef.show(
+        '取消作废',
+        abortedRowKeys,
+        this.cancelAbortedSchedule,
+        this.refreshTable
       );
     }
   };
@@ -157,8 +162,11 @@ export default class SchedulePage extends Component {
         }
       });
     } else {
-      this.setState({ task: this.cancelApproveSchedule }, () =>
-        this.batchProcessConfirmRef.show('取消批准', approvedRowKeys)
+      this.batchProcessConfirmRef.show(
+        '取消批准',
+        approvedRowKeys,
+        this.cancelApproveSchedule,
+        this.refreshTable
       );
     }
   };
@@ -186,8 +194,11 @@ export default class SchedulePage extends Component {
         }
       });
     } else {
-      this.setState({ task: this.approveSchedule }, () =>
-        this.batchProcessConfirmRef.show('批准', savedRowKeys)
+      this.batchProcessConfirmRef.show(
+        '批准',
+        savedRowKeys,
+        this.approveSchedule,
+        this.refreshTable
       );
     }
   };
@@ -269,9 +280,6 @@ export default class SchedulePage extends Component {
       approvedRowKeys,
       abortedRowKeys,
       activeTab,
-      editSchedule,
-      editPageVisible,
-      scheduleDetail,
     } = this.state;
 
     const buildOperations = () => {
@@ -322,11 +330,7 @@ export default class SchedulePage extends Component {
     };
     return (
       <div>
-        <BatchProcessConfirm
-          task={this.state.task}
-          refreshTable={this.refreshTable}
-          onRef={node => (this.batchProcessConfirmRef = node)}
-        />
+        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
         <Tabs
           activeKey={activeTab}
           onChange={this.handleTabChange}

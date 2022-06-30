@@ -2,9 +2,9 @@
  * @Author: guankongjin
  * @Date: 2022-05-27 09:11:09
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-27 14:59:25
+ * @LastEditTime: 2022-06-30 09:37:33
  * @Description: 批处理
- * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\batchProcessConfirm.js
+ * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\BatchProcessConfirm.js
  */
 import React, { Component } from 'react';
 import { Progress, Modal, Button, message, Tooltip, Icon } from 'antd';
@@ -31,6 +31,8 @@ export default class BatchProcessConfirm extends Component {
     },
     showFailedResultModal: false,
     confirmLoading: false,
+    task: {},
+    refresh: {},
   };
 
   componentDidMount() {
@@ -38,12 +40,14 @@ export default class BatchProcessConfirm extends Component {
   }
 
   //显示
-  show = (actionName, rowKeys) => {
+  show = (actionName, rowKeys, task, refresh) => {
     this.setState({
       actionName,
       rowKeys,
       taskCount: rowKeys.length,
       confirmModalVisible: true,
+      task,
+      refresh,
     });
   };
 
@@ -54,7 +58,7 @@ export default class BatchProcessConfirm extends Component {
       `成功批量${actionName}${taskReport.success}个选项，跳过${taskReport.skip}个选项`
     );
     this.resetProgress();
-    this.props.refreshTable();
+    this.state.refresh();
   };
 
   //确认批量处理
@@ -72,7 +76,7 @@ export default class BatchProcessConfirm extends Component {
   //执行任务
   taskExecutionFunc = rowKeys => {
     let bacth = index => {
-      this.props.task(rowKeys[index]).then(taskResult => {
+      this.state.task(rowKeys[index]).then(taskResult => {
         if (index + 1 < rowKeys.length) {
           bacth(index + 1);
         }
