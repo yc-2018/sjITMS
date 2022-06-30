@@ -18,6 +18,7 @@ export default class ScheduleDetailSearchPage extends QuickFormSearchPage {
   state = {
     ...this.state,
     isNotHd: true,
+    noNavigator: true
   };
 
   componentDidMount() {

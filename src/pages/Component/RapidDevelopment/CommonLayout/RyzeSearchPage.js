@@ -180,11 +180,15 @@ export default class RyzeSearchPage extends Component {
 
     return (
       <div>
-        <NavigatorPanel
-          canFullScreen={this.state.canFullScreen}
-          title={this.state.title}
-          action={this.drawActionButton ? this.drawActionButton() : ''}
-        />
+        {this.state.noNavigator ? (
+          ''
+        ) : (
+          <NavigatorPanel
+            canFullScreen={this.state.canFullScreen}
+            title={this.state.title}
+            action={this.drawActionButton ? this.drawActionButton() : ''}
+          />
+        )}
         {this.drawSearchPanel ? this.drawSearchPanel() : ''}
         {this.drawToolbar()}
         {this.drawToolbarTwo()}
