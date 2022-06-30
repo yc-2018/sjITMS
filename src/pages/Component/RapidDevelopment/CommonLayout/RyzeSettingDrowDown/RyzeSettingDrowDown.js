@@ -344,7 +344,9 @@ export default class RyzeSettingDrowDown extends Component {
     const { optionsList, settingKey } = this.state;
     const tableElement = document.getElementById(settingKey);
     const pos = tableElement ? tableElement.getBoundingClientRect() : {};
-    const footerElement = document.getElementById('footer');
+    // const footerElement = document.getElementById('footer');
+     //获取当前页签的footer
+    const footerElement = document.getElementById(this.state.pathname).getElementsByTagName('footer')[1];
     const footerPos = footerElement ? footerElement.getBoundingClientRect() : {};
     let height = this.props.tableHeight ? this.props.tableHeight : footerPos.top - pos.top - 40;
     let dataHeight = optionsList ? optionsList.length * 30 + 40 : 0;

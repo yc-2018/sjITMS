@@ -2,12 +2,11 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-12 16:08:35
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-07 14:20:24
+ * @LastEditTime: 2022-06-28 17:45:46
  * @version: 1.0
  */
 import request from '@/utils/request';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { func } from 'prop-types';
 
 export async function getAuditedOrder(searchKeyValues) {
   return request(
@@ -83,6 +82,13 @@ export async function audit(payload) {
       method: 'POST',
     }
   );
+}
+
+export async function batchAudit(searchKeyValues) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/batchAudit`, {
+    method: 'POST',
+    body: searchKeyValues,
+  });
 }
 
 export async function cancel(payload) {

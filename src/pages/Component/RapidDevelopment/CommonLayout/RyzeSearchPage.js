@@ -192,6 +192,7 @@ export default class RyzeSearchPage extends Component {
           <StandardTable
             colTotal={this.state.colTotal ? this.state.colTotal : []}
             unShowRow={this.state.unShowRow ? this.state.unShowRow : false}
+            onRow={this.handleOnRow}
             rowKey={record => record.uuid}
             hasSettingColumns
             selectedRows={selectedRows}
