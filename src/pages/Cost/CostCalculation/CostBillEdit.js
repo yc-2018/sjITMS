@@ -3,7 +3,7 @@ import FormPanel from '@/pages/Component/RapidDevelopment/CommonLayout/Form/Form
 import CFormItem from '@/pages/Component/RapidDevelopment/CommonLayout/Form/CFormItem';
 import React, { Component } from 'react';
 import { getSubjectBill, updateSubjectBill } from '@/services/cost/CostCalculation';
-import { Form, Input, InputNumber, message } from 'antd';
+import { Form, Input, InputNumber, message, Tooltip } from 'antd';
 
 const costTypes = [
   { DICT_CODE: 'costType', SORT_ORDER: 1, VALUE: '0', NAME: '税前加项' },
@@ -37,6 +37,9 @@ export default class CostBillEdit extends CreatePage {
   }
 
   handleChange = (key, value) => {
+    if (value == '') {
+      value = 0;
+    }
     this.entity[key] = value;
     this.linkCalculate(key);
   };
@@ -52,11 +55,13 @@ export default class CostBillEdit extends CreatePage {
     const { projects, billDetail, planItems } = this.state.billInfo;
     const calculateProject = projects.find(x => x.CODE == key);
     // 筛选出费用内计算的项目
-    const linkProjects = projects.filter(x => 
-      x.FORMULA_TYPE == 1 && 
-      x.CODE != key && 
-      x.calcSort > calculateProject.calcSort &&
-      x.SQL.indexOf(calculateProject.ITEM_NAME) > -1);
+    const linkProjects = projects.filter(
+      x =>
+        x.FORMULA_TYPE == 1 &&
+        x.CODE != key &&
+        x.calcSort > calculateProject.calcSort &&
+        x.SQL.indexOf(calculateProject.ITEM_NAME) > -1
+    );
     for (const linkProject of linkProjects) {
       let sql = linkProject.SQL;
       // 匹配到对应项且将其替换成值
@@ -106,23 +111,35 @@ export default class CostBillEdit extends CreatePage {
     for (const costType of costTypes) {
       let calcCols = [];
       for (const detail of billInfo.billDetail) {
-        if (
-          billInfo.projects.find(project => project.UUID == detail.projectUuid)?.TYPE !=
-          costType.VALUE
-        ) {
+        const project = billInfo.projects.find(project => project.UUID == detail.projectUuid);
+        if (project?.TYPE != costType.VALUE) {
           continue;
+        }
+        let calcComponent = null;
+        // 汇总项无法修改
+        if (project.FORMULA_TYPE == 1) {
+          calcComponent = (
+            <Tooltip title={project.SQL}>
+              {getFieldDecorator(detail.projectCode, {
+                initialValue: detail.amount,
+                rules: [{ required: true, message: `字段不能为空` }],
+              })(
+                <InputNumber
+                  readOnly
+                  onChange={value => this.handleChange(detail.projectCode, value)}
+                />
+              )}
+            </Tooltip>
+          );
+        } else {
+          calcComponent = getFieldDecorator(detail.projectCode, {
+            initialValue: detail.amount,
+            rules: [{ required: true, message: `字段不能为空` }],
+          })(<InputNumber onChange={value => this.handleChange(detail.projectCode, value)} />);
         }
         calcCols.push(
           <CFormItem key={detail.projectCode} label={detail.projectName}>
-            {getFieldDecorator(detail.projectCode, {
-              initialValue: detail.amount,
-              rules: [{ required: true, message: `字段不能为空` }],
-            })(
-              <InputNumber
-                controls={false}
-                onChange={value => this.handleChange(detail.projectCode, value)}
-              />
-            )}
+            {calcComponent}
           </CFormItem>
         );
       }
