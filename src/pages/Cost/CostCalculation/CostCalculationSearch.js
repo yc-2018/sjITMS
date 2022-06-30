@@ -124,17 +124,17 @@ export default class CostProjectSearch extends QuickFormSearchPage {
    * 跳转到编辑页面
    */
   edit = () => {
+    const { selectedRows } = this.state;
     const { dateString } = this.state;
     const { e } = this.props.params;
-    const {
-      selectedRows,
-      plan: { subjectKeyField },
-      bill: { uuid: billUuid },
-    } = this.state;
     if (selectedRows.length == 0) {
       message.error('请选择一条数据');
       return;
     }
+    const {
+      plan: { subjectKeyField },
+      bill: { uuid: billUuid },
+    } = this.state;
     // 拿到主键
     const subjectUuid = selectedRows[0][subjectKeyField];
     this.props.switchTab('create', {
