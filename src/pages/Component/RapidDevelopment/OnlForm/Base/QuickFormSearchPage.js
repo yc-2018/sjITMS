@@ -85,7 +85,7 @@ export default class QuickFormSearchPage extends SearchPage {
       colTotal: [],
       queryConfigColumns: [],
       tableName: '',
-      authority: props.route.authority[0] ? props.route.authority[0] : null,
+      authority: props.route.authority ? props.route.authority[0] : null,
     };
   }
 
