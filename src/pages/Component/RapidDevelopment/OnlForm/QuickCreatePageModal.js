@@ -43,9 +43,11 @@ export default class CreatePageModal extends Component {
                 <CreatePage
                     noBorder={true}
                     onSaving={() => this.setState({ saving: true })}
-                    onSaved={(success) => {
+                    onSaved={(data) => {
                         this.setState({ saving: false });
-                        if (success) {
+                        if (this.props.onSaved) {
+                            this.props.onSaved(data);
+                        } else if (data.response.success) {
                             this.hide();
                         }
                     }}

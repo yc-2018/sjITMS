@@ -137,10 +137,10 @@ export default class QuickCreatePage extends CreatePage {
     }
   };
 
-  onSaved = success => {
+  onSaved = data => {
     this.setState({ saving: false });
     if (this.props.onSaved) {
-      this.props.onSaved(success);
+      this.props.onSaved(data);
     } else if (this.props.switchTab) {
       this.props.switchTab('query');
     }
@@ -463,7 +463,7 @@ export default class QuickCreatePage extends CreatePage {
     const response = await this.saveEntityData(param);
     const success = response.success == true;
     this.afterSave(success);
-    this.onSaved(success);
+    this.onSaved({ response, param });
     if (success) {
       message.success(commonLocale.saveSuccessLocale);
     }
