@@ -32,7 +32,7 @@ import styles from './BasicLayout.less';
 import ReportPage from '@/pages/Report/ReportPage';
 import defaultSettings from '../defaultSettings';
 import IToolTip from '@/pages/Component/IToolTip';
-import { listenerData } from '@/utils/serial/SerialPort';
+// import { listenerData } from '@/utils/serial/SerialPort';
 
 const { Content } = Layout;
 const { TabPane } = Tabs;
@@ -119,10 +119,10 @@ class BasicLayout extends React.Component {
   };
 
   componentDidMount() {
-    listenerData((result, err) => {
-      console.log(err);
-    });
-    console.log('链接id：' + sessionStorage.getItem('serialConnectionId'));
+    // listenerData((result, err) => {
+    //   console.log(err);
+    // });
+    // console.log('链接id：' + sessionStorage.getItem('serialConnectionId'));
 
     const { dispatch } = this.props;
     if (isLogin() == false) {

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-30 10:02:22
+ * @LastEditTime: 2022-07-01 08:58:12
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -79,6 +79,9 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         <Popconfirm
           title="确定取消批准选中排车单?"
           visible={showRollBackPop}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showRollBackPop: visible });
+          }}
           onCancel={() => {
             this.setState({ showRollBackPop: false });
           }}
@@ -99,6 +102,9 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         <Popconfirm
           title="确定作废选中排车单?"
           visible={showAbortPop}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showAbortPop: visible });
+          }}
           onCancel={() => {
             this.setState({ showAbortPop: false });
           }}
