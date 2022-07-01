@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-25 11:24:46
+ * @LastEditTime: 2022-07-01 15:55:31
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -250,21 +250,10 @@ export default class BasicSourceDataSearchPage extends SearchPage {
   };
 
   render() {
-    let ret = this.state.canFullScreen ? (
-      <FreshPageHeaderWrapper>{this.drawPage()}</FreshPageHeaderWrapper>
-    ) : this.state.isNotHd ? (
-      <div>{this.drawPage()}</div>
-    ) : (
-      <PageHeaderWrapper>
-        <Page withCollect={true} pathname={this.props.pathname}>
-          {this.drawPage()}
-        </Page>
-      </PageHeaderWrapper>
+    return (
+      <Spin spinning={this.state.searchLoading}>
+        <div>{this.drawPage()}</div>
+      </Spin>
     );
-    if (this.state.isDrag) {
-      return <DndProvider backend={HTML5Backend}>{ret}</DndProvider>;
-    } else {
-      return <Spin spinning={this.state.searchLoading}>{ret}</Spin>;
-    }
   }
 }
