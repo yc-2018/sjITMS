@@ -22,6 +22,7 @@ export default class QuickForm extends PureComponent {
   }
 
   componentDidMount() {
+    // console.log('props', this.props);
     this.getCreateConfig();
   }
 
@@ -70,6 +71,7 @@ export default class QuickForm extends PureComponent {
       tableName: tableName,
       pathname: location.pathname,
       ...this.fixedProps,
+      route: this.props.route,
     };
     let component;
     let e;

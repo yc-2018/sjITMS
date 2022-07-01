@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-23 11:40:41
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-29 14:45:02
+ * @LastEditTime: 2022-07-01 09:11:01
  * @Description: 登录页
  * @FilePath: \iwms-web\src\pages\SJTms\Login\Login.js
  */
@@ -177,7 +177,7 @@ export default class LoginPage extends PureComponent {
               Transport Management System
             </div>
           </div>
-          <Form onSubmit={this.handleSubmit} style={{ height: 380, margin: '20px 50px 0' }}>
+          <Form onSubmit={this.handleSubmit} style={{ height: 360, margin: '40px 50px 0' }}>
             <Form.Item>
               {getFieldDecorator('loginAccount', {
                 rules: [

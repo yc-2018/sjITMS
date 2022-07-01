@@ -23,6 +23,7 @@ export default class DeliveredConfirmPage extends PureComponent {
     super(props);
     this.state = {
       confirmQuickUuid: 'ITMS_SHIP_ORDER_STORE_CONFIRM',
+      orderBillCheck:"sj_schedule_order_bill_check",
       selectFields: [],
       pageFilters: { matchType: '', queryParams: [] },
     };
@@ -42,7 +43,7 @@ export default class DeliveredConfirmPage extends PureComponent {
   }
 
   render() {
-    const { confirmQuickUuid, pageFilters, selectFields } = this.state;
+    const { confirmQuickUuid, pageFilters, selectFields,orderBillCheck } = this.state;
     const { getFieldDecorator } = this.props.form;
     const isOrgQuery = [
       {
@@ -79,7 +80,7 @@ export default class DeliveredConfirmPage extends PureComponent {
               <TabPane tab={'票据核对'} key="bill">
                 <DeliveredBillCheck
                   key="NoDeliveredConfirmSearch"
-                  quickuuid="sj_schedule_order_bill_check"
+                  quickuuid={orderBillCheck}
                   pageFilters={pageFilters}
                 />
               </TabPane>

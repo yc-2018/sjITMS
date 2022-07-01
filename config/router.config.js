@@ -1072,6 +1072,13 @@ export default [
             component: './Cost/BasicSource/BasicSource',
           },
           {
+            path: '/costbasic/import',
+            name: '数据导入',
+            org: ['DISPATCH_CENTER'],
+            component: './Cost/CostDataImport/ImportForm',
+            quickuuid: 'cost_import_data',
+          },
+          {
             path: '/costbasic/costproject',
             name: '计费项目',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'], // component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
