@@ -32,6 +32,7 @@ export default class CreatePageModal extends Component {
         const CreatePage = customPage ? customPage : QuickCreatePageDefault;
         return (
             <Modal
+                bodyStyle={{ maxHeight: "70vh" }}
                 visible={this.state.visible}
                 onOk={e => this.createPageRef.handleSave(e)}
                 onCancel={() => this.createPageRef.handleCancel()}
