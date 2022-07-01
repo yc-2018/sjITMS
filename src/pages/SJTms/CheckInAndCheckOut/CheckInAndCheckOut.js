@@ -173,9 +173,9 @@ export default class CheckInAndCheckOut extends SearchPage {
 
       }}
         >
-          {responseError?<div style={{ color:'#F5222D', fontSize: '40px',margin: 'auto'}} >{this.state.responseMsg}</div> 
-          :colorChange?<div style={{ color:'#00DD00' , fontSize:'40px',margin:'auto'}}>{this.state.responseMsg}</div>:
-          <div style={{ color:'#1354DA' , fontSize: '40px',margin: 'auto'}} >{this.state.responseMsg}</div>} 
+          {responseError?<div style={{ color:'#F5222D', fontSize: '45px',margin: 'auto'}} >{this.state.responseMsg}</div> 
+          :colorChange?<div style={{ color:'#00DD00' , fontSize:'45px',margin:'auto'}}>{this.state.responseMsg}</div>:
+          <div style={{ color:'#1354DA' , fontSize: '45px',margin: 'auto'}} >{this.state.responseMsg}</div>} 
            
       </Card>
     );
@@ -233,7 +233,7 @@ export default class CheckInAndCheckOut extends SearchPage {
 
   render() {
     return (
-     
+     //style={{overflowY:'auto', height:'100%'}}
         <PageHeaderWrapper>
           <Spin indicator={LoadingIcon('default')} delay={5} spinning={this.props.loading}>
             <Page withCollect={true} >
@@ -242,7 +242,12 @@ export default class CheckInAndCheckOut extends SearchPage {
                   title={this.state.title}
                   style={{marginBottom:10}}
                 />
-                <div style={{overflow:'scroll', height:'100%'}}>
+                <div   scroll={{
+              x: 10,
+              y: 'calc(80vh)',
+              overflowY:'auto'
+             
+            }}  style={{height:'calc(90vh)'}} >
                 {this.drawVehicleInfo()}
                 {this.drawNoticeMessage()}
                 {this.drawBillInfo()}

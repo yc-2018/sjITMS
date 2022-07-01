@@ -1,11 +1,12 @@
 import React, { PureComponent } from 'react';
-import { Button, Modal } from 'antd';
+import { Button, message, Modal,Tag ,Popconfirm } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import DeliveredNoCheck from './DeliveredNoCheck';
 import { loginOrg, loginCompany } from '@/utils/LoginContext';
 import { commonLocale } from '@/utils/CommonLocale';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
+import { calculatePlan } from '@/services/cost/CostCalculation';
 @connect(({ quick, deliveredConfirm, loading }) => ({
   quick,
   deliveredConfirm,
@@ -17,12 +18,63 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
     ...this.state,
     storeItemConfirmModalVisible: false,
     isShowStandardTable: false,
-    billData: { list: [] }, // 票据核对
     isNotHd: true,
   };
   drawTopButton = () => {};
   drawToolsButton = () => {};
-  drawToolbarPanel = () => {};
+  drawToolbarPanel = () => {
+    return (
+      <>
+        <Modal
+          visible={this.state.isShowStandardTable}
+          onOk={this.handleCancel}
+          onCancel={this.handleCancel}
+          centered
+          width={'90%'}
+         // bodyStyle={{ margin: -12 }}
+          bodyStyle={{ height: 'calc(80vh)', overflowY: 'auto' }}
+          footer={<Button onClick={()=>this.setState({isShowStandardTable:false})}>取消</Button>}
+        >
+          <DeliveredNoCheck
+            quickuuid="sj_schedule_order_no_check"
+            pageFilters={this.props.pageFilters}
+            // scroll={{
+            //   x: 4000,
+            //   y: 'calc(80vh)',
+            // }}
+          />
+        </Modal>
+      
+        {/* <Button onClick={this.saveDelivered} type={'primary'}>
+          保存门店送货
+        </Button> */}
+         <Popconfirm
+    title="确定设置为待处理?"
+    onConfirm={()=>this.deliveredConfirmSchedule("Pending")}
+    okText="确定"
+    cancelText="取消"
+  >
+  <Button type={'primary'}>待处理</Button>
+  </Popconfirm>
+  <Popconfirm
+    title="确定设置为送达?"
+    onConfirm={()=>this.deliveredConfirmSchedule("Delivered")}
+    okText="确定"
+    cancelText="取消"
+  >
+  <Button type={'primary'}>送达</Button>
+  </Popconfirm>
+  <Popconfirm
+    title="确定设置为未送达?"
+    onConfirm={()=>this.deliveredConfirmSchedule("NotDelivered")}
+    okText="确定"
+    cancelText="取消"
+  >
+  <Button  type={'danger'}>未送达</Button>
+  </Popconfirm>
+    </>
+    );
+  };
   drawSearchPanel = () => {};
   componentWillReceiveProps(nextProps) {
     if (nextProps.pageFilters != this.props.pageFilters) {
@@ -33,14 +85,14 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
   drawcell = e => {
     //找到fieldName为CODE这一列 更改它的component
     if (e.column.fieldName == 'DELIVERED') {
-      const component = (
-        <SimpleAutoComplete
-          style={{ width: 100 }}
-          dictCode={'delivered'}
-          value={e.record.DELIVERED}
-          onChange={this.deliveredChage.bind(this, e.record, e.column)}
-        />
-      );
+      let component =<span>{"<空>"}</span>;
+      if(e.record.DELIVERED==='Delivered'){
+        component = <Tag color="green">{e.record.DELIVERED_CN}</Tag>
+      }else if(e.record.DELIVERED==='NotDelivered'){
+        component = <Tag color="red">{e.record.DELIVERED_CN}</Tag>
+      }else if(e.record.DELIVERED==='Pending'){
+        component = <Tag color="cyan">{e.record.DELIVERED_CN}</Tag>
+      }
       e.component = component;
     }
   };
@@ -65,43 +117,34 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
   deliveredChage = (records, colum, e) => {
     records[colum.fieldName] = e.value;
   };
-
-  //保存门店送货
-  saveDelivered = () => {
+  // 全部送达/未送达/待处理
+  deliveredConfirmSchedule = (value) => {
+    if(!value){
+      return ;
+    }
+    if(this.state.selectedRows.length==0){
+      message.info("至少选择一条数据！");
+      return ;
+    }
     this.props.dispatch({
-      type: 'deliveredConfirm1/deliveredConfirmSchedule',
-      payload: this.state.selectedRows,
-      callback: response => {
-        if (response && response.success) {
-          this.refreshTable();
-          message.success(commonLocale.saveSuccessLocale);
-        }
-      },
-    });
+          type: 'deliveredConfirm1/deliveredConfirmSchedule',
+          payload: this.state.selectedRows.map(e => {
+            return {
+              ... e,
+              DELIVERED:value,
+              companyUuid : loginCompany().uuid,
+              dispatchCenterUuid : loginOrg().uuid
+            }
+          }),
+          callback: response => {
+            if (response && response.success) {
+              this.refreshTable();
+              message.success("保存成功");
+            }
+          },
+      });
   };
-
-  // 全部送达
-  deliveredConfirmSchedule = () => {
-    const { selectedRows } = this.state;
-    console.log('selectRow', selectedRows);
-    selectedRows.forEach(e => {
-      e.DELIVERED = 'Delivered';
-      e.companyUuid = loginCompany().uuid;
-      e.dispatchCenterUuid = loginOrg().uuid;
-    });
-    this.setState({ selectedRows });
-  };
-
-  // 全部未送达
-  unDeliveredConfirmSchedule = () => {
-    const { selectedRows } = this.state;
-    selectedRows.forEach(e => {
-      e.DELIVERED = 'NotDelivered';
-      e.companyUuid = loginCompany().uuid;
-      e.dispatchCenterUuid = loginOrg().uuid;
-    });
-    this.setState({ selectedRows });
-  };
+  
   //取消
   handleCancel = () => {
     this.setState({ isShowStandardTable: false });
@@ -110,44 +153,8 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
   showNoDelivered = () => {
     this.setState({ isShowStandardTable: true });
   };
-
+  changeState = () => {this.setState({title:''})}; //扩展state
   drawActionButton = () => {
-    const {
-      storeSelectedRows,
-      billSelectedRows,
-      billData,
-      storeData,
-      targetTabKey,
-      storeItemConfirmModalVisible,
-      storeUuid,
-      storeCode,
-      storeName,
-      storeAddress,
-      scheduleBillNumber,
-      selectedRows,
-    } = this.state;
-    return (
-      <>
-        <Modal
-          visible={this.state.isShowStandardTable}
-          onOk={this.handleCancel}
-          onCancel={this.handleCancel}
-          centered
-          width={1200}
-          bodyStyle={{ margin: -12 }}
-        >
-          <DeliveredNoCheck
-            quickuuid="sj_schedule_order_no_check"
-            pageFilters={this.props.pageFilters}
-          />
-        </Modal>
-        <Button onClick={this.showNoDelivered}>回车未送达确认</Button>
-        <Button onClick={this.saveDelivered} type={'primary'}>
-          保存门店送货
-        </Button>
-        <Button onClick={this.deliveredConfirmSchedule}>全部送达</Button>
-        <Button onClick={this.unDeliveredConfirmSchedule}>全部未送达</Button>
-      </>
-    );
+  return <Button  type="primary" onClick={this.showNoDelivered}>回车未送达确认</Button>
   };
 }

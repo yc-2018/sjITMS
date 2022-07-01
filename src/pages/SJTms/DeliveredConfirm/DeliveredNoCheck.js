@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Button, Form, message, Select, Modal, Popconfirm } from 'antd';
+import { Button, Form, message, Select, Modal, Popconfirm ,Menu,Dropdown ,Icon} from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { confirmOrder } from '@/services/sjtms/DeliveredConfirm';
@@ -24,7 +24,7 @@ import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchF
 export default class DeliveredNoCheck extends QuickFormSearchPage {
   state = {
     ...this.state,
-    tableHeight: 500,
+   tableHeight: 388.1,
     isNotHd: true,
     pageData: [],
     reasonModalVisible: false,
@@ -82,17 +82,18 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
 
   //该方法会覆盖所有的上层按钮
   drawActionButton = () => {
-    return (
-      <>
-        {this.CreateFormReason()}
-        {this.CreateUnDeliveredDuty(0)}
-        {this.nocheckInfo()}
-      </>
-    );
+      return (
+        <>
+          {this.CreateFormReason()}
+          {this.CreateUnDeliveredDuty(0)}
+          {this.nocheckInfo()}
+        </>
+      );
   };
 
   //该方法会覆盖所有的中间功能按钮
   drawToolbarPanel = () => {
+   
     return (
       <div style={{ marginBottom: 10 }}>
         <Popconfirm title="确定重送?" onConfirm={this.checkResend} okText="确定" cancelText="取消">
@@ -134,22 +135,24 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
   //重送
   checkResend = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length == 0) {
-      message.warn('请选择记录');
-    }
+    // if (selectedRows.length == 0) {
+    //   message.warn('请选择记录');
+    // }
     selectedRows.forEach(e => {
       e.UNDELIVEREDTYPE = 'ReSend';
     });
-    this.setState({ selectedRows });
+    // this.setState({ selectedRows });
+    this.checkSave();
   };
   //拒收
   checkRejection = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length == 0) {
-      message.warn('请选择记录');
-    }
+    // if (selectedRows.length == 0) {
+    //   message.warn('请选择记录');
+    // }
     selectedRows.forEach(e => (e.UNDELIVEREDTYPE = 'Reject'));
-    this.setState({ selectedRows });
+    // this.setState({ selectedRows });
+    this.checkSave();
   };
 
   //批量设置原因
@@ -171,6 +174,25 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     }
     this.setState({ deliveredDutyMdodalVisible: true });
   };
+   //批量保存
+   checkSave = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.warn('请选择记录');
+    }
+    this.props.dispatch({
+      type: 'deliveredConfirm1/updateNoDelivered',
+      payload: this.state.selectedRows,
+      callback: response => {
+        console.log('response', response);
+        if (response && response.success) {
+          this.refreshTable();
+          message.success('更新成功');
+        }
+      },
+    });
+  };
+
   deliveredChage = (records, colum, e) => {
     records[colum.fieldName] = e.value;
   };
@@ -203,7 +225,8 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
           selectedRows.forEach(
             e => (e.UNDELIVEREDREASON = fieldsValue.UNDELIVEREDREASON.record.VALUE)
           );
-          this.setState({ selectedRows, reasonModalVisible: !this.state.reasonModalVisible });
+          this.checkSave();
+          this.setState({reasonModalVisible: !this.state.reasonModalVisible });
           // this.props.dispatch({
           //     type: 'deliveredConfirm1/updateNoDelivered',
           //     payload: rows,
@@ -285,8 +308,9 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
           if (errors && errors.UnDeliveredDuty) return;
 
           selectedRows.forEach(e => (e.UNDELIVEREDDUTY = fieldsValue.UnDeliveredDuty.record.VALUE));
+          this.checkSave();
           this.setState({
-            selectedRows,
+           
             deliveredDutyMdodalVisible: !this.state.deliveredDutyMdodalVisible,
           });
         });
@@ -324,24 +348,7 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     this.setState({ deliveredDutyMdodalVisible: false });
   };
 
-  //保存
-  checkSave = () => {
-    const { selectedRows } = this.state;
-    if (selectedRows.length == 0) {
-      message.warn('请选择记录');
-    }
-    this.props.dispatch({
-      type: 'deliveredConfirm1/updateNoDelivered',
-      payload: this.state.selectedRows,
-      callback: response => {
-        console.log('response', response);
-        if (response && response.success) {
-          this.refreshTable();
-          message.success('更新成功');
-        }
-      },
-    });
-  };
+ 
 
   checkAndSave = async () => {
     const { selectedRows } = this.state;
