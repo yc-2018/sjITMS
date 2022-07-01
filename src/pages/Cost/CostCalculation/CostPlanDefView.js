@@ -17,6 +17,7 @@ import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCre
 import CostProjectCreate from '@/pages/Cost/CostProject/CostProjectCreate';
 import BasicSourceDataSearchPage from '@/pages/Cost/BasicSource/BasicSourceDataSearchPage';
 import { dynamicQuery } from '@/services/quick/Quick';
+import CostbillSource from './CostbillSource';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -24,6 +25,7 @@ import { dynamicQuery } from '@/services/quick/Quick';
 }))
 //View界面扩展
 export default class CostPlanDefView extends QuickViewPage {
+  project = {};
   state = {
     ...this.state,
     noActionCol: false,
@@ -54,6 +56,8 @@ export default class CostPlanDefView extends QuickViewPage {
   };
 
   checkDataSource = async e => {
+    console.log('e', e);
+    this.project = e.record;
     const dataSourceUuid = e.record.DATASOURCE_UUID.split(',');
     let param = {
       tableName: 'cost_form',
@@ -81,10 +85,21 @@ export default class CostPlanDefView extends QuickViewPage {
     const { dataSource } = this.state;
     const { dateInterval } = this.props.params;
     let arr = [];
+    arr.push(
+      <CostbillSource
+        key={new Date() + 2222}
+        title={'test'}
+        scroll={{
+          x: 4000,
+          y: 'calc(50vh)',
+        }}
+        project={this.project}
+      />
+    );
     dataSource.forEach(data => {
       arr.push(
         <BasicSourceDataSearchPage
-          key={new Date()}
+          // key={new Date()}
           title={data.TABLENAME_CN}
           tableName={data.TABLENAME}
           scroll={{
