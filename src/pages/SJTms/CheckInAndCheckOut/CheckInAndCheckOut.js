@@ -121,13 +121,12 @@ export default class CheckInAndCheckOut extends SearchPage {
                 :`${response.data.data.vehicle.name},出车刷卡成功!`,
               responseError: false,
               colorChange:false,
-              shipBill: response.data.data ? response.data.data : {},
+              shipPlanBill: response.data.data ? response.data.data : {},
             });
           }else{
             this.setState({
               responseMsg:response.data.data,
               responseError: true,
-            shipBill: {},
             shipPlanBill: {},
             })
           }
@@ -136,7 +135,6 @@ export default class CheckInAndCheckOut extends SearchPage {
           this.setState({
             responseMsg: response.message,
             responseError: true,
-            shipBill: {},
             shipPlanBill: {},
           });
         }
