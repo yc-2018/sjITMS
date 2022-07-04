@@ -9,6 +9,9 @@ import { commonLocale, placeholderLocale, placeholderChooseLocale } from '@/util
 import { TITLE_SEPARATION } from '@/utils/constants';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { dynamicQuery } from '@/services/quick/Quick';
+import { routerRedux } from 'dva/router';
+import CostProjectCreate from '../CostProject/CostProjectCreate'
+import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 @connect(({ quick, deliveredConfirm,loading, }) => ({
   quick,
   deliveredConfirm,
@@ -31,9 +34,18 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     scrollValue: {
       y: 'calc(400vh)',
     },
-    tableHeight:'80%'
+    tableHeight:'80%',
+    addItemVisible:false,
+    param:{}
   }
 
+  componentWillReceiveProps(nextProps){
+    console.log("next",nextProps);
+    if( this.props.param?.code !==nextProps.param?.code){
+      console.log("next");
+      this.handleOks(nextProps.param.code);
+    }
+  }
   delItem = ()=>{
    const{selectedRows,data}  = this.state;
   if(selectedRows.length==0){
@@ -45,15 +57,38 @@ export default class CostPlanSearch extends QuickFormSearchPage {
         data.list.splice(index,1);
       }
     })
+    //排序
+    data.list.forEach((element,index)=>{
+      element.CALC_SORT = index+1;
+    })
   });
   this.setState({data})
+  }
+  addItem =(data)=>{
+    const param ={
+      quickuuid: 'COST_PROJECT',
+      params: data?{entityUuid: data.record.UUID}:{},
+      showPageNow: data?'update':'create',
+     }
+    this.setState({param})
+    this.createPageModalRef.show()
+     
+  }
+  drawcell = e => {
+    //找到fieldName为CODE这一列 更改它的component
+    if (e.column.fieldName == 'ITEM_NAME') {
+       const component = <a onClick={()=>this.addItem(e)}>{e.record.ITEM_NAME}</a>
+      e.component = component;
+    }
+  };
+  saveItem = (data)=>{  
+    this.handleOks(data.CODE);
+    this.createPageModalRef.hide()
   }
   drawTopButton = () => {
     return <></>
   };
-  handleOks = async ()=>{
-
-  console.log("state",this.state);
+  handleOks = async (code)=>{
    const params = {
     tableName:"COST_PROJECT",
     condition:{
@@ -62,32 +97,36 @@ export default class CostPlanSearch extends QuickFormSearchPage {
       ]
     }
   }
+  if(code){
+    params.condition.params[0] ={field: 'CODE', rule: 'eq', val: [code] }
+  }
   let  result =  await dynamicQuery(params);
-  console.log("res",result);
    let {data} = this.state;
    result = result.result?.records[0];
    if(data.list==undefined || data.list.length==0){
     result.CALC_SORT = 1
     data.list = [result]
-   }else{
-    let  flag = false
-    data.list.forEach(e=>{
-      if(e.UUID == result.UUID){
-        flag = true;
-        return;
+    this.setState({data,visible:false})
+    return;
+   }
+   const item = data.list.filter(e=>e.UUID==result.UUID);
+   if(!code ||(code && item.length==0)){
+    //校验是否重复添加
+      if(item.length>0){
+        message.info("项目已经存在!,请勿重复添加");
+        return ;
       }
-    })
-    if(flag){
-      message.error("项目已经存在");
-      return ;
-    }
     result.CALC_SORT= data.list.map(e=>e.CALC_SORT).sort((a,b)=>{return b-a})[0]+1;
     data.list.push(result)
+    this.setState({data,visible:false})
+    return ;
    }
+  result.CALC_SORT = item[0].CALC_SORT;
+  data.list.splice(item[0].CALC_SORT-1,1,result);
   this.setState({data,visible:false})
-   
   }
-
+  
+ 
   drapTableChange =(e)=>{
     let {data} = this.state;
     let i = 1;
@@ -101,12 +140,14 @@ export default class CostPlanSearch extends QuickFormSearchPage {
   //扩展最上层按钮
   //该方法会覆盖所有的上层按钮
   drawActionButton = () => {
-    const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = this.props.form;
-    return <Modal
+    const { getFieldDecorator} = this.props.form;
+    return <>
+    <Modal
     title="添加项目"
     visible={this.state.visible}
-    onOk={this.handleOks}
+    onOk={()=>this.handleOks()}
     onCancel={()=>this.setState({visible:false})}
+    destroyOnClose
   >
    <Form>
       <Form.Item>
@@ -136,14 +177,25 @@ export default class CostPlanSearch extends QuickFormSearchPage {
         </Form.Item>
       </Form>
   </Modal>
+  <CreatePageModal
+          modal={{ title: "新建/编辑计费项目", width: '90%' }}
+          page={this.state.param}
+          onSaved = {this.saveItem}
+          customPage={CostProjectCreate}
+          onRef={node => (this.createPageModalRef = node)}
+        />
+    </>
 
   };
   
   //该方法会覆盖所有的中间功能按钮
   drawToolbarPanel = () => {
+    //console.log("props",this.props);
     return   <div style={{ margin: '10px 0 10px 0' }}>
     <Button  type ='primary' onClick = {()=>this.setState({visible:!this.state.visible})}>添加项目</Button>
+    <Button type ='primary' onClick = {()=>this.addItem()} style={{marginLeft:10}}>新建并添加项目</Button>
     <Button onClick = {()=>this.delItem()} style={{marginLeft:10}}>删除</Button>
+
     </div>
   };
 

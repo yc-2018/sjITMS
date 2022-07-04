@@ -217,7 +217,7 @@ export default class CostProjectCreate extends QuickCreatePage {
     let res = await save(formDatas);
     const success = res.data.success == true;
     this.afterSave(success);
-    this.onSaved(success);
+    this.onSaved(this.entity.COST_PROJECT[0]);
     if (success) {
       message.success('保存成功！');
     }
