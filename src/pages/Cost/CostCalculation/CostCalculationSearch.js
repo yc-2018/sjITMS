@@ -188,7 +188,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
           fieldType: 'VarChar',
           fieldWidth: 100,
           isSearch: false,
-          isShow: true,
+          isShow: true
         });
       });
       var datas = {
@@ -266,6 +266,15 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     this.month = dateString;
     this.setState({ dateString });
     // this.isLock(dateString);
+  };
+
+  drawcell = (e) => {
+    if(e.column.fieldName == "modified"){
+      e.val = e.val ? "是" : "否";
+    }
+    if (e.record.modified) {
+      e.component = <p3 style={{ color: "red" }}>{this.convertData(e.val, e.column.preview, e.record)}</p3>;
+    }
   };
 
   /**
