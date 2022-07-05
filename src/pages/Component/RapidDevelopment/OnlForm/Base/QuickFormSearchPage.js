@@ -276,11 +276,7 @@ export default class QuickFormSearchPage extends SearchPage {
     let quickColumns = new Array();
 
     columns.filter(data => data.isShow).forEach(column => {
-      let jumpPaths;
       let preview;
-      if (column.jumpPath) {
-        jumpPaths = column.jumpPath.split(',');
-      }
       if (column.preview) {
         preview = column.preview;
       } else {
@@ -298,87 +294,7 @@ export default class QuickFormSearchPage extends SearchPage {
         width: column.fieldWidth == 0 ? colWidth.codeColWidth : column.fieldWidth,
         fieldType: column.fieldType,
         preview: preview,
-        render:
-          column.clickEvent == '1'
-            ? (val, record) => {
-                const component = (
-                  <a
-                    onClick={() => this.onView(record)}
-                    style={{ color: this.colorChange(val, column.textColorJson) }}
-                  >
-                    {this.convertData(val, column.preview, record)}
-                  </a>
-                );
-                return this.customize(
-                  record,
-                  this.convertData(val, column.preview, record),
-                  component,
-                  column
-                );
-              }
-            : column.clickEvent == '2'
-              ? (val, record) => {
-                  const component = (
-                    <a
-                      onClick={this.onOtherView.bind(this, record, jumpPaths)}
-                      style={{ color: this.colorChange(val, column.textColorJson) }}
-                    >
-                      {this.convertData(val, column.preview, record)}
-                    </a>
-                  );
-                  return this.customize(
-                    record,
-                    this.convertData(val, column.preview, record),
-                    component,
-                    column
-                  );
-                }
-              : (val, record) => {
-                  if (
-                    column.reportRender &&
-                    column.reportRender == 1 &&
-                    loginOrg().type == 'COMPANY'
-                  ) {
-                    const component = (
-                      <Switch
-                        checkedChildren="启用"
-                        unCheckedChildren="禁用"
-                        checked={val == 1 ? true : false}
-                        onClick={e => this.changeOpenState(e, record, column)}
-                        // size="small"
-                      />
-                    );
-                    return this.customize(
-                      record,
-                      this.convertData(val, column.preview, record),
-                      component,
-                      column
-                    );
-                  } else if (column.textColorJson) {
-                    const component = (
-                      <div>
-                        <Badge
-                          color={this.colorChange(val, column.textColorJson)}
-                          text={this.convertData(val, column.preview, record)}
-                        />
-                      </div>
-                    );
-                    return this.customize(
-                      record,
-                      this.convertData(val, column.preview, record),
-                      component,
-                      column
-                    );
-                  } else {
-                    const component = <p3>{this.convertData(val, column.preview, record)}</p3>;
-                    return this.customize(
-                      record,
-                      this.convertData(val, column.preview, record),
-                      component,
-                      column
-                    );
-                  }
-                },
+        render: (val, record) => this.getRender(val, column, record)
       };
       if (exColumns) {
         quickColumns.push(exColumns);
@@ -404,6 +320,63 @@ export default class QuickFormSearchPage extends SearchPage {
       tableName,
     });
   };
+
+  columnComponent = {
+    view: (val, column, record) => {
+      return <a onClick={() => this.onView(record)} style={{ color: this.colorChange(val, column.textColorJson) }}>
+        {this.convertData(val, column.preview, record)}
+      </a>;
+    },
+    otherView: (val, column, record) => {
+      return <a onClick={() => this.onOtherView(record, record)} style={{ color: this.colorChange(val, column.textColorJson) }}>
+        {this.convertData(val, column.preview, record)}
+      </a>;
+    },
+    switch: (val, column, record) => {
+      return <Switch
+        checkedChildren="启用"
+        unCheckedChildren="禁用"
+        checked={val == 1}
+        onClick={e => this.changeOpenState(e, record, column)}
+      />;
+    },
+    colorBadge: (val, column, record) => {
+      return <div>
+        <Badge
+          color={this.colorChange(val, column.textColorJson)}
+          text={this.convertData(val, column.preview, record)}
+        />
+      </div>;
+    },
+    p3: (val, column, record) => {
+      return <p3>{this.convertData(val, column.preview, record)}</p3>;
+    }
+  }
+
+  getRender = (val, column, record) => {
+    let component;
+    val = this.convertData(val, column.preview, record)
+    if (column.render) {
+      component = column.render(val, column, record);
+    } else if (column.clickEvent == '1') {
+      component = this.columnComponent.view(val, column, record);
+    } else if (column.clickEvent == '2') {
+      component = this.columnComponent.otherView(val, column, record);
+    } else if (column.reportRender && column.reportRender == 1 && loginOrg().type == 'COMPANY') {
+      component = this.columnComponent.switch(val, column, record);
+    } else if (column.textColorJson) {
+      component = this.columnComponent.colorBadge(val, column, record);
+    } else {
+      component = this.columnComponent.p3(val, column, record);
+    }
+
+    return this.customize(
+      record,
+      this.convertData(val, column.preview, record),
+      component,
+      column
+    );
+  }
 
   //初始化数据
   initData = data => {
@@ -475,7 +448,11 @@ export default class QuickFormSearchPage extends SearchPage {
   };
 
   //跳转到其他详情页
-  onOtherView = (record, jumpPaths) => {
+  onOtherView = (record, column) => {
+    let jumpPaths;
+    if (column.jumpPath) {
+      jumpPaths = column.jumpPath.split(',');
+    }
     if (!jumpPaths || jumpPaths.length != 2) {
       message.error('配置为空或配置错误，请检查点击事件配置！');
       return;
