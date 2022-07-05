@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-29 15:20:05
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-07-05 09:30:56
  * @version: 1.0
  */
 import React from 'react';
@@ -67,7 +67,7 @@ export default class OrderSearch extends QuickFormSearchPage {
     return (
       <span>
         <Button
-          hidden={!havePermission(this.state.reportCode + '.import')}
+          hidden={!havePermission(this.state.authority + '.import')}
           type="primary"
           onClick={this.onUpload}
         >
@@ -140,53 +140,5 @@ export default class OrderSearch extends QuickFormSearchPage {
         message.success('取消成功!');
       }
     });
-  };
-
-  /**
-   * 绘制右上角按钮
-   */
-  drawActionButton = () => {
-    //额外的菜单选项
-    const menus = [];
-    menus.push({
-      // disabled: !havePermission(STORE_RES.CREATE), //权限认证
-      name: '测试', //功能名称
-      onClick: this.test, //功能实现
-    });
-    return (
-      <div>
-        <Button
-          hidden={!havePermission(this.state.reportCode + '.create')}
-          onClick={this.onCreate}
-          type="primary"
-          icon="plus"
-        >
-          新建
-        </Button>
-        <Button
-          hidden={!havePermission(this.state.reportCode + '.edit')}
-          onClick={this.onUpdate}
-          type="primary"
-        >
-          编辑
-        </Button>
-        <Button
-          hidden={!havePermission(this.state.reportCode + '.view')}
-          onClick={this.onView}
-          type="primary"
-        >
-          查看
-        </Button>
-        <Button
-          hidden={!havePermission(this.state.reportCode + '.port')}
-          onClick={this.port}
-          type="primary"
-        >
-          导出
-        </Button>
-        {this.drawTopButton()}
-        {/* <SearchMoreAction menus={menus} /> */}
-      </div>
-    );
   };
 }
