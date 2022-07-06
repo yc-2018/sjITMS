@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-11 17:30:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-06 11:08:42
+ * @LastEditTime: 2022-07-06 11:33:09
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -39,7 +39,7 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
   drawcell = e => {
     if (e.column.fieldName == 'TAKEDELIVERYQTY') {
       const component =
-        e.val == '<空>' ? (
+        e.record.STATE == '0' ? (
           <Input
             defaultValue={e.val == '<空>' ? '' : e.val}
             placeholder="请输入提货数量"
