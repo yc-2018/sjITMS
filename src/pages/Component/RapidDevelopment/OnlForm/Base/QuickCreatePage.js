@@ -616,12 +616,12 @@ export default class QuickCreatePage extends CreatePage {
       let currentTableName;
       for (const tableItemKey in tableItems) {
         const tableItem = tableItems[tableItemKey];
-        const { categoryName, key, tableName, fieldName, label } = tableItem;
+        const { categoryName, key, tableName, fieldName, label, onlFormField } = tableItem;
         if (categoryName != categoryItem.category) {
           continue;
         }
         currentTableName = tableName;
-        let mustInput = tableItem.onlFormField.dbIsNull ? '' : '*';
+        let mustInput = onlFormField.dbIsNull ? '' : '*';
         let tailItem = {
           title: (
             <div>
@@ -631,7 +631,7 @@ export default class QuickCreatePage extends CreatePage {
           ),
           dataIndex: key,
           key: key,
-          width: itemColWidth.articleEditColWidth,
+          width: onlFormField.fieldLength,
           render: (text, record) => {
             const e = { ...tableItem };
             e.record = record;
