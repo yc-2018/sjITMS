@@ -355,7 +355,7 @@ export default class QuickFormSearchPage extends SearchPage {
 
   getRender = (val, column, record) => {
     let component;
-    val = this.convertData(val, column.preview, record)
+    // val = this.convertData(val, column.preview, record)
     if (column.render) {
       component = column.render(val, column, record);
     } else if (column.clickEvent == '1') {
