@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-11 17:30:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-10 08:46:36
+ * @LastEditTime: 2022-07-06 11:08:42
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -36,31 +36,29 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
     this.setState({ title: '' });
   };
 
-  drawExColumns = e => {
-    if (e.column.fieldName == 'SOURCENUM') {
-      const c = {
-        title: '确认数量',
-        dataIndex: 'TDQTY',
-        key: 'TDQTY',
-        sorter: true,
-        width: colWidth.codeColWidth,
-        render: (val, record) => {
-          return (
-            <Input placeholder="请输入提货数量" onChange={v => (record.TDQTY = v.target.value)} />
-          );
-        },
-      };
-      return c;
+  drawcell = e => {
+    if (e.column.fieldName == 'TAKEDELIVERYQTY') {
+      const component =
+        e.val == '<空>' ? (
+          <Input
+            defaultValue={e.val == '<空>' ? '' : e.val}
+            placeholder="请输入提货数量"
+            onChange={v => (e.record.TAKEDELIVERYQTY = v.target.value)}
+          />
+        ) : (
+          <span>{e.val}</span>
+        );
+      e.component = component;
     }
   };
 
   comfirm = () => {
-    const { selectedRows, reportCode } = this.state;
+    const { selectedRows } = this.state;
     const deliveryList = [];
     let isReturn = 0;
     if (selectedRows.length !== 0) {
       selectedRows.forEach((rows, index) => {
-        if (typeof rows.TDQTY == 'undefined') {
+        if (typeof rows.TAKEDELIVERYQTY == 'undefined') {
           message.error('第' + (index + 1) + '行提货数量不能为空');
           isReturn = 1;
         }
@@ -70,7 +68,7 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
           SOURCENUM: rows.SOURCENUM,
           ARTICLECODE: rows.ARTICLECODE,
           ORDERQTY: rows.QTY,
-          TAKEDELIVERYQTY: rows.TDQTY,
+          TAKEDELIVERYQTY: rows.TAKEDELIVERYQTY,
           SCHEDULEUUID: rows.SCHEDULEUUID,
         });
       });
