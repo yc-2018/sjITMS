@@ -66,6 +66,7 @@ export default class QuickView extends RyzeViewPage {
       oddItems: [],
       noActionCol: true,
       notNote: true,
+      authority: props.route?.authority ? props.route.authority[0] : null,
     };
   }
 
@@ -382,7 +383,7 @@ export default class QuickView extends RyzeViewPage {
           </Button>
         ) : null} */}
         <Button
-          hidden={!havePermission(this.state.quickuuid + '.edit')}
+          hidden={!havePermission(this.state.authority + '.edit')}
           type="primary"
           onClick={this.onEdit}
         >

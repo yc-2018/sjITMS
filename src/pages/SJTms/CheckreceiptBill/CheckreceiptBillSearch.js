@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-01 15:58:47
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-24 14:29:25
+ * @LastEditTime: 2022-07-06 15:26:54
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -111,14 +111,16 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
 
   buildOptions = () => {
     const { sourceData } = this.state;
-    return sourceData.map(data => {
-      return <Select.Option value={data.NAME}>{data.NAME}</Select.Option>;
-    });
+    if (sourceData != 'false') {
+      return sourceData.map(data => {
+        return <Select.Option value={data.NAME}>{data.NAME}</Select.Option>;
+      });
+    }
   };
 
   buildMenu = () => {
     const { sourceData } = this.state;
-    if (sourceData.length > 0) {
+    if (sourceData != 'false') {
       return (
         <Menu onClick={this.handleMenuClick}>
           {sourceData.map(data => {
@@ -130,7 +132,7 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
       return (
         <Empty
           style={{ textAlign: 'center' }}
-          description={<span style={{ color: '#aeb8c2' }}>没有保存任何查询</span>}
+          description={<span style={{ color: '#aeb8c2' }}>暂无数据</span>}
         />
       );
     }

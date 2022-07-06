@@ -294,7 +294,7 @@ export default class QuickFormSearchPage extends SearchPage {
         width: column.fieldWidth == 0 ? colWidth.codeColWidth : column.fieldWidth,
         fieldType: column.fieldType,
         preview: preview,
-        render: (val, record) => this.getRender(val, column, record)
+        render: (val, record) => this.getRender(val, column, record),
       };
       if (exColumns) {
         quickColumns.push(exColumns);
@@ -323,35 +323,49 @@ export default class QuickFormSearchPage extends SearchPage {
 
   columnComponent = {
     view: (val, column, record) => {
-      return <a onClick={() => this.onView(record)} style={{ color: this.colorChange(val, column.textColorJson) }}>
-        {this.convertData(val, column.preview, record)}
-      </a>;
+      return (
+        <a
+          onClick={() => this.onView(record)}
+          style={{ color: this.colorChange(val, column.textColorJson) }}
+        >
+          {this.convertData(val, column.preview, record)}
+        </a>
+      );
     },
     otherView: (val, column, record) => {
-      return <a onClick={() => this.onOtherView(record, record)} style={{ color: this.colorChange(val, column.textColorJson) }}>
-        {this.convertData(val, column.preview, record)}
-      </a>;
+      return (
+        <a
+          onClick={() => this.onOtherView(record, column)}
+          style={{ color: this.colorChange(val, column.textColorJson) }}
+        >
+          {this.convertData(val, column.preview, record)}
+        </a>
+      );
     },
     switch: (val, column, record) => {
-      return <Switch
-        checkedChildren="启用"
-        unCheckedChildren="禁用"
-        checked={val == 1}
-        onClick={e => this.changeOpenState(e, record, column)}
-      />;
+      return (
+        <Switch
+          checkedChildren="启用"
+          unCheckedChildren="禁用"
+          checked={val == 1}
+          onClick={e => this.changeOpenState(e, record, column)}
+        />
+      );
     },
     colorBadge: (val, column, record) => {
-      return <div>
-        <Badge
-          color={this.colorChange(val, column.textColorJson)}
-          text={this.convertData(val, column.preview, record)}
-        />
-      </div>;
+      return (
+        <div>
+          <Badge
+            color={this.colorChange(val, column.textColorJson)}
+            text={this.convertData(val, column.preview, record)}
+          />
+        </div>
+      );
     },
     p3: (val, column, record) => {
       return <p3>{this.convertData(val, column.preview, record)}</p3>;
-    }
-  }
+    },
+  };
 
   getRender = (val, column, record) => {
     let component;
@@ -370,13 +384,8 @@ export default class QuickFormSearchPage extends SearchPage {
       component = this.columnComponent.p3(val, column, record);
     }
 
-    return this.customize(
-      record,
-      this.convertData(val, column.preview, record),
-      component,
-      column
-    );
-  }
+    return this.customize(record, this.convertData(val, column.preview, record), component, column);
+  };
 
   //初始化数据
   initData = data => {
@@ -453,6 +462,7 @@ export default class QuickFormSearchPage extends SearchPage {
     if (column.jumpPath) {
       jumpPaths = column.jumpPath.split(',');
     }
+    console.log(column, 'jumpPaths', jumpPaths);
     if (!jumpPaths || jumpPaths.length != 2) {
       message.error('配置为空或配置错误，请检查点击事件配置！');
       return;
