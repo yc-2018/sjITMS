@@ -2,13 +2,11 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-11 17:30:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-06 11:33:09
+ * @LastEditTime: 2022-07-06 14:17:35
  * @version: 1.0
  */
-import React, { PureComponent } from 'react';
-import { Table, Button, Modal, Input, message, Popconfirm, Row } from 'antd';
-import { colWidth } from '@/utils/ColWidth';
-import OperateCol from '@/pages/Component/Form/OperateCol';
+import React from 'react';
+import { Button, InputNumber, message, Popconfirm } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { saveFormData } from '@/services/quick/Quick';
@@ -40,10 +38,10 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
     if (e.column.fieldName == 'TAKEDELIVERYQTY') {
       const component =
         e.record.STATE == '0' ? (
-          <Input
-            defaultValue={e.val == '<空>' ? '' : e.val}
+          <InputNumber
             placeholder="请输入提货数量"
-            onChange={v => (e.record.TAKEDELIVERYQTY = v.target.value)}
+            min={0}
+            onChange={v => (e.record.TAKEDELIVERYQTY = v)}
           />
         ) : (
           <span>{e.val}</span>
