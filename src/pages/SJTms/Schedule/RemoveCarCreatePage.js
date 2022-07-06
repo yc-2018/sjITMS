@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-04-20 10:41:30
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-29 16:34:43
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-07-06 15:11:48
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -93,7 +93,8 @@ export default class RemoveCarCreatePage extends QuickCreatePage {
 
     await removeCar(entity).then(result => {
       if (result.success) {
-        this.onSaved(result.success);
+        const response = { response: result };
+        this.onSaved(response);
         message.success('移车成功,已作废此排车单,生成对应的新排车单');
       }
     });
