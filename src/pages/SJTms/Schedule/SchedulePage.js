@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:01:35
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-29 18:56:51
+ * @LastEditTime: 2022-07-06 09:03:15
  * @Description: 排车单
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\SchedulePage.js
  */
@@ -28,8 +28,9 @@ export default class SchedulePage extends PureComponent {
     isShowDetail: false,
   };
   //刷新
-  refreshSelectedRow = selectedRows => {
-    this.setState({ selectedRows, isShowDetail: true });
+  refreshSelectedRow = row => {
+    const { selectedRows } = this.state;
+    if (selectedRows.UUID != row.UUID) this.setState({ selectedRows: row, isShowDetail: true });
   };
   //修改人员
   memberModalClick = record => {

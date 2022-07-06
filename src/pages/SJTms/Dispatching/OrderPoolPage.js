@@ -2,15 +2,14 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-06 11:14:55
+ * @LastEditTime: 2022-07-06 09:22:22
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
 import React, { Component } from 'react';
-import { Table, Button, Row, Col, Tabs, message, Typography } from 'antd';
+import { Button, Row, Col, Tabs, message, Typography } from 'antd';
 import DispatchingTable from './DispatchingTable';
-import DispatchingChildTable from './DispatchingChildTable';
-import { OrderColumns, OrderDetailColumns, pagination } from './DispatchingColumns';
+import { OrderColumns, pagination } from './DispatchingColumns';
 import OrderPoolSearchForm from './OrderPoolSearchForm';
 import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
 import DispatchingCreatePage from './DispatchingCreatePage';
@@ -19,11 +18,12 @@ import {
   queryAuditedOrder,
   getAuditedOrder,
   getOrderByStat,
-  getOrderInPending,
   savePending,
 } from '@/services/sjitms/OrderBill';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
+import { isEmpty } from '@/utils/utils';
 import { groupBy, sumBy, uniq, uniqBy } from 'lodash';
+import { string } from 'prop-types';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
@@ -173,13 +173,32 @@ export default class OrderPoolPage extends Component {
     const orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
     //不可共配校验
     let owners = [...orders, ...selectPending].map(x => {
-      const is_private = x.is_private == '0' ? 0 : -1;
-      return { ...x.owner, is_private };
+      return { ...x.owner, noJointlyOwnerCodes: x.noJointlyOwnerCode };
     });
     owners = uniqBy(owners, 'uuid');
-    let noMixtureShip = owners.filter(item => item.is_private == 0).map(x => x.name);
-    if (owners.length > 1 && noMixtureShip) {
-      message.error('货主 ' + noMixtureShip.join(',') + ' 不可共配！');
+    const checkOwners = owners.filter(x => x.noJointlyOwnerCodes);
+    let noJointlyOwner = undefined;
+    checkOwners.forEach(owner => {
+      //不可共配货主
+      const noJointlyOwnerCodes = owner.noJointlyOwnerCodes.split(',');
+      const noJointlyOwners = owners.filter(
+        x => noJointlyOwnerCodes.indexOf(x.code) != -1 && x.code != owner.code
+      );
+      if (noJointlyOwners.length > 0) {
+        noJointlyOwner = {
+          ownerName: owner.name,
+          owners: noJointlyOwners.map(x => x.name).join(','),
+        };
+      }
+    });
+    if (noJointlyOwner != undefined) {
+      message.error(
+        '货主：' +
+          noJointlyOwner.ownerName +
+          '与[' +
+          noJointlyOwner.owners +
+          ']不可共配，请检查货主配置!'
+      );
       return;
     }
     this.createPageModalRef.show(false, [...orders, ...selectPending]);
