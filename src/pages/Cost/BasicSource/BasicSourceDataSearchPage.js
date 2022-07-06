@@ -2,17 +2,12 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-01 15:55:31
+ * @LastEditTime: 2022-07-05 18:12:28
  * @version: 1.0
  */
 import React, { Component } from 'react';
 import { connect } from 'dva';
 import { Button, Form, message, Spin } from 'antd';
-import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
-import Page from '@/pages/Component/Page/inner/Page';
-import { DndProvider } from 'react-dnd';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import SearchPage from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSearchPage';
 import { dynamicQuery } from '@/services/quick/Quick';

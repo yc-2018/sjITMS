@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-29 17:35:32
+ * @LastEditTime: 2022-07-06 09:42:41
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -60,18 +60,14 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     bill: null,
     isShowLogs: false,
     billLogs: [],
-    isLock: false,
+    isLock: null,
   };
 
   month = moment().format('YYYY-MM');
 
-  componentWillReceiveProps(nextprops) {
-    this.getLockStatus();
-    this.getCostFormFields();
-  }
-
   componentDidMount() {
     this.handleOnSertch();
+    this.getCostFormFields();
   }
 
   getCostFormFields = () => {
@@ -82,7 +78,8 @@ export default class CostProjectSearch extends QuickFormSearchPage {
 
   getLockStatus = date => {
     isLock(this.props.params.entityUuid, date == undefined ? this.month : date).then(result => {
-      this.setState({ isLock: result.data });
+      console.log('result', result);
+      this.setState({ isLock: !result.data });
     });
   };
 
@@ -98,24 +95,9 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       return;
     }
 
-    // const startDate =
-    //   moment(dateString)
-    //     .add(e.START_DATE, 'month')
-    //     .format('YYYY-MM') +
-    //   '-' +
-    //   e.START_DAY;
-
-    // const endDate =
-    //   moment(dateString)
-    //     .add(e.END_DATE, 'month')
-    //     .format('YYYY-MM') +
-    //   '-' +
-    //   e.END_DAY;
-
     this.props.switchTab('update', {
       entityUuid: this.props.params.entityUuid,
       dateString,
-      // dateInterval: [startDate, endDate],
       e,
     });
   };
@@ -188,7 +170,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
           fieldType: 'VarChar',
           fieldWidth: 100,
           isSearch: false,
-          isShow: true
+          isShow: true,
         });
       });
       var datas = {
@@ -212,6 +194,8 @@ export default class CostProjectSearch extends QuickFormSearchPage {
         sql: ' ccc',
         reportHeadName: this.props.params.e.SCHEME_NAME,
       });
+
+      this.getLockStatus();
     } else {
       message.error('当前查询无数据,请计算后再操作');
       this.setState({ data: [], searchLoading: false, bill: null });
@@ -268,12 +252,14 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     // this.isLock(dateString);
   };
 
-  drawcell = (e) => {
-    if(e.column.fieldName == "modified"){
-      e.val = e.val ? "是" : "否";
+  drawcell = e => {
+    if (e.column.fieldName == 'modified') {
+      e.val = e.val ? '是' : '否';
     }
     if (e.record.modified) {
-      e.component = <p3 style={{ color: "red" }}>{this.convertData(e.val, e.column.preview, e.record)}</p3>;
+      e.component = (
+        <p3 style={{ color: 'red' }}>{this.convertData(e.val, e.column.preview, e.record)}</p3>
+      );
     }
   };
 
@@ -296,7 +282,44 @@ export default class CostProjectSearch extends QuickFormSearchPage {
   };
 
   //该方法会覆盖所有的中间功能按钮
-  drawToolbarPanel = () => {};
+  drawToolbarPanel = () => {
+    const { billLogs, isLock } = this.state;
+    return (
+      <div style={{ marginBottom: '-15px' }}>
+        <Button onClick={this.calculate.bind()}>计算</Button>
+        <Button onClick={this.checkData.bind()}>检查数据</Button>
+        <Button type={isLock ? 'danger' : ''} onClick={() => this.onLock()}>
+          {isLock ? '解锁(已锁定)' : '锁定(未锁定)'}
+        </Button>
+        <Button hidden={!this.state.bill} onClick={this.getcalcLog}>
+          结果日志
+        </Button>
+        <Modal
+          title="结果日志"
+          visible={this.state.isShowLogs}
+          onOk={this.changeLogsModal}
+          onCancel={this.changeLogsModal}
+          width={1000}
+        >
+          <div style={{ overflow: 'scroll', height: '500px' }}>
+            <Collapse>
+              {billLogs.map((item, index) => {
+                //  let logs = item.costLog.replace(/\n/g, '&#10;');
+                let logs = item.costLog.split('\n');
+                return (
+                  <Panel header={item.costTitle} key={index}>
+                    {logs.map(item => {
+                      return <p>{item}</p>;
+                    })}
+                  </Panel>
+                );
+              })}
+            </Collapse>
+          </div>
+        </Modal>
+      </div>
+    );
+  };
 
   changeState = () => {
     this.setState({ title: this.props.params.e.SCHEME_NAME });
@@ -304,7 +327,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
 
   drawSearchPanel = () => {
     const { getFieldDecorator } = this.props.form;
-    const { dateString, searchLoading, billLogs } = this.state;
+    const { dateString } = this.state;
     let node = [];
 
     node.push(
@@ -334,60 +357,8 @@ export default class CostProjectSearch extends QuickFormSearchPage {
     node = [...node, ...searchFields];
     node.push(
       <Form.Item>
-        <Button style={{ margin: '0px 10px' }} type="primary" onClick={() => this.handleOnSertch()}>
+        <Button type="primary" onClick={() => this.handleOnSertch()}>
           查询
-        </Button>
-      </Form.Item>
-    );
-
-    node.push(
-      <Form.Item>
-        <Button type="primary" onClick={this.calculate.bind()}>
-          计算
-        </Button>
-      </Form.Item>
-    );
-    node.push(
-      <Form.Item>
-        <Button type={this.state.isLock ? 'danger' : 'primary'} onClick={() => this.onLock()}>
-          {this.state.isLock ? '解锁(已锁定)' : '锁定(未锁定)'}
-        </Button>
-      </Form.Item>
-    );
-    node.push(
-      <Form.Item>
-        <Button hidden={!this.state.bill} type="primary" onClick={this.getcalcLog}>
-          结果日志
-        </Button>
-        <Modal
-          title="结果日志"
-          visible={this.state.isShowLogs}
-          onOk={this.changeLogsModal}
-          onCancel={this.changeLogsModal}
-          width={1000}
-        >
-          <div style={{ overflow: 'scroll', height: '500px' }}>
-            <Collapse>
-              {billLogs.map((item, index) => {
-                //  let logs = item.costLog.replace(/\n/g, '&#10;');
-                let logs = item.costLog.split('\n');
-                return (
-                  <Panel header={item.costTitle} key={index}>
-                    {logs.map(item => {
-                      return <p>{item}</p>;
-                    })}
-                  </Panel>
-                );
-              })}
-            </Collapse>
-          </div>
-        </Modal>
-      </Form.Item>
-    );
-    node.push(
-      <Form.Item>
-        <Button style={{ margin: '0px 8px' }} type="primary" onClick={this.checkData.bind()}>
-          检查数据
         </Button>
         <Button style={{ margin: '0px 10px' }} type="primary" onClick={this.edit.bind()}>
           编辑
@@ -410,19 +381,12 @@ export default class CostProjectSearch extends QuickFormSearchPage {
   };
 
   render() {
-    let ret = this.state.canFullScreen ? (
-      <FreshPageHeaderWrapper>{this.drawPage()}</FreshPageHeaderWrapper>
-    ) : (
+    return (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.pathname}>
           <Spin spinning={this.state.searchLoading}>{this.drawPage()}</Spin>
         </Page>
       </PageHeaderWrapper>
     );
-    if (this.state.isDrag) {
-      return <DndProvider backend={HTML5Backend}>{ret}</DndProvider>;
-    } else {
-      return ret;
-    }
   }
 }
