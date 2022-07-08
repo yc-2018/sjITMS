@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-10 11:29:27
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-11 14:56:15
+ * @LastEditTime: 2022-07-08 17:01:09
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -45,6 +45,18 @@ export async function onLock(planUuid, month) {
 }
 export async function isLock(planUuid, month) {
   return request(`/itms-cost/itms-cost/costbill/isLock?planUuid=${planUuid}&dateString=${month}`, {
+    method: 'GET',
+  });
+}
+
+export async function haveCheck(Uuid) {
+  return request(`/itms-cost/itms-cost/costbill/haveCheck?Uuid=${Uuid}`, {
+    method: 'GET',
+  });
+}
+
+export async function consumed(Uuid) {
+  return request(`/itms-cost/itms-cost/costbill/consumed?Uuid=${Uuid}`, {
     method: 'GET',
   });
 }
