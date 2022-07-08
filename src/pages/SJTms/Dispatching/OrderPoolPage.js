@@ -302,7 +302,7 @@ export default class OrderPoolPage extends Component {
 
   //更新列配置
   setColumns = (orderPoolColumns, index, width) => {
-    index ? this.orderColSetting.handleWidth(index, width) : {};
+    this.orderColSetting.handleWidth(index, width);
     this.setState({ orderPoolColumns });
   };
 

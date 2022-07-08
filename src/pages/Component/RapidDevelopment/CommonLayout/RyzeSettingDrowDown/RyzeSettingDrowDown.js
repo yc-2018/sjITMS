@@ -75,7 +75,7 @@ function fetchOptions(columns, key) {
     for (let i = 0; i < columns.length; i++) {
       if (
         defaultColumns.indexOf(columns[i].title) == -1 &&
-        i != 0 &&
+        // i != 0 &&
         columns[i].title &&
         columns[i].title !== commonLocale.operateLocale
       ) {
@@ -103,9 +103,9 @@ function fetchOptions(columns, key) {
   } else {
     for (let idx = 0; idx < columns.length; idx++) {
       const e = columns[idx];
-      if (idx === 0) {
-        continue;
-      }
+      // if (idx === 0) {
+      //   continue;
+      // }
       if (e.title && e.title !== commonLocale.operateLocale) {
         if (!columns[idx].invisible) {
           options.push({
@@ -276,6 +276,7 @@ export default class RyzeSettingDrowDown extends Component {
     const { optionsList } = this.state;
     const { columns } = this.props;
     let oldColumns = [];
+    // console.log('optionsList', optionsList);
     //copy数组对象
     for (let i = 0; i < columns.length; i++) {
       oldColumns[i] = shencopy(columns[i]);
@@ -291,7 +292,7 @@ export default class RyzeSettingDrowDown extends Component {
       }
     }
     // 设置第一列
-    newColumns.push({ ...oldColumns[0] });
+    // newColumns.push({ ...oldColumns[0] });
 
     // 按顺序 添加
     for (let i = 0; i < optionsList.length; i++) {
@@ -308,10 +309,12 @@ export default class RyzeSettingDrowDown extends Component {
     // 按是否勾选 删除
 
     for (let i = newColumns.length - 1; i >= 0; i--) {
-      if (newList.indexOf(newColumns[i].title) == -1 && i != 0) {
+      if (newList.indexOf(newColumns[i].title) == -1) {
+        console.log('title', newColumns[i].title);
         newColumns.splice(i, 1);
       }
     }
+
     // 设置最后一列
     if (
       oldColumns[oldColumns.length - 1].title === commonLocale.operateLocale &&
@@ -345,8 +348,10 @@ export default class RyzeSettingDrowDown extends Component {
     const tableElement = document.getElementById(settingKey);
     const pos = tableElement ? tableElement.getBoundingClientRect() : {};
     // const footerElement = document.getElementById('footer');
-     //获取当前页签的footer
-    const footerElement = document.getElementById(this.state.pathname).getElementsByTagName('footer')[1];
+    //获取当前页签的footer
+    const footerElement = document
+      .getElementById(this.state.pathname)
+      .getElementsByTagName('footer')[1];
     const footerPos = footerElement ? footerElement.getBoundingClientRect() : {};
     let height = this.props.tableHeight ? this.props.tableHeight : footerPos.top - pos.top - 40;
     let dataHeight = optionsList ? optionsList.length * 30 + 40 : 0;
@@ -507,18 +512,36 @@ export default class RyzeSettingDrowDown extends Component {
   };
 
   handleWidth = (index, width) => {
-    if (index <= 0) return;
-    const { optionsList } = this.state;
-    let newOptionsList = optionsList;
-    newOptionsList[index - 1].width = width;
-    this.setState(
-      {
-        optionsList: newOptionsList,
-      },
-      () => {
-        this.handleOK();
-      }
-    );
+    if (index == 0) {
+      const { optionsList } = this.state;
+      let newOptionsList = optionsList;
+      // newOptionsList[index - 1].width = width;
+      newOptionsList[index].width = width;
+
+      this.setState(
+        {
+          optionsList: newOptionsList,
+        },
+        () => {
+          this.handleOK();
+        }
+      );
+    } else {
+      if (!index) return;
+      const { optionsList } = this.state;
+      let newOptionsList = optionsList;
+      // newOptionsList[index - 1].width = width;
+      newOptionsList[index].width = width;
+
+      this.setState(
+        {
+          optionsList: newOptionsList,
+        },
+        () => {
+          this.handleOK();
+        }
+      );
+    }
   };
 
   settingColumns = [

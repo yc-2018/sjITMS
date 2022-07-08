@@ -107,7 +107,7 @@ export default class PendingPage extends Component {
 
   //更新列配置
   setColumns = (pendingOrderColumns, index, width) => {
-    index ? this.pendingOrderColSetting.handleWidth(index, width) : {};
+    this.orderColSetting.handleWidth(index, width);
     this.setState({ pendingOrderColumns });
   };
 
