@@ -97,3 +97,8 @@ export async function savePlan(payload) {
     return e;
   });
 }
+export async function copyPlan(uuid) {
+  return request(`/itms-cost/itms-cost/costplan/copyPlan/${uuid}`, {
+    method: 'GET'
+  });
+}

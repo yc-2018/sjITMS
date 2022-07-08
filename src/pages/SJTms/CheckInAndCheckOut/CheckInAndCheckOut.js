@@ -1,23 +1,13 @@
-import React, { PureComponent } from 'react';
-import { Card, Col, Form, Input, message, Row, Spin, Divider } from 'antd';
+import React from 'react';
+import { Card, Col, Form, Input, Row, Spin } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import Page from '@/pages/Component/Page/inner/Page';
-import FormPanel from '@/pages/Component/Form/FormPanel';
-import CFormItem from '@/pages/Component/Form/CFormItem';
-import { loginCompany } from '@/utils/LoginContext';
-import FormTitle from '@/pages/Component/Form/FormTitle';
-import styles from '@/pages/Component/Form/NotePanel.less';
-import FormItem from 'antd/es/form/FormItem';
 import { connect } from 'dva';
-import { commonLocale } from '@/utils/CommonLocale';
 import Empty from '@/pages/Component/Form/Empty';
-import { convertCodeName } from '@/utils/utils';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
-import { State } from '@/pages/Tms/ShipBill/ShipBillContants';
 import SearchPage from '@/pages/Component/Page/SearchPage';
-import { autoHideHeader } from '@/defaultSettings';
-import { getByCarrier, beginloading, finishloading } from '@/services/sjitms/ChargeLoading';
+import { getByCarrier, beginloading} from '@/services/sjitms/ChargeLoading';
 
 @connect(({ newCheckInAndCheckOut }) => ({
   newCheckInAndCheckOut,
@@ -47,13 +37,11 @@ export default class CheckInAndCheckOut extends SearchPage {
       callback: response => {
         console.log();
         if (response && response.success && response.data) {
-         //debugger;
           if(response.data.result){
             this.updateTime(response.data.data.billNumber);
           }else{
             this.getPlanInfo(driverCode);
           }
-         
           
         } else {
             
@@ -106,9 +94,7 @@ export default class CheckInAndCheckOut extends SearchPage {
     });
   };
   updateTime = billNumber => {
-    // const { shipBill } = this.state;
     if (!billNumber) return;
-
     this.props.dispatch({
       type: 'newCheckInAndCheckOut/updateTime',
       payload: billNumber,
@@ -156,8 +142,7 @@ export default class CheckInAndCheckOut extends SearchPage {
    * 提示信息
    */
   drawNoticeMessage() {
-    const { form } = this.props;
-    const { responseError, responseMsg, shipBill,colorChange } = this.state;
+    const { responseError,colorChange } = this.state;
     const noteItemLayout = {
       labelCol: { span: 0 },
       wrapperCol: { span: 36 },
@@ -183,9 +168,7 @@ export default class CheckInAndCheckOut extends SearchPage {
    * 单据信息
    */
   drawBillInfo() {
-    const { shipPlanBill, shipBill, responseMsg } = this.state;
-    console.log('shipPlanBill', shipPlanBill);
-    const { getFieldDecorator } = this.props.form;
+    const { shipPlanBill} = this.state;
     const formItemLayout = {
       labelCol: {
         xs: { span: 1 },
@@ -231,7 +214,6 @@ export default class CheckInAndCheckOut extends SearchPage {
 
   render() {
     return (
-     //style={{overflowY:'auto', height:'100%'}}
         <PageHeaderWrapper>
           <Spin indicator={LoadingIcon('default')} delay={5} spinning={this.props.loading}>
             <Page withCollect={true} >
@@ -250,8 +232,6 @@ export default class CheckInAndCheckOut extends SearchPage {
                 {this.drawNoticeMessage()}
                 {this.drawBillInfo()}
                 </div>
-               
-               
             </Page>
           </Spin>
         </PageHeaderWrapper>
