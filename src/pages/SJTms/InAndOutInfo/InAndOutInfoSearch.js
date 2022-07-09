@@ -29,14 +29,6 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     previewImage: '',
   };
 
-  /**
-   * 该方法用于自定义扩展列
-     e={
-       column:column
-     }
-   */
-  drawExColumns = e => {};
-
   drawActionButton = () => {
     const {
       storeModalVisible,
@@ -70,16 +62,6 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     );
   };
 
-  /**
-   该方法用于修改table的render
-
-   e的对象结构为{
-      column   //对应的column
-      record,  //对应的record
-      component, //render渲染的组件
-      val  //val值
-   }  
-   */
   drawcell = e => {
     const column = e.column;
     const record = e.record;
@@ -109,7 +91,10 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           onBlur={this.onBlurs.bind(this, record, column.fieldName)}
           min={0}
           max={10000}
-          defaultValue={record.LAST_RETURN_MILEAGE}
+          disabled={e.record.INOUTCHECKED == 1}
+          defaultValue={
+            record.INOUTCHECKED == 0 ? record.LAST_RETURN_MILEAGE : record.DISPATCHMILEAGE
+          }
         />
       );
       e.component = component;
@@ -125,6 +110,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           step={0.0}
           min={0}
           max={10000}
+          disabled={e.record.INOUTCHECKED == 1}
           defaultValue={record.RETURNMILEAGE}
           style={{ width: 100 }}
           onBlur={this.onBlurs.bind(this, record, column.fieldName)}
@@ -132,15 +118,8 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
       );
       e.component = component;
     }
-    // if(fieldName=='TOTALMILEAGE'){
-    //   const component =(
-    //         <Input step={0.00}  disabled
-    //         style={{width:100}}
-    //          min={0}  value={record.TOTALMILEAGE} onBlur= {this.onBlurs.bind(this,record,column.fieldName)}/>
-    //   );
-    //   e.component = component;
-    // }
   };
+
   showOrderFee = (number, uuid) => {
     if (uuid) {
       this.setState({
@@ -150,6 +129,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
       });
     }
   };
+
   showStore = uuid => {
     if (uuid) {
       this.setState({
@@ -158,36 +138,28 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
       });
     }
   };
+
   onBlurs = (record, fieldName, e) => {
     const { data } = this.state;
+    let newData = { ...data };
+    let row = newData.list.find(x => x.uuid == record.uuid);
     if (fieldName == 'RETURNMILEAGE') {
-      data.list.forEach(element => {
-        if (element.ROW_ID == record.ROW_ID) {
-          element.RETURNMILEAGE = Number(e.target.value);
-          element.TOTALMILEAGE =
-            Number(e.target.value) - record.DISPATCHMILEAGE == 0
-              ? record.LAST_RETURN_MILEAGE
-              : record.DISPATCHMILEAGE;
-          this.setState({ data });
-          return;
-        }
-      });
+      row.RETURNMILEAGE = Number(e.target.value);
+      row.TOTALMILEAGE =
+        Number(e.target.value) -
+        (row.DISPATCHMILEAGE == 0 ? record.LAST_RETURN_MILEAGE : record.DISPATCHMILEAGE);
+    } else {
+      row.DISPATCHMILEAGE = Number(e.target.value);
     }
-    if (fieldName == 'DISPATCHMILEAGE') {
-      data.list.forEach(element => {
-        if (element.ROW_ID == record.ROW_ID) {
-          element.DISPATCHMILEAGE = e.target.value;
-          element.TOTALMILEAGE = record.RETURNMILEAGE - e.target.value;
-          this.setState({ data });
-          return;
-        }
-      });
-    }
+    const index = newData.list.findIndex(x => x.uuid == row.uuid);
+    newData.list[index] = row;
+    this.setState({ data: newData });
   };
 
   convertCodeName = () => {};
   //该方法用于写最上层的按钮 多个按钮用<span>包裹
   drawTopButton = () => {};
+
   onPreview = async file => {
     let src = file.url;
     if (!src) {
@@ -202,6 +174,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     const imgWindow = window.open(src);
     imgWindow?.document.write(image.outerHTML);
   };
+
   drawToolbarPanel = () => {
     return (
       <span>
@@ -216,7 +189,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
   };
 
   save = () => {
-    const { selectedRows, batchAction } = this.state;
+    const { selectedRows } = this.state;
     if (selectedRows.length < 1) {
       message.warn('请至少选择一条记录');
       return;
@@ -234,8 +207,8 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     });
   };
 
-  audits = name => {
-    const { selectedRows, batchAction } = this.state;
+  audits = () => {
+    const { selectedRows } = this.state;
     if (selectedRows.length < 1) {
       message.warn('请至少选择一条记录');
       return;
