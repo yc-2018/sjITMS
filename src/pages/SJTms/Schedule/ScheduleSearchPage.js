@@ -2,13 +2,13 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-01 08:58:12
+ * @LastEditTime: 2022-07-09 09:37:11
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
 import { connect } from 'dva';
-import { Button, message, Popconfirm } from 'antd';
-import { convertDateToTime } from '@/utils/utils';
+import { Dropdown, Menu, Icon, Button, message, Popconfirm } from 'antd';
+import { convertDate, convertDateToTime } from '@/utils/utils';
 import { loginUser } from '@/utils/LoginContext';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
@@ -70,9 +70,19 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     }
   };
 
+  handleMenuClick = e => {
+    this.handlePrint(e.key);
+  };
+
   //按钮面板
   drawToolbarPanel = () => {
     const { printPage, selectedRows, showRollBackPop, showAbortPop } = this.state;
+    const menu = (
+      <Menu onClick={this.handleMenuClick}>
+        <Menu.Item key="load">装车单</Menu.Item>
+        <Menu.Item key="out">出车单</Menu.Item>
+      </Menu>
+    );
     return (
       <div style={{ marginBottom: 10 }}>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
@@ -125,9 +135,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         <Button style={{ marginLeft: 12 }} onClick={() => this.onMoveCar()}>
           移车
         </Button>
-        <Button style={{ marginLeft: 12 }} onClick={() => this.handlePrint()} icon="printer">
-          打印
-        </Button>
+        <Dropdown overlay={menu}>
+          <Button onClick={() => this.handlePrint()} icon="printer" style={{ marginLeft: 12 }}>
+            打印 <Icon type="down" />
+          </Button>
+        </Dropdown>
         <div id="printPage" style={{ display: 'none' }}>
           {printPage}
         </div>
@@ -183,7 +195,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   };
 
   //打印
-  handlePrint = async () => {
+  handlePrint = async key => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
       message.warn('请选择需要打印的排车单！');
@@ -193,12 +205,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     let LODOP = getLodop();
     if (LODOP == undefined) return;
     LODOP.PRINT_INIT('排车单打印');
-    LODOP.SET_PRINT_PAGESIZE(2, 281, 240, '280mm*241mm'); //1代表横的打印 2代表竖的打印 3纵向打印，宽度固定，高度按打印内容的高度自适应；
+    LODOP.SET_PRINT_PAGESIZE(1, 2200, 1400, '220mm*140mm'); //1代表横的打印 2代表竖的打印 3纵向打印，宽度固定，高度按打印内容的高度自适应；
     LODOP.SET_PRINT_MODE('PRINT_DUPLEX', 1); //去掉双面打印
-    LODOP.SET_SHOW_MODE('LANDSCAPE_DEFROTATED', 1); //纸张旋转横过来
     LODOP.SET_PRINT_STYLEA(0, 'Horient', 2); //打印项在纸张中水平居中
     const strStyle = '<style> td,th {height:30px}</style>';
-    await this.buildPrintPage();
+    key == 'load' ? await this.buildPrintPage() : await this.buildSchedulePrintPage();
     const printPages = document.getElementById('printPage').childNodes;
     printPages.forEach(page => {
       LODOP.NewPageA();
@@ -209,6 +220,32 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     this.setState({ printPage: undefined });
   };
 
+  //出车单
+  buildSchedulePrintPage = async () => {
+    const { selectedRows } = this.state;
+    const printPages = [];
+    for (let index = 0; selectedRows.length > index; index++) {
+      const response = await queryAllData({
+        quickuuid: 'sj_itms_schedule_order',
+        superQuery: {
+          queryParams: [
+            {
+              field: 'billuuid',
+              type: 'VarChar',
+              rule: 'eq',
+              val: selectedRows[index].UUID,
+            },
+          ],
+        },
+      });
+      const scheduleDetails = response.success ? response.data.records : [];
+      const printPage = drawScheduleBillPage(selectedRows[index], scheduleDetails);
+      printPages.push(printPage);
+    }
+    this.setState({ printPage: printPages });
+  };
+
+  //装车单
   buildPrintPage = async () => {
     const { selectedRows } = this.state;
     const printPages = [];
@@ -233,6 +270,158 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     this.setState({ printPage: printPages });
   };
 }
+
+const drawScheduleBillPage = (schedule, scheduleDetails) => {
+  const driver = schedule.DRIVER ? schedule.DRIVER.substr(schedule.DRIVER.indexOf(']') + 1) : '';
+  const stevedore = schedule.STEVEDORE
+    ? schedule.STEVEDORE.substr(schedule.STEVEDORE.indexOf(']') + 1)
+    : '';
+  return (
+    <div>
+      <table
+        style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14 }}
+        border={1}
+        cellPadding={0}
+        cellSpacing={0}
+      >
+        <thead>
+          <tr style={{ height: 50 }}>
+            <th colspan={2} style={{ border: 0 }} />
+            <th colspan={4} style={{ border: 0 }}>
+              <div style={{ fontSize: 22, textAlign: 'center' }}>广东时捷物流有限公司出车单</div>
+            </th>
+            <th colspan={2} style={{ border: 0 }}>
+              <div style={{ fontSize: 16, textAlign: 'center' }}>
+                <span>第</span>
+                <font tdata="PageNO" color="blue">
+                  ##
+                </font>
+                <span>页/共</span>
+                <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
+                  ##
+                </font>
+                <span>页</span>
+              </div>
+            </th>
+          </tr>
+
+          <tr>
+            <th colspan={8} style={{ border: 0 }}>
+              <div style={{ display: 'flex', textAlign: 'left' }}>
+                <div style={{ flex: 1.5 }}>出车单号： {schedule.BILLNUMBER}</div>
+                <div style={{ flex: 1 }}> 车牌号： {schedule.VEHICLEPLATENUMBER}</div>
+                <div style={{ flex: 1 }}>司机: {driver}</div>
+                <div style={{ flex: 1 }}>送货员： {stevedore}</div>
+              </div>
+            </th>
+          </tr>
+
+          <tr>
+            <th width={120}>单号</th>
+            <th width={100}>单据类别</th>
+            <th width={150}>客户编号</th>
+            <th width={150}>客户名称</th>
+            <th width={80}>整件</th>
+            <th width={80}>散件</th>
+            <th width={100}>差异单号</th>
+            <th width={100}>备注</th>
+          </tr>
+        </thead>
+        <tbody>
+          {scheduleDetails ? (
+            scheduleDetails.map((item, index) => {
+              return (
+                <tr style={{ textAlign: 'center' }}>
+                  <td width={120}>{item.ORDERNUMBER}</td>
+                  <td>{item.ORDERTYPE}</td>
+                  <td>{item.DELIVERYPOINTCODE}</td>
+                  <td>{item.DELIVERYPOINTNAME}</td>
+                  <td>{item.REALCARTONCOUNT}</td>
+                  <td>{item.REALSCATTEREDCOUNT}</td>
+                  <td />
+                  <td>{item.NOTE || ''}</td>
+                </tr>
+              );
+            })
+          ) : (
+            <></>
+          )}
+        </tbody>
+        <tfoot>
+          <tr style={{ height: 35 }}>
+            <td colspan={4}>合计:</td>
+            <td style={{ textAlign: 'center' }}>
+              <font color="blue" tdata="SubSum" format="#,##" tindex="5">
+                ######
+              </font>
+            </td>
+            <td style={{ textAlign: 'center' }}>
+              <font color="blue" tdata="SubSum" format="#,##" tindex="6">
+                ######
+              </font>
+            </td>
+            <td colspan={2} />
+          </tr>
+          <tr style={{ height: 35 }}>
+            <td colspan={8}>备注:</td>
+          </tr>
+          <tr style={{ height: 35 }}>
+            <td colspan={8}>
+              <div style={{ display: 'flex', margin: 10 }}>
+                <div style={{ flex: 1 }}>提成工资:</div>
+                <div style={{ flex: 2 }}>
+                  {driver}：{'99.00'}
+                </div>
+                {stevedore ? (
+                  <div style={{ flex: 2 }}>
+                    {stevedore}：{'59.00'}
+                  </div>
+                ) : (
+                  <div />
+                )}
+                <div style={{ flex: 4 }} />
+              </div>
+            </td>
+          </tr>
+          <tr style={{ height: 35 }}>
+            <td colspan={8} style={{ border: 0 }}>
+              <div style={{ margin: 10 }}>该出车单工资包含车次补贴和伙食补贴</div>
+            </td>
+          </tr>
+          <tr style={{ height: 35 }}>
+            <td colspan={8} style={{ border: 0 }}>
+              <div style={{ display: 'flex', margin: 10 }}>
+                <div style={{ flex: 2 }}>备注：红色^放行 黄色^交货、交收退 红色^财务</div>
+                <div style={{ flex: 1 }}> 打印日期: {convertDate(new Date())} </div>
+                <div style={{ flex: 1 }}> 制单人: {loginUser().name}</div>
+              </div>
+            </td>
+          </tr>
+          <tr style={{ height: 35 }}>
+            <td colspan={8} style={{ border: 0 }}>
+              <div style={{ display: 'flex', margin: 10 }}>
+                <div style={{ flex: 1 }}>出车公里数:</div>
+                <div style={{ flex: 1 }}>出车时间:</div>
+                <div style={{ flex: 1 }}>回车公里数:</div>
+                <div style={{ flex: 1 }}>回车时间:</div>
+              </div>
+            </td>
+          </tr>
+          <tr style={{ height: 35 }}>
+            <td colspan={8} style={{ border: 0 }}>
+              <div style={{ display: 'flex', margin: 10 }}>
+                <div style={{ flex: 1 }}>发货主管:</div>
+                <div style={{ flex: 1 }}> 司机签名:</div>
+                <div style={{ flex: 1 }}>送货员签名:</div>
+                <div style={{ flex: 1 }}>收退签名:</div>
+              </div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+};
 
 const drawPrintPage = (schedule, scheduleDetails) => {
   return (

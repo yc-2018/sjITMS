@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-06 09:22:22
+ * @LastEditTime: 2022-07-09 11:05:44
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -280,23 +280,22 @@ export default class OrderPoolPage extends Component {
   };
   //计算汇总
   groupByOrder = data => {
-    const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0;
-    const pickupPointCount = data ? uniq(data.map(x => x.pickUpPoint.code)).length : 0;
     data = data.filter(x => x.orderType !== 'OnlyBill');
+    if (data.length == 0) {
+      return {
+        realCartonCount: 0,
+        realScatteredCount: 0,
+        realContainerCount: 0,
+        volume: 0,
+        weight: 0,
+      };
+    }
     return {
-      orderCount: data ? data.length : 0,
-      cartonCount: data ? sumBy(data.map(x => x.cartonCount)) : 0,
-      scatteredCount: data ? sumBy(data.map(x => x.scatteredCount)) : 0,
-      containerCount: data ? sumBy(data.map(x => x.containerCount)) : 0,
-      realCartonCount: data ? sumBy(data.map(x => x.realCartonCount)) : 0,
-      realScatteredCount: data ? sumBy(data.map(x => x.realScatteredCount)) : 0,
-      realContainerCount: data ? sumBy(data.map(x => x.realContainerCount)) : 0,
-      weight: data ? sumBy(data.map(x => Number(x.weight))) : 0,
-      volume: data ? sumBy(data.map(x => Number(x.volume))) : 0,
-      totalAmount: data ? sumBy(data.map(x => Number(x.amount))) : 0,
-      deliveryPointCount,
-      pickupPointCount,
-      ownerCount: data ? uniq(data.map(x => x.owner.code)).length : 0,
+      realCartonCount: sumBy(data.map(x => x.realCartonCount)),
+      realScatteredCount: sumBy(data.map(x => x.realScatteredCount)),
+      realContainerCount: sumBy(data.map(x => x.realContainerCount)),
+      weight: sumBy(data.map(x => Number(x.weight))),
+      volume: sumBy(data.map(x => Number(x.volume))),
     };
   };
 

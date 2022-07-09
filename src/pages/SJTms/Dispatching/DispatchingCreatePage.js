@@ -146,7 +146,7 @@ export default class DispatchingCreatePage extends Component {
           this.setState({
             vehicles,
             employees,
-            orders: details,
+            orders: [...details],
             schedule: response.data,
             selectVehicle: selectVehicle == undefined ? {} : selectVehicle,
             selectEmployees,
@@ -158,7 +158,7 @@ export default class DispatchingCreatePage extends Component {
       vehicles = await this.getRecommendByOrders(record, vehicles);
       this.basicEmployee = employees;
       this.basicVehicle = vehicles;
-      this.setState({ vehicles, employees, orders: record, loading: false });
+      this.setState({ vehicles, employees, orders: [...record], loading: false });
     }
   };
 
@@ -185,7 +185,6 @@ export default class DispatchingCreatePage extends Component {
       },
     };
     const response = await dynamicQuery(param);
-    const { selectEmployees } = this.state;
     let vehicleEmployees = [];
     if (response.success && response.result.records != 'false') {
       vehicleEmployees = uniqBy(response.result.records, 'CODE').map(item => {
@@ -199,7 +198,7 @@ export default class DispatchingCreatePage extends Component {
   };
   //车辆筛选
   vehicleFilter = (key, value) => {
-    const { vehicles, vehicleParam } = this.state;
+    const { vehicleParam } = this.state;
     let serachVeh = [...this.basicVehicle];
     vehicleParam[key] = value;
     if (vehicleParam.searchKey) {
@@ -232,7 +231,7 @@ export default class DispatchingCreatePage extends Component {
   };
   //人员筛选
   employeeFilter = (key, value) => {
-    const { employees, empParams } = this.state;
+    const { empParams } = this.state;
     let searchEmp = [...this.basicEmployee];
     empParams[key] = value;
     if (empParams.searchKey) {

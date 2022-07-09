@@ -1,32 +1,10 @@
-import React, { PureComponent } from 'react';
-import {
-  Table,
-  Form,
-  Button,
-  Input,
-  InputNumber,
-  Col,
-  Select,
-  Icon,
-  Row,
-  Modal,
-  Popconfirm,
-  message,
-  Checkbox,
-  Upload,
-} from 'antd';
-
-import { colWidth } from '@/utils/ColWidth';
-import { ArraytoReplaceKeyLow } from '@/utils/utils';
+import React from 'react';
+import { Button, Input, Popconfirm, message } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-//import { convertCodeName } from '@/utils/utils';
 import StoreModal from './StoreModal';
 import OtherFeeModal from './OtherFeeModal';
-import StandardTable from '@/components/StandardTable';
-import { commonLocale, placeholderLocale, placeholderChooseLocale } from '@/utils/CommonLocale';
-import OperateCol from '@/pages/Component/Form/OperateCol';
-import FeeTypeForm from './FeeTypeForm';
+import { commonLocale } from '@/utils/CommonLocale';
 
 @connect(({ quick, sjdispatchReturn, loading }) => ({
   quick,
@@ -131,7 +109,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           onBlur={this.onBlurs.bind(this, record, column.fieldName)}
           min={0}
           max={10000}
-          defaultValue={record.DISPATCHMILEAGE}
+          defaultValue={record.LAST_RETURN_MILEAGE}
         />
       );
       e.component = component;
@@ -185,8 +163,11 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     if (fieldName == 'RETURNMILEAGE') {
       data.list.forEach(element => {
         if (element.ROW_ID == record.ROW_ID) {
-          element.RETURNMILEAGE = e.target.value;
-          element.TOTALMILEAGE = e.target.value - record.DISPATCHMILEAGE;
+          element.RETURNMILEAGE = Number(e.target.value);
+          element.TOTALMILEAGE =
+            Number(e.target.value) - record.DISPATCHMILEAGE == 0
+              ? record.LAST_RETURN_MILEAGE
+              : record.DISPATCHMILEAGE;
           this.setState({ data });
           return;
         }
@@ -271,5 +252,4 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
       },
     });
   };
-  test = (a, b) => {};
 }
