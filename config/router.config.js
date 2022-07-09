@@ -1061,7 +1061,7 @@ export default [
       {
         path: '/cost',
         name: '计费管理',
-        org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+        org: ['DISPATCH_CENTER'],
         authority: ['itms.cost'],
         icon: 'icon-cangchuguanli_uncheck',
         routes: [
@@ -1083,7 +1083,7 @@ export default [
           {
             path: '/cost/costproject',
             name: '计费项目',
-            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'], // component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+            org: ['DISPATCH_CENTER'], // component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
             component: './Cost/CostProject/CostProjectForm',
             quickuuid: 'COST_PROJECT',
             authority: ['itms.cost.project'],
@@ -1091,18 +1091,25 @@ export default [
           {
             path: '/cost/plan',
             name: '计费方案',
-            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'], // component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+            org: ['DISPATCH_CENTER'], // component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
             component: './Cost/CostPlan/CostPlanFrom',
             quickuuid: 'cost_plan',
             authority: ['itms.cost.plan'],
           },
           {
-            path: '/cost/costbill',
+            path: '/cost/calc',
             name: '费用计算',
             org: ['DISPATCH_CENTER'],
             quickuuid: 'cost_plan',
             component: './Cost/CostCalculation/CostCalculationForm',
             authority: ['itms.cost.calc'],
+          },
+          {
+            path: '/cost/bill',
+            name: '费用台账',
+            org: ['DISPATCH_CENTER'],
+            component: './Cost/CostBill/CostBillFrom',
+            authority: ['itms.cost.bill'],
           },
         ],
       },

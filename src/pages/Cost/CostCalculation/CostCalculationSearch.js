@@ -2,31 +2,15 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-06 09:42:41
+ * @LastEditTime: 2022-07-08 14:40:30
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
-import {
-  Table,
-  Button,
-  Input,
-  Col,
-  Row,
-  Popconfirm,
-  message,
-  Modal,
-  List,
-  DatePicker,
-  Spin,
-  Form,
-  Collapse,
-} from 'antd';
+import { Button, Input, Col, Row, message, Modal, DatePicker, Spin, Form, Collapse } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
-import { DndProvider } from 'react-dnd';
 import {
   calculatePlan,
   getBill,
@@ -38,7 +22,6 @@ import {
 const { MonthPicker } = DatePicker;
 import moment from 'moment';
 const { Panel } = Collapse;
-import { throttleSetter } from 'lodash-decorators';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -46,7 +29,7 @@ import { throttleSetter } from 'lodash-decorators';
 }))
 //继承QuickFormSearchPage Search页面扩展
 @Form.create()
-export default class CostProjectSearch extends QuickFormSearchPage {
+export default class CostBillDtlView extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
   state = {
     ...this.state,
@@ -79,7 +62,7 @@ export default class CostProjectSearch extends QuickFormSearchPage {
   getLockStatus = date => {
     isLock(this.props.params.entityUuid, date == undefined ? this.month : date).then(result => {
       console.log('result', result);
-      this.setState({ isLock: !result.data });
+      this.setState({ isLock: result.data });
     });
   };
 
@@ -268,15 +251,9 @@ export default class CostProjectSearch extends QuickFormSearchPage {
    */
   onLock = async () => {
     await onLock(this.props.params.entityUuid, this.state.dateString).then(e => {
-      if (e.data == 0) {
-        this.setState({ isLock: false });
-        message.success('解锁成功');
-      } else if (e.data == 1) {
-        this.setState({ isLock: true });
-        message.success('锁定成功');
-      } else {
-        this.setState({ isLock: false });
-        message.info('未找到数据!');
+      if (e.data) {
+        this.setState({ isLock: e.data });
+        message.success('操作成功');
       }
     });
   };
@@ -288,8 +265,12 @@ export default class CostProjectSearch extends QuickFormSearchPage {
       <div style={{ marginBottom: '-15px' }}>
         <Button onClick={this.calculate.bind()}>计算</Button>
         <Button onClick={this.checkData.bind()}>检查数据</Button>
-        <Button type={isLock ? 'danger' : ''} onClick={() => this.onLock()}>
-          {isLock ? '解锁(已锁定)' : '锁定(未锁定)'}
+        <Button
+          disabled={!(isLock == 'Saved' || isLock == 'Approved')}
+          type={isLock != 'Saved' ? 'danger' : ''}
+          onClick={() => this.onLock()}
+        >
+          {isLock == 'Approved' ? '取消批准' : '批准'}
         </Button>
         <Button hidden={!this.state.bill} onClick={this.getcalcLog}>
           结果日志

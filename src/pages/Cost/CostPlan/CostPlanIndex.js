@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import { Form, Button, Layout, Spin, Card, Row, Col, Input, Empty ,Popconfirm, message} from 'antd';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
-import { savePlan } from '@/services/cost/Cost';
+import { savePlan,copyPlan } from '@/services/cost/Cost';
 import Page from '@/pages/Component/Page/inner/Page';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
@@ -47,6 +47,15 @@ export default class CostPlanIndex extends PureComponent {
       this.handleSarch();
       message.success("操作成功！")
      }
+    });
+  }
+  copyPlan=(data)=>{
+    console.log("data",data);
+    copyPlan(data.UUID).then(e=>{
+      if(e.success){
+        this.handleSarch();
+        message.success("复制成功");
+      }
     });
   }
   drowe = () => {
@@ -96,8 +105,16 @@ export default class CostPlanIndex extends PureComponent {
     cancelText="取消"
   >
     <Button>{e.NOT_ENABLE==0?'停用':'启用'}</Button>
-  </Popconfirm>
-      </div>
+    </Popconfirm>
+    <Popconfirm
+    title={'确定复制吗？'}
+    onConfirm={() => this.copyPlan(e)}
+    okText="确定"
+    cancelText="取消"
+  >
+    <Button style={{ marginLeft: '10px' }} >{'复制'}</Button>
+    </Popconfirm>
+     </div>
     );
   };
   handleShowExcelImportPage = () => {

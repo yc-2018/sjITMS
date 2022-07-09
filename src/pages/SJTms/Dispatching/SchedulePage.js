@@ -267,7 +267,7 @@ export default class SchedulePage extends Component {
 
   //更新列配置
   setColumns = (columns, index, width) => {
-    index ? this.scheduleColSetting.handleWidth(index, width) : {};
+    this.scheduleColSetting.handleWidth(index, width);
     this.setState({ columns });
   };
 
