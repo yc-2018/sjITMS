@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-06 16:31:01
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-08 17:48:25
+ * @LastEditTime: 2022-07-11 10:31:18
  * @version: 1.0
  */
 
@@ -30,7 +30,10 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import { dynamicQuery } from '@/services/quick/Quick';
 import CostBillDtlSeacrhPage from './CostBillDtlSeacrhPage';
 import { haveCheck, consumed } from '@/services/cost/CostCalculation';
-import moment from 'moment';
+import {
+  SimpleTreeSelect,
+  SimpleAutoComplete,
+} from '@/pages/Component/RapidDevelopment/CommonComponent';
 
 const { Header, Footer, Content } = Layout;
 const { RangePicker } = DatePicker;
@@ -83,6 +86,13 @@ export default class CostBillSearchPage extends PureComponent {
           ];
           params = [...params, { field: 'BILL_MONTH', rule: 'between', val: month }];
         }
+        if (values.state != undefined) {
+          params = [...params, { field: 'STATE', rule: 'eq', val: [values.state] }];
+        }
+        if (values.poject.value) {
+          params = [...params, { field: 'PLAN_UUID', rule: 'eq', val: [values.poject.value] }];
+        }
+
         queryData.condition = { params };
       }
     });
@@ -132,7 +142,7 @@ export default class CostBillSearchPage extends PureComponent {
               />
             )}
           </Form.Item>
-          <Form.Item label="月份:" style={{ display: 'inline-block' }}>
+          <Form.Item label="月份" style={{ display: 'inline-block' }}>
             {getFieldDecorator('reportMonth')(
               <RangePicker
                 placeholder={['开始月份', '结束月份']}
@@ -143,6 +153,34 @@ export default class CostBillSearchPage extends PureComponent {
                     reportMonth: [value[0].startOf('month'), value[1].startOf('month')],
                   });
                 }}
+              />
+            )}
+          </Form.Item>
+          <Form.Item label="方案类型">
+            {getFieldDecorator('poject')(
+              <SimpleTreeSelect
+                placeholder="请选择方案类型"
+                textField="%SCHEME_NAME%"
+                valueField="UUID"
+                style={{ width: 150 }}
+                queryParams={{
+                  tableName: 'cost_plan',
+                  condition: {
+                    params: [{ field: 'NOT_ENABLE', rule: 'eq', val: [0] }],
+                  },
+                }}
+                showSearch
+              />
+            )}
+          </Form.Item>
+          <Form.Item label="状态">
+            {getFieldDecorator('state')(
+              <SimpleAutoComplete
+                style={{ width: 150 }}
+                placeholder="请选择台账状态"
+                dictCode="costState"
+                noRecord
+                allowClear={true}
               />
             )}
           </Form.Item>
@@ -218,7 +256,13 @@ export default class CostBillSearchPage extends PureComponent {
             {e.STATE_CN}
           </Col>
         </Row>
-        <div style={{ float: 'right', marginTop: '30px' }}>
+        <Row>
+          <Col>
+            单号：
+            {e.BILL_NUMBER}
+          </Col>
+        </Row>
+        <Row style={{ float: 'right', marginTop: '20px' }}>
           <Button onClick={() => this.checkDtl(e)}>查看台账</Button>
           <Button
             type="primary"
@@ -230,7 +274,7 @@ export default class CostBillSearchPage extends PureComponent {
           <Button type="primary" onClick={() => this.handleConsumed(e)}>
             核销
           </Button>
-        </div>
+        </Row>
       </div>
     );
   };
@@ -251,6 +295,7 @@ export default class CostBillSearchPage extends PureComponent {
     const response = await haveCheck(e.UUID);
     if (response && response.success) {
       message.success('确认成功');
+      this.handleSarch();
     }
   };
 
@@ -258,6 +303,7 @@ export default class CostBillSearchPage extends PureComponent {
     const response = await consumed(e.UUID);
     if (response && response.success) {
       message.success('核销成功');
+      this.handleSarch();
     }
   };
 
