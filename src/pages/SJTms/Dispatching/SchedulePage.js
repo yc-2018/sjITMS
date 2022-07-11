@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-30 09:52:35
+ * @LastEditTime: 2022-07-11 11:09:49
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -12,6 +12,7 @@ import DispatchingTable from './DispatchingTable';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import ScheduleSearchForm from './ScheduleSearchForm';
 import BatchProcessConfirm from './BatchProcessConfirm';
+import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
 import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
 import { ScheduleColumns, pagination } from './DispatchingColumns';
@@ -74,6 +75,11 @@ export default class SchedulePage extends Component {
   handleTabChange = activeKey => {
     this.setState({ activeTab: activeKey, loading: true });
     this.getSchedules(activeKey);
+  };
+
+  //新建排车单
+  handleCreateSchedule = () => {
+    this.createSchedulePageRef.show();
   };
 
   //排车单编辑
@@ -299,7 +305,7 @@ export default class SchedulePage extends Component {
         default:
           return (
             <div>
-              <Button>新建</Button>
+              <Button onClick={this.handleCreateSchedule}>新建</Button>
               <Button type={'primary'} style={{ marginLeft: 10 }} onClick={this.handleApprove}>
                 批准
               </Button>
@@ -362,6 +368,16 @@ export default class SchedulePage extends Component {
                 this.props.refreshPending();
               }}
               onRef={node => (this.createPageModalRef = node)}
+            />
+            {/* 新建排车单 */}
+            <CreatePageModal
+              modal={{ title: '新建排车单', width: 1000 }}
+              page={{ quickuuid: 'sj_itms_schedule' }}
+              onSaved={() => {
+                this.createSchedulePageRef.show();
+                this.refreshTable();
+              }}
+              onRef={node => (this.createSchedulePageRef = node)}
             />
           </TabPane>
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已批准</Text>} key="Approved">

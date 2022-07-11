@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-09 16:31:43
+ * @LastEditTime: 2022-07-11 11:00:48
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -307,11 +307,13 @@ const drawScheduleBillPage = (schedule, scheduleDetails) => {
 
           <tr>
             <th colspan={8} style={{ border: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'row', textAlign: 'left' }}>
-                <div style={{ flex: 1.5 }}>出车单号： {schedule.BILLNUMBER}</div>
-                <div style={{ flex: 1 }}> 车牌号： {schedule.VEHICLEPLATENUMBER}</div>
-                <div style={{ flex: 1 }}>司机: {driver}</div>
-                <div style={{ flex: 1 }}>送货员： {stevedore}</div>
+              <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                <div style={{ float: 'left', width: '30%' }}>出车单号： {schedule.BILLNUMBER}</div>
+                <div style={{ float: 'left', width: '24%' }}>
+                  车牌号： {schedule.VEHICLEPLATENUMBER}
+                </div>
+                <div style={{ float: 'left', width: '23%' }}>司机: {driver}</div>
+                <div style={{ float: 'left', width: '23%' }}>送货员： {stevedore}</div>
               </div>
             </th>
           </tr>
@@ -329,7 +331,7 @@ const drawScheduleBillPage = (schedule, scheduleDetails) => {
         </thead>
         <tbody>
           {scheduleDetails ? (
-            scheduleDetails.map((item, index) => {
+            scheduleDetails.map(item => {
               return (
                 <tr style={{ textAlign: 'center' }}>
                   <td width={120}>{item.ORDERNUMBER}</td>
@@ -367,13 +369,13 @@ const drawScheduleBillPage = (schedule, scheduleDetails) => {
           </tr>
           <tr style={{ height: 35 }}>
             <td colspan={8}>
-              <div style={{ display: 'flex', flexDirection: 'row', margin: 10 }}>
-                <div style={{ flex: 1 }}>提成工资:</div>
-                <div style={{ flex: 2 }}>
+              <div style={{ margin: 10 }}>
+                <div style={{ float: 'left', width: '10%' }}>提成工资:</div>
+                <div style={{ float: 'left', width: '30%' }}>
                   {driver}：{'99.00'}
                 </div>
                 {stevedore ? (
-                  <div style={{ flex: 2 }}>
+                  <div style={{ float: 'left', width: '30%' }}>
                     {stevedore}：{'59.00'}
                   </div>
                 ) : (
@@ -389,32 +391,28 @@ const drawScheduleBillPage = (schedule, scheduleDetails) => {
             </td>
           </tr>
           <tr style={{ height: 35 }}>
-            <td colspan={8} style={{ border: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'row', margin: 10 }}>
-                <div style={{ flex: 2 }}>备注：红色^放行 黄色^交货、交收退 红色^财务</div>
-                <div style={{ flex: 1 }}> 打印日期: {convertDate(new Date())} </div>
-                <div style={{ flex: 1 }}> 制单人: {loginUser().name}</div>
+            <td colspan={8} style={{ border: 0, margin: 10 }}>
+              <div style={{ float: 'left', width: '50%' }}>
+                备注：红色^放行 黄色^交货、交收退 红色^财务
               </div>
+              <div style={{ float: 'left', width: '25%' }}>打印日期: {convertDate(new Date())}</div>
+              <div style={{ float: 'left', width: '25%' }}> 制单人: {loginUser().name}</div>
             </td>
           </tr>
           <tr style={{ height: 35 }}>
-            <td colspan={8} style={{ border: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'row', margin: 10 }}>
-                <div style={{ flex: 1 }}>出车公里数:</div>
-                <div style={{ flex: 1 }}>出车时间:</div>
-                <div style={{ flex: 1 }}>回车公里数:</div>
-                <div style={{ flex: 1 }}>回车时间:</div>
-              </div>
+            <td colspan={8} style={{ border: 0, margin: 10 }}>
+              <div style={{ float: 'left', width: '25%' }}>出车公里数:</div>
+              <div style={{ float: 'left', width: '25%' }}>出车时间:</div>
+              <div style={{ float: 'left', width: '25%' }}>回车公里数:</div>
+              <div style={{ float: 'left', width: '25%' }}>回车时间:</div>
             </td>
           </tr>
           <tr style={{ height: 35 }}>
-            <td colspan={8} style={{ border: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'row', margin: 10 }}>
-                <div style={{ flex: 1 }}>发货主管:</div>
-                <div style={{ flex: 1 }}> 司机签名:</div>
-                <div style={{ flex: 1 }}>送货员签名:</div>
-                <div style={{ flex: 1 }}>收退签名:</div>
-              </div>
+            <td colspan={8} style={{ border: 0, margin: 10 }}>
+              <div style={{ float: 'left', width: '25%' }}>发货主管:</div>
+              <div style={{ float: 'left', width: '25%' }}> 司机签名:</div>
+              <div style={{ float: 'left', width: '25%' }}>送货员签名:</div>
+              <div style={{ float: 'left', width: '25%' }}>收退签名:</div>
             </td>
           </tr>
         </tfoot>
@@ -452,29 +450,32 @@ const drawPrintPage = (schedule, scheduleDetails) => {
               </div>
             </th>
           </tr>
-
           <tr>
             <th colspan={8} style={{ border: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'row', textAlign: 'left' }}>
-                <div style={{ flex: 1 }}>调度签名：</div>
-                <div style={{ flex: 1 }}>装车人签名：</div>
-                <div style={{ flex: 1 }}>打印时间： {convertDateToTime(new Date())}</div>
-                <div style={{ flex: 1, textAligin: 'left' }}>制单人： {loginUser().name}</div>
+              <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                <div style={{ float: 'left', width: '25%' }}>调度签名：</div>
+                <div style={{ float: 'left', width: '25%' }}>装车人签名：</div>
+                <div style={{ float: 'left', width: '25%' }}>
+                  打印时间： {convertDateToTime(new Date())}
+                </div>
+                <div style={{ float: 'left', width: '25%' }}>制单人： {loginUser().name}</div>
               </div>
             </th>
           </tr>
-
           <tr>
             <th colspan={8} style={{ border: 0 }}>
-              <div style={{ display: 'flex', flexDirection: 'row', textAlign: 'left' }}>
-                <div style={{ flex: 1 }}>单号： {schedule.BILLNUMBER}</div>
-                <div style={{ flex: 1 }}> 车牌号： {schedule.VEHICLEPLATENUMBER}</div>
-                <div style={{ flex: 1 }}> 送货员： {schedule.STEVEDORE || ''}</div>
-                <div style={{ flex: 1 }} />
+              <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                <div style={{ float: 'left', width: '25%' }}>单号： {schedule.BILLNUMBER}</div>
+                <div style={{ float: 'left', width: '25%' }}>
+                  车牌号： {schedule.VEHICLEPLATENUMBER}
+                </div>
+                <div style={{ float: 'left', width: '25%' }}>
+                  送货员： {schedule.STEVEDORE || ''}
+                </div>
+                <div style={{ float: 'left', width: '25%' }} />
               </div>
             </th>
           </tr>
-
           <tr>
             <th width={50}>序号</th>
             <th width={120}>销售单号</th>
@@ -526,12 +527,10 @@ const drawPrintPage = (schedule, scheduleDetails) => {
           </tr>
           <tr style={{ height: 35 }}>
             <td colspan={8} style={{ border: 0 }}>
-              <div style={{ display: 'flex' }}>
-                <div style={{ flex: 1 }}>装车员:</div>
-                <div style={{ flex: 1 }}>司机:</div>
-                <div style={{ flex: 1 }}> 送货员:</div>
-                <div style={{ flex: 1 }}>调度:</div>
-              </div>
+              <div style={{ float: 'left', width: '25%' }}>装车员:</div>
+              <div style={{ float: 'left', width: '25%' }}>司机:</div>
+              <div style={{ float: 'left', width: '25%' }}> 送货员:</div>
+              <div style={{ float: 'left', width: '25%' }}>调度:</div>
             </td>
           </tr>
         </tfoot>
