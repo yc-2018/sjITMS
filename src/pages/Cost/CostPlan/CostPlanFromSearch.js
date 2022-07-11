@@ -1,14 +1,7 @@
-import React, { PureComponent } from 'react';
-import { Table,Form, Button, Input, Col,Select,Icon, Row,Modal, Popconfirm, message,Checkbox,List} from 'antd';
-import { colWidth } from '@/utils/ColWidth';
+import React from 'react';
+import { Form, Button, Modal,List} from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { loginOrg, loginCompany, loginUser } from '@/utils/LoginContext';
-import StandardTable from '@/components/StandardTable';
-import { commonLocale, placeholderLocale, placeholderChooseLocale } from '@/utils/CommonLocale';
-import { TITLE_SEPARATION } from '@/utils/constants';
-import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
-import { dynamicQuery } from '@/services/quick/Quick';
 import { getPlanFile } from '@/services/cost/Cost';
 @connect(({ quick, deliveredConfirm,loading, }) => ({
   quick,
@@ -45,7 +38,6 @@ export default class CostPlanSearch extends QuickFormSearchPage {
  drawcell = e => {
    //找到fieldName为CODE这一列 更改它的component
    if (e.column.fieldName == 'ACCESSORY_NAME') {
-     // const component = <p3 style={{ color: 'red' }}>{e.val}</p3>;
      const component = (
        <a onClick={this.isShow.bind(this, e.record)} style={{ color: 'blue' }}>
          {'查看'}
@@ -89,7 +81,6 @@ export default class CostPlanSearch extends QuickFormSearchPage {
      <Modal
        title="附件列表"
        visible={this.state.isShow}
-       //  onOk={this.handleOk}
        onCancel={() => this.isShow(false)}
        footer={[<Button onClick={() => this.isShow(false)}>返回</Button>]}
      >
@@ -103,7 +94,6 @@ export default class CostPlanSearch extends QuickFormSearchPage {
                  <a onClick={() => this.download(item, index)} key="list-loadmore-edit">
                    下载
                  </a>,
-                 // <a key="list-loadmore-more">more</a>,
                ]}
              >
                {item.download}

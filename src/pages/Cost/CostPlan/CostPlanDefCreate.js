@@ -1,16 +1,12 @@
-import React, { PureComponent } from 'react';
+import React from 'react';
 import { connect } from 'dva';
-import { Route, Switch } from 'react-router-dom';
-import { Form, Input, Upload, Button, Icon, message, Select, Tabs, Layout } from 'antd';
+import { Form, Upload, Button, Icon, message, Layout } from 'antd';
 import { savePlan } from '@/services/cost/Cost';
 import {makeFormData} from '@/pages/Cost/CostProject/CostProjectCreate'
-import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
-import CreatePage from '@/pages/Component/RapidDevelopment/CommonLayout/CreatePage';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import CostPlanSearch from './CostPlanSearch'
-import Item from 'antd/lib/list/Item';
-const { Header, Footer, Sider, Content } = Layout;
-const { TabPane } = Tabs
+const {Footer, Content } = Layout;
+
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -110,10 +106,9 @@ export default class CostPlanDefCreate extends QuickCreatePage {
       if (!element.isSaved) {
         formDatas.append('files', element.originFileObj);
       }
-      // formDatas.append('files', element.originFileObj);
     });
     let res = await savePlan(formDatas);
-    const success = res.data.success == true;
+    const success = res.success == true;
     this.afterSave(success);
     this.onSaved(success);
     if (success) {
@@ -134,11 +129,8 @@ export default class CostPlanDefCreate extends QuickCreatePage {
         beforeUpload={() => {
           return false;
         }}
-        //listType="picture"
         defaultFileList={[...this.state.filelist]}
-        // fileList={[...this.state.filelist]}
         className="upload-list-inline"
-        // onPreview={this.onPreview}
         onChange={file => {
           this.setState({ filelist: file.fileList });
         }}

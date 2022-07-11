@@ -1,8 +1,6 @@
-import React, { PureComponent } from 'react';
+import React from 'react';
 import { connect } from 'dva';
-import { Route, Switch } from 'react-router-dom';
 import CostPlanDefCreate from './CostPlanDefCreate';
-import CostPlanFromSearch from './CostPlanFromSearch';
 import CostPlanView from './CostPlanView';
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
 import CostPlanIndexSearch from './CostPlanIndexSearch';
