@@ -1,5 +1,4 @@
 import request from '@/utils/request';
-import requestQ from '@/utils/requestQuick';
 import { async } from 'q';
 import { func } from 'prop-types';
 import axios from 'axios';

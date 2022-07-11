@@ -1,7 +1,4 @@
 import request from '@/utils/request';
-import { requestQ, requestP } from '@/utils/requestQuick';
-import { async } from 'q';
-import { func } from 'prop-types';
 import axios from 'axios';
 import configs from '@/utils/config';
 import { cacheLoginKey, loginKey } from '@/utils/LoginContext';
@@ -85,12 +82,16 @@ export async function analysisSql(payload) {
 }
 
 export async function savePlan(payload) {
-  return request(`/itms-cost/itms-cost/costplan/onSave`, {
+  return axios(configs[API_ENV].API_SERVER + `/itms-cost/itms-cost/costplan/onSave`, {
+    method: 'post',
     data: payload,
     headers: {
+      iwmsJwt: loginKey(),
       'Content-Type': 'multipart/form-data',
       Accept: '*/*',
-    }
+    },
+  }).then(e => {
+    return e;
   });
 }
 
