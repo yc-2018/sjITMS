@@ -85,18 +85,15 @@ export async function analysisSql(payload) {
 }
 
 export async function savePlan(payload) {
-  return axios(configs[API_ENV].API_SERVER + `/itms-cost/itms-cost/costplan/onSave`, {
-    method: 'post',
+  return request(`/itms-cost/itms-cost/costplan/onSave`, {
     data: payload,
     headers: {
-      iwmsJwt: loginKey(),
       'Content-Type': 'multipart/form-data',
       Accept: '*/*',
-    },
-  }).then(e => {
-    return e;
+    }
   });
 }
+
 export async function copyPlan(uuid) {
   return request(`/itms-cost/itms-cost/costplan/copyPlan/${uuid}`, {
     method: 'GET'
