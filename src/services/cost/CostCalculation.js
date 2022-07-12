@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-10 11:29:27
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-08 17:01:09
+ * @LastEditTime: 2022-07-12 15:07:28
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -91,6 +91,16 @@ export async function getSource(payload) {
     }&pageSize=${payload.pageSize}`,
     {
       method: 'GET',
+    }
+  );
+}
+
+export async function getCompareBill(billNumber, bakBillNumber, payload) {
+  return request(
+    `/itms-cost/itms-cost/costbill/compare?billNumber=${billNumber}&bakBillNumber=${bakBillNumber}`,
+    {
+      method: 'POST',
+      body: payload,
     }
   );
 }

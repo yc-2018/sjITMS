@@ -1105,6 +1105,13 @@ export default [
             authority: ['itms.cost.calc'],
           },
           {
+            path: '/cost/compare',
+            name: '台账历史比较',
+            org: ['DISPATCH_CENTER'],
+            component: './Cost/CostBillHistoryCompare/CompareForm',
+            authority: ['itms.cost.bill'],
+          },
+          {
             path: '/cost/bill',
             name: '费用台账',
             org: ['DISPATCH_CENTER'],
