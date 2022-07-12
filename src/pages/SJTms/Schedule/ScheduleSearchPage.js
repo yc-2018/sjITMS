@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-11 11:00:48
+ * @LastEditTime: 2022-07-12 09:40:25
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -140,6 +140,12 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
             打印 <Icon type="down" />
           </Button>
         </Dropdown>
+        <Button type="primary" ghost style={{ marginLeft: 12 }}>
+          发运
+        </Button>
+        <Button type="danger" ghost style={{ marginLeft: 12 }}>
+          回厂
+        </Button>
         <div id="printPage" style={{ display: 'none' }}>
           {printPage}
         </div>
@@ -308,12 +314,12 @@ const drawScheduleBillPage = (schedule, scheduleDetails) => {
           <tr>
             <th colspan={8} style={{ border: 0 }}>
               <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
-                <div style={{ float: 'left', width: '30%' }}>出车单号： {schedule.BILLNUMBER}</div>
-                <div style={{ float: 'left', width: '24%' }}>
+                <div style={{ float: 'left', width: '28%' }}>出车单号： {schedule.BILLNUMBER}</div>
+                <div style={{ float: 'left', width: '25%' }}>
                   车牌号： {schedule.VEHICLEPLATENUMBER}
                 </div>
-                <div style={{ float: 'left', width: '23%' }}>司机: {driver}</div>
-                <div style={{ float: 'left', width: '23%' }}>送货员： {stevedore}</div>
+                <div style={{ float: 'left', width: '22%' }}>司机: {driver}</div>
+                <div style={{ float: 'left', width: '20%' }}>送货员： {stevedore}</div>
               </div>
             </th>
           </tr>
@@ -396,7 +402,7 @@ const drawScheduleBillPage = (schedule, scheduleDetails) => {
                 备注：红色^放行 黄色^交货、交收退 红色^财务
               </div>
               <div style={{ float: 'left', width: '25%' }}>打印日期: {convertDate(new Date())}</div>
-              <div style={{ float: 'left', width: '25%' }}> 制单人: {loginUser().name}</div>
+              <div style={{ float: 'left', width: '22%' }}> 制单人: {loginUser().name}</div>
             </td>
           </tr>
           <tr style={{ height: 35 }}>
@@ -404,7 +410,7 @@ const drawScheduleBillPage = (schedule, scheduleDetails) => {
               <div style={{ float: 'left', width: '25%' }}>出车公里数:</div>
               <div style={{ float: 'left', width: '25%' }}>出车时间:</div>
               <div style={{ float: 'left', width: '25%' }}>回车公里数:</div>
-              <div style={{ float: 'left', width: '25%' }}>回车时间:</div>
+              <div style={{ float: 'left', width: '22%' }}>回车时间:</div>
             </td>
           </tr>
           <tr style={{ height: 35 }}>
@@ -412,7 +418,7 @@ const drawScheduleBillPage = (schedule, scheduleDetails) => {
               <div style={{ float: 'left', width: '25%' }}>发货主管:</div>
               <div style={{ float: 'left', width: '25%' }}> 司机签名:</div>
               <div style={{ float: 'left', width: '25%' }}>送货员签名:</div>
-              <div style={{ float: 'left', width: '25%' }}>收退签名:</div>
+              <div style={{ float: 'left', width: '22%' }}>收退签名:</div>
             </td>
           </tr>
         </tfoot>
@@ -458,7 +464,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
                 <div style={{ float: 'left', width: '25%' }}>
                   打印时间： {convertDateToTime(new Date())}
                 </div>
-                <div style={{ float: 'left', width: '25%' }}>制单人： {loginUser().name}</div>
+                <div style={{ float: 'left', width: '22%' }}>制单人： {loginUser().name}</div>
               </div>
             </th>
           </tr>
@@ -530,7 +536,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
               <div style={{ float: 'left', width: '25%' }}>装车员:</div>
               <div style={{ float: 'left', width: '25%' }}>司机:</div>
               <div style={{ float: 'left', width: '25%' }}> 送货员:</div>
-              <div style={{ float: 'left', width: '25%' }}>调度:</div>
+              <div style={{ float: 'left', width: '22%' }}>调度:</div>
             </td>
           </tr>
         </tfoot>
