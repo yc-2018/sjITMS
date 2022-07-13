@@ -186,9 +186,10 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
     } else if (e.column.fieldName == 'NOTE') {
       e.component = (
         <Input
-          value={e.val}
-          placeholder="请输入备注"
-          onChange={v => (e.record.NOTE = v.target.value)}
+        defaultValue={e.val}
+        onFocus = {(e)=>{e.currentTarget.select()}}
+        placeholder="请输入备注"
+         onChange={v => (e.record.NOTE = v.target.value)} 
         />
       );
     }
