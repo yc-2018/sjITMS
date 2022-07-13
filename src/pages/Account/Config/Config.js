@@ -15,6 +15,7 @@ import { roleLocale } from '../Role/RoleLocale';
 import siderStyle from '@/pages/Component/Page/inner/SiderPage.less';
 import styles from './Config.less';
 import QueryBillDateConfig from '@/pages/Facility/Config/QueryBillDateConfig/QueryBillDateConfig';
+import PlanConfig from './PlanConfig/PlanConfig';
 const { SubMenu } = Menu;
 
 export default class Config extends SiderPage {
@@ -102,6 +103,9 @@ export default class Config extends SiderPage {
             <Menu.Item key={configLocale.tmsConfig.returndistributiontypeconfig.key}>
               {configLocale.tmsConfig.returndistributiontypeconfig.name}
             </Menu.Item>
+            <Menu.Item key={'pcdpz'}>
+              {"排车体积重量限制"}
+            </Menu.Item>
           </SubMenu>
           : null}
 
@@ -160,6 +164,8 @@ export default class Config extends SiderPage {
       return <TimeIntervalConfig />;
     }else if (currentSelectedKey === configLocale.innerConfig.queryBillDateConfig.key) {
       return <QueryBillDateConfig />;
+    }else if(currentSelectedKey==='pcdpz'){
+      return <PlanConfig />;
     }
   }
 }

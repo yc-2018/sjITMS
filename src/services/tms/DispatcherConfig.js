@@ -20,3 +20,34 @@ export async function remove(uuid) {
       method: 'DELETE',
     });
 }
+
+export async function queryPlanConfig(payload) {
+    return request(`/iwms-basic/basic/planConfig/page`, {
+        method: 'POST',
+        body: payload,
+    });
+}
+export async function update(payload) {
+    return request(`/iwms-basic/basic/planConfig/update`, {
+        method: 'POST',
+        body: payload,
+    });
+}
+export async function insert(payload) {
+    return request(`/iwms-basic/basic/planConfig/insert`, {
+        method: 'POST',
+        body: payload,
+    });
+}
+
+export async function getByCompanyUuid(payload) {
+    return request(`/iwms-basic/basic/dispatchcenter/getByCompanyUuid?companyUuid=${payload}`, {
+        method: 'GET'
+    });
+}
+
+export async function getByDispatchcenterUuid(payload) {
+    return request(`/iwms-basic/basic/planConfig/getByDispatchcenterUuid/${payload}`, {
+        method: 'POST'
+    });
+}
