@@ -88,7 +88,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           onFocus={() => {
             document.getElementsByClassName(e.record.ROW_ID + 'DISPATCHMILEAGE')[0].select();
           }}
-          onBlur={this.onBlurs.bind(this, record, column.fieldName)}
+          onChange={event => this.onChange(record, column.fieldName, event.target.value)}
           min={0}
           max={10000}
           disabled={e.record.INOUTCHECKED == 1}
@@ -113,7 +113,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           disabled={e.record.INOUTCHECKED == 1}
           defaultValue={record.RETURNMILEAGE}
           style={{ width: 100 }}
-          onBlur={this.onBlurs.bind(this, record, column.fieldName)}
+          onChange={event => this.onChange(record, column.fieldName, Number(event.target.value))}
         />
       );
       e.component = component;
@@ -139,17 +139,17 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     }
   };
 
-  onBlurs = (record, fieldName, e) => {
+  onChange = (record, fieldName, value) => {
     const { data } = this.state;
     let newData = { ...data };
     let row = newData.list.find(x => x.uuid == record.uuid);
+    row.DISPATCHMILEAGE == 0 ? (row.DISPATCHMILEAGE = record.LAST_RETURN_MILEAGE) : {};
     if (fieldName == 'RETURNMILEAGE') {
-      row.RETURNMILEAGE = Number(e.target.value);
+      row.RETURNMILEAGE = value;
       row.TOTALMILEAGE =
-        Number(e.target.value) -
-        (row.DISPATCHMILEAGE == 0 ? record.LAST_RETURN_MILEAGE : record.DISPATCHMILEAGE);
+        value - (row.DISPATCHMILEAGE == 0 ? record.LAST_RETURN_MILEAGE : record.DISPATCHMILEAGE);
     } else {
-      row.DISPATCHMILEAGE = Number(e.target.value);
+      row.DISPATCHMILEAGE = value;
     }
     const index = newData.list.findIndex(x => x.uuid == row.uuid);
     newData.list[index] = row;
