@@ -63,7 +63,7 @@ export default class SimpleQuery extends SearchForm {
         if (field.searchShowtype == 'list' || field.searchShowtype == 'sel_search') {
           val = val.join('||');
         } else {
-          field.searchCondition == 'like';
+          field.searchCondition = 'like';
         }
       }
 
