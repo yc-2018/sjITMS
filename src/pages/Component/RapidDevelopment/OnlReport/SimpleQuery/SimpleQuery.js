@@ -155,9 +155,8 @@ export default class SimpleQuery extends SearchForm {
     showSelectFields.forEach(searchField => {
       //select多选默认值
       if (
-        searchField.searchShowtype == 'list' ||
-        (searchField.searchShowtype == 'sel_search' && searchField.searchCondition == 'in') ||
-        searchField.searchCondition == 'notIn'
+        (searchField.searchShowtype == 'list' || searchField.searchShowtype == 'sel_search') &&
+        (searchField.searchCondition == 'in' || searchField.searchCondition == 'notIn')
       ) {
         if (typeof filterValue[searchField.fieldName] === 'string') {
           filterValue[searchField.fieldName] = filterValue[searchField.fieldName].split('||');
