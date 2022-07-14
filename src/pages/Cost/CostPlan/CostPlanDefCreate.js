@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useDebugValue } from 'react';
 import { connect } from 'dva';
 import { Form, Upload, Button, Icon, message, Layout } from 'antd';
 import { savePlan } from '@/services/cost/Cost';
@@ -108,7 +108,7 @@ export default class CostPlanDefCreate extends QuickCreatePage {
       }
     });
     let res = await savePlan(formDatas);
-    const success = res.success == true;
+    const success = res.data.success == true;
     this.afterSave(success);
     this.onSaved(success);
     if (success) {

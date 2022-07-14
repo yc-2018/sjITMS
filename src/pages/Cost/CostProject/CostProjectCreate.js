@@ -33,7 +33,7 @@ export function makeFormData(obj, form_data) {
         form_data.append(data[i].key, '');
         continue;
       }
-      form_data.append(data[i].key, data[i].value);
+      form_data.append(data[i].key.toLowerCase(), data[i].value);
     }
   } else {
     return data;
