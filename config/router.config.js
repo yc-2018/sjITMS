@@ -1261,7 +1261,7 @@ export default [
             path: '/tmscode/checkin',
             name: 'checkin',
             org: ['DISPATCH_CENTER'],
-            component: './SJTms/CheckInAndCheckOut/CheckInAndCheckOut',
+            component: './SJTms/Schedule/Swipe',
             authority: ['sjtms.core.checkin'],
             divider: true,
           },

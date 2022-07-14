@@ -2,18 +2,19 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-12 09:40:25
+ * @LastEditTime: 2022-07-13 14:12:10
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
 import { connect } from 'dva';
-import { Dropdown, Menu, Icon, Button, message, Popconfirm } from 'antd';
+import { Dropdown, Menu, Icon, Button, message, Popconfirm, Modal, Form, InputNumber } from 'antd';
 import { convertDate, convertDateToTime } from '@/utils/utils';
 import { loginUser } from '@/utils/LoginContext';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { queryAllData } from '@/services/quick/Quick';
 import { aborted, shipRollback } from '@/services/sjitms/ScheduleBill';
+import { depart, back } from '@/services/sjitms/ScheduleProcess';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 
 @connect(({ quick, loading }) => ({
@@ -24,6 +25,8 @@ import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 export default class ScheduleSearchPage extends QuickFormSearchPage {
   state = {
     ...this.state,
+    returnMileageModal: false,
+    returnMileage: 0,
     showRollBackPop: false,
     showAbortPop: false,
     scroll: {
@@ -76,7 +79,13 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
 
   //按钮面板
   drawToolbarPanel = () => {
-    const { printPage, selectedRows, showRollBackPop, showAbortPop } = this.state;
+    const {
+      printPage,
+      selectedRows,
+      showRollBackPop,
+      showAbortPop,
+      returnMileageModal,
+    } = this.state;
     const menu = (
       <Menu onClick={this.handleMenuClick}>
         <Menu.Item key="load">装车单</Menu.Item>
@@ -140,12 +149,32 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
             打印 <Icon type="down" />
           </Button>
         </Dropdown>
-        <Button type="primary" ghost style={{ marginLeft: 12 }}>
-          发运
-        </Button>
-        <Button type="danger" ghost style={{ marginLeft: 12 }}>
+        <Popconfirm title="确定发运选中排车单?" onConfirm={this.handleDepart}>
+          <Button type="primary" ghost style={{ marginLeft: 12 }}>
+            发运
+          </Button>
+        </Popconfirm>
+        <Button type="danger" ghost style={{ marginLeft: 12 }} onClick={this.handleBack}>
           回厂
         </Button>
+        <Modal
+          width="20%"
+          title={'回车里程数录入'}
+          onOk={() => this.onBack()}
+          visible={returnMileageModal}
+          onCancel={() => this.setState({ returnMileageModal: false })}
+          destroyOnClose={true}
+        >
+          <Form>
+            <Form.Item label="回车里程数" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              <InputNumber
+                placeholder="请输入回车里程数"
+                onChange={this.onReturnMileageChange}
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
         <div id="printPage" style={{ display: 'none' }}>
           {printPage}
         </div>
@@ -198,6 +227,42 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   //作废
   onAbort = async record => {
     return await aborted(record.UUID);
+  };
+
+  //发运
+  handleDepart = async () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length === 1) {
+      const response = await depart(selectedRows[0].BILLNUMBER, selectedRows[0].FVERSION);
+      if (response.success) {
+        message.success('发运成功！');
+        this.queryCoulumns();
+      }
+    } else message.warn('请选中一条数据！');
+  };
+
+  handleBack = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length === 1) {
+      this.setState({ returnMileageModal: true, returnMileage: 0 });
+    } else message.warn('请选中一条数据！');
+  };
+  onReturnMileageChange = returnMileage => {
+    this.setState({ returnMileage });
+  };
+  //回厂
+  onBack = async () => {
+    const { returnMileage, selectedRows } = this.state;
+    const response = await back(
+      selectedRows[0].BILLNUMBER,
+      selectedRows[0].FVERSION,
+      returnMileage
+    );
+    if (response.success) {
+      message.success('回厂成功！');
+      this.queryCoulumns();
+    }
+    this.setState({ returnMileageModal: false, returnMileage: 0 });
   };
 
   //打印
@@ -294,10 +359,10 @@ const drawScheduleBillPage = (schedule, scheduleDetails) => {
           <tr style={{ height: 50 }}>
             <th colspan={2} style={{ border: 0 }} />
             <th colspan={4} style={{ border: 0 }}>
-              <div style={{ fontSize: 16, textAlign: 'center' }}>广东时捷物流有限公司出车单</div>
+              <div style={{ fontSize: 18, textAlign: 'center' }}>广东时捷物流有限公司出车单</div>
             </th>
             <th colspan={2} style={{ border: 0 }}>
-              <div style={{ fontSize: 16, textAlign: 'center' }}>
+              <div style={{ fontSize: 14, textAlign: 'center' }}>
                 <span>第</span>
                 <font tdata="PageNO" color="blue">
                   ##
@@ -327,12 +392,12 @@ const drawScheduleBillPage = (schedule, scheduleDetails) => {
           <tr>
             <th width={120}>单号</th>
             <th width={100}>单据类别</th>
-            <th width={150}>客户编号</th>
+            <th width={100}>客户编号</th>
             <th width={150}>客户名称</th>
-            <th width={80}>整件</th>
-            <th width={80}>散件</th>
+            <th width={60}>整件</th>
+            <th width={60}>散件</th>
             <th width={100}>差异单号</th>
-            <th width={100}>备注</th>
+            <th width={80}>备注</th>
           </tr>
         </thead>
         <tbody>
@@ -377,11 +442,11 @@ const drawScheduleBillPage = (schedule, scheduleDetails) => {
             <td colspan={8}>
               <div style={{ margin: 10 }}>
                 <div style={{ float: 'left', width: '10%' }}>提成工资:</div>
-                <div style={{ float: 'left', width: '30%' }}>
+                <div style={{ float: 'left', width: '20%' }}>
                   {driver}：{'99.00'}
                 </div>
                 {stevedore ? (
-                  <div style={{ float: 'left', width: '30%' }}>
+                  <div style={{ float: 'left', width: '20%' }}>
                     {stevedore}：{'59.00'}
                   </div>
                 ) : (
@@ -399,7 +464,7 @@ const drawScheduleBillPage = (schedule, scheduleDetails) => {
           <tr style={{ height: 35 }}>
             <td colspan={8} style={{ border: 0, margin: 10 }}>
               <div style={{ float: 'left', width: '50%' }}>
-                备注：红色^放行 黄色^交货、交收退 红色^财务
+                备注：白色~放行 黄色~交货、交收退 红色~财务
               </div>
               <div style={{ float: 'left', width: '25%' }}>打印日期: {convertDate(new Date())}</div>
               <div style={{ float: 'left', width: '22%' }}> 制单人: {loginUser().name}</div>

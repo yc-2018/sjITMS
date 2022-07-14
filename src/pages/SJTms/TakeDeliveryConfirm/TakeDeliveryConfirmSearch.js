@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-04-11 17:30:59
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-06 14:17:35
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-07-12 14:13:23
  * @version: 1.0
  */
 import React from 'react';
@@ -17,28 +17,14 @@ import { saveFormData } from '@/services/quick/Quick';
 }))
 //继承QuickFormSearchPage Search页面扩展
 export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
-  //需要操作列的显示 将noActionCol设置为false
-  state = {
-    ...this.state,
-    isShow: false,
-    scroll: {
-      x: 3600,
-      y: 'calc(60vh)',
-    },
-  };
-
   drawActionButton = () => {};
-
-  //该方法用于更改State
-  changeState = () => {
-    this.setState({ title: '' });
-  };
 
   drawcell = e => {
     if (e.column.fieldName == 'TAKEDELIVERYQTY') {
       const component =
         e.record.STATE == '0' ? (
           <InputNumber
+            style={{ width: '90%' }}
             placeholder="请输入提货数量"
             min={0}
             onChange={v => (e.record.TAKEDELIVERYQTY = v)}
