@@ -127,7 +127,6 @@ export default class SimpleQuery extends SearchForm {
             placeholder={'请选择' + searchField.fieldTxt}
             searchField={searchField}
             {...searchProperties}
-            {...mut}
           />
         );
       case 'cat_tree':
