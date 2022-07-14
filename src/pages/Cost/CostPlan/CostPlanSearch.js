@@ -153,6 +153,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
       <Form.Item>
           {getFieldDecorator('UUID', {})(
             <SimpleAutoComplete
+            showSearch
             placeholder=""
             textField="[%CLASSIFY%]%ITEM_NAME%"
             valueField="UUID"
