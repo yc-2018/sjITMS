@@ -97,23 +97,23 @@ export default class CostPlanIndex extends PureComponent {
         <Button style={{ marginRight: '10px' }} onClick={() => this.onClickPlan(e.UUID)}>
           编辑
         </Button>
-      
+        <Popconfirm
+      title={'确定复制吗？'}
+      onConfirm={() => this.copyPlan(e)}
+      okText="确定"
+      cancelText="取消"
+    >
+    <Button style={{ marginRight: '10px' }} >{'复制'}</Button>
+    </Popconfirm>
     <Popconfirm
     title={e.NOT_ENABLE==0?'确定停用？':'确定启用?'}
     onConfirm={() => this.isEnable(e)}
     okText="确定"
     cancelText="取消"
   >
-    <Button>{e.NOT_ENABLE==0?'停用':'启用'}</Button>
+    {e.NOT_ENABLE===0?<Button type="primary" >{'已启用'}</Button>:<Button type="danger" >{'已停用'}</Button>}
     </Popconfirm>
-    <Popconfirm
-    title={'确定复制吗？'}
-    onConfirm={() => this.copyPlan(e)}
-    okText="确定"
-    cancelText="取消"
-  >
-    <Button style={{ marginLeft: '10px' }} >{'复制'}</Button>
-    </Popconfirm>
+   
      </div>
     );
   };
@@ -144,6 +144,7 @@ export default class CostPlanIndex extends PureComponent {
           params = [...params, { field: 'SCHEME_NAME', rule: 'like', val: [values.SCHEM_ENAME] }];
         }
         queryData.condition = { params };
+        queryData.orderBy = ["NOT_ENABLE+","CREATED+"] 
 
         dynamicQuery(queryData).then(e => {
           this.setState({ data: e });
