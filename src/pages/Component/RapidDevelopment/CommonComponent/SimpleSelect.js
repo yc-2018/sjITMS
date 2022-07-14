@@ -71,7 +71,11 @@ export default class SimpleSelect extends PureComponent {
   buildOptions = () => {
     const { sourceData } = this.state;
     return sourceData.map(data => {
-      return <Select.Option value={data.VALUE}>{data.NAME}</Select.Option>;
+      return (
+        <Select.Option value={data.VALUE} label={data.NAME}>
+          {data.NAME}
+        </Select.Option>
+      );
     });
   };
 
@@ -114,12 +118,22 @@ export default class SimpleSelect extends PureComponent {
   };
 
   render() {
+    //查询类型为in时 变为多选
+    const { searchCondition } = this.props.searchField;
+    let mu =
+      searchCondition == 'in' || searchCondition == 'notIn'
+        ? {
+            mode: 'multiple',
+            optionLabelProp: 'label',
+          }
+        : {};
     return (
       <Select
         {...this.props}
         // onChange={this.onChange}
         onSearch={this.onSearch}
         onFocus={this.onFocus}
+        {...mu}
       >
         {this.buildOptions()}
       </Select>

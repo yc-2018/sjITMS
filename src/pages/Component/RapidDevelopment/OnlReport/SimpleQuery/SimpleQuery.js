@@ -58,6 +58,15 @@ export default class SimpleQuery extends SearchForm {
       if (field.searchShowtype == 'auto_complete' || field.searchShowtype == 'sel_tree') {
         val = val.value;
       }
+      //多选下拉框时修改入参,非下拉框暂时不支持in 改为like
+      if (field.searchCondition == 'in' || field.searchCondition == 'notIn') {
+        if (field.searchShowtype == 'list' || field.searchShowtype == 'sel_search') {
+          val = val.join('||');
+        } else {
+          field.searchCondition == 'like';
+        }
+      }
+
       if (val && field) {
         params.push({
           field: field.fieldName,
@@ -105,11 +114,20 @@ export default class SimpleQuery extends SearchForm {
           />
         );
       case 'auto_complete':
+        //影响原本判断逻辑 暂时不支持in与notIn 需要多选时参考json配置
+        // let mut =
+        //   searchField.searchCondition == 'in' || searchField.searchCondition == 'notIn'
+        //     ? {
+        //         mode: 'multiple',
+        //         multipleSplit: '||',
+        //       }
+        //     : {};
         return (
           <SimpleAutoComplete
             placeholder={'请选择' + searchField.fieldTxt}
             searchField={searchField}
             {...searchProperties}
+            {...mut}
           />
         );
       case 'cat_tree':
@@ -136,6 +154,16 @@ export default class SimpleQuery extends SearchForm {
     const showSelectFields = toggle ? selectFields : selectFields.slice(0, 3);
     let cols = new Array();
     showSelectFields.forEach(searchField => {
+      //select多选默认值
+      if (
+        searchField.searchShowtype == 'list' ||
+        (searchField.searchShowtype == 'sel_search' && searchField.searchCondition == 'in') ||
+        searchField.searchCondition == 'notIn'
+      ) {
+        if (typeof filterValue[searchField.fieldName] === 'string') {
+          filterValue[searchField.fieldName] = filterValue[searchField.fieldName].split('||');
+        }
+      }
       cols.push(
         <SFormItem key={searchField.id} label={searchField.fieldTxt}>
           {getFieldDecorator(searchField.fieldName, {
