@@ -1248,7 +1248,7 @@ class StandardTable extends Component {
                 <Table
                   id={'happy'}
                   columns={footerColumns}
-                  scroll={{ y: false }}
+                  scroll={{ x: scroll.x, y: false }}
                   rowKey={() => Math.random()}
                   pagination={false}
                   showHeader={false} // table 的 columns 头部隐藏
