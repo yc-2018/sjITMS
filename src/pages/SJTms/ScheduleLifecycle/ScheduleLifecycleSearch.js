@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-09 11:05:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-12 08:54:02
+ * @LastEditTime: 2022-07-15 16:26:34
  * @version: 1.0
  */
 /*
@@ -14,15 +14,13 @@
  */
 import React, { PureComponent } from 'react';
 import { Checkbox, Select, Input, Button, Popconfirm, message } from 'antd';
-import { colWidth } from '@/utils/ColWidth';
-import OperateCol from '@/pages/Component/Form/OperateCol';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { saveFormData } from '@/services/quick/Quick';
 import { guid } from '@/utils/utils';
 import { SimpleSelect } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { saveOfUpdateLifecycle } from '@/services/sjitms/ScheduleBill';
+import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -173,12 +171,14 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
       );
     } else if (e.column.fieldName == 'ALLOWSTAT') {
       e.component = (
-        <SimpleSelect
+        <SimpleAutoComplete
+          style={{ width: 150 }}
+          placeholder="请选择"
+          dictCode="scheduleStat"
           value={e.val}
           onChange={v => (e.record.ALLOWSTAT = v)}
-          placeholder={'请选择'}
-          dictCode={'scheduleStat'}
-          style={{ width: '100%' }}
+          noRecord
+          allowClear={true}
         />
       );
     }
