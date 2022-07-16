@@ -29,9 +29,10 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     returnMileage: 0,
     showRollBackPop: false,
     showAbortPop: false,
-    scroll: {
-      y: '50vh',
-    },
+    // scroll: {
+    //   y: '50vh',
+    // },
+    minHeight: '50vh',
     isNotHd: true,
   };
   drawTopButton = () => {};

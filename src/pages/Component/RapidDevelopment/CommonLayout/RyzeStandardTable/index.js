@@ -1076,6 +1076,10 @@ class StandardTable extends Component {
       scroll.y = height < 30 ? (this.props.minHeight ? this.props.minHeight : 30) : height;
       tableWidth = tableWidth - 120;
     }
+    //有minHeight走minHeight
+    if (this.props.minHeight) {
+      scroll.y = this.props.minHeight;
+    }
 
     // scroll.x = tableWidth;
 

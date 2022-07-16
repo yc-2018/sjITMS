@@ -194,6 +194,7 @@ export default class RyzeSearchPage extends Component {
         {this.drawToolbarTwo()}
         {!this.state.noTable ? (
           <StandardTable
+            minHeight={this.state.minHeight}
             colTotal={this.state.colTotal ? this.state.colTotal : []}
             unShowRow={this.state.unShowRow ? this.state.unShowRow : false}
             onRow={this.handleOnRow}
