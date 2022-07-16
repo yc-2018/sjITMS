@@ -119,14 +119,18 @@ export default class SimpleSelect extends PureComponent {
 
   render() {
     //查询类型为in时 变为多选
-    const { searchCondition } = this.props.searchField;
-    let mu =
-      searchCondition == 'in' || searchCondition == 'notIn'
-        ? {
-            mode: 'multiple',
-            optionLabelProp: 'label',
-          }
-        : {};
+    let mu = {};
+    if (
+      this.props.searchField?.searchCondition &&
+      (this.props.searchField.searchCondition == 'in' ||
+        this.props.searchField.searchCondition == 'notIn')
+    ) {
+      mu = {
+        mode: 'multiple',
+        optionLabelProp: 'label',
+      };
+    }
+
     return (
       <Select
         {...this.props}
