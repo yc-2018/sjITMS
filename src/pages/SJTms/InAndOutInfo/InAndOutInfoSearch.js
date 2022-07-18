@@ -220,7 +220,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
       return e;
     }
   })
-  if(totalMileageData){
+  if(totalMileageData.length>0){
     let str ="";
     totalMileageData.forEach(e => {
        str+=e.BILLNUMBER+","
@@ -233,7 +233,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
       onOk:saveOrAudits
     })
   }else{
-    saveOrAudits;
+    saveOrAudits();
   }
  }
  
