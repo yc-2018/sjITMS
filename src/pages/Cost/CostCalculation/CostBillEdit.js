@@ -59,7 +59,6 @@ export default class CostBillEdit extends CreatePage {
   linkCalculate = key => {
     const { projects, billDetail, planItems } = this.state.billInfo;
     const calculateProject = projects.find(x => x.code == key);
-    console.log(key, calculateProject);
     // 筛选出费用内计算的项目
     const linkProjects = projects.filter(
       x =>
@@ -76,7 +75,6 @@ export default class CostBillEdit extends CreatePage {
       }
       // 使用动态js命令更新关联项目
       sql = 'this.entity.' + linkProject.code + '=' + sql;
-      console.log(sql);
       eval(sql);
       // 通知表单更新页面
       this.props.form.setFieldsValue({ [linkProject.code]: this.entity[linkProject.code] });
