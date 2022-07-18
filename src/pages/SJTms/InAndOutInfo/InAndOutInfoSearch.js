@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Input, Popconfirm, message } from 'antd';
+import { Button, Input, Popconfirm, message, Modal } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import StoreModal from './StoreModal';
@@ -26,7 +26,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     }, // 票据核对
     otherFeeModalVisible: false,
     filelist: [],
-    previewImage: '',
+    previewImage: ''
   };
 
   drawActionButton = () => {
@@ -49,15 +49,6 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           scheduleBillNumber={scheduleBillNumber}
           handleModal={() => this.setState({ otherFeeModalVisible: false })}
         />
-        {/* <Button onClick={()=>this.setState({feeTypeModalVisible:true})}>费用类型管理</Button>
-        <Modal  width ={'auto'} height ={'auto'}
-          footer={null}
-          style={{overflow:'auto'}}
-          visible={this.state.feeTypeModalVisible}
-          onCancel={()=>this.setState({feeTypeModalVisible:false})}
-          title={"费用类型管理"}>
-          <FeeTypeForm quickuuid='sj_feeType' location={{pathname:window.location.pathname}}></FeeTypeForm>
-        </Modal>  */}
       </>
     );
   };
@@ -178,41 +169,33 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
   drawToolbarPanel = () => {
     return (
       <span>
-        <Popconfirm title="确定审核?" onConfirm={this.audits} okText="确定" cancelText="取消">
+        <Popconfirm title="确定审核?" onConfirm={()=>this.checkTotalMileage(this.audits)} okText="确定" cancelText="取消">
           <Button type="primary">保存审核</Button>
         </Popconfirm>
-        <Popconfirm title="确定保存?" onConfirm={this.save} okText="确定" cancelText="取消">
+        <Popconfirm title="确定保存?" onConfirm={()=>this.checkTotalMileage(this.save)} okText="确定" cancelText="取消">
           <Button>保存</Button>
         </Popconfirm>
       </span>
     );
   };
-
+  //保存
   save = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length < 1) {
-      message.warn('请至少选择一条记录');
-      return;
-    }
-    this.props.dispatch({
-      type: 'dispatchReturnStore/onConfirm',
-      payload: selectedRows,
-      callback: response => {
-        this.setState({ selectedRows: [] });
-        if (response && response.success) {
-          this.refreshTable();
-          message.success(commonLocale.saveSuccessLocale);
-        }
-      },
-    });
+      this.props.dispatch({
+        type: 'dispatchReturnStore/onConfirm',
+        payload: selectedRows,
+        callback: response => {
+          this.setState({ selectedRows: [] });
+          if (response && response.success) {
+            this.refreshTable();
+            message.success(commonLocale.saveSuccessLocale);
+          }
+        },
+      });
   };
-
+  //审核
   audits = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length < 1) {
-      message.warn('请至少选择一条记录');
-      return;
-    }
     this.props.dispatch({
       type: 'dispatchReturnStore/onAudit',
       payload: selectedRows,
@@ -225,4 +208,33 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
       },
     });
   };
+  //校验本次里程数
+ checkTotalMileage =(saveOrAudits)=>{
+  const { selectedRows } = this.state;
+  if (selectedRows.length < 1) {
+    message.warn('请至少选择一条记录');
+    return;
+  }
+  const totalMileageData = selectedRows.filter(e=>{
+    if(e.TOTALMILEAGE>=1000){
+      return e;
+    }
+  })
+  if(totalMileageData){
+    let str ="";
+    totalMileageData.forEach(e => {
+       str+=e.BILLNUMBER+","
+    });
+    str = "单号:"+str+"本次里程数超过1000,确定继续吗？";
+    Modal.confirm({
+      title:'提示',
+      content:str,
+      okText: '确定',
+      onOk:saveOrAudits
+    })
+  }else{
+    saveOrAudits;
+  }
+ }
+ 
 }
