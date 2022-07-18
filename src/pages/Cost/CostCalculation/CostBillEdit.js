@@ -27,7 +27,7 @@ export default class CostBillEdit extends CreatePage {
     getSubjectBill({ billUuid, subjectUuid }).then(response => {
       const billInfo = response.data;
       billInfo.projects.map(project => {
-        const planItem = billInfo.planItems.find(planItem => planItem.projectUuid == project.UUID);
+        const planItem = billInfo.planItems.find(planItem => planItem.projectUuid == project.uuid);
         project.calcSort = planItem.calcSort;
       });
       this.setState({ loading: false, billInfo, billUuid, subjectUuid });
@@ -58,28 +58,28 @@ export default class CostBillEdit extends CreatePage {
    */
   linkCalculate = key => {
     const { projects, billDetail, planItems } = this.state.billInfo;
-    const calculateProject = projects.find(x => x.CODE == key);
+    const calculateProject = projects.find(x => x.code == key);
     // 筛选出费用内计算的项目
     const linkProjects = projects.filter(
       x =>
-        x.FORMULA_TYPE == 1 &&
-        x.CODE != key &&
+        x.formulaType == 1 &&
+        x.code != key &&
         x.calcSort > calculateProject.calcSort &&
-        x.SQL.indexOf(calculateProject.ITEM_NAME) > -1
+        x.sql.indexOf(calculateProject.itemName) > -1
     );
     for (const linkProject of linkProjects) {
-      let sql = linkProject.SQL;
+      let sql = linkProject.sql;
       // 匹配到对应项且将其替换成值
       for (const project of projects) {
-        sql = sql.replace(project.ITEM_NAME, this.entity[project.CODE]);
+        sql = sql.replace(project.ITEM_NAME, this.entity[project.code]);
       }
       // 使用动态js命令更新关联项目
-      sql = 'this.entity.' + linkProject.CODE + '=' + sql;
+      sql = 'this.entity.' + linkProject.code + '=' + sql;
       eval(sql);
       // 通知表单更新页面
-      this.props.form.setFieldsValue({ [linkProject.CODE]: this.entity[linkProject.CODE] });
+      this.props.form.setFieldsValue({ [linkProject.code]: this.entity[linkProject.sql] });
       // 处理其下级依赖
-      this.linkCalculate(linkProject.CODE);
+      this.linkCalculate(linkProject.sql);
     }
   };
 
@@ -116,15 +116,15 @@ export default class CostBillEdit extends CreatePage {
     for (const costType of costTypes) {
       let calcCols = [];
       for (const detail of billInfo.billDetail) {
-        const project = billInfo.projects.find(project => project.UUID == detail.projectUuid);
-        if (project?.TYPE != costType.VALUE) {
+        const project = billInfo.projects.find(project => project.uuid == detail.projectUuid);
+        if (project?.type != costType.VALUE) {
           continue;
         }
         let calcComponent = null;
         // 汇总项无法修改
-        if (project.FORMULA_TYPE == 1) {
+        if (project.formulaType == 1) {
           calcComponent = (
-            <Tooltip title={project.SQL}>
+            <Tooltip title={project.sql}>
               {getFieldDecorator(detail.projectCode, {
                 initialValue: detail.amount,
                 rules: [{ required: true, message: `字段不能为空` }],
