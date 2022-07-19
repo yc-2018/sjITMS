@@ -2,55 +2,95 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-06 11:15:30
+ * @LastEditTime: 2022-07-19 16:44:43
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
 import React, { Component } from 'react';
-import { Form, Input, Button, Row, Col } from 'antd';
+import { Form, Button, Row, Col, DatePicker } from 'antd';
+import { notNullLocale } from '@/utils/CommonLocale';
+import Address from '@/pages/Component/Form/Address';
 import {
   SimpleTreeSelect,
-  SimpleAutoComplete,
   SimpleSelect,
+  SimpleRadio,
+  SimpleAutoComplete,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { queryColumns } from '@/services/quick/Quick';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { queryIdleAndThisPostionUseing } from '@/services/facility/Container';
 
+const { RangePicker } = DatePicker;
+const isOrgQuery = [
+  { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+  { field: 'dispatchcenteruuid', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
+];
 @Form.create()
 export default class OrderPoolSearchForm extends Component {
-  state = { pageFilter: {}, advancedFields: [] };
+  state = {
+    quickuuid: 'sj_itms_dispatching_orderpool',
+    pageFilter: {},
+    selectFields: [],
+    advancedFields: [],
+  };
 
   componentDidMount() {
-    queryColumns({
-      reportCode: 'sj_itms_dispatching_orderpool',
-      sysCode: 'tms',
-    }).then(response => {
+    queryColumns({ reportCode: this.state.quickuuid, sysCode: 'tms' }).then(response => {
       if (response.success) {
-        this.setState({ advancedFields: response.result.columns.filter(data => data.isShow) });
+        this.setState({
+          selectFields: response.result.columns.filter(data => data.isSearch),
+          advancedFields: response.result.columns.filter(data => data.isShow),
+        });
       }
     });
   }
-  onSearch = event => {
+  onSubmit = event => {
     const { form } = this.props;
     event.preventDefault();
     form.validateFields((err, fieldsValue) => {
       if (err) return;
-      let searchKeyValues = {};
-      for (let param in fieldsValue) {
-        let val = fieldsValue[param];
-        if (val == undefined) {
-          continue;
-        }
-        val = val.hasOwnProperty('value') ? val.value : val;
-        if (val == null || val == undefined) {
-          continue;
-        }
-        searchKeyValues[param] = val;
-      }
-      this.props.refresh(searchKeyValues);
+      this.onSearch(fieldsValue);
     });
+  };
+
+  //查询
+  onSearch = async searchParam => {
+    let params = new Array();
+    const { selectFields } = this.state;
+    for (let param in searchParam) {
+      const field = selectFields.find(x => x.fieldName == param);
+      let val = searchParam[param];
+      if (val == null || val == undefined) {
+        continue;
+      }
+      if (field.searchShowtype == 'datetime' && val instanceof Array) {
+        val = val.map(x => x.format('YYYY-MM-DD hh:mm')).join('||');
+      }
+      if (field.searchShowtype == 'date' && val instanceof Array) {
+        val = val.map(x => x.format('YYYY-MM-DD')).join('||');
+      }
+      if (field.searchShowtype == 'auto_complete' || field.searchShowtype == 'sel_tree') {
+        val = val.value;
+      }
+      //多选下拉框时修改入参,非下拉框暂时不支持in 改为like
+      if (field.searchCondition == 'in' || field.searchCondition == 'notIn') {
+        if (field.searchShowtype == 'list' || field.searchShowtype == 'sel_search') {
+          val = val.join('||');
+        } else {
+          field.searchCondition = 'like';
+        }
+      }
+
+      if (val && field) {
+        params.push({
+          field: field.fieldName,
+          type: field.fieldType,
+          rule: field.searchCondition || 'like',
+          val,
+        });
+      }
+    }
+    await this.props.refreshOrderPool({ superQuery: { matchType: 'and', queryParams: params } });
   };
   //高级查询
   onAdvanceSearch = async filter => {
@@ -68,117 +108,136 @@ export default class OrderPoolSearchForm extends Component {
   //重置
   handleReset = () => {
     this.props.form.resetFields();
-    this.props.refresh();
+    this.props.refreshOrderPool();
   };
+
+  //生成查询控件
+  buildSearchItem = searchField => {
+    const searchProperties = searchField.searchProperties
+      ? JSON.parse(searchField.searchProperties)
+      : '';
+    switch (searchField.searchShowtype) {
+      case 'date':
+        return <RangePicker style={{ width: '100%' }} />;
+      case 'datetime':
+        return <RangePicker style={{ width: '100%' }} showTime />;
+      case 'time':
+        return <RangePicker style={{ width: '100%' }} showTime />;
+      case 'list':
+        return (
+          <SimpleSelect
+            allowClear
+            placeholder={'请选择' + searchField.fieldTxt}
+            searchField={searchField}
+            {...searchProperties}
+          />
+        );
+      case 'radio':
+        return <SimpleRadio {...searchProperties} />;
+      case 'sel_search':
+        return (
+          <SimpleSelect
+            showSearch
+            allowClear
+            placeholder={'请输入' + searchField.fieldTxt}
+            searchField={searchField}
+            reportCode={this.state.quickuuid}
+            isOrgQuery={isOrgQuery}
+          />
+        );
+      case 'auto_complete':
+        return (
+          <SimpleAutoComplete
+            placeholder={'请选择' + searchField.fieldTxt}
+            searchField={searchField}
+            {...searchProperties}
+          />
+        );
+      case 'cat_tree':
+        return <RangePicker style={{ width: '100%' }} />;
+      case 'popup':
+        return <RangePicker style={{ width: '100%' }} />;
+      case 'sel_depart':
+        return <RangePicker style={{ width: '100%' }} />;
+      case 'sel_user':
+        return <RangePicker style={{ width: '100%' }} />;
+      case 'pca':
+        return <Address />;
+      case 'sel_tree':
+        return <SimpleTreeSelect {...searchProperties} />;
+      default:
+        return <Input placeholder={'请输入' + searchField.fieldTxt} />;
+    }
+  };
+
   render() {
     const { getFieldDecorator } = this.props.form;
+    let { selectFields } = this.state;
+    const newSelectFields = selectFields.map(item => {
+      if (item.fieldType == 'Date') {
+        let days = parseInt(item.searchDefVal);
+        if (days != days) days = 0;
+        let endDate = moment(new Date()).format('YYYY-MM-DD');
+        let startDate = moment(new Date())
+          .add(-item.searchDefVal, 'days')
+          .format('YYYY-MM-DD');
+        item.defaultValue = `${startDate}||${endDate}`;
+      }
+      return item;
+    });
     return (
       <Form
         labelCol={{ span: 6 }}
         wrapperCol={{ span: 18 }}
-        onSubmit={this.onSearch}
+        onSubmit={this.onSubmit}
         autoComplete="off"
       >
         <Row justify="space-around">
-          <Col span={10}>
-            <Form.Item label="线路">
-              {getFieldDecorator('lineCode', { initialValue: '' })(
-                <SimpleTreeSelect
-                  placeholder="请选择线路"
-                  textField="[%CODE%]%NAME%"
-                  valueField="CODE"
-                  sonField="UUID"
-                  parentField="PARENTUUID"
-                  queryParams={{
-                    tableName: 'v_sj_tms_line_system',
-                    condition: {
-                      params: [
-                        { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
-                        { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
-                      ],
-                    },
-                  }}
-                  showSearch
-                  multiSave="PARENTUUID:UUID"
-                />
-              )}
-            </Form.Item>
-          </Col>
-          <Col span={10}>
-            <Form.Item label="单据类型">
-              {getFieldDecorator('orderType', { initialValue: 'Delivery' })(
-                <SimpleAutoComplete
-                  placeholder="请选择单据类型"
-                  dictCode="orderType"
-                  noRecord
-                  allowClear={true}
-                />
-              )}
-            </Form.Item>
-          </Col>
+          {newSelectFields.filter((_, index) => index < 2).map(searchField => {
+            return (
+              <Col span={10}>
+                <Form.Item key={searchField.id} label={searchField.fieldTxt}>
+                  {getFieldDecorator(searchField.fieldName, {
+                    initialValue: searchField.defaultValue || undefined,
+                    rules: [
+                      {
+                        required: searchField.searchRequire,
+                        message: notNullLocale(searchField.fieldTxt),
+                      },
+                    ],
+                  })(this.buildSearchItem(searchField))}
+                </Form.Item>
+              </Col>
+            );
+          })}
           <Col span={4} style={{ paddingLeft: 12 }}>
             <AdvanceQuery
               searchFields={this.state.advancedFields}
+              isOrgQuery={isOrgQuery}
               filterValue={this.state.pageFilter.searchKeyValues}
               refresh={this.onAdvanceSearch}
-              reportCode="orderpool"
+              reportCode={this.state.quickuuid}
             />
-            {/* <Button style={{ marginLeft: 12 }}>高级查询</Button> */}
           </Col>
         </Row>
         <Row justify="space-around">
-          <Col span={10}>
-            <Form.Item label="送货点">
-              {getFieldDecorator('deliveryPointCode', {})(
-                <SimpleAutoComplete
-                  placeholder="请输入送货点编码"
-                  textField="[%CODE%]%NAME%"
-                  valueField="CODE"
-                  searchField="CODE,NAME"
-                  queryParams={{
-                    tableName: 'v_sj_itms_ship_store',
-                    condition: {
-                      params: [
-                        { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
-                        { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
-                      ],
-                    },
-                  }}
-                  noRecord
-                  autoComplete
-                  allowClear={true}
-                />
-              )}
-            </Form.Item>
-          </Col>
-          <Col span={10}>
-            <Form.Item label="货主">
-              {getFieldDecorator('ownerCode', {})(
-                <SimpleAutoComplete
-                  placeholder="请输入货主编码"
-                  textField="[%CODE%]%NAME%"
-                  label="CODE"
-                  valueField="CODE"
-                  searchField="CODE,NAME"
-                  maxTagCount={2}
-                  queryParams={{
-                    tableName: 'sj_itms_owner',
-                    condition: {
-                      params: [
-                        { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
-                        { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
-                      ],
-                    },
-                  }}
-                  noRecord
-                  mode="multiple"
-                  multipleSplit=","
-                  autoComplete
-                  allowClear={true}
-                />
-              )}
-            </Form.Item>
-          </Col>
+          {newSelectFields.filter((_, index) => index > 1).map(searchField => {
+            return (
+              <Col span={10}>
+                <Form.Item key={searchField.id} label={searchField.fieldTxt}>
+                  {getFieldDecorator(searchField.fieldName, {
+                    initialValue: searchField.defaultValue || undefined,
+                    rules: [
+                      {
+                        required: searchField.searchRequire,
+                        message: notNullLocale(searchField.fieldTxt),
+                      },
+                    ],
+                  })(this.buildSearchItem(searchField))}
+                </Form.Item>
+              </Col>
+            );
+          })}
           <Col span={4}>
             <Button
               type={'primary'}

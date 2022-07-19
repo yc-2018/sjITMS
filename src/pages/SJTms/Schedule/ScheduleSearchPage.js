@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-14 13:57:13
+ * @LastEditTime: 2022-07-16 17:04:15
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -29,14 +29,39 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     returnMileage: 0,
     showRollBackPop: false,
     showAbortPop: false,
-    // scroll: {
-    //   y: '50vh',
-    // },
     minHeight: '50vh',
     isNotHd: true,
   };
-  drawTopButton = () => {};
-  drawToolsButton = () => {};
+
+  drawTopButton = () => {
+    const { returnMileageModal, printPage } = this.state;
+    return (
+      <>
+        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
+        <div id="printPage" style={{ display: 'none' }}>
+          {printPage}
+        </div>
+        <Modal
+          width="20%"
+          title={'回车里程数录入'}
+          onOk={() => this.onBack()}
+          visible={returnMileageModal}
+          onCancel={() => this.setState({ returnMileageModal: false })}
+          destroyOnClose={true}
+        >
+          <Form>
+            <Form.Item label="回车里程数" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              <InputNumber
+                placeholder="请输入回车里程数"
+                onChange={this.onReturnMileageChange}
+                style={{ width: '100%' }}
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
+      </>
+    );
+  };
   componentWillReceiveProps(nextProps) {
     if (nextProps.selectedRows != this.props.selectedRows) {
       this.queryCoulumns();
@@ -78,14 +103,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   };
 
   //按钮面板
-  drawToolbarPanel = () => {
-    const {
-      printPage,
-      selectedRows,
-      showRollBackPop,
-      showAbortPop,
-      returnMileageModal,
-    } = this.state;
+  drawToolsButton = () => {
+    const { selectedRows, showRollBackPop, showAbortPop } = this.state;
     const menu = (
       <Menu onClick={this.handleMenuClick}>
         <Menu.Item key="load">装车单</Menu.Item>
@@ -93,8 +112,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       </Menu>
     );
     return (
-      <div style={{ marginBottom: 10 }}>
-        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
+      <>
         <Popconfirm
           title="确定取消批准选中排车单?"
           visible={showRollBackPop}
@@ -114,9 +132,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
             });
           }}
         >
-          <Button style={{ marginBottom: -5 }} onClick={() => this.onBatchRollBack()}>
-            取消批准
-          </Button>
+          <Button onClick={() => this.onBatchRollBack()}>取消批准</Button>
         </Popconfirm>
         <Popconfirm
           title="确定作废选中排车单?"
@@ -137,48 +153,23 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
             });
           }}
         >
-          <Button style={{ marginLeft: 12 }} onClick={() => this.onBatchAbort()}>
-            作废
-          </Button>
+          <Button onClick={() => this.onBatchAbort()}>作废</Button>
         </Popconfirm>
-        <Button style={{ marginLeft: 12 }} onClick={() => this.onMoveCar()}>
-          移车
-        </Button>
+        <Button onClick={() => this.onMoveCar()}>移车</Button>
         <Dropdown overlay={menu}>
-          <Button onClick={() => this.handlePrint()} icon="printer" style={{ marginLeft: 12 }}>
+          <Button onClick={() => this.handlePrint()} icon="printer">
             打印 <Icon type="down" />
           </Button>
         </Dropdown>
         <Popconfirm title="确定发运选中排车单?" onConfirm={this.handleDepart}>
-          <Button type="primary" ghost style={{ marginLeft: 12 }}>
+          <Button type="primary" ghost>
             发运
           </Button>
         </Popconfirm>
-        <Button type="danger" ghost style={{ marginLeft: 12 }} onClick={this.handleBack}>
+        <Button type="danger" ghost onClick={this.handleBack}>
           回厂
         </Button>
-        <Modal
-          width="20%"
-          title={'回车里程数录入'}
-          onOk={() => this.onBack()}
-          visible={returnMileageModal}
-          onCancel={() => this.setState({ returnMileageModal: false })}
-          destroyOnClose={true}
-        >
-          <Form>
-            <Form.Item label="回车里程数" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
-              <InputNumber
-                placeholder="请输入回车里程数"
-                onChange={this.onReturnMileageChange}
-                style={{ width: '100%' }}
-              />
-            </Form.Item>
-          </Form>
-        </Modal>
-        <div id="printPage" style={{ display: 'none' }}>
-          {printPage}
-        </div>
-      </div>
+      </>
     );
   };
 

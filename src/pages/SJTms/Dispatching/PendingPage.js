@@ -2,32 +2,44 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-02 10:16:13
+ * @LastEditTime: 2022-07-19 17:07:07
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
 import React, { Component } from 'react';
-import { Table, Button, Row, Col, Typography, message } from 'antd';
-import { OrderColumns, pagination } from './DispatchingColumns';
+import { Button, Row, Col, Typography, message } from 'antd';
+import {
+  OrderColumns,
+  OrderCollectColumns,
+  OrderDetailColumns,
+  pagination,
+} from './DispatchingColumns';
 import { getOrderInPending, removePending } from '@/services/sjitms/OrderBill';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
-import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
 import DispatchingTable from './DispatchingTable';
+import DispatchingChildTable from './DispatchingChildTable';
 import dispatchingStyles from './Dispatching.less';
+import { groupBy, sumBy } from 'lodash';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 export default class PendingPage extends Component {
   state = {
     loading: false,
     pendingOrderColumns: [...OrderColumns],
     pendingData: [],
+    pendingCollectData: [],
+    pendingParentRowKeys: [],
     pendingRowKeys: [],
   };
 
   componentDidMount() {
-    this.pendingOrderColSetting.handleOK();
     this.refreshTable();
+  }
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.isOrderCollect != this.props.isOrderCollect) {
+      this.setState({ pendingParentRowKeys: [], pendingRowKeys: [] });
+    }
   }
 
   //刷新
@@ -43,10 +55,40 @@ export default class PendingPage extends Component {
         this.setState({
           loading: false,
           pendingData: response.data,
+          pendingCollectData: this.groupData(response.data),
           pendingRowKeys: [],
+          pendingParentRowKeys: [],
         });
       }
     });
+  };
+
+  //按送货点汇总运输订单
+  groupData = data => {
+    let output = groupBy(data, x => x.deliveryPoint.code);
+    let deliveryPointGroupArr = Object.keys(output).map(pointCode => {
+      const orders = output[pointCode];
+      return {
+        pointCode,
+        uuid: orders[0].uuid,
+        deliveryPoint: orders[0].deliveryPoint,
+        archLine: orders[0].archLine,
+        owner: orders[0].owner,
+        address: orders[0].deliveryPoint.address,
+        cartonCount: Math.round(sumBy(orders, 'cartonCount') * 1000) / 1000,
+        realCartonCount: Math.round(sumBy(orders, 'realCartonCount') * 1000) / 1000,
+        scatteredCount: Math.round(sumBy(orders, 'scatteredCount') * 1000) / 1000,
+        realScatteredCount: Math.round(sumBy(orders, 'realScatteredCount') * 1000) / 1000,
+        containerCount: Math.round(sumBy(orders, 'containerCount') * 1000) / 1000,
+        realContainerCount: Math.round(sumBy(orders, 'realContainerCount') * 1000) / 1000,
+        volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
+        weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
+      };
+    });
+    deliveryPointGroupArr.forEach(data => {
+      data.details = output[data.pointCode];
+    });
+    return deliveryPointGroupArr;
   };
 
   //删除待定
@@ -89,6 +131,7 @@ export default class PendingPage extends Component {
     });
   };
 
+  //表格行选择
   tableChangeRows = selectedRowKeys => {
     const { pendingData } = this.state;
     this.props.refreshSelectRowOrder(
@@ -100,19 +143,49 @@ export default class PendingPage extends Component {
     );
     this.setState({ pendingRowKeys: selectedRowKeys });
   };
+  childTableChangeRows = result => {
+    const { pendingData } = this.state;
+    this.props.refreshSelectRowOrder(
+      pendingData.filter(x => result.childSelectedRowKeys.indexOf(x.uuid) != -1).map(item => {
+        item.stat = 'Pending';
+        return item;
+      }),
+      'Pending'
+    );
+    this.setState({
+      pendingParentRowKeys: result.selectedRowKeys,
+      pendingRowKeys: result.childSelectedRowKeys,
+    });
+  };
   //取消选中
   handleCancelRow = () => {
     this.tableChangeRows([]);
   };
 
-  //更新列配置
-  setColumns = (pendingOrderColumns, index, width) => {
-    this.pendingOrderColSetting.handleWidth(index, width);
-    this.setState({ pendingOrderColumns });
-  };
-
   render() {
-    const { loading, pendingOrderColumns, pendingData, pendingRowKeys } = this.state;
+    const {
+      loading,
+      pendingOrderColumns,
+      pendingData,
+      pendingCollectData,
+      pendingParentRowKeys,
+      pendingRowKeys,
+    } = this.state;
+    const settingColumnsBar = (
+      <>
+        <span style={{ fontSize: 14 }}>
+          已选：
+          {pendingRowKeys.length}
+        </span>
+        <Button
+          style={{ marginLeft: 20, marginBottom: 5 }}
+          size="small"
+          onClick={this.handleCancelRow}
+        >
+          取消
+        </Button>
+      </>
+    );
     return (
       <div style={{ padding: 5 }}>
         <Row style={{ marginBottom: 5, lineHeight: '28px' }}>
@@ -133,46 +206,48 @@ export default class PendingPage extends Component {
             </Button>
           </Col>
         </Row>
-        <DispatchingTable
-          clickRow
-          pagination={pagination}
-          setColumns={this.setColumns}
-          children={
-            <Row>
-              <Col span={12}>
-                <span style={{ fontSize: 14 }}>
-                  已选：
-                  {pendingRowKeys.length}
-                </span>
-                <Button
-                  style={{ marginLeft: 20, marginBottom: 5 }}
-                  size="small"
-                  onClick={this.handleCancelRow}
-                >
-                  取消
-                </Button>
-              </Col>
-              <Col span={12}>
-                <RyzeSettingDrowDown
-                  noToolbarPanel
-                  columns={OrderColumns}
-                  comId={'PendingOrderColumns'}
-                  getNewColumns={this.setColumns}
-                  onRef={ref => (this.pendingOrderColSetting = ref)}
-                />
-              </Col>
-            </Row>
-          }
-          loading={loading}
-          dataSource={pendingData}
-          refreshDataSource={pendingData => {
-            this.setState({ pendingData });
-          }}
-          changeSelectRows={this.tableChangeRows}
-          selectedRowKeys={pendingRowKeys}
-          columns={pendingOrderColumns}
-          scrollY="calc(68vh - 130px)"
-        />
+        {this.props.isOrderCollect ? (
+          <DispatchingChildTable
+            comId="pendingOrder"
+            clickRow
+            hasChildTable
+            settingColumnsBar={settingColumnsBar}
+            // childSettingCol
+            noToolbarPanel={true}
+            pagination={pagination || false}
+            loading={loading}
+            dataSource={pendingCollectData}
+            refreshDataSource={pendingCollectData => {
+              this.childTableChangeRows({ selectedRowKeys: [], childSelectedRowKeys: [] });
+              this.setState({ pendingCollectData });
+            }}
+            changeSelectRows={this.childTableChangeRows}
+            selectedRowKeys={pendingParentRowKeys}
+            childSelectedRowKeys={pendingRowKeys}
+            columns={OrderCollectColumns}
+            nestColumns={OrderDetailColumns}
+            scrollY="calc(68vh - 130px)"
+            title={this.buildTitle}
+          />
+        ) : (
+          <DispatchingTable
+            comId="pendingOrder"
+            clickRow
+            pagination={pagination}
+            settingColumnsBar={settingColumnsBar}
+            loading={loading}
+            noToolbarPanel={true}
+            dataSource={pendingData}
+            refreshDataSource={pendingData => {
+              this.tableChangeRows([]);
+              this.setState({ pendingData });
+            }}
+            changeSelectRows={this.tableChangeRows}
+            selectedRowKeys={pendingRowKeys}
+            columns={pendingOrderColumns}
+            scrollY="calc(68vh - 130px)"
+          />
+        )}
       </div>
     );
   }

@@ -2,14 +2,13 @@
  * @Author: guankongjin
  * @Date: 2022-03-29 14:03:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-30 14:23:25
+ * @LastEditTime: 2022-07-19 11:47:01
  * @Description: 配送调度主页面
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\Dispatching.js
  */
 import React, { Component } from 'react';
 import { connect } from 'dva';
 import { Layout, Row, Col } from 'antd';
-import FullScreenButton from '@/pages/Component/Page/FullScreenButton';
 import Page from '@/pages/Component/RapidDevelopment/CommonLayout/Page/Page';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import OrderPoolPage from './OrderPoolPage';
@@ -17,7 +16,6 @@ import SchedulePage from './SchedulePage';
 import PendingPage from './PendingPage';
 import ScheduleDetailPage from './ScheduleDetailPage';
 import dispatchingStyles from './Dispatching.less';
-import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
 const { Content } = Layout;
 
@@ -32,6 +30,7 @@ export default class Dispatching extends Component {
 
   state = {
     selectOrders: [],
+    isOrderCollect: true,
   };
 
   refreshOrderTable = () => {
@@ -64,6 +63,9 @@ export default class Dispatching extends Component {
     let tempSelectOrders = selectOrders.filter(x => x.stat != stat);
     this.setState({ selectOrders: [...tempSelectOrders, ...orders] });
   };
+  refreshOrderCollect = isOrderCollect => {
+    this.setState({ isOrderCollect, selectOrders: [] });
+  };
 
   render() {
     if (this.props.dispatching.showPage === 'query') {
@@ -81,6 +83,8 @@ export default class Dispatching extends Component {
                       <OrderPoolPage
                         scheduleRowKeys={this.getScheduleRowKeys}
                         ref={ref => (this.orderPoolPageRef = ref)}
+                        isOrderCollect={this.state.isOrderCollect}
+                        refreshOrderCollect={this.refreshOrderCollect}
                         refreshSchedule={this.refreshScheduleTable}
                         refreshPending={this.refreshPendingTable}
                         selectPending={this.getSelectPending}
@@ -103,6 +107,7 @@ export default class Dispatching extends Component {
                     <div className={dispatchingStyles.dispatchingCard}>
                       <PendingPage
                         scheduleRowKeys={this.getScheduleRowKeys}
+                        isOrderCollect={this.state.isOrderCollect}
                         ref={ref => (this.pendingPageRef = ref)}
                         refreshOrder={this.refreshOrderTable}
                         refreshSchedule={this.refreshScheduleTable}
@@ -114,6 +119,7 @@ export default class Dispatching extends Component {
                     <div className={dispatchingStyles.dispatchingCard}>
                       <ScheduleDetailPage
                         ref={ref => (this.scheduleDetailPageRef = ref)}
+                        isOrderCollect={this.state.isOrderCollect}
                         refreshSchedule={this.refreshScheduleTable}
                         refreshPending={this.refreshPendingTable}
                         refreshSelectRowOrder={this.refreshSelectRowOrder}

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-11 11:09:49
+ * @LastEditTime: 2022-07-19 10:43:41
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -13,7 +13,6 @@ import DispatchingCreatePage from './DispatchingCreatePage';
 import ScheduleSearchForm from './ScheduleSearchForm';
 import BatchProcessConfirm from './BatchProcessConfirm';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
-import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
 import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
 import { ScheduleColumns, pagination } from './DispatchingColumns';
 import dispatchingStyles from './Dispatching.less';
@@ -43,7 +42,6 @@ export default class SchedulePage extends Component {
   };
 
   componentDidMount() {
-    this.scheduleColSetting.handleOK();
     this.setState({ loading: true });
     this.getSchedules(this.state.activeTab);
   }
@@ -271,12 +269,6 @@ export default class SchedulePage extends Component {
     this.props.refreshDetail(selectSchedule);
   };
 
-  //更新列配置
-  setColumns = (columns, index, width) => {
-    this.scheduleColSetting.handleWidth(index, width);
-    this.setState({ columns });
-  };
-
   render() {
     const {
       scheduleData,
@@ -317,14 +309,6 @@ export default class SchedulePage extends Component {
       }
     };
 
-    const settingColumns = (
-      <RyzeSettingDrowDown
-        columns={ScheduleColumns}
-        comId={'ScheduleColumns'}
-        getNewColumns={this.setColumns}
-        onRef={ref => (this.scheduleColSetting = ref)}
-      />
-    );
     columns[0].render = (val, record) => {
       return record.stat == 'Saved' ? (
         <a href="#" onClick={this.editTable(record)}>
@@ -345,6 +329,7 @@ export default class SchedulePage extends Component {
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>排车单</Text>} key="Saved">
             <ScheduleSearchForm refresh={this.refreshTable} />
             <DispatchingTable
+              comId="saveSchedule"
               pagination={pagination}
               loading={loading}
               onClickRow={this.onClickRow}
@@ -355,8 +340,6 @@ export default class SchedulePage extends Component {
                 this.setState({ scheduleData });
               }}
               columns={columns}
-              setColumns={this.setColumns}
-              children={settingColumns}
               scrollY="calc(68vh - 152px)"
             />
             {/* 编辑排车单 */}
@@ -383,6 +366,7 @@ export default class SchedulePage extends Component {
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已批准</Text>} key="Approved">
             <ScheduleSearchForm refresh={this.refreshTable} />
             <DispatchingTable
+              comId="approvedSchedule"
               pagination={pagination}
               loading={loading}
               onClickRow={this.onClickRow}
@@ -393,14 +377,13 @@ export default class SchedulePage extends Component {
                 this.setState({ scheduleData });
               }}
               columns={columns}
-              setColumns={this.setColumns}
-              children={settingColumns}
               scrollY="calc(68vh - 152px)"
             />
           </TabPane>
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已作废</Text>} key="Aborted">
             <ScheduleSearchForm refresh={this.refreshTable} />
             <DispatchingTable
+              comId="abortedSchedule"
               pagination={pagination}
               loading={loading}
               onClickRow={this.onClickRow}
@@ -411,8 +394,6 @@ export default class SchedulePage extends Component {
                 this.setState({ scheduleData });
               }}
               columns={columns}
-              setColumns={this.setColumns}
-              children={settingColumns}
               scrollY="calc(68vh - 152px)"
             />
           </TabPane>
