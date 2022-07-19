@@ -657,6 +657,7 @@ export default class QuickFormSearchPage extends SearchPage {
     const { dispatch } = this.props;
     const { pageFilters } = this.state;
     let queryFilter = { ...pageFilters };
+    console.log("filter",filter);
     if (filter) {
       var order = '';
       for (var key in filter.sortFields) {
@@ -669,6 +670,9 @@ export default class QuickFormSearchPage extends SearchPage {
         page: filter.page + 1,
         pageSize: filter.pageSize,
       };
+    }else{
+      //查询页码重置为1
+      queryFilter.page=1
     }
     this.state.pageFilters = queryFilter;
     this.getData(queryFilter);
