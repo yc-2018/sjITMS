@@ -1308,13 +1308,49 @@ export default [
         ],
       },
       {
-        path: '/bigdata',
+        path: '/bigData',
         name: 'bigData',
+        org: ['DISPATCH_CENTER'],
+        authority: ['sjtms.bigData'],
         icon: 'icon-menu_data1',
         routes: [
           {
-            path: '/bigdata/:folder/:report',
-            component: './Report/ReportPage',
+            path: '/bigData/loading',
+            name: '排车装车',
+            routes: [
+              {
+                path: '/bigData/loading/arrange',
+                name: '车辆安排查询',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'sj_itms_vehicle_arrange',
+                authority: ['sjtms.bigData.arrange'],
+              },
+            ],
+          },
+
+          {
+            path: '/bigData/zs',
+            name: '中山',
+            routes: [
+              {
+                path: '/bigData/zs/scheduleDtl',
+                name: '出车明细查询',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'sj_itms_schedule_dtl',
+                authority: ['sjtms.bigData.arrange'],
+              },
+
+              {
+                path: '/bigData/zs/memberWage',
+                name: '每月份配送人员车次工资',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'sj_itms_member_wage',
+                authority: ['sjtms.bigData.arrange'],
+              },
+            ],
           },
         ],
       },
