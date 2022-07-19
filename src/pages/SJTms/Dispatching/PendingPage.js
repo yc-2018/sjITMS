@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-19 17:07:07
+ * @LastEditTime: 2022-07-19 17:25:32
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -210,7 +210,6 @@ export default class PendingPage extends Component {
           <DispatchingChildTable
             comId="pendingOrder"
             clickRow
-            hasChildTable
             settingColumnsBar={settingColumnsBar}
             // childSettingCol
             noToolbarPanel={true}

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-19 17:13:07
+ * @LastEditTime: 2022-07-19 17:48:52
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -67,13 +67,19 @@ export default class OrderPoolPage extends Component {
 
   refreshOrderPool = params => {
     this.setState({ loading: true });
-    if (params == undefined) params = { superQuery: { matchType: 'and', queryParams: [] } };
+    if (params == undefined) {
+      params = { superQuery: { matchType: 'and', queryParams: [] } };
+    }
     let { superQuery } = params;
     const isOrgQuery = [
       { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
       { field: 'dispatchcenteruuid', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
     ];
-    params.superQuery.queryParams = [...superQuery.queryParams, ...isOrgQuery];
+    params.superQuery.queryParams = [
+      ...superQuery.queryParams,
+      ...isOrgQuery,
+      { field: 'STAT', type: 'VarChar', rule: 'eq', val: 'Audited' },
+    ];
     queryAuditedOrder(params).then(response => {
       if (response.success) {
         this.setState({
@@ -84,6 +90,7 @@ export default class OrderPoolPage extends Component {
           scheduledRowKeys: [],
           activeTab: 'Audited',
         });
+        this.props.refreshSelectRowOrder([], 'Audited');
       }
     });
   };
@@ -162,10 +169,10 @@ export default class OrderPoolPage extends Component {
 
   childTableChangeRows = result => {
     const { auditedData } = this.state;
-    this.props.refreshSelectRowOrder(
-      auditedData.filter(x => result.childSelectedRowKeys.indexOf(x.uuid) != -1),
-      'Audited'
+    const totalAuditedData = auditedData.filter(
+      x => result.childSelectedRowKeys.indexOf(x.uuid) != -1
     );
+    this.props.refreshSelectRowOrder(totalAuditedData, 'Audited');
     this.setState({
       auditedParentRowKeys: result.selectedRowKeys,
       auditedRowKeys: result.childSelectedRowKeys,
@@ -358,7 +365,6 @@ export default class OrderPoolPage extends Component {
             <DispatchingChildTable
               comId="orderPool"
               clickRow
-              hasChildTable
               // childSettingCol
               pagination={pagination || false}
               loading={loading}

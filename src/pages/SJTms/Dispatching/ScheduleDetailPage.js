@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-19 17:10:19
+ * @LastEditTime: 2022-07-19 17:25:37
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -161,7 +161,6 @@ export default class ScheduleDetailPage extends Component {
           <DispatchingChildTable
             comId="scheduleDetail"
             clickRow
-            hasChildTable
             // childSettingCol
             noToolbarPanel={true}
             pagination={false}

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-01 08:43:48
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-19 16:59:49
+ * @LastEditTime: 2022-07-19 17:24:49
  * @Description: 嵌套子表格组件
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingChildTable.js
  */
@@ -43,26 +43,20 @@ export default class DispatchingChildTable extends Component {
 
   //表格选择
   onParentSelectChange = (record, selected) => {
-    const {
-      dataSource,
-      hasChildTable,
-      selectedRowKeys,
-      childSelectedRowKeys,
-      changeSelectRows,
-    } = this.props;
+    const { dataSource, selectedRowKeys, childSelectedRowKeys, changeSelectRows } = this.props;
     let patentArr = [...selectedRowKeys];
     let childArr = childSelectedRowKeys ? [...childSelectedRowKeys] : [];
     //选中行下的所有子选项
     const details = dataSource.find(d => d.uuid === record.uuid).details;
-    let setChildArr = hasChildTable && details ? details.map(item => item.uuid) : [];
+    let setChildArr = details ? details.map(item => item.uuid) : [];
     if (selected) {
       //父Table选中，子Table全选中
       patentArr.push(record.uuid);
-      childArr = hasChildTable ? childArr.concat(setChildArr) : [];
+      childArr = childArr.concat(setChildArr);
     } else {
       //父Table取消选中，子Table全取消选中
       patentArr.splice(patentArr.findIndex(item => item === record.uuid), 1);
-      childArr = hasChildTable ? childArr.filter(item => !setChildArr.some(e => e === item)) : [];
+      childArr = childArr.filter(item => !setChildArr.some(e => e === item));
     }
     //设置父，子的SelectedRowKeys
     changeSelectRows({ selectedRowKeys: patentArr, childSelectedRowKeys: childArr });
@@ -70,17 +64,15 @@ export default class DispatchingChildTable extends Component {
 
   //表格全选
   onParentSelectAll = (selected, selectedRows, changeRows) => {
-    const { hasChildTable, selectedRowKeys, childSelectedRowKeys, changeSelectRows } = this.props;
+    const { selectedRowKeys, childSelectedRowKeys, changeSelectRows } = this.props;
     let patentArr = [...selectedRowKeys];
     let childArr = childSelectedRowKeys ? [...childSelectedRowKeys] : [];
     if (selected) {
       //父Table选中，子Table全选中，设置子Table的SelectedRowKeys
       patentArr = patentArr.concat(changeRows.map(item => item.uuid));
-      if (hasChildTable) {
-        changeRows.forEach(row => {
-          childArr = childArr.concat(row.details.map(item => item.uuid));
-        });
-      }
+      changeRows.forEach(row => {
+        childArr = childArr.concat(row.details.map(item => item.uuid));
+      });
     } else {
       //父Table取消选中，子Table全取消选中，设置子Table的SelectedRowKeys
       patentArr = patentArr.filter(item => !changeRows.some(e => e.uuid === item));
@@ -198,7 +190,7 @@ export default class DispatchingChildTable extends Component {
   };
 
   render() {
-    const { hasChildTable, dataSource, selectedRowKeys, childSelectedRowKeys } = this.props;
+    const { dataSource, selectedRowKeys, childSelectedRowKeys } = this.props;
     const childRowSelection = {
       selectedRowKeys: childSelectedRowKeys,
       onSelect: this.onChildSelectChange,
@@ -281,7 +273,7 @@ export default class DispatchingChildTable extends Component {
           dataSource={dataSource}
           onRowClick={selectedRowKeys ? this.onClickRow : ''}
           onChange={this.handleStandardTableChange}
-          expandedRowRender={hasChildTable ? record => expandedRowRender(record) : ''}
+          expandedRowRender={record => expandedRowRender(record)}
           className={dispatchingTableStyles.dispatchingTable}
           style={{ height: this.props.scrollY }}
           bodyStyle={{ height: this.props.scrollY }}
