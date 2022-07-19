@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-20 10:41:30
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-16 09:19:06
+ * @LastEditTime: 2022-07-19 11:33:34
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -55,7 +55,8 @@ export default class BasicDtlCreatPage extends QuickCreatePage {
     const saveResponse = await this.saveEntityData(param);
     const success = saveResponse.success == true;
     this.afterSave(success);
-    this.onSaved(success);
+    const result = { response: saveResponse };
+    this.onSaved(result);
     if (success) {
       message.success(commonLocale.saveSuccessLocale);
     }

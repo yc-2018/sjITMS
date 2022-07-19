@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-12 17:02:13
+ * @LastEditTime: 2022-07-12 17:31:34
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -72,6 +72,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
       };
     }
     this.props.form.validateFields(async (err, values) => {
+      this.setState({ searchLoading: true });
       const response = await getCompareBill(values.billNumber, values.compareNum, params);
       if (response.data && response.success) {
         const { structs, data, plan, bill } = response.data.records[0];

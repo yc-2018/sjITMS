@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-08 14:40:30
+ * @LastEditTime: 2022-07-14 16:37:51
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -19,6 +19,7 @@ import {
   onLock,
   isLock,
 } from '@/services/cost/CostCalculation';
+import { colWidth } from '@/utils/ColWidth';
 const { MonthPicker } = DatePicker;
 import moment from 'moment';
 const { Panel } = Collapse;
@@ -151,7 +152,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
           fieldName: struct.fieldName,
           fieldTxt: struct.fieldTxt,
           fieldType: 'VarChar',
-          fieldWidth: 100,
+          fieldWidth: colWidth.dateColWidth,
           isSearch: false,
           isShow: true,
         });
