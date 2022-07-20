@@ -2,12 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-05-27 09:11:09
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-30 09:37:33
+ * @LastEditTime: 2022-07-20 15:12:31
  * @Description: 批处理
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\BatchProcessConfirm.js
  */
 import React, { Component } from 'react';
-import { Progress, Modal, Button, message, Tooltip, Icon } from 'antd';
+import { Progress, Modal, Popover, Button, message } from 'antd';
 import styles from './BatchProcessConfirm.less';
 import warnFillSvg from '@/assets/common/img_warnfill.svg';
 import { PROGRESS_STATUS } from '@/utils/constants';
@@ -18,7 +18,8 @@ export default class BatchProcessConfirm extends Component {
     actionName: '',
     taskCount: 0,
     rowKeys: [],
-    failedRowKeys: [],
+    successRowKeys: [],
+    errMsg: [],
     confirmModalVisible: false,
     progressModalVisible: false,
     progressStatus: PROGRESS_STATUS['active'],
@@ -57,6 +58,7 @@ export default class BatchProcessConfirm extends Component {
     message.success(
       `成功批量${actionName}${taskReport.success}个选项，跳过${taskReport.skip}个选项`
     );
+    localStorage.setItem('showMessage', '1');
     this.resetProgress();
     this.state.refresh();
   };
@@ -65,22 +67,24 @@ export default class BatchProcessConfirm extends Component {
   handleBatchProcessConfirmOk = () => {
     const { rowKeys } = this.state;
     this.handleProgressModalVisible(true);
+    localStorage.setItem('showMessage', '0');
     // 执行任务
     this.taskExecutionFunc(rowKeys);
   };
   //取消
   handleBatchProcessConfirmCancel = () => {
+    localStorage.setItem('showMessage', '1');
     this.resetProgress();
     this.setState({ confirmModalVisible: false });
   };
   //执行任务
   taskExecutionFunc = rowKeys => {
     let bacth = index => {
-      this.state.task(rowKeys[index]).then(taskResult => {
+      this.state.task(rowKeys[index]).then(response => {
         if (index + 1 < rowKeys.length) {
           bacth(index + 1);
         }
-        this.calculateTask(taskResult, rowKeys[index]);
+        this.calculateTask(response, rowKeys[index]);
       });
     };
     bacth(0);
@@ -88,23 +92,30 @@ export default class BatchProcessConfirm extends Component {
 
   //任务执行记录
   calculateTask = (taskResult, uuid) => {
-    let { taskReport, taskCount, failedRowKeys } = this.state;
+    let { taskReport, successRowKeys, errMsg } = this.state;
     this.currentIndex++;
     if (taskResult == null) {
       taskReport.skip += 1;
     } else {
       if (taskResult.success) {
         taskReport.success += 1;
+        successRowKeys.push(uuid);
       } else {
+        errMsg.push(taskResult.message);
         taskReport.failure += 1;
-        failedRowKeys.push(uuid);
       }
     }
-    this.setState({ taskReport, failedRowKeys });
+    this.setState({ taskReport, successRowKeys, errMsg });
+    this.showResult();
+  };
+
+  showResult = () => {
+    let { taskReport, taskCount } = this.state;
+
     this.calculateProgressPercent(taskCount, this.currentIndex);
 
     if (this.currentIndex > 0 && taskCount === this.currentIndex) {
-      if (taskReport.failure === 0) {
+      if (taskReport.failure == 0 && taskReport.skip == 0) {
         this.handleAllSuccessed();
       } else {
         this.setState({
@@ -116,6 +127,7 @@ export default class BatchProcessConfirm extends Component {
       }
     }
   };
+
   /** 计算进度条的百分比（任务执行进度）
    * @param {Integer} total 任务总数，必大于0
    * @param {Integer} index 当前已完成任务数， 必大于0
@@ -129,9 +141,7 @@ export default class BatchProcessConfirm extends Component {
   };
   //进度条弹出框显示控制
   handleProgressModalVisible = flag => {
-    const { progressPercent, currentIndex } = this.state;
     if (flag) {
-      const { progressStatus, progressVisible } = this.state;
       this.setState({
         currentIndex: 0,
         progressStatus: PROGRESS_STATUS['active'],
@@ -168,25 +178,26 @@ export default class BatchProcessConfirm extends Component {
 
   //重试
   handleRerty = () => {
+    let { successRowKeys, rowKeys } = this.state;
     this.resetProgress();
-    let rowkeys = this.state.failedRowKeys;
+    let rows = rowKeys.filter(x => successRowKeys.indexOf(x) == -1);
     this.setState({
       progressModalVisible: true,
       progressVisible: true,
       showFailedResultModal: false,
-      taskCount: rowkeys.length,
-      failedRowKeys: [],
+      taskCount: rows.length,
     });
-    this.taskExecutionFunc(rowkeys);
+    this.taskExecutionFunc(rows);
   };
   //取消重试
   handleRetryCancel = () => {
+    localStorage.setItem('showMessage', '1');
     this.resetProgress();
     this.setState({ showFailedResultModal: false });
   };
   //重试批量处理结果
   renderProgressFeedbackFailedResult = () => {
-    const { actionName, taskReport } = this.state;
+    const { actionName, taskReport, errMsg } = this.state;
     return (
       <div>
         成功
@@ -194,9 +205,26 @@ export default class BatchProcessConfirm extends Component {
         <span className={styles.taskNumber}>{taskReport.success}</span>
         个选项， 跳过
         <span className={styles.taskNumber}>{taskReport.skip}</span>
-        个选项， 失败
-        <span className={styles.taskNumber}>{taskReport.failure}</span>
-        个选项
+        个选项，
+        <Popover
+          content={
+            errMsg.length > 0 ? (
+              errMsg.map(err => {
+                return <p>{err}</p>;
+              })
+            ) : (
+              <></>
+            )
+          }
+          title="失败原因"
+          trigger="hover"
+        >
+          失败
+          <a className={styles.taskNumber} style={{ textDecoration: 'underline' }}>
+            {taskReport.failure}
+          </a>
+          个选项
+        </Popover>
       </div>
     );
   };
@@ -216,6 +244,7 @@ export default class BatchProcessConfirm extends Component {
       progressStatus: PROGRESS_STATUS['active'],
       progressPercent: 0,
       taskReport,
+      errMsg: [],
       confirmLoading: false,
     });
   };

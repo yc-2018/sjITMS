@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-01 08:43:48
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-19 17:24:49
+ * @LastEditTime: 2022-07-20 14:10:38
  * @Description: 嵌套子表格组件
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingChildTable.js
  */
@@ -149,7 +149,9 @@ export default class DispatchingChildTable extends Component {
       const sortType = sorter.order === 'descend' ? 'desc' : 'asc';
       dataSource = orderBy(
         dataSource,
-        sorter.column.sorterCode ? x => x[sorter.field].code : [sorter.field],
+        sorter.column.sorterCode
+          ? x => (x[sorter.field] ? x[sorter.field].code : '')
+          : [sorter.field],
         [sortType]
       );
     }

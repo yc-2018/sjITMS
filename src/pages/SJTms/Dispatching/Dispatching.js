@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-29 14:03:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-19 11:47:01
+ * @LastEditTime: 2022-07-20 09:07:27
  * @Description: 配送调度主页面
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\Dispatching.js
  */
@@ -32,6 +32,11 @@ export default class Dispatching extends Component {
     selectOrders: [],
     isOrderCollect: true,
   };
+
+  componentDidMount() {
+    const isOrderCollect = localStorage.getItem(window.location.hostname + '-orderCollect');
+    this.setState({ isOrderCollect: isOrderCollect != 'false' });
+  }
 
   refreshOrderTable = () => {
     this.orderPoolPageRef.refreshTable();
@@ -64,6 +69,7 @@ export default class Dispatching extends Component {
     this.setState({ selectOrders: [...tempSelectOrders, ...orders] });
   };
   refreshOrderCollect = isOrderCollect => {
+    localStorage.setItem(window.location.hostname + '-orderCollect', isOrderCollect);
     this.setState({ isOrderCollect, selectOrders: [] });
   };
 

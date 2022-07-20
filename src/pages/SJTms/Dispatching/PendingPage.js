@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-19 17:25:32
+ * @LastEditTime: 2022-07-20 14:07:17
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -26,7 +26,6 @@ const { Text } = Typography;
 export default class PendingPage extends Component {
   state = {
     loading: false,
-    pendingOrderColumns: [...OrderColumns],
     pendingData: [],
     pendingCollectData: [],
     pendingParentRowKeys: [],
@@ -165,7 +164,6 @@ export default class PendingPage extends Component {
   render() {
     const {
       loading,
-      pendingOrderColumns,
       pendingData,
       pendingCollectData,
       pendingParentRowKeys,
@@ -243,7 +241,7 @@ export default class PendingPage extends Component {
             }}
             changeSelectRows={this.tableChangeRows}
             selectedRowKeys={pendingRowKeys}
-            columns={pendingOrderColumns}
+            columns={OrderColumns}
             scrollY="calc(68vh - 130px)"
           />
         )}

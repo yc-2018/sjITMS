@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-19 16:58:17
+ * @LastEditTime: 2022-07-20 14:10:53
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
@@ -73,7 +73,9 @@ export default class DispatchingTable extends Component {
       const sortType = sorter.order === 'descend' ? 'desc' : 'asc';
       dataSource = orderBy(
         dataSource,
-        sorter.column.sorterCode ? x => x[sorter.field].code : [sorter.field],
+        sorter.column.sorterCode
+          ? x => (x[sorter.field] ? x[sorter.field].code : '')
+          : [sorter.field],
         [sortType]
       );
     }

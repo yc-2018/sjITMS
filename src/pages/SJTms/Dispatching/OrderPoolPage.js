@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-19 17:48:52
+ * @LastEditTime: 2022-07-20 16:17:58
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -40,7 +40,12 @@ export default class OrderPoolPage extends Component {
   };
 
   componentDidMount() {
-    this.refreshOrderPool();
+    this.refreshOrderPool({
+      superQuery: {
+        matchType: 'and',
+        queryParams: [{ field: 'ORDERTYPE', type: 'VarChar', rule: 'eq', val: 'Delivery' }],
+      },
+    });
   }
 
   componentWillReceiveProps(nextProps) {
@@ -60,25 +65,23 @@ export default class OrderPoolPage extends Component {
         this.getScheduledOrders(activeTab);
         break;
       default:
-        this.refreshOrderPool();
+        this.refreshOrderPool({ superQuery: { matchType: 'and', queryParams: [] } });
         break;
     }
   };
 
   refreshOrderPool = params => {
     this.setState({ loading: true });
-    if (params == undefined) {
-      params = { superQuery: { matchType: 'and', queryParams: [] } };
-    }
     let { superQuery } = params;
     const isOrgQuery = [
-      { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
-      { field: 'dispatchcenteruuid', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
+      { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+      { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
     ];
     params.superQuery.queryParams = [
       ...superQuery.queryParams,
       ...isOrgQuery,
       { field: 'STAT', type: 'VarChar', rule: 'eq', val: 'Audited' },
+      { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
     ];
     queryAuditedOrder(params).then(response => {
       if (response.success) {
@@ -86,6 +89,7 @@ export default class OrderPoolPage extends Component {
           loading: false,
           auditedData: response.data,
           auditedCollectData: this.groupData(response.data),
+          auditedParentRowKeys: [],
           auditedRowKeys: [],
           scheduledRowKeys: [],
           activeTab: 'Audited',
@@ -188,6 +192,12 @@ export default class OrderPoolPage extends Component {
       return;
     }
     const orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
+    //订单类型校验
+    const orderType = uniqBy(orders.map(x => x.orderType));
+    if (orderType.includes('Returnable') && orderType.some(x => x != 'Returnable')) {
+      message.error('门店退货类型运输订单不能与其它类型订单混排，请检查！');
+      return;
+    }
     //不可共配校验
     let owners = [...orders, ...selectPending].map(x => {
       return { ...x.owner, noJointlyOwnerCodes: x.noJointlyOwnerCode };

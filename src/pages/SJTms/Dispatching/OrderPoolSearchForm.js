@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-19 16:44:43
+ * @LastEditTime: 2022-07-20 09:39:43
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -181,7 +181,7 @@ export default class OrderPoolSearchForm extends Component {
         let startDate = moment(new Date())
           .add(-item.searchDefVal, 'days')
           .format('YYYY-MM-DD');
-        item.defaultValue = `${startDate}||${endDate}`;
+        item.searchDefVal = `${startDate}||${endDate}`;
       }
       return item;
     });
@@ -198,7 +198,7 @@ export default class OrderPoolSearchForm extends Component {
               <Col span={10}>
                 <Form.Item key={searchField.id} label={searchField.fieldTxt}>
                   {getFieldDecorator(searchField.fieldName, {
-                    initialValue: searchField.defaultValue || undefined,
+                    initialValue: searchField.searchDefVal || undefined,
                     rules: [
                       {
                         required: searchField.searchRequire,
@@ -212,11 +212,10 @@ export default class OrderPoolSearchForm extends Component {
           })}
           <Col span={4} style={{ paddingLeft: 12 }}>
             <AdvanceQuery
+              reportCode={this.state.quickuuid}
               searchFields={this.state.advancedFields}
               isOrgQuery={isOrgQuery}
-              filterValue={this.state.pageFilter.searchKeyValues}
               refresh={this.onAdvanceSearch}
-              reportCode={this.state.quickuuid}
             />
           </Col>
         </Row>
@@ -226,7 +225,7 @@ export default class OrderPoolSearchForm extends Component {
               <Col span={10}>
                 <Form.Item key={searchField.id} label={searchField.fieldTxt}>
                   {getFieldDecorator(searchField.fieldName, {
-                    initialValue: searchField.defaultValue || undefined,
+                    initialValue: searchField.searchDefVal || undefined,
                     rules: [
                       {
                         required: searchField.searchRequire,
