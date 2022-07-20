@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-14 11:51:43
+ * @LastEditTime: 2022-07-20 15:25:12
  * @Description: 司机刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\Swipe.js
  */
@@ -24,19 +24,20 @@ export default class Swipe extends PureComponent {
 
   //刷卡
   onSubmit = async event => {
-    this.setState({ loading: true });
+    localStorage.setItem('showMessage', '0');
+    this.setState({ loading: true, errMsg: undefined });
     const response = await swipe(event.target.value);
+    localStorage.setItem('showMessage', '1');
     if (response.success) {
-      if (response.data.code == 0) {
-        this.setState({
-          loading: false,
-          scheduleBill: response.data.scheduleBill,
-          message: response.data.message,
-          isShip: response.data.message.indexOf('装车') != -1,
-        });
-      } else this.setState({ errMsg: response.data.message, scheduleBill: {} });
+      this.setState({
+        loading: false,
+        scheduleBill: response.data.scheduleBill,
+        message: response.data.message,
+        isShip: response.data.message.indexOf('装车') != -1,
+      });
+    } else {
+      this.setState({ errMsg: response.message, scheduleBill: {}, loading: false });
     }
-    this.setState({ loading: false });
   };
   render() {
     const { loading, scheduleBill, errMsg, message, isShip } = this.state;

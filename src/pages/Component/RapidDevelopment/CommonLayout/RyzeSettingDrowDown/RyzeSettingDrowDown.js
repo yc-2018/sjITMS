@@ -228,6 +228,7 @@ export default class RyzeSettingDrowDown extends Component {
 
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
+    this.handleOK();
   };
 
   moveSettingRow = (dragIndex, hoverIndex) => {

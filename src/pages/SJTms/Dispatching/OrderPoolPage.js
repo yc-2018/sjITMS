@@ -2,95 +2,103 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-09 11:05:44
+ * @LastEditTime: 2022-07-20 16:17:58
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
 import React, { Component } from 'react';
-import { Button, Row, Col, Tabs, message, Typography } from 'antd';
+import { Switch, Button, Row, Col, Tabs, message, Typography } from 'antd';
 import DispatchingTable from './DispatchingTable';
-import { OrderColumns, pagination } from './DispatchingColumns';
+import DispatchingChildTable from './DispatchingChildTable';
+import {
+  OrderColumns,
+  OrderCollectColumns,
+  OrderDetailColumns,
+  pagination,
+} from './DispatchingColumns';
 import OrderPoolSearchForm from './OrderPoolSearchForm';
-import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import dispatchingStyles from './Dispatching.less';
-import {
-  queryAuditedOrder,
-  getAuditedOrder,
-  getOrderByStat,
-  savePending,
-} from '@/services/sjitms/OrderBill';
+import { queryAuditedOrder, getOrderByStat, savePending } from '@/services/sjitms/OrderBill';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
-import { isEmpty } from '@/utils/utils';
-import { groupBy, sumBy, uniq, uniqBy } from 'lodash';
-import { string } from 'prop-types';
+import { groupBy, sumBy, uniqBy } from 'lodash';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
 
 export default class OrderPoolPage extends Component {
   state = {
-    searchKeyValues: { orderType: 'Delivery' },
     loading: false,
-    orderPoolColumns: [...OrderColumns],
     auditedData: [],
+    auditedCollectData: [],
     scheduledData: [],
+    auditedParentRowKeys: [],
     auditedRowKeys: [],
     scheduledRowKeys: [],
     activeTab: 'Audited',
   };
 
   componentDidMount() {
-    this.orderColSetting.handleOK();
-    this.refreshTable();
+    this.refreshOrderPool({
+      superQuery: {
+        matchType: 'and',
+        queryParams: [{ field: 'ORDERTYPE', type: 'VarChar', rule: 'eq', val: 'Delivery' }],
+      },
+    });
+  }
+
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.isOrderCollect != this.props.isOrderCollect) {
+      this.setState({
+        auditedParentRowKeys: [],
+        auditedRowKeys: [],
+      });
+    }
   }
 
   //刷新
-  refreshTable = searchKeyValues => {
-    if (searchKeyValues == undefined) {
-      searchKeyValues = this.state.searchKeyValues;
-    }
+  refreshTable = () => {
     const { activeTab } = this.state;
     switch (activeTab) {
       case 'Scheduled':
         this.getScheduledOrders(activeTab);
         break;
       default:
-        this.getAuditedOrders(searchKeyValues, activeTab);
+        this.refreshOrderPool({ superQuery: { matchType: 'and', queryParams: [] } });
         break;
     }
   };
 
   refreshOrderPool = params => {
     this.setState({ loading: true });
+    let { superQuery } = params;
+    const isOrgQuery = [
+      { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+      { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
+    ];
+    params.superQuery.queryParams = [
+      ...superQuery.queryParams,
+      ...isOrgQuery,
+      { field: 'STAT', type: 'VarChar', rule: 'eq', val: 'Audited' },
+      { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
+    ];
     queryAuditedOrder(params).then(response => {
       if (response.success) {
         this.setState({
           loading: false,
           auditedData: response.data,
+          auditedCollectData: this.groupData(response.data),
+          auditedParentRowKeys: [],
           auditedRowKeys: [],
           scheduledRowKeys: [],
+          activeTab: 'Audited',
         });
+        this.props.refreshSelectRowOrder([], 'Audited');
       }
     });
   };
 
-  //获取待排运输订单
-  getAuditedOrders = (searchKeyValues, activeKey) => {
-    this.setState({ loading: true });
-    getAuditedOrder(searchKeyValues).then(response => {
-      if (response.success) {
-        this.setState({
-          searchKeyValues,
-          loading: false,
-          auditedData: response.data,
-          auditedRowKeys: [],
-          scheduledRowKeys: [],
-          activeTab: activeKey,
-        });
-      }
-    });
-  };
   //获取已排运输订单
   getScheduledOrders = activeKey => {
     this.setState({ activeTab: activeKey, loading: true });
@@ -108,21 +116,24 @@ export default class OrderPoolPage extends Component {
 
   //按送货点汇总运输订单
   groupData = data => {
-    let output = groupBy(data, 'deliverypointcode');
+    let output = groupBy(data, x => x.deliveryPoint.code);
     let deliveryPointGroupArr = Object.keys(output).map(pointCode => {
       const orders = output[pointCode];
       return {
         pointCode,
-        orderStat: orders[0].stat,
-        archLineCode: '',
-        deliverypoint: `[${orders[0].deliveryPoint.code}]` + orders[0].deliveryPoint.name,
-        address: orders[0].deliveryPoint.address,
-        cartonCount: sumBy(orders, 'cartonCount') + '/' + sumBy(orders, 'realCartonCount'),
-        scatteredCount: sumBy(orders, 'scatteredCount') + '/' + sumBy(orders, 'realScatteredCount'),
-        containerCount: sumBy(orders, 'containerCount') + '/' + sumBy(orders, 'realContainerCount'),
-        volume: sumBy(orders, 'volume'),
-        weight: sumBy(orders, 'weight'),
+        uuid: orders[0].uuid,
+        deliveryPoint: orders[0].deliveryPoint,
+        archLine: orders[0].archLine,
         owner: orders[0].owner,
+        address: orders[0].deliveryPoint.address,
+        cartonCount: Math.round(sumBy(orders, 'cartonCount') * 1000) / 1000,
+        realCartonCount: Math.round(sumBy(orders, 'realCartonCount') * 1000) / 1000,
+        scatteredCount: Math.round(sumBy(orders, 'scatteredCount') * 1000) / 1000,
+        realScatteredCount: Math.round(sumBy(orders, 'realScatteredCount') * 1000) / 1000,
+        containerCount: Math.round(sumBy(orders, 'containerCount') * 1000) / 1000,
+        realContainerCount: Math.round(sumBy(orders, 'realContainerCount') * 1000) / 1000,
+        volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
+        weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
       };
     });
     deliveryPointGroupArr.forEach(data => {
@@ -144,22 +155,32 @@ export default class OrderPoolPage extends Component {
   };
 
   //表格行选择
-  tableChangeRows = tableType => {
-    return selectedRowKeys => {
-      switch (tableType) {
-        case 'Scheduled':
-          this.setState({ scheduledRowKeys: selectedRowKeys });
-          break;
-        default:
-          const { auditedData } = this.state;
-          this.props.refreshSelectRowOrder(
-            auditedData.filter(x => selectedRowKeys.indexOf(x.uuid) != -1),
-            'Audited'
-          );
-          this.setState({ auditedRowKeys: selectedRowKeys });
-          break;
-      }
-    };
+  tableChangeRows = (tableType, selectedRowKeys) => {
+    switch (tableType) {
+      case 'Scheduled':
+        this.setState({ scheduledRowKeys: selectedRowKeys });
+        break;
+      default:
+        const { auditedData } = this.state;
+        this.props.refreshSelectRowOrder(
+          auditedData.filter(x => selectedRowKeys.indexOf(x.uuid) != -1),
+          'Audited'
+        );
+        this.setState({ auditedRowKeys: selectedRowKeys });
+        break;
+    }
+  };
+
+  childTableChangeRows = result => {
+    const { auditedData } = this.state;
+    const totalAuditedData = auditedData.filter(
+      x => result.childSelectedRowKeys.indexOf(x.uuid) != -1
+    );
+    this.props.refreshSelectRowOrder(totalAuditedData, 'Audited');
+    this.setState({
+      auditedParentRowKeys: result.selectedRowKeys,
+      auditedRowKeys: result.childSelectedRowKeys,
+    });
   };
 
   //排车
@@ -171,6 +192,12 @@ export default class OrderPoolPage extends Component {
       return;
     }
     const orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
+    //订单类型校验
+    const orderType = uniqBy(orders.map(x => x.orderType));
+    if (orderType.includes('Returnable') && orderType.some(x => x != 'Returnable')) {
+      message.error('门店退货类型运输订单不能与其它类型订单混排，请检查！');
+      return;
+    }
     //不可共配校验
     let owners = [...orders, ...selectPending].map(x => {
       return { ...x.owner, noJointlyOwnerCodes: x.noJointlyOwnerCode };
@@ -299,19 +326,14 @@ export default class OrderPoolPage extends Component {
     };
   };
 
-  //更新列配置
-  setColumns = (orderPoolColumns, index, width) => {
-    this.orderColSetting.handleWidth(index, width);
-    this.setState({ orderPoolColumns });
-  };
-
   render() {
     const {
       loading,
-      orderPoolColumns,
+      auditedParentRowKeys,
       auditedRowKeys,
-      scheduledRowKeys,
       auditedData,
+      auditedCollectData,
+      scheduledRowKeys,
       scheduledData,
       activeTab,
     } = this.state;
@@ -336,15 +358,6 @@ export default class OrderPoolPage extends Component {
       }
     };
 
-    const settingColumn = (
-      <RyzeSettingDrowDown
-        columns={OrderColumns}
-        comId={'OrderPoolColumns'}
-        getNewColumns={this.setColumns}
-        onRef={ref => (this.orderColSetting = ref)}
-      />
-    );
-
     return (
       <Tabs
         activeKey={activeTab}
@@ -358,22 +371,57 @@ export default class OrderPoolPage extends Component {
             refreshOrderPool={this.refreshOrderPool}
           />
           {/* 待排订单列表 */}
-          <DispatchingTable
-            clickRow
-            pagination={pagination}
-            setColumns={this.setColumns}
-            children={settingColumn}
-            loading={loading}
-            dataSource={auditedData}
-            refreshDataSource={auditedData => {
-              this.setState({ auditedData });
-            }}
-            changeSelectRows={this.tableChangeRows('Audited')}
-            selectedRowKeys={auditedRowKeys}
-            columns={orderPoolColumns}
-            scrollY="calc(68vh - 220px)"
-            title={this.buildTitle}
-          />
+          {this.props.isOrderCollect ? (
+            <DispatchingChildTable
+              comId="orderPool"
+              clickRow
+              // childSettingCol
+              pagination={pagination || false}
+              loading={loading}
+              dataSource={auditedCollectData}
+              refreshDataSource={auditedCollectData => {
+                this.childTableChangeRows({ selectedRowKeys: [], childSelectedRowKeys: [] });
+                this.setState({ auditedCollectData });
+              }}
+              changeSelectRows={this.childTableChangeRows}
+              selectedRowKeys={auditedParentRowKeys}
+              childSelectedRowKeys={auditedRowKeys}
+              columns={OrderCollectColumns}
+              nestColumns={OrderDetailColumns}
+              scrollY="calc(68vh - 220px)"
+              title={this.buildTitle}
+            />
+          ) : (
+            <DispatchingTable
+              comId="orderPool"
+              clickRow
+              pagination={pagination}
+              loading={loading}
+              dataSource={auditedData}
+              refreshDataSource={auditedData => {
+                this.tableChangeRows('Audited', []);
+                this.setState({ auditedData });
+              }}
+              changeSelectRows={selectedRowKeys => this.tableChangeRows('Audited', selectedRowKeys)}
+              selectedRowKeys={auditedRowKeys}
+              columns={OrderColumns}
+              scrollY="calc(68vh - 220px)"
+              title={this.buildTitle}
+            />
+          )}
+          {loading ? (
+            <></>
+          ) : (
+            <div style={{ position: 'absolute', bottom: 0, left: 10 }}>
+              门店汇总：
+              <Switch
+                checked={this.props.isOrderCollect}
+                onClick={isOrderCollect => {
+                  this.props.refreshOrderCollect(isOrderCollect);
+                }}
+              />
+            </div>
+          )}
           {/* 排车modal */}
           <DispatchingCreatePage
             modal={{ title: '排车' }}
@@ -391,21 +439,18 @@ export default class OrderPoolPage extends Component {
         >
           {/* 已排列表 */}
           <DispatchingTable
+            comId="scheduleOrder"
             clickRow
             pagination={pagination}
-            setColumns={this.setColumns}
-            children={settingColumn}
             loading={loading}
             dataSource={scheduledData}
             refreshDataSource={scheduledData => {
+              this.tableChangeRows('Scheduled', []);
               this.setState({ scheduledData });
             }}
-            changeSelectRows={this.tableChangeRows('Scheduled')}
+            changeSelectRows={selectedRowKeys => this.tableChangeRows('Scheduled', selectedRowKeys)}
             selectedRowKeys={scheduledRowKeys}
-            columns={[
-              { title: '排车单号', dataIndex: 'scheduleNum', width: 150 },
-              ...orderPoolColumns,
-            ]}
+            columns={[{ title: '排车单号', dataIndex: 'scheduleNum', width: 150 }, ...OrderColumns]}
             scrollY="calc(68vh - 115px)"
           />
         </TabPane>

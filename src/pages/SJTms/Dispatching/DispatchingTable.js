@@ -2,13 +2,14 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-02 09:26:49
+ * @LastEditTime: 2022-07-20 14:10:53
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
 import React, { Component } from 'react';
 import { Resizable } from 'react-resizable';
-import { Table } from 'antd';
+import { Table, Row, Col } from 'antd';
+import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
 import dispatchingTableStyles from './DispatchingTable.less';
 import { orderBy } from 'lodash';
 
@@ -33,12 +34,6 @@ const ResizeableTitle = props => {
 
 export default class DispatchingTable extends Component {
   state = { columns: this.props.columns };
-
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.columns && nextProps.columns != this.props.columns) {
-      this.setState({ columns: nextProps.columns });
-    }
-  }
 
   components = {
     header: {
@@ -73,12 +68,18 @@ export default class DispatchingTable extends Component {
 
   handleStandardTableChange = (pagination, filtersArg, sorter) => {
     //排序
-    if (sorter.field && this.props.refreshDataSource) {
-      let { dataSource } = this.props;
+    let { dataSource } = this.props;
+    if (sorter.field && this.props.refreshDataSource && sorter.column) {
       const sortType = sorter.order === 'descend' ? 'desc' : 'asc';
-      dataSource = orderBy(dataSource, [sorter.field], [sortType]);
-      this.props.refreshDataSource(dataSource);
+      dataSource = orderBy(
+        dataSource,
+        sorter.column.sorterCode
+          ? x => (x[sorter.field] ? x[sorter.field].code : '')
+          : [sorter.field],
+        [sortType]
+      );
     }
+    this.props.refreshDataSource(dataSource);
   };
 
   //修改宽度
@@ -88,13 +89,17 @@ export default class DispatchingTable extends Component {
       ...nextColumns[index],
       width: size.width,
     };
-    this.props.setColumns
-      ? this.props.setColumns(nextColumns, index, size.width)
-      : this.setState({ columns: nextColumns });
+    this.setColumns(nextColumns, index, size.width);
+  };
+
+  //更新列配置
+  setColumns = (columns, index, width) => {
+    this.columnsSetting.handleWidth(index, width);
+    this.setState({ columns });
   };
 
   render() {
-    const { selectedRowKeys, pagination } = this.props;
+    const { selectedRowKeys } = this.props;
     const rowSelection = selectedRowKeys
       ? {
           selectedRowKeys,
@@ -112,7 +117,19 @@ export default class DispatchingTable extends Component {
 
     return (
       <div style={{ position: 'relative' }}>
-        {this.props.children}
+        {this.props.topBar}
+        <Row>
+          <Col span={20}>{this.props.settingColumnsBar}</Col>
+          <Col span={4}>
+            <RyzeSettingDrowDown
+              comId={this.props.comId + 'SettingColumns'}
+              noToolbarPanel={this.props.noToolbarPanel}
+              columns={this.props.columns}
+              getNewColumns={this.setColumns}
+              onRef={ref => (this.columnsSetting = ref)}
+            />
+          </Col>
+        </Row>
         <Table
           {...this.props}
           size="small"

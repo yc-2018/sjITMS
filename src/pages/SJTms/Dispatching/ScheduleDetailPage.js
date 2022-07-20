@@ -2,34 +2,76 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-30 10:30:53
+ * @LastEditTime: 2022-07-20 10:06:45
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
 import React, { Component } from 'react';
-import { Table, Button, Row, Col, Typography, message, Empty } from 'antd';
+import { Button, Row, Col, Typography, message, Empty } from 'antd';
 import emptySvg from '@/assets/common/img_empoty.svg';
-import { ScheduleDetailColumns } from './DispatchingColumns';
+import { ScheduleDetailColumns, OrderCollectColumns } from './DispatchingColumns';
 import EditContainerNumberPage from './EditContainerNumberPage';
 import DispatchingTable from './DispatchingTable';
-import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
+import DispatchingChildTable from './DispatchingChildTable';
 import dispatchingStyles from './Dispatching.less';
 import { removeOrders } from '@/services/sjitms/ScheduleBill';
+import { groupBy, sumBy } from 'lodash';
 
-const { Title, Text } = Typography;
+const { Text } = Typography;
 
 export default class ScheduleDetailPage extends Component {
   state = {
     loading: false,
-    scheduleDetailColumns: [...ScheduleDetailColumns],
     selectedRowKeys: [],
+    selectedParentRowKeys: [],
     schedule: undefined,
+    scheduleDetail: [],
+    scheduleCollectDetail: [],
   };
 
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.isOrderCollect != this.props.isOrderCollect) {
+      this.setState({ selectedRowKeys: [], selectedParentRowKeys: [] });
+    }
+  }
+
   refreshTable = schedule => {
-    this.setState({ schedule, selectedRowKeys: [] });
+    this.setState({
+      schedule,
+      scheduleDetail: schedule ? schedule.details : [],
+      scheduleCollectDetail: schedule ? this.groupData(schedule.details) : [],
+      selectedRowKeys: [],
+      childSelectedRowKeys: [],
+    });
     this.props.refreshSelectRowOrder([], 'Schedule');
-    this.scheduleDetailColSetting ? this.scheduleDetailColSetting.handleOK() : {};
+  };
+
+  //按送货点汇总运输订单
+  groupData = data => {
+    let output = groupBy(data, x => x.deliveryPoint.code);
+    let deliveryPointGroupArr = Object.keys(output).map(pointCode => {
+      const orders = output[pointCode];
+      return {
+        pointCode,
+        uuid: orders[0].uuid,
+        deliveryPoint: orders[0].deliveryPoint,
+        archLine: orders[0].archLine,
+        owner: orders[0].owner,
+        address: orders[0].deliveryPoint.address,
+        cartonCount: Math.round(sumBy(orders, 'cartonCount') * 1000) / 1000,
+        realCartonCount: Math.round(sumBy(orders, 'realCartonCount') * 1000) / 1000,
+        scatteredCount: Math.round(sumBy(orders, 'scatteredCount') * 1000) / 1000,
+        realScatteredCount: Math.round(sumBy(orders, 'realScatteredCount') * 1000) / 1000,
+        containerCount: Math.round(sumBy(orders, 'containerCount') * 1000) / 1000,
+        realContainerCount: Math.round(sumBy(orders, 'realContainerCount') * 1000) / 1000,
+        volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
+        weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
+      };
+    });
+    deliveryPointGroupArr.forEach(data => {
+      data.details = output[data.pointCode];
+    });
+    return deliveryPointGroupArr;
   };
 
   //排车单明细整件数量修改
@@ -72,33 +114,31 @@ export default class ScheduleDetailPage extends Component {
     );
     this.setState({ selectedRowKeys });
   };
-
-  //更新列配置
-  setColumns = (scheduleDetailColumns, index, width) => {
-    index ? this.scheduleDetailColSetting.handleWidth(index, width) : {};
-    this.setState({ scheduleDetailColumns });
+  childTableChangeRows = result => {
+    const { schedule } = this.state;
+    let orders = schedule.details;
+    orders = orders.map(item => {
+      return { ...item, billNumber: item.orderNumber, stat: 'Schedule' };
+    });
+    this.props.refreshSelectRowOrder(
+      orders.filter(x => result.childSelectedRowKeys.indexOf(x.uuid) != -1),
+      'Schedule'
+    );
+    this.setState({
+      selectedParentRowKeys: result.selectedRowKeys,
+      selectedRowKeys: result.childSelectedRowKeys,
+    });
   };
 
   render() {
-    const { loading, scheduleDetailColumns, selectedRowKeys, schedule } = this.state;
-    const editColumn = {
-      title: '操作',
-      width: 50,
-      render: (_, record) => (
-        <a href="#" onClick={() => this.editDetail(record)}>
-          编辑
-        </a>
-      ),
-    };
-    const settingColumns = (
-      <RyzeSettingDrowDown
-        noToolbarPanel
-        columns={ScheduleDetailColumns}
-        comId={'ScheduleDetailColumns'}
-        getNewColumns={this.setColumns}
-        onRef={ref => (this.scheduleDetailColSetting = ref)}
-      />
-    );
+    const {
+      loading,
+      selectedRowKeys,
+      selectedParentRowKeys,
+      schedule,
+      scheduleDetail,
+      scheduleCollectDetail,
+    } = this.state;
     return schedule == undefined ? (
       <Empty style={{ marginTop: 80 }} image={emptySvg} description="暂无数据，请选择排车单！" />
     ) : (
@@ -117,18 +157,44 @@ export default class ScheduleDetailPage extends Component {
             )}
           </Col>
         </Row>
-        <DispatchingTable
-          clickRow
-          pagination={false}
-          setColumns={this.setColumns}
-          children={settingColumns}
-          loading={loading}
-          dataSource={schedule.details}
-          changeSelectRows={this.tableChangeRows}
-          selectedRowKeys={selectedRowKeys}
-          columns={scheduleDetailColumns}
-          scrollY="calc(68vh - 107px)"
-        />
+        {this.props.isOrderCollect ? (
+          <DispatchingChildTable
+            comId="scheduleDetail"
+            clickRow
+            // childSettingCol
+            noToolbarPanel={true}
+            pagination={false}
+            loading={loading}
+            dataSource={scheduleCollectDetail}
+            refreshDataSource={scheduleCollectDetail => {
+              this.childTableChangeRows({ selectedRowKeys: [], childSelectedRowKeys: [] });
+              this.setState({ scheduleCollectDetail });
+            }}
+            changeSelectRows={this.childTableChangeRows}
+            selectedRowKeys={selectedParentRowKeys}
+            childSelectedRowKeys={selectedRowKeys}
+            columns={OrderCollectColumns}
+            nestColumns={ScheduleDetailColumns}
+            scrollY="calc(68vh - 107px)"
+          />
+        ) : (
+          <DispatchingTable
+            comId="scheduleDetail"
+            clickRow
+            pagination={false}
+            loading={loading}
+            noToolbarPanel={true}
+            dataSource={scheduleDetail}
+            refreshDataSource={scheduleDetail => {
+              this.tableChangeRows([]);
+              this.setState({ scheduleDetail });
+            }}
+            changeSelectRows={this.tableChangeRows}
+            selectedRowKeys={selectedRowKeys}
+            columns={ScheduleDetailColumns}
+            scrollY="calc(68vh - 107px)"
+          />
+        )}
         {/* 修改排车数量  */}
         <EditContainerNumberPage
           modal={{ title: '编辑' }}

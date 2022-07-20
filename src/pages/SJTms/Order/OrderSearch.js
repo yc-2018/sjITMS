@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-05 09:30:56
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-07-20 10:48:48
  * @version: 1.0
  */
 import React from 'react';
@@ -10,6 +10,7 @@ import { Button, Popconfirm, message } from 'antd';
 import { connect } from 'dva';
 import { havePermission } from '@/utils/authority';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
+import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { batchAudit, audit, cancel } from '@/services/sjitms/OrderBill';
 
 @connect(({ quick, loading }) => ({
@@ -20,27 +21,38 @@ import { batchAudit, audit, cancel } from '@/services/sjitms/OrderBill';
 export default class OrderSearch extends QuickFormSearchPage {
   state = {
     ...this.state,
+    showAuditPop: false,
     uploadModal: false,
   };
-
-  drawExColumns = e => {};
-
-  drawcell = e => {};
 
   onUpload = () => {
     this.props.switchTab('import');
   };
 
   drawToolsButton = () => {
+    const { showAuditPop, selectedRows } = this.state;
     return (
       <span>
         <Popconfirm
           title="你确定要审核所选中的内容吗?"
-          onConfirm={() => this.onBatchAudit()}
-          okText="确定"
-          cancelText="取消"
+          visible={showAuditPop}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showAuditPop: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showAuditPop: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showAuditPop: false });
+            this.onAudit(selectedRows[0]).then(response => {
+              if (response.success) {
+                message.success('审核成功！');
+                this.onSearch();
+              }
+            });
+          }}
         >
-          <Button>审核</Button>
+          <Button onClick={() => this.onBatchAudit()}>审核</Button>
         </Popconfirm>
         <Popconfirm
           title="你确定要审全部的内容吗?"
@@ -58,6 +70,7 @@ export default class OrderSearch extends QuickFormSearchPage {
         >
           <Button>取消</Button>
         </Popconfirm>
+        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </span>
     );
   };
@@ -93,17 +106,20 @@ export default class OrderSearch extends QuickFormSearchPage {
     }
   };
 
+  //审核
+  onAudit = async record => {
+    return await audit(record.BILLNUMBER);
+  };
   //批量审核（多选）
   onBatchAudit = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length !== 0) {
-      selectedRows.forEach(data => {
-        this.audit(data.BILLNUMBER);
-      });
-      this.onSearch();
-    } else {
-      message.error('请至少选中一条数据！');
+    if (selectedRows.length == 0) {
+      message.warn('请选中一条数据！');
+      return;
     }
+    selectedRows.length == 1
+      ? this.setState({ showAuditPop: true })
+      : this.batchProcessConfirmRef.show('审核', selectedRows, this.onAudit, this.onSearch);
   };
   //批量审核（查询结果）
   onBatchAllAudit = async () => {
