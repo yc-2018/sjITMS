@@ -20,12 +20,14 @@ const mathRule = [
   { value: 'like', name: '包含' },
   { value: 'likeRight', name: '以...开始' },
   { value: 'likeLeft', name: '以...结尾' },
-  { value: 'between', name: '在...中' },
+  { value: 'between', name: '介于…之间' },
   { value: 'ne', name: '不等于' },
   { value: 'gt', name: '大于' },
   { value: 'ge', name: '大于等于' },
   { value: 'lt', name: '小于' },
   { value: 'le', name: '小于等于' },
+  { value: 'in', name: '在...内' },
+  { value: 'notIn', name: '不在...内' },
 ];
 @Form.create()
 export default class ColsAdvanced extends Component {
@@ -66,7 +68,7 @@ export default class ColsAdvanced extends Component {
     this.setState({
       searchParams: [
         {
-          key: 1,
+          key: 0,
           searchField: undefined,
           searchCondition: 'like',
           defaultValue: undefined,
@@ -91,11 +93,24 @@ export default class ColsAdvanced extends Component {
           data.type = searchField?.fieldType;
           data.field = item;
           data.rule = rule[index];
-          if(searchField?.searchShowtype == "auto_complete" || searchField?.searchShowtype == "sel_tree"){
+          //增加rule为like判断
+          if (
+            (searchField?.searchShowtype == 'auto_complete' ||
+              searchField?.searchShowtype == 'sel_tree') &&
+            rule[index] != 'like'
+          ) {
             data.val = val[index].value;
           } else {
             data.val = val[index];
           }
+          //多选更改入参
+          if (
+            (searchField.searchShowtype == 'list' || searchField.searchShowtype == 'sel_search') &&
+            (rule[index] == 'in' || rule[index] == 'notIn')
+          ) {
+            data.val = val[index].join('||');
+          }
+
           IQueryParam.queryParams.push(data);
         }
       });
@@ -121,9 +136,17 @@ export default class ColsAdvanced extends Component {
   };
   //查询条件选择
   onConditionSelect = key => {
+    const { searchFields } = this.props;
+    const { searchParams } = this.state;
+    if (searchParams[key]) {
+      let selectField = searchFields.find(item => item.fieldName == searchParams[key].searchField);
+      if (selectField) {
+        selectField.searchCondition = searchParams[key].searchCondition;
+      }
+    }
+
     return condition => {
       this.props.form.resetFields([`val[${key}]`, `rule[${key}]`]);
-      const { searchParams } = this.state;
       const newSearchParams = [...searchParams];
       const index = newSearchParams.findIndex(x => x.key == key);
       newSearchParams[index].searchCondition = condition;
