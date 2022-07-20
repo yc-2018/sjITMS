@@ -297,8 +297,8 @@ export default class DispatchingCreatePage extends Component {
         const wei = exceedWeight>0;
         const vol = exceedVolume >0;
         if(result.success){
+          let  confirmTitle = '';
           if(result.data){
-            let  confirmTitle = '';
             const valumelimit =  result.data.volume == 1;
             const weightLimit = result.data.weight == 1;
             if(valumelimit  && weightLimit){
