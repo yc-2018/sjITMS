@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-20 10:48:48
+ * @LastEditTime: 2022-07-20 17:34:15
  * @version: 1.0
  */
 import React from 'react';
@@ -22,6 +22,7 @@ export default class OrderSearch extends QuickFormSearchPage {
   state = {
     ...this.state,
     showAuditPop: false,
+    showCancelPop: false,
     uploadModal: false,
   };
 
@@ -30,7 +31,7 @@ export default class OrderSearch extends QuickFormSearchPage {
   };
 
   drawToolsButton = () => {
-    const { showAuditPop, selectedRows } = this.state;
+    const { showAuditPop, showCancelPop, selectedRows } = this.state;
     return (
       <span>
         <Popconfirm
@@ -64,11 +65,24 @@ export default class OrderSearch extends QuickFormSearchPage {
         </Popconfirm>
         <Popconfirm
           title="你确定要取消所选中的内容吗?"
-          onConfirm={() => this.onBatchCancel()}
-          okText="确定"
-          cancelText="取消"
+          visible={showCancelPop}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showCancelPop: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showCancelPop: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showCancelPop: false });
+            this.onCancel(selectedRows[0]).then(response => {
+              if (response.success) {
+                message.success('审核成功！');
+                this.onSearch();
+              }
+            });
+          }}
         >
-          <Button>取消</Button>
+          <Button onClick={() => this.onBatchCancel()}>取消</Button>
         </Popconfirm>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </span>
@@ -130,31 +144,19 @@ export default class OrderSearch extends QuickFormSearchPage {
     }
   };
 
+  //取消
+  onCancel = async record => {
+    return await cancel(record.BILLNUMBER);
+  };
+  //批量取消
   onBatchCancel = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length !== 0) {
-      selectedRows.forEach(data => {
-        this.cancel(data.BILLNUMBER);
-      });
-      this.onSearch();
-    } else {
-      message.error('请至少选中一条数据！');
+    if (selectedRows.length == 0) {
+      message.warn('请选中一条数据！');
+      return;
     }
-  };
-
-  audit = async billnumber => {
-    await audit(billnumber).then(result => {
-      if (result && result.success) {
-        message.success('审核成功!');
-      }
-    });
-  };
-
-  cancel = async billnumber => {
-    await cancel(billnumber).then(result => {
-      if (result && result.success) {
-        message.success('取消成功!');
-      }
-    });
+    selectedRows.length == 1
+      ? this.setState({ showCancelPop: true })
+      : this.batchProcessConfirmRef.show('取消', selectedRows, this.onCancel, this.onSearch);
   };
 }
