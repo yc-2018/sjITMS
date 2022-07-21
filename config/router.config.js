@@ -1299,6 +1299,15 @@ export default [
             divider: true,
           },
           {
+            path: '/tmscode/shippingorder',
+            name: '托运单',
+            org: ['DISPATCH_CENTER'],
+            component: './SJTms/ShippingOrder/ShippingOrderForm',
+            quickuuid: 'sj_itms_shippingorder',
+            authority: ['sjtms.core.shippingorder'],
+            divider: true,
+          },
+          {
             path: '/tmscode/taskCenter',
             name: 'taskCenter',
             org: ['DISPATCH_CENTER'],
