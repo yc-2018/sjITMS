@@ -1359,6 +1359,22 @@ export default [
                 quickuuid: 'sj_itms_member_wage',
                 authority: ['sjtms.bigData.arrange'],
               },
+              {
+                path: '/bigData/zs/checkreceiptbill',
+                name: '出车回单',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'sj_itms_checkreceiptbill_info',
+                authority: ['sjtms.bigData.arrange'],
+              },
+              {
+                path: '/bigData/zs/outCarMonth',
+                name: '每月出车统计',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'sj_itms_out_car_month_info',
+                authority: ['sjtms.bigData.arrange'],
+              }
             ],
           },
         ],
