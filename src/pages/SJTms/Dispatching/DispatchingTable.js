@@ -2,13 +2,14 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-20 14:10:53
+ * @LastEditTime: 2022-07-21 10:47:47
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
 import React, { Component } from 'react';
 import { Resizable } from 'react-resizable';
 import { Table, Row, Col } from 'antd';
+import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
 import dispatchingTableStyles from './DispatchingTable.less';
 import { orderBy } from 'lodash';
@@ -132,6 +133,10 @@ export default class DispatchingTable extends Component {
         </Row>
         <Table
           {...this.props}
+          loading={{
+            spinning: this.props.loading,
+            indicator: LoadingIcon('default'),
+          }}
           size="small"
           components={this.components}
           rowClassName={record => {
