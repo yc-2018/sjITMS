@@ -2,13 +2,14 @@
  * @Author: guankongjin
  * @Date: 2022-04-01 08:43:48
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-20 14:10:38
+ * @LastEditTime: 2022-07-21 10:47:57
  * @Description: 嵌套子表格组件
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingChildTable.js
  */
 import React, { Component } from 'react';
 import { Resizable } from 'react-resizable';
 import { Table, Row, Col } from 'antd';
+import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import dispatchingTableStyles from './DispatchingTable.less';
 import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
 import { orderBy } from 'lodash';
@@ -267,6 +268,10 @@ export default class DispatchingChildTable extends Component {
         </Row>
         <Table
           {...this.props}
+          loading={{
+            spinning: this.props.loading,
+            indicator: LoadingIcon('default'),
+          }}
           columns={columns}
           components={this.components}
           rowSelection={selectedRowKeys ? parentRowSelection : ''}

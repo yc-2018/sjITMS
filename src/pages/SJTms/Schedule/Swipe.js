@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-20 15:25:12
+ * @LastEditTime: 2022-07-21 10:36:00
  * @Description: 司机刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\Swipe.js
  */
@@ -11,6 +11,7 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
 import { Card, Col, Input, Row, Spin } from 'antd';
+import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import Empty from '@/pages/Component/Form/Empty';
 import { swipe } from '@/services/sjitms/ScheduleProcess';
 export default class Swipe extends PureComponent {
@@ -44,7 +45,7 @@ export default class Swipe extends PureComponent {
     return (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
-          <Spin spinning={loading}>
+          <Spin indicator={LoadingIcon('default')} spinning={loading}>
             <NavigatorPanel title="司机刷卡" />
             <div style={{ fontSize: 16, textAlign: 'center' }}>
               工号：
