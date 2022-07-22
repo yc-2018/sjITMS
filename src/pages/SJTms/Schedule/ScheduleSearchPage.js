@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-16 17:04:15
+ * @LastEditTime: 2022-07-22 12:27:13
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -16,6 +16,7 @@ import { queryAllData } from '@/services/quick/Quick';
 import { aborted, shipRollback } from '@/services/sjitms/ScheduleBill';
 import { depart, back } from '@/services/sjitms/ScheduleProcess';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
+import { groupBy, sumBy } from 'lodash';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -288,20 +289,38 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     const printPages = [];
     for (let index = 0; selectedRows.length > index; index++) {
       const response = await queryAllData({
-        quickuuid: 'sj_itms_schedule_order',
+        quickuuid: 'sj_itms_print_schedule_order',
+        superQuery: {
+          queryParams: [
+            { field: 'billuuid', type: 'VarChar', rule: 'eq', val: selectedRows[index].UUID },
+          ],
+        },
+      });
+      const memberWageResponse = await queryAllData({
+        quickuuid: 'sj_itms_member_wage',
         superQuery: {
           queryParams: [
             {
-              field: 'billuuid',
+              field: 'billnumber',
               type: 'VarChar',
               rule: 'eq',
-              val: selectedRows[index].UUID,
+              val: selectedRows[index].BILLNUMBER,
             },
           ],
         },
       });
       const scheduleDetails = response.success ? response.data.records : [];
-      const printPage = drawScheduleBillPage(selectedRows[index], scheduleDetails);
+      let memberWage = memberWageResponse.success ? memberWageResponse.data.records : [];
+      memberWage = memberWage.filter(x => x.AMOUNT);
+      let output = groupBy(memberWage, x => x.MEMBERNAME);
+      memberWage = Object.keys(output).map(member => {
+        const wages = output[member];
+        return {
+          memberName: member,
+          wage: Math.round(sumBy(wages, 'AMOUNT') * 1000) / 1000,
+        };
+      });
+      const printPage = drawScheduleBillPage(selectedRows[index], scheduleDetails, memberWage);
       printPages.push(printPage);
     }
     this.setState({ printPage: printPages });
@@ -313,15 +332,10 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     const printPages = [];
     for (let index = 0; selectedRows.length > index; index++) {
       const response = await queryAllData({
-        quickuuid: 'sj_itms_schedule_order',
+        quickuuid: 'sj_itms_print_schedule_order',
         superQuery: {
           queryParams: [
-            {
-              field: 'billuuid',
-              type: 'VarChar',
-              rule: 'eq',
-              val: selectedRows[index].UUID,
-            },
+            { field: 'billuuid', type: 'VarChar', rule: 'eq', val: selectedRows[index].UUID },
           ],
         },
       });
@@ -333,7 +347,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   };
 }
 
-const drawScheduleBillPage = (schedule, scheduleDetails) => {
+const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
   const driver = schedule.DRIVER ? schedule.DRIVER.substr(schedule.DRIVER.indexOf(']') + 1) : '';
   const stevedore = schedule.STEVEDORE
     ? schedule.STEVEDORE.substr(schedule.STEVEDORE.indexOf(']') + 1)
@@ -382,9 +396,9 @@ const drawScheduleBillPage = (schedule, scheduleDetails) => {
 
           <tr>
             <th width={120}>单号</th>
-            <th width={100}>单据类别</th>
+            <th width={80}>单据类别</th>
             <th width={100}>客户编号</th>
-            <th width={150}>客户名称</th>
+            <th width={170}>客户名称</th>
             <th width={60}>整件</th>
             <th width={60}>散件</th>
             <th width={100}>差异单号</th>
@@ -397,9 +411,9 @@ const drawScheduleBillPage = (schedule, scheduleDetails) => {
               return (
                 <tr style={{ textAlign: 'center' }}>
                   <td width={120}>{item.ORDERNUMBER}</td>
-                  <td>{item.ORDERTYPE}</td>
+                  <td>{item.BILLTYPE}</td>
                   <td>{item.DELIVERYPOINTCODE}</td>
-                  <td width={150}>{item.DELIVERYPOINTNAME}</td>
+                  <td width={170}>{item.DELIVERYPOINTNAME}</td>
                   <td>{item.REALCARTONCOUNT}</td>
                   <td>{item.REALSCATTEREDCOUNT}</td>
                   <td />
@@ -431,20 +445,18 @@ const drawScheduleBillPage = (schedule, scheduleDetails) => {
           </tr>
           <tr style={{ height: 35 }}>
             <td colspan={8}>
-              <div style={{ margin: 10 }}>
-                <div style={{ float: 'left', width: '10%' }}>提成工资:</div>
-                <div style={{ float: 'left', width: '20%' }}>
-                  {driver}：{'99.00'}
-                </div>
-                {stevedore ? (
-                  <div style={{ float: 'left', width: '20%' }}>
-                    {stevedore}：{'59.00'}
-                  </div>
-                ) : (
-                  <div />
-                )}
-                <div style={{ flex: 4 }} />
-              </div>
+              <div style={{ float: 'left', width: '10%', marginLeft: 10 }}>提成工资:</div>
+              {memberWage.length > 0 ? (
+                memberWage.map(item => {
+                  return (
+                    <div style={{ float: 'left', marginRight: 15 }}>
+                      {item.memberName}：{item.wage}
+                    </div>
+                  );
+                })
+              ) : (
+                <></>
+              )}
             </td>
           </tr>
           <tr style={{ height: 35 }}>
@@ -560,7 +572,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
                   <td width={150}>{item.DELIVERYPOINTNAME}</td>
                   <td>{item.REALCARTONCOUNT}</td>
                   <td>{item.REALSCATTEREDCOUNT}</td>
-                  <td />
+                  <td>{item.COLLECTBIN}</td>
                   <td>{item.NOTE || ''}</td>
                 </tr>
               );
