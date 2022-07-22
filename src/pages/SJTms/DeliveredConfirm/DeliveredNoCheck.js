@@ -30,6 +30,7 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     reasonModalVisible: false,
     deliveredDutyMdodalVisible: false,
     nocheckInfoVisible: false,
+    checkRejectionResendMdodalVisible:false,
   };
 
   exSearchFilter = () => {
@@ -85,7 +86,8 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
       return (
         <>
           {this.CreateFormReason()}
-          {this.CreateUnDeliveredDuty(0)}
+          {this.CreateUnDeliveredDuty()}
+          {this.checkRejections()}
           {this.nocheckInfo()}
         </>
       );
@@ -96,23 +98,13 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
    
     return (
       <div style={{ marginBottom: 10 }}>
-        <Popconfirm title="确定重送?" onConfirm={this.checkResend} okText="确定" cancelText="取消">
-          <Button>批量重送</Button>
-        </Popconfirm>
-        <Popconfirm
-          title="确定拒收?"
-          onConfirm={this.checkRejection}
-          okText="确定"
-          cancelText="取消"
-        >
-          <Button style={{ marginLeft: 10 }}>批量拒收</Button>
-        </Popconfirm>
-
-        <Button onClick={this.checkReason} style={{ marginLeft: 10 }}>
-          批量设置原因
-        </Button>
-        <Button onClick={this.checkAttribution} style={{ marginLeft: 10 }}>
+         <Button onClick={this.checkAttribution} style={{ marginLeft: 10 }}>
           批量设置责任归属
+        </Button>
+        <Button style={{ marginLeft: 10 }} onClick={this.checkRejectionResend}>批量设置未送达类型</Button>
+       
+        <Button onClick={this.checkReason} style={{ marginLeft: 10 }}>
+          批量设置未送达原因
         </Button>
         <Popconfirm
           title="确定保存?"
@@ -131,28 +123,6 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
   //未送达原因管理
   checkNoReason = () => {
     this.setState({ nocheckInfoVisible: true });
-  };
-  //重送
-  checkResend = () => {
-    const { selectedRows } = this.state;
-    // if (selectedRows.length == 0) {
-    //   message.warn('请选择记录');
-    // }
-    selectedRows.forEach(e => {
-      e.UNDELIVEREDTYPE = 'ReSend';
-    });
-    // this.setState({ selectedRows });
-    this.checkSave();
-  };
-  //拒收
-  checkRejection = () => {
-    const { selectedRows } = this.state;
-    // if (selectedRows.length == 0) {
-    //   message.warn('请选择记录');
-    // }
-    selectedRows.forEach(e => (e.UNDELIVEREDTYPE = 'Reject'));
-    // this.setState({ selectedRows });
-    this.checkSave();
   };
 
   //批量设置原因
@@ -174,17 +144,26 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     }
     this.setState({ deliveredDutyMdodalVisible: true });
   };
+   //批量未送达类型
+   checkRejectionResend = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.warn('请选择记录');
+      return;
+    }
+    this.setState({ checkRejectionResendMdodalVisible: true });
+  };
    //批量保存
    checkSave = () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
       message.warn('请选择记录');
     }
+    if(this.checkValue(selectedRows)){return false}
     this.props.dispatch({
       type: 'deliveredConfirm1/updateNoDelivered',
-      payload: this.state.selectedRows,
+      payload: selectedRows,
       callback: response => {
-        console.log('response', response);
         if (response && response.success) {
           this.refreshTable();
           message.success('更新成功');
@@ -192,11 +171,32 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
       },
     });
   };
-
+  checkValue = (selectedRows)=>{
+    let flag = false;
+    selectedRows.forEach(e=>{
+      if(!e.UNDELIVEREDTYPE){
+        message.info("未送达类型存在空值请检查");
+        flag  = true
+        return ;
+      }
+      if(!e.UNDELIVEREDREASON){
+        message.info("未送达原因存在空值请检查");
+        flag  = true
+        return ;
+      }
+      if(!e.UNDELIVEREDDUTY){
+        message.info("未送达责任归属存在空值请检查");
+        flag  = true
+        return;
+      }
+    })
+    return flag;
+  }
   deliveredChage = (records, colum, e) => {
     records[colum.fieldName] = e.value;
   };
-  CreateFormReason = () => {
+
+  checkRejections = () => {
     const formItemLayout = {
       labelCol: {
         xs: { span: 48 },
@@ -208,13 +208,73 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
       },
     };
 
+    const CheckRejections = Form.create()(props => {
+      const { dispatch, form } = props;
+      const { getFieldDecorator } = form;
+      const handleSubmitReason = () => {
+        const { selectedRows, data } = this.state;
+        form.validateFields((errors, fieldsValue) => {
+          if (errors && errors.UNDELIVEREDTYPE) return;
+          // let rows = selectedRows.map(row=>{
+          //   return {
+          //     UNDELIVEREDREASON:fieldsValue.UNDELIVEREDREASON.record.VALUE,
+          //     UUID:row["UUID"]
+          //   }
+          // });
+          selectedRows.forEach(
+            e => (e.UNDELIVEREDTYPE = fieldsValue.UNDELIVEREDTYPE.record.VALUE)
+          );
+          message.success("设置成功！")
+          //this.checkSave();
+          this.setState({checkRejectionResendMdodalVisible: !this.state.checkRejectionResendMdodalVisible });
+          
+        });
+      };
+      return (
+        <Modal
+          visible={this.state.checkRejectionResendMdodalVisible}
+          onCancel={() => this.onBatchSetReasonVisible(false)}
+          onOk={handleSubmitReason}
+          title={'批量设置未送达类型'}
+        >
+          <Form {...formItemLayout}>
+            <Form.Item label={'未送达类型'}>
+              {getFieldDecorator('UNDELIVEREDTYPE', {
+                initialValue: undefined,
+                rules: [{ required: true, message: '未送达类型不能为空' }],
+              })(
+                <SimpleAutoComplete
+                  dictCode="UnDeliveredType"
+                  valueField="VALUE"
+                  textField="NAME"
+                />
+              )}
+            </Form.Item>
+          </Form>
+        </Modal>
+      );
+    });
+
+    return <CheckRejections />;
+  };
+
+   CreateFormReason= () => {
+    const formItemLayout = {
+      labelCol: {
+        xs: { span: 48 },
+        sm: { span: 8 },
+      },
+      wrapperCol: {
+        xs: { span: 48 },
+        sm: { span: 10 },
+      },
+    };
     const CreateFormReason = Form.create()(props => {
       const { dispatch, form } = props;
       const { getFieldDecorator } = form;
       const handleSubmitReason = () => {
         const { selectedRows, data } = this.state;
         form.validateFields((errors, fieldsValue) => {
-          console.log('errors', fieldsValue);
           if (errors && errors.UnDeliveredDuty) return;
           // let rows = selectedRows.map(row=>{
           //   return {
@@ -225,7 +285,8 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
           selectedRows.forEach(
             e => (e.UNDELIVEREDREASON = fieldsValue.UNDELIVEREDREASON.record.VALUE)
           );
-          this.checkSave();
+          message.success("设置成功！")
+          //this.checkSave();
           this.setState({reasonModalVisible: !this.state.reasonModalVisible });
           // this.props.dispatch({
           //     type: 'deliveredConfirm1/updateNoDelivered',
@@ -304,13 +365,12 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
       const handleSubmitReason = () => {
         const { selectedRows } = this.state;
         form.validateFields((errors, fieldsValue) => {
-          console.log('errors', fieldsValue);
           if (errors && errors.UnDeliveredDuty) return;
 
           selectedRows.forEach(e => (e.UNDELIVEREDDUTY = fieldsValue.UnDeliveredDuty.record.VALUE));
-          this.checkSave();
+          //this.checkSave();
+          message.success("设置成功！")
           this.setState({
-           
             deliveredDutyMdodalVisible: !this.state.deliveredDutyMdodalVisible,
           });
         });
@@ -346,6 +406,7 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
   onBatchSetReasonVisible = () => {
     this.setState({ reasonModalVisible: false });
     this.setState({ deliveredDutyMdodalVisible: false });
+    this.setState({ checkRejectionResendMdodalVisible: false });
   };
 
  
