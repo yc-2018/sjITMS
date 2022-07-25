@@ -2,21 +2,22 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-20 09:35:04
+ * @LastEditTime: 2022-07-25 11:47:34
  * @version: 1.0
  */
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { Button, Popconfirm, message } from 'antd';
+import { Button, Popconfirm, message, Steps } from 'antd';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { audit } from '@/services/sjitms/ShippingOrder';
 
+const Step = Steps.Step;
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
 export default class ShippingOrderSearchPage extends QuickFormSearchPage {
-  state = { ...this.state, showAuditPop: false };
+  state = { ...this.state, showAuditPop: false, isModalVisible: false, current: 0 };
 
   onUpdate = () => {
     const { selectedRows } = this.state;
@@ -50,6 +51,10 @@ export default class ShippingOrderSearchPage extends QuickFormSearchPage {
     return await audit(selectedRows.UUID);
   };
 
+  import = () => {
+    this.props.switchTab('import');
+  };
+
   drawToolbarPanel = () => {
     const { showAuditPop, selectedRows } = this.state;
     return (
@@ -72,6 +77,7 @@ export default class ShippingOrderSearchPage extends QuickFormSearchPage {
           }}
         >
           <Button onClick={() => this.onBatchAudit()}>审核</Button>
+          <Button onClick={() => this.import()}>导入</Button>
         </Popconfirm>
       </span>
     );

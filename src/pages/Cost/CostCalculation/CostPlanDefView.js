@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-10 09:30:40
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-17 15:34:09
+ * @LastEditTime: 2022-07-22 10:21:20
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -56,7 +56,6 @@ export default class CostPlanDefView extends QuickViewPage {
   };
 
   checkDataSource = async e => {
-    console.log('e', e);
     this.project = e.record;
     const dataSourceUuid = e.record.DATASOURCE_UUID.split(',');
     let param = {

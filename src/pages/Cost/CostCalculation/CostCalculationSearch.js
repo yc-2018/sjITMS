@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-14 16:37:51
+ * @LastEditTime: 2022-07-22 10:44:42
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -62,7 +62,6 @@ export default class CostBillDtlView extends QuickFormSearchPage {
 
   getLockStatus = date => {
     isLock(this.props.params.entityUuid, date == undefined ? this.month : date).then(result => {
-      console.log('result', result);
       this.setState({ isLock: result.data });
     });
   };
@@ -196,9 +195,9 @@ export default class CostBillDtlView extends QuickFormSearchPage {
       return;
     }
     this.setState({ searchLoading: true });
-    const uuid = this.props.params.entityUuid;
+    const planUuid = this.props.params.entityUuid;
     let params = {
-      planUuid: uuid,
+      planUuid: planUuid,
       month: dateString,
     };
     await calculatePlan(params).then(response => {
