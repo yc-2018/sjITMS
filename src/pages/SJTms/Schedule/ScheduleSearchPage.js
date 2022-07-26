@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-22 12:27:13
+ * @LastEditTime: 2022-07-26 10:29:02
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -410,7 +410,7 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
             scheduleDetails.map(item => {
               return (
                 <tr style={{ textAlign: 'center' }}>
-                  <td width={120}>{item.ORDERNUMBER}</td>
+                  <td width={120}>{item.SOURCENUM}</td>
                   <td>{item.BILLTYPE}</td>
                   <td>{item.DELIVERYPOINTCODE}</td>
                   <td width={170}>{item.DELIVERYPOINTNAME}</td>
@@ -567,7 +567,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
               return (
                 <tr style={{ textAlign: 'center' }}>
                   <td>{index + 1}</td>
-                  <td width={120}>{item.ORDERNUMBER}</td>
+                  <td width={120}>{item.SOURCENUM}</td>
                   <td>{item.DELIVERYPOINTCODE}</td>
                   <td width={150}>{item.DELIVERYPOINTNAME}</td>
                   <td>{item.REALCARTONCOUNT}</td>

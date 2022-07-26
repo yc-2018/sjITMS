@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-20 09:39:43
+ * @LastEditTime: 2022-07-25 11:44:13
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -69,7 +69,7 @@ export default class OrderPoolSearchForm extends Component {
       if (field.searchShowtype == 'date' && val instanceof Array) {
         val = val.map(x => x.format('YYYY-MM-DD')).join('||');
       }
-      if (field.searchShowtype == 'auto_complete' || field.searchShowtype == 'sel_tree') {
+      if (field.searchShowtype == 'sel_tree') {
         val = val.value;
       }
       //多选下拉框时修改入参,非下拉框暂时不支持in 改为like
@@ -150,6 +150,7 @@ export default class OrderPoolSearchForm extends Component {
           <SimpleAutoComplete
             placeholder={'请选择' + searchField.fieldTxt}
             searchField={searchField}
+            noRecord
             {...searchProperties}
           />
         );

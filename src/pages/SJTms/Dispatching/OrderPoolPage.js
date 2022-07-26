@@ -2,12 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-20 16:17:58
+ * @LastEditTime: 2022-07-25 16:36:01
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
 import React, { Component } from 'react';
-import { Switch, Button, Row, Col, Tabs, message, Typography } from 'antd';
+import { Switch, Button, Row, Col, Tabs, message, Typography, Modal } from 'antd';
 import DispatchingTable from './DispatchingTable';
 import DispatchingChildTable from './DispatchingChildTable';
 import {
@@ -18,11 +18,13 @@ import {
 } from './DispatchingColumns';
 import OrderPoolSearchForm from './OrderPoolSearchForm';
 import DispatchingCreatePage from './DispatchingCreatePage';
+import DispatchMap from './DispatchMap';
 import dispatchingStyles from './Dispatching.less';
 import { queryAuditedOrder, getOrderByStat, savePending } from '@/services/sjitms/OrderBill';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
 import { groupBy, sumBy, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import mapIcon from '@/assets/common/map.svg';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
@@ -30,6 +32,7 @@ const { TabPane } = Tabs;
 export default class OrderPoolPage extends Component {
   state = {
     loading: false,
+    mapModal: false,
     auditedData: [],
     auditedCollectData: [],
     scheduledData: [],
@@ -87,7 +90,7 @@ export default class OrderPoolPage extends Component {
       if (response.success) {
         this.setState({
           loading: false,
-          auditedData: response.data,
+          auditedData: response.data ? response.data : [],
           auditedCollectData: this.groupData(response.data),
           auditedParentRowKeys: [],
           auditedRowKeys: [],
@@ -329,6 +332,7 @@ export default class OrderPoolPage extends Component {
   render() {
     const {
       loading,
+      mapModal,
       auditedParentRowKeys,
       auditedRowKeys,
       auditedData,
@@ -337,6 +341,7 @@ export default class OrderPoolPage extends Component {
       scheduledData,
       activeTab,
     } = this.state;
+    const { totalOrder } = this.props;
     const buildOperations = () => {
       switch (activeTab) {
         case 'Scheduled':
@@ -409,17 +414,25 @@ export default class OrderPoolPage extends Component {
               title={this.buildTitle}
             />
           )}
-          {loading ? (
+          {auditedData.length == 0 ? (
             <></>
           ) : (
             <div style={{ position: 'absolute', bottom: 0, left: 10 }}>
-              门店汇总：
+              <span>门店汇总：</span>
               <Switch
                 checked={this.props.isOrderCollect}
                 onClick={isOrderCollect => {
                   this.props.refreshOrderCollect(isOrderCollect);
                 }}
               />
+              <a
+                href="#"
+                style={{ marginLeft: 30 }}
+                onClick={() => this.setState({ mapModal: true })}
+              >
+                <img src={mapIcon} style={{ width: 20, height: 20 }} />
+                地图
+              </a>
             </div>
           )}
           {/* 排车modal */}
@@ -432,6 +445,15 @@ export default class OrderPoolPage extends Component {
             }}
             onRef={node => (this.createPageModalRef = node)}
           />
+          <Modal
+            width="80%"
+            visible={mapModal}
+            footer={null}
+            onCancel={() => this.setState({ mapModal: false })}
+            destroyOnClose={true}
+          >
+            <DispatchMap orders={totalOrder} />
+          </Modal>
         </TabPane>
         <TabPane
           tab={<Text className={dispatchingStyles.cardTitle}>已排订单</Text>}
