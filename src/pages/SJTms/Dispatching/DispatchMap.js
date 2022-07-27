@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-26 10:19:44
+ * @LastEditTime: 2022-07-27 17:33:53
  * @Description: 地图
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchMap.js
  */
@@ -13,6 +13,7 @@ import { uniqBy } from 'lodash';
 
 export default class DispatchMap extends Component {
   state = {
+    isShowName: true,
     infoWindowPoint: undefined,
   };
 
@@ -53,14 +54,49 @@ export default class DispatchMap extends Component {
   //   drv.search(start, end);
   // }
 
+  //经纬度测算中心位置
+  getCenter = arr => {
+    let centerLonLat = {};
+    if (arr.length) {
+      const sortedLongitudeArray = arr.map(x => x.longitude).sort();
+      const sortedLatitudeArray = arr.map(x => x.latitude).sort();
+      const centerLongitude = (
+        (parseFloat(sortedLongitudeArray[0]) +
+          parseFloat(sortedLongitudeArray[sortedLongitudeArray.length - 1])) /
+        2
+      ).toFixed(14);
+      const centerLatitude = (
+        (parseFloat(sortedLatitudeArray[0]) +
+          parseFloat(sortedLatitudeArray[sortedLatitudeArray.length - 1])) /
+        2
+      ).toFixed(14);
+      centerLonLat = { lng: Number(centerLongitude), lat: Number(centerLatitude) };
+    }
+    return centerLonLat;
+  };
+
   render() {
-    const { infoWindowPoint } = this.state;
+    const { infoWindowPoint, isShowName } = this.state;
     const { orders } = this.props;
     let shipAddress = [...orders].filter(x => x.longitude);
     shipAddress = uniqBy(shipAddress, x => x.deliveryPoint.uuid);
     const icon = new BMapGL.Icon(storeIcon, new BMapGL.Size(30, 30));
+    const features = shipAddress.filter(x => x.longitude != 0 && x.longitude != 1).map(x => {
+      return { longitude: x.longitude, latitude: x.latitude };
+    });
+    const centerLonLat = this.getCenter(features);
     return shipAddress.length > 0 ? (
-      <Map zoom={12} minZoom={6} enableScrollWheelZoom enableAutoResize style={{ height: 600 }}>
+      <Map
+        zoom={14}
+        minZoom={6}
+        onZoomend={event => {
+          this.setState({ isShowName: event.target.zoomLevel > 12 });
+        }}
+        center={centerLonLat}
+        enableScrollWheelZoom
+        enableAutoResize
+        style={{ height: '90vh' }}
+      >
         {shipAddress.map(address => {
           var point = new BMapGL.Point(address.longitude, address.latitude);
           return (
@@ -69,35 +105,35 @@ export default class DispatchMap extends Component {
                 position={point}
                 icon={icon}
                 shadow={true}
-                autoViewport
                 onMouseover={() =>
                   this.setState({ infoWindowPoint: { point, address: address.deliveryPoint } })
                 }
                 onMouseout={() => this.setState({ infoWindowPoint: undefined })}
-                title={address.deliveryPoint.name}
               />
-              <Label
-                text={address.deliveryPoint.name}
-                position={point}
-                style={{
-                  width: '150px',
-                  whiteSpace: 'unset',
-                  border: 0,
-                  background: 'none',
-                  color: '#22886f',
-                  fontWeight: 'bold',
-                  strokeColor: '#fff',
-                  strokeWidth: 2,
-                }}
-                offset={new BMapGL.Size(15, -10)}
-              />
+              {isShowName ? (
+                <Label
+                  text={address.deliveryPoint.name}
+                  position={point}
+                  style={{
+                    width: '150px',
+                    whiteSpace: 'unset',
+                    border: 0,
+                    background: 'none',
+                    color: '#0000EA',
+                    fontWeight: 'bold',
+                  }}
+                  offset={new BMapGL.Size(15, -10)}
+                />
+              ) : (
+                <></>
+              )}
             </>
           );
         })}
         {infoWindowPoint ? (
           <InfoWindow
             position={infoWindowPoint.point}
-            title={infoWindowPoint.address.name}
+            title={`[${infoWindowPoint.address.code}]` + infoWindowPoint.address.name}
             text={infoWindowPoint.address.address}
           />
         ) : (
@@ -110,7 +146,7 @@ export default class DispatchMap extends Component {
         zoom={18}
         enableScrollWheelZoom
         enableAutoResize
-        style={{ height: 600 }}
+        style={{ height: '90vh' }}
       />
     );
   }

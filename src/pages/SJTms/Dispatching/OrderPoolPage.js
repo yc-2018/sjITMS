@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-25 16:36:01
+ * @LastEditTime: 2022-07-27 17:34:54
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -341,7 +341,6 @@ export default class OrderPoolPage extends Component {
       scheduledData,
       activeTab,
     } = this.state;
-    const { totalOrder } = this.props;
     const buildOperations = () => {
       switch (activeTab) {
         case 'Scheduled':
@@ -446,13 +445,14 @@ export default class OrderPoolPage extends Component {
             onRef={node => (this.createPageModalRef = node)}
           />
           <Modal
-            width="80%"
+            width="95vw"
+            centered
             visible={mapModal}
             footer={null}
             onCancel={() => this.setState({ mapModal: false })}
             destroyOnClose={true}
           >
-            <DispatchMap orders={totalOrder} />
+            <DispatchMap orders={auditedData} />
           </Modal>
         </TabPane>
         <TabPane

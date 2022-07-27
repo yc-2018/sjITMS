@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-26 10:29:02
+ * @LastEditTime: 2022-07-27 14:13:11
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -16,7 +16,7 @@ import { queryAllData } from '@/services/quick/Quick';
 import { aborted, shipRollback } from '@/services/sjitms/ScheduleBill';
 import { depart, back } from '@/services/sjitms/ScheduleProcess';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
-import { groupBy, sumBy } from 'lodash';
+import { groupBy, sumBy, orderBy } from 'lodash';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -309,7 +309,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
           ],
         },
       });
-      const scheduleDetails = response.success ? response.data.records : [];
+      let scheduleDetails = response.success ? response.data.records : [];
+      scheduleDetails = orderBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
       let memberWage = memberWageResponse.success ? memberWageResponse.data.records : [];
       memberWage = memberWage.filter(x => x.AMOUNT);
       let output = groupBy(memberWage, x => x.MEMBERNAME);
@@ -346,7 +347,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     this.setState({ printPage: printPages });
   };
 }
-
+//出车单
 const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
   const driver = schedule.DRIVER ? schedule.DRIVER.substr(schedule.DRIVER.indexOf(']') + 1) : '';
   const stevedore = schedule.STEVEDORE
@@ -409,7 +410,7 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
           {scheduleDetails ? (
             scheduleDetails.map(item => {
               return (
-                <tr style={{ textAlign: 'center' }}>
+                <tr style={{ textAlign: 'center', height: '20px' }}>
                   <td width={120}>{item.SOURCENUM}</td>
                   <td>{item.BILLTYPE}</td>
                   <td>{item.DELIVERYPOINTCODE}</td>
@@ -426,7 +427,7 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
           )}
         </tbody>
         <tfoot>
-          <tr style={{ height: 35 }}>
+          <tr style={{ height: 25 }}>
             <td colspan={4}>合计:</td>
             <td style={{ textAlign: 'center' }}>
               <font color="blue" tdata="SubSum" format="#,##" tindex="5">
@@ -440,10 +441,10 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
             </td>
             <td colspan={2} />
           </tr>
-          <tr style={{ height: 35 }}>
+          <tr style={{ height: 25 }}>
             <td colspan={8}>备注:</td>
           </tr>
-          <tr style={{ height: 35 }}>
+          <tr style={{ height: 25 }}>
             <td colspan={8}>
               <div style={{ float: 'left', width: '10%', marginLeft: 10 }}>提成工资:</div>
               {memberWage.length > 0 ? (
@@ -459,13 +460,13 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
               )}
             </td>
           </tr>
-          <tr style={{ height: 35 }}>
+          <tr style={{ height: 25 }}>
             <td colspan={8} style={{ border: 0 }}>
               <div style={{ margin: 10 }}>该出车单工资包含车次补贴和伙食补贴</div>
             </td>
           </tr>
-          <tr style={{ height: 35 }}>
-            <td colspan={8} style={{ border: 0, margin: 10 }}>
+          <tr style={{ height: 25 }}>
+            <td colspan={8} style={{ border: 0 }}>
               <div style={{ float: 'left', width: '50%' }}>
                 备注：白色~放行 黄色~交货、交收退 红色~财务
               </div>
@@ -473,16 +474,16 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
               <div style={{ float: 'left', width: '22%' }}> 制单人: {loginUser().name}</div>
             </td>
           </tr>
-          <tr style={{ height: 35 }}>
-            <td colspan={8} style={{ border: 0, margin: 10 }}>
+          <tr style={{ height: 25 }}>
+            <td colspan={8} style={{ border: 0 }}>
               <div style={{ float: 'left', width: '25%' }}>出车公里数:</div>
               <div style={{ float: 'left', width: '25%' }}>出车时间:</div>
               <div style={{ float: 'left', width: '25%' }}>回车公里数:</div>
               <div style={{ float: 'left', width: '22%' }}>回车时间:</div>
             </td>
           </tr>
-          <tr style={{ height: 35 }}>
-            <td colspan={8} style={{ border: 0, margin: 10 }}>
+          <tr style={{ height: 25 }}>
+            <td colspan={8} style={{ border: 0 }}>
               <div style={{ float: 'left', width: '25%' }}>发货主管:</div>
               <div style={{ float: 'left', width: '25%' }}> 司机签名:</div>
               <div style={{ float: 'left', width: '25%' }}>送货员签名:</div>
@@ -495,6 +496,7 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
   );
 };
 
+//装车单
 const drawPrintPage = (schedule, scheduleDetails) => {
   return (
     <div>
@@ -508,7 +510,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
           <tr style={{ height: 50 }}>
             <th colspan={2} style={{ border: 0 }} />
             <th colspan={4} style={{ border: 0 }}>
-              <div style={{ fontSize: 18, textAlign: 'center' }}>广东时捷物流有限公司排车单</div>
+              <div style={{ fontSize: 18, textAlign: 'center' }}>广东时捷物流有限公司装车单</div>
             </th>
             <th colspan={2} style={{ border: 0 }}>
               <div style={{ fontSize: 14, textAlign: 'center' }}>
@@ -582,7 +584,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
           )}
         </tbody>
         <tfoot>
-          <tr style={{ height: 35 }}>
+          <tr style={{ height: 25 }}>
             <td colspan={4}>合计:</td>
             <td style={{ textAlign: 'center' }}>
               <font color="blue" tdata="SubSum" format="#,##" tindex="5">
@@ -596,7 +598,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
             </td>
             <td colspan={2} />
           </tr>
-          <tr style={{ height: 35 }}>
+          <tr style={{ height: 25 }}>
             <td colspan={8}>备注:</td>
           </tr>
           <tr style={{ height: 35 }}>
