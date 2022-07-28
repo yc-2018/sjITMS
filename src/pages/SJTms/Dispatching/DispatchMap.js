@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-27 17:33:53
+ * @LastEditTime: 2022-07-28 09:00:44
  * @Description: 地图
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchMap.js
  */
@@ -58,8 +58,8 @@ export default class DispatchMap extends Component {
   getCenter = arr => {
     let centerLonLat = {};
     if (arr.length) {
-      const sortedLongitudeArray = arr.map(x => x.longitude).sort();
-      const sortedLatitudeArray = arr.map(x => x.latitude).sort();
+      const sortedLongitudeArray = arr.map(x => x.lng).sort();
+      const sortedLatitudeArray = arr.map(x => x.lat).sort();
       const centerLongitude = (
         (parseFloat(sortedLongitudeArray[0]) +
           parseFloat(sortedLongitudeArray[sortedLongitudeArray.length - 1])) /
@@ -74,6 +74,12 @@ export default class DispatchMap extends Component {
     }
     return centerLonLat;
   };
+  getMinPoint = (arr, centerPoint) => {
+    const index = arr
+      .map(point => Math.abs(centerPoint.lng - point.lng))
+      .findIndex(i => i === Math.min(...arr.map(point => Math.abs(centerPoint.lng - point.lng))));
+    return arr[index];
+  };
 
   render() {
     const { infoWindowPoint, isShowName } = this.state;
@@ -82,12 +88,13 @@ export default class DispatchMap extends Component {
     shipAddress = uniqBy(shipAddress, x => x.deliveryPoint.uuid);
     const icon = new BMapGL.Icon(storeIcon, new BMapGL.Size(30, 30));
     const features = shipAddress.filter(x => x.longitude != 0 && x.longitude != 1).map(x => {
-      return { longitude: x.longitude, latitude: x.latitude };
+      return { lng: x.longitude, lat: x.latitude };
     });
-    const centerLonLat = this.getCenter(features);
+    let centerLonLat = this.getCenter(features);
+    centerLonLat = this.getMinPoint(features, centerLonLat);
     return shipAddress.length > 0 ? (
       <Map
-        zoom={14}
+        zoom={12}
         minZoom={6}
         onZoomend={event => {
           this.setState({ isShowName: event.target.zoomLevel > 12 });
@@ -95,7 +102,7 @@ export default class DispatchMap extends Component {
         center={centerLonLat}
         enableScrollWheelZoom
         enableAutoResize
-        style={{ height: '90vh' }}
+        style={{ height: '85vh' }}
       >
         {shipAddress.map(address => {
           var point = new BMapGL.Point(address.longitude, address.latitude);
@@ -146,7 +153,7 @@ export default class DispatchMap extends Component {
         zoom={18}
         enableScrollWheelZoom
         enableAutoResize
-        style={{ height: '90vh' }}
+        style={{ height: '85vh' }}
       />
     );
   }
