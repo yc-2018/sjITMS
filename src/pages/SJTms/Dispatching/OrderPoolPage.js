@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-27 17:34:54
+ * @LastEditTime: 2022-07-28 11:48:55
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -424,16 +424,14 @@ export default class OrderPoolPage extends Component {
                   this.props.refreshOrderCollect(isOrderCollect);
                 }}
               />
-              <a
-                href="#"
-                style={{ marginLeft: 30 }}
-                onClick={() => this.setState({ mapModal: true })}
-              >
-                <img src={mapIcon} style={{ width: 20, height: 20 }} />
-                地图
-              </a>
             </div>
           )}
+          <div style={{ position: 'absolute', top: 12, left: 160 }}>
+            <a href="#" onClick={() => this.setState({ mapModal: true })}>
+              <img src={mapIcon} style={{ width: 20, height: 20 }} />
+              地图
+            </a>
+          </div>
           {/* 排车modal */}
           <DispatchingCreatePage
             modal={{ title: '排车' }}
