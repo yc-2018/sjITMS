@@ -2,11 +2,23 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-22 10:44:42
+ * @LastEditTime: 2022-07-27 17:20:34
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
-import { Button, Input, Col, Row, message, Modal, DatePicker, Spin, Form, Collapse } from 'antd';
+import {
+  Button,
+  Input,
+  Col,
+  Row,
+  message,
+  Modal,
+  DatePicker,
+  Spin,
+  Form,
+  Collapse,
+  Popconfirm,
+} from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
@@ -18,10 +30,13 @@ import {
   getBillLogs,
   onLock,
   isLock,
+  calculateMemberWage,
 } from '@/services/cost/CostCalculation';
 import { colWidth } from '@/utils/ColWidth';
-const { MonthPicker } = DatePicker;
+import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
 import moment from 'moment';
+
+const { MonthPicker } = DatePicker;
 const { Panel } = Collapse;
 
 @connect(({ quick, loading }) => ({
@@ -45,6 +60,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
     isShowLogs: false,
     billLogs: [],
     isLock: null,
+    showCalculateAgainPop: false,
   };
 
   month = moment().format('YYYY-MM');
@@ -209,6 +225,26 @@ export default class CostBillDtlView extends QuickFormSearchPage {
     });
   };
 
+  onBatchCalculateAgain = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.error('请至少选中一条数据！');
+      return;
+    }
+    selectedRows.length == 1
+      ? this.setState({ showCalculateAgainPop: true })
+      : this.batchProcessConfirmRef.show(
+          '重算',
+          selectedRows,
+          this.calculateAgain,
+          this.handleOnSertch
+        );
+  };
+
+  calculateAgain = async selectedRows => {
+    return await calculateMemberWage(selectedRows.BILLNUMBER);
+  };
+
   getcalcLog = async () => {
     this.changeLogsModal();
     await getBillLogs(this.state.bill.uuid).then(response => {
@@ -260,10 +296,36 @@ export default class CostBillDtlView extends QuickFormSearchPage {
 
   //该方法会覆盖所有的中间功能按钮
   drawToolbarPanel = () => {
-    const { billLogs, isLock } = this.state;
+    const { billLogs, isLock, showCalculateAgainPop, selectedRows } = this.state;
     return (
       <div style={{ marginBottom: '-15px' }}>
         <Button onClick={this.calculate.bind()}>计算</Button>
+        {this.props.params.e.CLASSIFICATION == 'PrivateDriver' ? (
+          <Popconfirm
+            title="你确定要取消所选中的内容吗?"
+            visible={showCalculateAgainPop}
+            onVisibleChange={visible => {
+              if (!visible) this.setState({ showCalculateAgainPop: visible });
+            }}
+            onCancel={() => {
+              this.setState({ showCalculateAgainPop: false });
+            }}
+            onConfirm={() => {
+              this.setState({ showCancelPop: false });
+              this.calculateAgain(selectedRows[0]).then(response => {
+                if (response.success) {
+                  message.success('重算成功！');
+                  this.handleOnSertch();
+                }
+              });
+            }}
+          >
+            <Button onClick={this.onBatchCalculateAgain.bind()}>重算</Button>
+          </Popconfirm>
+        ) : (
+          ''
+        )}
+
         <Button onClick={this.checkData.bind()}>检查数据</Button>
         <Button
           disabled={!(isLock == 'Saved' || isLock == 'Approved')}
@@ -298,6 +360,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
             </Collapse>
           </div>
         </Modal>
+        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </div>
     );
   };
