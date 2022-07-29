@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-29 10:46:01
+ * @LastEditTime: 2022-07-29 11:56:45
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -19,6 +19,7 @@ import dispatchingStyles from './Dispatching.less';
 import { convertDateToTime } from '@/utils/utils';
 import { loginUser } from '@/utils/LoginContext';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
+import { orderBy } from 'lodash';
 import { queryAllData } from '@/services/quick/Quick';
 import {
   querySchedule,
@@ -291,7 +292,7 @@ export default class SchedulePage extends Component {
     const printPages = document.getElementById('printSchedule').childNodes;
     printPages.forEach(page => {
       LODOP.NewPageA();
-      LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', 300, page.innerHTML);
+      LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
     });
     LODOP.PREVIEW();
     hide();
@@ -309,7 +310,8 @@ export default class SchedulePage extends Component {
           ],
         },
       });
-      const scheduleDetails = response.success ? response.data.records : [];
+      let scheduleDetails = response.success ? response.data.records : [];
+      scheduleDetails = orderBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
       const printPage = drawPrintPage(
         scheduleData.find(x => x.uuid == approvedRowKeys[index]),
         scheduleDetails

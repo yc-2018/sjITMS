@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-29 10:46:28
+ * @LastEditTime: 2022-07-29 11:56:11
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -275,7 +275,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     const printPages = document.getElementById('printPage').childNodes;
     printPages.forEach(page => {
       LODOP.NewPageA();
-      LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', 300, page.innerHTML);
+      LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
     });
     LODOP.PREVIEW();
     hide();
@@ -339,7 +339,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
           ],
         },
       });
-      const scheduleDetails = response.success ? response.data.records : [];
+      let scheduleDetails = response.success ? response.data.records : [];
+      scheduleDetails = orderBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
       const printPage = drawPrintPage(selectedRows[index], scheduleDetails);
       printPages.push(printPage);
     }
