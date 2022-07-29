@@ -818,7 +818,7 @@ export default class QuickCreatePage extends CreatePage {
         if (valueEvent.record instanceof Array) {
           filter.rule = 'in';
           if (valueSplit) {
-            const val = [];
+            let val = [];
             for (const item of valueEvent.record) {
               val = [...val, ...item[inField]?.split(inField)];
             }
