@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-25 11:44:13
+ * @LastEditTime: 2022-07-30 08:50:42
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -76,6 +76,8 @@ export default class OrderPoolSearchForm extends Component {
       if (field.searchCondition == 'in' || field.searchCondition == 'notIn') {
         if (field.searchShowtype == 'list' || field.searchShowtype == 'sel_search') {
           val = val.join('||');
+        } else if (field.searchShowtype == 'auto_complete') {
+          val = val.replace(',', '||');
         } else {
           field.searchCondition = 'like';
         }
