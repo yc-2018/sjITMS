@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-29 11:56:11
+ * @LastEditTime: 2022-08-01 18:07:42
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -265,13 +265,13 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       return;
     }
     const hide = message.loading('加载中...', 0);
-    let LODOP = getLodop();
+    const LODOP = getLodop();
     if (LODOP == undefined) return;
     LODOP.PRINT_INIT('排车单打印');
     LODOP.SET_PRINT_PAGESIZE(1, 2100, 1400, '210mm*140mm'); //1代表横的打印 2代表竖的打印 3纵向打印，宽度固定，高度按打印内容的高度自适应；
     LODOP.SET_PRINT_MODE('PRINT_DUPLEX', 1); //去掉双面打印
-    LODOP.SET_PRINT_STYLEA(0, 'Horient', 2); //打印项在纸张中水平居中
     key == 'load' ? await this.buildPrintPage() : await this.buildSchedulePrintPage();
+    if (key != 'load') LODOP.SET_SHOW_MODE('SKIN_TYPE', 1);
     const printPages = document.getElementById('printPage').childNodes;
     printPages.forEach(page => {
       LODOP.NewPageA();
@@ -425,24 +425,19 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
           ) : (
             <></>
           )}
-        </tbody>
-        <tfoot>
           <tr style={{ height: 25 }}>
             <td colspan={4}>合计:</td>
             <td style={{ textAlign: 'center' }}>
-              <font color="blue" tdata="SubSum" format="#,##" tindex="5">
+              <font color="blue" tdata="AllSum" format="#,##" tindex="5">
                 ######
               </font>
             </td>
             <td style={{ textAlign: 'center' }}>
-              <font color="blue" tdata="SubSum" format="#,##" tindex="6">
+              <font color="blue" tdata="AllSum" format="#,##" tindex="6">
                 ######
               </font>
             </td>
             <td colspan={2} />
-          </tr>
-          <tr style={{ height: 25 }}>
-            <td colspan={8}>备注：</td>
           </tr>
           <tr style={{ height: 25 }}>
             <td colspan={8}>
@@ -461,14 +456,12 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
             </td>
           </tr>
           <tr style={{ height: 25 }}>
-            <td colspan={8} style={{ border: 0 }}>
-              <div style={{ margin: 10 }}>该出车单工资包含车次补贴和伙食补贴</div>
-            </td>
+            <td colspan={8}>备注：该出车单工资包含车次补贴和伙食补贴</td>
           </tr>
           <tr style={{ height: 25 }}>
             <td colspan={8} style={{ border: 0 }}>
               <div style={{ float: 'left', width: '50%' }}>
-                （备注：白色~放行 黄色~送货、交收退 红色~财务）
+                （白色~放行 黄色~送货、交收退 红色~财务）
               </div>
               <div style={{ float: 'left', width: '25%' }}>打印日期: {convertDate(new Date())}</div>
               <div style={{ float: 'left', width: '22%' }}> 制单人: {loginUser().name}</div>
@@ -490,7 +483,7 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
               <div style={{ float: 'left', width: '22%' }}>收退签名:</div>
             </td>
           </tr>
-        </tfoot>
+        </tbody>
       </table>
     </div>
   );
