@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-29 11:18:36
+ * @LastEditTime: 2022-07-30 17:55:22
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -321,11 +321,11 @@ export default class OrderPoolPage extends Component {
       };
     }
     return {
-      realCartonCount: Math.round(sumBy(data.map(x => x.realCartonCount)) / 100) * 100,
-      realScatteredCount: Math.round(sumBy(data.map(x => x.realScatteredCount)) / 100) * 100,
-      realContainerCount: Math.round(sumBy(data.map(x => x.realContainerCount)) / 100) * 100,
-      weight: Math.round(sumBy(data.map(x => Number(x.weight))) / 100) * 100,
-      volume: Math.round(sumBy(data.map(x => Number(x.volume))) / 100) * 100,
+      realCartonCount: Math.round(sumBy(data.map(x => x.realCartonCount)) * 100) / 100,
+      realScatteredCount: Math.round(sumBy(data.map(x => x.realScatteredCount)) * 100) / 100,
+      realContainerCount: Math.round(sumBy(data.map(x => x.realContainerCount)) * 100) / 100,
+      weight: Math.round(sumBy(data.map(x => Number(x.weight))) * 100) / 100,
+      volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
     };
   };
 
