@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-29 11:56:45
+ * @LastEditTime: 2022-08-02 18:21:45
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -553,7 +553,10 @@ const drawPrintPage = (schedule, scheduleDetails) => {
             <td colspan={2} />
           </tr>
           <tr style={{ height: 20 }}>
-            <td colspan={8}>备注:</td>
+            <td colspan={8}>
+              备注：
+              {schedule.note}
+            </td>
           </tr>
           <tr style={{ height: 25 }}>
             <td colspan={8} style={{ border: 0 }}>

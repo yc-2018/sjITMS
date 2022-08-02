@@ -153,6 +153,7 @@ export default class DispatchingCreatePage extends Component {
             employees,
             orders: [...details],
             schedule: response.data,
+            note: response.data.note,
             selectVehicle: selectVehicle == undefined ? {} : selectVehicle,
             selectEmployees,
             loading: false,
