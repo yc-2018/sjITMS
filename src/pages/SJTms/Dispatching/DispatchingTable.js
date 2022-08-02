@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-21 10:47:47
+ * @LastEditTime: 2022-08-02 15:52:07
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
@@ -149,7 +149,6 @@ export default class DispatchingTable extends Component {
           onChange={this.handleStandardTableChange}
           rowKey={record => record.uuid}
           rowSelection={rowSelection}
-          style={{ height: this.props.scrollY }}
           bodyStyle={{ height: this.props.scrollY }}
           scroll={{ y: this.props.scrollY, x: '100%' }}
           className={this.props.className || dispatchingTableStyles.dispatchingTable}
