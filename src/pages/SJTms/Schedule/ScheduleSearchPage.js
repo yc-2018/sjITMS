@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-08-01 18:07:42
+ * @LastEditTime: 2022-08-02 10:45:08
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -584,12 +584,12 @@ const drawPrintPage = (schedule, scheduleDetails) => {
           <tr style={{ height: 20 }}>
             <td colspan={4}>合计:</td>
             <td style={{ textAlign: 'center' }}>
-              <font color="blue" tdata="SubSum" format="#,##" tindex="5">
+              <font color="blue" tdata="AllSum" format="#,##" tindex="5">
                 ######
               </font>
             </td>
             <td style={{ textAlign: 'center' }}>
-              <font color="blue" tdata="SubSum" format="#,##" tindex="6">
+              <font color="blue" tdata="AllSum" format="#,##" tindex="6">
                 ######
               </font>
             </td>

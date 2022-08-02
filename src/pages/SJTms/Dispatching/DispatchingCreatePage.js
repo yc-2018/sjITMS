@@ -227,10 +227,10 @@ export default class DispatchingCreatePage extends Component {
     index == -1
       ? employees.push(employee)
       : (employees = employees.filter(x => x.UUID != employee.UUID));
-    if (employees.filter(item => item.memberType == 'Driver').length >= 2) {
-      message.error('只允许一位驾驶员！');
-      return;
-    }
+    // if (employees.filter(item => item.memberType == 'Driver').length >= 2) {
+    //   message.error('只允许一位驾驶员！');
+    //   return;
+    // }
     this.setState({ selectEmployees: employees });
   };
   //人员筛选
