@@ -49,3 +49,11 @@ export async function updateDtl(payload) {
     body: payload,
   });
 }
+
+export async function batchImport(payload) {
+  return request(`/itms-cost/itms-cost/source/batchImport?sourceUuid=${payload.sourceUuid}&fileKey=${payload.fileKey}`,
+    {
+      method: 'POST'
+    }
+  );
+}

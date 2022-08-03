@@ -9,12 +9,10 @@ import { PureComponent } from 'react';
 import { connect } from 'dva';
 import BasicSourceSearchPage from './BasicSourceSearchPage';
 
-// @connect(({ lineSystem, loading }) => ({
-//   lineSystem,
-//   loading: loading.models.lineSystem,
-// }))
+@connect(() => ({
+}))
 export default class BasicSource extends PureComponent {
   render() {
-    return <BasicSourceSearchPage />;
+    return <BasicSourceSearchPage dispatch={this.props.dispatch} />;
   }
 }

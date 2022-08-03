@@ -11,6 +11,7 @@ import Page from '@/pages/Component/Page/inner/NewStylePage';
 import sourceStyle from './BasicSource.less';
 import FormFieldSearchPage from './BasicFormFieldSearchPage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
+import ExcelImport from '@/components/ExcelImport';
 import BasicHeadCreatPage from './BasicHeadCreatPage';
 import BasicDtlCreatPage from './BasicDtlCreatPage';
 import { findSourceTree, deleteSourceTree } from '@/services/cost/BasicSource';
@@ -21,6 +22,7 @@ import BasicSourceDataSearchPage from './BasicSourceDataSearchPage';
 const { Content, Sider } = Layout;
 const { TreeNode } = Tree;
 const { TabPane } = Tabs;
+
 export default class BasicSourceSearchPage extends Component {
   constructor(props) {
     super(props);
@@ -33,6 +35,7 @@ export default class BasicSourceSearchPage extends Component {
   }
 
   componentDidMount = () => {
+    console.log(this.props)
     this.queryTree();
   };
 
@@ -176,7 +179,19 @@ export default class BasicSourceSearchPage extends Component {
                 key={`Line${selectedKeys[0]}`}
                 selectedRows={selectedKeys[0]}
               />
-            </TabPane>
+              </TabPane>
+              <TabPane tab={'导入'} key="import">
+                <div style={{ marginTop: "20px" }}>
+                  <ExcelImport
+                    title={event.selectedNodes[0].props.dataRef.tableNameCN}
+                    templateType="BASICSOURCE"
+                    dispatch={this.props.dispatch}
+                    uploadType="basicSource/batchImport"
+                    uploadParams={{ sourceUuid: selectedKeys[0] }}
+                    cancelCallback={() => { }}
+                  />
+                </div>
+              </TabPane>
           </Tabs>
         ),
         selectedKeys: selectedKeys[0],
