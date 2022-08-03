@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-08-02 10:45:08
+ * @LastEditTime: 2022-08-02 18:30:06
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -311,15 +311,17 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       let scheduleDetails = response.success ? response.data.records : [];
       scheduleDetails = orderBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
       let memberWage = memberWageResponse.success ? memberWageResponse.data.records : [];
-      memberWage = memberWage.filter(x => x.AMOUNT);
-      let output = groupBy(memberWage, x => x.MEMBERNAME);
-      memberWage = Object.keys(output).map(member => {
-        const wages = output[member];
-        return {
-          memberName: member,
-          wage: Math.round(sumBy(wages, 'AMOUNT') * 1000) / 1000,
-        };
-      });
+      if (memberWage.length > 0) {
+        memberWage = memberWage.filter(x => x.AMOUNT);
+        let output = groupBy(memberWage, x => x.MEMBERNAME);
+        memberWage = Object.keys(output).map(member => {
+          const wages = output[member];
+          return {
+            memberName: member,
+            wage: Math.round(sumBy(wages, 'AMOUNT') * 1000) / 1000,
+          };
+        });
+      }
       const printPage = drawScheduleBillPage(selectedRows[index], scheduleDetails, memberWage);
       printPages.push(printPage);
     }
@@ -456,12 +458,20 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
             </td>
           </tr>
           <tr style={{ height: 25 }}>
-            <td colspan={8}>备注：该出车单工资包含车次补贴和伙食补贴</td>
+            <td colspan={8}>
+              备注：
+              {schedule.NOTE}
+            </td>
+          </tr>
+          <tr style={{ height: 25 }}>
+            <td colspan={8} style={{ border: 0 }}>
+              该出车单工资包含车次补贴和伙食补贴
+            </td>
           </tr>
           <tr style={{ height: 25 }}>
             <td colspan={8} style={{ border: 0 }}>
               <div style={{ float: 'left', width: '50%' }}>
-                （白色~放行 黄色~送货、交收退 红色~财务）
+                （备注：白色~放行 黄色~送货、交收退 红色~财务）
               </div>
               <div style={{ float: 'left', width: '25%' }}>打印日期: {convertDate(new Date())}</div>
               <div style={{ float: 'left', width: '22%' }}> 制单人: {loginUser().name}</div>
@@ -596,7 +606,10 @@ const drawPrintPage = (schedule, scheduleDetails) => {
             <td colspan={2} />
           </tr>
           <tr style={{ height: 20 }}>
-            <td colspan={8}>备注:</td>
+            <td colspan={8}>
+              备注：
+              {schedule.NOTE}
+            </td>
           </tr>
           <tr style={{ height: 25 }}>
             <td colspan={8} style={{ border: 0 }}>

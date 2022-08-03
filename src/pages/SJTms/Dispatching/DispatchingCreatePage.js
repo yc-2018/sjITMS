@@ -153,6 +153,7 @@ export default class DispatchingCreatePage extends Component {
             employees,
             orders: [...details],
             schedule: response.data,
+            note: response.data.note,
             selectVehicle: selectVehicle == undefined ? {} : selectVehicle,
             selectEmployees,
             loading: false,
@@ -1017,7 +1018,7 @@ export default class DispatchingCreatePage extends Component {
                   </div>
                 }
                 style={{ marginTop: 5 }}
-                bodyStyle={{ height: '30vh', padding: 10, overflowY: 'auto' }}
+                bodyStyle={{ height: '28vh', padding: 10, overflowY: 'auto' }}
               >
                 {selectEmployees.map(employee => {
                   return (
@@ -1070,7 +1071,7 @@ export default class DispatchingCreatePage extends Component {
                 })}
               </Card>
               {/* 备注 */}
-              <Row style={{ marginTop: 2 }}>
+              <Row style={{ marginTop: 5 }}>
                 <Col span={4} style={{ fontWeight: 'bold', lineHeight: '24px', fontSize: 14 }}>
                   备注：
                 </Col>
