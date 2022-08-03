@@ -93,7 +93,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     tableName:"COST_PROJECT",
     condition:{
       params:[
-        {field: 'UUID', rule: 'eq', val: [this.state.itemValue] },
+        {field: 'UUID', rule: 'in', val: this.state.itemValue.split(",") },
       ]
     }
   }
@@ -102,29 +102,54 @@ export default class CostPlanSearch extends QuickFormSearchPage {
   }
   let  result =  await dynamicQuery(params);
    let {data} = this.state;
-   result = result.result?.records[0];
-   if(data.list==undefined || data.list.length==0){
-    result.CALC_SORT = 1
-    data.list = [result]
-    this.setState({data,visible:false})
-    return;
-   }
-   const item = data.list.filter(e=>e.UUID==result.UUID);
-   if(!code ||(code && item.length==0)){
-    //校验是否重复添加
-      if(item.length>0){
+   result = result.result?.records;
+   for(const e of result){
+    const item = data?.list?.filter(f=>f.UUID==e.UUID);
+    if(!code ||(code && item.length==0)){
+      if(item?.length>0){
         message.info("项目已经存在!,请勿重复添加");
         return ;
       }
-    result.CALC_SORT= data.list.map(e=>e.CALC_SORT).sort((a,b)=>{return b-a})[0]+1;
-    data.list.push(result)
-    this.setState({data,visible:false})
-    return ;
+    }
    }
-  result.CALC_SORT = item[0].CALC_SORT;
-  data.list.splice(item[0].CALC_SORT-1,1,result);
-  this.setState({data,visible:false})
-  }
+   result.reverse().forEach(e=>{
+    if(data.list==undefined || data.list.length==0){
+      e.CALC_SORT = 1
+      data.list = [e]
+    }else{
+      const item = data?.list?.filter(f=>f.UUID==e.UUID);
+      if(code && item && item.length>0){
+        e.CALC_SORT = item[0].CALC_SORT;
+        data.list.splice(item[0].CALC_SORT-1,1,e);
+      }else{
+        e.CALC_SORT= data.list.map(g=>g.CALC_SORT).sort((a,b)=>{return b-a})[0]+1;
+        data.list.push(e);
+      }
+    }
+   })
+   this.setState({data,visible:false})
+  //  if(data.list==undefined || data.list.length==0){
+  //   result.CALC_SORT = 1
+  //   data.list = [result]
+  //   this.setState({data,visible:false})
+  //   return;
+  //  }
+  //  const item = data.list.filter(e=>e.UUID==result.UUID);
+  //  if(!code ||(code && item.length==0)){
+  //   //校验是否重复添加
+  //     if(item.length>0){
+  //       message.info("项目已经存在!,请勿重复添加");
+  //       return ;
+  //     }
+  //   result.CALC_SORT= data.list.map(e=>e.CALC_SORT).sort((a,b)=>{return b-a})[0]+1;
+  //   data.list.push(result)
+  //   this.setState({data,visible:false})
+  //   return ;
+  //  }
+  // result.CALC_SORT = item[0].CALC_SORT;
+  // data.list.splice(item[0].CALC_SORT-1,1,result);
+  // this.setState({data,visible:false})
+   }
   
  
   drapTableChange =(e)=>{
@@ -150,20 +175,33 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     destroyOnClose
   >
    <Form>
-      <Form.Item>
-          {getFieldDecorator('UUID', {})(
+      <Form.Item label='分类'>
+          {getFieldDecorator('CLASSIFY', {})(
+            <SimpleAutoComplete
+            showSearch
+            placeholder=""
+            dictCode = "CLASSIFY"
+           onChange ={(e)=>this.setState({classify:e.value})}
+          
+          />
+          )}
+        </Form.Item>
+        <Form.Item label='项目名称'>
+        {getFieldDecorator('UUID', {})(
             <SimpleAutoComplete
             showSearch
             placeholder=""
             textField="[%CLASSIFY%]%ITEM_NAME%"
             valueField="UUID"
             searchField="ITEM_NAME"
+            mode="multiple"
             queryParams={{
               tableName: 'COST_PROJECT',
               condition: {
                 params: [
                   { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
                   { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
+                  { field: 'CLASSIFY', rule: 'eq', val: [this.state.classify] },
                 ],
               },
             }

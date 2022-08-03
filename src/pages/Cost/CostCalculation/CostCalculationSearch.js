@@ -275,6 +275,9 @@ export default class CostBillDtlView extends QuickFormSearchPage {
         <Button hidden={!this.state.bill} onClick={this.getcalcLog}>
           结果日志
         </Button>
+        <Button onClick={this.getView}>
+         查看
+        </Button>
         <Modal
           title="结果日志"
           visible={this.state.isShowLogs}
@@ -305,7 +308,29 @@ export default class CostBillDtlView extends QuickFormSearchPage {
   changeState = () => {
     this.setState({ title: this.props.params.e.SCHEME_NAME });
   };
-
+  getView =()=>{
+    const { selectedRows } = this.state;
+    const { dateString } = this.state;
+    const { e } = this.props.params;
+    if (selectedRows.length == 0) {
+      message.error('请选择一条数据');
+      return;
+    }
+    const {
+      plan: { subjectKeyField },
+      bill: { uuid: billUuid },
+    } = this.state;
+    // 拿到主键
+    const subjectUuid = selectedRows[0][subjectKeyField];
+    this.props.switchTab('import', {
+      billUuid,
+      subjectUuid,
+      dateString,
+      entityUuid: this.props.params.entityUuid,
+      e,
+    });
+    //this.props.switchTab('billView');
+  }
   drawSearchPanel = () => {
     const { getFieldDecorator } = this.props.form;
     const { dateString } = this.state;

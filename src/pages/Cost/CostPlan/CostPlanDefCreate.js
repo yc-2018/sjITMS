@@ -1,7 +1,7 @@
 import React, { useDebugValue } from 'react';
 import { connect } from 'dva';
 import { Form, Upload, Button, Icon, message, Layout } from 'antd';
-import { savePlan } from '@/services/cost/Cost';
+import { savePlan,addHistory} from '@/services/cost/Cost';
 import {makeFormData} from '@/pages/Cost/CostProject/CostProjectCreate'
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import CostPlanSearch from './CostPlanSearch'
@@ -117,6 +117,13 @@ export default class CostPlanDefCreate extends QuickCreatePage {
       }
     });
   }
+  addHistory = async()=>{
+    await addHistory(this.props?.params?.entityUuid).then(e=>{
+        if(e&& e.success){
+          message.success("添加历史版本成功");
+        }
+    })
+  }
   formLoaded = () => {
     const { formItems } = this.state;
     formItems.cost_plan_ACCESSORY.component = this.uploadComponent;
@@ -152,9 +159,10 @@ export default class CostPlanDefCreate extends QuickCreatePage {
   };
   render() {
     return <Layout style={{ backgroundColor: "white", height:'100%'}}>
-      <div style={{paddingTop:20}}>
+      <div style={{paddingTop:20}}>b
+        <Button type='primary' style={{float:'right',marginLeft:10,marginRight:10}}  onClick={this.addHistory}>添加历史记录</Button>
         <Button type='primary' style={{float:'right',marginLeft:10,marginRight:10}} onClick={this.onSave}>保存</Button>
-        <Button style={{float:'right'}} onClick={() => { this.props.switchTab("query") }}>返回</Button>
+        <Button style={{float:'right'}} onClick={() => { this.props.switchTab("query")} }>返回</Button>
       </div>
       <Content style={{marginLeft:'4.6%'}}>{this.drawForm()}</Content>
       <Footer style={{ backgroundColor: "white"}}> <CostPlanSearch quickuuid ="cost_plan_item" PLAN_UUID = {this.props?.params?.entityUuid} 

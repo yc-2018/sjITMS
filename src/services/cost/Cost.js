@@ -100,3 +100,9 @@ export async function copyPlan(uuid) {
     method: 'GET'
   });
 }
+export async function addHistory(uuid) {
+  return request(`/itms-cost/itms-cost/costplan/addHistory/${uuid}`, {
+    method: 'GET'
+  });
+}
+

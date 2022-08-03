@@ -13,6 +13,7 @@ import CostCalculationSearchPage from './CostCalculationSearch';
 // import CostPlanDefCreate from '@/pages/Cost/CostPlan/CostPlanDefCreate';
 import CostPlanDefView from './CostPlanDefView';
 import CostBillEdit from './CostBillEdit';
+import CostBillEditView from './CostBillEditView'
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -53,6 +54,9 @@ export default class CostProjectForm extends QuickForm {
       e.component = component;
     } else if (e.showPageNow == 'create') {
       const component = <CostBillEdit {...e.props} />;
+      e.component = component;
+    }else if(e.showPageNow =='import'){
+      const component = <CostBillEditView {...e.props}/>
       e.component = component;
     }
   };

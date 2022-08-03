@@ -104,3 +104,11 @@ export async function getCompareBill(billNumber, bakBillNumber, payload) {
     }
   );
 }
+export async function getPlanParticulars(subjectUuid,billuuid, name) {
+  return request(
+    `/itms-cost/itms-cost/costbill/getPlanParticulars/${subjectUuid}/${billuuid}/${name}`,
+    {
+      method: 'POST'
+    }
+  );
+}
