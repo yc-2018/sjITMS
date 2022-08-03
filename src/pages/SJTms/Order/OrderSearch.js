@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-20 17:34:15
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-07-27 16:31:04
  * @version: 1.0
  */
 import React from 'react';
@@ -76,7 +76,7 @@ export default class OrderSearch extends QuickFormSearchPage {
             this.setState({ showCancelPop: false });
             this.onCancel(selectedRows[0]).then(response => {
               if (response.success) {
-                message.success('审核成功！');
+                message.success('取消成功！');
                 this.onSearch();
               }
             });

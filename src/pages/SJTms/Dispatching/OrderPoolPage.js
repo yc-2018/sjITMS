@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-25 16:36:01
+ * @LastEditTime: 2022-07-30 17:55:22
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -321,11 +321,11 @@ export default class OrderPoolPage extends Component {
       };
     }
     return {
-      realCartonCount: sumBy(data.map(x => x.realCartonCount)),
-      realScatteredCount: sumBy(data.map(x => x.realScatteredCount)),
-      realContainerCount: sumBy(data.map(x => x.realContainerCount)),
-      weight: sumBy(data.map(x => Number(x.weight))),
-      volume: sumBy(data.map(x => Number(x.volume))),
+      realCartonCount: Math.round(sumBy(data.map(x => x.realCartonCount)) * 100) / 100,
+      realScatteredCount: Math.round(sumBy(data.map(x => x.realScatteredCount)) * 100) / 100,
+      realContainerCount: Math.round(sumBy(data.map(x => x.realContainerCount)) * 100) / 100,
+      weight: Math.round(sumBy(data.map(x => Number(x.weight))) * 100) / 100,
+      volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
     };
   };
 
@@ -341,7 +341,6 @@ export default class OrderPoolPage extends Component {
       scheduledData,
       activeTab,
     } = this.state;
-    const { totalOrder } = this.props;
     const buildOperations = () => {
       switch (activeTab) {
         case 'Scheduled':
@@ -425,16 +424,14 @@ export default class OrderPoolPage extends Component {
                   this.props.refreshOrderCollect(isOrderCollect);
                 }}
               />
-              <a
-                href="#"
-                style={{ marginLeft: 30 }}
-                onClick={() => this.setState({ mapModal: true })}
-              >
-                <img src={mapIcon} style={{ width: 20, height: 20 }} />
-                地图
-              </a>
             </div>
           )}
+          <div style={{ position: 'absolute', top: 12, left: 160 }}>
+            <a href="#" onClick={() => this.setState({ mapModal: true })}>
+              <img src={mapIcon} style={{ width: 20, height: 20 }} />
+              地图
+            </a>
+          </div>
           {/* 排车modal */}
           <DispatchingCreatePage
             modal={{ title: '排车' }}
@@ -446,13 +443,14 @@ export default class OrderPoolPage extends Component {
             onRef={node => (this.createPageModalRef = node)}
           />
           <Modal
-            width="80%"
+            width="95vw"
+            centered
             visible={mapModal}
             footer={null}
             onCancel={() => this.setState({ mapModal: false })}
             destroyOnClose={true}
           >
-            <DispatchMap orders={totalOrder} />
+            <DispatchMap orders={auditedData} />
           </Modal>
         </TabPane>
         <TabPane

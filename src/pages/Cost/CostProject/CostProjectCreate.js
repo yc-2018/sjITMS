@@ -159,12 +159,31 @@ export default class CostProjectCreate extends QuickCreatePage {
   };
 
   formLoaded = () => {
-    const { formItems } = this.state;
+    const { formItems, onlFormInfos } = this.state;
     formItems.COST_PROJECT_SQL.component = this.sqlComponent;
     formItems.COST_PROJECT_ACCESSORY.component = this.uploadComponent;
     formItems.COST_PROJECT_CYCLE_FIELD.component = this.selectComponent;
     formItems.COST_PROJECT_CYCLE_BODY_FIELD.component = this.selectComponent;
     formItems.COST_PROJECT_BILLING_FIELD.component = this.selectComponent;
+
+    const tableName = onlFormInfos[0].onlFormHead.tableName;
+    const FORMULA_TYPE = this.entity[tableName][0].FORMULA_TYPE;
+    if (FORMULA_TYPE == '3') {
+      for (const formItemKey in formItems) {
+        const formItem = formItems[formItemKey];
+        if (formItem.categoryName == '公式设定' && formItem.fieldName != 'FORMULA_TYPE') {
+          formItem.categoryName = 'hidden';
+        }
+      }
+    } else if (FORMULA_TYPE == '1' || FORMULA_TYPE == '2') {
+      for (const formItemKey in formItems) {
+        const formItem = formItems[formItemKey];
+        if (formItem.categoryName != '基本设定' && formItem.fieldName != 'FORMULA_TYPE') {
+          formItem.categoryName = 'hidden';
+        }
+      }
+      formItems['COST_PROJECT_SQL'].categoryName = '公式设定';
+    }
   };
 
   drawcell = e => {

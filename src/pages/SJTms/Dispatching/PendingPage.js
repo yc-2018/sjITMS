@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-20 14:07:17
+ * @LastEditTime: 2022-08-01 16:01:55
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -44,6 +44,7 @@ export default class PendingPage extends Component {
   //刷新
   refreshTable = () => {
     this.getPendingOrders();
+    this.props.refreshSelectRowOrder([], 'Pending');
   };
 
   //获取待排运输订单

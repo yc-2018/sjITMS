@@ -2,12 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-21 10:36:00
+ * @LastEditTime: 2022-08-03 08:50:23
  * @Description: 司机刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\Swipe.js
  */
 import { PureComponent } from 'react';
-import PageHeaderWrapper from '@/components/PageHeaderWrapper';
+import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
 import { Card, Col, Input, Row, Spin } from 'antd';
@@ -18,10 +18,14 @@ export default class Swipe extends PureComponent {
   state = {
     loading: false,
     scheduleBill: {},
+    empId: '',
     message: undefined,
     errMsg: '',
     isShip: false,
   };
+  componentDidMount() {
+    this.empInputRef.focus();
+  }
 
   //刷卡
   onSubmit = async event => {
@@ -31,22 +35,23 @@ export default class Swipe extends PureComponent {
     localStorage.setItem('showMessage', '1');
     if (response.success) {
       this.setState({
+        empId: '',
         loading: false,
         scheduleBill: response.data.scheduleBill,
         message: response.data.message,
         isShip: response.data.message.indexOf('装车') != -1,
       });
     } else {
-      this.setState({ errMsg: response.message, scheduleBill: {}, loading: false });
+      this.setState({ empId: '', loading: false, scheduleBill: {}, errMsg: response.message });
     }
   };
   render() {
-    const { loading, scheduleBill, errMsg, message, isShip } = this.state;
+    const { loading, empId, scheduleBill, errMsg, message, isShip } = this.state;
     return (
-      <PageHeaderWrapper>
+      <FreshPageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
           <Spin indicator={LoadingIcon('default')} spinning={loading}>
-            <NavigatorPanel title="司机刷卡" />
+            <NavigatorPanel title="司机刷卡" canFullScreen={true} />
             <div style={{ fontSize: 16, textAlign: 'center' }}>
               工号：
               <Input
@@ -56,6 +61,9 @@ export default class Swipe extends PureComponent {
                   fontSize: 16,
                   margin: 15,
                 }}
+                value={empId}
+                ref={input => (this.empInputRef = input)}
+                onChange={event => this.setState({ empId: event.target.value })}
                 onPressEnter={this.onSubmit}
                 placeholder={'输入员工代码'}
               />
@@ -134,7 +142,7 @@ export default class Swipe extends PureComponent {
             </Card>
           </Spin>
         </Page>
-      </PageHeaderWrapper>
+      </FreshPageHeaderWrapper>
     );
   }
 }

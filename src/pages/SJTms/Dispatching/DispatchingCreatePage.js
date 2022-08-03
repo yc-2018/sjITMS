@@ -45,6 +45,7 @@ export default class DispatchingCreatePage extends Component {
     vehicleParam: [],
     selectVehicle: {},
     selectEmployees: [],
+    note: '',
     schedule: {},
     editPageVisible: false,
     scheduleDetail: {},
@@ -152,6 +153,7 @@ export default class DispatchingCreatePage extends Component {
             employees,
             orders: [...details],
             schedule: response.data,
+            note: response.data.note,
             selectVehicle: selectVehicle == undefined ? {} : selectVehicle,
             selectEmployees,
             loading: false,
@@ -218,19 +220,19 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ vehicles: serachVeh });
   };
   //选人
-  handleEmployee = employee => {
+  handleEmployee = emp => {
     const { selectEmployees } = this.state;
     let employees = [...selectEmployees];
-    const index = selectEmployees.findIndex(x => x.UUID == employee.UUID);
-    employee.memberType = employee.ROLE_TYPE;
-    employee.memberUuid = guid();
+    const index = selectEmployees.findIndex(x => x.UUID == emp.UUID);
+    emp.memberType = emp.ROLE_TYPE;
+    emp.memberUuid = guid();
     index == -1
-      ? employees.push(employee)
-      : (employees = employees.filter(x => x.UUID != employee.UUID));
-    if (employees.filter(item => item.memberType == 'Driver').length >= 2) {
-      message.error('只允许一位驾驶员！');
-      return;
-    }
+      ? employees.push(emp)
+      : (employees = employees.filter(x => x.memberUuid != emp.memberUuid));
+    // if (employees.filter(item => item.memberType == 'Driver').length >= 2) {
+    //   message.error('只允许一位驾驶员！');
+    //   return;
+    // }
     this.setState({ selectEmployees: employees });
   };
   //人员筛选
@@ -412,7 +414,7 @@ export default class DispatchingCreatePage extends Component {
   };
   //保存
   handleSave = async () => {
-    const { isEdit, orders, schedule, selectVehicle, selectEmployees } = this.state;
+    const { isEdit, orders, schedule, selectVehicle, selectEmployees, note } = this.state;
     const orderSummary = this.groupByOrder(orders);
     // if (!this.verifySchedule(orderSummary, selectVehicle, selectEmployees)) {
     //   return;
@@ -452,6 +454,7 @@ export default class DispatchingCreatePage extends Component {
       ...orderSummary,
       companyUuid: loginCompany().uuid,
       dispatchCenterUuid: loginOrg().uuid,
+      note: note,
     };
     const response = isEdit
       ? await modify(Object.assign(schedule, paramBody))
@@ -547,8 +550,7 @@ export default class DispatchingCreatePage extends Component {
     return (
       <Card
         title="员工"
-        style={{ height: '36vh', fontWeight: 'bold' }}
-        bodyStyle={{ padding: '15px 0 0 0', height: '29vh', overflowY: 'auto' }}
+        bodyStyle={{ padding: 0, paddingTop: 8, height: '34vh', overflowY: 'auto' }}
         extra={
           <div>
             <Select
@@ -639,8 +641,7 @@ export default class DispatchingCreatePage extends Component {
     return (
       <Card
         title="车辆"
-        style={{ height: '36vh' }}
-        bodyStyle={{ padding: '15px 0 0 0', height: '29vh', overflowY: 'auto' }}
+        bodyStyle={{ padding: 0, paddingTop: 8, height: '34vh', overflowY: 'auto' }}
         extra={
           <div>
             <Select
@@ -748,6 +749,7 @@ export default class DispatchingCreatePage extends Component {
       selectVehicle,
       scheduleDetail,
       editPageVisible,
+      note,
     } = this.state;
     const totalData = this.groupByOrder(orders);
     //车辆可装载信息
@@ -806,7 +808,7 @@ export default class DispatchingCreatePage extends Component {
         centered
         {...this.props.modal}
         className={dispatchingStyles.dispatchingCreatePage}
-        bodyStyle={{ margin: -24 }}
+        bodyStyle={{ margin: -24, height: '90vh' }}
         footer={[
           <div>
             <Button onClick={this.exit}>取消</Button>
@@ -825,22 +827,20 @@ export default class DispatchingCreatePage extends Component {
           onCancel={() => this.setState({ editPageVisible: false })}
         />
         <Spin indicator={LoadingIcon('default')} spinning={loading}>
-          <Row gutter={[8, 0]}>
+          <Row gutter={[5, 0]}>
             <Col span={16}>
-              <Card bodyStyle={{ padding: 1, height: '42.5vh' }}>
-                <DispatchingTable
-                  loading={loading}
-                  className={dispatchingStyles.dispatchingTable}
-                  columns={[...CreatePageOrderColumns, buildRowOperation]}
-                  dataSource={orders}
-                  refreshDataSource={orders => {
-                    this.setState({ orders });
-                  }}
-                  pagination={false}
-                  scrollY="37vh"
-                />
-              </Card>
-              <Row gutter={[8, 0]} style={{ marginTop: 8 }}>
+              <DispatchingTable
+                loading={loading}
+                className={dispatchingStyles.dispatchingTable}
+                columns={[...CreatePageOrderColumns, buildRowOperation]}
+                dataSource={orders}
+                refreshDataSource={orders => {
+                  this.setState({ orders });
+                }}
+                pagination={false}
+                scrollY="40vh"
+              />
+              <Row gutter={[5, 0]} style={{ marginTop: 5 }}>
                 <Col span={12}>{this.buildSelectVehicleCard()}</Col>
                 <Col span={12}>{this.buildSelectEmployeeCard()}</Col>
               </Row>
@@ -849,8 +849,8 @@ export default class DispatchingCreatePage extends Component {
               {/* 订单汇总 */}
               <Card
                 title={<div className={dispatchingStyles.selectCary}>订单汇总</div>}
-                className={dispatchingStyles.orderTotalCard}
-                bodyStyle={{ padding: 5 }}
+                style={{ height: '22vh', overflow: 'auto' }}
+                bodyStyle={{ padding: 0, fontSize: 14 }}
               >
                 <div className={dispatchingStyles.orderTotalCardBody}>
                   <div style={{ flex: 1 }}>
@@ -903,8 +903,8 @@ export default class DispatchingCreatePage extends Component {
               </Card>
               {/* 已选车辆 */}
               <Card
-                className={dispatchingStyles.orderTotalCard}
-                bodyStyle={{ padding: 5 }}
+                style={{ height: '22vh', marginTop: 5, overflow: 'auto' }}
+                bodyStyle={{ padding: 0, paddingTop: 5, fontSize: 14 }}
                 title={
                   <div>
                     <span
@@ -919,7 +919,6 @@ export default class DispatchingCreatePage extends Component {
                     <span style={{ marginLeft: 5 }}>{selectVehicle.PLATENUMBER}</span>
                   </div>
                 }
-                style={{ height: '24.2vh', marginTop: 8, overflow: 'auto' }}
               >
                 {selectVehicle.PLATENUMBER ? (
                   selectVehicle.VEHICLETYPE != '[]' ? (
@@ -1018,14 +1017,14 @@ export default class DispatchingCreatePage extends Component {
                     已选人员
                   </div>
                 }
-                style={{ height: '36vh', marginTop: 8 }}
-                bodyStyle={{ height: '29vh', overflowY: 'scroll' }}
+                style={{ marginTop: 5 }}
+                bodyStyle={{ height: '28vh', padding: 10, overflowY: 'auto' }}
               >
                 {selectEmployees.map(employee => {
                   return (
-                    <Row gutter={[8, 8]} style={{ fontWeight: 'bold', lineHeight: '30px' }}>
+                    <Row gutter={[5, 5]} style={{ fontWeight: 'bold', lineHeight: '30px' }}>
                       <Col
-                        span={8}
+                        span={9}
                         style={{
                           overflow: 'hidden',
                           whiteSpace: 'nowrap',
@@ -1064,13 +1063,26 @@ export default class DispatchingCreatePage extends Component {
                           }}
                           style={{ marginLeft: 10 }}
                         >
-                          添加
+                          复制
                         </a>
                       </Col>
                     </Row>
                   );
                 })}
               </Card>
+              {/* 备注 */}
+              <Row style={{ marginTop: 5 }}>
+                <Col span={4} style={{ fontWeight: 'bold', lineHeight: '24px', fontSize: 14 }}>
+                  备注：
+                </Col>
+                <Col span={20}>
+                  <Input
+                    placeholder="请输入备注"
+                    defaultValue={note}
+                    onChange={event => this.setState({ note: event.target.value })}
+                  />
+                </Col>
+              </Row>
             </Col>
           </Row>
         </Spin>

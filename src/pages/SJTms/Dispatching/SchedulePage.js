@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-19 10:43:41
+ * @LastEditTime: 2022-08-02 18:21:45
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -16,6 +16,11 @@ import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCre
 import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
 import { ScheduleColumns, pagination } from './DispatchingColumns';
 import dispatchingStyles from './Dispatching.less';
+import { convertDateToTime } from '@/utils/utils';
+import { loginUser } from '@/utils/LoginContext';
+import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
+import { orderBy } from 'lodash';
+import { queryAllData } from '@/services/quick/Quick';
 import {
   querySchedule,
   approve,
@@ -269,11 +274,59 @@ export default class SchedulePage extends Component {
     this.props.refreshDetail(selectSchedule);
   };
 
+  //打印
+  handlePrint = async () => {
+    const { approvedRowKeys } = this.state;
+    if (approvedRowKeys.length == 0) {
+      message.warn('请选择需要打印的排车单！');
+      return;
+    }
+    const hide = message.loading('加载中...', 0);
+    const LODOP = getLodop();
+    if (LODOP == undefined) return;
+    LODOP.PRINT_INIT('排车单打印');
+    LODOP.SET_PRINT_PAGESIZE(1, 2100, 1400, '210mm*140mm'); //1代表横的打印 2代表竖的打印 3纵向打印，宽度固定，高度按打印内容的高度自适应；
+    LODOP.SET_PRINT_MODE('PRINT_DUPLEX', 1); //去掉双面打印
+    LODOP.SET_PRINT_STYLEA(0, 'Horient', 2); //打印项在纸张中水平居中
+    await this.buildPrintPage();
+    const printPages = document.getElementById('printSchedule').childNodes;
+    printPages.forEach(page => {
+      LODOP.NewPageA();
+      LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
+    });
+    LODOP.PREVIEW();
+    hide();
+    this.setState({ printPage: undefined });
+  };
+  buildPrintPage = async () => {
+    const { scheduleData, approvedRowKeys } = this.state;
+    const printPages = [];
+    for (let index = 0; approvedRowKeys.length > index; index++) {
+      const response = await queryAllData({
+        quickuuid: 'sj_itms_print_schedule_order',
+        superQuery: {
+          queryParams: [
+            { field: 'billuuid', type: 'VarChar', rule: 'eq', val: approvedRowKeys[index] },
+          ],
+        },
+      });
+      let scheduleDetails = response.success ? response.data.records : [];
+      scheduleDetails = orderBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
+      const printPage = drawPrintPage(
+        scheduleData.find(x => x.uuid == approvedRowKeys[index]),
+        scheduleDetails
+      );
+      printPages.push(printPage);
+    }
+    this.setState({ printPage: printPages });
+  };
+
   render() {
     const {
       scheduleData,
       loading,
       columns,
+      printPage,
       savedRowKeys,
       approvedRowKeys,
       abortedRowKeys,
@@ -284,9 +337,14 @@ export default class SchedulePage extends Component {
       switch (activeTab) {
         case 'Approved':
           return (
-            <Button style={{ marginLeft: 10 }} onClick={this.handleCancelApprove}>
-              取消批准
-            </Button>
+            <div>
+              <Button style={{ marginLeft: 10 }} onClick={this.handlePrint}>
+                打印
+              </Button>
+              <Button style={{ marginLeft: 10 }} onClick={this.handleCancelApprove}>
+                取消批准
+              </Button>
+            </div>
           );
         case 'Aborted':
           return (
@@ -365,6 +423,9 @@ export default class SchedulePage extends Component {
           </TabPane>
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已批准</Text>} key="Approved">
             <ScheduleSearchForm refresh={this.refreshTable} />
+            <div id="printSchedule" style={{ display: 'none' }}>
+              {printPage}
+            </div>
             <DispatchingTable
               comId="approvedSchedule"
               pagination={pagination}
@@ -402,3 +463,111 @@ export default class SchedulePage extends Component {
     );
   }
 }
+
+//装车单
+const drawPrintPage = (schedule, scheduleDetails) => {
+  return (
+    <div>
+      <table
+        style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0 }}
+        border={1}
+        cellPadding={0}
+        cellSpacing={0}
+      >
+        <thead>
+          <tr style={{ height: 50 }}>
+            <th colspan={2} style={{ border: 0 }} />
+            <th colspan={4} style={{ border: 0 }}>
+              <div style={{ fontSize: 18, textAlign: 'center' }}>广东时捷物流有限公司装车单</div>
+            </th>
+            <th colspan={2} style={{ border: 0 }}>
+              <div style={{ fontSize: 14, textAlign: 'center' }}>
+                <span>第</span>
+                <font tdata="PageNO" color="blue">
+                  ##
+                </font>
+                <span>页/共</span>
+                <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
+                  ##
+                </font>
+                <span>页</span>
+              </div>
+            </th>
+          </tr>
+          <tr>
+            <th colspan={8} style={{ border: 0, height: 20 }}>
+              <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                <div style={{ float: 'left', width: '25%' }}>单号： {schedule.billNumber}</div>
+                <div style={{ float: 'left', width: '25%' }}>车牌号： {schedule.vehicle.name}</div>
+                <div style={{ float: 'left', width: '25%' }}>
+                  打印时间： {convertDateToTime(new Date())}
+                </div>
+                <div style={{ float: 'left', width: '22%' }}>制单人： {loginUser().name}</div>
+              </div>
+            </th>
+          </tr>
+          <tr style={{ height: 25 }}>
+            <th width={50}>序号</th>
+            <th width={120}>销售单号</th>
+            <th width={100}>客户编号</th>
+            <th width={170}>客户名称</th>
+            <th width={80}>整件</th>
+            <th width={80}>散件</th>
+            <th width={80}>板位</th>
+            <th width={60}>备注</th>
+          </tr>
+        </thead>
+        <tbody>
+          {scheduleDetails ? (
+            scheduleDetails.map((item, index) => {
+              return (
+                <tr style={{ textAlign: 'center', height: 20 }}>
+                  <td width={50}>{index + 1}</td>
+                  <td width={120}>{item.SOURCENUM}</td>
+                  <td width={100}>{item.DELIVERYPOINTCODE}</td>
+                  <td width={170}>{item.DELIVERYPOINTNAME}</td>
+                  <td width={80}>{item.REALCARTONCOUNT}</td>
+                  <td width={80}>{item.REALSCATTEREDCOUNT}</td>
+                  <td width={80}>{item.COLLECTBIN}</td>
+                  <td width={60}>{item.NOTE || ''}</td>
+                </tr>
+              );
+            })
+          ) : (
+            <></>
+          )}
+        </tbody>
+        <tfoot>
+          <tr style={{ height: 20 }}>
+            <td colspan={4}>合计:</td>
+            <td style={{ textAlign: 'center' }}>
+              <font color="blue" tdata="SubSum" format="#,##" tindex="5">
+                ######
+              </font>
+            </td>
+            <td style={{ textAlign: 'center' }}>
+              <font color="blue" tdata="SubSum" format="#,##" tindex="6">
+                ######
+              </font>
+            </td>
+            <td colspan={2} />
+          </tr>
+          <tr style={{ height: 20 }}>
+            <td colspan={8}>
+              备注：
+              {schedule.note}
+            </td>
+          </tr>
+          <tr style={{ height: 25 }}>
+            <td colspan={8} style={{ border: 0 }}>
+              <div style={{ float: 'left', width: '25%' }}>装车员:</div>
+              <div style={{ float: 'left', width: '25%' }}>司机:</div>
+              <div style={{ float: 'left', width: '25%' }}> 送货员:</div>
+              <div style={{ float: 'left', width: '22%' }}>调度:</div>
+            </td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  );
+};

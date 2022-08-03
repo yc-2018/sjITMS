@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-12 17:31:34
+ * @LastEditTime: 2022-07-26 15:47:05
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -106,7 +106,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
         this.initConfig({
           columns: newColumns,
           sql: ' ccc',
-          reportHeadName: 'ccc',
+          reportHeadName: '台账历史对比',
         });
       } else {
         message.error('当前查询无数据,请计算后再操作');

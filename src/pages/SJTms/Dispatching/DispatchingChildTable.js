@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-01 08:43:48
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-21 10:47:57
+ * @LastEditTime: 2022-08-02 15:52:21
  * @Description: 嵌套子表格组件
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingChildTable.js
  */
@@ -282,7 +282,6 @@ export default class DispatchingChildTable extends Component {
           onChange={this.handleStandardTableChange}
           expandedRowRender={record => expandedRowRender(record)}
           className={dispatchingTableStyles.dispatchingTable}
-          style={{ height: this.props.scrollY }}
           bodyStyle={{ height: this.props.scrollY }}
           scroll={{ y: this.props.scrollY, x: '100%' }}
           footer={this.props.footer}

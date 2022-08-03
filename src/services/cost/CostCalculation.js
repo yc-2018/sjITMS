@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-10 11:29:27
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-12 15:07:28
+ * @LastEditTime: 2022-07-27 16:55:48
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -14,6 +14,17 @@ export async function calculatePlan(payload) {
     `/itms-cost/itms-cost/costbill/calculatePlan?planUuid=${payload.planUuid}&month=${
       payload.month
     }`,
+    {
+      method: 'POST',
+    }
+  );
+}
+
+export async function calculateMemberWage(payload) {
+  return request(
+    `/itms-cost/itms-cost/costbill/calculateMemberWage?scheduleNum=${payload}&companyUuid=${
+      loginCompany().uuid
+    }&dispatchCenterUuid=${loginOrg().uuid}`,
     {
       method: 'POST',
     }

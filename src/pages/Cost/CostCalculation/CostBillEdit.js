@@ -85,10 +85,15 @@ export default class CostBillEdit extends CreatePage {
 
   onSave = async () => {
     const { billUuid, subjectUuid } = this.state;
+    const { dateString, e } = this.props.params;
     const response = await updateSubjectBill({ billUuid, subjectUuid, updateMap: this.entity });
     if (response.success) {
       message.success('保存成功');
-      this.props.switchTab('view', { params: {} });
+      this.props.switchTab('view', {
+        entityUuid: this.props.params.entityUuid,
+        dateString,
+        e,
+      });
     }
   };
 
