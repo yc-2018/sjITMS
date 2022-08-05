@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-08-02 18:21:45
+ * @LastEditTime: 2022-08-04 11:34:06
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -56,6 +56,10 @@ export default class SchedulePage extends Component {
     this.getSchedules(this.state.activeTab, searchKeyValues);
     this.props.refreshDetail(undefined);
   };
+  refreshScheduleAndpending = () => {
+    this.refreshTable();
+    this.props.refreshPending();
+  };
   //获取排车单
   getSchedules = (stat, searchKeyValues) => {
     if (searchKeyValues == undefined) searchKeyValues = {};
@@ -104,6 +108,7 @@ export default class SchedulePage extends Component {
         if (response.success) {
           message.success('作废成功！');
           this.getSchedules(activeTab);
+          this.props.refreshPending();
         }
       });
     } else {
@@ -111,7 +116,7 @@ export default class SchedulePage extends Component {
         '作废',
         savedRowKeys,
         this.abortedSchedule,
-        this.refreshTable
+        this.refreshScheduleAndpending
       );
     }
   };
@@ -136,6 +141,7 @@ export default class SchedulePage extends Component {
         if (response.success) {
           message.success('取消作废成功！');
           this.getSchedules(activeTab);
+          this.props.refreshPending();
         }
       });
     } else {
@@ -143,7 +149,7 @@ export default class SchedulePage extends Component {
         '取消作废',
         abortedRowKeys,
         this.cancelAbortedSchedule,
-        this.refreshTable
+        this.refreshScheduleAndpending
       );
     }
   };
@@ -404,9 +410,8 @@ export default class SchedulePage extends Component {
             <DispatchingCreatePage
               modal={{ title: '编辑排车单' }}
               refresh={() => {
-                this.refreshTable();
+                this.refreshScheduleAndpending();
                 this.props.refreshOrder();
-                this.props.refreshPending();
               }}
               onRef={node => (this.createPageModalRef = node)}
             />

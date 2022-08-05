@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-08-02 18:30:06
+ * @LastEditTime: 2022-08-03 10:14:45
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -311,7 +311,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       let scheduleDetails = response.success ? response.data.records : [];
       scheduleDetails = orderBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
       let memberWage = memberWageResponse.success ? memberWageResponse.data.records : [];
-      if (memberWage.length > 0) {
+      if (memberWage) {
         memberWage = memberWage.filter(x => x.AMOUNT);
         let output = groupBy(memberWage, x => x.MEMBERNAME);
         memberWage = Object.keys(output).map(member => {
