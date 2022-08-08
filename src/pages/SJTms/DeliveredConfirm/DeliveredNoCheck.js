@@ -1,20 +1,12 @@
 import React, { PureComponent } from 'react';
-import { Button, Form, message, Select, Modal, Popconfirm ,Menu,Dropdown ,Icon} from 'antd';
+import { Button, Form, message, Modal, Popconfirm } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { confirmOrder } from '@/services/sjtms/DeliveredConfirm';
-import Result from '@/components/Result';
-import { res } from '@/pages/In/Move/PlaneMovePermission';
-import { queryIdleAndThisPostionUseing } from '@/services/facility/Container';
-import { loginOrg, loginCompany, loginUser } from '@/utils/LoginContext';
+import { loginOrg, loginCompany } from '@/utils/LoginContext';
 import NocheckForm from './NoCheckForm';
-import {
-  SimpleTreeSelect,
-  SimpleSelect,
-  SimpleRadio,
-  SimpleAutoComplete,
-} from '@/pages/Component/RapidDevelopment/CommonComponent';
-import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchForm';
+import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
+import { calculateMemberWage } from '@/services/cost/CostCalculation';
 @connect(({ quick, deliveredConfirm, loading }) => ({
   quick,
   deliveredConfirm,
@@ -24,13 +16,13 @@ import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchF
 export default class DeliveredNoCheck extends QuickFormSearchPage {
   state = {
     ...this.state,
-   tableHeight: 388.1,
+    tableHeight: 388.1,
     isNotHd: true,
     pageData: [],
     reasonModalVisible: false,
     deliveredDutyMdodalVisible: false,
     nocheckInfoVisible: false,
-    checkRejectionResendMdodalVisible:false,
+    checkRejectionResendMdodalVisible: false,
   };
 
   exSearchFilter = () => {
@@ -83,26 +75,27 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
 
   //该方法会覆盖所有的上层按钮
   drawActionButton = () => {
-      return (
-        <>
-          {this.CreateFormReason()}
-          {this.CreateUnDeliveredDuty()}
-          {this.checkRejections()}
-          {this.nocheckInfo()}
-        </>
-      );
+    return (
+      <>
+        {this.CreateFormReason()}
+        {this.CreateUnDeliveredDuty()}
+        {this.checkRejections()}
+        {this.nocheckInfo()}
+      </>
+    );
   };
 
   //该方法会覆盖所有的中间功能按钮
   drawToolbarPanel = () => {
-   
     return (
       <div style={{ marginBottom: 10 }}>
-         <Button onClick={this.checkAttribution} style={{ marginLeft: 10 }}>
+        <Button onClick={this.checkAttribution} style={{ marginLeft: 10 }}>
           批量设置责任归属
         </Button>
-        <Button style={{ marginLeft: 10 }} onClick={this.checkRejectionResend}>批量设置未送达类型</Button>
-       
+        <Button style={{ marginLeft: 10 }} onClick={this.checkRejectionResend}>
+          批量设置未送达类型
+        </Button>
+
         <Button onClick={this.checkReason} style={{ marginLeft: 10 }}>
           批量设置未送达原因
         </Button>
@@ -144,8 +137,8 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     }
     this.setState({ deliveredDutyMdodalVisible: true });
   };
-   //批量未送达类型
-   checkRejectionResend = () => {
+  //批量未送达类型
+  checkRejectionResend = () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
       message.warn('请选择记录');
@@ -153,13 +146,15 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     }
     this.setState({ checkRejectionResendMdodalVisible: true });
   };
-   //批量保存
-   checkSave = () => {
+  //批量保存
+  checkSave = async () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
       message.warn('请选择记录');
     }
-    if(this.checkValue(selectedRows)){return false}
+    if (this.checkValue(selectedRows)) {
+      return false;
+    }
     this.props.dispatch({
       type: 'deliveredConfirm1/updateNoDelivered',
       payload: selectedRows,
@@ -167,31 +162,37 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
         if (response && response.success) {
           this.refreshTable();
           message.success('更新成功');
+          this.calculate(selectedRows);
         }
       },
     });
   };
-  checkValue = (selectedRows)=>{
+
+  calculate = async selectedRows => {
+    await calculateMemberWage(selectedRows[0].SCHEDULEBILLNUMBER);
+  };
+
+  checkValue = selectedRows => {
     let flag = false;
-    selectedRows.forEach(e=>{
-      if(!e.UNDELIVEREDTYPE){
-        message.info("未送达类型存在空值请检查");
-        flag  = true
-        return ;
-      }
-      if(!e.UNDELIVEREDREASON){
-        message.info("未送达原因存在空值请检查");
-        flag  = true
-        return ;
-      }
-      if(!e.UNDELIVEREDDUTY){
-        message.info("未送达责任归属存在空值请检查");
-        flag  = true
+    selectedRows.forEach(e => {
+      if (!e.UNDELIVEREDTYPE) {
+        message.info('未送达类型存在空值请检查');
+        flag = true;
         return;
       }
-    })
+      if (!e.UNDELIVEREDREASON) {
+        message.info('未送达原因存在空值请检查');
+        flag = true;
+        return;
+      }
+      if (!e.UNDELIVEREDDUTY) {
+        message.info('未送达责任归属存在空值请检查');
+        flag = true;
+        return;
+      }
+    });
     return flag;
-  }
+  };
   deliveredChage = (records, colum, e) => {
     records[colum.fieldName] = e.value;
   };
@@ -221,13 +222,12 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
           //     UUID:row["UUID"]
           //   }
           // });
-          selectedRows.forEach(
-            e => (e.UNDELIVEREDTYPE = fieldsValue.UNDELIVEREDTYPE.record.VALUE)
-          );
-          message.success("设置成功！")
+          selectedRows.forEach(e => (e.UNDELIVEREDTYPE = fieldsValue.UNDELIVEREDTYPE.record.VALUE));
+          message.success('设置成功！');
           //this.checkSave();
-          this.setState({checkRejectionResendMdodalVisible: !this.state.checkRejectionResendMdodalVisible });
-          
+          this.setState({
+            checkRejectionResendMdodalVisible: !this.state.checkRejectionResendMdodalVisible,
+          });
         });
       };
       return (
@@ -258,7 +258,7 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     return <CheckRejections />;
   };
 
-   CreateFormReason= () => {
+  CreateFormReason = () => {
     const formItemLayout = {
       labelCol: {
         xs: { span: 48 },
@@ -285,9 +285,9 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
           selectedRows.forEach(
             e => (e.UNDELIVEREDREASON = fieldsValue.UNDELIVEREDREASON.record.VALUE)
           );
-          message.success("设置成功！")
+          message.success('设置成功！');
           //this.checkSave();
-          this.setState({reasonModalVisible: !this.state.reasonModalVisible });
+          this.setState({ reasonModalVisible: !this.state.reasonModalVisible });
           // this.props.dispatch({
           //     type: 'deliveredConfirm1/updateNoDelivered',
           //     payload: rows,
@@ -369,7 +369,7 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
 
           selectedRows.forEach(e => (e.UNDELIVEREDDUTY = fieldsValue.UnDeliveredDuty.record.VALUE));
           //this.checkSave();
-          message.success("设置成功！")
+          message.success('设置成功！');
           this.setState({
             deliveredDutyMdodalVisible: !this.state.deliveredDutyMdodalVisible,
           });
@@ -408,8 +408,6 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     this.setState({ deliveredDutyMdodalVisible: false });
     this.setState({ checkRejectionResendMdodalVisible: false });
   };
-
- 
 
   checkAndSave = async () => {
     const { selectedRows } = this.state;
