@@ -1374,7 +1374,24 @@ export default [
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'sj_itms_out_car_month_info',
                 authority: ['sjtms.bigData.arrange'],
-              }
+              },
+              {
+                path: '/bigData/zs/tmswmsordersum',
+                name: '订单数据汇总核对报表',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'sj_iwms_itms_order_info',
+                authority: ['sjtms.bigData.arrange'],
+              },
+              {
+                path: '/bigData/zs/tmswmsorderitemsum',
+                name: '订单数据明细核对报表',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'sj_iwms_itms_order_item_info',
+                authority: ['sjtms.bigData.arrange'],
+              },
+
             ],
           },
         ],
