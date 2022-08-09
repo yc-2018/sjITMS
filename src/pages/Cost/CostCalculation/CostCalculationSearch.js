@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-09 14:43:41
+ * @LastEditTime: 2022-08-09 14:50:10
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -15,11 +15,14 @@ import {
   Modal,
   DatePicker,
   Form,
+  Spin,
   Collapse,
   Popconfirm,
 } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
+import PageHeaderWrapper from '@/components/PageHeaderWrapper';
+import Page from '@/pages/Component/Page/inner/Page';
 import {
   calculatePlan,
   getBill,
