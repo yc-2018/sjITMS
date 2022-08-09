@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-10 11:29:27
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-27 16:55:48
+ * @LastEditTime: 2022-08-09 10:13:50
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -115,11 +115,18 @@ export async function getCompareBill(billNumber, bakBillNumber, payload) {
     }
   );
 }
-export async function getPlanParticulars(subjectUuid,billuuid, name) {
+export async function getPlanParticulars(subjectUuid, billuuid, name) {
   return request(
     `/itms-cost/itms-cost/costbill/getPlanParticulars/${subjectUuid}/${billuuid}/${name}`,
     {
-      method: 'POST'
+      method: 'POST',
     }
   );
+}
+
+export async function UpdateDtlNote(payload) {
+  return request(`/itms-cost/itms-cost/costbill/UpdateDtlNote`, {
+    method: 'POST',
+    body: payload,
+  });
 }

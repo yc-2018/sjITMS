@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-27 17:20:34
+ * @LastEditTime: 2022-08-09 14:43:41
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -14,15 +14,12 @@ import {
   message,
   Modal,
   DatePicker,
-  Spin,
   Form,
   Collapse,
   Popconfirm,
 } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import Page from '@/pages/Component/Page/inner/Page';
 import {
   calculatePlan,
   getBill,
@@ -31,10 +28,12 @@ import {
   onLock,
   isLock,
   calculateMemberWage,
+  UpdateDtlNote,
 } from '@/services/cost/CostCalculation';
 import { colWidth } from '@/utils/ColWidth';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
 import moment from 'moment';
+import { guid } from '@/utils/utils';
 
 const { MonthPicker } = DatePicker;
 const { Panel } = Collapse;
@@ -170,8 +169,12 @@ export default class CostBillDtlView extends QuickFormSearchPage {
           fieldWidth: colWidth.dateColWidth,
           isSearch: false,
           isShow: true,
+          render: (val, record) => this.getRender(val, struct, record),
         });
       });
+      if (data && data.length > 0 && !data[0].uuid) {
+        data.forEach(row => (row.uuid = guid()));
+      }
       var datas = {
         list: data,
         pagination: {
@@ -198,6 +201,22 @@ export default class CostBillDtlView extends QuickFormSearchPage {
     } else {
       message.error('当前查询无数据,请计算后再操作');
       this.setState({ data: [], searchLoading: false, bill: null });
+    }
+  };
+
+  getRender = (val, column, record) => {
+    if (column.fieldName == 'note') {
+      return (
+        <Input
+          defaultValue={val}
+          onChange={v => {
+            const { data } = this.state;
+            record[column.fieldName] = v.target.value;
+          }}
+        />
+      );
+    } else {
+      return val;
     }
   };
 
@@ -327,6 +346,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
         )}
 
         <Button onClick={this.checkData.bind()}>检查数据</Button>
+        <Button onClick={this.onSaveNote.bind()}>保存</Button>
         <Button
           disabled={!(isLock == 'Saved' || isLock == 'Approved')}
           type={isLock != 'Saved' ? 'danger' : ''}
@@ -337,9 +357,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
         <Button hidden={!this.state.bill} onClick={this.getcalcLog}>
           结果日志
         </Button>
-        <Button onClick={this.getView}>
-         查看
-        </Button>
+        <Button onClick={this.getView}>查看</Button>
         <Modal
           title="结果日志"
           visible={this.state.isShowLogs}
@@ -371,7 +389,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
   changeState = () => {
     this.setState({ title: this.props.params.e.SCHEME_NAME });
   };
-  getView =()=>{
+  getView = () => {
     const { selectedRows } = this.state;
     const { dateString } = this.state;
     const { e } = this.props.params;
@@ -393,7 +411,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
       e,
     });
     //this.props.switchTab('billView');
-  }
+  };
   drawSearchPanel = () => {
     const { getFieldDecorator } = this.props.form;
     const { dateString } = this.state;
@@ -447,6 +465,23 @@ export default class CostBillDtlView extends QuickFormSearchPage {
         </Col>
       </Row>
     );
+  };
+
+  onSaveNote = async () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length !== 0) {
+      const row = {
+        selectedRows,
+      };
+      await UpdateDtlNote(row).then(response => {
+        if (response && response.success) {
+          message.success('保存成功');
+          this.handleOnSertch();
+        }
+      });
+    } else {
+      message.error('请至少选中一条数据！');
+    }
   };
 
   render() {
