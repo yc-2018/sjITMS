@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-06 16:30:13
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-07 11:42:41
+ * @LastEditTime: 2022-08-09 16:36:15
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -13,7 +13,7 @@ import CostBillSearchPage from './CostBillSearchPage';
   quick,
   loading: loading.models.quick,
 }))
-export default class CostBillFrom extends QuickForm {
+export default class CostBillForm extends QuickForm {
   drawTab = e => {
     if (e.showPageNow == 'query') {
       const component = <CostBillSearchPage {...e.props} />;

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-26 15:47:05
+ * @LastEditTime: 2022-08-10 16:35:19
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -28,10 +28,6 @@ export default class CostBillDtlView extends QuickFormSearchPage {
     ...this.state,
     searchLoading: false,
     calculateLoading: false,
-    dateString:
-      this.props.params.dateString == undefined
-        ? moment().format('YYYY-MM')
-        : this.props.params.dateString,
     plan: null,
     bill: null,
     isShowLogs: false,
@@ -51,8 +47,16 @@ export default class CostBillDtlView extends QuickFormSearchPage {
     },
   ];
 
-  componentDidMount() {
-    // this.handleOnSertch();
+  componentDidMount() {}
+
+  componentDidUpdate() {
+    // const { compareNum, billNumber } = this.props.params;
+    // console.log('compareNum', compareNum);
+    // console.log('billNumber', billNumber);
+    // if (compareNum != undefined && billNumber != undefined) {
+    //   console.log('cccc');
+    //   this.handleOnSertch();
+    // }
   }
 
   /**
@@ -66,9 +70,6 @@ export default class CostBillDtlView extends QuickFormSearchPage {
       params = {
         page: 1,
         pageSize: 20,
-        // sortFields: {},
-        // searchKeyValues: {},
-        // likeKeyValues: {},
       };
     }
     this.props.form.validateFields(async (err, values) => {
@@ -124,11 +125,6 @@ export default class CostBillDtlView extends QuickFormSearchPage {
     this.handleOnSertch(data);
   };
 
-  monthChange = (date, dateString) => {
-    this.month = dateString;
-    this.setState({ dateString });
-  };
-
   drawcell = e => {
     if (e.val.toString().substr(-3, 3) == 'red') {
       e.component = (
@@ -144,11 +140,13 @@ export default class CostBillDtlView extends QuickFormSearchPage {
 
   drawSearchPanel = () => {
     const { getFieldDecorator } = this.props.form;
+    const { compareNum, billNumber } = this.props.params;
     let node = [];
 
     node.push(
       <Form.Item label="当前单号">
         {getFieldDecorator('billNumber', {
+          initialValue: billNumber,
           rules: [{ required: true, message: '请输入当前单号!' }],
         })(
           <SimpleAutoComplete
@@ -170,6 +168,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
     node.push(
       <Form.Item label="对比单号">
         {getFieldDecorator('compareNum', {
+          initialValue: compareNum,
           rules: [{ required: true, message: '请输入对比单号!' }],
         })(
           <SimpleAutoComplete
