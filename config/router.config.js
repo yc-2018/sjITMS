@@ -9,6 +9,11 @@ export default [
     ],
   },
   {
+    path: '/driver',
+    component: '../layouts/DriverLayout',
+    routes: [{ path: '/driver/swipe', component: './SJTms/Schedule/DriverSwipe' }],
+  },
+  {
     path: '/',
     component: '../layouts/BasicLayout',
     Routes: ['src/pages/Authorized'],
@@ -1391,7 +1396,6 @@ export default [
                 quickuuid: 'sj_iwms_itms_order_item_info',
                 authority: ['sjtms.bigData.arrange'],
               },
-
             ],
           },
         ],
