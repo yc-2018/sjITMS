@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-08-10 11:36:20
+ * @LastEditTime: 2022-08-10 15:59:38
  * @Description: 司机刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipe.js
  */
@@ -10,7 +10,7 @@ import { PureComponent } from 'react';
 import { Card, Col, Input, Row, Spin } from 'antd';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import Empty from '@/pages/Component/Form/Empty';
-import { swipe } from '@/services/sjitms/ScheduleProcess';
+import { driverSwipe } from '@/services/sjitms/ScheduleProcess';
 
 export default class Swiper extends PureComponent {
   state = {
@@ -38,7 +38,7 @@ export default class Swiper extends PureComponent {
   onSubmit = async event => {
     localStorage.setItem('showMessage', '0');
     this.setState({ loading: true, errMsg: undefined });
-    const response = await swipe(event.target.value);
+    const response = await driverSwipe(event.target.value);
     localStorage.setItem('showMessage', '1');
     if (response.success) {
       this.speech('刷卡成功');
