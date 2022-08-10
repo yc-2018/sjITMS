@@ -9,6 +9,11 @@ export default [
     ],
   },
   {
+    path: '/driver',
+    component: '../layouts/DriverLayout',
+    routes: [{ path: '/driver/swipe', component: './SJTms/Schedule/DriverSwipe' }],
+  },
+  {
     path: '/',
     component: '../layouts/BasicLayout',
     Routes: ['src/pages/Authorized'],

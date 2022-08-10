@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-13 10:25:32
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-13 16:34:52
+ * @LastEditTime: 2022-08-10 15:59:14
  * @Description: file content
  * @FilePath: \iwms-web\src\services\sjitms\ScheduleProcess.js
  */
@@ -10,10 +10,14 @@ import request from '@/utils/request';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 //刷卡
 export async function swipe(empId) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/process/swipe?empId=${empId}`, {
+    method: 'POST',
+  });
+}
+//司机刷卡
+export async function driverSwipe(empId) {
   return request(
-    `/itms-schedule/itms-schedule/sj/bill/schedule/process/swipe?empId=${empId}&companyUuid=${
-      loginCompany().uuid
-    }&dispatchCenterUuid=${loginOrg().uuid}`,
+    `/itms-schedule/itms-schedule/openapi/bill/schedule/process/swipe?empId=${empId}`,
     {
       method: 'POST',
     }

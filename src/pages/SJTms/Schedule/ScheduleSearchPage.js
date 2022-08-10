@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-08-03 10:14:45
+ * @LastEditTime: 2022-08-05 09:22:11
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -444,7 +444,7 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
           <tr style={{ height: 25 }}>
             <td colspan={8}>
               <div style={{ float: 'left', width: '10%' }}>提成工资:</div>
-              {memberWage.length > 0 ? (
+              {memberWage ? (
                 memberWage.map(item => {
                   return (
                     <div style={{ float: 'left', marginRight: 15 }}>
