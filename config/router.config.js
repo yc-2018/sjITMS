@@ -1121,7 +1121,7 @@ export default [
             path: '/cost/billBak',
             name: '历史费用台账',
             org: ['DISPATCH_CENTER'],
-            component: './Cost/CostBillBak/CostBillBakForm',
+            component: './Cost/CostBillHistory/CostBillBakForm',
             authority: ['itms.cost.bill'],
           },
           {
