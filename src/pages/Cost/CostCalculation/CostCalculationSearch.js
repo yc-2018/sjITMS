@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-09 14:50:10
+ * @LastEditTime: 2022-08-11 16:34:16
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -213,13 +213,20 @@ export default class CostBillDtlView extends QuickFormSearchPage {
         <Input
           defaultValue={val}
           onChange={v => {
-            const { data } = this.state;
             record[column.fieldName] = v.target.value;
           }}
         />
       );
     } else {
-      return val;
+      if (column.fieldName == 'modified') {
+        val = val ? '是' : '否';
+      }
+      if (record.modified) {
+        console.log('record', record);
+        return <p3 style={{ color: 'red' }}>{val}</p3>;
+      } else {
+        return val;
+      }
     }
   };
 
@@ -293,16 +300,16 @@ export default class CostBillDtlView extends QuickFormSearchPage {
     // this.isLock(dateString);
   };
 
-  drawcell = e => {
-    if (e.column.fieldName == 'modified') {
-      e.val = e.val ? '是' : '否';
-    }
-    if (e.record.modified) {
-      e.component = (
-        <p3 style={{ color: 'red' }}>{this.convertData(e.val, e.column.preview, e.record)}</p3>
-      );
-    }
-  };
+  // drawcell = e => {
+  //   if (e.column.fieldName == 'modified') {
+  //     e.val = e.val ? '是' : '否';
+  //   }
+  //   if (e.record.modified) {
+  //     e.component = (
+  //       <p3 style={{ color: 'red' }}>{this.convertData(e.val, e.column.preview, e.record)}</p3>
+  //     );
+  //   }
+  // };
 
   /**
    * 版本锁定
