@@ -1304,6 +1304,14 @@ export default [
             divider: true,
           },
           {
+            path: '/tmscode/costws',
+            name: '唯尚费用',
+            org: ['DISPATCH_CENTER'],
+            component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+            quickuuid: 'sj_itms_costws',
+            authority: ['sjtms.core.shippingorder'],
+          },
+          {
             path: '/tmscode/shippingorder',
             name: '托运单',
             org: ['DISPATCH_CENTER'],
