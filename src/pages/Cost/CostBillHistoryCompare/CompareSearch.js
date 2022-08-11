@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-10 16:35:19
+ * @LastEditTime: 2022-08-11 09:05:20
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -24,16 +24,20 @@ import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonCom
 @Form.create()
 export default class CostBillDtlView extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
-  state = {
-    ...this.state,
-    searchLoading: false,
-    calculateLoading: false,
-    plan: null,
-    bill: null,
-    isShowLogs: false,
-    billLogs: [],
-    isLock: null,
-  };
+
+  constructor(props) {
+    super(props);
+    this.state = {
+      ...this.state,
+      searchLoading: false,
+      calculateLoading: false,
+      plan: null,
+      bill: null,
+      isShowLogs: false,
+      billLogs: [],
+      isLock: null,
+    };
+  }
 
   month = moment().format('YYYY-MM');
 
@@ -47,16 +51,10 @@ export default class CostBillDtlView extends QuickFormSearchPage {
     },
   ];
 
-  componentDidMount() {}
-
-  componentDidUpdate() {
-    // const { compareNum, billNumber } = this.props.params;
-    // console.log('compareNum', compareNum);
-    // console.log('billNumber', billNumber);
-    // if (compareNum != undefined && billNumber != undefined) {
-    //   console.log('cccc');
-    //   this.handleOnSertch();
-    // }
+  componentDidMount() {
+    if (this.props.param.billNumber != undefined && this.props.param.compareNum != undefined) {
+      this.handleOnSertch();
+    }
   }
 
   /**
@@ -140,7 +138,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
 
   drawSearchPanel = () => {
     const { getFieldDecorator } = this.props.form;
-    const { compareNum, billNumber } = this.props.params;
+    const { compareNum, billNumber } = this.props.param;
     let node = [];
 
     node.push(
