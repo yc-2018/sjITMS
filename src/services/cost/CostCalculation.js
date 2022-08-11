@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-10 11:29:27
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-09 10:13:50
+ * @LastEditTime: 2022-08-09 16:29:16
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -33,6 +33,13 @@ export async function calculateMemberWage(payload) {
 
 export async function getBill(planUuid, payload) {
   return request(`/itms-cost/itms-cost/costbill/getBill?planUuid=${planUuid}`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function getBillBak(billNumber, payload) {
+  return request(`/itms-cost/itms-cost/costbill/getBillBak?billNumber=${billNumber}`, {
     method: 'POST',
     body: payload,
   });

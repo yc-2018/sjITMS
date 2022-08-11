@@ -1109,18 +1109,26 @@ export default [
             component: './Cost/CostCalculation/CostCalculationForm',
             authority: ['itms.cost.calc'],
           },
+
+          {
+            path: '/cost/bill',
+            name: '费用台账',
+            org: ['DISPATCH_CENTER'],
+            component: './Cost/CostBill/CostBillForm',
+            authority: ['itms.cost.bill'],
+          },
+          {
+            path: '/cost/billBak',
+            name: '历史费用台账',
+            org: ['DISPATCH_CENTER'],
+            component: './Cost/CostBillHistory/CostBillBakForm',
+            authority: ['itms.cost.bill'],
+          },
           {
             path: '/cost/compare',
             name: '台账历史比较',
             org: ['DISPATCH_CENTER'],
             component: './Cost/CostBillHistoryCompare/CompareForm',
-            authority: ['itms.cost.bill'],
-          },
-          {
-            path: '/cost/bill',
-            name: '费用台账',
-            org: ['DISPATCH_CENTER'],
-            component: './Cost/CostBill/CostBillFrom',
             authority: ['itms.cost.bill'],
           },
         ],
