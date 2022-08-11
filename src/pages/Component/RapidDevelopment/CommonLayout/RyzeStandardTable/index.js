@@ -1226,6 +1226,7 @@ class StandardTable extends Component {
     }
     // 当固定列时，列总宽度小于表单宽度会到导致出现白色垂直空隙，留一列不设宽度以适应弹性布局
     showColumns.push({});
+    footerColumns.push({});
     let settingIcon = (
       <div className={styles.setting} onClick={() => this.handleSettingModalVisible(true)}>
         <IconFont style={{ fontSize: '20px', color: '#848C96' }} type="icon-setting" />

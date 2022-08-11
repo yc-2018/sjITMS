@@ -274,6 +274,12 @@ const OrderType = {
 
 export const CreatePageOrderColumns = [
   {
+    title: '来源单号',
+    dataIndex: 'sourceNum',
+    width: 120,
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+  },
+  {
     title: '订单号',
     dataIndex: 'billNumber',
     width: 140,
