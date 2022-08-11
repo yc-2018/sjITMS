@@ -1414,6 +1414,22 @@ export default [
               },
             ],
           },
+          {
+            path: '/bigData/shippingorder',
+            name: '托运单费用',
+            org: ['DISPATCH_CENTER'],
+            component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+            quickuuid: 'sj_itms_cost_shippingorder',
+            authority: ['sjtms.bigData.arrange'],
+          },
+          {
+            path: '/bigData/monthwage',
+            name: '员工工资',
+            org: ['DISPATCH_CENTER'],
+            component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+            quickuuid: 'sj_itms_member_monthwage',
+            authority: ['sjtms.bigData.arrange'],
+          },
         ],
       },
       {
