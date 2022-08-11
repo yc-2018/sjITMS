@@ -6,11 +6,7 @@
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
-import { Select, message } from 'antd';
-import { connect } from 'dva';
-import { formatMessage } from 'umi/locale';
-import { loginCompany } from '@/utils/LoginContext';
-import { STATE } from '@/utils/constants';
+import { Select } from 'antd';
 import { selectCoulumns, dynamicQuery } from '@/services/quick/Quick';
 
 /**
@@ -91,16 +87,18 @@ export default class SimpleSelect extends PureComponent {
   };
 
   onSearch = value => {
-    const searchField = this.props.searchField;
-    let params = new Array();
-    params.push({
-      field: searchField.fieldName,
-      type: searchField.fieldType,
-      rule: 'like',
-      val: value,
-    });
-    params = [...params, ...this.props.isOrgQuery];
-    this.getCoulumns({ queryParams: params }, value);
+    if (this.props.isOrgQuery) {
+      const searchField = this.props.searchField;
+      let params = new Array();
+      params.push({
+        field: searchField.fieldName,
+        type: searchField.fieldType,
+        rule: 'like',
+        val: value,
+      });
+      params = [...params, ...this.props.isOrgQuery];
+      this.getCoulumns({ queryParams: params }, value);
+    }
   };
 
   getCoulumns = async (pageFilters, value) => {
