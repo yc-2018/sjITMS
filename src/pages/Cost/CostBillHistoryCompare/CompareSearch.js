@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-11 09:05:20
+ * @LastEditTime: 2022-08-11 17:13:55
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -52,7 +52,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
   ];
 
   componentDidMount() {
-    if (this.props.param.billNumber != undefined && this.props.param.compareNum != undefined) {
+    if (this.props.param.billNumber != '' && this.props.param.compareNum != '') {
       this.handleOnSertch();
     }
   }

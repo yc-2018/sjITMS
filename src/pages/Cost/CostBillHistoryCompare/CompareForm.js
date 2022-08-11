@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:38:44
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-10 17:57:15
+ * @LastEditTime: 2022-08-11 17:10:36
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -18,7 +18,13 @@ export default class CompareForm extends QuickForm {
   drawTab = e => {
     if (e.showPageNow == 'query') {
       const { state } = this.props.location;
-      const component = <CompareSearch {...e.props} param={state.param} />;
+      let param;
+      if (state?.param == undefined) {
+        param = { compareNum: '', billNumber: '' };
+      } else {
+        param = state.param;
+      }
+      const component = <CompareSearch {...e.props} param={param} />;
       e.component = component;
     }
   };
