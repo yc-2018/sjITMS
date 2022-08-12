@@ -22,6 +22,7 @@ import {
   Input,
   DatePicker,
   message,
+  Popconfirm
 } from 'antd';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
 import Page from '@/pages/Component/Page/inner/Page';
@@ -34,6 +35,7 @@ import {
   SimpleTreeSelect,
   SimpleAutoComplete,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
+import { throttleSetter } from 'lodash-decorators';
 
 const { Header, Footer, Content } = Layout;
 const { RangePicker } = DatePicker;
@@ -264,13 +266,15 @@ export default class CostBillSearchPage extends PureComponent {
         </Row>
         <Row style={{ float: 'right', marginTop: '20px' }}>
           <Button onClick={() => this.checkDtl(e)}>查看台账</Button>
+          <Popconfirm title="费用账单确认对账后无法调整，确认后如有问题请在下期账单调整或联系信息中心同事处理" onConfirm ={()=>this.handleHaveCheck(e)}>
           <Button
             type="primary"
             style={{ margin: '0px 10px' }}
-            onClick={() => this.handleHaveCheck(e)}
+            //onClick={() => this.handleHaveCheck(e)}
           >
             确认对账
           </Button>
+          </Popconfirm>
           <Button type="primary" onClick={() => this.handleConsumed(e)}>
             核销
           </Button>

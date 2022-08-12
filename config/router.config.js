@@ -1412,6 +1412,13 @@ export default [
                 quickuuid: 'sj_iwms_itms_order_item_info',
                 authority: ['sjtms.bigData.arrange'],
               },
+              {
+                path: '/bigData/zs/count',
+                name: '业务看板',
+                org: ['DISPATCH_CENTER'],
+                component: './SJtms/ResourceMoitoring/CountInfo',
+                authority: ['sjtms.bigData.arrange'],
+              }
             ],
           },
           {
@@ -1430,6 +1437,7 @@ export default [
             quickuuid: 'sj_itms_member_monthwage',
             authority: ['sjtms.bigData.arrange'],
           },
+         
         ],
       },
       {
