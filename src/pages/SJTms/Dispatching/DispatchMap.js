@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-08-02 15:02:35
+ * @LastEditTime: 2022-08-12 11:02:19
  * @Description: 地图
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchMap.js
  */
@@ -16,6 +16,7 @@ export default class DispatchMap extends Component {
   state = {
     isShowName: true,
     windowInfo: undefined,
+    selectOrder: [],
   };
 
   // componentDidMount() {
@@ -108,9 +109,19 @@ export default class DispatchMap extends Component {
     });
     return deliveryPointGroupArr;
   };
+  //选中门店
+  handleSelectPoint = (order, point) => {
+    let { selectOrder } = this.state;
+    const index = selectOrder.findIndex(x => x.uuid == order.uuid);
+    order.point = point;
+    index > -1
+      ? (selectOrder = selectOrder.filter(x => x.uuid != order.uuid))
+      : selectOrder.push(order);
+    this.setState({ selectOrder });
+  };
 
   render() {
-    const { windowInfo, isShowName } = this.state;
+    const { windowInfo, selectOrder, isShowName } = this.state;
     const { orders } = this.props;
     let shipOrder = [...orders].filter(x => x.longitude);
     shipOrder = this.groupByOrder(shipOrder);
@@ -140,6 +151,7 @@ export default class DispatchMap extends Component {
                 position={point}
                 icon={icon}
                 shadow={true}
+                onClick={() => this.handleSelectPoint(order, point)}
                 onMouseover={() => this.setState({ windowInfo: { point, order } })}
                 onMouseout={() => this.setState({ windowInfo: undefined })}
               />
@@ -147,6 +159,7 @@ export default class DispatchMap extends Component {
                 <Label
                   text={order.deliveryPoint.name}
                   position={point}
+                  onClick={() => this.handleSelectPoint(order, point)}
                   onMouseover={() => this.setState({ windowInfo: { point, order } })}
                   onMouseout={() => this.setState({ windowInfo: undefined })}
                   style={{
@@ -154,7 +167,8 @@ export default class DispatchMap extends Component {
                     whiteSpace: 'unset',
                     border: 0,
                     background: 'none',
-                    color: '#0000EA',
+                    color: '#D90429',
+                    opacity: 0.7,
                     fontWeight: 'bold',
                   }}
                   offset={new BMapGL.Size(15, -10)}
@@ -163,6 +177,34 @@ export default class DispatchMap extends Component {
                 <></>
               )}
             </>
+          );
+        })}
+        {selectOrder.map(order => {
+          return (
+            <CustomOverlay position={order.point} offset={new BMapGL.Size(15, -15)}>
+              <div style={{ width: 300, height: 110, padding: 5, background: '#FFF' }}>
+                <div style={{ fontWeight: 'bold' }}>
+                  {`[${order.deliveryPoint.code}]` + order.deliveryPoint.name}
+                </div>
+                <Divider style={{ margin: 0, marginTop: 5 }} />
+                <div style={{ display: 'flex', marginTop: 5 }}>
+                  <div style={{ flex: 1 }}>订单数</div>
+                  <div style={{ flex: 1 }}>体积</div>
+                  <div style={{ flex: 1 }}>重量</div>
+                  <div style={{ flex: 1 }}>总件数</div>
+                </div>
+                <div style={{ display: 'flex' }}>
+                  <div style={{ flex: 1 }}>{order.orderCount}</div>
+                  <div style={{ flex: 1 }}>{order.volume}</div>
+                  <div style={{ flex: 1 }}>{order.weight}</div>
+                  <div style={{ flex: 1 }}>{order.realCartonCount}</div>
+                </div>
+                <div style={{ marginTop: 5 }}>
+                  地址：
+                  {order.address}
+                </div>
+              </div>
+            </CustomOverlay>
           );
         })}
         {windowInfo ? (
