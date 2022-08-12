@@ -52,7 +52,6 @@ export default class CostBillEditView extends CreatePage {
     await getPlanParticulars(this.state.subjectUuid,this.state.billUuid,projectCode).then(e=>{
       if(e && e.success){
         const col = [];
-        debugger;
         const data = e.data[0];
         for(let s in data){
           let ss = {
