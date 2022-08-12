@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-08-12 11:02:19
+ * @LastEditTime: 2022-08-12 11:09:40
  * @Description: 地图
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchMap.js
  */
@@ -182,8 +182,8 @@ export default class DispatchMap extends Component {
         {selectOrder.map(order => {
           return (
             <CustomOverlay position={order.point} offset={new BMapGL.Size(15, -15)}>
-              <div style={{ width: 300, height: 110, padding: 5, background: '#FFF' }}>
-                <div style={{ fontWeight: 'bold' }}>
+              <div style={{ width: 250, height: 80, padding: 5, background: '#FFF' }}>
+                <div style={{ fontWeight: 'bold', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                   {`[${order.deliveryPoint.code}]` + order.deliveryPoint.name}
                 </div>
                 <Divider style={{ margin: 0, marginTop: 5 }} />
@@ -199,18 +199,18 @@ export default class DispatchMap extends Component {
                   <div style={{ flex: 1 }}>{order.weight}</div>
                   <div style={{ flex: 1 }}>{order.realCartonCount}</div>
                 </div>
-                <div style={{ marginTop: 5 }}>
+                {/* <div style={{ marginTop: 5 }}>
                   地址：
                   {order.address}
-                </div>
+                </div> */}
               </div>
             </CustomOverlay>
           );
         })}
         {windowInfo ? (
           <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
-            <div style={{ width: 300, height: 110, padding: 5, background: '#FFF' }}>
-              <div style={{ fontWeight: 'bold' }}>
+            <div style={{ width: 250, height: 80, padding: 5, background: '#FFF' }}>
+              <div style={{ fontWeight: 'bold', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                 {`[${windowInfo.order.deliveryPoint.code}]` + windowInfo.order.deliveryPoint.name}
               </div>
               <Divider style={{ margin: 0, marginTop: 5 }} />
@@ -226,10 +226,10 @@ export default class DispatchMap extends Component {
                 <div style={{ flex: 1 }}>{windowInfo.order.weight}</div>
                 <div style={{ flex: 1 }}>{windowInfo.order.realCartonCount}</div>
               </div>
-              <div style={{ marginTop: 5 }}>
+              {/* <div style={{ marginTop: 5 }}>
                 地址：
                 {windowInfo.order.address}
-              </div>
+              </div> */}
             </div>
           </CustomOverlay>
         ) : (
