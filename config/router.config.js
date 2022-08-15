@@ -1416,7 +1416,7 @@ export default [
                 path: '/bigData/zs/count',
                 name: '业务看板',
                 org: ['DISPATCH_CENTER'],
-                component: './SJtms/ResourceMoitoring/CountInfo',
+                component: './SJTms/ResourceMoitoring/CountInfo',
                 authority: ['sjtms.bigData.arrange'],
               }
             ],
