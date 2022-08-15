@@ -1,10 +1,11 @@
 import CreatePage from '@/pages/Component/RapidDevelopment/CommonLayout/CreatePage';
 import FormPanel from '@/pages/Component/RapidDevelopment/CommonLayout/Form/FormPanel';
 import CFormItem from '@/pages/Component/RapidDevelopment/CommonLayout/Form/CFormItem';
-import React, { Component } from 'react';
-import { getSubjectBill, updateSubjectBill,getPlanParticulars } from '@/services/cost/CostCalculation';
-import { Form, Input, InputNumber, message, Tooltip,Modal, Table} from 'antd';
+import React, { Component,Fragment } from 'react';
+import { getSubjectBill, updateSubjectBill,getPlanParticulars ,exportPlan} from '@/services/cost/CostCalculation';
+import { Form, Input, InputNumber, message, Tooltip,Modal, Table,Button} from 'antd';
 import { throttleSetter } from 'lodash-decorators';
+import ExportJsonExcel from 'js-export-excel';
 
 const costTypes = [
   { DICT_CODE: 'costType', SORT_ORDER: 1, VALUE: '0', NAME: '税前加项' },
@@ -38,7 +39,18 @@ export default class CostBillEditView extends CreatePage {
     });
   
   }
-
+  drawCreateButtons = () => {
+    return (
+      <Fragment>
+        <Button key="cancel" onClick={this.handleCancel}>
+         返回
+        </Button>
+        <Button key="save" type="primary" loading={this.state.saving} onClick={this.handleexportPlan.bind(this)}>
+         导出
+        </Button>
+      </Fragment>
+    );
+  };
   handleChange = (key, value) => {
     if (value == '') {
       value = 0;
@@ -46,11 +58,46 @@ export default class CostBillEditView extends CreatePage {
     this.entity[key] = value;
     this.linkCalculate(key);
   };
+
+  handleexportPlan =async ()=>{
+    await exportPlan(this.state.billUuid,this.state.subjectUuid).then(response=>{
+      if (response.data) {
+        var option = [];
+        option.fileName = "导出的费用";
+        const {data} = response;
+        
+        for(const item in data){
+          if(item=='excelName'){
+            option.fileName = data[item][0].name;
+            continue;
+          }
+          debugger
+          const system  = [];
+          for(const filed in data[item][0]){
+            system.push(filed);
+          }
+          const datas = {
+            sheetData:data[item],
+            sheetName:item,
+            sheetFilter:system,
+            sheetHeader: system,
+          }
+          if(option.datas){
+            option.datas.push(datas)
+          }else{
+            option.datas = [datas];
+          }
+        }
+        const toExcel = new ExportJsonExcel(option);
+        toExcel.saveExcel();
+      }
+    })
+  }
   showView= async (projectCode)=>{
    //console.log(this);
     console.log(this.state.subjectUuid,this.state.billUuid);
     await getPlanParticulars(this.state.subjectUuid,this.state.billUuid,projectCode).then(e=>{
-      if(e && e.success){
+      if(e && e.success && e.data){
         const col = [];
         const data = e.data[0];
         for(let s in data){

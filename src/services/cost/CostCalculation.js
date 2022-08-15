@@ -137,3 +137,8 @@ export async function UpdateDtlNote(payload) {
     body: payload,
   });
 }
+export async function exportPlan(billuuid,subjectUuid) {
+  return request(`/itms-cost/itms-cost/costplan/exportPlan/${billuuid}/${subjectUuid}`, {
+    method: 'GET',
+  });
+}
