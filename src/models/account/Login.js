@@ -51,7 +51,7 @@ export default {
             return;
           }
         }
-        yield put(routerRedux.replace('/bigData/zs/count'));
+        yield put(routerRedux.replace(redirect || '/bigData/zs/count'));
       } else {
         yield put({
           type: 'changeLoginStatus',
