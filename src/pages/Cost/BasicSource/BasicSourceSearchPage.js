@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-16 10:17:03
+ * @LastEditTime: 2022-08-08 10:59:44
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -15,8 +15,6 @@ import ExcelImport from '@/components/ExcelImport';
 import BasicHeadCreatPage from './BasicHeadCreatPage';
 import BasicDtlCreatPage from './BasicDtlCreatPage';
 import { findSourceTree, deleteSourceTree } from '@/services/cost/BasicSource';
-import { res } from '@/pages/In/Move/PlaneMovePermission';
-import emptySvg from '@/assets/common/img_empoty.svg';
 import BasicSourceDataSearchPage from './BasicSourceDataSearchPage';
 
 const { Content, Sider } = Layout;
@@ -35,7 +33,7 @@ export default class BasicSourceSearchPage extends Component {
   }
 
   componentDidMount = () => {
-    console.log(this.props)
+    console.log(this.props);
     this.queryTree();
   };
 
@@ -137,6 +135,7 @@ export default class BasicSourceSearchPage extends Component {
   onSelect = (selectedKeys, event) => {
     const { treeData, tabsKey } = this.state;
     const system = treeData.find(x => x.uuid == selectedKeys[0]);
+    console.log('event', event);
     if (selectedKeys.length == 1) {
       this.setState({
         rightContent: system ? (
@@ -174,24 +173,29 @@ export default class BasicSourceSearchPage extends Component {
             </TabPane>
             <TabPane tab={'表数据'} key="data">
               <BasicSourceDataSearchPage
+                expanded={event.selectedNodes[0].props.dataRef.expanded}
                 title={event.selectedNodes[0].props.dataRef.tableNameCN}
                 tableName={event.selectedNodes[0].props.dataRef.tableName}
                 key={`Line${selectedKeys[0]}`}
                 selectedRows={selectedKeys[0]}
               />
-              </TabPane>
+            </TabPane>
+            {event.selectedNodes[0].props.dataRef.expanded == '1' ? (
               <TabPane tab={'导入'} key="import">
-                <div style={{ marginTop: "20px" }}>
+                <div style={{ marginTop: '20px' }}>
                   <ExcelImport
                     title={event.selectedNodes[0].props.dataRef.tableNameCN}
                     templateType="BASICSOURCE"
                     dispatch={this.props.dispatch}
                     uploadType="basicSource/batchImport"
                     uploadParams={{ sourceUuid: selectedKeys[0] }}
-                    cancelCallback={() => { }}
+                    cancelCallback={() => {}}
                   />
                 </div>
               </TabPane>
+            ) : (
+              ''
+            )}
           </Tabs>
         ),
         selectedKeys: selectedKeys[0],

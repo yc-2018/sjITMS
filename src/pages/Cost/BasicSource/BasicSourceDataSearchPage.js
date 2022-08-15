@@ -2,12 +2,12 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-05 18:12:28
+ * @LastEditTime: 2022-08-08 15:15:37
  * @version: 1.0
  */
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { Button, Form, message, Spin } from 'antd';
+import { Button, Form, Input, message, Spin } from 'antd';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import SearchPage from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSearchPage';
 import { dynamicQuery } from '@/services/quick/Quick';
@@ -74,6 +74,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         sorter: true,
         width: colWidth.codeColWidth,
         fieldType: data.DB_TYPE,
+        render: (val, record) => this.getRender(val, data, record),
       };
       quickColumns.push(qiuckcolumn);
 
@@ -95,6 +96,17 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       columns: quickColumns,
       searchFields: quickSearchFields,
     });
+  };
+
+  getRender = (val, column, record) => {
+    const { expanded } = this.props;
+    if (expanded == '1') {
+      return (
+        <Input defaultValue={val} onChange={v => (record[column.fieldName] = v.target.value)} />
+      );
+    } else {
+      return val;
+    }
   };
 
   getData = async pageFilters => {
@@ -223,10 +235,16 @@ export default class BasicSourceDataSearchPage extends SearchPage {
     }
   };
 
+  onSave = () => {
+    const { selectedRows } = this.state;
+    console.log('onsave', selectedRows);
+  };
+
   /**
    * 绘制批量工具栏
    */
   drawToolbarPanel = () => {
+    const { expanded } = this.props;
     return (
       <div style={{ marginTop: '10px' }}>
         <AdvanceQuery
@@ -237,9 +255,10 @@ export default class BasicSourceDataSearchPage extends SearchPage {
           reportCode={this.state.tableName}
           // isOrgQuery={this.state.isOrgQuery}
         />
-        <Button onClick={this.port} type="primary" style={{ marginLeft: '10px' }}>
+        <Button onClick={this.port} type="primary">
           导出
         </Button>
+        {expanded == '1' ? <Button onClick={this.onSave}>保存</Button> : ''}
       </div>
     );
   };
