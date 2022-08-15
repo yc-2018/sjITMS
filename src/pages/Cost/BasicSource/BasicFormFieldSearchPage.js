@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 17:46:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-27 16:51:50
+ * @LastEditTime: 2022-08-08 11:15:48
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -67,16 +67,14 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
         <Button type="primary" onClick={this.handleAdd.bind()}>
           新增
         </Button>
-        <Button style={{ marginLeft: '12px' }} onClick={this.handleOnSave.bind()}>
-          保存
-        </Button>
+        <Button onClick={this.handleOnSave.bind()}>保存</Button>
         <Popconfirm
           title="你确定要删除所选中的内容吗?"
           onConfirm={() => this.handleDelete()}
           okText="确定"
           cancelText="取消"
         >
-          <Button style={{ marginLeft: '12px' }}>删除</Button>
+          <Button>删除</Button>
         </Popconfirm>
         <Modal
           width={1000}
