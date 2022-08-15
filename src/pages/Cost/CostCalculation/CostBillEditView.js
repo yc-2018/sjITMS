@@ -71,7 +71,6 @@ export default class CostBillEditView extends CreatePage {
             option.fileName = data[item][0].name;
             continue;
           }
-          debugger
           const system  = [];
           for(const filed in data[item][0]){
             system.push(filed);
