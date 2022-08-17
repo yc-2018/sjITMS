@@ -1,20 +1,53 @@
 
 import React, { Spin, PureComponent } from 'react';
-import { Layout, Card, Row, Col } from 'antd'
+import { Layout, Card, Row, Col, Button ,Icon} from 'antd'
 const { Header, Footer, Sider, Content } = Layout;
 import { Chart, Util } from '@antv/g2';
 import { getOrderCount, getVehicleCount, getJobTodayCount,getTodayCompareOrder,getCollectbin } from '@/services/sjitms/ResourceMoitoring'
 
 export default class CountInfo extends PureComponent {
   componentDidMount() {
+    this.onFush();
+    this.timingOnFush = setInterval(async ()=>{
+      this.onFush();
+    },10*60*1000)
+  
+  }
+  state ={
+    loading:false
+
+  };
+ componentWillUnmount(){
+  clearInterval(this.timingOnFush)
+ }
+  yunlichart;
+  bwchart;
+  tddbchart;
+  colorSet = {
+    订单数: 'bb',
+    件数:'bb2',
+    使用车辆数: 'bb3',
+    排车单数:'bb4'
+  };
+  chartEmt = {
+    订单数: this.bbChart,
+    件数: this.bb2Chart,
+    使用车辆数: this.bb3Chart,
+    排车单数:this.bb4Chart
+  }
+  onFush =()=>{
+    
     this.dors();
     this.yunli();
     this.drzys();
     this.bw();
-    this.tddb();
+    this.tddb()
   }
-  state = {
-
+  handOnfush=()=>{
+    this.setState({loading:true})
+    this.onFush();
+    setTimeout(()=>this.setState({loading:false}), 1000);
+    
   }
   componentDidUpdate() {
 
@@ -24,10 +57,8 @@ export default class CountInfo extends PureComponent {
       if(res.data==undefined){
         return
       }
-     // debugger
       const result = res.data[0];
       const arr = [];
-      //debugger;
       for (const a in result) {
         const itme = {
           分类: a,
@@ -56,30 +87,35 @@ export default class CountInfo extends PureComponent {
       }
       this.setState({ vehicleCount: arr })
     })
-    const chart = new Chart({
+   if(this.yunlichart){
+     this.yunlichart.changeData(this.state.vehicleCount);
+     return ;
+   }
+     this.yunlichart = new Chart({
       container: 'yunli',
       autoFit: true,
       height: 260,
     });
 
-    chart.data(this.state.vehicleCount);
+    this.yunlichart.data(this.state.vehicleCount);
 
-    chart.coordinate('theta', {
+    this.yunlichart.coordinate('theta', {
       radius: 0.85
     });
 
-    chart.scale('percent', {
+    this.yunlichart.scale('percent', {
       formatter: (val) => {
         // val = val * 100 + '%';
         return val;
       },
     });
-    chart.tooltip({
+   
+    this.yunlichart.tooltip({
       showTitle: false,
       showMarkers: false,
     });
-    chart.axis(false); // 关闭坐标轴
-    const interval = chart
+   this.yunlichart.axis(false); // 关闭坐标轴
+    const interval = this.yunlichart
       .interval()
       .adjust('stack')
       .position('percent')
@@ -104,8 +140,8 @@ export default class CountInfo extends PureComponent {
         lineWidth: 1,
         stroke: '#fff',
       });
-    chart.interaction('element-single-selected');
-    chart.render();
+      this.yunlichart.interaction('element-single-selected');
+      this.yunlichart.render(true);
 
     // 默认选择
     interval.elements[0].setState('selected', true);
@@ -130,30 +166,34 @@ export default class CountInfo extends PureComponent {
       }
       this.setState({ collectbin: arr })
     })
-    const chart = new Chart({
+    if(this.bwchart){
+      this.bwchart.changeData(this.state.collectbin);
+      return;
+    }
+    this.bwchart = new Chart({
       container: 'bw',
       autoFit: true,
       height: 258,
     });
 
-    chart.data(this.state.collectbin);
+    this.bwchart.data(this.state.collectbin);
 
-    chart.coordinate('theta', {
+    this.bwchart.coordinate('theta', {
       radius: 0.85
     });
 
-    chart.scale('percent', {
+    this.bwchart.scale('percent', {
       formatter: (val) => {
         // val = val * 100 + '%';
         return val;
       },
     });
-    chart.tooltip({
+    this.bwchart.tooltip({
       showTitle: false,
       showMarkers: false,
     });
-    chart.axis(false); // 关闭坐标轴
-    const interval = chart
+    this.bwchart.axis(false); // 关闭坐标轴
+    const interval =  this.bwchart
       .interval()
       .adjust('stack')
       .position('percent')
@@ -178,15 +218,14 @@ export default class CountInfo extends PureComponent {
         lineWidth: 1,
         stroke: '#fff',
       });
-    chart.interaction('element-single-selected');
-    chart.render();
+      this.bwchart.interaction('element-single-selected');
+      this.bwchart.render();
 
     // 默认选择
     //interval.elements[0].setState('selected', true);
   }
   drzys = async () => {
     await getJobTodayCount().then(res => {
-      debugger;
       if(res.data==undefined){
         return
       }
@@ -203,23 +242,14 @@ export default class CountInfo extends PureComponent {
     })
   }
   tddb = async () => {
-    var colorSet = {
-      订单数: 'bb',
-      件数: 'bb2',
-      使用车辆数: 'bb3',
-      排车单数:'bb4'
-    };
     await getTodayCompareOrder().then(e=>{
-     // debugger
      if(e.data==undefined){
       return
     }
      const data =  e.data;
      let params = {};
      data.forEach(element => {
-       
-       
-        let arr = [];
+       let arr = [];
         for(const obj in element){
           if(obj!='TYPE'){
             let objs = {
@@ -235,8 +265,12 @@ export default class CountInfo extends PureComponent {
      this.setState({tddbData:params});
      var tddbData = this.state.tddbData;
      for(const ss in tddbData){
-      var chart = new Chart({
-        container: colorSet[ss],
+      if(this.chartEmt[ss]){
+        this.chartEmt[ss].changeData(tddbData[ss])
+        continue
+      }
+      this.chartEmt[ss] = new Chart({
+        container: this.colorSet[ss],
         autoFit: true,
         //forceFit: true,
         //height:200,
@@ -244,25 +278,34 @@ export default class CountInfo extends PureComponent {
       });
       //chart.legend(false);
      
-      chart.data(tddbData[ss], {
-        // value: {
-        //   alias: '访问数'
-        // },
-        // name: {
-        //   alias: '步骤名称'
-        // }
-      });
-      chart.axis('name', {
+      this.chartEmt[ss].data(tddbData[ss], {});
+      this.chartEmt[ss].axis('name', {
         title: null
       });//.shape('textInterval').
-      chart.scale('sales', {
+      const arrs = tddbData[ss].map(e=>e.value)
+      const number = Math.max.apply(null,arrs);
+      this.chartEmt[ss].scale('value', {
+        min:0,
+        max:number+5
         // tickInterval: 20,
-        nice: true
+        //nice:false,
       });
-      chart.interval().position('name*value').color('name',['#4FAAEB', '#FFE78F']
-      ).size(30).label("value");
+      this.chartEmt[ss].interval().position('name*value').color('name',['#4FAAEB', '#FFE78F']
+      ).size(30).label("value",{
+        //offsetX:22,
+        //offsetY:30
+      });
+      // this.chartEmt[ss].annotation()
+      // .text({
+      //   position: [item.type, item.value],
+      //   content: item.value,
+      //   style: {
+      //     textAlign: 'center',
+      //   },
+      //   offsetY: -30,
+      // })
       //chart.interval().position('name*value').color('#E4E4E4');//.shape('fallFlag');
-      chart.render();
+      this.chartEmt[ss].render();
      }
     
     })
@@ -271,18 +314,13 @@ export default class CountInfo extends PureComponent {
 
  
   render() {
-    // const styles = [
-    //   "#3e1ec0",
-    //   "#4abf2e",
-    //   "#cb6917",
-    //   "#b40466",
-    //   "#365ceb",
-    //   "#a1c606"
-    // ]
+  
     const { orderCount ,jobTodayCount} = this.state;
-   // debugger;
-    return <Layout>
-      <Content style={{ backgroundColor: "#eef1f4", height: '800', padding: '0 5px', lineHeight: '15px' }}>
+    return <Layout style={{ backgroundColor: "#eef1f4",marginTop:-20}}>
+      {/* <Header style={{height: '1%',backgroundColor: "#eef1f4"}}>
+      </Header> */}
+      <Content style={{ backgroundColor: "#eef1f4", height: '99%', padding: '0 5px', lineHeight: '15px' }}>
+      <div style={{marginRight:5}}><Button loading={this.state.loading} style = {{backgroundColor: "#ecf0f9  ",float:'right'}}  onClick={()=>this.handOnfush() } icon ='redo'></Button></div>
         <div style={{
           width: '100%',
           //height: '250px',
@@ -292,7 +330,8 @@ export default class CountInfo extends PureComponent {
           backgroundColor: '#ecf0f9',
           borderRadius: '2px',
           padding: 2,
-          paddingBottom: 5
+          paddingBottom: 5,
+          //marginTop:10
         }}>
           {/* <div style={{
             fontSize: 24, fontWeight: 'bold', marginBottom: 30
