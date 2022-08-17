@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-06 16:31:01
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-11 10:31:18
+ * @LastEditTime: 2022-08-17 16:37:04
  * @version: 1.0
  */
 
@@ -22,7 +22,10 @@ import {
   Input,
   DatePicker,
   message,
-  Popconfirm
+  Popconfirm,
+  List,
+  Upload,
+  Icon,
 } from 'antd';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
 import Page from '@/pages/Component/Page/inner/Page';
@@ -30,12 +33,13 @@ import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import { dynamicQuery } from '@/services/quick/Quick';
 import CostBillDtlSeacrhPage from './CostBillDtlSeacrhPage';
-import { haveCheck, consumed } from '@/services/cost/CostCalculation';
+import { haveCheck, consumed, uploadFile } from '@/services/cost/CostCalculation';
+import { getFile } from '@/services/cost/Cost';
 import {
   SimpleTreeSelect,
   SimpleAutoComplete,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
-import { throttleSetter } from 'lodash-decorators';
+import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
 
 const { Header, Footer, Content } = Layout;
 const { RangePicker } = DatePicker;
@@ -53,12 +57,14 @@ export default class CostBillSearchPage extends PureComponent {
     data: [],
     billState: [],
     isModalVisible: false,
+    accessoryModal: false,
     title: '费用台账',
     pageFilter: {
       searchCount: true,
       pageNo: 1,
       pageSize: 20,
     },
+    selectCords: [],
   };
 
   componentDidMount() {
@@ -76,30 +82,27 @@ export default class CostBillSearchPage extends PureComponent {
       ...pageFilter,
     };
     this.props.form.validateFields((err, values) => {
-      if (!err) {
-        let params = [];
-        if (values.TITLE) {
-          params = [...params, { field: 'TITLE', rule: 'like', val: [values.TITLE] }];
-        }
-        if (values.reportMonth) {
-          let month = [
-            values.reportMonth[0].format('YYYY-MM'),
-            values.reportMonth[1].format('YYYY-MM'),
-          ];
-          params = [...params, { field: 'BILL_MONTH', rule: 'between', val: month }];
-        }
-        if (values.state != undefined) {
-          params = [...params, { field: 'STATE', rule: 'eq', val: [values.state] }];
-        }
-        if (values.poject.value) {
-          params = [...params, { field: 'PLAN_UUID', rule: 'eq', val: [values.poject.value] }];
-        }
-
-        queryData.condition = { params };
+      let params = [];
+      if (values.TITLE) {
+        params = [...params, { field: 'TITLE', rule: 'like', val: [values.TITLE] }];
       }
+      if (values.reportMonth) {
+        let month = [
+          values.reportMonth[0].format('YYYY-MM'),
+          values.reportMonth[1].format('YYYY-MM'),
+        ];
+        params = [...params, { field: 'BILL_MONTH', rule: 'between', val: month }];
+      }
+      if (values.poject?.value) {
+        params = [...params, { field: 'PLAN_UUID', rule: 'eq', val: [values.poject.value] }];
+      }
+      if (values.state) {
+        params = [...params, { field: 'STATE', rule: 'eq', val: [values.state] }];
+      }
+      queryData.condition = { params };
     });
     dynamicQuery(queryData).then(e => {
-      this.setState({ data: e.result });
+      this.setState({ data: e.result, selectCords: [], accessoryModal: false });
     });
   };
 
@@ -209,23 +212,55 @@ export default class CostBillSearchPage extends PureComponent {
 
   drowe = () => {
     const records = this.state.data?.records;
+    const { selectCords } = this.state;
     return records && records != 'false' ? (
-      <Row
-        children={records.map(e => {
-          return (
-            <Col style={{ paddingBottom: 15 }} span={6}>
-              <Card
-                hoverable
-                key={e.UUID}
-                bodyStyle={{ padding: '15px 10px 10px' }}
-                style={{ width: '90%', border: '0.5px solid #3B77E3' }}
-              >
-                {this.drawBody(e)}
-              </Card>
-            </Col>
-          );
-        })}
-      />
+      <div>
+        <Row style={{ marginBlock: '10px' }}>
+          {/* <Popconfirm
+            title="费用账单确认对账后无法调整，确认后如有问题请在下期账单调整或联系信息中心同事处理"
+            onConfirm={() => this.handleHaveCheck()}
+          > */}
+          <Button
+            type="primary"
+            onClick={() => this.handleHaveCheck()}
+            style={{ margin: '0px 10px' }}
+          >
+            确认对账
+          </Button>
+          {/* </Popconfirm> */}
+          <Button type="danger" onClick={() => this.handleConsumed()}>
+            核销
+          </Button>
+        </Row>
+        <Row
+          children={records.map(e => {
+            let color = selectCords?.includes(e.UUID) ? 'skyblue' : '';
+            return (
+              <Col style={{ paddingBottom: 15 }} span={6}>
+                <Card
+                  hoverable
+                  key={e.UUID}
+                  bodyStyle={{ padding: '15px 10px 10px', backgroundColor: color }}
+                  style={{ width: '90%', border: '0.5px solid #3B77E3' }}
+                  onClick={() => {
+                    if (selectCords.includes(e.UUID)) {
+                      let selectCord = selectCords.filter(x => x != e.UUID);
+                      this.setState({ selectCords: selectCord });
+                    } else {
+                      let selectCord = [...selectCords];
+                      selectCord.push(e.UUID);
+                      this.setState({ selectCords: selectCord });
+                    }
+                  }}
+                >
+                  {this.drawBody(e)}
+                </Card>
+              </Col>
+            );
+          })}
+        />
+        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
+      </div>
     ) : (
       <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
     );
@@ -265,18 +300,13 @@ export default class CostBillSearchPage extends PureComponent {
           </Col>
         </Row>
         <Row style={{ float: 'right', marginTop: '20px' }}>
-          <Button onClick={() => this.checkDtl(e)}>查看台账</Button>
-          <Popconfirm title="费用账单确认对账后无法调整，确认后如有问题请在下期账单调整或联系信息中心同事处理" onConfirm ={()=>this.handleHaveCheck(e)}>
-          <Button
-            type="primary"
-            style={{ margin: '0px 10px' }}
-            //onClick={() => this.handleHaveCheck(e)}
-          >
-            确认对账
+          <Button onClick={() => this.checkDtl(e)} style={{ margin: '0px 10px' }}>
+            查看台账
           </Button>
-          </Popconfirm>
-          <Button type="primary" onClick={() => this.handleConsumed(e)}>
-            核销
+
+          <Button onClick={() => this.accessoryModalShow(true, e)}>
+            <Icon type="upload" />
+            附件
           </Button>
         </Row>
       </div>
@@ -295,24 +325,89 @@ export default class CostBillSearchPage extends PureComponent {
     this.setState({ isModalVisible: false });
   };
 
-  handleHaveCheck = async e => {
-    const response = await haveCheck(e.UUID);
+  accessoryModalShow = (isShow, e) => {
+    if (e != 'false' && e.ACCESSORY_NAME) {
+      let downloadsName = e.ACCESSORY_NAME.split(',');
+      let downloads = [];
+      downloadsName.map(c => {
+        let param = {
+          download: c,
+          uuid: e.UUID,
+        };
+        downloads.push(param);
+      });
+      // this.setState({ downloads: downloads });
+      this.setState({ accessoryModal: isShow, uploadUuid: e.UUID, downloads });
+    } else {
+      // this.setState({ downloads: [] });
+      this.setState({ accessoryModal: isShow, uploadUuid: e.UUID, downloads: [] });
+    }
+  };
+
+  handleHaveCheck = () => {
+    const { selectCords } = this.state;
+    if (selectCords.length < 1) {
+      message.error('至少选择一条数据');
+      return;
+    }
+    if (selectCords.length == 1) {
+      const response = this.haveCheck(selectCords[0]);
+      if (response && response.success) {
+        message.success('确认成功');
+        this.handleSarch();
+      }
+    } else {
+      this.batchProcessConfirmRef.show('确认', selectCords, this.haveCheck, this.handleSarch);
+    }
+  };
+
+  haveCheck = async e => {
+    return await haveCheck(e);
+  };
+
+  consumed = async e => {
+    return await consumed(e);
+  };
+
+  handleConsumed = () => {
+    const { selectCords } = this.state;
+    if (selectCords.length < 1) {
+      message.error('至少选择一条数据');
+      return;
+    }
+    if (selectCords.length == 1) {
+      const response = this.consumed(selectCords[0]);
+      if (response && response.success) {
+        message.success('核销成功');
+        this.handleSarch();
+      }
+    } else {
+      this.batchProcessConfirmRef.show('核销', selectCords, this.consumed, this.handleSarch);
+    }
+  };
+
+  uploadFile = async (file, fileList) => {
+    const { uploadUuid } = this.state;
+    var formDatas = new FormData();
+    formDatas.append('file', fileList[0]);
+    const response = await uploadFile(formDatas, uploadUuid);
     if (response && response.success) {
-      message.success('确认成功');
+      message.success('上传成功');
       this.handleSarch();
     }
   };
 
-  handleConsumed = async e => {
-    const response = await consumed(e.UUID);
-    if (response && response.success) {
-      message.success('核销成功');
-      this.handleSarch();
-    }
+  download = async (item, index) => {
+    let parma = {
+      uuid: item.uuid,
+      index: index,
+      fileName: item.download,
+    };
+    await getFile(parma);
   };
 
   render() {
-    const { data, isModalVisible, e } = this.state;
+    const { data, isModalVisible, e, accessoryModal, downloads } = this.state;
     const layout = {
       width: '100%',
       height: '94%',
@@ -325,7 +420,7 @@ export default class CostBillSearchPage extends PureComponent {
           <Page withCollect={true}>
             <NavigatorPanel title={this.state.title} />
             <Layout style={layout}>
-              <Header style={{ backgroundColor: '#ffffff', height: '9%', marginTop: '1%' }}>
+              <Header style={{ backgroundColor: '#ffffff', height: '4%', marginTop: '1%' }}>
                 {this.drawForm()}
               </Header>
               <Content style={{ overflow: 'auto', height: '20%' }}>{this.drowe()}</Content>
@@ -351,6 +446,51 @@ export default class CostBillSearchPage extends PureComponent {
           bodyStyle={{ height: 'calc(70vh)', overflowY: 'auto' }}
         >
           <CostBillDtlSeacrhPage key={e.UUID} params={e} />
+        </Modal>
+
+        <Modal
+          title="附件列表"
+          visible={accessoryModal}
+          onCancel={() => this.accessoryModalShow(false, '')}
+          footer={[
+            <Row justify="end">
+              <Col span={4} offset={16}>
+                <Upload
+                  name="file"
+                  className="upload-list-inline"
+                  showUploadList={false}
+                  beforeUpload={(file, fileList) => this.uploadFile(file, fileList)}
+                  maxCount={1}
+                >
+                  <Button>
+                    <Icon type="upload" />
+                    上传
+                  </Button>
+                </Upload>
+              </Col>
+              <Col span={4}>
+                <Button onClick={() => this.accessoryModalShow(false, '')}>返回</Button>
+              </Col>
+            </Row>,
+          ]}
+        >
+          <div style={{ overflow: 'auto' }}>
+            <List
+              bordered
+              dataSource={downloads}
+              renderItem={(item, index) => (
+                <List.Item
+                  actions={[
+                    <a onClick={() => this.download(item, index)} key="list-loadmore-edit">
+                      下载
+                    </a>,
+                  ]}
+                >
+                  {item.download}
+                </List.Item>
+              )}
+            />
+          </div>
         </Modal>
       </PageHeaderWrapper>
     );
