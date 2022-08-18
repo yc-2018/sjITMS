@@ -179,7 +179,7 @@ export default class DispatchingCreatePage extends Component {
   };
   //临时保存
   exit = () => {
-    this.setState({ visible: false, selectEmployees: [], selectVehicle: [] });
+    this.setState({ visible: false, note: '', selectEmployees: [], selectVehicle: [] });
   };
 
   //选车

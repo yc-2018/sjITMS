@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-30 17:55:22
+ * @LastEditTime: 2022-08-18 14:11:31
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -83,7 +83,7 @@ export default class OrderPoolPage extends Component {
     params.superQuery.queryParams = [
       ...superQuery.queryParams,
       ...isOrgQuery,
-      { field: 'STAT', type: 'VarChar', rule: 'eq', val: 'Audited' },
+      { field: 'STAT', type: 'VarChar', rule: 'in', val: 'Audited||PartScheduled' },
       { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
     ];
     queryAuditedOrder(params).then(response => {
