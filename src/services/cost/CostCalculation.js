@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-10 11:29:27
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-17 16:27:39
+ * @LastEditTime: 2022-08-17 17:44:53
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -149,4 +149,13 @@ export async function uploadFile(file, uuid) {
     method: 'POST',
     body: file,
   });
+}
+
+export async function deleteFile(uuid, download, index) {
+  return request(
+    `/itms-cost/itms-cost/costbill/deleteFile?uuid=${uuid}&download=${download}&index=${index}`,
+    {
+      method: 'POST',
+    }
+  );
 }

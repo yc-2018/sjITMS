@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-06 16:31:01
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-17 16:37:04
+ * @LastEditTime: 2022-08-18 10:14:00
  * @version: 1.0
  */
 
@@ -33,7 +33,7 @@ import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import { dynamicQuery } from '@/services/quick/Quick';
 import CostBillDtlSeacrhPage from './CostBillDtlSeacrhPage';
-import { haveCheck, consumed, uploadFile } from '@/services/cost/CostCalculation';
+import { haveCheck, consumed, uploadFile, deleteFile } from '@/services/cost/CostCalculation';
 import { getFile } from '@/services/cost/Cost';
 import {
   SimpleTreeSelect,
@@ -397,13 +397,21 @@ export default class CostBillSearchPage extends PureComponent {
     }
   };
 
-  download = async (item, index) => {
+  download = (item, index) => {
     let parma = {
       uuid: item.uuid,
       index: index,
       fileName: item.download,
     };
-    await getFile(parma);
+    getFile(parma);
+  };
+
+  delete = async (item, index) => {
+    const response = await deleteFile(item.uuid, item.download, index);
+    if (response && response.success) {
+      message.success('删除成功');
+      this.handleSarch();
+    }
   };
 
   render() {
@@ -483,6 +491,9 @@ export default class CostBillSearchPage extends PureComponent {
                   actions={[
                     <a onClick={() => this.download(item, index)} key="list-loadmore-edit">
                       下载
+                    </a>,
+                    <a onClick={() => this.delete(item, index)} key="list-loadmore-delete">
+                      删除
                     </a>,
                   ]}
                 >
