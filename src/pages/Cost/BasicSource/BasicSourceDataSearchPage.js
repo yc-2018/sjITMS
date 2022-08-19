@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-08 15:15:37
+ * @LastEditTime: 2022-08-19 10:22:14
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -11,6 +11,7 @@ import { Button, Form, Input, message, Spin } from 'antd';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import SearchPage from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSearchPage';
 import { dynamicQuery } from '@/services/quick/Quick';
+import { onSaveSourceData, deleteSourceData } from '@/services/cost/BasicSource';
 import { colWidth } from '@/utils/ColWidth';
 import { guid } from '@/utils/utils';
 import ExportJsonExcel from 'js-export-excel';
@@ -102,7 +103,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
     const { expanded } = this.props;
     if (expanded == '1') {
       return (
-        <Input defaultValue={val} onChange={v => (record[column.fieldName] = v.target.value)} />
+        <Input defaultValue={val} onChange={v => (record[column.DB_FIELD_NAME] = v.target.value)} />
       );
     } else {
       return val;
@@ -235,9 +236,38 @@ export default class BasicSourceDataSearchPage extends SearchPage {
     }
   };
 
-  onSave = () => {
+  onSave = async () => {
     const { selectedRows } = this.state;
-    console.log('onsave', selectedRows);
+    if (selectedRows.length == 0) {
+      message.error('请至少选中一条数据！');
+      return;
+    }
+    let param = {
+      uuid: this.props.selectedRows,
+      rows: selectedRows,
+    };
+    const response = await onSaveSourceData(param);
+    if (response && response.success) {
+      message.success('保存成功');
+      this.onSearch();
+    }
+  };
+
+  delete = async () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.error('请至少选中一条数据！');
+      return;
+    }
+    let param = {
+      uuid: this.props.selectedRows,
+      rows: selectedRows,
+    };
+    const response = await deleteSourceData(param);
+    if (response && response.success) {
+      message.success('删除成功');
+      this.onSearch();
+    }
   };
 
   /**
@@ -259,6 +289,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
           导出
         </Button>
         {expanded == '1' ? <Button onClick={this.onSave}>保存</Button> : ''}
+        {expanded == '1' ? <Button onClick={this.delete}>删除</Button> : ''}
       </div>
     );
   };

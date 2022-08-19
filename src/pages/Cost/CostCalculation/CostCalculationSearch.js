@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-11 16:34:16
+ * @LastEditTime: 2022-08-18 17:21:01
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -222,7 +222,6 @@ export default class CostBillDtlView extends QuickFormSearchPage {
         val = val ? '是' : '否';
       }
       if (record.modified) {
-        console.log('record', record);
         return <p3 style={{ color: 'red' }}>{val}</p3>;
       } else {
         return val;

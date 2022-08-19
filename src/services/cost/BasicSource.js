@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-01 16:01:34
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-16 09:31:37
+ * @LastEditTime: 2022-08-19 09:59:28
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -51,9 +51,26 @@ export async function updateDtl(payload) {
 }
 
 export async function batchImport(payload) {
-  return request(`/itms-cost/itms-cost/source/batchImport?sourceUuid=${payload.sourceUuid}&fileKey=${payload.fileKey}`,
+  return request(
+    `/itms-cost/itms-cost/source/batchImport?sourceUuid=${payload.sourceUuid}&fileKey=${
+      payload.fileKey
+    }`,
     {
-      method: 'POST'
+      method: 'POST',
     }
   );
+}
+
+export async function onSaveSourceData(payload) {
+  return request(`/itms-cost/itms-cost/source/onSaveSourceData`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function deleteSourceData(payload) {
+  return request(`/itms-cost/itms-cost/source/deleteSourceData`, {
+    method: 'POST',
+    body: payload,
+  });
 }
