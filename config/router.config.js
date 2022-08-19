@@ -1418,7 +1418,21 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './SJTms/ResourceMoitoring/CountInfo',
                 authority: ['sjtms.bigData.arrange'],
-              }
+              },
+            ],
+          },
+          {
+            path: '/bigData/costReport',
+            name: '费用报表',
+            routes: [
+              {
+                path: '/bigData/costReport/baihaohang',
+                name: '柏豪行运费明细',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'cost_baihaohang_report',
+                authority: ['sjtms.bigData.arrange'],
+              },
             ],
           },
           {
@@ -1437,7 +1451,6 @@ export default [
             quickuuid: 'sj_itms_member_monthwage',
             authority: ['sjtms.bigData.arrange'],
           },
-         
         ],
       },
       {
