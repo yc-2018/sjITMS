@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-19 10:22:14
+ * @LastEditTime: 2022-08-20 10:27:00
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -145,6 +145,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         });
         return param;
       };
+
       param = {
         pageNo: 1,
         pageSize: 20,
@@ -154,6 +155,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
           params: queryParams(filter.queryParams),
         },
       };
+      this.setState({ queryParams: queryParams(filter.queryParams) });
     }
     this.getData(param);
   };
@@ -177,7 +179,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
   };
 
   refreshTable = filter => {
-    const { tableName } = this.state;
+    const { tableName, queryParams } = this.state;
     let queryFilter;
     if (filter) {
       var order = [];
@@ -191,6 +193,9 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         orderBy: order,
         pageNo: filter.page + 1,
         pageSize: filter.pageSize,
+        condition: {
+          params: queryParams,
+        },
       };
     }
     this.getData(queryFilter);
@@ -280,7 +285,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         <AdvanceQuery
           searchFields={this.state.searchFields}
           fieldInfos={this.columns}
-          // filterValue={this.state.pageFilter.searchKeyValues}
+          filterValue={this.state.pageFilter.searchKeyValues}
           refresh={this.onSearch}
           reportCode={this.state.tableName}
           // isOrgQuery={this.state.isOrgQuery}

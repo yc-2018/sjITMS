@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-08 10:59:44
+ * @LastEditTime: 2022-08-20 10:17:49
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -162,7 +162,7 @@ export default class BasicSourceSearchPage extends Component {
             />
           </div>
         ) : (
-          <Tabs defaultActiveKey="structure">
+          <Tabs defaultActiveKey="data">
             <TabPane tab={'表结构'} key="structure">
               <FormFieldSearchPage
                 key={`Line${selectedKeys[0]}`}
