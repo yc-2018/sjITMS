@@ -639,6 +639,9 @@ export default class QuickCreatePage extends CreatePage {
             this.drawcell(e);
 
             let initialValue = this.entity[tableName][record.line - 1][fieldName]; // 初始值
+            if (initialValue == undefined) {
+              initialValue = onlFormField.fieldDefaultValue;
+            }
             return (
               <Form.Item>
                 {getFieldDecorator(key + '_' + (record.line - 1), {
