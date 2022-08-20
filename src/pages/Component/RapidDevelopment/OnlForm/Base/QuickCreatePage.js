@@ -309,6 +309,7 @@ export default class QuickCreatePage extends CreatePage {
       }
       const tableName = onlFormHead.tableName;
       this.entity[tableName][0] = {};
+      console.log(onlFormHead);
       const result = onlFormFields.filter(x => x.fieldDefaultValue !== undefined);
       result.forEach(data => {
         this.entity[tableName][0][data.dbFieldName] = data.fieldDefaultValue;
@@ -639,7 +640,8 @@ export default class QuickCreatePage extends CreatePage {
             this.drawcell(e);
 
             let initialValue = this.entity[tableName][record.line - 1][fieldName]; // 初始值
-            if (initialValue == undefined) {
+            if (initialValue == undefined && onlFormField.fieldDefaultValue) {
+              this.entity[tableName][record.line - 1][fieldName] = onlFormField.fieldDefaultValue;
               initialValue = onlFormField.fieldDefaultValue;
             }
             return (
