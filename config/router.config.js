@@ -1315,7 +1315,7 @@ export default [
             path: '/tmscode/costws',
             name: '唯尚费用',
             org: ['DISPATCH_CENTER'],
-            component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+            component: './Cost/CostWeiShang/CostWeiShangForm',
             quickuuid: 'sj_itms_costws',
             authority: ['sjtms.core.shippingorder'],
           },
