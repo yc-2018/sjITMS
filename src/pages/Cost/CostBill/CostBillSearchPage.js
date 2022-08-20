@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-06 16:31:01
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-18 10:14:00
+ * @LastEditTime: 2022-08-20 17:15:49
  * @version: 1.0
  */
 
@@ -40,6 +40,7 @@ import {
   SimpleAutoComplete,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
+import { rotate } from '@antv/g2/lib/util/transform';
 
 const { Header, Footer, Content } = Layout;
 const { RangePicker } = DatePicker;
@@ -206,16 +207,7 @@ export default class CostBillSearchPage extends PureComponent {
             </Button>
           </Form.Item>
         </Form>
-      </div>
-    );
-  };
-
-  drowe = () => {
-    const records = this.state.data?.records;
-    const { selectCords } = this.state;
-    return records && records != 'false' ? (
-      <div>
-        <Row style={{ marginBlock: '10px' }}>
+        <Row style={{ margin: '-13px 0px 0px -60px' }}>
           {/* <Popconfirm
             title="费用账单确认对账后无法调整，确认后如有问题请在下期账单调整或联系信息中心同事处理"
             onConfirm={() => this.handleHaveCheck()}
@@ -232,6 +224,15 @@ export default class CostBillSearchPage extends PureComponent {
             核销
           </Button>
         </Row>
+      </div>
+    );
+  };
+
+  drowe = () => {
+    const records = this.state.data?.records;
+    const { selectCords } = this.state;
+    return records && records != 'false' ? (
+      <div>
         <Row
           children={records.map(e => {
             let color = selectCords?.includes(e.UUID) ? 'skyblue' : '';
@@ -284,13 +285,22 @@ export default class CostBillSearchPage extends PureComponent {
           <Col
             span={4}
             style={{
-              fontSize: '14px',
-              color: stateDict?.TEXT_COLOR,
-              lineHeight: '30px',
+              width: '60px',
+              height: '60px',
+              transform: 'rotate(0.1turn)',
+              border: 'solid 2px' || stateDict?.TEXT_COLOR,
+              borderRadius: '100%',
               textAlign: 'center',
+              color: stateDict?.TEXT_COLOR,
+              fontSize: '16px',
+              fontWeight: 'bold',
+              lineHeight: '30px',
+              right: '10px',
+              bottom: '-20px',
+              position: 'absolute',
             }}
           >
-            {e.STATE_CN}
+            <Col style={{ bottom: '-10px' }}>{e.STATE_CN}</Col>
           </Col>
         </Row>
         <Row>
@@ -418,7 +428,7 @@ export default class CostBillSearchPage extends PureComponent {
     const { data, isModalVisible, e, accessoryModal, downloads } = this.state;
     const layout = {
       width: '100%',
-      height: '94%',
+      height: '90%',
       backgroundColor: '#ffffff',
     };
 
@@ -428,7 +438,7 @@ export default class CostBillSearchPage extends PureComponent {
           <Page withCollect={true}>
             <NavigatorPanel title={this.state.title} />
             <Layout style={layout}>
-              <Header style={{ backgroundColor: '#ffffff', height: '4%', marginTop: '1%' }}>
+              <Header style={{ backgroundColor: '#ffffff', height: '10%', marginTop: '1%' }}>
                 {this.drawForm()}
               </Header>
               <Content style={{ overflow: 'auto', height: '20%' }}>{this.drowe()}</Content>
