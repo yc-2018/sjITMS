@@ -11,20 +11,21 @@ import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm
 import CostBillSearchPage from './CostBillSearchPage';
 import CostBillEditView from '../CostCalculation/CostBillEditView'
 import CostBillDtlSeacrhPage from './CostBillDtlSeacrhPage';
+import { queryIdleAndThisPostionUseing } from '@/services/facility/Container';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
-export default class CostBillForm extends QuickForm {
+export default class CostBillViewForm extends QuickForm {
   drawTab = e => {
-    if (e.showPageNow == 'query') {
+    if (e.showPageNow == 'create') {
       const component = <CostBillSearchPage {...e.props} />;
       e.component = component;
     }else if(e.showPageNow =='view'){
       const component = <CostBillEditView {...e.props}/>
       e.component = component;
-    }else if(e.showPageNow =='create'){
-      const component = <CostBillDtlSeacrhPage {...e.props}/>
+    }else if(e.showPageNow =='query'){
+      const component = <CostBillDtlSeacrhPage {...e.props} {...this.props}/>
       e.component = component;
     }
   };

@@ -6,7 +6,8 @@ import { getSubjectBill, updateSubjectBill,getPlanParticulars ,exportPlan} from 
 import { Form, Input, InputNumber, message, Tooltip,Modal, Table,Button} from 'antd';
 import { throttleSetter } from 'lodash-decorators';
 import ExportJsonExcel from 'js-export-excel';
-
+import StandardTable from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeStandardTable/index';
+import styles from '@/pages/Tms/TransportOrder/transportOrder.less';
 const costTypes = [
   { DICT_CODE: 'costType', SORT_ORDER: 1, VALUE: '0', NAME: '税前加项' },
   { DICT_CODE: 'costType', SORT_ORDER: 2, VALUE: '1', NAME: '税前减项' },
@@ -115,8 +116,9 @@ export default class CostBillEditView extends CreatePage {
     //this.createPageModalRef.show();
   }
   onCancel = () => {
-    const { dateString, e } = this.props.params;
-    this.props.switchTab('view', {
+    const { dateString, e ,view} = this.props.params;
+    debugger;
+    this.props.switchTab( view?view:'view', {
       entityUuid: this.props.params.entityUuid,
       dateString,
       e,
@@ -234,9 +236,23 @@ export default class CostBillEditView extends CreatePage {
       //onOk={this.handleOk.bind()}
       onCancel={()=>this.setState({isModalVisible:false})}
       width={'80%'}
-      bodyStyle={{ height: 'calc(80vh)', overflowY: 'auto' }}
+      bodyStyle={{ height: 'auto', overflowY: 'auto' }}//calc(80vh)
     >
-     <Table dataSource={this.state.dataSource} columns= {this.state.col} />
+     <StandardTable
+        dataSource={this.state.dataSource}
+       columns= {this.state.col}
+       //loading 
+       noPagination
+       size ='small'
+       rowClassName={(record, index) => {
+        let name = '';
+        if (index % 2 === 0) {
+          name = styles.lightRow;
+        }
+        return name;
+      }}
+      width='800'
+       />
     </Modal>;
   }
 }

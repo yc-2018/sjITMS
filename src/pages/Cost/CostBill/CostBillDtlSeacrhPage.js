@@ -37,7 +37,9 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
     this.handleOnSertch();
     // this.getCostFormFields();
   }
-
+  // componentWillReceiveProps(){
+  //   this.handleOnSertch();
+  // }
   getCostFormFields = () => {
     findCostFormFieldByPlanUuid(this.props.params.entityUuid).then(result => {
       this.setState({ subjectFields: result.data });
@@ -49,14 +51,14 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
    */
   handleOnSertch = async data => {
     let values = this.props.form.getFieldsValue();
-    const { PLAN_UUID, BILL_MONTH } = this.props.params;
+    const { PLAN_UUID, BILL_MONTH } = this.props;
     values.dateString = BILL_MONTH;
     for (const i in values) {
       if (values[i] == '') {
         delete values[i];
       }
     }
-    this.setState({ searchLoading: true });
+   // this.setState({ searchLoading: true });
     let params = {};
     if (data) {
       data.searchKeyValues = { ...values, ...data.searchKeyValues };
@@ -103,7 +105,7 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
       this.initConfig({
         columns: newColumns,
         sql: ' ccc',
-        reportHeadName: this.props.params.TITLE,
+        reportHeadName: this.props.TITLE //this.props.params.TITLE,
       });
     } else {
       message.error('当前查询无数据,请计算后再操作');
@@ -128,63 +130,42 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
   };
 
   //该方法会覆盖所有的中间功能按钮
-  drawToolbarPanel = () => {};
-
+  drawToolbarPanel = () => {
+    // return <>
+    //   <Button>查看</Button>
+    // </>
+  };
+  onView = ()=>{
+    if(this.state.selectedRows.length==0){
+      message.info("请选择一条记录")
+      return;
+    }
+  const {
+    plan: { subjectKeyField },
+    bill: { uuid: billUuid },
+  } = this.state;
+  const subjectUuid = this.state.selectedRows[0][subjectKeyField];
+    this.props.switchTab('view', {
+      billUuid,
+      subjectUuid,
+      view:'query'
+      
+     // entityUuid: this.props.params.entityUuid,
+     // e,
+    })
+  }
+  drawTopButton = () => {
+  //   return <>
+    
+  //   <Button onClick={()=>this.showVilew()}>查看</Button>
+  // </>
+  }; //扩展最上层按钮
   changeState = () => {
     this.setState({ title: this.props.params.TITLE });
   };
 
   drawSearchPanel = () => {
-    // const { getFieldDecorator } = this.props.form;
-    // const { dateString } = this.state;
-    // let node = [];
-    // node.push(
-    //   <Form.Item label="费用所属月">
-    //     {getFieldDecorator('dateString', {
-    //       initialValue: moment(
-    //         dateString == undefined ? moment().format('YYYY-MM') : dateString,
-    //         'YYYY-MM'
-    //       ),
-    //     })(
-    //       <MonthPicker
-    //         placeholder=""
-    //         onChange={(date, dateString) => this.monthChange(date, dateString)}
-    //       />
-    //     )}
-    //   </Form.Item>
-    // );
-    // let searchFields = this.state.subjectFields
-    //   ? this.state.subjectFields.map(item => {
-    //       return (
-    //         <Form.Item label={item.DB_FIELD_TXT}>
-    //           {getFieldDecorator(item.DB_FIELD_NAME, { initialValue: '' })(<Input />)}
-    //         </Form.Item>
-    //       );
-    //     })
-    //   : [];
-    // node = [...node, ...searchFields];
-    // node.push(
-    //   <Form.Item>
-    //     <Button type="primary" onClick={() => this.handleOnSertch()}>
-    //       查询
-    //     </Button>
-    //     <Button style={{ margin: '0px 10px' }} type="primary" onClick={this.edit.bind()}>
-    //       编辑
-    //     </Button>
-    //     <Button onClick={this.comeBack.bind()}>返回</Button>
-    //   </Form.Item>
-    // );
-    // return (
-    //   <Row style={{ marginTop: '10px' }}>
-    //     <Col>
-    //       <Form layout="inline">
-    //         {node.map(e => {
-    //           return e;
-    //         })}
-    //       </Form>
-    //     </Col>
-    //   </Row>
-    // );
+   
   };
 
   render() {

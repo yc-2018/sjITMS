@@ -41,6 +41,7 @@ import {
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
 import { rotate } from '@antv/g2/lib/util/transform';
+import CostBillViewForm from './CostBillViewForm'
 
 const { Header, Footer, Content } = Layout;
 const { RangePicker } = DatePicker;
@@ -463,7 +464,8 @@ export default class CostBillSearchPage extends PureComponent {
           width={'80%'}
           bodyStyle={{ height: 'calc(70vh)', overflowY: 'auto' }}
         >
-          <CostBillDtlSeacrhPage key={e.UUID} params={e} />
+          {/* <CostBillDtlSeacrhPage key={e.UUID} params={e} /> */}
+          <CostBillViewForm showPageNow ="query" quickuuid="123" {...e} {...this.props} location={{pathname:'1'}}></CostBillViewForm>
         </Modal>
 
         <Modal
