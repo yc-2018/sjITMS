@@ -144,7 +144,7 @@ export default class CountInfo extends PureComponent {
       this.yunlichart.render(true);
 
     // 默认选择
-    interval.elements[0].setState('selected', true);
+    //interval.elements[0].setState('selected', true);
   }
 
 
@@ -286,7 +286,7 @@ export default class CountInfo extends PureComponent {
       const number = Math.max.apply(null,arrs);
       this.chartEmt[ss].scale('value', {
         min:0,
-        max:number+5
+        max:number+(number*0.18)
         // tickInterval: 20,
         //nice:false,
       });
@@ -392,8 +392,8 @@ export default class CountInfo extends PureComponent {
               运力
             </div> */}
             <div style={{height:30,backgroundColor:'#dbf0fd' ,textAlign:'left',paddingLeft:10,paddingTop:6,fontWeight: 'bold',}}>单日作业数</div>
-            <div id="drzys" style={{height:230,padding:5}}>
-            {jobTodayCount && <div><Row gutter={[16,16]}>
+            <div id="drzys" style={{height:'calc(26vh)',padding:5,minHeight:'calc(10vh)'}}>
+            {jobTodayCount && <div><Row gutter={[16,8]}>
               {jobTodayCount.map((element, index) => {
                 //const ss = styles[index];
                 return <Col className="gutter-row" span={8}>
@@ -401,7 +401,7 @@ export default class CountInfo extends PureComponent {
                     headStyle={{ fontSize: 15, fontWeight: 'bold',backgroundColor:'#6fa29d', color: '#ffffff',borderRadius: '5px 5px 0 0', }}
                     style={{
                       width: '100%',
-                      height: '300',
+                      height: 'calc(12vh)+4px',
                       // marginBottom: '1%',
                       boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
                       , fontWeight: 'bold',
@@ -458,7 +458,7 @@ export default class CountInfo extends PureComponent {
             <div style={{height:230,padding:5}} id ='bw'></div>
           </div>
         </div>
-        <div style={{ paddingTop: 5,height:240,backgroundColor: '#ecf0f9'}}>
+        {/* <div style={{ paddingTop: 5,height:'calc(36vh)',backgroundColor: '#ecf0f9'}}> */}
       
          <div style={{
             width: '100%',
@@ -469,29 +469,55 @@ export default class CountInfo extends PureComponent {
             backgroundColor: '#ecf0f9',
             borderRadius: '2px',
             float: 'right',
-            height:290.5
-
+            height:'calc(36vh)',
+            marginTop: 5
           }} >
-           <div style={{height:30,backgroundColor:'#dbf0fd' ,textAlign:'left',paddingLeft:10,paddingTop:6,fontWeight: 'bold',}}>昨日与今日数据对比</div>
-            <div  style={{height:'90%',padding:5,float:'left',width:'24%',backgroundColor:'',padding:0.5}}>
-              <div id ="bb" style={{height:'90%'}}></div>
+           {/* <div style={{height:'13%',backgroundColor:'#dbf0fd' ,textAlign:'left',paddingLeft:10,paddingTop:6,fontWeight: 'bold',}}>昨日与今日数据对比</div>
+            <div  style={{height:'100%',padding:5,float:'left',width:'24%',padding:0.5,}}>
+              <div id ="bb" style={{height:'76%'}}></div>
               <div style={{textAlign: 'center',fontWeight: 'bold',height:'10%',paddingTop:4}}>订单数</div>
             </div>
-            <div style={{height:'90%',padding:5 ,float:'left',width:'24%',backgroundColor:'',padding:0.5}}>
-              <div  id ="bb2" style={{height:'90%'}}></div>
+            <div style={{height:'100%',padding:5 ,float:'left',width:'24%',padding:0.5,}}>
+              <div  id ="bb2" style={{height:'76%'}}></div>
               <div style={{textAlign: 'center',fontWeight: 'bold',height:'10%',paddingTop:4}}>订单件数</div>
             </div>
-            <div style={{height:'90%',padding:5,float:'left',width:'24%',backgroundColor:'',padding:0.5}}>
-            <div style={{height:'90%'}} id ="bb3"></div>
-            <div style={{textAlign: 'center',fontWeight: 'bold',height:'10%',paddingTop:4}}>使用车辆数</div>
+            <div style={{height:'100%',padding:5,float:'left',width:'24%',padding:0.5,}}>
+              <div style={{height:'76%'}} id ="bb3"></div>
+              <div style={{textAlign: 'center',fontWeight: 'bold',height:'10%',paddingTop:4}}>使用车辆数</div>
             </div>
-            <div style={{height:'90%',padding:5,float:'left',width:'24%',padding:0.5}} >
-            <div id="bb4" style={{height:'90%'}}></div>
-            <div style={{textAlign: 'center',fontWeight: 'bold',height:'10%',paddingTop:4}}>排车单数</div>
+            <div style={{height:'100%',padding:5,float:'left',width:'24%',padding:0.5,}} >
+              <div id="bb4" style={{height:'76%'}}></div>
+              <div style={{textAlign: 'center',fontWeight: 'bold',height:'10%',paddingTop:4}}>排车单数</div>
+            </div> */}
+             <div style={{height:30,backgroundColor:'#dbf0fd' ,textAlign:'left',paddingLeft:10,paddingTop:6,fontWeight: 'bold',marginBottom:'2'}}>昨日与今日数据对比</div>
+            <Row gutter={[8,8]}>
+            <Col className="gutter-row" span={6}>
+              <div style={{height:'calc(31.5vh)',backgroundColor:'#eef1f4', borderRadius:'0 0 2px 2px'}}>
+                <div id ="bb" style={{height:'90%'}}></div>
+                <div style={{textAlign: 'center',fontWeight: 'bold',height:'10%',}}>订单数</div>
+              </div>
+            </Col>
+            <Col className="gutter-row" span={6}>
+            <div style={{height:'calc(31.5vh)',backgroundColor:'#eef1f4', borderRadius: '0 0 2px 2px'}}>
+              <div  id ="bb2" style={{height:'90%'}}></div>
+              <div style={{textAlign: 'center',fontWeight: 'bold',height:'10%',}}>订单件数</div>
             </div>
-            
+            </Col>
+            <Col className="gutter-row" span={6}>
+            <div style={{height:'calc(31.5vh)',backgroundColor:'#eef1f4', borderRadius: '0 0 2px 2px'}}>
+              <div style={{height:'90%'}} id ="bb3"></div>
+              <div style={{textAlign: 'center',fontWeight: 'bold',height:'10%',}}>使用车辆数</div>
+            </div>
+            </Col>
+            <Col className="gutter-row" span={6}>
+            <div style={{height:'calc(31.5vh)',backgroundColor:'#eef1f4', borderRadius: '0 0 2px 2px'}}>
+              <div id="bb4" style={{height:'90%'}}></div>
+              <div style={{textAlign: 'center',fontWeight: 'bold',height:'10%',}}>排车单数</div>
+            </div>
+            </Col>
+            </Row>
           </div>
-        </div>
+        {/* </div> */}
       </Content>
     </Layout>
 
