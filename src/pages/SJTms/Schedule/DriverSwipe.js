@@ -1,16 +1,17 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-08-10 15:59:38
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-08-25 17:02:17
  * @Description: 司机刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipe.js
  */
 import { PureComponent } from 'react';
-import { Card, Col, Input, Row, Spin } from 'antd';
+import { Card, Col, Input, Row, Spin, Checkbox, message } from 'antd';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import Empty from '@/pages/Component/Form/Empty';
 import { driverSwipe } from '@/services/sjitms/ScheduleProcess';
+import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 
 export default class Swiper extends PureComponent {
   state = {
@@ -20,6 +21,9 @@ export default class Swiper extends PureComponent {
     message: undefined,
     errMsg: '',
     isShip: false,
+    companyUuid: undefined,
+    dispatchUuid: undefined,
+    dispatchName: undefined,
   };
   componentDidMount() {
     this.empInputRef.focus();
@@ -36,9 +40,14 @@ export default class Swiper extends PureComponent {
 
   //刷卡
   onSubmit = async event => {
+    const { dispatchUuid, companyUuid } = this.state;
+    if (dispatchUuid == undefined || companyUuid == undefined) {
+      message.error('企业中心或调度中心值缺失！');
+      return;
+    }
     localStorage.setItem('showMessage', '0');
     this.setState({ loading: true, errMsg: undefined });
-    const response = await driverSwipe(event.target.value);
+    const response = await driverSwipe(event.target.value, companyUuid, dispatchUuid);
     localStorage.setItem('showMessage', '1');
     if (response.success) {
       this.speech('刷卡成功');
@@ -55,11 +64,53 @@ export default class Swiper extends PureComponent {
     }
   };
   render() {
-    const { loading, empId, scheduleBill, errMsg, message, isShip } = this.state;
+    const { loading, empId, scheduleBill, errMsg, message, isShip, dispatchName } = this.state;
     return (
       <div style={{ height: '100vh' }} onClick={() => this.empInputRef.focus()}>
         <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
           <div
+            style={{
+              height: 100,
+              lineHeight: '100px',
+              borderBottom: '1px solid #e8e8e8',
+            }}
+          >
+            <div style={{ float: 'left', width: '8%', paddingLeft: 24 }}>
+              <SimpleAutoComplete
+                style={{ width: '100%' }}
+                dictCode="dispatchCenter"
+                valueField="VALUE"
+                textField="NAME"
+                value={dispatchName}
+                placeholder="请选择调度中心"
+                onChange={v => {
+                  console.log('v', v);
+                  this.setState({
+                    dispatchUuid: v.record.VALUE,
+                    dispatchName: v.record.NAME,
+                    companyUuid: v.record.DESCRIPTION,
+                  });
+                }}
+              />
+            </div>
+            {/* <div style={{ float: 'left', width: '8%', marginLeft: '1%' }}>
+              <Checkbox>锁定</Checkbox>
+            </div> */}
+
+            <div
+              style={{
+                fontSize: 55,
+                fontWeight: 'bold',
+                textAlign: 'center',
+                marginRight: '5%',
+                color: dispatchName == undefined ? 'red' : 'black',
+              }}
+            >
+              {dispatchName == undefined ? '请选择调度中心' : dispatchName + '司机刷卡'}
+            </div>
+          </div>
+
+          {/* <div
             style={{
               height: 50,
               lineHeight: '50px',
@@ -71,7 +122,7 @@ export default class Swiper extends PureComponent {
             }}
           >
             司机刷卡
-          </div>
+          </div> */}
           <div style={{ fontSize: 16, textAlign: 'center' }}>
             工号：
             <Input

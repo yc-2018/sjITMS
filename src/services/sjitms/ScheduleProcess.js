@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-07-13 10:25:32
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-08-10 15:59:14
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-08-25 17:03:22
  * @Description: file content
  * @FilePath: \iwms-web\src\services\sjitms\ScheduleProcess.js
  */
@@ -10,14 +10,19 @@ import request from '@/utils/request';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 //刷卡
 export async function swipe(empId) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/process/swipe?empId=${empId}`, {
-    method: 'POST',
-  });
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/process/swipe?empId=${empId}&companyUuid=${
+      loginCompany().uuid
+    }&dispatchCenterUuid=${loginOrg().uuid}`,
+    {
+      method: 'POST',
+    }
+  );
 }
 //司机刷卡
-export async function driverSwipe(empId) {
+export async function driverSwipe(empId, companyUuid, dispatchUuid) {
   return request(
-    `/itms-schedule/itms-schedule/openapi/bill/schedule/process/swipe?empId=${empId}`,
+    `/itms-schedule/itms-schedule/openapi/bill/schedule/process/swipe?empId=${empId}&companyUuid=${companyUuid}&dispatchUuid=${dispatchUuid}`,
     {
       method: 'POST',
     }
