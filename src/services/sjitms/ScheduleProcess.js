@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-13 10:25:32
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-25 17:03:22
+ * @LastEditTime: 2022-08-30 11:53:19
  * @Description: file content
  * @FilePath: \iwms-web\src\services\sjitms\ScheduleProcess.js
  */
@@ -13,7 +13,7 @@ export async function swipe(empId) {
   return request(
     `/itms-schedule/itms-schedule/sj/bill/schedule/process/swipe?empId=${empId}&companyUuid=${
       loginCompany().uuid
-    }&dispatchCenterUuid=${loginOrg().uuid}`,
+    }&dispatchUuid=${loginOrg().uuid}`,
     {
       method: 'POST',
     }
