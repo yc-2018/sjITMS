@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-25 17:02:17
+ * @LastEditTime: 2022-09-01 11:00:12
  * @Description: 司机刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipe.js
  */
@@ -27,6 +27,17 @@ export default class Swiper extends PureComponent {
   };
   componentDidMount() {
     this.empInputRef.focus();
+    if (
+      localStorage.getItem('dispatchUuid') != undefined &&
+      localStorage.getItem('dispatchName') &&
+      localStorage.getItem('companyUuid')
+    ) {
+      this.setState({
+        dispatchUuid: localStorage.getItem('dispatchUuid'),
+        dispatchName: localStorage.getItem('dispatchName'),
+        companyUuid: localStorage.getItem('companyUuid'),
+      });
+    }
   }
 
   speech = message => {
@@ -84,7 +95,9 @@ export default class Swiper extends PureComponent {
                 value={dispatchName}
                 placeholder="请选择调度中心"
                 onChange={v => {
-                  console.log('v', v);
+                  localStorage.setItem('dispatchUuid', v.record.VALUE);
+                  localStorage.setItem('dispatchName', v.record.NAME);
+                  localStorage.setItem('companyUuid', v.record.DESCRIPTION);
                   this.setState({
                     dispatchUuid: v.record.VALUE,
                     dispatchName: v.record.NAME,
