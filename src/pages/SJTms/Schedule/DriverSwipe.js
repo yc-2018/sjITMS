@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-09-01 11:33:45
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-09-01 11:47:33
  * @Description: 司机刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipe.js
  */
@@ -130,7 +130,7 @@ export default class Swiper extends PureComponent {
                 fontSize: 55,
                 fontWeight: 'bold',
                 textAlign: 'center',
-                marginRight: '5%',
+                marginRight: '15%',
                 color: dispatchName == undefined ? 'red' : 'black',
               }}
             >
