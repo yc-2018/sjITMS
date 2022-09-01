@@ -11,6 +11,7 @@ export async function queryDict(dictCode) {
 export async function queryDictByCode(dictCodes) {
   return request(`/itms-schedule/itms-schedule/dict/findDictByDictCode?dictCodes=${dictCodes}`, {
     method: 'GET',
+    headers: { check_flag: false },
   });
 }
 

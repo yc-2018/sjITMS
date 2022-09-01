@@ -1,21 +1,22 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-01 11:00:12
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-09-01 11:33:45
  * @Description: 司机刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipe.js
  */
 import { PureComponent } from 'react';
-import { Card, Col, Input, Row, Spin, Checkbox, message } from 'antd';
+import { Card, Col, Input, Row, Spin, Select, message } from 'antd';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import Empty from '@/pages/Component/Form/Empty';
 import { driverSwipe } from '@/services/sjitms/ScheduleProcess';
-import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
+import { queryDictByCode } from '@/services/quick/Quick';
 
 export default class Swiper extends PureComponent {
   state = {
     loading: false,
+    dict: [],
     scheduleBill: {},
     empId: '',
     message: undefined,
@@ -27,6 +28,8 @@ export default class Swiper extends PureComponent {
   };
   componentDidMount() {
     this.empInputRef.focus();
+    // 查询字典
+    queryDictByCode(['dispatchCenter']).then(res => this.setState({ dict: res.data }));
     if (
       localStorage.getItem('dispatchUuid') != undefined &&
       localStorage.getItem('dispatchName') &&
@@ -75,7 +78,16 @@ export default class Swiper extends PureComponent {
     }
   };
   render() {
-    const { loading, empId, scheduleBill, errMsg, message, isShip, dispatchName } = this.state;
+    const {
+      loading,
+      dict,
+      empId,
+      scheduleBill,
+      errMsg,
+      message,
+      isShip,
+      dispatchName,
+    } = this.state;
     return (
       <div style={{ height: '100vh' }} onClick={() => this.empInputRef.focus()}>
         <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
@@ -86,25 +98,28 @@ export default class Swiper extends PureComponent {
               borderBottom: '1px solid #e8e8e8',
             }}
           >
-            <div style={{ float: 'left', width: '8%', paddingLeft: 24 }}>
-              <SimpleAutoComplete
-                style={{ width: '100%' }}
-                dictCode="dispatchCenter"
-                valueField="VALUE"
-                textField="NAME"
-                value={dispatchName}
+            <div style={{ float: 'left', width: '15%', paddingLeft: 24 }}>
+              <Select
                 placeholder="请选择调度中心"
-                onChange={v => {
-                  localStorage.setItem('dispatchUuid', v.record.VALUE);
-                  localStorage.setItem('dispatchName', v.record.NAME);
-                  localStorage.setItem('companyUuid', v.record.DESCRIPTION);
+                onChange={val => {
+                  const item = dict.find(x => x.itemValue == val);
+                  localStorage.setItem('dispatchUuid', val);
+                  localStorage.setItem('dispatchName', item.itemText);
+                  localStorage.setItem('companyUuid', item.description);
                   this.setState({
-                    dispatchUuid: v.record.VALUE,
-                    dispatchName: v.record.NAME,
-                    companyUuid: v.record.DESCRIPTION,
+                    dispatchUuid: val,
+                    dispatchName: item.itemText,
+                    companyUuid: item.description,
                   });
                 }}
-              />
+                value={dispatchName}
+                allowClear={true}
+                style={{ width: '100%' }}
+              >
+                {dict.map(d => {
+                  return <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>;
+                })}
+              </Select>
             </div>
             {/* <div style={{ float: 'left', width: '8%', marginLeft: '1%' }}>
               <Checkbox>锁定</Checkbox>
