@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-18 17:21:01
+ * @LastEditTime: 2022-09-02 17:21:28
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -200,7 +200,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
         reportHeadName: this.props.params.e.SCHEME_NAME,
       });
 
-      this.getLockStatus();
+      this.getLockStatus(dateString);
     } else {
       message.error('当前查询无数据,请计算后再操作');
       this.setState({ data: [], searchLoading: false, bill: null });
