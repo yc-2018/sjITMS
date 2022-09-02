@@ -135,7 +135,7 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
     } else if (e.column.fieldName == 'ONLY_CONDITION') {
       const component = (
         <Checkbox
-          defaultChecked={e.val}
+          defaultChecked={e.val == 1 ? true : false}
           onChange={v => {
             e.record.ONLY_CONDITION = v.target.checked ? 1 : 0;
           }}
