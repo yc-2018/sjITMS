@@ -1,9 +1,14 @@
 import CreatePage from '@/pages/Component/RapidDevelopment/CommonLayout/CreatePage';
 import FormPanel from '@/pages/Component/RapidDevelopment/CommonLayout/Form/FormPanel';
 import CFormItem from '@/pages/Component/RapidDevelopment/CommonLayout/Form/CFormItem';
-import React, { Component,Fragment } from 'react';
-import { getSubjectBill, updateSubjectBill,getPlanParticulars ,exportPlan} from '@/services/cost/CostCalculation';
-import { Form, Input, InputNumber, message, Tooltip,Modal, Table,Button} from 'antd';
+import React, { Component, Fragment } from 'react';
+import {
+  getSubjectBill,
+  updateSubjectBill,
+  getPlanParticulars,
+  exportPlan,
+} from '@/services/cost/CostCalculation';
+import { Form, Input, InputNumber, message, Tooltip, Modal, Table, Button } from 'antd';
 import { throttleSetter } from 'lodash-decorators';
 import ExportJsonExcel from 'js-export-excel';
 import StandardTable from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeStandardTable/index';
@@ -22,7 +27,7 @@ const costTypes = [
 export default class CostBillEditView extends CreatePage {
   state = {
     title: '查看',
-    isModalVisible:false
+    isModalVisible: false,
   };
   entity = {};
 
@@ -38,16 +43,20 @@ export default class CostBillEditView extends CreatePage {
       // 初始化费用
       response.data.billDetail.map(x => (this.entity[x.projectCode] = x.amount));
     });
-  
   }
   drawCreateButtons = () => {
     return (
       <Fragment>
         <Button key="cancel" onClick={this.handleCancel}>
-         返回
+          返回
         </Button>
-        <Button key="save" type="primary" loading={this.state.saving} onClick={this.handleexportPlan.bind(this)}>
-         导出
+        <Button
+          key="save"
+          type="primary"
+          loading={this.state.saving}
+          onClick={this.handleexportPlan.bind(this)}
+        >
+          导出
         </Button>
       </Fragment>
     );
@@ -60,64 +69,61 @@ export default class CostBillEditView extends CreatePage {
     this.linkCalculate(key);
   };
 
-  handleexportPlan =async ()=>{
-    await exportPlan(this.state.billUuid,this.state.subjectUuid).then(response=>{
+  handleexportPlan = async () => {
+    await exportPlan(this.state.billUuid, this.state.subjectUuid).then(response => {
       if (response.data) {
         var option = [];
-        option.fileName = "导出的费用";
-        const {data} = response;
-        
-        for(const item in data){
-          if(item=='excelName'){
+        option.fileName = '导出的费用';
+        const { data } = response;
+
+        for (const item in data) {
+          if (item == 'excelName') {
             option.fileName = data[item][0].name;
             continue;
           }
-          const system  = [];
-          for(const filed in data[item][0]){
+          const system = [];
+          for (const filed in data[item][0]) {
             system.push(filed);
           }
           const datas = {
-            sheetData:data[item],
-            sheetName:item,
-            sheetFilter:system,
+            sheetData: data[item],
+            sheetName: item,
+            sheetFilter: system,
             sheetHeader: system,
-          }
-          if(option.datas){
-            option.datas.push(datas)
-          }else{
+          };
+          if (option.datas) {
+            option.datas.push(datas);
+          } else {
             option.datas = [datas];
           }
         }
         const toExcel = new ExportJsonExcel(option);
         toExcel.saveExcel();
       }
-    })
-  }
-  showView= async (projectCode)=>{
-   //console.log(this);
-    console.log(this.state.subjectUuid,this.state.billUuid);
-    await getPlanParticulars(this.state.subjectUuid,this.state.billUuid,projectCode).then(e=>{
-      if(e && e.success && e.data){
+    });
+  };
+  showView = async projectCode => {
+    await getPlanParticulars(this.state.subjectUuid, this.state.billUuid, projectCode).then(e => {
+      if (e && e.success && e.data) {
         const col = [];
         const data = e.data[0];
-        for(let s in data){
+        for (let s in data) {
           let ss = {
-            title:s,
-            dataIndex:s
-          }
-          col.push(ss)
+            title: s,
+            dataIndex: s,
+          };
+          col.push(ss);
         }
-        this.setState({dataSource:e.data,col})
-        this.setState({isModalVisible:true,projectCode})
-        console.log(e);
+        this.setState({ dataSource: e.data, col });
+        this.setState({ isModalVisible: true, projectCode });
       }
     });
-   
+
     //this.createPageModalRef.show();
-  }
+  };
   onCancel = () => {
-    const { dateString, e ,view} = this.props.params;
-    this.props.switchTab( view?view:'view', {
+    const { dateString, e, view } = this.props.params;
+    this.props.switchTab(view ? view : 'view', {
       entityUuid: this.props.params.entityUuid,
       dateString,
       e,
@@ -208,10 +214,13 @@ export default class CostBillEditView extends CreatePage {
         //     </Tooltip>
         //   );
         // } else {
-          calcComponent = getFieldDecorator(detail.projectCode, {
-            initialValue: detail.amount,
-           
-          })(<><a onClick={()=>this.showView(detail.projectName)}>{detail.amount}</a></>);
+        calcComponent = getFieldDecorator(detail.projectCode, {
+          initialValue: detail.amount,
+        })(
+          <>
+            <a onClick={() => this.showView(detail.projectName)}>{detail.amount}</a>
+          </>
+        );
         //}
         calcCols.push(
           <CFormItem key={detail.projectCode} label={detail.projectName}>
@@ -225,33 +234,34 @@ export default class CostBillEditView extends CreatePage {
         );
       }
     }
-   
+
     return formPanel;
   };
-  drawTable = ()=>{
-   
-    return  <Modal
-      visible={this.state.isModalVisible}
-      //onOk={this.handleOk.bind()}
-      onCancel={()=>this.setState({isModalVisible:false})}
-      width={'80%'}
-      bodyStyle={{ height: 'auto', overflowY: 'auto' }}//calc(80vh)
-    >
-     <StandardTable
-        dataSource={this.state.dataSource}
-       columns= {this.state.col}
-       //loading 
-       noPagination
-       size ='small'
-       rowClassName={(record, index) => {
-        let name = '';
-        if (index % 2 === 0) {
-          name = styles.lightRow;
-        }
-        return name;
-      }}
-      width='800'
-       />
-    </Modal>;
-  }
+  drawTable = () => {
+    return (
+      <Modal
+        visible={this.state.isModalVisible}
+        //onOk={this.handleOk.bind()}
+        onCancel={() => this.setState({ isModalVisible: false })}
+        width={'80%'}
+        bodyStyle={{ height: 'calc(75vh)', overflowY: 'auto' }} //calc(80vh)
+      >
+        <StandardTable
+          dataSource={this.state.dataSource}
+          columns={this.state.col}
+          // noPagination
+          size="middle"
+          colTotal={[]}
+          rowClassName={(record, index) => {
+            let name = '';
+            if (index % 2 === 0) {
+              name = styles.lightRow;
+            }
+            return name;
+          }}
+          width="800"
+        />
+      </Modal>
+    );
+  };
 }
