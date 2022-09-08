@@ -1,0 +1,16 @@
+/*
+ * @Author: Liaorongchang
+ * @Date: 2022-09-08 11:45:04
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-09-08 11:51:59
+ * @version: 1.0
+ */
+import request from '@/utils/request';
+
+export async function approved(payload) {
+  console.log('payload', payload);
+  return request(`/itms-schedule/itms-schedule/sj/tollFee/approved`, {
+    method: 'POST',
+    body: payload,
+  });
+}

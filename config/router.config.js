@@ -1309,6 +1309,14 @@ export default [
             component: './SJTms/InAndOutInfo/InAndOutInfoForm',
             quickuuid: 'ITMS_SHIP_VEHICE_SJ',
             authority: ['sjtms.core.return'],
+          },
+          {
+            path: '/tmscode/driverFee',
+            name: '司机费用核销',
+            org: ['DISPATCH_CENTER'],
+            component: './SJTms/DriverFee/DriverFeeForm',
+            quickuuid: 'sj_itms_driver_fee',
+            authority: ['sjtms.core.return'],
             divider: true,
           },
           {
