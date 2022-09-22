@@ -7,7 +7,7 @@ import OtherFeeModal from './OtherFeeModal';
 import { commonLocale } from '@/utils/CommonLocale';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { submitFee } from '@/services/sjtms/OtherFeeService';
-import { havePermission } from '@/utils/authority';
+
 @connect(({ quick, sjdispatchReturn, loading }) => ({
   quick,
   sjdispatchReturn,
@@ -209,12 +209,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
             });
           }}
         >
-          <Button
-            hidden={!havePermission(this.state.authority + '.audits')}
-            onClick={() => this.onBatchAudits()}
-          >
-            费用提交至审批
-          </Button>
+          <Button onClick={() => this.onBatchAudits()}>费用提交至审批</Button>
         </Popconfirm>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </span>

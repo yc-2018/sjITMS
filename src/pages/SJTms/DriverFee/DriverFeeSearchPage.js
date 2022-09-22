@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-09 10:06:50
+ * @LastEditTime: 2022-09-22 15:39:49
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -10,6 +10,7 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import { Button, Popconfirm, message, Steps } from 'antd';
 import { approved } from '@/services/sjitms/TollFee';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
+import { havePermission } from '@/utils/authority';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -50,7 +51,12 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
             });
           }}
         >
-          <Button onClick={() => this.onBatchApproved()}>审批</Button>
+          <Button
+            hidden={!havePermission(this.state.authority + '.audits')}
+            onClick={() => this.onBatchApproved()}
+          >
+            审批
+          </Button>
         </Popconfirm>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </span>
