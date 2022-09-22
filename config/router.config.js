@@ -1222,6 +1222,15 @@ export default [
             divider: true,
           },
           {
+            path: '/tmsbasic/passCard',
+            name: '粤通卡管理',
+            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+            component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+            quickuuid: 'sj_itms_pass_card',
+            authority: ['sjtms.basic.owner'],
+            divider: true,
+          },
+          {
             path: '/tmsbasic/lifecycle',
             name: 'lifecycle',
             org: ['DISPATCH_CENTER'],
@@ -1316,7 +1325,7 @@ export default [
             org: ['DISPATCH_CENTER'],
             component: './SJTms/DriverFee/DriverFeeForm',
             quickuuid: 'sj_itms_driver_fee',
-            authority: ['sjtms.core.return'],
+            authority: ['sjtms.core.arrange'],
             divider: true,
           },
           {

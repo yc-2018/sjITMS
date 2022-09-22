@@ -1,3 +1,10 @@
+/*
+ * @Author: Liaorongchang
+ * @Date: 2022-06-11 14:44:28
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-09-21 09:09:47
+ * @version: 1.0
+ */
 import { func } from 'prop-types';
 import request from '@/utils/request';
 import { loginOrg, loginCompany } from '@/utils/LoginContext';
@@ -50,4 +57,14 @@ export async function updateFee(payload) {
     method: 'POST',
     body: payload,
   });
+}
+
+export async function submitFee(payload) {
+  return request(
+    `/itms-schedule/itms-schedule/newoperation/dispatchreturn/submitFee?billNumber=${payload}`,
+    {
+      method: 'POST',
+      body: payload,
+    }
+  );
 }

@@ -5,7 +5,9 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import StoreModal from './StoreModal';
 import OtherFeeModal from './OtherFeeModal';
 import { commonLocale } from '@/utils/CommonLocale';
-
+import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
+import { submitFee } from '@/services/sjtms/OtherFeeService';
+import { havePermission } from '@/utils/authority';
 @connect(({ quick, sjdispatchReturn, loading }) => ({
   quick,
   sjdispatchReturn,
@@ -21,12 +23,13 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     scheduleBillNumber: '',
     isShowStandardTable: false,
     feeTypeModalVisible: false,
+    showAuditPop: false,
     billData: {
       list: [],
     }, // 票据核对
     otherFeeModalVisible: false,
     filelist: [],
-    previewImage: ''
+    previewImage: '',
   };
 
   drawActionButton = () => {
@@ -167,31 +170,70 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
   };
 
   drawToolbarPanel = () => {
+    const { showAuditPop, selectedRows } = this.state;
     return (
       <span>
-        <Popconfirm title="确定审核?" onConfirm={()=>this.checkTotalMileage(this.audits)} okText="确定" cancelText="取消">
+        <Popconfirm
+          title="确定审核?"
+          onConfirm={() => this.checkTotalMileage(this.audits)}
+          okText="确定"
+          cancelText="取消"
+        >
           <Button type="primary">保存审核</Button>
         </Popconfirm>
-        <Popconfirm title="确定保存?" onConfirm={()=>this.checkTotalMileage(this.save)} okText="确定" cancelText="取消">
+        <Popconfirm
+          title="确定保存?"
+          onConfirm={() => this.checkTotalMileage(this.save)}
+          okText="确定"
+          cancelText="取消"
+        >
           <Button>保存</Button>
         </Popconfirm>
+        <Popconfirm
+          title="确定提交至审批?"
+          visible={showAuditPop}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showAuditPop: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showAuditPop: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showAuditPop: false });
+            this.onTollFeeAudits(selectedRows[0]).then(response => {
+              console.log('response', response);
+              if (response.success) {
+                message.success('审核成功！');
+                this.onSearch();
+              }
+            });
+          }}
+        >
+          <Button
+            hidden={!havePermission(this.state.authority + '.audits')}
+            onClick={() => this.onBatchAudits()}
+          >
+            费用提交至审批
+          </Button>
+        </Popconfirm>
+        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </span>
     );
   };
   //保存
   save = () => {
     const { selectedRows } = this.state;
-      this.props.dispatch({
-        type: 'dispatchReturnStore/onConfirm',
-        payload: selectedRows,
-        callback: response => {
-          this.setState({ selectedRows: [] });
-          if (response && response.success) {
-            this.refreshTable();
-            message.success(commonLocale.saveSuccessLocale);
-          }
-        },
-      });
+    this.props.dispatch({
+      type: 'dispatchReturnStore/onConfirm',
+      payload: selectedRows,
+      callback: response => {
+        this.setState({ selectedRows: [] });
+        if (response && response.success) {
+          this.refreshTable();
+          message.success(commonLocale.saveSuccessLocale);
+        }
+      },
+    });
   };
   //审核
   audits = () => {
@@ -208,33 +250,50 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
       },
     });
   };
-  //校验本次里程数
- checkTotalMileage =(saveOrAudits)=>{
-  const { selectedRows } = this.state;
-  if (selectedRows.length < 1) {
-    message.warn('请至少选择一条记录');
-    return;
-  }
-  const totalMileageData = selectedRows.filter(e=>{
-    if(e.TOTALMILEAGE>=1000){
-      return e;
+
+  //路桥费提交至审批
+  onBatchAudits = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length < 1) {
+      message.warn('请至少选择一条记录');
+      return;
     }
-  })
-  if(totalMileageData.length>0){
-    let str ="";
-    totalMileageData.forEach(e => {
-       str+=e.BILLNUMBER+","
+    selectedRows.length == 1
+      ? this.setState({ showAuditPop: true })
+      : this.batchProcessConfirmRef.show('审核', selectedRows, this.onTollFeeAudits, this.onSearch);
+  };
+
+  onTollFeeAudits = async rows => {
+    console.log('rows', rows.BILLNUMBER);
+    return await submitFee(rows.BILLNUMBER);
+  };
+
+  //校验本次里程数
+  checkTotalMileage = saveOrAudits => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length < 1) {
+      message.warn('请至少选择一条记录');
+      return;
+    }
+    const totalMileageData = selectedRows.filter(e => {
+      if (e.TOTALMILEAGE >= 1000) {
+        return e;
+      }
     });
-    str = "单号:"+str+"本次里程数超过1000,确定继续吗？";
-    Modal.confirm({
-      title:'提示',
-      content:str,
-      okText: '确定',
-      onOk:saveOrAudits
-    })
-  }else{
-    saveOrAudits();
-  }
- }
- 
+    if (totalMileageData.length > 0) {
+      let str = '';
+      totalMileageData.forEach(e => {
+        str += e.BILLNUMBER + ',';
+      });
+      str = '单号:' + str + '本次里程数超过1000,确定继续吗？';
+      Modal.confirm({
+        title: '提示',
+        content: str,
+        okText: '确定',
+        onOk: saveOrAudits,
+      });
+    } else {
+      saveOrAudits();
+    }
+  };
 }
