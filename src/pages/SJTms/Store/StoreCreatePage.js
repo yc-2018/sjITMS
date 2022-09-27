@@ -1,13 +1,7 @@
 import { connect } from 'dva';
 import { Form, Modal, message } from 'antd';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
-import {
-  commonLocale,
-  notNullLocale,
-  placeholderLocale,
-  placeholderChooseLocale,
-  confirmLineFieldNotNullLocale,
-} from '@/utils/CommonLocale';
+import { commonLocale } from '@/utils/CommonLocale';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -15,7 +9,7 @@ import {
 }))
 @Form.create()
 export default class StoreCreatePage extends QuickCreatePage {
-  onSave = data => {
+  onSave = () => {
     const { entity } = this;
     const { onlFormInfos } = this.state;
 
@@ -26,7 +20,6 @@ export default class StoreCreatePage extends QuickCreatePage {
         delete this.entity[onlFormInfo.onlFormHead.tableName][0][addItem.dbFieldName];
       }
     }
-
     const { SJ_ITMS_SHIP_ADDRESS_OWNERUUID } = this.state.runTimeProps;
     const saveDispatchCenter = entity.SJ_ITMS_SHIP_ADDRESS[0].DISPATCHCENTERUUID;
     const saveOwner = entity.SJ_ITMS_SHIP_ADDRESS[0].OWNERUUID;
@@ -35,11 +28,7 @@ export default class StoreCreatePage extends QuickCreatePage {
       x => x.UUID == saveOwner
     ).DISPATCHCENTERUUID;
 
-    console.log('DISPATCHCENTERUUID', DISPATCHCENTERUUID);
-    console.log('saveDispatchCenter', saveDispatchCenter);
-
     if (DISPATCHCENTERUUID !== saveDispatchCenter) {
-      console.log('cccc');
       Modal.confirm({
         title: '调度中心配置与货主的调度中心不匹配，是否保存?',
         content: '',
