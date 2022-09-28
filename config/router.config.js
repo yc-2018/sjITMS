@@ -1285,6 +1285,14 @@ export default [
             org: ['DISPATCH_CENTER'],
             component: './SJTms/Schedule/Swipe',
             authority: ['sjtms.core.checkin'],
+          },
+          {
+            path: '/tmscode/issue',
+            name: '粤通卡发放',
+            org: ['DISPATCH_CENTER'],
+            component: './SJTms/ETCIssue/ETCPage',
+            quickuuid: 'sj_itms_etc_issue',
+            authority: ['sjtms.core.checkin'],
             divider: true,
           },
           {
