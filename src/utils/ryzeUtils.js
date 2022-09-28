@@ -6,45 +6,44 @@ import { dynamicQuery } from '@/services/quick/Quick';
  * @param {String} str 用户定义的字段文本
  */
 export function getFieldShow(rowData, str) {
-    if (!rowData || !str) {
-        return;
+  if (!rowData || !str) {
+    return;
+  }
+  var reg = /%\w+%/g;
+  var matchFields = str.match(reg);
+  if (matchFields) {
+    for (const replaceText of matchFields) {
+      var field = replaceText.replaceAll('%', '');
+      str = str.replaceAll(replaceText, rowData[field]);
     }
-    var reg = /%\w+%/g;
-    var matchFields = str.match(reg);
-    if (matchFields) {
-        for (const replaceText of matchFields) {
-            var field = replaceText.replaceAll('%', '');
-            str = str.replaceAll(replaceText, rowData[field]);
-        }
-        return str;
-    } else {
-        return rowData[str];
-    }
+    return str;
+  } else {
+    return rowData[str];
+  }
 }
-
 
 /**
  * 增加condition
  */
 export function addCondition(queryParams, condition) {
-    if (!queryParams.condition) {
-        // 如果数据源本身查询不带条件，则condition直接作为查询的条件
-        queryParams.condition = condition;
-    } else if (!queryParams.condition.matchType || queryParams.condition.matchType == "and") {
-        // 如果是and连接,则进行条件追加
-        queryParams.condition.params.push({ nestCondition: condition });
-    } else {
-        // 否则将原本的查询条件与condition作为两个子查询进行and拼接
-        queryParams.condition = {
-            params: [{ nestCondition: queryParams.condition }, { nestCondition: condition }],
-        };
-    }
+  if (!queryParams.condition) {
+    // 如果数据源本身查询不带条件，则condition直接作为查询的条件
+    queryParams.condition = condition;
+  } else if (!queryParams.condition.matchType || queryParams.condition.matchType == 'and') {
+    // 如果是and连接,则进行条件追加
+    queryParams.condition.params.push({ nestCondition: condition });
+  } else {
+    // 否则将原本的查询条件与condition作为两个子查询进行and拼接
+    queryParams.condition = {
+      params: [{ nestCondition: queryParams.condition }, { nestCondition: condition }],
+    };
+  }
 }
 
 /**
  * 微缓存动态查询
  */
-let dynamicQueryCache = {};     // 存的是Promise对象
+let dynamicQueryCache = {}; // 存的是Promise对象
 export const memoizeDynamicQuery = async queryParams => {
   const key = JSON.stringify(queryParams);
   let lastResult = dynamicQueryCache[key];
@@ -59,7 +58,6 @@ export const memoizeDynamicQuery = async queryParams => {
   }
 
   dynamicQueryCache[key] = lastResult;
-  console.log(dynamicQueryCache)
 
   return lastResult;
 };

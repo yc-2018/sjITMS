@@ -311,7 +311,6 @@ export default class RyzeSettingDrowDown extends Component {
 
     for (let i = newColumns.length - 1; i >= 0; i--) {
       if (newList.indexOf(newColumns[i].title) == -1) {
-        console.log('title', newColumns[i].title);
         newColumns.splice(i, 1);
       }
     }
