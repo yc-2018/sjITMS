@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-09-27 09:50:55
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-28 09:25:54
+ * @LastEditTime: 2022-09-28 11:21:39
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -27,6 +27,17 @@ export async function issue(payload) {
     {
       method: 'POST',
       body: payload,
+    }
+  );
+}
+
+export async function cancelIssue(billNumber) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/etc/cancelIssue?billNumber=${billNumber}&companyUuid=${
+      loginCompany().uuid
+    }&dcUuid=${loginOrg().uuid}`,
+    {
+      method: 'POST',
     }
   );
 }

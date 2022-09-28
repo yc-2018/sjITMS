@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-09-23 16:17:11
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-28 09:31:03
+ * @LastEditTime: 2022-09-28 11:02:56
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -16,8 +16,9 @@ const { Content, Sider } = Layout;
 
 export default class ETCPage extends PureComponent {
   state = {
-    issueRows: {},
-    recycleRows: {},
+    // issueRows: {},
+    // recycleRows: {},
+    selectRows: {},
     passCard: {},
   };
 
@@ -25,33 +26,12 @@ export default class ETCPage extends PureComponent {
     return (
       <span>
         <Button onClick={this.recommend.bind()}>推荐</Button>
-        <Button style={{ marginLeft: '10px' }} onClick={this.issue.bind()}>
+        <Button style={{ margin: '0 10px' }} onClick={this.issue.bind()}>
           发放
         </Button>
+        <Button onClick={this.recycle.bind()}>回收</Button>
       </span>
     );
-  };
-
-  //推荐
-  recommend = async () => {
-    const { issueRows } = this.state;
-    if (issueRows.BILLNUMBER == undefined) {
-      message.error('请选择需要推荐粤通卡的排车单');
-    }
-    const respone = await recommend(issueRows.BILLNUMBER);
-    if (respone.success && respone.data) {
-      this.setState({ passCard: { innerno: respone.data.innerno, cardno: respone.data.cardno } });
-    }
-  };
-
-  //发放
-  issue = async () => {
-    const { issueRows } = this.state;
-    if (issueRows.BILLNUMBER == undefined) {
-      message.error('请选择需要发放粤通卡的排车单');
-    }
-    const data = this.getCardEntity.getEntity();
-    await issue(data);
   };
 
   //回收
@@ -63,27 +43,58 @@ export default class ETCPage extends PureComponent {
     );
   };
 
+  //推荐
+  recommend = async () => {
+    const { selectRows } = this.state;
+    if (selectRows.BILLNUMBER == undefined) {
+      message.error('请选择需要推荐粤通卡的排车单');
+    }
+    const response = await recommend(selectRows.BILLNUMBER);
+    if (response.success && response.data) {
+      this.setState({ passCard: { innerno: response.data.innerno, cardno: response.data.cardno } });
+    }
+  };
+
+  //发放
+  issue = async () => {
+    const { selectRows } = this.state;
+    if (selectRows.BILLNUMBER == undefined) {
+      message.error('请选择需要发放粤通卡的排车单');
+    }
+    const data = this.getCardEntity.getEntity();
+    const response = await issue(data);
+    if (response.success) {
+      message.success('发放成功');
+      this.handlePage.onSearch();
+    }
+  };
+
   //回收
   recycle = async () => {
-    const { recycleRows } = this.state;
-    if (recycleRows.BILLNUMBER == undefined) {
+    const { selectRows } = this.state;
+    if (selectRows.BILLNUMBER == undefined) {
       message.error('请选择需要回收粤通卡的排车单');
     }
     const data = this.getCardEntity.getEntity();
-    await issue(data);
+    const response = await recycle(data);
+    if (response.success) {
+      message.success('回收成功');
+      this.handlePage.onSearch();
+    }
   };
 
   //刷新
   refreshSelectedRow = row => {
-    if (row.CARDNO == undefined) {
-      this.setState({ issueRows: row, recycleRows: {} });
-    } else {
-      this.setState({ issueRows: {}, recycleRows: row });
-    }
+    this.setState({ selectRows: row });
+    // if (row.CARDNO == undefined) {
+    //   this.setState({ issueRows: row, recycleRows: {} });
+    // } else {
+    //   this.setState({ issueRows: {}, recycleRows: row });
+    // }
   };
 
   render() {
-    const { issueRows, recycleRows, passCard } = this.state;
+    const { issueRows, recycleRows, passCard, selectRows } = this.state;
     return (
       <PageHeaderWrapper>
         <Layout style={{ height: 'calc(100vh - 120px)' }}>
@@ -92,24 +103,25 @@ export default class ETCPage extends PureComponent {
               // selectedRows={selectedRows}
               refreshSelectedRow={this.refreshSelectedRow}
               quickuuid="sj_itms_etc_issue"
+              onRef={node => (this.handlePage = node)}
             />
           </Content>
-          <Sider style={{ backgroundColor: 'rgb(237, 241, 245)' }} width={'30%'}>
+          <Sider style={{ backgroundColor: 'rgb(237, 241, 245)' }} width={'25%'}>
             <Row gutter={[0, 16]}>
               <Col>
-                <Card title="发放" extra={this.issueButton()}>
+                <Card title="发放与回收" extra={this.issueButton()}>
                   <ETCCreatePage
                     noBorder
                     noCategory
                     quickuuid="sj_itms_etc_issue"
-                    params={{ entityUuid: issueRows.BILLNUMBER }}
+                    params={{ entityUuid: selectRows.BILLNUMBER }}
                     showPageNow="update"
                     passCard={passCard}
                     onRef={node => (this.getCardEntity = node)}
                   />
                 </Card>
               </Col>
-              <Col>
+              {/* <Col>
                 <Card title="回收" extra={this.recycleButton()}>
                   <ETCCreatePage
                     noBorder
@@ -120,7 +132,7 @@ export default class ETCPage extends PureComponent {
                     onRef={node => (this.getCardEntity = node)}
                   />
                 </Card>
-              </Col>
+              </Col> */}
             </Row>
           </Sider>
         </Layout>
