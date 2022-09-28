@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-09-23 16:17:11
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-28 14:53:38
+ * @LastEditTime: 2022-09-28 15:20:20
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -26,10 +26,12 @@ export default class ETCPage extends PureComponent {
     return (
       <span>
         <Button onClick={this.recommend.bind()}>推荐</Button>
-        <Button style={{ margin: '0 10px' }} onClick={this.issue.bind()}>
+        <Button type="primary" style={{ margin: '0 10px' }} onClick={this.issue.bind()}>
           发放
         </Button>
-        <Button onClick={this.recycle.bind()}>回收</Button>
+        <Button type="danger" onClick={this.recycle.bind()}>
+          回收
+        </Button>
       </span>
     );
   };
