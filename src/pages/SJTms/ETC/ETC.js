@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-18 09:26:02
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-28 15:14:40
+ * @LastEditTime: 2022-09-28 15:17:25
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -33,7 +33,7 @@ export default class DriverFee extends PureComponent {
           placement="right"
           onClose={() => this.onClose()}
           visible={visible}
-          width={'50%'}
+          width={'60%'}
           destroyOnClose
         >
           <ETCOperationHistory {...this.props} quickuuid={'sj_itms_etc_record'} record={record} />
