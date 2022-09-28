@@ -1290,7 +1290,7 @@ export default [
             path: '/tmscode/issue',
             name: '粤通卡发放',
             org: ['DISPATCH_CENTER'],
-            component: './SJTms/ETCIssue/ETCPage',
+            component: './SJTms/ETCIssueAndRecycle/ETCIssueAndRecyclePage',
             quickuuid: 'sj_itms_etc_issue',
             authority: ['sjtms.core.checkin'],
             divider: true,

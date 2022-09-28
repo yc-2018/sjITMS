@@ -2,14 +2,14 @@
  * @Author: Liaorongchang
  * @Date: 2022-09-23 16:17:11
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-28 11:02:56
+ * @LastEditTime: 2022-09-28 14:53:38
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import ETCSearchPage from './ETCSearchPage';
 import { Layout, Row, Col, Card, Button, message } from 'antd';
-import ETCCreatePage from './ETCCreatePage';
+import ETCCreatePage from './ETCIssueAndRecycleCreatePage';
+import ETCDTLSearchPage from './ETCDTLSearchPage';
 import { recommend, issue, recycle } from '@/services/sjitms/ETCIssueAndRecycle';
 
 const { Content, Sider } = Layout;
@@ -99,7 +99,7 @@ export default class ETCPage extends PureComponent {
       <PageHeaderWrapper>
         <Layout style={{ height: 'calc(100vh - 120px)' }}>
           <Content>
-            <ETCSearchPage
+            <ETCDTLSearchPage
               // selectedRows={selectedRows}
               refreshSelectedRow={this.refreshSelectedRow}
               quickuuid="sj_itms_etc_issue"
