@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-01 08:43:48
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-08-02 15:52:21
+ * @LastEditTime: 2022-09-27 14:44:55
  * @Description: 嵌套子表格组件
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingChildTable.js
  */
@@ -42,45 +42,15 @@ export default class DispatchingChildTable extends Component {
     },
   };
 
-  //表格选择
-  onParentSelectChange = (record, selected) => {
-    const { dataSource, selectedRowKeys, childSelectedRowKeys, changeSelectRows } = this.props;
-    let patentArr = [...selectedRowKeys];
-    let childArr = childSelectedRowKeys ? [...childSelectedRowKeys] : [];
-    //选中行下的所有子选项
-    const details = dataSource.find(d => d.uuid === record.uuid).details;
-    let setChildArr = details ? details.map(item => item.uuid) : [];
-    if (selected) {
-      //父Table选中，子Table全选中
-      patentArr.push(record.uuid);
-      childArr = childArr.concat(setChildArr);
-    } else {
-      //父Table取消选中，子Table全取消选中
-      patentArr.splice(patentArr.findIndex(item => item === record.uuid), 1);
-      childArr = childArr.filter(item => !setChildArr.some(e => e === item));
-    }
+  //主表格RowSelection onChange
+  onChange = selectedRowKeys => {
+    const { dataSource, changeSelectRows } = this.props;
+    let childArr = [];
+    dataSource.filter(x => selectedRowKeys.indexOf(x.uuid) != -1).forEach(row => {
+      childArr = childArr.concat(row.details.map(item => item.uuid));
+    });
     //设置父，子的SelectedRowKeys
-    changeSelectRows({ selectedRowKeys: patentArr, childSelectedRowKeys: childArr });
-  };
-
-  //表格全选
-  onParentSelectAll = (selected, selectedRows, changeRows) => {
-    const { selectedRowKeys, childSelectedRowKeys, changeSelectRows } = this.props;
-    let patentArr = [...selectedRowKeys];
-    let childArr = childSelectedRowKeys ? [...childSelectedRowKeys] : [];
-    if (selected) {
-      //父Table选中，子Table全选中，设置子Table的SelectedRowKeys
-      patentArr = patentArr.concat(changeRows.map(item => item.uuid));
-      changeRows.forEach(row => {
-        childArr = childArr.concat(row.details.map(item => item.uuid));
-      });
-    } else {
-      //父Table取消选中，子Table全取消选中，设置子Table的SelectedRowKeys
-      patentArr = patentArr.filter(item => !changeRows.some(e => e.uuid === item));
-      childArr = [];
-    }
-    //设置父，子的SelectedRowKeys
-    changeSelectRows({ selectedRowKeys: patentArr, childSelectedRowKeys: childArr });
+    changeSelectRows({ selectedRowKeys, childSelectedRowKeys: childArr });
   };
 
   //子表格选择
@@ -102,7 +72,6 @@ export default class DispatchingChildTable extends Component {
     //设置父，子的SelectedRowKeys
     changeSelectRows({ selectedRowKeys: parentArr, childSelectedRowKeys: childArr });
   };
-
   //子表格全选
   onChildSelectAll = (selected, selectedRows, changeRows) => {
     const { dataSource, selectedRowKeys, childSelectedRowKeys, changeSelectRows } = this.props;
@@ -124,13 +93,16 @@ export default class DispatchingChildTable extends Component {
   //表格行点击事件
   onClickRow = record => {
     if (this.props.clickRow == undefined) return;
-    this.onParentSelectChange(record, this.props.selectedRowKeys.indexOf(record.uuid) == -1);
+    const { selectedRowKeys, changeSelectRows } = this.props;
+    const index = this.props.selectedRowKeys.indexOf(record.uuid);
+    index == -1 ? selectedRowKeys.push(record.uuid) : selectedRowKeys.splice(index, 1);
+    this.onChange(selectedRowKeys);
   };
 
   //子表格行点击事件
   onChildClickRow = record => {
     if (this.props.clickRow == undefined) return;
-    const { dataSource, selectedRowKeys, childSelectedRowKeys } = this.props;
+    const { dataSource, childSelectedRowKeys } = this.props;
     const selected = childSelectedRowKeys.indexOf(record.uuid) == -1;
     //找到子Table对应的父Table的所在行
     const parentRow = dataSource.find(x => x.details.find(d => d.uuid === record.uuid));
@@ -156,7 +128,7 @@ export default class DispatchingChildTable extends Component {
         [sortType]
       );
     }
-    this.props.refreshDataSource(dataSource);
+    this.props.refreshDataSource(dataSource, pagination, sorter);
   };
 
   //修改宽度
@@ -201,8 +173,7 @@ export default class DispatchingChildTable extends Component {
     };
     const parentRowSelection = {
       selectedRowKeys: selectedRowKeys,
-      onSelect: this.onParentSelectChange,
-      onSelectAll: this.onParentSelectAll,
+      onChange: this.onChange,
     };
 
     const columns = this.state.columns.map((col, index) => ({

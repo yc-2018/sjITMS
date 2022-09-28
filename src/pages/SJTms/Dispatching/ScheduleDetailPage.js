@@ -2,14 +2,14 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-20 10:06:45
+ * @LastEditTime: 2022-09-27 16:09:23
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
 import React, { Component } from 'react';
 import { Button, Row, Col, Typography, message, Empty } from 'antd';
 import emptySvg from '@/assets/common/img_empoty.svg';
-import { ScheduleDetailColumns, OrderCollectColumns } from './DispatchingColumns';
+import { ScheduleDetailColumns, ScheduleDetailCollectColumns } from './DispatchingColumns';
 import EditContainerNumberPage from './EditContainerNumberPage';
 import DispatchingTable from './DispatchingTable';
 import DispatchingChildTable from './DispatchingChildTable';
@@ -173,7 +173,7 @@ export default class ScheduleDetailPage extends Component {
             changeSelectRows={this.childTableChangeRows}
             selectedRowKeys={selectedParentRowKeys}
             childSelectedRowKeys={selectedRowKeys}
-            columns={OrderCollectColumns}
+            columns={ScheduleDetailCollectColumns}
             nestColumns={ScheduleDetailColumns}
             scrollY="calc(68vh - 107px)"
           />

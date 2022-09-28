@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-08-02 15:52:07
+ * @LastEditTime: 2022-09-27 12:26:40
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
@@ -42,29 +42,17 @@ export default class DispatchingTable extends Component {
     },
   };
 
-  //表格行点击事件
+  //表格行点击选中
   onClickRow = record => {
     if (this.props.clickRow == undefined) return;
-    this.onSelectChange(record, this.props.selectedRowKeys.indexOf(record.uuid) == -1);
-  };
-
-  //选中一行
-  onSelectChange = (record, selected) => {
     const { selectedRowKeys } = this.props;
-    selected
-      ? selectedRowKeys.push(record.uuid)
-      : selectedRowKeys.splice(selectedRowKeys.findIndex(item => item == record.uuid), 1);
+    const index = this.props.selectedRowKeys.indexOf(record.uuid);
+    index == -1 ? selectedRowKeys.push(record.uuid) : selectedRowKeys.splice(index, 1);
     this.props.changeSelectRows(selectedRowKeys);
   };
 
-  //全选
-  onSelectAll = (selected, selectedRows, changeRows) => {
-    const { selectedRowKeys } = this.props;
-    let newSelectedRowKeys = [...selectedRowKeys];
-    selected
-      ? (newSelectedRowKeys = newSelectedRowKeys.concat(changeRows.map(item => item.uuid)))
-      : (newSelectedRowKeys = []);
-    this.props.changeSelectRows(newSelectedRowKeys);
+  onChange = selectedRowKeys => {
+    this.props.changeSelectRows(selectedRowKeys);
   };
 
   handleStandardTableChange = (pagination, filtersArg, sorter) => {
@@ -80,7 +68,7 @@ export default class DispatchingTable extends Component {
         [sortType]
       );
     }
-    this.props.refreshDataSource(dataSource);
+    this.props.refreshDataSource(dataSource, pagination, sorter);
   };
 
   //修改宽度
@@ -104,8 +92,7 @@ export default class DispatchingTable extends Component {
     const rowSelection = selectedRowKeys
       ? {
           selectedRowKeys,
-          onSelect: this.onSelectChange,
-          onSelectAll: this.onSelectAll,
+          onChange: this.onChange,
         }
       : undefined;
     const columns = this.state.columns.map((col, index) => ({

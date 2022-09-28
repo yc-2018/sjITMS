@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-08-18 14:11:31
+ * @LastEditTime: 2022-09-28 10:04:32
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -22,7 +22,7 @@ import DispatchMap from './DispatchMap';
 import dispatchingStyles from './Dispatching.less';
 import { queryAuditedOrder, getOrderByStat, savePending } from '@/services/sjitms/OrderBill';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
-import { groupBy, sumBy, uniqBy } from 'lodash';
+import { groupBy, sumBy, uniqBy, isEmpty } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
 
@@ -34,6 +34,8 @@ export default class OrderPoolPage extends Component {
     loading: false,
     mapModal: false,
     auditedData: [],
+    searchPagination: false,
+    pageFilter: [],
     auditedCollectData: [],
     scheduledData: [],
     auditedParentRowKeys: [],
@@ -43,12 +45,7 @@ export default class OrderPoolPage extends Component {
   };
 
   componentDidMount() {
-    this.refreshOrderPool({
-      superQuery: {
-        matchType: 'and',
-        queryParams: [{ field: 'ORDERTYPE', type: 'VarChar', rule: 'eq', val: 'Delivery' }],
-      },
-    });
+    this.refreshOrderPool([{ field: 'ORDERTYPE', type: 'VarChar', rule: 'eq', val: 'Delivery' }]);
   }
 
   componentWillReceiveProps(nextProps) {
@@ -68,37 +65,64 @@ export default class OrderPoolPage extends Component {
         this.getScheduledOrders(activeTab);
         break;
       default:
-        this.refreshOrderPool({ superQuery: { matchType: 'and', queryParams: [] } });
+        this.refreshOrderPool();
         break;
     }
   };
 
-  refreshOrderPool = params => {
+  refreshOrderPool = (params, pages, sorter) => {
     this.setState({ loading: true });
-    let { superQuery } = params;
+    let order = [];
+    let { pageFilter } = this.state;
     const isOrgQuery = [
       { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
       { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
     ];
-    params.superQuery.queryParams = [
-      ...superQuery.queryParams,
-      ...isOrgQuery,
-      { field: 'STAT', type: 'VarChar', rule: 'in', val: 'Audited||PartScheduled' },
-      { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
-    ];
-    queryAuditedOrder(params).then(response => {
+    let filter = {
+      ...order,
+      superQuery: {
+        matchType: 'and',
+        queryParams: [
+          ...isOrgQuery,
+          ...pageFilter,
+          ...params,
+          { field: 'STAT', type: 'VarChar', rule: 'in', val: 'Audited||PartScheduled' },
+          { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
+        ],
+      },
+    };
+    if (sorter && sorter.column)
+      filter.order =
+        (sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey) +
+        ',' +
+        sorter.order;
+    if (pages) {
+      filter.page = pages.current;
+      filter.pageSize = pages.pageSize;
+    }
+    if (!isEmpty(params)) pageFilter = params;
+    queryAuditedOrder(filter).then(response => {
       if (response.success) {
+        const searchPagination = {
+          ...pagination,
+          total: response.data.paging.recordCount,
+          pageSize: response.data.paging.pageSize,
+          current: response.data.page,
+          showTotal: total => `共 ${total} 条`,
+        };
+        const data = response.data.records ? response.data.records : [];
         this.setState({
-          loading: false,
-          auditedData: response.data ? response.data : [],
-          auditedCollectData: this.groupData(response.data),
+          searchPagination,
+          auditedData: data,
+          auditedCollectData: this.groupData(data),
           auditedParentRowKeys: [],
           auditedRowKeys: [],
           scheduledRowKeys: [],
           activeTab: 'Audited',
         });
-        this.props.refreshSelectRowOrder([], 'Audited');
       }
+      this.props.refreshSelectRowOrder([], 'Audited');
+      this.setState({ loading: false, pageFilter });
     });
   };
 
@@ -276,33 +300,31 @@ export default class OrderPoolPage extends Component {
     const { auditedRowKeys } = this.state;
     const { totalOrder } = this.props;
     let selectOrders = this.groupByOrder(totalOrder);
-    const totalTextStyle = { fontSize: 16, fontWeight: 700 };
+    const totalTextStyle = { fontSize: 16, fontWeight: 700, marginLeft: 2, color: '#333' };
     return (
-      <Row type="flex" style={{ fontSize: 14, marginLeft: 5 }}>
-        <Col span={3} style={{ textAlign: 'left' }}>
-          <Text>
-            已选：
-            {auditedRowKeys.length}
-          </Text>
+      <Row type="flex" style={{ fontSize: 14 }}>
+        <Col span={2} style={{ fontSize: 12, lineHeight: '25px' }}>
+          <Text>已选:</Text>
+          <Text> {auditedRowKeys.length}</Text>
         </Col>
         <Col span={4}>
-          <Text> 整件：</Text>
+          <Text> 整件:</Text>
           <Text style={totalTextStyle}>{selectOrders.realCartonCount}</Text>
         </Col>
         <Col span={4}>
-          <Text> 散件：</Text>
+          <Text> 散件:</Text>
           <Text style={totalTextStyle}>{selectOrders.realScatteredCount}</Text>
         </Col>
-        <Col span={3}>
-          <Text> 周转筐：</Text>
+        <Col span={4}>
+          <Text> 周转筐:</Text>
           <Text style={totalTextStyle}>{selectOrders.realContainerCount}</Text>
         </Col>
         <Col span={5}>
-          <Text> 体积：</Text>
+          <Text> 体积:</Text>
           <Text style={totalTextStyle}>{selectOrders.volume.toFixed(2)}</Text>
         </Col>
         <Col span={5}>
-          <Text> 重量：</Text>
+          <Text> 重量:</Text>
           <Text style={totalTextStyle}>{selectOrders.weight.toFixed(2)}</Text>
         </Col>
       </Row>
@@ -336,6 +358,7 @@ export default class OrderPoolPage extends Component {
       auditedParentRowKeys,
       auditedRowKeys,
       auditedData,
+      searchPagination,
       auditedCollectData,
       scheduledRowKeys,
       scheduledData,
@@ -380,12 +403,11 @@ export default class OrderPoolPage extends Component {
               comId="orderPool"
               clickRow
               // childSettingCol
-              pagination={pagination || false}
+              pagination={searchPagination || false}
               loading={loading}
               dataSource={auditedCollectData}
-              refreshDataSource={auditedCollectData => {
-                this.childTableChangeRows({ selectedRowKeys: [], childSelectedRowKeys: [] });
-                this.setState({ auditedCollectData });
+              refreshDataSource={(_, pagination, sorter) => {
+                this.refreshOrderPool([], pagination, sorter);
               }}
               changeSelectRows={this.childTableChangeRows}
               selectedRowKeys={auditedParentRowKeys}
@@ -399,12 +421,11 @@ export default class OrderPoolPage extends Component {
             <DispatchingTable
               comId="orderPool"
               clickRow
-              pagination={pagination}
+              pagination={searchPagination || false}
               loading={loading}
               dataSource={auditedData}
-              refreshDataSource={auditedData => {
-                this.tableChangeRows('Audited', []);
-                this.setState({ auditedData });
+              refreshDataSource={(_, pagination, sorter) => {
+                this.refreshOrderPool([], pagination, sorter);
               }}
               changeSelectRows={selectedRowKeys => this.tableChangeRows('Audited', selectedRowKeys)}
               selectedRowKeys={auditedRowKeys}

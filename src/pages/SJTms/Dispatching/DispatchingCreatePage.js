@@ -138,12 +138,18 @@ export default class DispatchingCreatePage extends Component {
           //选中的人放到第一位
           const memberList = response.data.memberDetails;
           let selectEmployees = [];
-          memberList.forEach(item => {
-            let emp = employees.find(x => x.UUID == item.member.uuid);
-            if (emp) {
-              selectEmployees.push({ ...emp, memberType: item.memberType, memberUuid: item.uuid });
-            }
-          });
+          if (memberList) {
+            memberList.forEach(item => {
+              let emp = employees.find(x => x.UUID == item.member.uuid);
+              if (emp) {
+                selectEmployees.push({
+                  ...emp,
+                  memberType: item.memberType,
+                  memberUuid: item.uuid,
+                });
+              }
+            });
+          }
           employees = uniqBy([...selectEmployees, ...employees], 'CODE');
 
           this.basicEmployee = employees;
@@ -755,17 +761,16 @@ export default class DispatchingCreatePage extends Component {
     //车辆可装载信息
     let vehicleCalc;
     if (selectVehicle) {
+      const bearWeight = selectVehicle.BEARWEIGHT || 0;
+      const bearVolume = selectVehicle.BEARVOLUME || 0;
+      const bearVolumeRate = selectVehicle.BEARVOLUMERATE || 0;
       vehicleCalc = {
-        weight: Math.round(selectVehicle.BEARWEIGHT * 100) / 100, //车辆载重
-        remainWeight: Math.round((selectVehicle.BEARWEIGHT - totalData.weight) * 100) / 100, //剩余载重
-        volume: Math.round(selectVehicle.BEARVOLUME * 100) / 100, //车辆容积
-        usableVolume:
-          Math.round(selectVehicle.BEARVOLUME * (selectVehicle.BEARVOLUMERATE / 100) * 100) / 100, //车辆容积*容积率=可装容积
+        weight: Math.round(bearWeight * 100) / 100, //车辆载重
+        remainWeight: Math.round((bearWeight - totalData.weight) * 100) / 100, //剩余载重
+        volume: Math.round(bearVolume * 100) / 100, //车辆容积
+        usableVolume: Math.round(bearVolume * (bearVolumeRate / 100) * 100) / 100, //车辆容积*容积率=可装容积
         remainVolume:
-          Math.round(
-            (selectVehicle.BEARVOLUME * (selectVehicle.BEARVOLUMERATE / 100) - totalData.volume) *
-              100
-          ) / 100, //剩余可装容积
+          Math.round((bearVolume * (bearVolumeRate / 100) - totalData.volume) * 100) / 100, //剩余可装容积
       };
     }
 
@@ -921,7 +926,9 @@ export default class DispatchingCreatePage extends Component {
                 }
               >
                 {selectVehicle.PLATENUMBER ? (
-                  selectVehicle.VEHICLETYPE != '[]' ? (
+                  isEmptyObj(selectVehicle.VEHICLETYPE) ? (
+                    <div>请设置车辆车型！</div>
+                  ) : (
                     <Row>
                       <Col>
                         <div className={dispatchingStyles.orderTotalCardBody}>
@@ -980,7 +987,7 @@ export default class DispatchingCreatePage extends Component {
                             <div>容积率</div>
                             <div>
                               <span className={dispatchingStyles.orderTotalNumber}>
-                                {selectVehicle.BEARVOLUMERATE}%
+                                {selectVehicle.BEARVOLUMERATE || 0}%
                               </span>
                             </div>
                           </div>
@@ -997,8 +1004,6 @@ export default class DispatchingCreatePage extends Component {
                         </div>
                       </Col>
                     </Row>
-                  ) : (
-                    <div>请设置车辆车型！</div>
                   )
                 ) : (
                   <></>
