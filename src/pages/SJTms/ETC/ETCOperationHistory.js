@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-18 11:18:56
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-28 15:06:43
+ * @LastEditTime: 2022-09-28 15:14:37
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -13,7 +13,7 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
   loading: loading.models.quick,
 }))
 //继承QuickFormSearchPage Search页面扩展
-export default class StorePakingFeeSearch extends QuickFormSearchPage {
+export default class ETCOperationHistory extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
   state = { ...this.state, isNotHd: true };
 
@@ -40,7 +40,7 @@ export default class StorePakingFeeSearch extends QuickFormSearchPage {
         matchType: '',
         queryParams: [
           {
-            field: 'BILLUUID',
+            field: 'ETC_NO',
             type: 'VarChar',
             rule: 'eq',
             val: record,
