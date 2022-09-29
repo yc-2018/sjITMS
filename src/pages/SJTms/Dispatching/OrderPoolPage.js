@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-09-28 16:52:04
+ * @LastEditTime: 2022-09-29 16:47:09
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -44,10 +44,6 @@ export default class OrderPoolPage extends Component {
     activeTab: 'Audited',
   };
 
-  componentDidMount() {
-    this.refreshOrderPool([{ field: 'ORDERTYPE', type: 'VarChar', rule: 'eq', val: 'Delivery' }]);
-  }
-
   componentWillReceiveProps(nextProps) {
     if (nextProps.isOrderCollect != this.props.isOrderCollect) {
       this.setState({
@@ -70,14 +66,15 @@ export default class OrderPoolPage extends Component {
     }
   };
 
-  refreshOrderPool = (params, pages, sorter) => {
+  refreshOrderPool = (params, pages, sorter, search) => {
     this.setState({ loading: true });
     let order = [];
-    let { pageFilter } = this.state;
+    let { pageFilter, searchPagination } = this.state;
     const isOrgQuery = [
       { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
       { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
     ];
+    if (search) pageFilter = search;
     let filter = {
       ...order,
       superQuery: {
@@ -99,11 +96,13 @@ export default class OrderPoolPage extends Component {
     if (pages) {
       filter.page = pages.current;
       filter.pageSize = pages.pageSize;
+    } else {
+      filter.page = searchPagination.current;
+      filter.pageSize = searchPagination.pageSize;
     }
-    if (!isEmpty(params)) pageFilter = params;
     queryAuditedOrder(filter).then(response => {
       if (response.success) {
-        const searchPagination = {
+        searchPagination = {
           ...pagination,
           total: response.data.paging.recordCount,
           pageSize: response.data.paging.pageSize,

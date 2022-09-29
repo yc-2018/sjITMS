@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-09-29 15:42:48
+ * @LastEditTime: 2022-09-29 16:45:44
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -38,6 +38,7 @@ export default class OrderPoolSearchForm extends Component {
   async componentDidMount() {
     this.setState({ loading: true });
     const response = await queryColumns({ reportCode: this.state.quickuuid, sysCode: 'tms' });
+    const { form } = this.props;
     if (response.success) {
       let selectFields = response.result.columns.filter(data => data.isSearch);
       const field = response.result.columns.find(x => x.fieldName == 'DISPATCHCENTERUUID');
@@ -52,11 +53,16 @@ export default class OrderPoolSearchForm extends Component {
           );
         }
       }
-      this.setState({
-        loading: false,
-        selectFields,
-        advancedFields: response.result.columns.filter(data => data.isShow),
-      });
+      this.setState(
+        {
+          loading: false,
+          selectFields,
+          advancedFields: response.result.columns.filter(data => data.isShow),
+        },
+        () => {
+          this.onSearch(form.getFieldsValue());
+        }
+      );
     }
   }
   onSubmit = event => {
@@ -107,7 +113,7 @@ export default class OrderPoolSearchForm extends Component {
         });
       }
     }
-    await this.props.refreshOrderPool(params);
+    await this.props.refreshOrderPool([], undefined, undefined, params);
   };
   //高级查询
   onAdvanceSearch = async filter => {
