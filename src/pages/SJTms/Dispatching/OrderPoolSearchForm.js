@@ -2,12 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-09-28 11:54:44
+ * @LastEditTime: 2022-09-29 15:42:48
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
 import React, { Component } from 'react';
-import { Form, Button, Row, Col, DatePicker, Skeleton } from 'antd';
+import { Form, Input, Button, Row, Col, DatePicker, Skeleton } from 'antd';
 import { notNullLocale } from '@/utils/CommonLocale';
 import Address from '@/pages/Component/Form/Address';
 import {
@@ -39,9 +39,22 @@ export default class OrderPoolSearchForm extends Component {
     this.setState({ loading: true });
     const response = await queryColumns({ reportCode: this.state.quickuuid, sysCode: 'tms' });
     if (response.success) {
+      let selectFields = response.result.columns.filter(data => data.isSearch);
+      const field = response.result.columns.find(x => x.fieldName == 'DISPATCHCENTERUUID');
+      const fieldProperties = field.searchProperties.searchParams
+        ? field.searchProperties
+        : JSON.parse(field.searchProperties);
+      if (fieldProperties) {
+        const search = fieldProperties.searchParams.find(x => x.dispatch == loginOrg().uuid);
+        if (search) {
+          selectFields = response.result.columns.filter(
+            data => search.searchFields.indexOf(data.fieldName) != -1
+          );
+        }
+      }
       this.setState({
         loading: false,
-        selectFields: response.result.columns.filter(data => data.isSearch),
+        selectFields,
         advancedFields: response.result.columns.filter(data => data.isShow),
       });
     }
