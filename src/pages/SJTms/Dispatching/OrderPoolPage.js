@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-09-28 10:04:32
+ * @LastEditTime: 2022-09-28 16:52:04
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -65,7 +65,7 @@ export default class OrderPoolPage extends Component {
         this.getScheduledOrders(activeTab);
         break;
       default:
-        this.refreshOrderPool();
+        this.refreshOrderPool([]);
         break;
     }
   };

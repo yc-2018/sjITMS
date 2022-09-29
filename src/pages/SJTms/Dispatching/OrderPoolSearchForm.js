@@ -2,12 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-09-28 09:07:05
+ * @LastEditTime: 2022-09-28 11:54:44
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
 import React, { Component } from 'react';
-import { Form, Button, Row, Col, DatePicker } from 'antd';
+import { Form, Button, Row, Col, DatePicker, Skeleton } from 'antd';
 import { notNullLocale } from '@/utils/CommonLocale';
 import Address from '@/pages/Component/Form/Address';
 import {
@@ -29,20 +29,22 @@ const isOrgQuery = [
 export default class OrderPoolSearchForm extends Component {
   state = {
     quickuuid: 'sj_itms_dispatching_orderpool',
+    loading: false,
     pageFilter: {},
     selectFields: [],
     advancedFields: [],
   };
 
-  componentDidMount() {
-    queryColumns({ reportCode: this.state.quickuuid, sysCode: 'tms' }).then(response => {
-      if (response.success) {
-        this.setState({
-          selectFields: response.result.columns.filter(data => data.isSearch),
-          advancedFields: response.result.columns.filter(data => data.isShow),
-        });
-      }
-    });
+  async componentDidMount() {
+    this.setState({ loading: true });
+    const response = await queryColumns({ reportCode: this.state.quickuuid, sysCode: 'tms' });
+    if (response.success) {
+      this.setState({
+        loading: false,
+        selectFields: response.result.columns.filter(data => data.isSearch),
+        advancedFields: response.result.columns.filter(data => data.isShow),
+      });
+    }
   }
   onSubmit = event => {
     const { form } = this.props;
@@ -175,7 +177,7 @@ export default class OrderPoolSearchForm extends Component {
 
   render() {
     const { getFieldDecorator } = this.props.form;
-    let { selectFields } = this.state;
+    let { selectFields, loading } = this.state;
     const newSelectFields = selectFields.map(item => {
       if (item.fieldType == 'Date') {
         let days = parseInt(item.searchDefVal);
@@ -189,69 +191,71 @@ export default class OrderPoolSearchForm extends Component {
       return item;
     });
     return (
-      <Form
-        labelCol={{ span: 6 }}
-        wrapperCol={{ span: 18 }}
-        onSubmit={this.onSubmit}
-        autoComplete="off"
-      >
-        <Row justify="space-around">
-          {newSelectFields.filter((_, index) => index < 2).map(searchField => {
-            return (
-              <Col span={10}>
-                <Form.Item key={searchField.id} label={searchField.fieldTxt}>
-                  {getFieldDecorator(searchField.fieldName, {
-                    initialValue: searchField.searchDefVal || undefined,
-                    rules: [
-                      {
-                        required: searchField.searchRequire,
-                        message: notNullLocale(searchField.fieldTxt),
-                      },
-                    ],
-                  })(this.buildSearchItem(searchField))}
-                </Form.Item>
-              </Col>
-            );
-          })}
-          <Col span={4} style={{ paddingLeft: 12 }}>
-            <AdvanceQuery
-              reportCode={this.state.quickuuid}
-              searchFields={this.state.advancedFields}
-              isOrgQuery={isOrgQuery}
-              refresh={this.onAdvanceSearch}
-            />
-          </Col>
-        </Row>
-        <Row justify="space-around">
-          {newSelectFields.filter((_, index) => index > 1).map(searchField => {
-            return (
-              <Col span={10}>
-                <Form.Item key={searchField.id} label={searchField.fieldTxt}>
-                  {getFieldDecorator(searchField.fieldName, {
-                    initialValue: searchField.searchDefVal || undefined,
-                    rules: [
-                      {
-                        required: searchField.searchRequire,
-                        message: notNullLocale(searchField.fieldTxt),
-                      },
-                    ],
-                  })(this.buildSearchItem(searchField))}
-                </Form.Item>
-              </Col>
-            );
-          })}
-          <Col span={4}>
-            <Button
-              type={'primary'}
-              style={{ marginLeft: 12 }}
-              loading={this.props.loading}
-              htmlType="submit"
-            >
-              查询
-            </Button>
-          </Col>
-        </Row>
-      </Form>
+      <Skeleton active loading={loading} title={false} paragraph={{ rows: 2 }}>
+        <Form
+          labelCol={{ span: 6 }}
+          wrapperCol={{ span: 18 }}
+          onSubmit={this.onSubmit}
+          autoComplete="off"
+        >
+          <Row justify="space-around">
+            {newSelectFields.filter((_, index) => index < 2).map(searchField => {
+              return (
+                <Col span={10}>
+                  <Form.Item key={searchField.id} label={searchField.fieldTxt}>
+                    {getFieldDecorator(searchField.fieldName, {
+                      initialValue: searchField.searchDefVal || undefined,
+                      rules: [
+                        {
+                          required: searchField.searchRequire,
+                          message: notNullLocale(searchField.fieldTxt),
+                        },
+                      ],
+                    })(this.buildSearchItem(searchField))}
+                  </Form.Item>
+                </Col>
+              );
+            })}
+            <Col span={4} style={{ paddingLeft: 12 }}>
+              <AdvanceQuery
+                reportCode={this.state.quickuuid}
+                searchFields={this.state.advancedFields}
+                isOrgQuery={isOrgQuery}
+                refresh={this.onAdvanceSearch}
+              />
+            </Col>
+          </Row>
+          <Row justify="space-around">
+            {newSelectFields.filter((_, index) => index > 1).map(searchField => {
+              return (
+                <Col span={10}>
+                  <Form.Item key={searchField.id} label={searchField.fieldTxt}>
+                    {getFieldDecorator(searchField.fieldName, {
+                      initialValue: searchField.searchDefVal || undefined,
+                      rules: [
+                        {
+                          required: searchField.searchRequire,
+                          message: notNullLocale(searchField.fieldTxt),
+                        },
+                      ],
+                    })(this.buildSearchItem(searchField))}
+                  </Form.Item>
+                </Col>
+              );
+            })}
+            <Col span={4}>
+              <Button
+                type={'primary'}
+                style={{ marginLeft: 12 }}
+                loading={this.props.loading}
+                htmlType="submit"
+              >
+                查询
+              </Button>
+            </Col>
+          </Row>
+        </Form>
+      </Skeleton>
     );
   }
 }
