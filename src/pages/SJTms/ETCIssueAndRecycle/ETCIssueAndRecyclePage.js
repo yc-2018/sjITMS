@@ -2,22 +2,24 @@
  * @Author: Liaorongchang
  * @Date: 2022-09-23 16:17:11
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-28 15:20:20
+ * @LastEditTime: 2022-09-30 15:59:39
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import { Layout, Row, Col, Card, Button, message } from 'antd';
+import { Layout, Row, Col, Card, Button, message, Select, Input, Tooltip } from 'antd';
 import ETCCreatePage from './ETCIssueAndRecycleCreatePage';
 import ETCDTLSearchPage from './ETCDTLSearchPage';
 import { recommend, issue, recycle } from '@/services/sjitms/ETCIssueAndRecycle';
+import { queryDictByCode } from '@/services/quick/Quick';
+import ETCApplyRecordSearchPage from '../ETCApplyRecord/ETCApplyRecordSearchPage';
 
 const { Content, Sider } = Layout;
+const { Search } = Input;
 
 export default class ETCPage extends PureComponent {
+  dict = [];
   state = {
-    // issueRows: {},
-    // recycleRows: {},
     selectRows: {},
     passCard: {},
   };
@@ -88,15 +90,10 @@ export default class ETCPage extends PureComponent {
   //刷新
   refreshSelectedRow = row => {
     this.setState({ selectRows: row });
-    // if (row.CARDNO == undefined) {
-    //   this.setState({ issueRows: row, recycleRows: {} });
-    // } else {
-    //   this.setState({ issueRows: {}, recycleRows: row });
-    // }
   };
 
   render() {
-    const { issueRows, recycleRows, passCard, selectRows } = this.state;
+    const { passCard, selectRows } = this.state;
     return (
       <PageHeaderWrapper>
         <Layout style={{ height: 'calc(100vh - 120px)' }}>
@@ -108,8 +105,8 @@ export default class ETCPage extends PureComponent {
               onRef={node => (this.handlePage = node)}
             />
           </Content>
-          <Sider style={{ backgroundColor: 'rgb(237, 241, 245)' }} width={'25%'}>
-            <Row gutter={[0, 16]}>
+          <Sider style={{ backgroundColor: 'rgb(237, 241, 245)' }} width={'30%'}>
+            <Row gutter={[0, 8]}>
               <Col>
                 <Card title="发放与回收" extra={this.issueButton()}>
                   <ETCCreatePage
@@ -123,18 +120,6 @@ export default class ETCPage extends PureComponent {
                   />
                 </Card>
               </Col>
-              {/* <Col>
-                <Card title="回收" extra={this.recycleButton()}>
-                  <ETCCreatePage
-                    noBorder
-                    noCategory
-                    quickuuid="sj_itms_etc_issue"
-                    params={{ entityUuid: recycleRows.BILLNUMBER }}
-                    showPageNow="update"
-                    onRef={node => (this.getCardEntity = node)}
-                  />
-                </Card>
-              </Col> */}
             </Row>
           </Sider>
         </Layout>
