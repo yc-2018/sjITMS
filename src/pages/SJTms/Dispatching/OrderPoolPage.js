@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-09-29 16:47:09
+ * @LastEditTime: 2022-10-06 10:32:36
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -61,33 +61,27 @@ export default class OrderPoolPage extends Component {
         this.getScheduledOrders(activeTab);
         break;
       default:
-        this.refreshOrderPool([]);
+        this.refreshOrderPool();
         break;
     }
   };
 
-  refreshOrderPool = (params, pages, sorter, search) => {
+  refreshOrderPool = (params, pages, sorter) => {
     this.setState({ loading: true });
-    let order = [];
     let { pageFilter, searchPagination } = this.state;
+    let filter = { superQuery: { matchType: 'and', queryParams: [] } };
+    if (params) {
+      if (params.superQuery) {
+        filter = params;
+        pageFilter = params.superQuery.queryParams;
+      } else {
+        pageFilter = params;
+      }
+    }
     const isOrgQuery = [
       { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
       { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
     ];
-    if (search) pageFilter = search;
-    let filter = {
-      ...order,
-      superQuery: {
-        matchType: 'and',
-        queryParams: [
-          ...isOrgQuery,
-          ...pageFilter,
-          ...params,
-          { field: 'STAT', type: 'VarChar', rule: 'in', val: 'Audited||PartScheduled' },
-          { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
-        ],
-      },
-    };
     if (sorter && sorter.column)
       filter.order =
         (sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey) +
@@ -100,6 +94,12 @@ export default class OrderPoolPage extends Component {
       filter.page = searchPagination.current;
       filter.pageSize = searchPagination.pageSize;
     }
+    filter.superQuery.queryParams = [
+      ...pageFilter,
+      ...isOrgQuery,
+      { field: 'STAT', type: 'VarChar', rule: 'in', val: 'Audited||PartScheduled' },
+      { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
+    ];
     queryAuditedOrder(filter).then(response => {
       if (response.success) {
         searchPagination = {
@@ -406,7 +406,7 @@ export default class OrderPoolPage extends Component {
               loading={loading}
               dataSource={auditedCollectData}
               refreshDataSource={(_, pagination, sorter) => {
-                this.refreshOrderPool([], pagination, sorter);
+                this.refreshOrderPool(undefined, pagination, sorter);
               }}
               changeSelectRows={this.childTableChangeRows}
               selectedRowKeys={auditedParentRowKeys}
@@ -424,7 +424,7 @@ export default class OrderPoolPage extends Component {
               loading={loading}
               dataSource={auditedData}
               refreshDataSource={(_, pagination, sorter) => {
-                this.refreshOrderPool([], pagination, sorter);
+                this.refreshOrderPool(undefined, pagination, sorter);
               }}
               changeSelectRows={selectedRowKeys => this.tableChangeRows('Audited', selectedRowKeys)}
               selectedRowKeys={auditedRowKeys}

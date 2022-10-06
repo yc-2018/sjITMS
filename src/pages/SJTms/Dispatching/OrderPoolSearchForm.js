@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-09-29 16:45:44
+ * @LastEditTime: 2022-10-06 10:17:42
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -113,7 +113,7 @@ export default class OrderPoolSearchForm extends Component {
         });
       }
     }
-    await this.props.refreshOrderPool([], undefined, undefined, params);
+    await this.props.refreshOrderPool(params);
   };
   //高级查询
   onAdvanceSearch = async filter => {
