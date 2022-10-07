@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-30 09:47:27
+ * @LastEditTime: 2022-10-07 11:23:41
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -78,8 +78,7 @@ export default class ETCSearchPage extends QuickFormSearchPage {
   };
 
   handleApplyIssue = async selectedRow => {
-    console.log('selectedRow', selectedRow);
-    await applyIssue(selectedRow.BILLNUMBER);
+    return await applyIssue(selectedRow.BILLNUMBER);
   };
 
   drawToolsButton = () => {
@@ -99,7 +98,7 @@ export default class ETCSearchPage extends QuickFormSearchPage {
             this.setState({ showApply: false });
             this.handleApplyIssue(selectedRows[0]).then(response => {
               if (response.success) {
-                message.success('取消成功！');
+                message.success('发起成功！');
                 this.onSearch();
               }
             });

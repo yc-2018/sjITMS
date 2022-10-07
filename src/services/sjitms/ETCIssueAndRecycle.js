@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-09-27 09:50:55
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-30 15:29:05
+ * @LastEditTime: 2022-10-07 10:03:10
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -68,24 +68,14 @@ export async function applyIssue(billNumber) {
 
 //批准发卡
 export async function approval(uuid) {
-  return request(
-    `/itms-schedule/itms-schedule/sj/etc/approval?uuid=${uuid}&companyUuid=${
-      loginCompany().uuid
-    }&dcUuid=${loginOrg().uuid}`,
-    {
-      method: 'POST',
-    }
-  );
+  return request(`/itms-schedule/itms-schedule/sj/etc/approval?uuid=${uuid}`, {
+    method: 'POST',
+  });
 }
 
 //驳回发卡申请
 export async function rejected(uuid) {
-  return request(
-    `/itms-schedule/itms-schedule/sj/etc/rejected?uuid=${uuid}&companyUuid=${
-      loginCompany().uuid
-    }&dcUuid=${loginOrg().uuid}`,
-    {
-      method: 'POST',
-    }
-  );
+  return request(`/itms-schedule/itms-schedule/sj/etc/rejected?uuid=${uuid}`, {
+    method: 'POST',
+  });
 }
