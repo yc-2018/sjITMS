@@ -83,3 +83,22 @@ export async function findLineSystemTree(payload) {
       }
     );
   }
+  export async function savePlan(payload) {
+    return request(
+      `/itms-schedule/itms-schedule/lineShipAddress/savePlan/${payload.lineuuid}`,
+      {
+        method: 'POST',
+        body: payload.addressIds,
+      }
+    );
+  }
+
+  export async function updateStoreAddressList(payload) {
+    return request(
+      `/itms-schedule/itms-schedule/lineShipAddress/updateStoreAddressList`,
+      {
+        method: 'POST',
+        body: payload.addressList,
+      }
+    );
+  }

@@ -8,15 +8,14 @@
  */
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { Button, Switch, Modal, message, Layout, Icon, Tree, Tabs, Input, Upload } from 'antd';
-import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { Button, Switch, Modal, message, Layout, Icon, Tree, Tabs, Input, Upload,Row, Col,Form} from 'antd';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import LineShipAddress from './LineShipAddress';
 import LineSystemCreatePage from './LineSystemCreatePage';
 import LineMap from './LineMap';
 import configs from '@/utils/config';
 import { dynamicqueryById, dynamicDelete, dynamicQuery } from '@/services/quick/Quick';
-import { loginKey } from '@/utils/LoginContext';
+import { loginKey,loginCompany, loginOrg } from '@/utils/LoginContext';
 import {
   findLineSystemTree,
   deleteLineSystemTree,
@@ -25,6 +24,9 @@ import {
   updateState,
 } from '@/services/sjtms/LineSystemHis';
 import linesStyles from './LineSystem.less';
+import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
+import Select from '@/components/ExcelImport/Select';
+import request from '@/utils/request';
 
 const { Content, Sider } = Layout;
 const { TreeNode } = Tree;
@@ -33,6 +35,7 @@ const { TabPane } = Tabs;
   lineSystem,
   loading: loading.models.lineSystem,
 }))
+@Form.create()
 export default class LineSystemSearchPage extends Component {
   constructor(props) {
     super(props);
@@ -45,6 +48,10 @@ export default class LineSystemSearchPage extends Component {
       visible: false,
       bfValue: '',
       uploadVisible: false,
+      uploadLineVisible:false,
+      lineSystemValue:'',
+      file:{},
+      uploading:false
     };
   }
   componentDidMount() {
@@ -405,7 +412,6 @@ export default class LineSystemSearchPage extends Component {
     }
     this.setState({ expandKeys });
   };
-  upload = () => {};
 
   //绘制左侧菜单栏
   drawSider = () => {
@@ -448,13 +454,16 @@ export default class LineSystemSearchPage extends Component {
     return (
       <div>
         <div className={linesStyles.navigatorPanelWrapper}>
-          <span className={linesStyles.sidertitle}>线路体系</span>
+         {/* <span className={linesStyles.sidertitle}>线路体系</span> */}
           <div className={linesStyles.action}>
-            <Button type="primary" onClick={() => this.lineSystemCreatePageModalRef.show()}>
+            <Button type="primary" size='small' onClick={() => this.lineSystemCreatePageModalRef.show()}>
               新建体系
             </Button>
-            <Button type="primary" onClick={() => this.setState({ uploadVisible: true })}>
-              导入
+            {/* <Button type="primary"  size='small' onClick={() => this.setState({ uploadVisible: true })}>
+              导入体系
+            </Button> */}
+            <Button type="primary" size='small' onClick={() => this.setState({ uploadLineVisible: true })}>
+              导入线路
             </Button>
           </div>
         </div>
@@ -480,41 +489,41 @@ export default class LineSystemSearchPage extends Component {
   handleCancel = async () => {
     this.queryLineSystem(this.state.selectLineUuid);
   };
-  callback = () => {};
-  handleUpload = () => {
-    const { fileList } = this.state;
-    const formData = new FormData();
-    fileList.forEach(file => {
-      formData.append('files[]', file);
-    });
-
-    this.setState({
-      uploading: true,
-    });
-
-    // You can use any AJAX library you like
-    reqwest({
-      url: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
-      method: 'post',
-      processData: false,
-      data: formData,
-      success: () => {
-        this.setState({
-          fileList: [],
-          uploading: false,
-        });
-        message.success('upload successfully.');
-      },
-      error: () => {
-        this.setState({
-          uploading: false,
-        });
-        message.error('upload failed.');
-      },
-    });
+  /**
+   * 导入线路
+   */
+  handleUpload = async() => {
+    const { file} = this.state;
+    //this.formRef.preventDefault();
+    //console.log(this.formRef);
+   // this.props.form.preventDefault();
+    this.props.form.validateFields((err, fieldsValue) => {
+      console.log("as",err);
+      if (err) {
+        console.log(fieldsValue);
+        return;
+      }
+      const formData = new FormData();
+      formData.append('file', file);
+      this.setState({
+        uploading: true,
+      });
+       request(`/itms-schedule/itms-schedule/lineShipAddress/upload/${this.state.lineSystemValue}`, {
+        method: 'POST',
+        body:formData
+        
+      }).then (result=>{
+        this.setState({uploading:false});
+        if(result && result.success){
+          message.success('导入成功');
+        }
+      });
+    })
+ 
   };
   render() {
     const { selectLineUuid } = this.state;
+    const { getFieldDecorator} = this.props.form;
     const props = {
       name: 'file',
       action: configs[API_ENV].API_SERVER + '/itms-schedule/itms-schedule/LineSystem/upload',
@@ -522,9 +531,14 @@ export default class LineSystemSearchPage extends Component {
         //authorization: 'authorization-text',
         iwmsJwt: loginKey(),
       },
+      beforeUpload:(flie)=>{
+        this.setState({file:flie});
+        return false
+      },
       accept: '.xlsx',
       onChange(info) {
         if (info.file.status !== 'uploading') {
+            //this.setState({fileList:info.fileList[0]})
           console.log(info.file, info.fileList);
         }
         if (info.file.status === 'done') {
@@ -535,6 +549,7 @@ export default class LineSystemSearchPage extends Component {
       },
     };
     return (
+      
       <Content className={linesStyles.contentWrapper}>
         <Layout>
           {/* 左侧内容 */}
@@ -591,7 +606,7 @@ export default class LineSystemSearchPage extends Component {
               />
             </Modal>
             <Modal
-              title="导入"
+              title="导入体系"
               visible={this.state.uploadVisible}
               onOk={this.upload}
               onCancel={() => this.setState({ uploadVisible: false })}
@@ -604,6 +619,59 @@ export default class LineSystemSearchPage extends Component {
                   <Icon type="upload" /> 导入
                 </Button>
               </Upload>
+            </Modal>
+            <Modal
+              title="导入线路"
+              visible={this.state.uploadLineVisible}
+              onOk={this.handleUpload}
+              confirmLoading = {this.state.uploading}
+              onCancel={() => this.setState({ uploadLineVisible: false })}
+              //okButtonProps={{ hidden: true }}
+              afterClose={() => this.queryLineSystem()}
+              destroyOnClose={true}
+            >
+              <Form ref={(node)=>this.formRef = node}>
+              <Row>
+                <Col span={12}>
+                <Form.Item label="文件">
+                {getFieldDecorator('file', {rules: [{ type: 'object', required: true, message: '请选择要导入的文件' }],})(
+                <Upload {...props}>
+                  <Button >
+                    <Icon type="upload" /> 导入
+                  </Button>
+                </Upload>
+                )}
+                </Form.Item>
+                </Col>
+                <Col span ={12}>
+                <Form.Item label="体系">
+                  {getFieldDecorator('UUID', { rules: [{required: true , message: '请选择体系' }]})(
+                    <SimpleAutoComplete
+                    showSearch
+                    placeholder=""
+                    textField="[%CODE%]%NAME%"
+                    valueField="UUID"
+                    searchField="NAME"
+                    //value={this.state.lineSystemValue}
+                    queryParams={
+                      {
+                      tableName: 'SJ_ITMS_LINESYSTEM',
+                      condition: 
+                      { params: [{ field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+                      { field: 'DISPATCHCENTERUUID', rule: 'eq', val: [loginOrg().uuid]}]},
+                    }
+                  }
+                  onChange = {(e)=>this.setState({lineSystemValue:e})}
+                    noRecord
+                    style={{width:200}}
+                    allowClear={true}
+                  />
+                  )}
+                </Form.Item>
+               
+                 </Col>
+              </Row>
+              </Form>
             </Modal>
           </Sider>
           {/* 右侧内容 */}
