@@ -48,6 +48,14 @@ export async function findLineSystemTree(payload) {
       }
     );
   }
+  export async function deleteLines(payload) {
+    return request(
+      `/itms-schedule/itms-schedule/line/delete/${payload}`,
+      {
+        method: 'get',
+      }
+    );
+  }
   export async function deleteLineStoreAddressById(payload) {
     return request(`/itms-schedule/itms-schedule/lineShipAddress/deleteLineAddress/${payload}`, {
       method: 'get',
@@ -98,7 +106,7 @@ export async function findLineSystemTree(payload) {
       `/itms-schedule/itms-schedule/lineShipAddress/updateStoreAddressList`,
       {
         method: 'POST',
-        body: payload.addressList,
+        body: payload.ddressList,
       }
     );
   }

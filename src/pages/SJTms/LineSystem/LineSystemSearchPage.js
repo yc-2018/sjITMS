@@ -18,6 +18,7 @@ import { dynamicqueryById, dynamicDelete, dynamicQuery } from '@/services/quick/
 import { loginKey,loginCompany, loginOrg } from '@/utils/LoginContext';
 import {
   findLineSystemTree,
+  deleteLines,
   deleteLineSystemTree,
   backupLineSystem,
   isEnable,
@@ -166,12 +167,12 @@ export default class LineSystemSearchPage extends Component {
     Modal.confirm({
       title: '确定删除?',
       onOk: async () => {
-        await deleteLineSystemTree(lineUuid).then(result => {
-          if (result.success) {
-            message.success('删除成功！');
+        await deleteLines(lineUuid).then(result => {
+          if (result.success && result.data && result.data.success) {
+            message.success('删除成功');
             this.queryLineSystem();
           } else {
-            // message.error('删除失败，请刷新后再操作');
+            message.error(result.data.message);
           }
         });
       },
@@ -417,6 +418,10 @@ export default class LineSystemSearchPage extends Component {
   drawSider = () => {
     const { expandKeys, selectLineUuid } = this.state;
     var lineTreeData = JSON.parse(JSON.stringify(this.state.lineTreeData));
+    const formItemLayout = {
+      labelCol:16,
+      wrapperCol:16
+    };
 
     const renderTreeNode = data => {
       let nodeArr = data.map(item => {
@@ -467,6 +472,19 @@ export default class LineSystemSearchPage extends Component {
             </Button>
           </div>
         </div>
+        {/* <div>
+            <Form  layout="inline" {...formItemLayout }>
+                <Form.Item label='线路编号'>
+                  <Input width={30}></Input>
+                </Form.Item>
+                <Form.Item label='门店号'>
+                  <Input width={30}></Input>
+                </Form.Item>
+                <Form.Item label='运作类型'>
+                  <Input width={30}></Input>
+                </Form.Item>
+            </Form>
+          </div> */}
         <Tree
           showLine={true}
           showIcon={true}
