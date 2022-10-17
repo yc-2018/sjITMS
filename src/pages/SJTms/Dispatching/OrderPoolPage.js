@@ -18,7 +18,8 @@ import {
 } from './DispatchingColumns';
 import OrderPoolSearchForm from './OrderPoolSearchForm';
 import DispatchingCreatePage from './DispatchingCreatePage';
-import DispatchMap from './DispatchMap';
+// import DispatchMap from './DispatchMap';
+import DispatchMap from './DispatchMapZ';
 import dispatchingStyles from './Dispatching.less';
 import { queryAuditedOrder, getOrderByStat, savePending } from '@/services/sjitms/OrderBill';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
@@ -257,6 +258,52 @@ export default class OrderPoolPage extends Component {
     this.createPageModalRef.show(false, [...orders, ...selectPending]);
   };
 
+  //地图排车
+  dispatchingByMap = orders => {
+    // if (orders.length <= 0) {
+    //   message.warning('请选择门店！');
+    //   return;
+    // }
+    //订单类型校验
+    const orderType = uniqBy(orders.map(x => x.orderType));
+    if (orderType.includes('Returnable') && orderType.some(x => x != 'Returnable')) {
+      message.error('门店退货类型运输订单不能与其它类型订单混排，请检查！');
+      return;
+    }
+    //不可共配校验
+    let owners = [...orders].map(x => {
+      return { ...x.owner, noJointlyOwnerCodes: x.noJointlyOwnerCode };
+    });
+    owners = uniqBy(owners, 'uuid');
+    const checkOwners = owners.filter(x => x.noJointlyOwnerCodes);
+    let noJointlyOwner = undefined;
+    checkOwners.forEach(owner => {
+      //不可共配货主
+      const noJointlyOwnerCodes = owner.noJointlyOwnerCodes.split(',');
+      const noJointlyOwners = owners.filter(
+        x => noJointlyOwnerCodes.indexOf(x.code) != -1 && x.code != owner.code
+      );
+      if (noJointlyOwners.length > 0) {
+        noJointlyOwner = {
+          ownerName: owner.name,
+          owners: noJointlyOwners.map(x => x.name).join(','),
+        };
+      }
+    });
+    if (noJointlyOwner != undefined) {
+      message.error(
+        '货主：' +
+          noJointlyOwner.ownerName +
+          '与[' +
+          noJointlyOwner.owners +
+          ']不可共配，请检查货主配置!'
+      );
+      return;
+    }
+    this.setState({ mapModal: false });
+    this.createPageModalRef.show(false, orders);
+  };
+
   //添加到待定池
   handleAddPending = () => {
     const { auditedRowKeys } = this.state;
@@ -470,7 +517,7 @@ export default class OrderPoolPage extends Component {
             onCancel={() => this.setState({ mapModal: false })}
             destroyOnClose={true}
           >
-            <DispatchMap orders={auditedData} />
+            <DispatchMap orders={auditedData} dispatchingByMap={this.dispatchingByMap} />
           </Modal>
         </TabPane>
         <TabPane

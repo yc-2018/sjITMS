@@ -110,6 +110,13 @@ export default class ColsAdvanced extends Component {
           ) {
             data.val = val[index].join('||');
           }
+          //日期格式化
+          if (searchField.searchShowtype == 'datetime' && val instanceof Array) {
+            data.val = val[index].map(x => x.format('YYYY-MM-DD hh:mm')).join('||');
+          }
+          if (searchField.searchShowtype == 'date' && val instanceof Array) {
+            data.val = val[index].map(x => x.format('YYYY-MM-DD')).join('||');
+          }
 
           IQueryParam.queryParams.push(data);
         }
