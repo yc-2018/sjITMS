@@ -2,23 +2,19 @@
  * @Author: Liaorongchang
  * @Date: 2022-09-23 16:17:11
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-30 15:59:39
+ * @LastEditTime: 2022-10-11 16:52:21
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import { Layout, Row, Col, Card, Button, message, Select, Input, Tooltip } from 'antd';
+import { Layout, Row, Col, Card, Button, message } from 'antd';
 import ETCCreatePage from './ETCIssueAndRecycleCreatePage';
 import ETCDTLSearchPage from './ETCDTLSearchPage';
 import { recommend, issue, recycle } from '@/services/sjitms/ETCIssueAndRecycle';
-import { queryDictByCode } from '@/services/quick/Quick';
-import ETCApplyRecordSearchPage from '../ETCApplyRecord/ETCApplyRecordSearchPage';
 
 const { Content, Sider } = Layout;
-const { Search } = Input;
 
-export default class ETCPage extends PureComponent {
-  dict = [];
+export default class ETCIssueAndRecyclePage extends PureComponent {
   state = {
     selectRows: {},
     passCard: {},

@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-03-17 14:59:31
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-03-19 14:43:41
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-10-15 13:33:48
  * @Description: 穿梭框
  * @FilePath: \iwms-web\src\pages\Tms\LineSystem\TableTransfer.js
  */
@@ -24,15 +24,19 @@ export default class TableTransfer extends Component {
       total: 0,
       current: 1,
       pageSize: 10,
-      superQuery:{matchType:"and",queryParams:[{field: "COMPANYUUID", rule: "eq", val: loginCompany().uuid, type: "VarChar"},{field: "DISPATCHCENTERUUID", rule: "eq", val: loginOrg().uuid, type: "VarChar"}]}
+      superQuery: {
+        matchType: 'and',
+        queryParams: [
+          { field: 'COMPANYUUID', rule: 'eq', val: loginCompany().uuid, type: 'VarChar' },
+          { field: 'DISPATCHCENTERUUID', rule: 'eq', val: loginOrg().uuid, type: 'VarChar' },
+        ],
+      },
     },
   };
 
   componentDidMount() {
-    this.queryCoulumns()
-
+    this.queryCoulumns();
   }
-
 
   queryCoulumns = () => {
     const { dispatch } = this.props;
@@ -44,8 +48,9 @@ export default class TableTransfer extends Component {
       },
       callback: response => {
         this.fetch();
-      }})
-    }
+      },
+    });
+  };
 
   fetch = (params = this.state.pagination) => {
     const { dispatch, quickuuid, handleFetch } = this.props;

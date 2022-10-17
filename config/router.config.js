@@ -1228,6 +1228,14 @@ export default [
             component: './SJTms/ETC/ETCForm',
             quickuuid: 'sj_itms_pass_card',
             authority: ['sjtms.basic.owner'],
+          },
+          {
+            path: '/tmsbasic/storeteam',
+            name: '门店停车组队方案	',
+            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+            component: './SJTms/StoreTeam/StoreTeamPage',
+            quickuuid: 'sj_itms_storeteam_head',
+            authority: ['sjtms.basic.owner'],
             divider: true,
           },
           {
