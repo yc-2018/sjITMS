@@ -97,6 +97,7 @@ export default class StoreModal extends Component {
       uuid: ParkingFee == undefined ? '' : ParkingFee.uuid,
       amount: totalAmountAll,
       feetype: 'ParkingFee',
+      feename: '停车费',
       billuuid: shipBillTmsUuid,
       companyuuid: loginCompany().uuid,
       dispatchcenteruuid: loginOrg().uuid,

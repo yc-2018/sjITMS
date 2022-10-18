@@ -57,6 +57,8 @@ export default class OtherFeeModal extends Component {
           scheduleBillNumber: props.scheduleBillNumber,
         },
         likeKeyValues: {},
+        confirmModal: false,
+        confirmMessage: '',
       },
 
       defaultFeeType: '',
@@ -88,12 +90,6 @@ export default class OtherFeeModal extends Component {
         visible: nextProps.visible,
       });
     }
-
-    // if(nextProps.dispatchReturn.dataForStore&&nextProps.dispatchReturn.dataForStore!=this.props.dispatchReturn.dataForStore){
-    //   this.setState({
-    //     data:nextProps.dispatchReturn.dataForStore
-    //   })
-    // }
   }
 
   refresh = async value => {
@@ -110,10 +106,6 @@ export default class OtherFeeModal extends Component {
       };
       this.setState({ data: payload });
     });
-    // this.props.dispatch({
-    //   type: 'dispatchReturn/queryByStore',
-    //   payload: pageFilter?pageFilter:this.state.pageFilter,
-    // })
   };
 
   getFeeType = async () => {
@@ -224,31 +216,41 @@ export default class OtherFeeModal extends Component {
     }
   };
 
-  save = async () => {
-    const { amount, feeType, feeUuid, scheduleBillTmsUuid } = this.state;
+  handleSave = async confirm => {
+    const { amount, feeType, feeName, feeUuid, scheduleBillTmsUuid } = this.state;
     const params = {
       uuid: feeUuid,
       amount: amount,
       feetype: feeType,
+      feename: feeName,
       billuuid: scheduleBillTmsUuid,
       companyuuid: loginCompany().uuid,
       dispatchcenteruuid: loginOrg().uuid,
+      confirm: confirm,
     };
-    await saveOrUpdateFee(params).then(result => {
-      if (result && result.data > 0) {
-        message.success('保存成功');
-        this.setState({ amount: '', feeType: '' });
-      } else {
-        message.error('保存失败');
-      }
-    });
+    this.save(params);
   };
+
+  save = async params => {
+    const response = await saveOrUpdateFee(params);
+    if (response && response.data > 0) {
+      message.success('保存成功');
+      this.callback(1);
+    } else if (response && response.data.indexOf('确认保存') > 0) {
+      this.setState({ confirmModal: true, confirmMessage: response.data });
+    } else {
+      message.error('保存失败');
+    }
+  };
+
   modify = () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 1) {
+      console.log('selectedRows', selectedRows);
       this.setState({
         defaultActiveKey: '2',
         feeType: selectedRows[0].feetype,
+        feeName: selectedRows[0].feename,
         amount: selectedRows[0].amount,
         isView: false,
         feeUuid: selectedRows[0].uuid,
@@ -281,7 +283,7 @@ export default class OtherFeeModal extends Component {
     },
     {
       title: '费用类型',
-      dataIndex: 'feetype',
+      dataIndex: 'feename',
       width: colWidth.billNumberColWidth + 50,
       render: val => (val ? val : 0),
     },
@@ -291,110 +293,101 @@ export default class OtherFeeModal extends Component {
       width: colWidth.billNumberColWidth + 50,
       render: val => (val ? val : 0),
     },
-    // {
-    //   title: '是否审核',
-    //   dataIndex: 'checked',
-    //   width: colWidth.billNumberColWidth + 50,
-    //   render: val => (val ? '是' : '否'),
-    // },
   ];
   render() {
-    const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = this.props.form;
-    const { selectedRows, visible, data, isView } = this.state;
-    let totalAmountSelect = 0;
-    let totalAmountAll = 0;
-    // selectedRows.forEach(row=>{
-    //   totalAmountSelect = accAdd(row.amount,totalAmountSelect);
-    // });
-    // data.list.forEach(item=>{
-    //   totalAmountAll = accAdd(item.amount,totalAmountAll);
-    // })
+    const { getFieldDecorator } = this.props.form;
+    const { selectedRows, visible, data, isView, confirmModal, confirmMessage } = this.state;
 
     return (
-      <Modal
-        title={'其他费用'}
-        visible={visible}
-        destroyOnClose={true}
-        onCancel={() => this.handleCancel()}
-        footer={[]}
-        okText={commonLocale.confirmLocale}
-        cancelText={commonLocale.cancelLocale}
-        width={'70%'}
-      >
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          {isView ? (
-            <Button type="primary" onClick={() => this.modify()}>
-              编辑
-            </Button>
-          ) : (
-            <Button type="primary" onClick={() => this.save()}>
-              保存
-            </Button>
-          )}
-        </div>
-        <Tabs activeKey={this.state.defaultActiveKey} onChange={this.callback}>
-          <TabPane tab="费用信息" key="1">
-            <StandardTable
-              rowKey={record => record.uuid}
-              selectedRows={selectedRows}
-              unShowRow={false}
-              loading={this.props.loading}
-              data={data}
-              columns={this.columns}
-              onSelectRow={this.handleSelectRows}
-              onChange={this.handleStandardTableChange}
-            />
-          </TabPane>
-          <TabPane tab="费用录入" key="2">
-            <Row>
-              <Form>
-                <Col span={6}>
-                  <Form.Item label={'费用类型'} labelCol={{ span: 8 }}>
-                    {getFieldDecorator('feeType', {
-                      initialValue: this.state.feeType,
-                      rules: [{ required: true, message: '请选项费用类型' }],
-                    })(
-                      <SimpleSelect
-                        style={{ width: 120 }}
-                        onBlur={e => {
-                          this.setState({ feeType: e });
-                        }}
-                        dictCode={'FeeType'}
-                      />
-                      // <Select
-                      //   style={{ width: 120 }}
-                      //   onBlur={e => {
-                      //     this.setState({ feeType: e });
-                      //   }}
-                      // >
-                      //   {this.state.feeTypeData?.map(e => {
-                      //     return <Option value={e.name}>{e.name}</Option>;
-                      //   })}
-                      // </Select>
-                    )}
-                  </Form.Item>
-                </Col>
-                <Col span={6}>
-                  <Form.Item label={'金额'} labelCol={{ span: 12 }}>
-                    {getFieldDecorator('amount', {
-                      initialValue: this.state.amount,
-                      rules: [{ required: true, message: '请填写金额' }],
-                    })(
-                      <Input
-                        name="amount"
-                        style={{ width: 120, float: 'left' }}
-                        onBlur={e => {
-                          this.setState({ amount: e.target.value });
-                        }}
-                      />
-                    )}
-                  </Form.Item>
-                </Col>
-              </Form>
-            </Row>
-          </TabPane>
-        </Tabs>
-      </Modal>
+      <div>
+        <Modal
+          title={'其他费用'}
+          visible={visible}
+          destroyOnClose={true}
+          onCancel={() => this.handleCancel()}
+          footer={[]}
+          okText={commonLocale.confirmLocale}
+          cancelText={commonLocale.cancelLocale}
+          width={'70%'}
+        >
+          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            {isView ? (
+              <Button type="primary" onClick={() => this.modify()}>
+                编辑
+              </Button>
+            ) : (
+              <Button type="primary" onClick={() => this.handleSave(false)}>
+                保存
+              </Button>
+            )}
+          </div>
+          <Tabs activeKey={this.state.defaultActiveKey} onChange={this.callback}>
+            <TabPane tab="费用信息" key="1">
+              <StandardTable
+                rowKey={record => record.uuid}
+                selectedRows={selectedRows}
+                unShowRow={false}
+                loading={this.props.loading}
+                data={data}
+                columns={this.columns}
+                onSelectRow={this.handleSelectRows}
+                onChange={this.handleStandardTableChange}
+              />
+            </TabPane>
+            <TabPane tab="费用录入" key="2">
+              <Row>
+                <Form>
+                  <Col span={6}>
+                    <Form.Item label={'费用类型'} labelCol={{ span: 8 }}>
+                      {getFieldDecorator('feeType', {
+                        initialValue: this.state.feeType,
+                        rules: [{ required: true, message: '请选项费用类型' }],
+                      })(
+                        <SimpleSelect
+                          style={{ width: 120 }}
+                          onSelect={(value, key) => {
+                            this.setState({ feeType: value, feeName: key.props.label });
+                          }}
+                          dictCode={'FeeType'}
+                        />
+                      )}
+                    </Form.Item>
+                  </Col>
+                  <Col span={6}>
+                    <Form.Item label={'金额'} labelCol={{ span: 12 }}>
+                      {getFieldDecorator('amount', {
+                        initialValue: this.state.amount,
+                        rules: [{ required: true, message: '请填写金额' }],
+                      })(
+                        <Input
+                          name="amount"
+                          style={{ width: 120, float: 'left' }}
+                          onBlur={e => {
+                            this.setState({ amount: e.target.value });
+                          }}
+                        />
+                      )}
+                    </Form.Item>
+                  </Col>
+                </Form>
+              </Row>
+            </TabPane>
+          </Tabs>
+        </Modal>
+        <Modal
+          title="提示"
+          visible={confirmModal}
+          onCancel={() => {
+            this.setState({ confirmModal: false });
+          }}
+          onOk={() => {
+            this.handleSave(true);
+            this.setState({ confirmModal: false });
+          }}
+        >
+          <p style={{ fontSize: '15px', color: 'red' }}>{confirmMessage}</p>
+        </Modal>
+      </div>
     );
   }
 }
