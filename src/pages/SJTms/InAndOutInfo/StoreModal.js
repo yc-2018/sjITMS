@@ -3,236 +3,231 @@ import { connect } from 'dva';
 import { commonLocale } from '@/utils/CommonLocale';
 import StandardTable from '@/components/StandardTable';
 import { colWidth } from '@/utils/ColWidth';
-import { Modal, InputNumber, Button, message } from 'antd';
+import { Modal, InputNumber, Button, message, Input } from 'antd';
 import { loginOrg, loginCompany } from '@/utils/LoginContext';
-import { convertCodeName } from '@/utils/utils';
 import Empty from '@/pages/Component/Form/Empty';
-import { accAdd } from '@/utils/QpcStrUtil';
 import { dispatchReturnLocale } from './DispatchReturnLocale';
+import { query, saveOrUpdateFee } from '@/services/sjtms/OtherFeeService';
+
 @connect(({ dispatchReturnStore, loading }) => ({
   dispatchReturnStore,
   loading: loading.models.dispatchReturnStore,
 }))
 export default class StoreModal extends Component {
-
   constructor(props) {
     super(props);
     this.state = {
-      visible:props.visible,
-      shipBillTmsUuid:props.shipBillTmsUuid,
-      data:props.dispatchReturnStore.dataForStore,
-      selectedRows:[],
-      isView:props.isView,
+      visible: props.visible,
+      shipBillTmsUuid: props.shipBillTmsUuid,
+      data: this.props.dispatchReturnStore.dataForStore,
+      selectedRows: [],
+      isView: props.isView,
+      totalAmountAll: '',
       pageFilter: {
         page: 0,
         pageSize: 10,
         sortFields: {},
         searchKeyValues: {
-          companyUuid:loginCompany().uuid,
-          dispatchCenterUuid:loginOrg().uuid,
-          shipBillTmsUuid:props.shipBillTmsUuid
+          companyUuid: loginCompany().uuid,
+          dispatchCenterUuid: loginOrg().uuid,
+          scheduleBillNumber: props.scheduleBillNumber,
         },
-        likeKeyValues: {}
-      }
-    }
+        likeKeyValues: {},
+      },
+      ParkingFee: undefined,
+      confirmModal: false,
+      confirmMessage: '',
+    };
   }
-  componentWillMount(){
-    if(this.state.storeUuid){
+  componentWillMount() {
+    if (this.state.storeUuid) {
       this.refresh();
     }
   }
-  componentWillReceiveProps(nextProps){
-    if(nextProps.shipBillTmsUuid!=this.props.shipBillTmsUuid){
-      this.state.pageFilter.searchKeyValues.shipBillTmsUuid = nextProps.shipBillTmsUuid
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.scheduleBillNumber != this.props.scheduleBillNumber) {
+      this.state.pageFilter.searchKeyValues.scheduleBillNumber = nextProps.scheduleBillNumber;
       this.setState({
-        shipBillTmsUuid:nextProps.shipBillTmsUuid,
-        pageFilter:this.state.pageFilter
-      },()=>{
-        this.refresh(this.state.pageFilter);
+        scheduleBillNumber: nextProps.scheduleBillNumber,
+        shipBillTmsUuid: nextProps.shipBillTmsUuid,
+        pageFilter: this.state.pageFilter,
+      });
+      this.refresh(this.state.pageFilter);
+    }
+    if (nextProps.visible != this.props.visible) {
+      this.setState({
+        visible: nextProps.visible,
       });
     }
-    if(nextProps.visible!=this.props.visible){
-      this.refresh();
-      this.setState({
-        visible:nextProps.visible
-      })
-    }
 
-    if(nextProps.dispatchReturnStore.dataForStore&&nextProps.dispatchReturnStore.dataForStore!=this.props.dispatchReturnStore.dataForStore){
+    if (
+      nextProps.dispatchReturnStore.dataForStore &&
+      nextProps.dispatchReturnStore.dataForStore != this.props.dispatchReturnStore.dataForStore
+    ) {
       this.setState({
-        data:nextProps.dispatchReturnStore.dataForStore
-      })
+        data: nextProps.dispatchReturnStore.dataForStore,
+      });
     }
   }
 
-  refresh(pageFilter){
+  refresh = async pageFilter => {
+    this.getTotalAmount(pageFilter);
     this.props.dispatch({
       type: 'dispatchReturnStore/queryByStore',
-      payload: pageFilter?pageFilter:this.state.pageFilter,
-    })
-  }
-
-  /**
-   * 获取选中行
-   *  */
-  handleSelectRows = rows => {
-    this.setState({
-      selectedRows: rows,
+      payload: pageFilter ? pageFilter : this.state.pageFilter,
     });
-  }
+  };
 
-  handleOk = ()=>{
-    const { selectedRows } = this.state;
-    if(selectedRows.length == 0){
-      message.warning('请先选择行');
-      return;
-    }
-    selectedRows.forEach(e=>{
-      e.feetype = '停车费';
-      e.feename = '停车费';
-    })
-    this.props.dispatch({
-      type: 'dispatchReturnStore/onConfirmByStore',
-      payload:selectedRows,
-      callback:response=>{
-        if(response&&response.success){
-          this.setState({
-            selectedRows:[]
-          })
-          this.refresh();
-          message.success(commonLocale.saveSuccessLocale);
-        }
+  getTotalAmount = async pageFilter => {
+    const response = await query(pageFilter ? pageFilter : this.state.pageFilter);
+    if (response.success && response.data.records) {
+      let data = response.data.records;
+      let ParkingFee = data.find(a => a.feetype == 'ParkingFee');
+      if (ParkingFee != undefined) {
+        this.setState({ totalAmountAll: ParkingFee.amount, ParkingFee });
       }
-    })
-
-  }
-  handleCancel = ()=>{
-    this.props.handleModal()
-  }
-
-  handleStandardTableChange = ()=>{
-    const { dispatch } = this.props;
-    const { pageFilter } = this.state;
-
-    if (pageFilter.page !== pagination.current - 1) {
-        pageFilter.changePage = true;
+    } else {
+      this.setState({ totalAmountAll: '' });
     }
+  };
 
-    pageFilter.page = pagination.current - 1;
-    pageFilter.pageSize = pagination.pageSize;
+  handleOk = async confirm => {
+    const { shipBillTmsUuid, totalAmountAll, ParkingFee } = this.state;
+    const params = {
+      uuid: ParkingFee == undefined ? '' : ParkingFee.uuid,
+      amount: totalAmountAll,
+      feetype: 'ParkingFee',
+      billuuid: shipBillTmsUuid,
+      companyuuid: loginCompany().uuid,
+      dispatchcenteruuid: loginOrg().uuid,
+      confirm: confirm,
+    };
+    this.save(params);
+  };
 
-    // 判断是否有过滤信息
-    const filters = Object.keys(filtersArg).reduce((obj, key) => {
-        const newObj = { ...obj };
-        newObj[key] = getValue(filtersArg[key]);
-        return newObj;
-    }, {});
-
-    if (sorter.field) {
-        var sortField = `${sorter.field}`;
-        var sortType = sorter.order === 'descend' ? true : false;
-        // 排序触发表格变化清空表格选中行，分页则不触发
-        if (pageFilter.sortFields[sortField] === sortType) {
-            pageFilter.changePage = true;
-        } else {
-            pageFilter.changePage = false;
-        }
-        // 如果有排序字段，则需要将原来的清空
-        pageFilter.sortFields = {};
-        pageFilter.sortFields[sortField] = sortType;
+  save = async params => {
+    const response = await saveOrUpdateFee(params);
+    if (response && response.data > 0) {
+      message.success('保存成功');
+    } else if (response && response.data.indexOf('确认保存') > 0) {
+      this.setState({ confirmModal: true, confirmMessage: response.data });
+    } else {
+      message.error('保存失败');
     }
+  };
 
-    if (this.refresh)
-        this.refresh(pageFilter);
-  }
+  handleCancel = () => {
+    this.props.handleModal();
+  };
 
-  handleFieldChange = (e,  fieldName , line)=>{
-     const { data } = this.state;
-    let target = data.list[line];
-    target[fieldName] = e;
-    this.setState({
-      data:data
-    })
-  }
+  handleOnChange = e => {
+    this.setState({ totalAmountAll: e });
+  };
+
   columns = [
     {
       title: dispatchReturnLocale.archLine,
       dataIndex: 'archLine',
       width: colWidth.billNumberColWidth + 50,
-      render:(val,record)=>{
-        return record.archlinecode && record.archlinename ?'['+record.archlinecode+']'+record.archlinename:<Empty/>;
-      }
-      
+      render: (val, record) => {
+        return record.archlinecode && record.archlinename ? (
+          '[' + record.archlinecode + ']' + record.archlinename
+        ) : (
+          <Empty />
+        );
+      },
     },
     {
       title: commonLocale.inStoreLocale,
       dataIndex: 'store',
       width: colWidth.billNumberColWidth + 50,
-      render:(val,record)=>{
-       return record.storecode && record.storename ?'['+record.storecode+']'+record.storename:<Empty/>;
-      }
-
+      render: (val, record) => {
+        return record.storecode && record.storename ? (
+          '[' + record.storecode + ']' + record.storename
+        ) : (
+          <Empty />
+        );
+      },
     },
     {
       title: dispatchReturnLocale.parkingFee,
       dataIndex: 'parkingfee',
       width: colWidth.billNumberColWidth + 50,
-      render:val=>val?val:0
+      render: val => (val ? val : 0),
     },
-    {
-      title: dispatchReturnLocale.stopCarFee,
-      dataIndex: 'amount',
-      width: colWidth.billNumberColWidth + 50,
-      render:(val,record,index)=>this.state.isView?<span>{val}</span>:<InputNumber min={0} value={val?val:0} onChange={e => this.handleFieldChange(e, 'amount', index)}/>
-    },
-
   ];
   render() {
-    const { selectedRows,visible,data,isView } = this.state;
-    let totalAmountSelect = 0;
-    let totalAmountAll = 0;
-    selectedRows.forEach(row=>{
-      totalAmountSelect = accAdd(row.amount,totalAmountSelect);
-    });
-    data.list.forEach(item=>{
-      totalAmountAll = accAdd(item.amount,totalAmountAll);
-    })
-
-    return <Modal
-        title={'排车单门店明细费用信息（排车单号：'+(data.list[0]?data.list[0].billnumber:'')+'）'}
-        visible={visible}
-        destroyOnClose={true}
-        onCancel={()=>this.handleCancel()}
-        footer={[]}
-        okText={commonLocale.confirmLocale}
-        cancelText={commonLocale.cancelLocale}
-        width={'70%'}
-        style = {{overflow:'auto'}}
-      >
-        <div style={{display:'flex',justifyContent:'flex-end'}}>
-          {
-            isView?
-            <span>{dispatchReturnLocale.totalStopCarFee}：{totalAmountAll}</span>
-            :
-            <div>
-              <span>{dispatchReturnLocale.totalStopCarFee}：{totalAmountAll}</span>
-              &emsp;
-            <Button type="primary" onClick={()=>this.handleOk()}>{commonLocale.saveLocale}</Button>
-
-            </div>
+    const {
+      selectedRows,
+      visible,
+      data,
+      isView,
+      totalAmountAll,
+      confirmModal,
+      confirmMessage,
+    } = this.state;
+    return (
+      <div>
+        <Modal
+          title={
+            '排车单门店明细费用信息（排车单号：' +
+            (data.list[0] ? data.list[0].billnumber : '') +
+            '）'
           }
-
-        </div>
-        <StandardTable
-          rowKey={record => record.uuid}
-          selectedRows={selectedRows}
-          unShowRow={isView==true?true:false}
-          loading={this.props.loading}
-          data={data}
-          columns={this.columns}
-          onSelectRow={this.handleSelectRows}
-          onChange={this.handleStandardTableChange}
-        />
-    </Modal>
+          visible={visible}
+          destroyOnClose={true}
+          onCancel={() => this.handleCancel()}
+          footer={[]}
+          okText={commonLocale.confirmLocale}
+          cancelText={commonLocale.cancelLocale}
+          width={'70%'}
+          style={{ overflow: 'auto' }}
+        >
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '10px' }}>
+            <div style={{ display: 'flex' }}>
+              <div style={{ textAlign: 'center', height: '28px', lineHeight: '28px' }}>
+                {dispatchReturnLocale.totalStopCarFee}：
+              </div>
+              <div style={{ marginRight: '10px' }}>
+                <InputNumber
+                  placeholder="请输入总停车费"
+                  value={totalAmountAll}
+                  style={{ width: '100%' }}
+                  onChange={e => {
+                    this.handleOnChange(e);
+                  }}
+                />
+              </div>
+              <div>
+                <Button type="primary" onClick={() => this.handleOk(false)}>
+                  {commonLocale.saveLocale}
+                </Button>
+              </div>
+            </div>
+          </div>
+          <StandardTable
+            rowKey={record => record.uuid}
+            selectedRows={selectedRows}
+            unShowRow={isView == true ? true : false}
+            loading={this.props.loading}
+            data={data}
+            columns={this.columns}
+          />
+        </Modal>
+        <Modal
+          title="提示"
+          visible={confirmModal}
+          onCancel={() => {
+            this.setState({ confirmModal: false });
+          }}
+          onOk={() => {
+            this.handleOk(true);
+            this.setState({ confirmModal: false });
+          }}
+        >
+          <p style={{ fontSize: '15px', color: 'red' }}>{confirmMessage}</p>
+        </Modal>
+      </div>
+    );
   }
 }

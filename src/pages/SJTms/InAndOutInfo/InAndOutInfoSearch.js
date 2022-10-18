@@ -44,6 +44,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
         <StoreModal
           visible={storeModalVisible}
           shipBillTmsUuid={scheduleBillTmsUuid}
+          scheduleBillNumber={scheduleBillNumber}
           handleModal={() => this.setState({ storeModalVisible: false })}
         />
         <OtherFeeModal
@@ -61,7 +62,9 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     const record = e.record;
     const fieldName = column.fieldName;
     if (fieldName == 'UUID') {
-      const component = <a onClick={() => this.showStore(record.UUID)}>查看编辑</a>;
+      const component = (
+        <a onClick={() => this.showStore(record.BILLNUMBER, record.UUID)}>查看编辑</a>
+      );
       e.fixed = true;
       e.component = component;
     }
@@ -124,10 +127,11 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     }
   };
 
-  showStore = uuid => {
+  showStore = (number, uuid) => {
     if (uuid) {
       this.setState({
         scheduleBillTmsUuid: uuid,
+        scheduleBillNumber: number,
         storeModalVisible: !this.state.storeModalVisible,
       });
     }
@@ -201,7 +205,6 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           onConfirm={() => {
             this.setState({ showAuditPop: false });
             this.onTollFeeAudits(selectedRows[0]).then(response => {
-              console.log('response', response);
               if (response.success) {
                 message.success('审核成功！');
                 this.onSearch();
@@ -259,7 +262,6 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
   };
 
   onTollFeeAudits = async rows => {
-    console.log('rows', rows.BILLNUMBER);
     return await submitFee(rows.BILLNUMBER);
   };
 
