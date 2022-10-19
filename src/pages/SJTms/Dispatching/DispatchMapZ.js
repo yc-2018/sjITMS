@@ -7,8 +7,9 @@
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchMap.js
  */
 import React, { Component } from 'react';
-import { Divider, Modal, message } from 'antd';
-import { Map, Marker, Label, CustomOverlay } from 'react-bmapgl';
+import { Divider, message } from 'antd';
+import { Map, Marker, Label, CustomOverlay, DrawingManager } from 'react-bmapgl';
+import B from 'BMapLib';
 // import { Map, Marker, Label, CustomOverlay } from '@uiw/react-baidu-map';
 
 import storeIcon from '@/assets/common/store.svg';
@@ -19,7 +20,6 @@ import pass from '@/assets/common/pass.svg';
 
 import { groupBy, sumBy } from 'lodash';
 import order from '@/models/in/order';
-
 export default class DispatchMapZ extends Component {
   state = {
     isShowName: true,
@@ -30,10 +30,11 @@ export default class DispatchMapZ extends Component {
     selectOrderPla: [],
     shipOrder: [],
     markers: [],
+    isRotate: true,
   };
 
   componentDidMount() {
-    this.initMap();
+    this.initData();
   }
 
   componentWillUnmount() {
@@ -41,18 +42,33 @@ export default class DispatchMapZ extends Component {
     this.map.removeEventListener('zoomstart');
     this.map.removeEventListener('zoomend');
   }
-
-  //初始化Map
-  initMap() {
+  //初始化门店数据
+  initData = () => {
     const { orders } = this.props;
     let shipOrder = [...orders].filter(x => x.longitude);
     shipOrder = this.groupByOrder(shipOrder);
+
+    //延时获取 因为 可能还没渲染完就获取元素 防止获取不到
+    setTimeout(() => {
+      document.getElementsByClassName('BMapGLLib_rectangle')[0]?.addEventListener('click', e => {
+        //设置不允许旋转
+        // this.setState({ isRotate: !this.state.isRotate });
+      });
+    }, 1000);
+
+    this.setState({ shipOrder: shipOrder });
+  };
+
+  //初始化Map
+  initMap = () => {
     // document.oncontextmenu = function(e) {
     //   /*屏蔽浏览器默认右键事件*/
     //   e = e || window.event;
     //   return false;
     // };
     let that = this;
+
+    if (!this.map) return;
     //获取缩放监听
     //缩放开始监听
     this.map.addEventListener('zoomstart', function(evt) {});
@@ -107,9 +123,7 @@ export default class DispatchMapZ extends Component {
     // console.log('map', that.map);
     // //最简单的用法，生成一个marker数组，然后调用markerClusterer类即可。
     // var markerClusterer = new BMapLib.MarkerClusterer(that.map, { markers: markers });
-
-    // this.setState({ shipOrder: shipOrder, markers });
-  }
+  };
 
   //路线规划
   searchRoute = () => {
@@ -273,7 +287,6 @@ export default class DispatchMapZ extends Component {
       ? (selectOrder = selectOrder.filter(x => x.uuid != order.uuid))
       : selectOrder.push(order);
 
-    console.log('selectOrder', selectOrder);
     this.setState({ selectOrder });
   };
 
@@ -297,11 +310,45 @@ export default class DispatchMapZ extends Component {
     this.props.dispatchingByMap(selectOrderPla);
   };
 
+  //画框选取marker
+  drawSelete = (e, info) => {
+    const { shipOrder } = this.state;
+    let overlays = [];
+    overlays.push(e.overlay);
+    let pStart = e.overlay.getPath()[3]; //矩形左上角坐标
+    let pEnd = e.overlay.getPath()[1]; //矩形右上角坐标
+    var pt1 = new BMapGL.Point(pStart.lng, pStart.lat); //3象限
+    var pt2 = new BMapGL.Point(pEnd.lng, pEnd.lat); //1象限
+    var bds = new BMapGL.Bounds(pt1, pt2); //范围
+
+    let { selectOrder } = this.state;
+    for (const s of shipOrder) {
+      var pt = new BMapGL.Point(s.longitude, s.latitude);
+      var result = this.isPointInRect(pt, bds); //判断一个点是否在某个矩形中
+      if (result == true) {
+        const index = selectOrder.findIndex(x => x.uuid == s.uuid);
+        s.point = point;
+        index > -1
+          ? (selectOrder = selectOrder.filter(x => x.uuid != s.uuid))
+          : selectOrder.push(s);
+      }
+    }
+    this.map.removeOverlay(e.overlay);
+    this.setState({ selectOrder });
+  };
+  //判断一个点是否在某个矩形中
+  isPointInRect = (point, bounds) => {
+    var sw = bounds.getSouthWest(); //西南脚点
+    var ne = bounds.getNorthEast(); //东北脚点
+    return point.lng >= sw.lng && point.lng <= ne.lng && point.lat >= sw.lat && point.lat <= ne.lat;
+  };
+
   render() {
-    const { windowInfo, selectOrder, isShowName } = this.state;
-    const { orders } = this.props;
-    let shipOrder = [...orders].filter(x => x.longitude);
-    shipOrder = this.groupByOrder(shipOrder);
+    this.initMap();
+    const { windowInfo, selectOrder, isShowName, shipOrder } = this.state;
+    // const { orders } = this.props;
+    // let shipOrder = [...orders].filter(x => x.longitude);
+    // shipOrder = this.groupByOrder(shipOrder);
     const icon = new BMapGL.Icon(storeIcon, new BMapGL.Size(30, 30));
     const iconC = new BMapGL.Icon(storeIconC, new BMapGL.Size(30, 30));
     const features = shipOrder.filter(x => x.longitude != 0 && x.longitude != 1).map(x => {
@@ -311,16 +358,6 @@ export default class DispatchMapZ extends Component {
     centerLonLat = this.getMinPoint(features, centerLonLat);
     return shipOrder.length > 0 ? (
       <div>
-        {/* <Modal
-          title="是否将选中门店进行排车"
-          width="1px"
-          centered
-          visible={isPla}
-          onCancel={() => this.setState({ isPla: false })}
-          destroyOnClose={true}
-          style={{ marginRight: '20%' }}
-          onOk={this.toPla}
-        /> */}
         <Map
           zoom={12}
           minZoom={6}
@@ -330,14 +367,30 @@ export default class DispatchMapZ extends Component {
           center={centerLonLat}
           enableScrollWheelZoom
           enableAutoResize
+          enableTilt={false}
+          enableRotate={false}
           style={{ height: '85vh' }}
-          // onRightclick={e => {
-          //   this.setState({ isPla: true });
-          // }}
           ref={ref => {
             this.map = ref?.map;
           }}
         >
+          <DrawingManager
+            enableLimit
+            enableCalculate
+            onOverlaycomplete={(e, info) => this.drawSelete(e, info)}
+            limitOptions={{ area: 9999999999999, distance: 9999999999999 }}
+            drawingToolOptions={{
+              drawingModes: ['rectangle'],
+            }}
+            rectangleOptions={{
+              strokeColor: '#d9534f', //边线颜色。
+              fillColor: '#F4CDCC', //填充颜色。当参数为空时，圆形将没有填充效果。
+              strokeWeight: 2, //边线的宽度，以像素为单位。         ");
+              strokeOpacity: 0.6, //边线透明度，取值范围0 - 1。
+              fillOpacity: 0.3, //填充的透明度，取值范围0 - 1。
+              strokeStyle: 'dashed', //边线的样式，solid或dashed。
+            }}
+          />
           {shipOrder.map(order => {
             var point = new BMapGL.Point(order.longitude, order.latitude);
             return (
