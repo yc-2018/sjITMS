@@ -35,6 +35,7 @@ export default class DispatchMapZ extends Component {
 
   componentDidMount() {
     this.initData();
+    this.initMap();
   }
 
   componentWillUnmount() {
@@ -66,49 +67,53 @@ export default class DispatchMapZ extends Component {
     //   e = e || window.event;
     //   return false;
     // };
-    let that = this;
 
-    if (!this.map) return;
-    //获取缩放监听
-    //缩放开始监听
-    this.map.addEventListener('zoomstart', function(evt) {});
-    //缩放结束监听
-    this.map.addEventListener('zoomend', function(evt) {
-      //TODO 后续根据缩放Level判断门店聚合
-      console.log('evt', evt.target.zoomLevel); //缩放level
-    });
+    //避免map未生成，延迟1s
+    setTimeout(() => {
+      let that = this;
 
-    //增加右键菜单
-    var txtMenuItem = [
-      {
-        text: '排车', // 定义菜单项的显示文本
-        callback: function() {
-          // 定义菜单项点击触发的回调函数
-          that.toPla();
+      //获取缩放监听
+      //缩放开始监听
+      this.map.addEventListener('zoomstart', function(evt) {});
+      //缩放结束监听
+      this.map.addEventListener('zoomend', function(evt) {
+        //TODO 后续根据缩放Level判断门店聚合
+        console.log('evt', evt.target.zoomLevel); //缩放level
+      });
+
+      //增加右键菜单
+      var txtMenuItem = [
+        {
+          text: '排车', // 定义菜单项的显示文本
+          callback: function() {
+            // 定义菜单项点击触发的回调函数
+            that.toPla();
+          },
         },
-      },
-      {
-        text: '路线规划', // 定义菜单项的显示文本
-        callback: function() {
-          // 定义菜单项点击触发的回调函数
-          that.searchRoute();
+        {
+          text: '路线规划', // 定义菜单项的显示文本
+          callback: function() {
+            // 定义菜单项点击触发的回调函数
+            that.searchRoute();
+          },
         },
-      },
-    ];
-    var menu = new BMapGL.ContextMenu();
-    for (var i = 0; i < txtMenuItem.length; i++) {
-      menu.addItem(
-        new BMapGL.MenuItem( // 定义菜单项实例
-          txtMenuItem[i].text, // 传入菜单项的显示文本
-          txtMenuItem[i].callback, // 传入菜单项的回调函数
-          {
-            width: 100, // 指定菜单项的宽度
-            id: 'menu' + i, // 指定菜单项dom的id
-          }
-        )
-      );
-    }
-    this.map.addContextMenu(menu); // 给地图添加右键菜单
+      ];
+      var menu = new BMapGL.ContextMenu();
+      for (var i = 0; i < txtMenuItem.length; i++) {
+        menu.addItem(
+          new BMapGL.MenuItem( // 定义菜单项实例
+            txtMenuItem[i].text, // 传入菜单项的显示文本
+            txtMenuItem[i].callback, // 传入菜单项的回调函数
+            {
+              width: 100, // 指定菜单项的宽度
+              id: 'menu' + i, // 指定菜单项dom的id
+            }
+          )
+        );
+      }
+
+      this.map.addContextMenu(menu); // 给地图添加右键菜单
+    }, 1000);
 
     //缩放聚合 (引入js有问题)
     // var markers = [];
@@ -344,7 +349,6 @@ export default class DispatchMapZ extends Component {
   };
 
   render() {
-    this.initMap();
     const { windowInfo, selectOrder, isShowName, shipOrder } = this.state;
     // const { orders } = this.props;
     // let shipOrder = [...orders].filter(x => x.longitude);
