@@ -110,3 +110,21 @@ export async function findLineSystemTree(payload) {
       }
     );
   }
+
+  export async function findChildLine(payload) {
+     return await request(
+      `/itms-schedule/itms-schedule/line/findChildLine/${payload.uuid}`,
+      {
+        method: 'GET'
+      }
+    );
+  }
+  export async function updateStoreNum(payload) {
+    return await request(
+     `/itms-schedule/itms-schedule/line/updateStoreNum/${payload.lineUuid}`,
+     {
+       method: 'GET'
+       
+     }
+   );
+ }

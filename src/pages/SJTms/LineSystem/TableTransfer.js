@@ -8,14 +8,16 @@
  */
 import { connect } from 'dva';
 import React, { Component } from 'react';
-import { Transfer, Table } from 'antd';
+import { Transfer, Table,Form ,Input,Button} from 'antd';
 import difference from 'lodash/difference';
 import uniqBy from 'lodash/uniqBy';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
+@Form.create()
 export default class TableTransfer extends Component {
   state = {
     dataSource: [],
@@ -76,6 +78,23 @@ export default class TableTransfer extends Component {
     });
   };
 
+  onSubmit = ()=>{
+    this.props.form.validateFields((err,value) => {
+      if (err) {
+        return;
+      }
+      const pagination = { ...this.state.pagination }
+      pagination.superQuery.queryParams = [
+        { field: 'COMPANYUUID', rule: 'eq', val: loginCompany().uuid, type: 'VarChar' },
+        { field: 'DISPATCHCENTERUUID', rule: 'eq', val: value.CODE, type: 'VarChar' },
+      ]
+      if(value.codeName && value.codeName!=''){
+        pagination.superQuery.queryParams.push({ field: 'CODENAME', rule: 'like', val: value.codeName, type: 'VarChar' })
+      }
+      
+      this.fetch(pagination);
+    });
+  }
   filterData = searchValue => {
     const { pagination } = this.state;
     const queryParams = [
@@ -87,6 +106,7 @@ export default class TableTransfer extends Component {
   };
 
   render() {
+    const { getFieldDecorator} = this.props.form;
     const { targetKeys, columnsTitle, loading } = this.props;
     const { dataSource, pagination, totalDataSource } = this.state;
     const columns = [
@@ -101,12 +121,12 @@ export default class TableTransfer extends Component {
     return (
       <Transfer
         {...this.props}
-        showSearch={true}
+       //showSearch={true}
         onSearch={(direction, value) => {
           if (direction === 'left') this.filterData(value);
         }}
         filterOption={() => {}}
-        dataSource={dataSource}
+       // dataSource={dataSource}
         rowKey={record => record.UUID}
       >
         {({
@@ -154,6 +174,44 @@ export default class TableTransfer extends Component {
           }));
 
           return (
+            <>
+           {direction === 'left' && <Form layout="inline" onSubmit={this.handleSubmit}>
+             <Form.Item label={"代码(或名称)"}>
+             {getFieldDecorator('codeName', {})(
+               <Input
+              name ="codeName"
+              placeholder="代码(或名称)"
+              onChange={(e)=>this.setState({codeName:e})}
+              />)}
+            </Form.Item>
+            <Form.Item label={"调度中心"}>
+            {getFieldDecorator('CODE', { initialValue:loginOrg().uuid , rules: [{required: true , message: '请选择调度中心'}]})(
+                    <SimpleAutoComplete
+                    showSearch
+                    placeholder=""
+                    //textField="[%CODE%]%NAME%"
+                   // valueField="UUID"
+                   // searchField="NAME"
+                   
+                   dictCode ="dispatchCenter"
+                  onChange = {(e)=>this.setState({dispatchCenter:e})}
+                    noRecord
+                    style={{width:150}}
+                    allowClear={true}
+                  />
+                  )}
+            </Form.Item>
+            <Form.Item >
+            <Button
+            type="primary"
+            htmlType="submit"
+            onClick={this.onSubmit}
+            >
+            搜索
+          </Button>
+            </Form.Item>
+            </Form>} 
+           
             <Table
               rowSelection={rowSelection}
               columns={columns}
@@ -171,6 +229,7 @@ export default class TableTransfer extends Component {
               onChange={handleTableChange}
               pagination={direction === 'left' ? pagination : true}
             />
+            </>
           );
         }}
       </Transfer>

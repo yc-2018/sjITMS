@@ -15,6 +15,8 @@ import {
   deleteLineStoreAddressById,
   findLineByNameLike,
   addToNewLine,
+  findChildLine,
+  updateStoreNum
 } from '@/services/sjtms/LineSystemHis';
 import {
   updateStoreAddressList
@@ -70,17 +72,91 @@ export default class LineShipAddress extends QuickFormSearchPage {
     }
   };
 
-  exSearchFilter = () => {
-    return [
-      {
-        field: 'LINEUUID',
-        type: 'VarChar',
-        rule: 'eq',
-        val: this.props.lineuuid,
-      },
-    ];
+  exSearchFilter = async() => {
+    // debugger
+    let e =  await findChildLine ({"uuid":this.props.lineuuid});
+    let parmas = []
+      if(e && e.success){
+        updateStoreNum({"lineUuid":this.props.lineuuid});
+        const uuids = e.data.map(d=>{
+          return d.uuid;
+        }).join("||");
+        parmas = [{
+            field: 'LINEUUID',
+            type: 'VarChar',
+            rule: 'in',
+            val: uuids,
+          },{
+            field: 'DELFLAG',
+            type: 'VarChar',
+            rule: 'eq',
+            val: '1',
+          }]
+        }
+        
+        return parmas;  
+    
   };
+  onSearch = async filter => {
+    let exSearchFilter = await this.exSearchFilter();
+    if (!exSearchFilter) exSearchFilter = [];
 
+    let defaultSearch = this.defaultSearch();
+    if (!defaultSearch) defaultSearch = [];
+    if (typeof filter == 'undefined') {
+      let queryParams = this.state.pageFilters.superQuery?.queryParams?.filter(item => {
+        return (
+          item.field != 'dispatchCenterUuid' &&
+          item.field != 'dcUuid' &&
+          item.field != 'companyuuid'
+        );
+      });
+      let pageFilters = this.state.pageFilters;
+      if (this.state.pageFilters.superQuery && exSearchFilter.length == 0) {
+        pageFilters = {
+          ...this.state.pageFilters,
+          superQuery: {
+            ...this.state.pageFilters.superQuery,
+            queryParams: [...queryParams, ...this.state.isOrgQuery],
+          },
+        };
+        this.getData(pageFilters);
+      } else {
+        this.state.pageFilters = {
+          order: this.state.defaultSort,
+          quickuuid: this.props.quickuuid,
+          superQuery: {
+            matchType: '',
+            queryParams: [...this.state.isOrgQuery, ...exSearchFilter, ...defaultSearch],
+          },
+        }; //增加组织 公司id查询条件
+        this.getData(this.state.pageFilters);
+      }
+    } else if (filter == 'reset') {
+      //点击重置时，重置搜索条件
+      this.state.pageFilters = {
+        order: this.state.defaultSort,
+        quickuuid: this.props.quickuuid,
+        superQuery: {
+          matchType: '',
+          queryParams: [...this.state.isOrgQuery, ...exSearchFilter, ...defaultSearch],
+        },
+      }; //增加组织 公司id查询条件
+      this.getData(this.state.pageFilters);
+    } else {
+      const { dispatch } = this.props;
+      const { columns } = this.state;
+      const pageFilters = {
+        ...this.state.pageFilters,
+        superQuery: {
+          matchType: '',
+          queryParams: [...filter.queryParams, ...this.state.isOrgQuery, ...exSearchFilter],
+        },
+      };
+      this.state.pageFilters = pageFilters;
+      this.refreshTable();
+    }
+  };
   //列删除操作
   renderOperateCol = record => {
     return <OperateCol menus={this.fetchOperatePropsCommon(record)} />;
@@ -247,7 +323,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
         </Modal>
         <Modal
           title={modalTitle}
-          width={800}
+          width={1290}
           visible={modalVisible}
           onOk={this.handleStoreSave}
           confirmLoading={false}
