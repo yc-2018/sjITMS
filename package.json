@@ -46,7 +46,6 @@
     "antd": "^3.18.0",
     "bizcharts": "^3.2.2",
     "bizcharts-plugin-slider": "^2.0.3",
-    "bmaplib": "^1.0.1",
     "classnames": "^2.2.6",
     "dva": "^2.4.0",
     "enquire-js": "^0.2.1",
