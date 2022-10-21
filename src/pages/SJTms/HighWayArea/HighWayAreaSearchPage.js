@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-16 11:36:01
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-20 14:32:56
+ * @LastEditTime: 2022-10-21 15:47:58
  * @version: 1.0
  */
 
@@ -20,7 +20,7 @@ import HighWayAreaCreatePage from './HighWayAreaCreatePage';
 //继承QuickFormSearchPage Search页面扩展
 export default class HighWagAreaSearchPage extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
-  state = { ...this.state, noActionCol: false, isShow: false, canDragTable: true };
+  state = { ...this.state, noActionCol: false, isNotHd: true, isShow: false, canDragTable: true };
 
   onCreate = () => {
     this.newPretypeModalRef.show();

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-16 17:45:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-21 11:48:18
+ * @LastEditTime: 2022-10-21 15:32:07
  * @version: 1.0
  */
 /*
@@ -296,9 +296,4 @@ export default class HighWagAreaCreatePage extends QuickCreatePage {
       this.entity['sj_itms_highwayareagroup_head'][0]['TOTAL'] = total;
     }
   };
-
-  // beforeSave = data => {
-  //   console.log('data', data);
-  //   return false;
-  // };
 }
