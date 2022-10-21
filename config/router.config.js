@@ -1239,14 +1239,6 @@ export default [
             divider: true,
           },
           {
-            path: '/tmsbasic/highwayarea',
-            name: '高速区域维护	',
-            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
-            component: './SJTms/HighWayArea/HighWayAreaForm',
-            quickuuid: 'sj_itms_highwayarea',
-            authority: ['sjtms.basic.highwayarea'],
-          },
-          {
             path: '/tmsbasic/highwayareagroup',
             name: '高速区域组合	',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
