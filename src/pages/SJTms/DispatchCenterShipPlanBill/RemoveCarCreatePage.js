@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-20 10:41:30
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-27 09:02:36
+ * @LastEditTime: 2022-10-20 16:01:49
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -110,7 +110,6 @@ export default class RemoveCarCreatePage extends QuickCreatePage {
 
   formLoaded = () => {
     const { categories, formItems } = this.state;
-    console.log('formItems', formItems);
 
     formItems['CCCWEIGHT'] = {
       categoryName: '移车信息',

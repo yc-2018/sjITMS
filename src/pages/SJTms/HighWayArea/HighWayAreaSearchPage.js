@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-16 11:36:01
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-19 16:45:59
+ * @LastEditTime: 2022-10-20 14:32:56
  * @version: 1.0
  */
 
@@ -10,27 +10,27 @@ import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { dynamicDelete } from '@/services/quick/Quick';
 import { Button, Popconfirm, message } from 'antd';
-import { log } from 'lodash-decorators/utils';
+import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
+import HighWayAreaCreatePage from './HighWayAreaCreatePage';
 
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
 //继承QuickFormSearchPage Search页面扩展
-export default class PretypeSearch extends QuickFormSearchPage {
+export default class HighWagAreaSearchPage extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
   state = { ...this.state, noActionCol: false, isShow: false, canDragTable: true };
 
   onCreate = () => {
-    this.props.memberModalClick();
-  };
-
-  onBack = () => {
-    this.props.switchTab('query');
+    this.newPretypeModalRef.show();
   };
 
   onPretypeUpdate = record => {
-    this.props.updatePretypeModalClick(record);
+    this.setState({
+      params: { entityUuid: record.UUID, title: '1' },
+    });
+    this.updatePretypeModalRef.show();
   };
 
   onPretypeDelete = async record => {
@@ -78,19 +78,37 @@ export default class PretypeSearch extends QuickFormSearchPage {
    * 绘制右上角按钮
    */
   drawActionButton = () => {
-    //额外的菜单选项
-    const menus = [];
-    menus.push({
-      // disabled: !havePermission(STORE_RES.CREATE), //权限认证
-      name: '测试', //功能名称
-      onClick: this.test, //功能实现
-    });
+    const { params } = this.state;
     return (
       <div>
+        <CreatePageModal
+          modal={{
+            title: '新建高速区域',
+            width: 500,
+            bodyStyle: { marginRight: '40px' },
+            afterClose: () => {
+              this.refreshTable();
+            },
+          }}
+          page={{ quickuuid: this.props.quickuuid, noCategory: true }}
+          onRef={node => (this.newPretypeModalRef = node)}
+        />
+        <CreatePageModal
+          modal={{
+            title: '编辑高速区域',
+            width: 500,
+            bodyStyle: { marginRight: '40px' },
+            afterClose: () => {
+              this.refreshTable();
+            },
+          }}
+          customPage={HighWayAreaCreatePage}
+          page={{ quickuuid: this.props.quickuuid, params: params }}
+          onRef={node => (this.updatePretypeModalRef = node)}
+        />
         <Button onClick={this.onCreate.bind()} type="primary" icon="plus">
           新建
         </Button>
-        <Button onClick={this.onBack.bind()}>返回</Button>
       </div>
     );
   };
