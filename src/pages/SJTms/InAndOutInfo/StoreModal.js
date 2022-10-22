@@ -108,9 +108,10 @@ export default class StoreModal extends Component {
 
   save = async params => {
     const response = await saveOrUpdateFee(params);
+    console.log('response', response);
     if (response && response.data > 0) {
       message.success('保存成功');
-    } else if (response && response.data.indexOf('确认保存') > 0) {
+    } else if (response && response.data && response.data.indexOf('确认保存') > 0) {
       this.setState({ confirmModal: true, confirmMessage: response.data });
     } else {
       message.error('保存失败');
@@ -149,6 +150,12 @@ export default class StoreModal extends Component {
           <Empty />
         );
       },
+    },
+    {
+      title: dispatchReturnLocale.areaName,
+      dataIndex: 'areaname',
+      width: colWidth.billNumberColWidth + 50,
+      render: val => (val ? val : ''),
     },
     {
       title: dispatchReturnLocale.parkingFee,
