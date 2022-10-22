@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-22 08:56:42
+ * @LastEditTime: 2022-10-22 17:02:29
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -58,8 +58,8 @@ export default class AreaSubsidySearchPage extends QuickFormSearchPage {
   };
 
   drawcell = e => {
-    if (e.column.fieldName == 'CODE') {
-      const component = <a onClick={() => this.addItem(e)}>{e.record.CODE}</a>;
+    if (e.column.fieldName == 'AREACODE') {
+      const component = <a onClick={() => this.addItem(e)}>{e.record.AREACODE}</a>;
       e.component = component;
     }
   };
