@@ -2,13 +2,13 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-22 15:39:49
+ * @LastEditTime: 2022-10-22 11:07:46
  * @version: 1.0
  */
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { Button, Popconfirm, message, Steps } from 'antd';
-import { approved } from '@/services/sjitms/TollFee';
+import { approvedOrRejected } from '@/services/sjitms/TollFee';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { havePermission } from '@/utils/authority';
 
@@ -20,15 +20,18 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
   state = {
     ...this.state,
     showAuditPop: false,
+    showRejectedPop: false,
+    operation: '',
   };
 
-  approved = async data => {
-    return await approved(data);
+  approvedOrRejected = async data => {
+    const { operation } = this.state;
+    return await approvedOrRejected(data, operation);
   };
 
   //该方法用于写中间的功能按钮 多个按钮用<span>包裹
   drawToolsButton = () => {
-    const { showAuditPop, selectedRows } = this.state;
+    const { showAuditPop, selectedRows, showRejectedPop } = this.state;
 
     return (
       <span>
@@ -42,10 +45,11 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
             this.setState({ showAuditPop: false });
           }}
           onConfirm={() => {
-            this.setState({ showAuditPop: false });
-            this.approved(selectedRows[0]).then(response => {
+            this.setState({ showAuditPop: false, operation: 'Approved' });
+            this.approvedOrRejected(selectedRows[0]).then(response => {
               if (response.success) {
                 message.success('审核成功！');
+                this.setState({ operation: '' });
                 this.onSearch();
               }
             });
@@ -56,6 +60,33 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
             onClick={() => this.onBatchApproved()}
           >
             审批
+          </Button>
+        </Popconfirm>
+        <Popconfirm
+          title="你确定要驳回所选中的内容吗?"
+          visible={showRejectedPop}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showRejectedPop: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showRejectedPop: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showRejectedPop: false, operation: 'Rejected' });
+            this.approvedOrRejected(selectedRows[0]).then(response => {
+              if (response.success) {
+                message.success('驳回成功！');
+                this.setState({ operation: '' });
+                this.onSearch();
+              }
+            });
+          }}
+        >
+          <Button
+            hidden={!havePermission(this.state.authority + '.audits')}
+            onClick={() => this.onBatchRejected()}
+          >
+            驳回
           </Button>
         </Popconfirm>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
@@ -69,9 +100,32 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
       message.warn('请选中一条数据！');
       return;
     }
+    this.setState({ operation: 'Approved' });
     selectedRows.length == 1
       ? this.setState({ showAuditPop: true })
-      : this.batchProcessConfirmRef.show('审核', selectedRows, this.approved, this.onSearch);
+      : this.batchProcessConfirmRef.show(
+          '审核',
+          selectedRows,
+          this.approvedOrRejected,
+          this.onSearch
+        );
+  };
+
+  onBatchRejected = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.warn('请选中一条数据！');
+      return;
+    }
+    this.setState({ operation: 'Rejected' });
+    selectedRows.length == 1
+      ? this.setState({ showRejectedPop: true })
+      : this.batchProcessConfirmRef.show(
+          '驳回',
+          selectedRows,
+          this.approvedOrRejected,
+          this.onSearch
+        );
   };
 
   drawcell = e => {
