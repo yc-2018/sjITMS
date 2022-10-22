@@ -1248,6 +1248,15 @@ export default [
             divider: true,
           },
           {
+            path: '/tmsbasic/areasubsidy',
+            name: '门店补贴区域维护	',
+            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+            component: './SJTms/AreaSubsidy/AreaSubsidyForm',
+            quickuuid: 'sj_itms_areasubsidy',
+            authority: ['sjtms.basic.highwayarea'],
+            divider: true,
+          },
+          {
             path: '/tmsbasic/lifecycle',
             name: 'lifecycle',
             org: ['DISPATCH_CENTER'],

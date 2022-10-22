@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-21 16:12:05
+ * @LastEditTime: 2022-10-22 09:45:04
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -12,13 +12,13 @@ import Page from '@/pages/Component/Page/inner/Page';
 import { DndProvider } from 'react-dnd';
 import { message, Popconfirm, Button, Modal } from 'antd';
 import TableTransfer from '@/pages/SJTms/LineSystem/TableTransfer';
-import { onSave, saveTableSort, deleteDtl } from '@/services/sjitms/StoreTeam';
+import { onSave, deleteDtl } from '@/services/sjitms/AreaSubsidy';
 
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
-export default class StoreTeamDtlSearchPage extends QuickFormSearchPage {
+export default class AreaSubsidyDtlSearchPage extends QuickFormSearchPage {
   state = {
     ...this.state,
     modalVisible: false,
@@ -28,31 +28,18 @@ export default class StoreTeamDtlSearchPage extends QuickFormSearchPage {
     transferColumnsTitle: '',
     modalQuickuuid: '',
     buttonDisable: false,
-    canDragTable: true,
+    // canDragTable: true,
   };
-
   componentDidMount() {
     this.queryCoulumns();
     this.getCreateConfig();
     this.props.onRef && this.props.onRef(this);
   }
-
   componentWillReceiveProps(nextProps) {
     if (nextProps.selectedRow != this.props.selectedRow) {
       this.onSearch(nextProps.selectedRow);
     }
   }
-
-  // //拖拽排序
-  drapTableChange = list => {
-    const { data } = this.state;
-    data.list = list.map((record, index) => {
-      record.LINE = index + 1;
-      return record;
-    });
-
-    this.setState({ buttonDisable: true });
-  };
 
   onSearch = data => {
     const { selectedRow } = this.props;
@@ -63,7 +50,7 @@ export default class StoreTeamDtlSearchPage extends QuickFormSearchPage {
         matchType: '',
         queryParams: [
           {
-            field: 'headuuid',
+            field: 'uuid',
             type: 'VarChar',
             rule: 'eq',
             val: UUID,
@@ -74,15 +61,12 @@ export default class StoreTeamDtlSearchPage extends QuickFormSearchPage {
     this.state.pageFilters = pageFilters;
     this.refreshTable();
   };
-
   onTransferChange = targetKeys => {
     this.setState({ targetKeys });
   };
-
   onTranferFetch = dataSource => {
     this.setState({ transferDataSource: dataSource });
   };
-
   //添加门店
   handleAddStore = () => {
     const { selectedRow } = this.props;
@@ -93,11 +77,10 @@ export default class StoreTeamDtlSearchPage extends QuickFormSearchPage {
     this.setState({
       modalVisible: true,
       modalTitle: '添加门店',
-      modalQuickuuid: 'sj_itms_store',
+      modalQuickuuid: 'v_sj_itms_unsubsidystore',
       transferColumnsTitle: '门店',
     });
   };
-
   //保存
   handleStoreSave = async () => {
     const { targetKeys } = this.state;
@@ -114,31 +97,23 @@ export default class StoreTeamDtlSearchPage extends QuickFormSearchPage {
     }
   };
 
-  //排序
-  saveTableSort = async () => {
-    const { data } = this.state;
-    const response = await saveTableSort(data.list);
-    if (response.success) {
-      message.success('保存成功！');
-      this.refreshTable();
-    }
-  };
-
   delete = async () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
       message.warn('请至少选中一条数据！');
       return;
     }
-    const response = await deleteDtl(selectedRows);
+    let uuids = [];
+    selectedRows.forEach(selectedRow => {
+      uuids.push(selectedRow.STOREUUID);
+    });
+    const response = await deleteDtl(uuids);
     if (response.success) {
       message.success('删除成功！');
       this.refreshTable();
     }
   };
-
   drawActionButton = () => {};
-
   drawToolbarPanel = () => {
     const {
       modalVisible,
@@ -146,7 +121,6 @@ export default class StoreTeamDtlSearchPage extends QuickFormSearchPage {
       targetKeys,
       transferColumnsTitle,
       modalQuickuuid,
-      buttonDisable,
     } = this.state;
     return (
       <div style={{ marginTop: '10px' }}>
@@ -157,7 +131,6 @@ export default class StoreTeamDtlSearchPage extends QuickFormSearchPage {
         >
           添加门店
         </Button>
-        {buttonDisable ? <Button onClick={this.saveTableSort}>保存排序</Button> : <></>}
         <Button onClick={this.delete}>删除</Button>
         <Modal
           title={modalTitle}
@@ -179,9 +152,7 @@ export default class StoreTeamDtlSearchPage extends QuickFormSearchPage {
       </div>
     );
   };
-
   drawSearchPanel = () => {};
-
   render() {
     let ret = (
       <div style={{ marginTop: '24px' }}>
