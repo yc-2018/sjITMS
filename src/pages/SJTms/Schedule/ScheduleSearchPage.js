@@ -9,7 +9,7 @@
 import { connect } from 'dva';
 import { Dropdown, Menu, Icon, Button, message, Popconfirm, Modal, Form, InputNumber } from 'antd';
 import { convertDate, convertDateToTime } from '@/utils/utils';
-import { loginUser } from '@/utils/LoginContext';
+import { loginOrg, loginUser } from '@/utils/LoginContext';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { queryAllData } from '@/services/quick/Quick';
@@ -17,7 +17,7 @@ import { aborted, shipRollback } from '@/services/sjitms/ScheduleBill';
 import { depart, back } from '@/services/sjitms/ScheduleProcess';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 import { groupBy, sumBy, orderBy } from 'lodash';
-
+import scher  from '@/assets/common/scher.jpg'
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -278,6 +278,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
     });
     LODOP.PREVIEW();
+    //LODOP.PRINT();
     hide();
     this.setState({ printPage: undefined });
   };
@@ -501,6 +502,199 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
 
 //装车单
 const drawPrintPage = (schedule, scheduleDetails) => {
+    if(loginOrg().uuid =='000000750000004' ){
+      return (
+        <div>
+          <table
+            style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0 }}
+            border={1}
+            cellPadding={0}
+            cellSpacing={0}
+          >
+            <thead>
+              <tr style={{ height: 50 }}>
+                <th colspan={2} style={{ border: 0 }}><img style={{height:30 ,width:120}} src={scher}></img></th>
+                <th colspan={10} style={{ border: 0 }}>
+                 <div style={{ fontSize: 18, textAlign: 'center' }}>时捷物流配送装车/出车单</div>
+                </th>
+                <th colspan={4} style={{ border: 0 }}>
+                  <div style={{ fontSize: 14, textAlign: 'center' }}>
+                    <span>第</span>
+                    <font tdata="PageNO" color="blue">
+                      ##
+                    </font>
+                    <span>页/共</span>
+                    <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
+                      ##
+                    </font>
+                    <span>页</span>
+                  </div>
+                </th>
+              </tr>
+              {/* <tr>
+                <th colspan={8} style={{ border: 0, height: 20 }}>
+                  <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                    <div style={{ float: 'left', width: '25%' }}>调度签名：</div>
+                    <div style={{ float: 'left', width: '25%' }}>装车人签名：</div>
+                    <div style={{ float: 'left', width: '25%' }}>
+                      打印时间： {convertDateToTime(new Date())}
+                    </div>
+                    <div style={{ float: 'left', width: '22%' }}>制单人： {loginUser().name}</div>
+                  </div>
+                </th>
+              </tr> */}
+              <tr>
+                <th colspan={16} style={{ border: 0, height: 20 }}>
+                  <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                    <div style={{ float: 'left', width: '25%' }}>排车序号： {schedule.BILLNUMBER}</div>
+                    <div style={{ float: 'left', width: '25%' }}>
+                      操作员： {loginUser().name}
+                    </div>
+                    <div style={{ float: 'left', width: '25%' }}>
+                      驾驶员： {schedule.DRIVER}
+                    </div>
+                    <div style={{ float: 'left', width: '25%' }}>排车单号： {schedule.BILLNUMBER}</div>
+                  </div>
+                  <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                    <div style={{ float: 'left', width: '25%' }}>
+                      车号： {schedule.VEHICLECODE}</div>
+                    <div style={{ float: 'left', width: '25%' }}>
+                      信箱号：{schedule.pirs}
+                    </div>
+                    <div style={{ float: 'left', width: '25%' }}>
+                      装车员：{schedule.STEVEDORE}
+                    </div>
+                    <div style={{ float: 'left', width: '25%' }}>
+                      打印时间：{convertDateToTime(new Date())}
+                    </div>
+                  </div>
+                </th>
+              </tr>
+              <tr>
+                <th colspan={16} style={{ border: 0, height: 20 }}>
+                  <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                    <div style={{ float: 'left', width: '25%' }}>
+                      副司机： {schedule.DRIVER}
+                    </div>
+                  </div>
+                </th>
+              </tr>
+              <tr>
+                <th colspan={16} style={{ border: 0, height: 20 }}>
+                  <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                    <div style={{ float: 'left', width: '80%' }}>
+                     粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为{schedule.ETCAMOUNT}元<br/>
+                     [线路]去程入口:{schedule.ETCROUTE}<br/>
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;回程出口:{schedule.ETCROUTERETURN}<br/>
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如有异常需超额使用粤通卡的，请致电（670607）
+                    </div>
+                  </div>
+                </th>
+              </tr>
+              <tr style={{ height: 25 }}>
+                  <th width={50} rowSpan = {2}>线路</th>
+                  <th width={50} rowSpan = {2}>零板位</th>
+                  <th width={50} rowSpan = {2}>门店名称</th>
+                  <th width={170} colSpan={8}>送出</th>
+                  <th width={170} colSpan={3}>回收</th>
+                  <th width={50} rowSpan = {2}>整箱板位</th>
+                  <th width={50} rowSpan= {2}>电商</th>
+              </tr>
+              <tr style={{ height: 25 }}>
+                  <th>整件</th>
+                  <th>散件</th>
+                  <th>周转筐</th>
+                  <th>欠筐数</th>
+                  <th>箱总数</th>
+                  <th>腾箱数</th>
+                  <th>福袋数</th>
+                  <th>深通卡</th>
+                  <th>退货单</th>
+                  <th>差异单</th>
+                  <th>箱数</th>
+              </tr>
+            </thead>
+            <tbody>
+              {scheduleDetails ? (
+                scheduleDetails.map((item, index) => {
+                  return (
+                    <tr style={{ textAlign: 'center', height: 20 }}>
+                      <td width={100}>{item.ARCHLINECODE}</td>
+                      <td width={80}>{item.SCATTEREDCOLLECTBIN}</td>
+                      <td width={120}>{'['+item.DELIVERYPOINTCODE+']'+item.DELIVERYPOINTNAME}</td>
+                      <td width={80}>{item.REALCARTONCOUNT}</td>
+                      <td width={80}>{item.REALSCATTEREDCOUNT}</td>
+                      <td width={80}>{item.REALCONTAINERCOUNT}</td>
+                      <td width={80}>{0}</td>
+                      <td width={80}>{item.REALCONTAINERCOUNT + 0}</td>
+                      <td width={80}>{}</td>
+                      <td width={80}>{}</td>
+                      <td width={80}>{}</td>
+                      <td width={80}>{}</td>
+                      <td width={80}>{}</td>
+                      <td width={80}>{}</td>
+                      <td width={100}>{item.COLLECTBIN}</td>
+                      <td width={60}>{0}</td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <></>
+              )}
+            </tbody>
+            <tfoot border ={0}>
+              <tr style={{ height: 20,border:0 }} border={0} >
+                <td  style={{ border:0 }} colSpan={8}>总体积(m³):</td>
+                <td  style={{ border:0 }} colSpan={8} >脏筐数:_____________</td>
+              </tr>
+              <tr  style={{ border: 0, height: 20 }}>
+                <td style={{ border: 0 }} colspan={16}>单据备注: 白色~收据，红色~驾驶员、配送员，黄色~发货</td>
+                {/* <td style={{ textAlign: 'center' }}>
+                  <font color="blue" tdata="AllSum" format="#,##" tindex="5">
+                    ######
+                  </font>
+                </td>
+                <td style={{ textAlign: 'center' }}>
+                  <font color="blue" tdata="AllSum" format="#,##" tindex="6">
+                    ######
+                  </font>
+                </td>
+                <td colspan={2} /> */}
+              </tr>
+              <tr style={{ border: 0 ,height: 20 }}>
+                <td style={{ border: 0 }}  colspan={6} >驾驶/配送员签字：</td>
+                <td style={{ border: 0 }}  colspan={6} >收退货签字：</td>
+                <td style={{ border: 0 }}  colspan={4}><div border={0} style={{ fontSize: 14, textAlign: 'center' }}>
+                    <span>第</span>
+                    <font tdata="PageNO" color="blue">
+                      ##
+                    </font>
+                    <span>页/共</span>
+                    <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
+                      ##
+                    </font>
+                    <span>页</span>
+                  </div></td>
+              </tr>
+              {/* <tr style={{ height: 20 }}>
+                <td colspan={8}>
+                  备注：
+                  {schedule.NOTE}
+                </td>
+              </tr>
+              <tr style={{ height: 25 }}>
+                <td colspan={8} style={{ border: 0 }}>
+                  <div style={{ float: 'left', width: '25%' }}>装车员:</div>
+                  <div style={{ float: 'left', width: '25%' }}>司机:</div>
+                  <div style={{ float: 'left', width: '25%' }}> 送货员:</div>
+                  <div style={{ float: 'left', width: '22%' }}>调度:</div>
+                </td>
+              </tr> */}
+            </tfoot>
+          </table>
+        </div>
+      ); 
+    }else if(loginOrg().uuid =='000000750000003' ||loginOrg().uuid =='000008110000001' ){
   return (
     <div>
       <table
@@ -623,4 +817,8 @@ const drawPrintPage = (schedule, scheduleDetails) => {
       </table>
     </div>
   );
+    }
+
+  
+
 };
