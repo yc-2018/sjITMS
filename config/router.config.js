@@ -1253,7 +1253,7 @@ export default [
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
             component: './SJTms/AreaSubsidy/AreaSubsidyForm',
             quickuuid: 'sj_itms_areasubsidy',
-            authority: ['sjtms.basic.highwayarea'],
+            authority: ['sjtms.basic.areasubsidy'],
             divider: true,
           },
           {
@@ -1577,6 +1577,29 @@ export default [
                     component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                     quickuuid: 'v_cost_hh_self',
                     authority: ['sjtms.bigData.arrange'],
+                  },
+                ],
+              },
+              {
+                path: '/bigData/costReport/weiShangReport',
+                name: '唯尚报表',
+                authority: ['sjtms.costReport.weishang'],
+                routes: [
+                  {
+                    path: '/bigData/costReport/weiShangReport/wssettlement',
+                    name: '唯尚费用明细',
+                    org: ['DISPATCH_CENTER'],
+                    component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                    quickuuid: 'sj_itms_cost_ws_settlement_y',
+                    authority: ['sjtms.costReport.weishang'],
+                  },
+                  {
+                    path: '/bigData/costReport/weiShangReport/wsstaff',
+                    name: '员工唯尚费用',
+                    org: ['DISPATCH_CENTER'],
+                    component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                    quickuuid: 'sj_itms_cost_ws_staff_y',
+                    authority: ['sjtms.costReport.weishang'],
                   },
                 ],
               },
