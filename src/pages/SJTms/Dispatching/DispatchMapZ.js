@@ -34,7 +34,6 @@ export default class DispatchMapZ extends Component {
   };
 
   componentDidMount() {
-    this.initData();
     this.initMap();
   }
 
@@ -43,30 +42,12 @@ export default class DispatchMapZ extends Component {
     this.map.removeEventListener('zoomstart');
     this.map.removeEventListener('zoomend');
   }
-  //初始化门店数据
-  initData = () => {
-    const { orders } = this.props;
-    let shipOrder = [...orders].filter(x => x.longitude);
-    shipOrder = this.groupByOrder(shipOrder);
-
-    //延时获取 因为 可能还没渲染完就获取元素 防止获取不到
-    setTimeout(() => {
-      document.getElementsByClassName('BMapGLLib_rectangle')[0]?.addEventListener('click', e => {
-        //设置不允许旋转
-        // this.setState({ isRotate: !this.state.isRotate });
-      });
-    }, 1000);
-
-    this.setState({ shipOrder: shipOrder });
-  };
 
   //初始化Map
   initMap = () => {
-    // document.oncontextmenu = function(e) {
-    //   /*屏蔽浏览器默认右键事件*/
-    //   e = e || window.event;
-    //   return false;
-    // };
+    const { orders } = this.props;
+    let shipOrder = [...orders].filter(x => x.longitude);
+    shipOrder = this.groupByOrder(shipOrder);
 
     //避免map未生成，延迟1s
     setTimeout(() => {
@@ -114,66 +95,76 @@ export default class DispatchMapZ extends Component {
 
       this.map.addContextMenu(menu); // 给地图添加右键菜单
 
-      // var view = new mapvgl.View({
-      //   map: this.map,
-      // });
+      //缩放聚合
+      var view = new mapvgl.View({
+        map: this.map,
+      });
 
-      // var clusterLayer = new mapvgl.ClusterLayer({
-      //   minSize: 30, // 聚合点显示的最小直径
-      //   maxSize: 50, // 聚合点显示的最大直径
-      //   clusterRadius: 150, // 聚合范围半径
-      //   gradient: { 0: 'blue', 0.5: 'green', 1.0: 'red' }, // 聚合点颜色梯度
-      //   maxZoom: 15, // 聚合的最大级别，当地图放大级别高于此值将不再聚合
-      //   minZoom: 5, // 聚合的最小级别，当地图放大级别低于此值将不再聚合
-      //   // 是否显示文字
-      //   showText: true,
-      //   // 开始聚合的最少点数，点数多于此值才会被聚合
-      //   minPoints: 5,
-      //   // 设置文字样式
-      //   textOptions: {
-      //     fontSize: 12,
-      //     color: 'white',
-      //     // 格式化数字显示
-      //     format: function(count) {
-      //       return count >= 10000
-      //         ? Math.round(count / 1000) + 'k'
-      //         : count >= 1000
-      //           ? Math.round(count / 100) / 10 + 'k'
-      //           : count;
-      //     },
-      //   },
-      //   // 设置非聚合的点的icon
-      //   // iconOptions: {
-      //   //     width: 100 / 4,
-      //   //     height: 153 / 4,
-      //   //     icon: 'images/marker.png',
-      //   // },
-      //   enablePicked: true,
-      //   onClick(e) {
-      //     if (e.dataItem) {
-      //       // 可通过dataItem下面的children属性拿到被聚合的所有点
-      //       console.log(e.dataItem);
-      //     }
-      //   },
-      // });
+      let markerList = [];
 
-      // view.addLayer(clusterLayer);
-      // clusterLayer.setData(data);
+      // 构造数据
+      for (const s of shipOrder) {
+        markerList.push({
+          geometry: {
+            type: 'Point',
+            coordinates: [s.longitude, s.latitude],
+          },
+          properties: {
+            icon: [storeIcon], //storeIcon 先隐藏缩放的icon 如需显示，去除[]  TODO：考虑是使用该缩放聚合的点击事件还是缩放显示数字后隐藏原本的marker
+            width: 40,
+            height: 40,
+          },
+        });
+      }
+
+      var clusterLayer = new mapvgl.ClusterLayer({
+        minSize: 30, // 聚合点显示的最小直径
+        maxSize: 50, // 聚合点显示的最大直径
+        clusterRadius: 150, // 聚合范围半径
+        gradient: { 0: 'blue', 0.5: 'green', 1.0: 'red' }, // 聚合点颜色梯度
+        maxZoom: 15, // 聚合的最大级别，当地图放大级别高于此值将不再聚合
+        minZoom: 5, // 聚合的最小级别，当地图放大级别低于此值将不再聚合
+        // 是否显示文字
+        showText: true,
+        // 开始聚合的最少点数，点数多于此值才会被聚合
+        minPoints: 5,
+        // 设置文字样式
+        textOptions: {
+          fontSize: 12,
+          color: 'white',
+          // 格式化数字显示
+          format: function(count) {
+            return count >= 10000
+              ? Math.round(count / 1000) + 'k'
+              : count >= 1000
+                ? Math.round(count / 100) / 10 + 'k'
+                : count;
+          },
+        },
+        // 设置非聚合的点的icon
+        // iconOptions: {
+        //     width: 100 / 4,
+        //     height: 153 / 4,
+        //     icon: 'images/marker.png',
+        // },
+        enablePicked: true,
+        onClick(e) {
+          if (e.dataItem) {
+            // 可通过dataItem下面的children属性拿到被聚合的所有点
+            console.log(e.dataItem);
+          }
+        },
+      });
+
+      view.addLayer(clusterLayer);
+      clusterLayer.setData(markerList);
+
+      document.getElementsByClassName('BMapGLLib_rectangle')[0]?.addEventListener('click', e => {
+        //设置不允许旋转
+        // this.setState({ isRotate: !this.state.isRotate });
+      });
     }, 1000);
-
-    //缩放聚合 (引入js有问题)
-    // var markers = [];
-    // var pt = null;
-    // for (var i = 0; i < shipOrder.length; i++) {
-    //   pt = {
-    //     text: shipOrder[i].deliveryPoint.name,
-    //     location: `${shipOrder[i].longitude},${shipOrder[i].latitude}`,
-    //   };
-    //   markers.push(pt);
-    // }
-    // console.log('map', that.map);
-    // //最简单的用法，生成一个marker数组，然后调用markerClusterer类即可。
-    // var markerClusterer = new BMapLib.MarkerClusterer(that.map, { markers: markers });
+    this.setState({ shipOrder: shipOrder });
   };
 
   //路线规划

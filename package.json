@@ -58,6 +58,7 @@
     "lodash": "^4.17.10",
     "lodash-decorators": "^6.0.0",
     "mapv": "^2.0.49",
+    "mapvgl": "^1.0.0-beta.159",
     "memoize-one": "^4.0.0",
     "moment": "^2.22.2",
     "numeral": "^2.0.6",
