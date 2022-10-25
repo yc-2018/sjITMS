@@ -2,19 +2,21 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-08-04 11:34:06
+ * @LastEditTime: 2022-10-25 14:24:59
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
 import React, { Component } from 'react';
-import { Modal, Tabs, Button, message, Typography } from 'antd';
+import { Modal, Tabs, Button, message, Typography, Dropdown, Menu } from 'antd';
 import DispatchingTable from './DispatchingTable';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import ScheduleSearchForm from './ScheduleSearchForm';
 import BatchProcessConfirm from './BatchProcessConfirm';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
+import mapIcon from '@/assets/common/map.svg';
 import { ScheduleColumns, pagination } from './DispatchingColumns';
+import DispatchMap from '@/pages/SJTms/MapDispatching/schedule/ScheduleMap';
 import dispatchingStyles from './Dispatching.less';
 import { convertDateToTime } from '@/utils/utils';
 import { loginUser } from '@/utils/LoginContext';
@@ -392,20 +394,39 @@ export default class SchedulePage extends Component {
         >
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>排车单</Text>} key="Saved">
             <ScheduleSearchForm refresh={this.refreshTable} />
-            <DispatchingTable
-              comId="saveSchedule"
-              pagination={pagination}
-              loading={loading}
-              onClickRow={this.onClickRow}
-              selectedRowKeys={savedRowKeys}
-              changeSelectRows={this.tableChangeRows()}
-              dataSource={scheduleData}
-              refreshDataSource={scheduleData => {
-                this.setState({ scheduleData });
-              }}
-              columns={columns}
-              scrollY="calc(68vh - 152px)"
-            />
+            <Dropdown
+              overlay={
+                <Menu>
+                  <Menu.Item
+                    onClick={() => {
+                      this.dispatchMapRef.show(savedRowKeys);
+                    }}
+                  >
+                    <img src={mapIcon} style={{ width: 20, height: 20 }} />
+                    排车单地图
+                  </Menu.Item>
+                </Menu>
+              }
+              trigger={['contextMenu']}
+            >
+              <div>
+                <DispatchingTable
+                  comId="saveSchedule"
+                  pagination={pagination}
+                  loading={loading}
+                  onClickRow={this.onClickRow}
+                  selectedRowKeys={savedRowKeys}
+                  changeSelectRows={this.tableChangeRows()}
+                  dataSource={scheduleData}
+                  refreshDataSource={scheduleData => {
+                    this.setState({ scheduleData });
+                  }}
+                  columns={columns}
+                  scrollY="calc(68vh - 152px)"
+                />
+              </div>
+            </Dropdown>
+            <DispatchMap onRef={node => (this.dispatchMapRef = node)} />
             {/* 编辑排车单 */}
             <DispatchingCreatePage
               modal={{ title: '编辑排车单' }}
