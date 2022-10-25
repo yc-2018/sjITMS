@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-10-21 15:36:31
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-21 15:46:38
+ * @LastEditTime: 2022-10-25 16:24:43
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -45,7 +45,7 @@ export default class HighWayAreaGroupSearchPage extends QuickFormSearchPage {
           onOk={this.handleOk.bind()}
           onCancel={this.handleCancel.bind()}
           width={'80%'}
-          bodyStyle={{ height: 'calc(70vh)', overflowY: 'auto' }}
+          bodyStyle={{ height: 'calc(80vh)', overflowY: 'auto' }}
         >
           <HighWayAreaSearchPage quickuuid="sj_itms_highwayarea" />
         </Modal>
