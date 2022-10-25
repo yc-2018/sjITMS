@@ -61,6 +61,11 @@ export async function findLineSystemTree(payload) {
       method: 'get',
     });
   }
+  export async function inScheduleStore(payload) {
+    return request(`/itms-schedule/itms-schedule/lineShipAddress/inScheduleStore/${payload}`, {
+      method: 'get',
+    });
+  }
   
   export async function updateState(LineSystemUuid,state){
     return request(`/itms-schedule/itms-schedule/LineSystem/updateState/${LineSystemUuid}/${state}`, {

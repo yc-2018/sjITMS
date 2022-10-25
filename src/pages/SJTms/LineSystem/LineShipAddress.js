@@ -16,7 +16,8 @@ import {
   findLineByNameLike,
   addToNewLine,
   findChildLine,
-  updateStoreNum
+  updateStoreNum,
+  inScheduleStore
 } from '@/services/sjtms/LineSystemHis';
 import {
   updateStoreAddressList
@@ -67,6 +68,15 @@ export default class LineShipAddress extends QuickFormSearchPage {
           style={{ width: 80, textAlign: 'center' }}
           onChange={event => {}}
         />
+      );
+      event.component = component;
+    }
+    
+    if(event.column.fieldName == 'TYPE'){
+      const component = (
+        <a onClick={()=>this.fetchOperateSheculeStore(event.record)}>
+             {"移入待定池"}
+        </a>
       );
       event.component = component;
     }
@@ -157,17 +167,40 @@ export default class LineShipAddress extends QuickFormSearchPage {
       this.refreshTable();
     }
   };
+  drawExColumns =(e)=>{
+    // const c = {
+    //   title: '移入待定池',
+    //   //dataIndex: '移入待定池',
+    //   //key: '移入待定池',
+    //   sorter: true,
+    //   width: colWidth.codeColWidth,
+    //   render: (val, record) => {
+    //     return (
+    //       <a onClick={()=>this.fetchOperateSheculeStore(record)}>
+    //         {"移入待定池"}
+    //       </a>
+    //     );
+    //   },
+    // };
+    // return c;
+    
+      
+    
+  }
   //列删除操作
   renderOperateCol = record => {
-    return <OperateCol menus={this.fetchOperatePropsCommon(record)} />;
+    return <>
+    <OperateCol menus={this.fetchOperatePropsCommon(record)} />
+    </>
+    
   };
   fetchOperatePropsCommon = record => {
     return [
       {
-        name: '删除',
+        name: '移除',
         onClick: () => {
           Modal.confirm({
-            title: '是否删除' + record.ADDRESSNAME + '门店?',
+            title: '是否移除' + record.ADDRESSNAME + '门店?',
             onOk: () => {
               this.handleDelete(record.UUID);
             },
@@ -175,6 +208,15 @@ export default class LineShipAddress extends QuickFormSearchPage {
         },
       },
     ];
+  };
+  fetchOperateSheculeStore = record => {
+    console.log(record);
+          Modal.confirm({
+            title:  record.ADDRESSNAME + '是否移入待定池?',
+            onOk: () => {
+              this.inScheduleStore(record.UUID);
+            },
+          });
   };
   //删除执行
   handleDelete = async shipAddressUuid => {
@@ -186,6 +228,16 @@ export default class LineShipAddress extends QuickFormSearchPage {
       } else {
         // message.error('删除失败，请刷新后再操作');
       }
+    });
+  };
+   //添加待排门店池
+   inScheduleStore = async shipAddressUuid => {
+    const { pageFilters } = this.state;
+    await inScheduleStore(shipAddressUuid).then(result => {
+      if (result.success) {
+        message.success('操作成功');
+        this.getData(pageFilters);
+      } 
     });
   };
 
