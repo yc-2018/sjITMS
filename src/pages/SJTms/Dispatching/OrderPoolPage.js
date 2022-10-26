@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-06 10:32:36
+ * @LastEditTime: 2022-10-25 17:32:50
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -18,8 +18,7 @@ import {
 } from './DispatchingColumns';
 import OrderPoolSearchForm from './OrderPoolSearchForm';
 import DispatchingCreatePage from './DispatchingCreatePage';
-// import DispatchMap from './DispatchMap';
-import DispatchMap from './DispatchMapZ';
+import DispatchMap from '@/pages/SJTms/MapDispatching/dispatching/DispatchingMap';
 import dispatchingStyles from './Dispatching.less';
 import { queryAuditedOrder, getOrderByStat, savePending } from '@/services/sjitms/OrderBill';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
@@ -494,7 +493,7 @@ export default class OrderPoolPage extends Component {
             </div>
           )}
           <div style={{ position: 'absolute', top: 12, left: 160 }}>
-            <a href="#" onClick={() => this.setState({ mapModal: true })}>
+            <a href="#" onClick={() => this.dispatchMapRef.show()}>
               <img src={mapIcon} style={{ width: 20, height: 20 }} />
               地图
             </a>
@@ -509,16 +508,10 @@ export default class OrderPoolPage extends Component {
             }}
             onRef={node => (this.createPageModalRef = node)}
           />
-          <Modal
-            width="95vw"
-            centered
-            visible={mapModal}
-            footer={null}
-            onCancel={() => this.setState({ mapModal: false })}
-            destroyOnClose={true}
-          >
-            <DispatchMap orders={auditedData} dispatchingByMap={this.dispatchingByMap} />
-          </Modal>
+          <DispatchMap
+            dispatchingByMap={this.dispatchingByMap}
+            onRef={node => (this.dispatchMapRef = node)}
+          />
         </TabPane>
         <TabPane
           tab={<Text className={dispatchingStyles.cardTitle}>已排订单</Text>}

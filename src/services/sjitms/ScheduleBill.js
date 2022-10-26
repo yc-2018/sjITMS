@@ -2,17 +2,23 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-05-17 11:06:56
+ * @LastEditTime: 2022-10-24 16:10:22
  * @version: 1.0
  */
 import request from '@/utils/request';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { func } from 'prop-types';
 
 //根据uuid获取排车单
 export async function getSchedule(uuid) {
   return request(`/itms-schedule/itms-schedule/sj/bill/schedule/get?uuid=${uuid}`, {
     method: 'GET',
+  });
+}
+//根据排车单uuid列表，获取排车明细
+export async function getDetailByBillUuids(billUuids) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/getDetailByBillUuids`, {
+    body: billUuids,
+    method: 'POST',
   });
 }
 
