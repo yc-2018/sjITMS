@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-25 17:25:18
+ * @LastEditTime: 2022-10-26 10:05:34
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -440,10 +440,13 @@ export default class SchedulePage extends Component {
             {/* 新建排车单 */}
             <CreatePageModal
               modal={{ title: '新建排车单', width: 1000 }}
-              page={{ quickuuid: 'sj_itms_schedule', showPageNow: 'create' }}
+              page={{
+                quickuuid: 'sj_itms_schedule',
+                showPageNow: 'create',
+              }}
               customPage={ScheduleCreatePage}
               onSaved={() => {
-                this.createSchedulePageRef.show();
+                this.createSchedulePageRef.hide();
                 this.refreshTable();
               }}
               onRef={node => (this.createSchedulePageRef = node)}
