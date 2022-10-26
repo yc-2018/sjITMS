@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-25 10:17:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-19 16:33:59
+ * @LastEditTime: 2022-10-26 09:25:52
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -31,8 +31,7 @@ export default class ScheduleCreatePage extends QuickCreatePage {
   exHandleChange = async e => {
     const { fieldName, valueEvent } = e;
     const { form } = this.props;
-    if (fieldName == 'VEHICLECODE' && valueEvent) {
-      console.log('valueEvent', valueEvent);
+    if (fieldName == 'VEHICLEUUID' && valueEvent) {
       this.props.form.setFieldsValue({ ['CCCWEIGHT']: valueEvent.record.BEARWEIGHT });
       this.props.form.setFieldsValue({ ['CCCVOLUME']: valueEvent.record.BEARVOLUME });
       this.setState({
@@ -50,11 +49,13 @@ export default class ScheduleCreatePage extends QuickCreatePage {
       };
 
       this.entity['SJ_ITMS_SCHEDULE_MEMBER'] = [];
+      let cc = undefined;
       form.validateFields();
       await dynamicqueryById(param).then(result => {
         if (result.success && result.result.records !== 'false') {
           const billuuid = this.entity.sj_itms_schedule[0].UUID;
-          result.result.records.forEach((data, index) => {
+          const member = result.result.records;
+          member.forEach((data, index) => {
             this.entity['SJ_ITMS_SCHEDULE_MEMBER'].push({
               BILLUUID: billuuid,
               LINE: index + 1,
@@ -66,19 +67,34 @@ export default class ScheduleCreatePage extends QuickCreatePage {
               key: this.tableKey++,
             });
           });
+
+          cc = member.find(x => x.WORKTYPE == 'Driver');
+          if (cc != undefined) {
+            this.entity['sj_itms_schedule'][0] = {
+              ...this.entity['sj_itms_schedule'][0],
+              CARRIERUUID: cc.UUID,
+              CARRIERCODE: cc.EMPCODE,
+              CARRIERNAME: cc.EMPNAME,
+            };
+            this.props.form.setFieldsValue({
+              ['sj_itms_schedule_CARRIERUUID']: '[' + cc.EMPCODE + ']' + cc.EMPNAME,
+            });
+          }
+        }
+        if (cc == undefined) {
+          this.entity['sj_itms_schedule'][0] = {
+            ...this.entity['sj_itms_schedule'][0],
+            CARRIERUUID: '',
+            CARRIERCODE: '',
+            CARRIERNAME: '',
+          };
+          this.props.form.setFieldsValue({
+            ['sj_itms_schedule_CARRIERUUID']: '',
+          });
         }
         form.validateFields();
       });
     }
-  };
-
-  initEntity = () => {
-    const { onlFormInfos } = this.state;
-    //初始化entity
-    onlFormInfos.forEach(item => {
-      this.entity[item.onlFormHead.tableName] = [];
-    });
-    this.initUpdateEntity(onlFormInfos);
   };
 
   beforeSave = entity => {
@@ -95,28 +111,30 @@ export default class ScheduleCreatePage extends QuickCreatePage {
 
   formLoaded = () => {
     const { formItems } = this.state;
+    console.log('formItems', formItems);
+    if (this.props.extension) {
+      formItems['CCCWEIGHT'] = {
+        categoryName: '车辆信息',
+        component: Input,
+        fieldName: 'CCCWEIGHT',
+        fieldShowType: 'text',
+        key: 'CCCWEIGHT',
+        label: '车辆承重(换)',
+        tableName: 'sj_itms_schedule',
+        props: { disabled: true },
+      };
 
-    formItems['CCCWEIGHT'] = {
-      categoryName: '车辆信息',
-      component: Input,
-      fieldName: 'CCCWEIGHT',
-      fieldShowType: 'text',
-      key: 'CCCWEIGHT',
-      label: '车辆承重(换)',
-      tableName: 'sj_itms_schedule',
-      props: { disabled: true },
-    };
-
-    formItems['CCCVOLUME'] = {
-      categoryName: '车辆信息',
-      component: Input,
-      fieldName: 'CCCVOLUME',
-      fieldShowType: 'text',
-      key: 'CCCVOLUME',
-      label: '车辆体积(换)',
-      tableName: 'sj_itms_schedule',
-      props: { disabled: true },
-    };
+      formItems['CCCVOLUME'] = {
+        categoryName: '车辆信息',
+        component: Input,
+        fieldName: 'CCCVOLUME',
+        fieldShowType: 'text',
+        key: 'CCCVOLUME',
+        label: '车辆体积(换)',
+        tableName: 'sj_itms_schedule',
+        props: { disabled: true },
+      };
+    }
   };
 
   onSave = async data => {
@@ -149,7 +167,7 @@ export default class ScheduleCreatePage extends QuickCreatePage {
     if (success) {
       message.success(commonLocale.saveSuccessLocale);
       if (editableState.includes(entity.sj_itms_schedule[0].STAT)) {
-        await calculateMemberWage(entity.sj_itms_schedule[0].BILLNUMBER);
+        const operation = await calculateMemberWage(entity.sj_itms_schedule[0].BILLNUMBER);
       }
     }
   };

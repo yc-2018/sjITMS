@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:01:35
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-12 10:38:52
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-10-25 17:27:10
  * @Description: 排车单
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\SchedulePage.js
  */
@@ -85,7 +85,12 @@ export default class SchedulePage extends PureComponent {
                   this.setState({ selectedRows: [] });
                 },
               }}
-              page={{ quickuuid: 'sj_itms_schedule', params }}
+              page={{
+                quickuuid: 'sj_itms_schedule',
+                params,
+                extension: true,
+                showPageNow: 'update',
+              }}
               customPage={ScheduleCreatePage}
               onRef={node => (this.createPageModalRef = node)}
             />
