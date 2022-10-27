@@ -47,7 +47,7 @@ let dynamicQueryCache = {}; // 存的是Promise对象
 export const memoizeDynamicQuery = async queryParams => {
   const key = JSON.stringify(queryParams);
   let lastResult = dynamicQueryCache[key];
-  if (lastResult != undefined) {
+  if (lastResult != undefined&&queryParams.isCache!='false') {
     return lastResult;
   }
 

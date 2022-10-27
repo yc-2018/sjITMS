@@ -23,11 +23,13 @@ import {
   backupLineSystem,
   isEnable,
   updateState,
+  findLineSystemTreeByStoreCode
 } from '@/services/sjtms/LineSystemHis';
 import linesStyles from './LineSystem.less';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import Select from '@/components/ExcelImport/Select';
 import request from '@/utils/request';
+import ExportJsonExcel from 'js-export-excel';
 
 const { Content, Sider } = Layout;
 const { TreeNode } = Tree;
@@ -102,14 +104,14 @@ export default class LineSystemSearchPage extends Component {
   };
 
   //查询所有线路体系
-  queryLineSystem = async lineuuid => {
+  queryLineSystema = async lineuuid => {
     await findLineSystemTree({ company: loginCompany().uuid, dcUuid: loginOrg().uuid }).then(
       async response => {
         let lineTreeData = [];
         let lineData = [];
         if (response) {
           const data = response?.data;
-          data?.forEach(element => {
+          await data?.forEach(element => {
             let itemData = {};
             this.getLineSystemTree(element, itemData, lineData);
             lineTreeData.push(itemData);
@@ -132,6 +134,43 @@ export default class LineSystemSearchPage extends Component {
       }
     );
   };
+    //查询所有线路体系
+    queryLineSystem = async lineuuid => {
+      const parmas = {
+        company: loginCompany().uuid,
+        dcUuid: loginOrg().uuid,
+        storeCode :this.state.storeCode?this.state.storeCode:'',
+        lineCode:this.state.lineCode?this.state.lineCode:''
+      }
+      await findLineSystemTreeByStoreCode(parmas).then(
+         response => {
+          let lineTreeData = [];
+          let lineData = [];
+          if (response) {
+            const data = response?.data;
+            data?.forEach(element => {
+              let itemData = {};
+              this.getLineSystemTree(element, itemData, lineData);
+              lineTreeData.push(itemData);
+            });
+            if (lineuuid == undefined) {
+              lineuuid = lineTreeData
+                ? lineTreeData[0]?.children
+                  ? lineTreeData[0].children[0]?.key
+                  : lineTreeData[0]?.key
+                : undefined;
+            }
+            this.setState({
+              expandKeys: lineTreeData.map(x => x.key),
+              lineTreeData,
+              lineData,
+              selectLineUuid: lineuuid,
+            });
+            this.onSelect([this.state.selectLineUuid]);
+          }
+        }
+      );
+    };
   //查询线路体系下所有线路
   getSerialArchLineList = async defSchemeUuid => {
     const param = {
@@ -178,7 +217,7 @@ export default class LineSystemSearchPage extends Component {
       },
     });
   };
-  pz = async systemUuid => {
+  onApproval = async(systemUuid,status)  => {
     // const params = [
     //   {
     //     tableName: 'SJ_ITMS_LINESYSTEM',
@@ -188,16 +227,16 @@ export default class LineSystemSearchPage extends Component {
     //     deleteAll: 'false',
     //   },
     // ];
-    await updateState(systemUuid, 'Approved').then(result => {
+    await updateState(systemUuid, status).then(result => {
       if (result.success) {
-        message.success('批准成功！');
+        message.success('操作成功');
         this.queryLineSystem(systemUuid);
       } else {
-        message.error('批准失败！');
+        message.error('操作成功');
       }
     });
   };
-  qxpz = async systemUuid => {
+  onCancelApproval = async systemUuid => {
     await updateState(systemUuid, 'Revising').then(result => {
       if (result.success) {
         message.success('取消批准成功！');
@@ -207,7 +246,7 @@ export default class LineSystemSearchPage extends Component {
       }
     });
   };
-  zf = async systemUuid => {
+  onInvalid = async systemUuid => {
     await updateState(systemUuid, 'Discard').then(result => {
       if (result && result.success) {
         message.success('作废成功！');
@@ -217,7 +256,7 @@ export default class LineSystemSearchPage extends Component {
       }
     });
   };
-  bf = async () => {
+  onBackup = async () => {
     let params = {
       systemUuid: this.state.selectLineUuid,
       note: this.state.bfValue,
@@ -252,25 +291,31 @@ export default class LineSystemSearchPage extends Component {
         },
       };
       let isenable = await dynamicQuery(param);
-      return isenable.result?.records[0]?.ISENABLE;
+      return isenable.result?.records[0];
     }
   };
-  //选中树节点
-  onSelect = async (selectedKeys, event) => {
-    const { lineTreeData, lineData } = this.state;
-    const pdChildren = data => {
-      let nodeArr = data.map(item => {
-        const node = item.key == selectedKeys[0];
-        if (node) {
-          return node;
-        } else if (item.children) {
-          pdChildren(item.children);
+  //遍历查找
+   pdChildren = (data ,selectedKeys)=> {
+   //let node = {};
+    for(const item of data){
+      if(item.key==selectedKeys){
+        return item;
+      }else{
+        if(item.children){
+          let node   = this.pdChildren(item.children,selectedKeys)
+          if(node){
+            return this.pdChildren(item.children,selectedKeys)
+          }
         }
-      });
-      return nodeArr;
-    };
-
-    let sdf = pdChildren(lineTreeData);
+      }
+    }
+    return false;
+    
+  };
+  //选中树节点
+  onSelect =  async (selectedKeys, event) => {
+    const { lineTreeData, lineData } = this.state;
+    let sdf =await this.pdChildren(lineTreeData,selectedKeys[0]);
     if (selectedKeys.length == 1 && selectedKeys[0] == undefined) {
       this.setState({ rightContent: <></>, selectLineUuid: undefined });
       return;
@@ -278,12 +323,12 @@ export default class LineSystemSearchPage extends Component {
     if (event && !event.selected) return;
 
     const system = lineTreeData.find(x => x.key == selectedKeys[0]);
-    if (!system && sdf?.children) {
-      this.setState({ rightContent: <></> });
-      return;
-    }
-    let enable = await this.swithCom(system, selectedKeys[0]);
-
+   // const system = lineTreeData.find(x => x.key == selectedKeys[0]);
+    // if (!system && sdf?.children) {
+    //   this.setState({ rightContent: <></> });
+    //   return;
+    // }
+    const systemData = await this.swithCom(system, selectedKeys[0]);
     this.setState({
       rightContent: system ? (
         <div>
@@ -292,32 +337,40 @@ export default class LineSystemSearchPage extends Component {
             <div className={linesStyles.action}>
               <Switch
                 checkedChildren="启用"
-                checked={enable == 1}
+                checked={systemData && (systemData.ISENABLE == 1)}
                 unCheckedChildren="禁用"
                 onClick={() => {
                   Modal.confirm({
-                    title: enable == 1 ? '确定禁用?' : '确定启用',
+                    title: systemData && (systemData.ISENABLE) == 1 ? '确定禁用?' : '确定启用',
                     onOk: () => {
-                      this.swithChange(selectedKeys[0], enable == 1 ? 0 : 1);
+                      this.swithChange(selectedKeys[0], systemData && (systemData.ISENABLE == 1) ? 0 : 1);
                     },
                   });
                 }}
               />
-              <Button
-                type="primary"
+               <Switch
+                checkedChildren="已批准"
+                checked={systemData && (systemData.STATUS == 'Approved')}
+                unCheckedChildren="未批准"
                 onClick={() => {
-                  this.setState({ visible: true });
+                  Modal.confirm({
+                    title: systemData && (systemData.STATUS == 'Approved') ? '确定未批准?' : '确定已批准',
+                    onOk: () => {
+                      this.onApproval(selectedKeys[0], systemData && (systemData.STATUS == 'Approved') ? 'Revising' : 'Approved');
+                    },
+                  });
                 }}
-              >
-                备份
+              />
+               <Button type="primary" onClick={e => this.lineSystemEditPage.handleSave(e)}>
+                保存
               </Button>
-              <Button
+              {/* <Button
                 type="primary"
                 onClick={() => {
                   Modal.confirm({
                     title: '确定批准?',
                     onOk: () => {
-                      this.pz(selectedKeys[0]);
+                      this.onApproval(selectedKeys[0]);
                     },
                   });
                 }}
@@ -330,20 +383,20 @@ export default class LineSystemSearchPage extends Component {
                   Modal.confirm({
                     title: '确定取消批准?',
                     onOk: () => {
-                      this.qxpz(selectedKeys[0]);
+                      this.onCancelApproval(selectedKeys[0]);
                     },
                   });
                 }}
               >
                 取消批准
-              </Button>
+              </Button> */}
               <Button
                 type="danger"
                 onClick={() => {
                   Modal.confirm({
                     title: '确定作废?',
                     onOk: () => {
-                      this.zf(selectedKeys[0]);
+                      this.onInvalid(selectedKeys[0]);
                     },
                   });
                 }}
@@ -352,6 +405,14 @@ export default class LineSystemSearchPage extends Component {
               </Button>
               <Button type="primary" icon="plus" onClick={() => this.lineCreatePageModalRef.show()}>
                 添加路线
+              </Button>
+              <Button
+                type="primary"
+                onClick={() => {
+                  this.setState({ visible: true });
+                }}
+              >
+                备份
               </Button>
               {/* <Button
                 onClick={() => {
@@ -365,9 +426,7 @@ export default class LineSystemSearchPage extends Component {
               >
                 删除
               </Button> */}
-              {/* <Button type="primary" onClick={e => this.lineSystemEditPage.handleSave(e)}>
-                保存
-              </Button> */}
+             
             </div>
           </div>
           <div style={{ width: '80%' }}>
@@ -376,7 +435,7 @@ export default class LineSystemSearchPage extends Component {
               showPageNow="update"
               noBorder={true}
               noCategory={true}
-              params={{ entityUuid: selectedKeys[0] }}
+              params={{ entityUuid: selectedKeys[0]}}
               onRef={node => (this.lineSystemEditPage = node)}
             />
           </div>
@@ -389,7 +448,8 @@ export default class LineSystemSearchPage extends Component {
               quickuuid="sj_itms_line_shipaddress"
               lineuuid={selectedKeys[0]}
               lineTreeData={this.state.lineTreeData}
-              showadfa={this.queryLineSystem}
+              showadfa={()=>this.queryLineSystem(this.state.selectLineUuid)}
+              canDragTables ={sdf && sdf.children? false:true}
               linecode={
                 lineData.length > 0 ? lineData.find(x => x.uuid == selectedKeys[0]).code : ''
               }
@@ -413,16 +473,15 @@ export default class LineSystemSearchPage extends Component {
     }
     this.setState({ expandKeys });
   };
-
   //绘制左侧菜单栏
   drawSider = () => {
+    const { getFieldDecorator } = this.props.form;
     const { expandKeys, selectLineUuid } = this.state;
     var lineTreeData = JSON.parse(JSON.stringify(this.state.lineTreeData));
     const formItemLayout = {
-      labelCol:16,
-      wrapperCol:16
+      labelCol:8,
+      wrapperCol:8
     };
-
     const renderTreeNode = data => {
       let nodeArr = data.map(item => {
         item.title = (
@@ -467,39 +526,69 @@ export default class LineSystemSearchPage extends Component {
             {/* <Button type="primary"  size='small' onClick={() => this.setState({ uploadVisible: true })}>
               导入体系
             </Button> */}
+             <Button type="primary" size='small' onClick={() => this.downloadTemplate()}>
+              下载导入模板
+            </Button>
             <Button type="primary" size='small' onClick={() => this.setState({ uploadLineVisible: true })}>
               导入线路
             </Button>
+          
           </div>
-        </div>
-        {/* <div>
-            <Form  layout="inline" {...formItemLayout }>
+          <div>
+            <Form  layout="inline" {...formItemLayout } onSubmit={this.handleSubmitLine} >
                 <Form.Item label='线路编号'>
-                  <Input width={30}></Input>
+                {getFieldDecorator('lineCode', {
+                    rules: [{}],
+                 })(
+                <Input width={10} onBlur = {(e)=>this.setState({lineCode:e.target.value})}></Input>
+                )}
                 </Form.Item>
                 <Form.Item label='门店号'>
-                  <Input width={30}></Input>
+                {getFieldDecorator('storeCode', {
+                    rules: [{}],
+                 })(
+                <Input width={10} onBlur = {e=>this.setState({storeCode:e.target.value})}></Input>
+                )}
                 </Form.Item>
-                <Form.Item label='运作类型'>
-                  <Input width={30}></Input>
-                </Form.Item>
+              <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
+                <Button type="primary" htmlType="submit">
+                  查询
+                </Button>
+              </Form.Item>
             </Form>
-          </div> */}
-        <Tree
-          showLine={true}
-          showIcon={true}
-          selectable
-          expandedKeys={expandKeys}
-          selectedKeys={[selectLineUuid]}
-          onSelect={this.onSelect}
-          onExpand={this.onExpand}
-        >
-          {renderTreeNode(lineTreeData)}
-        </Tree>
+          </div>
+        </div>
+        <div style={{ height:480,overflow:'auto'}}>
+          <Tree
+            showLine={true}
+            showIcon={true}
+            selectable
+            expandedKeys={expandKeys}
+            selectedKeys={[selectLineUuid]}
+            onSelect={this.onSelect}
+            onExpand={this.onExpand}
+          >
+            {renderTreeNode(lineTreeData)}
+          </Tree>
+         </div>
+      
       </div>
     );
   };
-
+  downloadTemplate = () =>{ 
+    var option = [];
+    option.fileName = '线路导入模板'; //导出的Excel文件名
+    option.datas = [
+      {
+        sheetData:[],
+        sheetName: '线路', //工作表的名字
+        sheetFilter: [],
+        sheetHeader:['门店号','班组','门店名称','调整后线路'],
+      },
+    ];
+    var toExcel = new ExportJsonExcel(option);
+    toExcel.saveExcel();
+}
   //绘制右侧内容
   drawContent = () => {
     return this.state.rightContent;
@@ -507,18 +596,22 @@ export default class LineSystemSearchPage extends Component {
   handleCancel = async () => {
     this.queryLineSystem(this.state.selectLineUuid);
   };
+
+  handleSubmitLine = (e)=>{
+    e.preventDefault();
+    this.props.form.validateFields((err, values) => {
+      if (err) {
+        this.queryLineSystem();
+      }
+    });
+  }
   /**
    * 导入线路
    */
   handleUpload = async() => {
     const { file} = this.state;
-    //this.formRef.preventDefault();
-    //console.log(this.formRef);
-   // this.props.form.preventDefault();
     this.props.form.validateFields((err, fieldsValue) => {
-      console.log("as",err);
       if (err) {
-        console.log(fieldsValue);
         return;
       }
       const formData = new FormData();
@@ -540,6 +633,7 @@ export default class LineSystemSearchPage extends Component {
  
   };
   render() {
+    this.lineSystemEditPage?.init()
     const { selectLineUuid } = this.state;
     const { getFieldDecorator} = this.props.form;
     const props = {
@@ -557,7 +651,6 @@ export default class LineSystemSearchPage extends Component {
       onChange(info) {
         if (info.file.status !== 'uploading') {
             //this.setState({fileList:info.fileList[0]})
-          console.log(info.file, info.fileList);
         }
         if (info.file.status === 'done') {
           message.success(`${info.file.name} 上传成功`);
@@ -571,7 +664,7 @@ export default class LineSystemSearchPage extends Component {
       <Content className={linesStyles.contentWrapper}>
         <Layout>
           {/* 左侧内容 */}
-          <Sider width={300} className={linesStyles.leftWrapper} style={{ overflow: 'auto' }}>
+          <Sider width={350} className={linesStyles.leftWrapper} >
             {this.drawSider()}
             <CreatePageModal
               modal={{
@@ -612,7 +705,7 @@ export default class LineSystemSearchPage extends Component {
             <Modal
               title="备份"
               visible={this.state.visible}
-              onOk={this.bf}
+              onOk={this.onBackup}
               onCancel={() => this.setState({ visible: false })}
             >
               备注：
@@ -645,7 +738,7 @@ export default class LineSystemSearchPage extends Component {
               confirmLoading = {this.state.uploading}
               onCancel={() => this.setState({ uploadLineVisible: false })}
               //okButtonProps={{ hidden: true }}
-              afterClose={() => this.queryLineSystem()}
+              afterClose={() => this.queryLineSystem(this.state.selectLineUuid)}
               destroyOnClose={true}
             >
               <Form ref={(node)=>this.formRef = node}>

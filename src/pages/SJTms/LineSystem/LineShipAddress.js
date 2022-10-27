@@ -28,6 +28,7 @@ import TableTransfer from './TableTransfer';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import LineShipAddressPlan from "./LineShipAddressPlan";
 import AlcNumModal from '@/pages/Wcs/Dps/Job/AlcNumModal';
+import { throttleSetter } from 'lodash-decorators';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -54,10 +55,22 @@ export default class LineShipAddress extends QuickFormSearchPage {
   constructor(props) {
     super(props);
   }
-
+  changeStatess = () => {
+    this.setState({canDragTable:true}
+      )}; //扩展state
+    componentWillMount() {
+      this.setState({canDragTable:this.props.canDragTables});
+      }
   getLineShipAddress = () => {
     return this.state.data;
   };
+  // componentWillReceiveProps(Props){
+  //   console.log("componentWillReceiveProps",this.props);
+  //   this.setState({canDragTable:false});
+    
+  //   //if(this.props.lineuuid != Props.lineuuid){
+      
+  // }
 
   drawcell = event => {
     if (event.column.fieldName == 'ORDERNUM') {
@@ -83,7 +96,6 @@ export default class LineShipAddress extends QuickFormSearchPage {
   };
 
   exSearchFilter = async() => {
-    // debugger
     let e =  await findChildLine ({"uuid":this.props.lineuuid});
     let parmas = []
       if(e && e.success){
@@ -210,7 +222,6 @@ export default class LineShipAddress extends QuickFormSearchPage {
     ];
   };
   fetchOperateSheculeStore = record => {
-    console.log(record);
           Modal.confirm({
             title:  record.ADDRESSNAME + '是否移入待定池?',
             onOk: () => {
@@ -347,7 +358,6 @@ export default class LineShipAddress extends QuickFormSearchPage {
       lineModalVisible,
       lineData,
     } = this.state;
-   
     const options = lineData.map(a => {
       return <Select.Option key={a.uuid}>{a.name}</Select.Option>;
     });
