@@ -40,6 +40,13 @@ export default class PlanConfig extends ConfigSearchPage {
       render: (_, record) => (record.name ? '[' + record.code + ']' + record.name : ''),
     },
     {
+      title: dispatcherConfigLocale.wharf,
+      dataIndex: 'wharf',
+      render: (val, record) => (
+        <Checkbox checked={val} onChange={event => this.onChange(record, 'wharf', event)} />
+      ),
+    },
+    {
       title: dispatcherConfigLocale.volume,
       dataIndex: 'volume',
       render: (val, record) => (
