@@ -877,12 +877,17 @@ export default class DispatchingCreatePage extends Component {
                     </Menu.Item>
                     <Menu.Item
                       onClick={() => {
+                        const records = orders.filter(x => rowKeys.indexOf(x.uuid) != -1);
+                        if (records.length == 0) {
+                          message.error('请选择需要移除的运输订单！');
+                          return;
+                        }
                         const that = this;
                         confirm({
                           title: '提示',
                           content: '是否移除选中运输订单？',
                           onOk() {
-                            that.removeDetails(orders.filter(x => rowKeys.indexOf(x.uuid) != -1));
+                            that.removeDetails(records);
                           },
                           onCancel() {
                             that.setState({ rowKeys: [] });
