@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-25 10:17:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-26 09:25:52
+ * @LastEditTime: 2022-10-27 10:02:44
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -111,7 +111,6 @@ export default class ScheduleCreatePage extends QuickCreatePage {
 
   formLoaded = () => {
     const { formItems } = this.state;
-    console.log('formItems', formItems);
     if (this.props.extension) {
       formItems['CCCWEIGHT'] = {
         categoryName: '车辆信息',

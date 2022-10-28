@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-27 09:23:26
+ * @LastEditTime: 2022-10-27 18:14:17
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -130,6 +130,17 @@ export async function shipRollback(Uuid) {
   });
 }
 
+// 修改码头
+export async function updatePris(uuid, pris) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/updatePris?uuid=${uuid}&pris=${pris}`,
+    {
+      method: 'PUT',
+    }
+  );
+}
+
+//移车
 export async function removeCar(payload) {
   return request(`/itms-schedule/itms-schedule/sj/bill/schedule/removeCar`, {
     method: 'POST',

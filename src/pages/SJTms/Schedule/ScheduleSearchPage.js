@@ -2,18 +2,29 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-27 09:20:43
+ * @LastEditTime: 2022-10-28 10:11:30
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
 import { connect } from 'dva';
-import { Dropdown, Menu, Icon, Button, message, Popconfirm, Modal, Form, InputNumber } from 'antd';
+import {
+  Dropdown,
+  Menu,
+  Icon,
+  Button,
+  message,
+  Popconfirm,
+  Modal,
+  Form,
+  InputNumber,
+  Input,
+} from 'antd';
 import { convertDate, convertDateToTime } from '@/utils/utils';
 import { loginOrg, loginUser } from '@/utils/LoginContext';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { queryAllData } from '@/services/quick/Quick';
-import { aborted, shipRollback, abortedAndReset } from '@/services/sjitms/ScheduleBill';
+import { aborted, shipRollback, abortedAndReset, updatePris } from '@/services/sjitms/ScheduleBill';
 import { depart, back } from '@/services/sjitms/ScheduleProcess';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 import { groupBy, sumBy, orderBy } from 'lodash';
@@ -33,6 +44,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     minHeight: '50vh',
     isNotHd: true,
     showAbortAndReset: false,
+    showUpdatePirsPop: false,
+    newPirs: '',
   };
 
   drawTopButton = () => {
@@ -77,6 +90,15 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     };
   };
 
+  onUpdatePirs = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 1) {
+      this.setState({ showUpdatePirsPop: true });
+    } else {
+      message.warn('请选择一条数据！');
+    }
+  };
+
   //添加操作列
   drawExColumns = e => {
     const editableState = ['Saved', 'Approved', 'Shipping', 'Shiped'];
@@ -100,13 +122,32 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     }
   };
 
+  updatePirs = async () => {
+    const { selectedRows, newPirs } = this.state;
+    if (selectedRows[0].STAT != 'Approved' || selectedRows[0].PIRS == undefined) {
+      message.warn('该排车单未签到，不能修改码头！');
+    }
+    const response = await updatePris(selectedRows[0].UUID, newPirs);
+    if (response.success) {
+      message.success('修改成功！');
+      this.setState({ showUpdatePirsPop: false });
+      this.queryCoulumns();
+    }
+  };
+
   handleMenuClick = e => {
     this.handlePrint(e.key);
   };
 
   //按钮面板
   drawToolsButton = () => {
-    const { selectedRows, showRollBackPop, showAbortPop, showAbortAndReset } = this.state;
+    const {
+      selectedRows,
+      showRollBackPop,
+      showAbortPop,
+      showAbortAndReset,
+      showUpdatePirsPop,
+    } = this.state;
     const menu = (
       <Menu onClick={this.handleMenuClick}>
         <Menu.Item key="load">装车单</Menu.Item>
@@ -179,7 +220,13 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         >
           <Button onClick={() => this.onBatchAbortAndReset()}>作废并重排</Button>
         </Popconfirm>
-
+        <Button
+          onClick={() => {
+            this.onUpdatePirs();
+          }}
+        >
+          修改码头
+        </Button>
         <Button onClick={() => this.onMoveCar()}>移车</Button>
         <Dropdown overlay={menu}>
           <Button onClick={() => this.handlePrint()} icon="printer">
@@ -194,6 +241,32 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         <Button type="danger" ghost onClick={this.handleBack}>
           回厂
         </Button>
+        <Modal
+          title="修改码头"
+          visible={showUpdatePirsPop}
+          onOk={() => {
+            this.updatePirs();
+          }}
+          onCancel={() => {
+            this.setState({ showUpdatePirsPop: false });
+          }}
+        >
+          <Form>
+            <Form.Item label="排车单号" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              <span>{selectedRows.length == 1 ? selectedRows[0].BILLNUMBER : ''}</span>
+            </Form.Item>
+            <Form.Item label="码头号" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              <span>{selectedRows.length == 1 ? selectedRows[0].PIRS : ''}</span>
+            </Form.Item>
+            <Form.Item label="修改码头" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              <Input
+                onChange={e => {
+                  this.setState({ newPirs: e.target.value });
+                }}
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
       </>
     );
   };
