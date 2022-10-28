@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-27 11:24:00
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-01 14:15:04
+ * @LastEditTime: 2022-10-28 11:17:58
  * @Description: 修改排车单 运输订单明细 整件配送数量
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\EditContainerNumberPageF.js
  */
@@ -49,7 +49,7 @@ export default class EditContainerNumberPageF extends Component {
                 placeholder="请输入排车件数"
                 min={0}
                 style={{ width: '100%' }}
-                max={order.realCartonCount}
+                max={order.cartonCount}
               />
             )}
           </Form.Item>

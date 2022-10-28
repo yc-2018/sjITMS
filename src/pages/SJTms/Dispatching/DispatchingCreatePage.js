@@ -14,6 +14,8 @@ import {
   Icon,
   Badge,
   Tooltip,
+  Dropdown,
+  Menu,
 } from 'antd';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import { isEmptyObj, guid } from '@/utils/utils';
@@ -28,6 +30,7 @@ import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { getByDispatchcenterUuid } from '@/services/tms/DispatcherConfig';
 
 const { Search } = Input;
+const { confirm } = Modal;
 
 export default class DispatchingCreatePage extends Component {
   basicEmployee = [];
@@ -39,6 +42,7 @@ export default class DispatchingCreatePage extends Component {
     visible: false,
     isEdit: false,
     orders: [],
+    rowKeys: [],
     vehicles: [],
     employees: [],
     empParams: [],
@@ -176,7 +180,7 @@ export default class DispatchingCreatePage extends Component {
 
   //显示
   show = (isEdit, record) => {
-    this.setState({ visible: true, isEdit, loading: true });
+    this.setState({ visible: true, isEdit, loading: true, rowKeys: [] });
     this.initData(isEdit, record);
   };
   //取消隐藏
@@ -290,6 +294,15 @@ export default class DispatchingCreatePage extends Component {
     let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
     this.setState({ orders, vehicles });
   };
+  removeDetails = async records => {
+    let { orders } = this.state;
+    const uuids = records.map(x => x.uuid);
+    orders = orders.filter(x => uuids.indexOf(x.uuid) == -1);
+    let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
+    this.setState({ orders, vehicles });
+  };
+
+  //保存校验
   handlSaveverify = async () => {
     const { isEdit, orders, schedule, selectVehicle, selectEmployees } = this.state;
     const orderSummary = this.groupByOrder(orders);
@@ -425,9 +438,12 @@ export default class DispatchingCreatePage extends Component {
     // if (!this.verifySchedule(orderSummary, selectVehicle, selectEmployees)) {
     //   return;
     // }
+
+    const orderType = uniqBy(orders.map(x => x.orderType)).shift();
+    const type = orderType == 'TakeDelivery' ? 'Task' : 'Job';
     const driver = selectEmployees.find(x => x.memberType == 'Driver');
     const paramBody = {
-      type: 'Job',
+      type,
       vehicle: {
         uuid: selectVehicle.UUID,
         code: selectVehicle.CODE,
@@ -726,25 +742,33 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ editPageVisible: true, scheduleDetail: record });
   };
   //更新state订单整件排车件数
-  updateCartonCount = event => {
+  updateCartonCount = result => {
     const { orders } = this.state;
-    if (event.count.cartonCount <= 0) {
+    const that = this;
+    if (result.count.cartonCount <= 0) {
       return;
     }
-    for (const order of orders) {
-      if (order.billNumber == event.billNumber) {
-        order.volume =
-          Math.round((event.count.cartonCount / order.realCartonCount) * order.volume * 1000) /
-          1000;
-        order.weight =
-          Math.round((event.count.cartonCount / order.realCartonCount) * order.weight * 1000) /
-          1000;
-        order.realCartonCount = event.count.cartonCount;
-        order.unDispatchCarton = order.cartonCount - order.realCartonCount;
-        break;
-      }
-    }
-    this.setState({ orders, editPageVisible: false });
+    let record = orders.find(x => x.billNumber == result.billNumber);
+    const remVolume = (result.count.cartonCount / record.cartonCount) * record.volume;
+    const remWeight = (result.count.cartonCount / record.cartonCount) * record.weight;
+    const volumes =
+      Math.round((sumBy(orders.map(x => x.volume)) - (record.volume - remVolume)) * 1000) / 1000;
+    const weights =
+      Math.round(sumBy(orders.map(x => x.weight)) - (record.weight - remWeight)) / 1000;
+    confirm({
+      title: '提示',
+      content: `拆单后排车单体积为：${volumes}m³，重量为：${weights}t ，是否确定拆单？`,
+      onOk() {
+        record.volume = remVolume;
+        record.weight = remWeight;
+        record.realCartonCount = result.count.cartonCount;
+        record.unDispatchCarton = record.cartonCount - record.cartonCount;
+        that.setState({ orders, editPageVisible: false });
+      },
+      onCancel() {
+        that.setState({ editPageVisible: false });
+      },
+    });
   };
 
   render() {
@@ -753,6 +777,7 @@ export default class DispatchingCreatePage extends Component {
       orders,
       selectEmployees,
       selectVehicle,
+      rowKeys,
       scheduleDetail,
       editPageVisible,
       note,
@@ -834,17 +859,59 @@ export default class DispatchingCreatePage extends Component {
         <Spin indicator={LoadingIcon('default')} spinning={loading}>
           <Row gutter={[5, 0]}>
             <Col span={16}>
-              <DispatchingTable
-                loading={loading}
-                className={dispatchingStyles.dispatchingTable}
-                columns={[...CreatePageOrderColumns, buildRowOperation]}
-                dataSource={orders}
-                refreshDataSource={orders => {
-                  this.setState({ orders });
-                }}
-                pagination={false}
-                scrollY="40vh"
-              />
+              <Dropdown
+                overlay={
+                  <Menu>
+                    <Menu.Item
+                      onClick={() => {
+                        const records = orders.filter(x => rowKeys.indexOf(x.uuid) != -1);
+                        this.editSource(records[0]);
+                      }}
+                    >
+                      <Icon type="edit" />
+                      拆单
+                    </Menu.Item>
+                    <Menu.Item
+                      onClick={() => {
+                        const that = this;
+                        confirm({
+                          title: '提示',
+                          content: '是否移除选中运输订单？',
+                          onOk() {
+                            that.removeDetails(orders.filter(x => rowKeys.indexOf(x.uuid) != -1));
+                          },
+                          onCancel() {
+                            that.setState({ rowKeys: [] });
+                          },
+                        });
+                      }}
+                    >
+                      <Icon type="delete" />
+                      移除
+                    </Menu.Item>
+                  </Menu>
+                }
+                trigger={['contextMenu']}
+              >
+                <div>
+                  <DispatchingTable
+                    loading={loading}
+                    clickRow
+                    className={dispatchingStyles.dispatchingTable}
+                    columns={CreatePageOrderColumns}
+                    dataSource={orders}
+                    refreshDataSource={orders => {
+                      this.setState({ orders });
+                    }}
+                    changeSelectRows={selectedRowKeys =>
+                      this.setState({ rowKeys: selectedRowKeys })
+                    }
+                    selectedRowKeys={rowKeys}
+                    pagination={false}
+                    scrollY="40vh"
+                  />
+                </div>
+              </Dropdown>
               <Row gutter={[5, 0]} style={{ marginTop: 5 }}>
                 <Col span={12}>{this.buildSelectVehicleCard()}</Col>
                 <Col span={12}>{this.buildSelectEmployeeCard()}</Col>
@@ -869,8 +936,7 @@ export default class DispatchingCreatePage extends Component {
                   <div style={{ flex: 1 }}>
                     <div>重量</div>
                     <div className={dispatchingStyles.orderTotalNumber}>
-                      {Math.round(totalData.weight * 1000) / 1000}
-                      kg
+                      {Math.round(totalData.weight) / 1000}t
                     </div>
                   </div>
                 </div>
@@ -891,7 +957,7 @@ export default class DispatchingCreatePage extends Component {
                     <div> 整件</div>
                     <div>
                       <span className={dispatchingStyles.orderTotalNumber}>
-                        {totalData.realCartonCount}
+                        {totalData.cartonCount}
                       </span>
                     </div>
                   </div>
@@ -900,7 +966,7 @@ export default class DispatchingCreatePage extends Component {
                     <div>周转箱</div>
                     <div>
                       <span className={dispatchingStyles.orderTotalNumber}>
-                        {totalData.realContainerCount}
+                        {totalData.containerCount}
                       </span>
                     </div>
                   </div>

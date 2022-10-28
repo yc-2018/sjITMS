@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-09-27 16:09:23
+ * @LastEditTime: 2022-10-28 09:23:16
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -43,7 +43,7 @@ export default class ScheduleDetailPage extends Component {
       selectedRowKeys: [],
       childSelectedRowKeys: [],
     });
-    this.props.refreshSelectRowOrder([], 'Schedule');
+    this.props.refreshSelectRowOrder([], ['Schedule']);
   };
 
   //按送货点汇总运输订单
@@ -108,10 +108,9 @@ export default class ScheduleDetailPage extends Component {
     orders = orders.map(item => {
       return { ...item, billNumber: item.orderNumber, stat: 'Schedule' };
     });
-    this.props.refreshSelectRowOrder(
-      orders.filter(x => selectedRowKeys.indexOf(x.uuid) != -1),
-      'Schedule'
-    );
+    this.props.refreshSelectRowOrder(orders.filter(x => selectedRowKeys.indexOf(x.uuid) != -1), [
+      'Schedule',
+    ]);
     this.setState({ selectedRowKeys });
   };
   childTableChangeRows = result => {
@@ -122,7 +121,7 @@ export default class ScheduleDetailPage extends Component {
     });
     this.props.refreshSelectRowOrder(
       orders.filter(x => result.childSelectedRowKeys.indexOf(x.uuid) != -1),
-      'Schedule'
+      ['Schedule']
     );
     this.setState({
       selectedParentRowKeys: result.selectedRowKeys,
