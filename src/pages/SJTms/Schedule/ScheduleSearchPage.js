@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-28 10:21:06
+ * @LastEditTime: 2022-10-28 17:52:59
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -17,7 +17,7 @@ import {
   Modal,
   Form,
   InputNumber,
-  Input,
+  Select,
 } from 'antd';
 import { convertDate, convertDateToTime } from '@/utils/utils';
 import { loginOrg, loginUser } from '@/utils/LoginContext';
@@ -29,6 +29,7 @@ import { depart, back } from '@/services/sjitms/ScheduleProcess';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 import { groupBy, sumBy, orderBy } from 'lodash';
 import scher from '@/assets/common/scher.jpg';
+import { dynamicQuery } from '@/services/quick/Quick';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -46,6 +47,37 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     showAbortAndReset: false,
     showUpdatePirsPop: false,
     newPirs: '',
+    sourceData: [],
+  };
+
+  componentDidMount() {
+    this.queryCoulumns();
+    this.getCreateConfig();
+    this.initOptionsData();
+  }
+
+  initOptionsData = async () => {
+    let queryParamsJson = {
+      tableName: 'V_WMS_PIRS',
+      condition: {
+        params: [
+          // { field: 'PRETYPE', rule: 'eq', val: ['DEALMETHOD'] },
+          // { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+        ],
+      },
+    };
+    await dynamicQuery(queryParamsJson).then(datas => {
+      this.setState({ sourceData: datas.result.records });
+    });
+  };
+
+  buildOptions = () => {
+    const { sourceData } = this.state;
+    if (sourceData != 'false') {
+      return sourceData.map(data => {
+        return <Select.Option value={data.DOCKNO}>{data.DOCKNO}</Select.Option>;
+      });
+    }
   };
 
   drawTopButton = () => {
@@ -259,11 +291,21 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
               <span>{selectedRows.length == 1 ? selectedRows[0].PIRS : ''}</span>
             </Form.Item>
             <Form.Item label="修改码头" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
-              <Input
+              {/* <Input
                 onChange={e => {
                   this.setState({ newPirs: e.target.value });
                 }}
-              />
+              /> */}
+              <Select
+                allowClear
+                // value={e.val}
+                style={{ width: 120 }}
+                onChange={v => {
+                  this.setState({ newPirs: v });
+                }}
+              >
+                {this.buildOptions()}
+              </Select>
             </Form.Item>
           </Form>
         </Modal>

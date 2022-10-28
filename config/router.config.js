@@ -1415,6 +1415,22 @@ export default [
                 quickuuid: 'sj_itms_vehicle_arrange',
                 authority: ['sjtms.bigData.arrange'],
               },
+              {
+                path: '/bigData/loading/dispatchtime',
+                name: '司机送货时间统计',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_sj_itms_dispatchtime',
+                authority: ['sjtms.bigData.arrange'],
+              },
+              {
+                path: '/bigData/loading/driverfeereport',
+                name: '出车费用审核报表',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_sj_itms_driver_fee_report',
+                authority: ['sjtms.bigData.arrange'],
+              },
             ],
           },
 
