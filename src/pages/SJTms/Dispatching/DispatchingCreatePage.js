@@ -865,6 +865,10 @@ export default class DispatchingCreatePage extends Component {
                     <Menu.Item
                       onClick={() => {
                         const records = orders.filter(x => rowKeys.indexOf(x.uuid) != -1);
+                        if (records.length != 1) {
+                          message.error('请选择一张运输订单！');
+                          return;
+                        }
                         this.editSource(records[0]);
                       }}
                     >

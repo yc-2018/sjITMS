@@ -98,32 +98,6 @@ export const OrderColumns = [
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
-    title: '创建人',
-    dataIndex: 'createInfo',
-    width: 80,
-    render: val => (val ? <span>{val.operator.fullName}</span> : <Empty />),
-  },
-  {
-    title: '创建时间',
-    dataIndex: 'createTime',
-    width: 80,
-    render: (_, record) =>
-      record.createInfo.time ? <span>{record.createInfo.time}</span> : <Empty />,
-  },
-  {
-    title: '最后修改人',
-    dataIndex: 'lastModifyInfo',
-    width: 80,
-    render: val => (val ? <span>{val.operator.fullName}</span> : <Empty />),
-  },
-  {
-    title: '最后修改时间',
-    dataIndex: 'lastModifyTime',
-    width: 80,
-    render: (_, record) =>
-      record.lastModifyInfo.time ? <span>{record.lastModifyInfo.time}</span> : <Empty />,
-  },
-  {
     title: '备注',
     dataIndex: 'note',
     width: 80,
@@ -262,32 +236,6 @@ export const OrderDetailColumns = [
     dataIndex: 'amount',
     width: 80,
     render: val => (val ? <span>{val}</span> : <Empty />),
-  },
-  {
-    title: '创建人',
-    dataIndex: 'createInfo',
-    width: 80,
-    render: val => (val ? <span>{val.operator.fullName}</span> : <Empty />),
-  },
-  {
-    title: '创建时间',
-    dataIndex: 'createTime',
-    width: 80,
-    render: (_, record) =>
-      record.createInfo.time ? <span>{record.createInfo.time}</span> : <Empty />,
-  },
-  {
-    title: '最后修改人',
-    dataIndex: 'lastModifyInfo',
-    width: 80,
-    render: val => (val ? <span>{val.operator.fullName}</span> : <Empty />),
-  },
-  {
-    title: '最后修改时间',
-    dataIndex: 'lastModifyTime',
-    width: 80,
-    render: (_, record) =>
-      record.lastModifyInfo.time ? <span>{record.lastModifyInfo.time}</span> : <Empty />,
   },
   {
     title: '备注',
@@ -459,6 +407,32 @@ export const ScheduleColumns = [
     dataIndex: 'totalAmount',
     width: 100,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+  },
+  {
+    title: '创建人',
+    dataIndex: 'createInfo',
+    width: 80,
+    render: val => (val ? <span>{val.operator.fullName}</span> : <Empty />),
+  },
+  {
+    title: '创建时间',
+    dataIndex: 'createTime',
+    width: 80,
+    render: (_, record) =>
+      record.createInfo.time ? <span>{record.createInfo.time}</span> : <Empty />,
+  },
+  {
+    title: '最后修改人',
+    dataIndex: 'lastModifyInfo',
+    width: 80,
+    render: val => (val ? <span>{val.operator.fullName}</span> : <Empty />),
+  },
+  {
+    title: '最后修改时间',
+    dataIndex: 'lastModifyTime',
+    width: 80,
+    render: (_, record) =>
+      record.lastModifyInfo.time ? <span>{record.lastModifyInfo.time}</span> : <Empty />,
   },
 ];
 export const ScheduleDetailColumns = [
