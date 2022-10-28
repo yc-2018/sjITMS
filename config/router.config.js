@@ -11,7 +11,10 @@ export default [
   {
     path: '/driver',
     component: '../layouts/DriverLayout',
-    routes: [{ path: '/driver/swipe', component: './SJTms/Schedule/DriverSwipe' }],
+    routes: [
+      { path: '/driver/swipe', component: './SJTms/Schedule/DriverSwipe' },
+      { path: '/driver/DriverSwipePrint', component: './SJTms/Schedule/DriverSwipePrint' }
+  ],
   },
   {
     path: '/',
@@ -1310,6 +1313,13 @@ export default [
             name: 'checkin',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/Schedule/Swipe',
+            authority: ['sjtms.core.checkin'],
+          },
+          {
+            path: '/tmscode/checkinPrint',
+            name: '刷卡打印装车单',
+            org: ['DISPATCH_CENTER'],
+            component: './SJTms/Schedule/DriverSwipePrint',
             authority: ['sjtms.core.checkin'],
           },
           {

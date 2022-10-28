@@ -533,7 +533,7 @@ export default class LineSystemSearchPage extends Component {
       return nodeArr;
     };
     return (
-      <div>
+      <div style={{height:'100%'}}>
         <div className={linesStyles.navigatorPanelWrapper}>
           {/* <span className={linesStyles.sidertitle}>线路体系</span> */}
           <div className={linesStyles.action}>
@@ -588,7 +588,7 @@ export default class LineSystemSearchPage extends Component {
             </Form>
           </div>
         </div>
-        <div style={{ height: 480, overflow: 'auto' }}>
+        <div style={{ height: '80%', overflow: 'auto' }}>
           <Tree
             showLine={true}
             showIcon={true}
@@ -800,6 +800,7 @@ export default class LineSystemSearchPage extends Component {
                               params: [
                                 { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
                                 { field: 'DISPATCHCENTERUUID', rule: 'eq', val: [loginOrg().uuid] },
+                                { field: 'DELFLAG', rule: 'eq', val: [1] },
                               ],
                             },
                           }}

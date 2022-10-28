@@ -28,6 +28,15 @@ export async function driverSwipe(empId, companyUuid, dispatchUuid) {
     }
   );
 }
+//司机刷卡打印
+export async function driverSwipePrint(empId, companyUuid, dispatchUuid) {
+  return request(
+    `/itms-schedule/itms-schedule/openapi/bill/schedule/process/swipePrint?empId=${empId}&companyUuid=${companyUuid}&dispatchUuid=${dispatchUuid}`,
+    {
+      method: 'POST',
+    }
+  );
+}
 //装车开始
 export async function shipping(billNumber, version) {
   return request(
