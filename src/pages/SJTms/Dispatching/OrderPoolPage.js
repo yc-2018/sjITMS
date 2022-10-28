@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-25 17:32:50
+ * @LastEditTime: 2022-10-28 17:46:55
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -32,7 +32,6 @@ const { TabPane } = Tabs;
 export default class OrderPoolPage extends Component {
   state = {
     loading: false,
-    mapModal: false,
     auditedData: [],
     searchPagination: false,
     pageFilter: [],
@@ -120,7 +119,7 @@ export default class OrderPoolPage extends Component {
           activeTab: 'Audited',
         });
       }
-      this.props.refreshSelectRowOrder([], 'Audited');
+      this.props.refreshSelectRowOrder([], ['Audited', 'PartScheduled']);
       this.setState({ loading: false, pageFilter });
     });
   };
@@ -190,7 +189,7 @@ export default class OrderPoolPage extends Component {
         const { auditedData } = this.state;
         this.props.refreshSelectRowOrder(
           auditedData.filter(x => selectedRowKeys.indexOf(x.uuid) != -1),
-          'Audited'
+          ['Audited', 'PartScheduled']
         );
         this.setState({ auditedRowKeys: selectedRowKeys });
         break;
@@ -202,7 +201,7 @@ export default class OrderPoolPage extends Component {
     const totalAuditedData = auditedData.filter(
       x => result.childSelectedRowKeys.indexOf(x.uuid) != -1
     );
-    this.props.refreshSelectRowOrder(totalAuditedData, 'Audited');
+    this.props.refreshSelectRowOrder(totalAuditedData, ['Audited', 'PartScheduled']);
     this.setState({
       auditedParentRowKeys: result.selectedRowKeys,
       auditedRowKeys: result.childSelectedRowKeys,
@@ -217,11 +216,16 @@ export default class OrderPoolPage extends Component {
       message.warning('请选择运输订单！');
       return;
     }
-    const orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
+    let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
+    orders = orders.concat(selectPending);
     //订单类型校验
     const orderType = uniqBy(orders.map(x => x.orderType));
     if (orderType.includes('Returnable') && orderType.some(x => x != 'Returnable')) {
       message.error('门店退货类型运输订单不能与其它类型订单混排，请检查！');
+      return;
+    }
+    if (orderType.includes('TakeDelivery') && orderType.some(x => x != 'TakeDelivery')) {
+      message.error('提货类型运输订单不能与其它类型订单混排，请检查！');
       return;
     }
     //不可共配校验
@@ -269,6 +273,10 @@ export default class OrderPoolPage extends Component {
       message.error('门店退货类型运输订单不能与其它类型订单混排，请检查！');
       return;
     }
+    if (orderType.includes('TakeDelivery') && orderType.some(x => x != 'TakeDelivery')) {
+      message.error('提货类型运输订单不能与其它类型订单混排，请检查！');
+      return;
+    }
     //不可共配校验
     let owners = [...orders].map(x => {
       return { ...x.owner, noJointlyOwnerCodes: x.noJointlyOwnerCode };
@@ -299,7 +307,7 @@ export default class OrderPoolPage extends Component {
       );
       return;
     }
-    this.setState({ mapModal: false });
+    // this.setState({ mapModal: false });
     this.createPageModalRef.show(false, orders);
   };
 
@@ -388,9 +396,12 @@ export default class OrderPoolPage extends Component {
       };
     }
     return {
-      realCartonCount: Math.round(sumBy(data.map(x => x.realCartonCount)) * 100) / 100,
-      realScatteredCount: Math.round(sumBy(data.map(x => x.realScatteredCount)) * 100) / 100,
-      realContainerCount: Math.round(sumBy(data.map(x => x.realContainerCount)) * 100) / 100,
+      realCartonCount:
+        Math.round(sumBy(data.map(x => x.realCartonCount || x.cartonCount)) * 100) / 100,
+      realScatteredCount:
+        Math.round(sumBy(data.map(x => x.realScatteredCount || x.scatteredCount)) * 100) / 100,
+      realContainerCount:
+        Math.round(sumBy(data.map(x => x.realContainerCount || x.containerCount)) * 100) / 100,
       weight: Math.round(sumBy(data.map(x => Number(x.weight))) * 100) / 100,
       volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
     };
@@ -399,7 +410,6 @@ export default class OrderPoolPage extends Component {
   render() {
     const {
       loading,
-      mapModal,
       auditedParentRowKeys,
       auditedRowKeys,
       auditedData,
@@ -447,7 +457,7 @@ export default class OrderPoolPage extends Component {
             <DispatchingChildTable
               comId="orderPool"
               clickRow
-              // childSettingCol
+              childSettingCol
               pagination={searchPagination || false}
               loading={loading}
               dataSource={auditedCollectData}

@@ -1,4 +1,6 @@
-<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="#0069ff"  xmlns="http://www.w3.org/2000/svg">
+const StoreIcon = color => {
+  return (
+    <svg height="1024" width="1024" fill={color}>
       <g>
         <path
           id="7815"
@@ -20,4 +22,8 @@
           />
         </g>
       </g>
-</svg>
+    </svg>
+  );
+};
+
+export default StoreIcon;

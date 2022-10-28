@@ -60,28 +60,28 @@ export const OrderColumns = [
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
-    title: '整件数(估/实)',
+    title: '整件数',
     dataIndex: 'cartonCount',
     sorter: true,
-    width: 80,
+    width: 60,
     render: (val, record) =>
-      val != undefined ? <span>{val + '/' + record.realCartonCount}</span> : <Empty />,
+      val != undefined ? <span>{record.realCartonCount || val}</span> : <Empty />,
   },
   {
-    title: '散件数(估/实)',
+    title: '散件数',
     dataIndex: 'scatteredCount',
     sorter: true,
-    width: 80,
+    width: 60,
     render: (val, record) =>
-      val != undefined ? <span>{val + '/' + record.realScatteredCount}</span> : <Empty />,
+      val != undefined ? <span>{record.realScatteredCount || val}</span> : <Empty />,
   },
   {
-    title: '周转箱(估/实)',
+    title: '周转箱',
     dataIndex: 'containerCount',
     sorter: true,
-    width: 80,
+    width: 60,
     render: (val, record) =>
-      val != undefined ? <span>{val + '/' + record.realContainerCount}</span> : <Empty />,
+      val != undefined ? <span>{record.realContainerCount || val}</span> : <Empty />,
   },
   {
     title: '体积',
@@ -140,28 +140,28 @@ export const OrderCollectColumns = [
     render: val => (val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />),
   },
   {
-    title: '整件数(估/实)',
+    title: '整件数',
     dataIndex: 'cartonCount',
     sorter: true,
-    width: 80,
+    width: 60,
     render: (val, record) =>
-      val != undefined ? <span>{val + '/' + record.realCartonCount}</span> : <Empty />,
+      val != undefined ? <span>{record.realCartonCount || val}</span> : <Empty />,
   },
   {
-    title: '散件数(估/实)',
+    title: '散件数',
     dataIndex: 'scatteredCount',
     sorter: true,
-    width: 80,
+    width: 60,
     render: (val, record) =>
-      val != undefined ? <span>{val + '/' + record.realScatteredCount}</span> : <Empty />,
+      val != undefined ? <span>{record.realScatteredCount || val}</span> : <Empty />,
   },
   {
-    title: '周转箱(估/实)',
+    title: '周转箱',
     dataIndex: 'containerCount',
     sorter: true,
-    width: 80,
+    width: 60,
     render: (val, record) =>
-      val != undefined ? <span>{val + '/' + record.realContainerCount}</span> : <Empty />,
+      val != undefined ? <span>{record.realContainerCount || val}</span> : <Empty />,
   },
   {
     title: '体积',
@@ -199,25 +199,25 @@ export const OrderDetailColumns = [
     render: val => (val ? <EllipsisCol colValue={OrderType[val].caption} /> : <Empty />),
   },
   {
-    title: '整件数(估/实)',
+    title: '整件数',
     dataIndex: 'cartonCount',
-    width: 80,
+    width: 60,
     render: (val, record) =>
-      val != undefined ? <span>{val + '/' + record.realCartonCount}</span> : <Empty />,
+      val != undefined ? <span>{record.realCartonCount || val}</span> : <Empty />,
   },
   {
-    title: '散件数(估/实)',
+    title: '散件数',
     dataIndex: 'scatteredCount',
-    width: 80,
+    width: 60,
     render: (val, record) =>
-      val != undefined ? <span>{val + '/' + record.realScatteredCount}</span> : <Empty />,
+      val != undefined ? <span>{record.realScatteredCount || val}</span> : <Empty />,
   },
   {
-    title: '周转箱(估/实)',
+    title: '周转箱',
     dataIndex: 'containerCount',
-    width: 80,
+    width: 60,
     render: (val, record) =>
-      val != undefined ? <span>{val + '/' + record.realContainerCount}</span> : <Empty />,
+      val != undefined ? <span>{record.realContainerCount || val}</span> : <Empty />,
   },
   {
     title: '体积',
@@ -311,22 +311,25 @@ export const CreatePageOrderColumns = [
     render: val => (val ? <EllipsisCol colValue={OrderType[val].caption} /> : <Empty />),
   },
   {
-    title: '整箱数',
-    dataIndex: 'realCartonCount',
+    title: '整件数',
+    dataIndex: 'cartonCount',
     width: 60,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: (val, record) =>
+      val ? <EllipsisCol colValue={record.realCartonCount || val} /> : <Empty />,
   },
   {
-    title: '零散数',
-    dataIndex: 'realScatteredCount',
+    title: '散件数',
+    dataIndex: 'scatteredCount',
     width: 60,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: (val, record) =>
+      val ? <EllipsisCol colValue={record.realScatteredCount || val} /> : <Empty />,
   },
   {
     title: '周转箱',
-    dataIndex: 'realContainerCount',
+    dataIndex: 'containerCount',
     width: 60,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: (val, record) =>
+      val ? <EllipsisCol colValue={record.realContainerCount || val} /> : <Empty />,
   },
   {
     title: '体积',
@@ -404,6 +407,32 @@ export const ScheduleColumns = [
     dataIndex: 'totalAmount',
     width: 100,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+  },
+  {
+    title: '创建人',
+    dataIndex: 'createInfo',
+    width: 80,
+    render: val => (val ? <span>{val.operator.fullName}</span> : <Empty />),
+  },
+  {
+    title: '创建时间',
+    dataIndex: 'createTime',
+    width: 80,
+    render: (_, record) =>
+      record.createInfo.time ? <span>{record.createInfo.time}</span> : <Empty />,
+  },
+  {
+    title: '最后修改人',
+    dataIndex: 'lastModifyInfo',
+    width: 80,
+    render: val => (val ? <span>{val.operator.fullName}</span> : <Empty />),
+  },
+  {
+    title: '最后修改时间',
+    dataIndex: 'lastModifyTime',
+    width: 80,
+    render: (_, record) =>
+      record.lastModifyInfo.time ? <span>{record.lastModifyInfo.time}</span> : <Empty />,
   },
 ];
 export const ScheduleDetailColumns = [

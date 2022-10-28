@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-25 14:36:51
+ * @LastEditTime: 2022-10-28 08:37:03
  * @Description: 排车单地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\schedule\ScheduleMap.js
  */
@@ -11,9 +11,8 @@ import { Divider, Modal, Button } from 'antd';
 import { Map, Marker, CustomOverlay } from 'react-bmapgl';
 import { getDetailByBillUuids } from '@/services/sjitms/ScheduleBill';
 import { getAddressByUuids } from '@/services/sjitms/StoreTeam';
-// import { ReactComponent as ShopIcon } from '@/assets/common/shop.svg';
-import ShopIcon from '@/assets/common/shop.svg';
-
+import StoreSVG from '@/assets/common/shop.svg';
+import StoreIcon from './StoreIcon';
 import { uniqBy } from 'lodash';
 
 export default class DispatchMap extends Component {
@@ -40,6 +39,10 @@ export default class DispatchMap extends Component {
             const store = stores.find(point => point.uuid == order.deliveryPoint.uuid);
             if (store) return { ...order, longitude: store.longitude, latitude: store.latitude };
           });
+          const points = orders.map(point => {
+            return new BMapGL.Point(point.longitude, point.latitude);
+          });
+          setTimeout(() => this.map?.setViewport(points), 500);
         }
         this.setState({ orders });
       }
@@ -47,31 +50,16 @@ export default class DispatchMap extends Component {
     this.setState({ visible: true });
   };
 
-  //经纬度测算中心位置
-  getCenter = arr => {
-    let centerLonLat = {};
-    if (arr.length) {
-      const sortedLongitudeArray = arr.map(x => x.longitude).sort();
-      const sortedLatitudeArray = arr.map(x => x.latitude).sort();
-      const centerLongitude = (
-        (parseFloat(sortedLongitudeArray[0]) +
-          parseFloat(sortedLongitudeArray[sortedLongitudeArray.length - 1])) /
-        2
-      ).toFixed(14);
-      const centerLatitude = (
-        (parseFloat(sortedLatitudeArray[0]) +
-          parseFloat(sortedLatitudeArray[sortedLatitudeArray.length - 1])) /
-        2
-      ).toFixed(14);
-      centerLonLat = { lng: Number(centerLongitude), lat: Number(centerLatitude) };
-    }
-    return centerLonLat;
+  drawIcon = color => {
+    const icon = StoreIcon(color);
+    // const svg = new XMLSerializer().serializeToString(icon);
+    // const ImgBase64 = `data:image/svg+xml;base64,${window.btoa(svg)}`;
+    const mapIcon = new BMapGL.Icon(StoreSVG, new BMapGL.Size(32, 32));
+    return mapIcon;
   };
 
   render() {
     const { visible, windowInfo, orders } = this.state;
-    const icon = new BMapGL.Icon(ShopIcon, new BMapGL.Size(32, 32));
-    // let centerLonLat = this.getCenter(orders);
     return (
       <Modal
         style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
@@ -86,20 +74,20 @@ export default class DispatchMap extends Component {
           <Map
             zoom={10}
             minZoom={6}
-            // center={centerLonLat}
             enableScrollWheelZoom
-            enableAutoResize
+            enableRotate={false}
             enableTilt={false}
+            ref={ref => (this.map = ref?.map)}
             style={{ height: '100%' }}
           >
             {orders.map(order => {
+              const icon = this.drawIcon('#0069ff');
               var point = new BMapGL.Point(order.longitude, order.latitude);
               return (
                 <Marker
                   position={point}
                   icon={icon}
                   shadow={true}
-                  autoViewport
                   onMouseover={() => this.setState({ windowInfo: { point, order } })}
                   onMouseout={() => this.setState({ windowInfo: undefined })}
                 />
