@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-28 17:46:55
+ * @LastEditTime: 2022-10-28 18:06:03
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -378,7 +378,7 @@ export default class OrderPoolPage extends Component {
         </Col>
         <Col span={5}>
           <Text> 重量:</Text>
-          <Text style={totalTextStyle}>{selectOrders.weight.toFixed(2)}</Text>
+          <Text style={totalTextStyle}>{(selectOrders.weight / 1000).toFixed(2)}</Text>
         </Col>
       </Row>
     );

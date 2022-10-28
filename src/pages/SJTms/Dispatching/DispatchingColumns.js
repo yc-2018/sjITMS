@@ -95,7 +95,7 @@ export const OrderColumns = [
     dataIndex: 'weight',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
   },
   {
     title: '备注',
@@ -175,7 +175,7 @@ export const OrderCollectColumns = [
     dataIndex: 'weight',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
   },
 ];
 export const OrderDetailColumns = [
@@ -229,7 +229,7 @@ export const OrderDetailColumns = [
     title: '重量',
     dataIndex: 'weight',
     width: 80,
-    render: val => (val ? <span>{val}</span> : <Empty />),
+    render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
   },
   {
     title: '金额',
@@ -343,7 +343,7 @@ export const CreatePageOrderColumns = [
     dataIndex: 'weight',
     width: 60,
     sorter: true,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
   },
 ];
 
@@ -400,7 +400,7 @@ export const ScheduleColumns = [
     title: '重量',
     dataIndex: 'weight',
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
   },
   {
     title: '总金额',
@@ -482,7 +482,7 @@ export const ScheduleDetailColumns = [
     title: '重量',
     dataIndex: 'weight',
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
   },
   {
     title: '金额',
@@ -565,7 +565,7 @@ export const ScheduleDetailCollectColumns = [
     dataIndex: 'weight',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
   },
 ];
 
