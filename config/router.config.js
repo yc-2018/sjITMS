@@ -11,7 +11,10 @@ export default [
   {
     path: '/driver',
     component: '../layouts/DriverLayout',
-    routes: [{ path: '/driver/swipe', component: './SJTms/Schedule/DriverSwipe' }],
+    routes: [
+      { path: '/driver/swipe', component: './SJTms/Schedule/DriverSwipe' },
+      { path: '/driver/DriverSwipePrint', component: './SJTms/Schedule/DriverSwipePrint' }
+  ],
   },
   {
     path: '/',
@@ -1313,6 +1316,13 @@ export default [
             authority: ['sjtms.core.checkin'],
           },
           {
+            path: '/tmscode/checkinPrint',
+            name: '刷卡打印装车单',
+            org: ['DISPATCH_CENTER'],
+            component: './SJTms/Schedule/DriverSwipePrint',
+            authority: ['sjtms.core.checkin'],
+          },
+          {
             path: '/tmscode/issue',
             name: '粤通卡发放与回收',
             org: ['DISPATCH_CENTER'],
@@ -1413,6 +1423,22 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'sj_itms_vehicle_arrange',
+                authority: ['sjtms.bigData.arrange'],
+              },
+              {
+                path: '/bigData/loading/dispatchtime',
+                name: '司机送货时间统计',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_sj_itms_dispatchtime',
+                authority: ['sjtms.bigData.arrange'],
+              },
+              {
+                path: '/bigData/loading/driverfeereport',
+                name: '出车费用审核报表',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_sj_itms_driver_fee_report',
                 authority: ['sjtms.bigData.arrange'],
               },
             ],
