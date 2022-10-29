@@ -2,12 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-29 11:00:49
+ * @LastEditTime: 2022-10-29 16:05:16
  * @Description: 排车单地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
 import React, { Component } from 'react';
-import { Divider, Modal, Button, Row, Col, Empty } from 'antd';
+import { Divider, Modal, Button, Row, Col, Empty, message } from 'antd';
 import { Map, Marker, CustomOverlay, DrawingManager } from 'react-bmapgl';
 import style from './DispatchingMap.less';
 import emptySvg from '@/assets/common/img_empoty.svg';
@@ -15,6 +15,9 @@ import SearchForm from './SearchForm';
 import { queryAuditedOrder } from '@/services/sjitms/OrderBill';
 import ShopIcon from '@/assets/common/shop.svg';
 import ShopClickIcon from '@/assets/common/shopClick.svg';
+import start from '@/assets/common/start.svg';
+import end from '@/assets/common/end.svg';
+import pass from '@/assets/common/pass.svg';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { orderBy } from 'lodash';
 
@@ -26,12 +29,15 @@ export default class DispatchMap extends Component {
     loading: false,
     pageFilter: [],
     orders: [],
+    driverTime: 0,
+    driverMileage: 0,
   };
 
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
   };
 
+  //显示modal
   show = () => {
     this.setState({ visible: true });
   };
@@ -39,6 +45,7 @@ export default class DispatchMap extends Component {
   //查询
   refresh = params => {
     this.setState({ loading: true });
+    this.clusterLayer = undefined;
     let { pageFilter } = this.state;
     let filter = { pageSize: 200, superQuery: { matchType: 'and', queryParams: [] } };
     if (params) {
@@ -58,13 +65,13 @@ export default class DispatchMap extends Component {
       if (response.success) {
         const data = response.data.records ? response.data.records : [];
         this.setState({ orders: data }, () => {
-          this.drawClusterLayer();
-          this.clusterSetData(data);
+          setTimeout(() => {
+            this.drawClusterLayer();
+            this.drawMenu();
+            this.clusterSetData(data);
+            this.autoViewPort(data);
+          }, 500);
         });
-        const points = data.map(point => {
-          return new BMapGL.Point(point.longitude, point.latitude);
-        });
-        this.map?.setViewport(points);
         // this.drawingManagerRef?.open();
         // this.drawingManagerRef?.setDrawingMode(BMAP_DRAWING_RECTANGLE);
       }
@@ -72,20 +79,32 @@ export default class DispatchMap extends Component {
     });
   };
 
+  //自动聚焦
+  autoViewPort = orders => {
+    const points = orders.map(point => {
+      return new BMapGL.Point(point.longitude, point.latitude);
+    });
+    this.map?.setViewport(points);
+  };
+
+  //选门店
   onChangeSelect = (checked, record) => {
     let { orders } = this.state;
     let order = orders.find(x => x.uuid == record.uuid);
-    order.isSelect = checked;
-    this.setState({ orders }, () => {
-      this.clusterSetData(orders);
-    });
+    if (order) {
+      order.isSelect = checked;
+      this.setState({ orders }, () => {
+        this.clusterSetData(orders);
+      });
+    }
   };
 
   //重置
   onReset = () => {
     let { orders } = this.state;
     orders.map(order => (order.isSelect = false));
-    this.setState({ orders }, () => {
+    this.setState({ orders, driverMileage: 0 }, () => {
+      this.map?.clearOverlays();
       this.clusterSetData(orders);
     });
   };
@@ -107,9 +126,11 @@ export default class DispatchMap extends Component {
     });
   };
 
+  //标注点聚合图层初始化
   drawClusterLayer = () => {
     const that = this;
-    const view = new mapvgl.View({ map: this.map });
+    const view = new mapvgl.View({ map: this?.map });
+    view.removeAllLayers();
     const clusterLayer = new mapvgl.ClusterLayer({
       minSize: 40,
       maxSize: 80,
@@ -121,10 +142,16 @@ export default class DispatchMap extends Component {
       textOptions: { fontSize: 14, color: '#FFF' },
       enablePicked: true,
       minPoints: 5,
+      onClick(event) {
+        if (event.dataItem?.order) {
+          const order = event.dataItem.order;
+          that.onChangeSelect(!order.isSelect, order);
+        }
+      },
       onMousemove(event) {
         if (event.dataItem?.order) {
-          let order = event.dataItem.order;
-          var point = new BMapGL.Point(order.longitude, order.latitude);
+          const order = event.dataItem.order;
+          const point = new BMapGL.Point(order.longitude, order.latitude);
           that.setState({ windowInfo: { point, order } });
         } else {
           that.setState({ windowInfo: undefined });
@@ -132,9 +159,9 @@ export default class DispatchMap extends Component {
       },
     });
     this.clusterLayer = clusterLayer;
-    view.removeAllLayers();
     view.addLayer(this.clusterLayer);
   };
+  //标注点聚合图层数据加载
   clusterSetData = data => {
     const markers = data.map(point => {
       return {
@@ -150,6 +177,92 @@ export default class DispatchMap extends Component {
     this.clusterLayer?.setData(markers);
   };
 
+  //路线规划
+  searchRoute = selectOrder => {
+    let map = this.map;
+    var driving = new BMapGL.DrivingRoute(map);
+    var poinArray = [];
+    for (var i = 0; i < selectOrder.length - 1; i++) {
+      var p1 = new BMapGL.Point(selectOrder[i].longitude, selectOrder[i].latitude);
+      var p2 = new BMapGL.Point(selectOrder[i + 1].longitude, selectOrder[i + 1].latitude);
+      poinArray.push(p1);
+      if (i == selectOrder.length - 2) {
+        poinArray.push(p2);
+      }
+      driving.search(p1, p2);
+    }
+    const startIcon = new BMapGL.Icon(start, new BMapGL.Size(30, 30));
+    const endIcon = new BMapGL.Icon(end, new BMapGL.Size(30, 30));
+    const passIcon = new BMapGL.Icon(pass, new BMapGL.Size(30, 30));
+    var startMarker = new BMapGL.Marker(poinArray[0], { icon: startIcon }); // 创建标注
+    var endMarker = new BMapGL.Marker(poinArray[poinArray.length - 1], { icon: endIcon }); // 创建标注
+    map.addOverlay(startMarker);
+    map.addOverlay(endMarker);
+    //途径点marker
+    for (let i = 1; i < poinArray.length - 1; i++) {
+      map.addOverlay(new BMapGL.Marker(poinArray[i], { icon: passIcon }));
+    }
+    map.setViewport(poinArray); //调整到最佳视野
+    let { driverTime, driverMileage } = this.state;
+    driving.setSearchCompleteCallback(function() {
+      console.log(driving);
+      var pts = driving
+        .getResults()
+        .getPlan(0)
+        .getRoute(0)
+        .getPath();
+      var polyline = new BMapGL.Polyline(pts, {
+        strokeColor: '#00A6ED',
+        strokeWeight: 6,
+        strokeOpacity: 1,
+      });
+      map.addOverlay(polyline);
+      var plan = driving.getResults().getPlan(0);
+      if (plan) {
+        var dis = plan.getDistance(false); //获取总公里数
+        var t = plan.getDuration(false); ///获取总耗时
+        driverTime += t;
+        driverMileage += dis;
+      }
+    });
+  };
+
+  //右键菜单
+  drawMenu = () => {
+    const { orders } = this.state;
+    const menuItems = [
+      {
+        text: '排车',
+        callback: () => {
+          const selectOrder = orders.filter(x => x.isSelect);
+          if (selectOrder.length === 0) {
+            message.error('请选择需要排车的门店！');
+            return;
+          }
+          this.props.dispatchingByMap(selectOrder);
+        },
+      },
+      {
+        text: '路线规划',
+        callback: () => {
+          const selectOrder = orders.filter(x => x.isSelect);
+          if (selectOrder.length === 0) {
+            message.error('请选择需要排车的门店！');
+            return;
+          }
+          this.searchRoute(selectOrder);
+        },
+      },
+    ];
+    const menu = new BMapGL.ContextMenu();
+    menuItems.forEach((item, index) => {
+      menu.addItem(
+        new BMapGL.MenuItem(item.text, item.callback, { width: 100, id: 'menu' + index })
+      );
+    });
+    this.map?.addContextMenu(menu);
+  };
+
   //画框选取marker
   drawSelete = event => {
     let { orders } = this.state;
@@ -161,7 +274,7 @@ export default class DispatchMap extends Component {
     var pt2 = new BMapGL.Point(pEnd.lng, pEnd.lat); //1象限
     var bds = new BMapGL.Bounds(pt1, pt2); //范围
 
-    for (const order of orders) {
+    for (const order of orders.filter(x => !x.isSelect)) {
       var pt = new BMapGL.Point(order.longitude, order.latitude);
       order.isSelect = this.isPointInRect(pt, bds);
     }
@@ -220,16 +333,22 @@ export default class DispatchMap extends Component {
                       /> */}
                       {`[${order.deliveryPoint.code}]` + order.deliveryPoint.name}
                     </div>
+                    <div>
+                      线路：
+                      {order.archLine?.name}
+                    </div>
                     <Divider style={{ margin: 0, marginTop: 5 }} />
                     <div style={{ display: 'flex', marginTop: 5 }}>
+                      <div style={{ flex: 1 }}>整件数</div>
+                      <div style={{ flex: 1 }}>周转箱数</div>
                       <div style={{ flex: 1 }}>体积</div>
                       <div style={{ flex: 1 }}>重量</div>
-                      <div style={{ flex: 1 }}>总件数</div>
                     </div>
                     <div style={{ display: 'flex' }}>
+                      <div style={{ flex: 1 }}>{order.cartonCount}</div>
+                      <div style={{ flex: 1 }}>{order.containerCount}</div>
                       <div style={{ flex: 1 }}>{order.volume}</div>
                       <div style={{ flex: 1 }}>{order.weight}</div>
-                      <div style={{ flex: 1 }}>{order.realCartonCount}</div>
                     </div>
                   </div>
                 );
@@ -276,21 +395,27 @@ export default class DispatchMap extends Component {
                 {/* {this.drawMarker()} */}
                 {windowInfo ? (
                   <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
-                    <div style={{ width: 250, height: 80, padding: 5, background: '#FFF' }}>
+                    <div style={{ width: 250, height: 100, padding: 5, background: '#FFF' }}>
                       <div style={{ fontWeight: 'bold', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                         {`[${windowInfo.order.deliveryPoint.code}]` +
                           windowInfo.order.deliveryPoint.name}
                       </div>
+                      <div>
+                        线路：
+                        {windowInfo.order.archLine?.name}
+                      </div>
                       <Divider style={{ margin: 0, marginTop: 5 }} />
                       <div style={{ display: 'flex', marginTop: 5 }}>
+                        <div style={{ flex: 1 }}>整件数</div>
+                        <div style={{ flex: 1 }}>周转箱数</div>
                         <div style={{ flex: 1 }}>体积</div>
                         <div style={{ flex: 1 }}>重量</div>
-                        <div style={{ flex: 1 }}>总件数</div>
                       </div>
                       <div style={{ display: 'flex' }}>
+                        <div style={{ flex: 1 }}>{windowInfo.order.cartonCount}</div>
+                        <div style={{ flex: 1 }}>{windowInfo.order.containerCount}</div>
                         <div style={{ flex: 1 }}>{windowInfo.order.volume}</div>
                         <div style={{ flex: 1 }}>{windowInfo.order.weight}</div>
-                        <div style={{ flex: 1 }}>{windowInfo.order.realCartonCount}</div>
                       </div>
                     </div>
                   </CustomOverlay>
