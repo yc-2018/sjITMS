@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-28 08:37:03
+ * @LastEditTime: 2022-10-29 09:12:10
  * @Description: 排车单地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\schedule\ScheduleMap.js
  */
@@ -11,9 +11,8 @@ import { Divider, Modal, Button } from 'antd';
 import { Map, Marker, CustomOverlay } from 'react-bmapgl';
 import { getDetailByBillUuids } from '@/services/sjitms/ScheduleBill';
 import { getAddressByUuids } from '@/services/sjitms/StoreTeam';
-import StoreSVG from '@/assets/common/shop.svg';
-import StoreIcon from './StoreIcon';
-import { uniqBy } from 'lodash';
+import ShopsIcon from '@/assets/common/shops.png';
+import { uniqBy, orderBy } from 'lodash';
 
 export default class DispatchMap extends Component {
   state = {
@@ -24,6 +23,20 @@ export default class DispatchMap extends Component {
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
   };
+
+  drawIcon = num => {
+    const index = num % 20;
+    const multiple = 4;
+    const icon = new BMapGL.Icon(ShopsIcon, new BMapGL.Size(160 / multiple, 160 / multiple), {
+      imageOffset: new BMapGL.Size(
+        (160 / multiple) * (Math.ceil(index / 5) - 1),
+        (160 / multiple) * ((index % 5) - 1)
+      ),
+      imageSize: new BMapGL.Size(800 / multiple, 1000 / multiple),
+    });
+    return icon;
+  };
+
   show = async rowKeys => {
     if (rowKeys.length) {
       const response = await getDetailByBillUuids(rowKeys);
@@ -36,26 +49,27 @@ export default class DispatchMap extends Component {
           const storeRespones = await getAddressByUuids(deliveryPoints);
           const stores = storeRespones.data || [];
           orders = orders.map(order => {
+            const index = rowKeys.findIndex(x => x == order.billUuid);
             const store = stores.find(point => point.uuid == order.deliveryPoint.uuid);
-            if (store) return { ...order, longitude: store.longitude, latitude: store.latitude };
+            if (store)
+              return {
+                ...order,
+                longitude: store.longitude || 0,
+                latitude: store.latitude || 0,
+                scheduleNum: index,
+              };
           });
+          orders = orders.filter(res => res);
+          orders = orderBy(orders, x => x.scheduleNum);
+          this.setState({ orders });
           const points = orders.map(point => {
             return new BMapGL.Point(point.longitude, point.latitude);
           });
           setTimeout(() => this.map?.setViewport(points), 500);
         }
-        this.setState({ orders });
       }
     }
     this.setState({ visible: true });
-  };
-
-  drawIcon = color => {
-    const icon = StoreIcon(color);
-    // const svg = new XMLSerializer().serializeToString(icon);
-    // const ImgBase64 = `data:image/svg+xml;base64,${window.btoa(svg)}`;
-    const mapIcon = new BMapGL.Icon(StoreSVG, new BMapGL.Size(32, 32));
-    return mapIcon;
   };
 
   render() {
@@ -81,8 +95,8 @@ export default class DispatchMap extends Component {
             style={{ height: '100%' }}
           >
             {orders.map(order => {
-              const icon = this.drawIcon('#0069ff');
-              var point = new BMapGL.Point(order.longitude, order.latitude);
+              const point = new BMapGL.Point(order.longitude, order.latitude);
+              const icon = this.drawIcon(order.scheduleNum);
               return (
                 <Marker
                   position={point}

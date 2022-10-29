@@ -2,18 +2,19 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-26 16:45:28
+ * @LastEditTime: 2022-10-29 11:00:49
  * @Description: 排车单地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
 import React, { Component } from 'react';
-import { Divider, Modal, Button, Row, Col, Checkbox } from 'antd';
+import { Divider, Modal, Button, Row, Col, Empty } from 'antd';
 import { Map, Marker, CustomOverlay, DrawingManager } from 'react-bmapgl';
 import style from './DispatchingMap.less';
+import emptySvg from '@/assets/common/img_empoty.svg';
 import SearchForm from './SearchForm';
 import { queryAuditedOrder } from '@/services/sjitms/OrderBill';
-import StoreIcon from '@/assets/common/store.svg';
-import StoreClickIcon from '@/assets/common/storeClick.svg';
+import ShopIcon from '@/assets/common/shop.svg';
+import ShopClickIcon from '@/assets/common/shopClick.svg';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { orderBy } from 'lodash';
 
@@ -26,9 +27,11 @@ export default class DispatchMap extends Component {
     pageFilter: [],
     orders: [],
   };
+
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
   };
+
   show = () => {
     this.setState({ visible: true });
   };
@@ -54,44 +57,16 @@ export default class DispatchMap extends Component {
     queryAuditedOrder(filter).then(response => {
       if (response.success) {
         const data = response.data.records ? response.data.records : [];
-        this.setState({ orders: data });
+        this.setState({ orders: data }, () => {
+          this.drawClusterLayer();
+          this.clusterSetData(data);
+        });
         const points = data.map(point => {
           return new BMapGL.Point(point.longitude, point.latitude);
         });
         this.map?.setViewport(points);
-
         // this.drawingManagerRef?.open();
         // this.drawingManagerRef?.setDrawingMode(BMAP_DRAWING_RECTANGLE);
-
-        // const markerList = data.map(point => {
-        //   return {
-        //     geometry: { type: 'Point', coordinates: [point.longitude, point.latitude] },
-        //     properties: {
-        //       icon: [StoreIcon, StoreClickIcon][point.isSelect ? 1 : 0],
-        //       width: 40,
-        //       height: 40,
-        //     },
-        //   };
-        // });
-        // var clusterLayer = new mapvgl.ClusterLayer({
-        //   minSize: 40,
-        //   maxSize: 80,
-        //   clusterRadius: 150,
-        //   gradient: {
-        //     0: '#E6AA68',
-        //     0.5: '#309900',
-        //     1.0: '#CA3C25',
-        //   },
-        //   maxZoom: 15,
-        //   minZoom: 5,
-        //   showText: true,
-        //   textOptions: { fontSize: 14, color: '#FFF' },
-        //   enablePicked: true,
-        //   minPoints: 5,
-        // });
-        // var view = new mapvgl.View({ map: this.map });
-        // view.addLayer(clusterLayer);
-        // clusterLayer.setData(markerList);
       }
       this.setState({ loading: false, pageFilter });
     });
@@ -101,7 +76,18 @@ export default class DispatchMap extends Component {
     let { orders } = this.state;
     let order = orders.find(x => x.uuid == record.uuid);
     order.isSelect = checked;
-    this.setState({ orders });
+    this.setState({ orders }, () => {
+      this.clusterSetData(orders);
+    });
+  };
+
+  //重置
+  onReset = () => {
+    let { orders } = this.state;
+    orders.map(order => (order.isSelect = false));
+    this.setState({ orders }, () => {
+      this.clusterSetData(orders);
+    });
   };
 
   //标注点
@@ -109,20 +95,59 @@ export default class DispatchMap extends Component {
     const { orders } = this.state;
     return orders.map(order => {
       var point = new BMapGL.Point(order.longitude, order.latitude);
-      const icon = new BMapGL.Icon(
-        order.isSelect ? StoreClickIcon : StoreIcon,
-        new BMapGL.Size(32, 32)
-      );
       return (
         <Marker
           position={point}
-          icon={icon}
+          icon={order.isSelect ? ShopClickIcon : ShopIcon}
           shadow={true}
           onMouseover={() => this.setState({ windowInfo: { point, order } })}
           onMouseout={() => this.setState({ windowInfo: undefined })}
         />
       );
     });
+  };
+
+  drawClusterLayer = () => {
+    const that = this;
+    const view = new mapvgl.View({ map: this.map });
+    const clusterLayer = new mapvgl.ClusterLayer({
+      minSize: 40,
+      maxSize: 80,
+      clusterRadius: 150,
+      gradient: { 0: '#E6AA68', 0.5: '#309900', 1.0: '#CA3C25' },
+      maxZoom: 15,
+      minZoom: 5,
+      showText: true,
+      textOptions: { fontSize: 14, color: '#FFF' },
+      enablePicked: true,
+      minPoints: 5,
+      onMousemove(event) {
+        if (event.dataItem?.order) {
+          let order = event.dataItem.order;
+          var point = new BMapGL.Point(order.longitude, order.latitude);
+          that.setState({ windowInfo: { point, order } });
+        } else {
+          that.setState({ windowInfo: undefined });
+        }
+      },
+    });
+    this.clusterLayer = clusterLayer;
+    view.removeAllLayers();
+    view.addLayer(this.clusterLayer);
+  };
+  clusterSetData = data => {
+    const markers = data.map(point => {
+      return {
+        geometry: { type: 'Point', coordinates: [point.longitude, point.latitude] },
+        properties: {
+          icon: [ShopIcon, ShopClickIcon][point.isSelect ? 1 : 0],
+          width: 40,
+          height: 40,
+        },
+        order: point,
+      };
+    });
+    this.clusterLayer?.setData(markers);
   };
 
   //画框选取marker
@@ -142,7 +167,9 @@ export default class DispatchMap extends Component {
     }
     this.map.removeOverlay(event.overlay);
     // orders = orderBy(orders, x => x.isSelect);
-    this.setState({ orders });
+    this.setState({ orders }, () => {
+      this.clusterSetData(orders);
+    });
     this.props.dispatchingByMap(orders.filter(x => x.isSelect));
   };
   //判断一个点是否在某个矩形中
@@ -163,8 +190,11 @@ export default class DispatchMap extends Component {
         visible={visible}
         title={
           <Row type="flex" justify="space-between">
-            <Col span={22}>
+            <Col span={20}>
               <SearchForm refresh={this.refresh} />
+            </Col>
+            <Col span={1}>
+              <Button onClick={() => this.onReset()}>清空</Button>
             </Col>
             <Col span={1}>
               <Button onClick={() => this.setState({ visible: false })}>关闭</Button>
@@ -176,18 +206,18 @@ export default class DispatchMap extends Component {
       >
         <Row type="flex" style={{ height: '100%' }}>
           <Col span={6} style={{ height: '100%', background: '#fff', overflow: 'auto' }}>
-            {orders.length > 0 ? (
-              orders.map(order => {
+            {orders.filter(x => x.isSelect).length > 0 ? (
+              orders.filter(x => x.isSelect).map(order => {
                 return (
                   <div
                     className={style.storeCard}
                     onClick={() => this.onChangeSelect(!order.isSelect, order)}
                   >
                     <div>
-                      <Checkbox
+                      {/* <Checkbox
                         checked={order.isSelect}
                         onChange={event => this.onChangeSelect(event.target.checked, order)}
-                      />
+                      /> */}
                       {`[${order.deliveryPoint.code}]` + order.deliveryPoint.name}
                     </div>
                     <Divider style={{ margin: 0, marginTop: 5 }} />
@@ -205,7 +235,11 @@ export default class DispatchMap extends Component {
                 );
               })
             ) : (
-              <></>
+              <Empty
+                style={{ marginTop: 80 }}
+                image={emptySvg}
+                description="暂无数据，请选择排车门店！"
+              />
             )}
           </Col>
           <Col span={18}>
@@ -239,7 +273,7 @@ export default class DispatchMap extends Component {
                   }}
                   ref={ref => (this.drawingManagerRef = ref?.drawingmanager)}
                 />
-                {this.drawMarker()}
+                {/* {this.drawMarker()} */}
                 {windowInfo ? (
                   <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
                     <div style={{ width: 250, height: 80, padding: 5, background: '#FFF' }}>
