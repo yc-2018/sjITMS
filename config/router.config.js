@@ -13,8 +13,8 @@ export default [
     component: '../layouts/DriverLayout',
     routes: [
       { path: '/driver/swipe', component: './SJTms/Schedule/DriverSwipe' },
-      { path: '/driver/DriverSwipePrint', component: './SJTms/Schedule/DriverSwipePrint' }
-  ],
+      { path: '/driver/DriverSwipePrint', component: './SJTms/Schedule/DriverSwipePrint' },
+    ],
   },
   {
     path: '/',
@@ -1439,6 +1439,22 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_sj_itms_driver_fee_report',
+                authority: ['sjtms.bigData.arrange'],
+              },
+              {
+                path: '/bigData/loading/dispatchDtl',
+                name: '出车明细记录',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_sj_itms_dispatchDtl_report',
+                authority: ['sjtms.bigData.arrange'],
+              },
+              {
+                path: '/bigData/loading/linereport',
+                name: '线路查询	',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_sj_itms_line_report',
                 authority: ['sjtms.bigData.arrange'],
               },
             ],
