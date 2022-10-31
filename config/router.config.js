@@ -1457,6 +1457,22 @@ export default [
                 quickuuid: 'v_sj_itms_line_report',
                 authority: ['sjtms.bigData.arrange'],
               },
+              {
+                path: '/bigData/loading/joindtlreport',
+                name: '承运车配送明细_按车	',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_sj_itms_joindtl_report',
+                authority: ['sjtms.bigData.arrange'],
+              },
+              {
+                path: '/bigData/loading/owndtlreport',
+                name: '自有车配送明细_按车',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_sj_itms_owndtl_report',
+                authority: ['sjtms.bigData.arrange'],
+              },
             ],
           },
 
