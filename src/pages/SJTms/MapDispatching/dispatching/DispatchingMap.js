@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-31 09:43:49
+ * @LastEditTime: 2022-10-31 17:24:00
  * @Description: 排车单地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -339,7 +339,7 @@ export default class DispatchMap extends Component {
                     </div>
                     <div>
                       线路：
-                      {order.archLine?.name}
+                      {order.archLine?.code}
                     </div>
                     <Divider style={{ margin: 0, marginTop: 5 }} />
                     <div style={{ display: 'flex', marginTop: 5 }}>
@@ -406,7 +406,7 @@ export default class DispatchMap extends Component {
                       </div>
                       <div>
                         线路：
-                        {windowInfo.order.archLine?.name}
+                        {windowInfo.order.archLine?.code}
                       </div>
                       <Divider style={{ margin: 0, marginTop: 5 }} />
                       <div style={{ display: 'flex', marginTop: 5 }}>

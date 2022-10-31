@@ -24,7 +24,7 @@ export const OrderColumns = [
     sorterCode: true,
     width: 60,
     render: val => {
-      return val ? <EllipsisCol colValue={val.name} /> : <Empty />;
+      return val ? <EllipsisCol colValue={val.code} /> : <Empty />;
     },
   },
   {
