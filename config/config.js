@@ -27,16 +27,16 @@ const plugins = [
       },
       ...(!process.env.TEST && os.platform() === 'darwin'
         ? {
-          dll: {
-            include: ['dva', 'dva/router', 'dva/saga', 'dva/fetch'],
-            exclude: ['@babel/runtime'],
-          },
-          hardSource: true,
-        }
+            dll: {
+              include: ['dva', 'dva/router', 'dva/saga', 'dva/fetch'],
+              exclude: ['@babel/runtime'],
+            },
+            hardSource: true,
+          }
         : {}),
     },
     new webpack.DefinePlugin({
-      'process.env.API_ENV': JSON.stringify('production')
+      'process.env.API_ENV': JSON.stringify('production'),
     }),
   ],
 ];
@@ -61,7 +61,7 @@ export default {
   },
   define: {
     APP_TYPE: process.env.APP_TYPE || '',
-    API_ENV:  process.env.API_ENV || ''
+    API_ENV: process.env.API_ENV || '',
   },
   devtool: 'source-map',
   // 路由配置
@@ -73,6 +73,7 @@ export default {
     'font-size-base': '12px',
     'btn-height-base': '28px',
     'input-height-base': '28px',
+    'text-color': 'rgba(0, 0, 0, 0.75)', // 主文本色
     'menu-inline-toplevel-item-height': '30px',
     'menu-item-height': '30px',
     'menu-collapsed-width': defaultSettings.closeSiderNavigatorWidth,
