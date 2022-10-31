@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-31 09:20:24
+ * @LastEditTime: 2022-10-31 17:49:20
  * @Description: 排车单地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\schedule\ScheduleMap.js
  */
@@ -26,7 +26,6 @@ export default class DispatchMap extends Component {
 
   drawIcon = num => {
     const index = num % 20;
-    console.log(index);
     const multiple = 4;
     const icon = new BMapGL.Icon(ShopsIcon, new BMapGL.Size(160 / multiple, 160 / multiple), {
       imageOffset: new BMapGL.Size(
@@ -110,12 +109,16 @@ export default class DispatchMap extends Component {
             })}
             {windowInfo ? (
               <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
-                <div style={{ width: 250, height: 80, padding: 5, background: '#FFF' }}>
+                <div style={{ width: 250, height: 100, padding: 5, background: '#FFF' }}>
                   <div style={{ fontWeight: 'bold', overflow: 'hidden', whiteSpace: 'nowrap' }}>
                     {`[${windowInfo.order.deliveryPoint.code}]` +
                       windowInfo.order.deliveryPoint.name}
                   </div>
                   <Divider style={{ margin: 0, marginTop: 5 }} />
+                  <div>
+                    线路：
+                    {windowInfo.order.archLine?.code}
+                  </div>
                   <div style={{ display: 'flex', marginTop: 5 }}>
                     <div style={{ flex: 1 }}>整件数</div>
                     <div style={{ flex: 1 }}>周转箱数</div>
