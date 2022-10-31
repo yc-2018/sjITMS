@@ -1,48 +1,47 @@
-@import "~antd/lib/style/themes/default.less";
+@import '~antd/lib/style/themes/default.less';
 
-.tabsBody{
+.tabsBody {
   height: 100%;
-  :global{
-
-    .ant-tabs-tab-prev-icon, .ant-tabs-tab-next-icon {
+  :global {
+    .ant-tabs-tab-prev-icon,
+    .ant-tabs-tab-next-icon {
       top: 40%;
     }
 
     // 标签页 未选中
-    .ant-tabs-editable-card .ant-tabs-nav-animated .ant-tabs-tab{
+    .ant-tabs-editable-card .ant-tabs-nav-animated .ant-tabs-tab {
       width: 160px;
-      height:32px;
+      height: 32px;
       border-left: none;
       border-top: none;
       border-bottom: none;
       //border-right: none;
-      border-right-color: rgba(237,241,245,1);
+      border-right-color: rgba(237, 241, 245, 1);
       border-radius: 0;
-      background-color:white;
+      background-color: white;
       color: #354052;
-      .ant-tabs-close-x{
+      .ant-tabs-close-x {
         float: right;
         margin-top: 8px;
-        color: white;
+        color: rgba(132, 140, 150, 1);
       }
     }
 
-    .ant-tabs-editable-card .ant-tabs-nav-animated .ant-tabs-tab :hover{
-      .ant-tabs-close-x{
-        color:rgba(132,140,150,1);
-      }
-    }
+    // .ant-tabs-editable-card .ant-tabs-nav-animated .ant-tabs-tab :hover{
+    //   .ant-tabs-close-x{
+    //     color:rgba(132,140,150,1);
+    //   }
+    // }
     // 标签页 选中
-    .ant-tabs-nav-animated .ant-tabs-tab-active.ant-tabs-tab{
+    .ant-tabs-nav-animated .ant-tabs-tab-active.ant-tabs-tab {
       width: 160px;
-      height:32px;
+      height: 32px;
       border: none;
-      background-color:rgba(237,241,245,1);
-      .ant-tabs-close-x{
+      background-color: rgba(237, 241, 245, 1);
+      .ant-tabs-close-x {
         float: right;
         margin-top: 8px;
-        color: rgba(237,241,245,1);
-
+        color: rgba(132, 140, 150, 1);
       }
     }
 
@@ -50,11 +49,11 @@
       padding: 0px 14px;
       line-height: 32px;
     }
-    .ant-tabs-editable-card{
-      height:100%;
+    .ant-tabs-editable-card {
+      height: 100%;
     }
-    .ant-tabs-content{
-      height:calc(~'100% - 41px');
+    .ant-tabs-content {
+      height: calc(~'100% - 41px');
     }
     .ant-tabs-tabpane {
       height: 100%;
@@ -68,24 +67,22 @@
     }
   }
 }
-.content{
+.content {
   margin-top: 32px;
   height: 100%;
-  :global{
+  :global {
     // 内容页 未选中
-    .ant-tabs-nav-scroll .ant-tabs-nav-animated .ant-tabs-tab{
+    .ant-tabs-nav-scroll .ant-tabs-nav-animated .ant-tabs-tab {
       // color:rgba(0,0,0,.65);
       color: #354052;
-      width:auto;
-
+      width: auto;
     }
     // 内容页 选中
-    .ant-tabs-nav-animated .ant-tabs-tab-active.ant-tabs-tab{
-      width:auto;
-      background-color:white;
+    .ant-tabs-nav-animated .ant-tabs-tab-active.ant-tabs-tab {
+      width: auto;
+      background-color: white;
       height: 42px;
-      color:#3B77E3;
-
+      color: #3b77e3;
     }
 
     .ant-tabs-nav .ant-tabs-tab {
