@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-28 18:06:03
+ * @LastEditTime: 2022-10-31 16:23:53
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -217,7 +217,7 @@ export default class OrderPoolPage extends Component {
       return;
     }
     let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
-    orders = orders.concat(selectPending);
+    orders = [...orders, ...selectPending];
     //订单类型校验
     const orderType = uniqBy(orders.map(x => x.orderType));
     if (orderType.includes('Returnable') && orderType.some(x => x != 'Returnable')) {
@@ -229,7 +229,7 @@ export default class OrderPoolPage extends Component {
       return;
     }
     //不可共配校验
-    let owners = [...orders, ...selectPending].map(x => {
+    let owners = orders.map(x => {
       return { ...x.owner, noJointlyOwnerCodes: x.noJointlyOwnerCode };
     });
     owners = uniqBy(owners, 'uuid');
@@ -258,7 +258,7 @@ export default class OrderPoolPage extends Component {
       );
       return;
     }
-    this.createPageModalRef.show(false, [...orders, ...selectPending]);
+    this.createPageModalRef.show(false, orders);
   };
 
   //地图排车
