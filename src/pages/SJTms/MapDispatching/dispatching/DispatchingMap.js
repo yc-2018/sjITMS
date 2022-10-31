@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-29 16:05:16
+ * @LastEditTime: 2022-10-31 09:43:49
  * @Description: 排车单地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -63,7 +63,8 @@ export default class DispatchMap extends Component {
     ];
     queryAuditedOrder(filter).then(response => {
       if (response.success) {
-        const data = response.data.records ? response.data.records : [];
+        let data = response.data.records ? response.data.records : [];
+        data = data.filter(x => x.longitude && x.latitude);
         this.setState({ orders: data }, () => {
           setTimeout(() => {
             this.drawClusterLayer();
@@ -128,6 +129,9 @@ export default class DispatchMap extends Component {
 
   //标注点聚合图层初始化
   drawClusterLayer = () => {
+    if (this.clusterLayer) {
+      return;
+    }
     const that = this;
     const view = new mapvgl.View({ map: this?.map });
     view.removeAllLayers();
@@ -348,7 +352,7 @@ export default class DispatchMap extends Component {
                       <div style={{ flex: 1 }}>{order.cartonCount}</div>
                       <div style={{ flex: 1 }}>{order.containerCount}</div>
                       <div style={{ flex: 1 }}>{order.volume}</div>
-                      <div style={{ flex: 1 }}>{order.weight}</div>
+                      <div style={{ flex: 1 }}>{(order.weight / 1000).toFixed(3)}</div>
                     </div>
                   </div>
                 );
@@ -415,7 +419,7 @@ export default class DispatchMap extends Component {
                         <div style={{ flex: 1 }}>{windowInfo.order.cartonCount}</div>
                         <div style={{ flex: 1 }}>{windowInfo.order.containerCount}</div>
                         <div style={{ flex: 1 }}>{windowInfo.order.volume}</div>
-                        <div style={{ flex: 1 }}>{windowInfo.order.weight}</div>
+                        <div style={{ flex: 1 }}>{(windowInfo.order.weight / 1000).toFixed(3)}</div>
                       </div>
                     </div>
                   </CustomOverlay>

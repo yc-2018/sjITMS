@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-29 09:12:10
+ * @LastEditTime: 2022-10-31 09:20:24
  * @Description: 排车单地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\schedule\ScheduleMap.js
  */
@@ -26,6 +26,7 @@ export default class DispatchMap extends Component {
 
   drawIcon = num => {
     const index = num % 20;
+    console.log(index);
     const multiple = 4;
     const icon = new BMapGL.Icon(ShopsIcon, new BMapGL.Size(160 / multiple, 160 / multiple), {
       imageOffset: new BMapGL.Size(
@@ -56,7 +57,7 @@ export default class DispatchMap extends Component {
                 ...order,
                 longitude: store.longitude || 0,
                 latitude: store.latitude || 0,
-                scheduleNum: index,
+                scheduleNum: index + 1,
               };
           });
           orders = orders.filter(res => res);
@@ -116,14 +117,16 @@ export default class DispatchMap extends Component {
                   </div>
                   <Divider style={{ margin: 0, marginTop: 5 }} />
                   <div style={{ display: 'flex', marginTop: 5 }}>
+                    <div style={{ flex: 1 }}>整件数</div>
+                    <div style={{ flex: 1 }}>周转箱数</div>
                     <div style={{ flex: 1 }}>体积</div>
                     <div style={{ flex: 1 }}>重量</div>
-                    <div style={{ flex: 1 }}>总件数</div>
                   </div>
                   <div style={{ display: 'flex' }}>
+                    <div style={{ flex: 1 }}>{windowInfo.order.cartonCount}</div>
+                    <div style={{ flex: 1 }}>{windowInfo.order.containerCount}</div>
                     <div style={{ flex: 1 }}>{windowInfo.order.volume}</div>
-                    <div style={{ flex: 1 }}>{windowInfo.order.weight}</div>
-                    <div style={{ flex: 1 }}>{windowInfo.order.realCartonCount}</div>
+                    <div style={{ flex: 1 }}>{(windowInfo.order.weight / 1000).toFixed(3)}</div>
                   </div>
                 </div>
               </CustomOverlay>
