@@ -39,7 +39,7 @@ export default class LineSystemCreatePage extends QuickCreatePage {
 
     convertSaveValue = (e, fieldShowType) => {
       if (fieldShowType == 'date') {
-        return e.format('MM-DD');
+        return e?.format('MM-DD');
       } else if (
         fieldShowType == 'text' ||
         fieldShowType == 'textarea' ||

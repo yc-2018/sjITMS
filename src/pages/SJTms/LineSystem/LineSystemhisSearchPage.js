@@ -109,44 +109,23 @@ export default class LineSystemhisSearchPage extends Component {
   export = selectedKeys => {
     systemHisExport(selectedKeys).then(response => {
       if (response) {
-        const system = [
-          '版本号',
-          '体系编号',
-          '体系名称',
-          '备注',
-          '线路编号',
-          '线路名称',
-          '上级线路名称',
-          '上级线路编号',
-        ];
-        const address = ['线路编号', '线路名称', '送货点编号', '送货点名称'];
+        const sheetHeader = ['门店号', '班组', '门店名称', '调整后线路'];
         var option = [];
-        const sytemCode = [
-          'version',
-          'systemCode',
-          'systemName',
+        const sheetFilter = [
+          'storeCode',
           'note',
-          'lineCode',
-          'lineName',
-          'parentName',
-          'parentCode',
+          'storeName',
+          'lineCode'
         ];
-        const addressCode = ['lineCode', 'lineName', 'addressCode', 'addressName'];
         option.fileName = response.data.tableName;
         option.datas = [
           {
-            sheetData: response.data.systemExcelList ? response.data.systemExcelList : [],
+            sheetData: response.data.lineAddressHisExcels ? response.data.lineAddressHisExcels : [],
             sheetName: response.data.sheet1, //工作表的名字
-            sheetFilter: sytemCode,
-            sheetHeader: system,
+            sheetFilter: sheetFilter,
+            sheetHeader: sheetHeader,
           },
         ];
-        option.datas.push({
-          sheetData: response.data.lineAddressHisExcels ? response.data.lineAddressHisExcels : [],
-          sheetName: response.data.sheet2, //工作表的名字
-          sheetFilter: addressCode,
-          sheetHeader: address,
-        });
         const toExcel = new ExportJsonExcel(option);
         toExcel.saveExcel();
       }

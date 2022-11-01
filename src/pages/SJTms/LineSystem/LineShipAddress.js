@@ -13,7 +13,6 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import {
   deleteLineStoreAddressById,
-  findLineByNameLike,
   addToNewLine,
   findChildLine,
   updateStoreNum,
@@ -468,17 +467,17 @@ export default class LineShipAddress extends QuickFormSearchPage {
     );
   };
 
-  handleSearch = async value => {
-    if (value) {
-      await findLineByNameLike(value).then(result => {
-        if (result && result.data) {
-          this.setState({ lineData: result.data });
-        } else {
-          this.setState({});
-        }
-      });
-    }
-  };
+  // handleSearch = async value => {
+  //   if (value) {
+  //     await findLineByNameLike(value).then(result => {
+  //       if (result && result.data) {
+  //         this.setState({ lineData: result.data });
+  //       } else {
+  //         this.setState({});
+  //       }
+  //     });
+  //   }
+  // };
   handleChange = e => {
     this.setState({ lineValue: e });
   };

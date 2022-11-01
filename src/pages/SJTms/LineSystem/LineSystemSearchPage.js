@@ -45,7 +45,7 @@ import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonCom
 import Select from '@/components/ExcelImport/Select';
 import request from '@/utils/request';
 import ExportJsonExcel from 'js-export-excel';
-
+import {LineSystemAddPage} from './LineSystemAddPage'
 const { Content, Sider } = Layout;
 const { TreeNode } = Tree;
 const { TabPane } = Tabs;
@@ -496,8 +496,8 @@ export default class LineSystemSearchPage extends Component {
     const { expandKeys, selectLineUuid } = this.state;
     var lineTreeData = JSON.parse(JSON.stringify(this.state.lineTreeData));
     const formItemLayout = {
-      labelCol: 16,
-      wrapperCol: 16,
+      labelCol: 8,
+      wrapperCol: 8,
     };
     const renderTreeNode = data => {
       let nodeArr = data.map(item => {
@@ -539,63 +539,42 @@ export default class LineSystemSearchPage extends Component {
           {/* <span className={linesStyles.sidertitle}>线路体系</span> */}
           
           <div>
-            <Form layout="inline" {...formItemLayout} onSubmit={this.handleSubmitLine}>
-              <Form.Item label="" labelCol= '6' wrapperCol='6' >
-                {getFieldDecorator('code', {
-                  rules: [{}],
-                })(
+            <Row gutter={[_,2]} align ='middle' type ='flex'>
+              <Col span={9}>
                   <Input
-                    style={{ width: '240px' }}
                     placeholder="线路编号或者门店号"
                     onBlur={e => this.setState({ lineStoreCode: e.target.value })}
                   />
-                )}
-              </Form.Item>
-              {/* <Form.Item label="门店号">
-                {getFieldDecorator('storeCode', {
-                  rules: [{}],
-                })(
-                  <Input
-                    style={{  width: '70px' }}
-                    onBlur={e => this.setState({ storeCode: e.target.value })}
-                  />
-                )}
-              </Form.Item> */}
-              <Form.Item >
-              {/* wrapperCol={{ offset: 8, span: 16 }} */}
-                <Button type="primary" htmlType="submit">
+              </Col>
+              <Col span={3} push={1}>
+                <Button type="primary" size="small" onClick={()=>this.handleSubmitLine()}>
                   查询
                 </Button>
-              </Form.Item>
-            </Form>
+              </Col>
+              <Col span={6} push={2}>
+                <Button
+                type="primary"
+                size="small"
+                onClick={() => this.lineSystemCreatePageModalRef.show()}
+              >
+                新建体系
+              </Button>
+              </Col>
+              <Col span={6} push={1}>
+                <Button
+                type="primary"
+                size="small"
+                onClick={() => this.setState({ uploadLineVisible: true })}
+              >
+                导入线路
+              </Button>
+              </Col>
+            </Row>
           </div>
           <div > 
-            <Button
-              type="primary"
-              size="small"
-              onClick={() => this.lineSystemCreatePageModalRef.show()}
-              style={{marginRight:30}}
-            >
-             
-
-              新建体系
-            </Button>
-            {/* <Button type="primary"  size='small' onClick={() => this.setState({ uploadVisible: true })}>
-              导入体系
-            </Button> */}
-            {/* <Button type="primary" size="small" onClick={() => this.downloadTemplate()}>
-              下载导入模板
-            </Button> */}
-            <Button
-              type="primary"
-              size="small"
-              onClick={() => this.setState({ uploadLineVisible: true })}
-            >
-              导入线路
-            </Button>
           </div>
         </div>
-        <div style={{ height: '80%', overflow: 'auto' }}>
+        <div style={{ height: '90%', overflow: 'auto' }}>
           <Tree
             showLine={true}
             showIcon={true}
@@ -634,12 +613,7 @@ export default class LineSystemSearchPage extends Component {
   };
 
   handleSubmitLine = e => {
-    e.preventDefault();
-    this.props.form.validateFields((err, values) => {
-      if (err) {
         this.queryLineSystem();
-      }
-    });
   };
   /**
    * 导入线路
@@ -708,6 +682,7 @@ export default class LineSystemSearchPage extends Component {
               }}
               page={{ quickuuid: 'sj_itms_create_linesystem', noCategory: true }}
               onRef={node => (this.lineSystemCreatePageModalRef = node)}
+              customPage={LineSystemAddPage}
             />
             <CreatePageModal
               modal={{
@@ -807,6 +782,7 @@ export default class LineSystemSearchPage extends Component {
                           //value={this.state.lineSystemValue}
                           queryParams={{
                             tableName: 'SJ_ITMS_LINESYSTEM',
+                            isCache:'false',
                             condition: {
                               params: [
                                 { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
