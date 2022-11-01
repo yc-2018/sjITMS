@@ -22,6 +22,7 @@ import {
   Row,
   Col,
   Form,
+  Divider
 } from 'antd';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import LineShipAddress from './LineShipAddress';
@@ -153,8 +154,7 @@ export default class LineSystemSearchPage extends Component {
     const parmas = {
       company: loginCompany().uuid,
       dcUuid: loginOrg().uuid,
-      storeCode: this.state.storeCode ? this.state.storeCode : '',
-      lineCode: this.state.lineCode ? this.state.lineCode : '',
+      code: this.state.lineStoreCode ? this.state.lineStoreCode : ''
     };
     await findLineSystemTreeByStoreCode(parmas).then(response => {
       let lineTreeData = [];
@@ -496,8 +496,8 @@ export default class LineSystemSearchPage extends Component {
     const { expandKeys, selectLineUuid } = this.state;
     var lineTreeData = JSON.parse(JSON.stringify(this.state.lineTreeData));
     const formItemLayout = {
-      labelCol: 8,
-      wrapperCol: 8,
+      labelCol: 16,
+      wrapperCol: 16,
     };
     const renderTreeNode = data => {
       let nodeArr = data.map(item => {
@@ -535,21 +535,57 @@ export default class LineSystemSearchPage extends Component {
     return (
       <div style={{height:'100%'}}>
         <div className={linesStyles.navigatorPanelWrapper}>
+        {/* className={linesStyles.action} */}
           {/* <span className={linesStyles.sidertitle}>线路体系</span> */}
-          <div className={linesStyles.action}>
+          
+          <div>
+            <Form layout="inline" {...formItemLayout} onSubmit={this.handleSubmitLine}>
+              <Form.Item label="" labelCol= '6' wrapperCol='6' >
+                {getFieldDecorator('code', {
+                  rules: [{}],
+                })(
+                  <Input
+                    style={{ width: '240px' }}
+                    placeholder="线路编号或者门店号"
+                    onBlur={e => this.setState({ lineStoreCode: e.target.value })}
+                  />
+                )}
+              </Form.Item>
+              {/* <Form.Item label="门店号">
+                {getFieldDecorator('storeCode', {
+                  rules: [{}],
+                })(
+                  <Input
+                    style={{  width: '70px' }}
+                    onBlur={e => this.setState({ storeCode: e.target.value })}
+                  />
+                )}
+              </Form.Item> */}
+              <Form.Item >
+              {/* wrapperCol={{ offset: 8, span: 16 }} */}
+                <Button type="primary" htmlType="submit">
+                  查询
+                </Button>
+              </Form.Item>
+            </Form>
+          </div>
+          <div > 
             <Button
               type="primary"
               size="small"
               onClick={() => this.lineSystemCreatePageModalRef.show()}
+              style={{marginRight:30}}
             >
+             
+
               新建体系
             </Button>
             {/* <Button type="primary"  size='small' onClick={() => this.setState({ uploadVisible: true })}>
               导入体系
             </Button> */}
-            <Button type="primary" size="small" onClick={() => this.downloadTemplate()}>
+            {/* <Button type="primary" size="small" onClick={() => this.downloadTemplate()}>
               下载导入模板
-            </Button>
+            </Button> */}
             <Button
               type="primary"
               size="small"
@@ -557,35 +593,6 @@ export default class LineSystemSearchPage extends Component {
             >
               导入线路
             </Button>
-          </div>
-          <div>
-            <Form layout="inline" {...formItemLayout} onSubmit={this.handleSubmitLine}>
-              <Form.Item label="线路编号">
-                {getFieldDecorator('lineCode', {
-                  rules: [{}],
-                })(
-                  <Input
-                    style={{ width: '162px' }}
-                    onBlur={e => this.setState({ lineCode: e.target.value })}
-                  />
-                )}
-              </Form.Item>
-              <Form.Item label="门店号">
-                {getFieldDecorator('storeCode', {
-                  rules: [{}],
-                })(
-                  <Input
-                    style={{ marginLeft: '12px', width: '162px' }}
-                    onBlur={e => this.setState({ storeCode: e.target.value })}
-                  />
-                )}
-              </Form.Item>
-              <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                <Button type="primary" htmlType="submit">
-                  查询
-                </Button>
-              </Form.Item>
-            </Form>
           </div>
         </div>
         <div style={{ height: '80%', overflow: 'auto' }}>
@@ -767,9 +774,13 @@ export default class LineSystemSearchPage extends Component {
               afterClose={() => this.queryLineSystem(this.state.selectLineUuid)}
               destroyOnClose={true}
             >
-              <Form ref={node => (this.formRef = node)}>
-                <Row>
-                  <Col span={12}>
+              <Form layout="inline"  ref={node => (this.formRef = node)}>
+                <Row gutter={[8,8]}>
+                  <Col span={24}>
+                  <a onClick={() => this.downloadTemplate()}>点击下载导入模板</a>
+                  </Col>
+                  <Divider/>
+                  <Col span={8}>
                     <Form.Item label="文件">
                       {getFieldDecorator('file', {
                         rules: [{ type: 'object', required: true, message: '请选择要导入的文件' }],
@@ -782,7 +793,7 @@ export default class LineSystemSearchPage extends Component {
                       )}
                     </Form.Item>
                   </Col>
-                  <Col span={12}>
+                  <Col span={16}>
                     <Form.Item label="体系">
                       {getFieldDecorator('UUID', {
                         rules: [{ required: true, message: '请选择体系' }],

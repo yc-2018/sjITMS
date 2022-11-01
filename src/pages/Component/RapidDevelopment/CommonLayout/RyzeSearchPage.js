@@ -199,7 +199,7 @@ export default class RyzeSearchPage extends Component {
             unShowRow={this.state.unShowRow ? this.state.unShowRow : false}
             onRow={this.handleOnRow}
             rowKey={record => record.uuid}
-            hasSettingColumns
+            hasSettingColumns = {this.state.hasSettingColumns==undefined?true:this.state.hasSettingColumns}
             selectedRows={selectedRows}
             loading={tableLoading}
             tableHeight={this.state.tableHeight}

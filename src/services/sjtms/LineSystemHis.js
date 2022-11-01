@@ -35,7 +35,7 @@ export async function save(payload) {
 
 
 export async function findLineSystemTreeByStoreCode(payload) {
-    return request(`/itms-schedule/itms-schedule/LineSystem/findLineSystemTreeByStoreCode/${payload.company}/${payload.dcUuid}?storeCode=${payload.storeCode}&lineCode=${payload.lineCode}`, {
+    return request(`/itms-schedule/itms-schedule/LineSystem/findLineSystemTreeByStoreCode/${payload.company}/${payload.dcUuid}?code=${payload.code}`, {
       method: 'get',
     });
   }

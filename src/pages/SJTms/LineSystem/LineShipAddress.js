@@ -50,7 +50,10 @@ export default class LineShipAddress extends QuickFormSearchPage {
     lineModalVisible: false,
     lineData: [],
     lineValue: undefined,
-    isModalVisible:false
+    isModalVisible:false,
+    noSettingColumns :true,
+    hasSettingColumns:false
+    
   };
   constructor(props) {
     super(props);
