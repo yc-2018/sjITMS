@@ -2,8 +2,8 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-01 12:34:50
- * @Description: 排车单地图
+ * @LastEditTime: 2022-11-01 16:07:43
+ * @Description: 地图排车
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
 import React, { Component } from 'react';
@@ -20,7 +20,6 @@ import start from '@/assets/common/start.svg';
 import end from '@/assets/common/end.svg';
 import pass from '@/assets/common/pass.svg';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { orderBy } from 'lodash';
 
 export default class DispatchMap extends Component {
   state = {
@@ -41,6 +40,12 @@ export default class DispatchMap extends Component {
   //显示modal
   show = () => {
     this.setState({ visible: true });
+  };
+  //隐藏modal
+  hide = () => {
+    this.setState({ visible: false });
+    this.clusterLayer = undefined;
+    this.contextMenu = undefined;
   };
 
   //查询
@@ -134,7 +139,6 @@ export default class DispatchMap extends Component {
     }
     const that = this;
     const view = new mapvgl.View({ map: this?.map });
-    console.log(this.map);
     this.clusterLayer = new mapvgl.ClusterLayer({
       minSize: 40,
       maxSize: 80,
@@ -208,7 +212,6 @@ export default class DispatchMap extends Component {
     map.setViewport(poinArray); //调整到最佳视野
     let { driverTime, driverMileage } = this.state;
     driving.setSearchCompleteCallback(function() {
-      console.log(driving);
       var pts = driving
         .getResults()
         .getPlan(0)
@@ -232,11 +235,12 @@ export default class DispatchMap extends Component {
 
   //右键菜单
   drawMenu = () => {
-    const { orders } = this.state;
+    if (this.contextMenu) return;
     const menuItems = [
       {
         text: '排车',
         callback: () => {
+          const { orders } = this.state;
           const selectOrder = orders.filter(x => x.isSelect);
           if (selectOrder.length === 0) {
             message.error('请选择需要排车的门店！');
@@ -248,6 +252,7 @@ export default class DispatchMap extends Component {
       {
         text: '路线规划',
         callback: () => {
+          const { orders } = this.state;
           const selectOrder = orders.filter(x => x.isSelect);
           if (selectOrder.length === 0) {
             message.error('请选择需要排车的门店！');
@@ -263,6 +268,7 @@ export default class DispatchMap extends Component {
         new BMapGL.MenuItem(item.text, item.callback, { width: 100, id: 'menu' + index })
       );
     });
+    this.contextMenu = menu;
     this.map?.addContextMenu(menu);
   };
 
@@ -282,7 +288,6 @@ export default class DispatchMap extends Component {
       order.isSelect = this.isPointInRect(pt, bds);
     }
     this.map.removeOverlay(event.overlay);
-    // orders = orderBy(orders, x => x.isSelect);
     this.setState({ orders }, () => {
       this.clusterSetData(orders);
     });
@@ -313,7 +318,7 @@ export default class DispatchMap extends Component {
               <Button onClick={() => this.onReset()}>清空</Button>
             </Col>
             <Col span={1}>
-              <Button onClick={() => this.setState({ visible: false })}>关闭</Button>
+              <Button onClick={() => this.hide()}>关闭</Button>
             </Col>
           </Row>
         }
@@ -373,6 +378,7 @@ export default class DispatchMap extends Component {
             <Col span={18}>
               {orders.length > 0 ? (
                 <Map
+                  center={{ lng: 113.809388, lat: 23.067107 }}
                   zoom={10}
                   minZoom={6}
                   enableScrollWheelZoom
@@ -381,6 +387,7 @@ export default class DispatchMap extends Component {
                   ref={ref => (this.map = ref?.map)}
                   style={{ height: '100%' }}
                 >
+                  {/* 鼠标绘制工具 */}
                   <DrawingManager
                     enableLimit
                     enableCalculate
@@ -400,7 +407,7 @@ export default class DispatchMap extends Component {
                     }}
                     ref={ref => (this.drawingManagerRef = ref?.drawingmanager)}
                   />
-                  {/* {this.drawMarker()} */}
+
                   {windowInfo ? (
                     <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
                       <div style={{ width: 250, height: 100, padding: 5, background: '#FFF' }}>
@@ -438,7 +445,7 @@ export default class DispatchMap extends Component {
               ) : (
                 <Map
                   center={{ lng: 113.809388, lat: 23.067107 }}
-                  zoom={14}
+                  zoom={10}
                   enableScrollWheelZoom
                   enableAutoResize
                   enableRotate={false}
