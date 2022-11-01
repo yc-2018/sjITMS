@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-10-25 10:25:16
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-25 16:39:11
+ * @LastEditTime: 2022-11-01 11:27:14
  * @Description:地图排车查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\SearchForm.js
  */
@@ -206,7 +206,7 @@ export default class SearchForm extends Component {
           <Row justify="space-around">
             {newSelectFields.filter((_, index) => index < 4).map(searchField => {
               return (
-                <Col span={4}>
+                <Col span={5}>
                   <Form.Item key={searchField.id} label={searchField.fieldTxt}>
                     {getFieldDecorator(searchField.fieldName, {
                       initialValue: searchField.searchDefVal || undefined,

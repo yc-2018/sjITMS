@@ -2,14 +2,15 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-31 17:24:00
+ * @LastEditTime: 2022-11-01 12:34:50
  * @Description: 排车单地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
 import React, { Component } from 'react';
-import { Divider, Modal, Button, Row, Col, Empty, message } from 'antd';
+import { Divider, Modal, Button, Row, Col, Empty, Spin, message } from 'antd';
 import { Map, Marker, CustomOverlay, DrawingManager } from 'react-bmapgl';
 import style from './DispatchingMap.less';
+import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import emptySvg from '@/assets/common/img_empoty.svg';
 import SearchForm from './SearchForm';
 import { queryAuditedOrder } from '@/services/sjitms/OrderBill';
@@ -24,7 +25,7 @@ import { orderBy } from 'lodash';
 export default class DispatchMap extends Component {
   state = {
     visible: false,
-    isDrag: true,
+    loading: true,
     windowInfo: undefined,
     loading: false,
     pageFilter: [],
@@ -45,7 +46,6 @@ export default class DispatchMap extends Component {
   //查询
   refresh = params => {
     this.setState({ loading: true });
-    this.clusterLayer = undefined;
     let { pageFilter } = this.state;
     let filter = { pageSize: 200, superQuery: { matchType: 'and', queryParams: [] } };
     if (params) {
@@ -134,8 +134,8 @@ export default class DispatchMap extends Component {
     }
     const that = this;
     const view = new mapvgl.View({ map: this?.map });
-    view.removeAllLayers();
-    const clusterLayer = new mapvgl.ClusterLayer({
+    console.log(this.map);
+    this.clusterLayer = new mapvgl.ClusterLayer({
       minSize: 40,
       maxSize: 80,
       clusterRadius: 150,
@@ -162,7 +162,6 @@ export default class DispatchMap extends Component {
         }
       },
     });
-    this.clusterLayer = clusterLayer;
     view.addLayer(this.clusterLayer);
   };
   //标注点聚合图层数据加载
@@ -297,7 +296,7 @@ export default class DispatchMap extends Component {
   };
 
   render() {
-    const { visible, isDrag, windowInfo, orders } = this.state;
+    const { visible, loading, windowInfo, orders } = this.state;
     return (
       <Modal
         style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
@@ -321,92 +320,31 @@ export default class DispatchMap extends Component {
         closable={false}
         destroyOnClose={true}
       >
-        <Row type="flex" style={{ height: '100%' }}>
-          <Col span={6} style={{ height: '100%', background: '#fff', overflow: 'auto' }}>
-            {orders.filter(x => x.isSelect).length > 0 ? (
-              orders.filter(x => x.isSelect).map(order => {
-                return (
-                  <div
-                    className={style.storeCard}
-                    onClick={() => this.onChangeSelect(!order.isSelect, order)}
-                  >
-                    <div>
-                      {/* <Checkbox
+        <Spin
+          indicator={LoadingIcon('default')}
+          spinning={loading}
+          tip="加载中..."
+          wrapperClassName={style.loading}
+        >
+          <Row type="flex" style={{ height: '100%' }}>
+            <Col span={6} style={{ height: '100%', background: '#fff', overflow: 'auto' }}>
+              {orders.filter(x => x.isSelect).length > 0 ? (
+                orders.filter(x => x.isSelect).map(order => {
+                  return (
+                    <div
+                      className={style.storeCard}
+                      onClick={() => this.onChangeSelect(!order.isSelect, order)}
+                    >
+                      <div>
+                        {/* <Checkbox
                         checked={order.isSelect}
                         onChange={event => this.onChangeSelect(event.target.checked, order)}
                       /> */}
-                      {`[${order.deliveryPoint.code}]` + order.deliveryPoint.name}
-                    </div>
-                    <div>
-                      线路：
-                      {order.archLine?.code}
-                    </div>
-                    <Divider style={{ margin: 0, marginTop: 5 }} />
-                    <div style={{ display: 'flex', marginTop: 5 }}>
-                      <div style={{ flex: 1 }}>整件数</div>
-                      <div style={{ flex: 1 }}>周转箱数</div>
-                      <div style={{ flex: 1 }}>体积</div>
-                      <div style={{ flex: 1 }}>重量</div>
-                    </div>
-                    <div style={{ display: 'flex' }}>
-                      <div style={{ flex: 1 }}>{order.cartonCount}</div>
-                      <div style={{ flex: 1 }}>{order.containerCount}</div>
-                      <div style={{ flex: 1 }}>{order.volume}</div>
-                      <div style={{ flex: 1 }}>{(order.weight / 1000).toFixed(3)}</div>
-                    </div>
-                  </div>
-                );
-              })
-            ) : (
-              <Empty
-                style={{ marginTop: 80 }}
-                image={emptySvg}
-                description="暂无数据，请选择排车门店！"
-              />
-            )}
-          </Col>
-          <Col span={18}>
-            {orders.length > 0 ? (
-              <Map
-                zoom={10}
-                minZoom={6}
-                enableScrollWheelZoom
-                enableRotate={false}
-                // enableDragging={isDrag}
-                enableTilt={false}
-                ref={ref => (this.map = ref?.map)}
-                style={{ height: '100%' }}
-              >
-                <DrawingManager
-                  enableLimit
-                  enableCalculate
-                  // enableDrawingTool={false}
-                  onOverlaycomplete={event => this.drawSelete(event)}
-                  limitOptions={{ area: 9999999999999, distance: 9999999999999 }}
-                  drawingToolOptions={{
-                    drawingModes: ['rectangle'],
-                  }}
-                  rectangleOptions={{
-                    strokeColor: '#d9534f', //边线颜色。
-                    fillColor: '#f4cdcc', //填充颜色。当参数为空时，圆形将没有填充效果。
-                    strokeWeight: 2, //边线的宽度，以像素为单位。         ");
-                    strokeOpacity: 0.6, //边线透明度，取值范围0 - 1。
-                    fillOpacity: 0.3, //填充的透明度，取值范围0 - 1。
-                    strokeStyle: 'dashed', //边线的样式，solid或dashed。
-                  }}
-                  ref={ref => (this.drawingManagerRef = ref?.drawingmanager)}
-                />
-                {/* {this.drawMarker()} */}
-                {windowInfo ? (
-                  <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
-                    <div style={{ width: 250, height: 100, padding: 5, background: '#FFF' }}>
-                      <div style={{ fontWeight: 'bold', overflow: 'hidden', whiteSpace: 'nowrap' }}>
-                        {`[${windowInfo.order.deliveryPoint.code}]` +
-                          windowInfo.order.deliveryPoint.name}
+                        {`[${order.deliveryPoint.code}]` + order.deliveryPoint.name}
                       </div>
                       <div>
                         线路：
-                        {windowInfo.order.archLine?.code}
+                        {order.archLine?.code}
                       </div>
                       <Divider style={{ margin: 0, marginTop: 5 }} />
                       <div style={{ display: 'flex', marginTop: 5 }}>
@@ -416,30 +354,101 @@ export default class DispatchMap extends Component {
                         <div style={{ flex: 1 }}>重量</div>
                       </div>
                       <div style={{ display: 'flex' }}>
-                        <div style={{ flex: 1 }}>{windowInfo.order.cartonCount}</div>
-                        <div style={{ flex: 1 }}>{windowInfo.order.containerCount}</div>
-                        <div style={{ flex: 1 }}>{windowInfo.order.volume}</div>
-                        <div style={{ flex: 1 }}>{(windowInfo.order.weight / 1000).toFixed(3)}</div>
+                        <div style={{ flex: 1 }}>{order.cartonCount}</div>
+                        <div style={{ flex: 1 }}>{order.containerCount}</div>
+                        <div style={{ flex: 1 }}>{order.volume}</div>
+                        <div style={{ flex: 1 }}>{(order.weight / 1000).toFixed(3)}</div>
                       </div>
                     </div>
-                  </CustomOverlay>
-                ) : (
-                  <></>
-                )}
-              </Map>
-            ) : (
-              <Map
-                center={{ lng: 113.809388, lat: 23.067107 }}
-                zoom={14}
-                enableScrollWheelZoom
-                enableAutoResize
-                enableRotate={false}
-                enableTilt={false}
-                style={{ height: '100%' }}
-              />
-            )}
-          </Col>
-        </Row>
+                  );
+                })
+              ) : (
+                <Empty
+                  style={{ marginTop: 80 }}
+                  image={emptySvg}
+                  description="暂无数据，请选择排车门店！"
+                />
+              )}
+            </Col>
+            <Col span={18}>
+              {orders.length > 0 ? (
+                <Map
+                  zoom={10}
+                  minZoom={6}
+                  enableScrollWheelZoom
+                  enableRotate={false}
+                  enableTilt={false}
+                  ref={ref => (this.map = ref?.map)}
+                  style={{ height: '100%' }}
+                >
+                  <DrawingManager
+                    enableLimit
+                    enableCalculate
+                    // enableDrawingTool={false}
+                    onOverlaycomplete={event => this.drawSelete(event)}
+                    limitOptions={{ area: 9999999999999, distance: 9999999999999 }}
+                    drawingToolOptions={{
+                      drawingModes: ['rectangle'],
+                    }}
+                    rectangleOptions={{
+                      strokeColor: '#d9534f', //边线颜色。
+                      fillColor: '#f4cdcc', //填充颜色。当参数为空时，圆形将没有填充效果。
+                      strokeWeight: 2, //边线的宽度，以像素为单位。         ");
+                      strokeOpacity: 0.6, //边线透明度，取值范围0 - 1。
+                      fillOpacity: 0.3, //填充的透明度，取值范围0 - 1。
+                      strokeStyle: 'dashed', //边线的样式，solid或dashed。
+                    }}
+                    ref={ref => (this.drawingManagerRef = ref?.drawingmanager)}
+                  />
+                  {/* {this.drawMarker()} */}
+                  {windowInfo ? (
+                    <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
+                      <div style={{ width: 250, height: 100, padding: 5, background: '#FFF' }}>
+                        <div
+                          style={{ fontWeight: 'bold', overflow: 'hidden', whiteSpace: 'nowrap' }}
+                        >
+                          {`[${windowInfo.order.deliveryPoint.code}]` +
+                            windowInfo.order.deliveryPoint.name}
+                        </div>
+                        <div>
+                          线路：
+                          {windowInfo.order.archLine?.code}
+                        </div>
+                        <Divider style={{ margin: 0, marginTop: 5 }} />
+                        <div style={{ display: 'flex', marginTop: 5 }}>
+                          <div style={{ flex: 1 }}>整件数</div>
+                          <div style={{ flex: 1 }}>周转箱数</div>
+                          <div style={{ flex: 1 }}>体积</div>
+                          <div style={{ flex: 1 }}>重量</div>
+                        </div>
+                        <div style={{ display: 'flex' }}>
+                          <div style={{ flex: 1 }}>{windowInfo.order.cartonCount}</div>
+                          <div style={{ flex: 1 }}>{windowInfo.order.containerCount}</div>
+                          <div style={{ flex: 1 }}>{windowInfo.order.volume}</div>
+                          <div style={{ flex: 1 }}>
+                            {(windowInfo.order.weight / 1000).toFixed(3)}
+                          </div>
+                        </div>
+                      </div>
+                    </CustomOverlay>
+                  ) : (
+                    <></>
+                  )}
+                </Map>
+              ) : (
+                <Map
+                  center={{ lng: 113.809388, lat: 23.067107 }}
+                  zoom={14}
+                  enableScrollWheelZoom
+                  enableAutoResize
+                  enableRotate={false}
+                  enableTilt={false}
+                  style={{ height: '100%' }}
+                />
+              )}
+            </Col>
+          </Row>
+        </Spin>
       </Modal>
     );
   }
