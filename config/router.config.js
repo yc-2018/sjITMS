@@ -1431,7 +1431,7 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_sj_itms_dispatchtime',
-                authority: ['sjtms.bigData.arrange'],
+                authority: ['sjtms.bigData.dispatchtime'],
               },
               {
                 path: '/bigData/loading/driverfeereport',
@@ -1439,7 +1439,7 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_sj_itms_driver_fee_report',
-                authority: ['sjtms.bigData.arrange'],
+                authority: ['sjtms.bigData.driverfeereport'],
               },
               {
                 path: '/bigData/loading/dispatchDtl',
@@ -1447,7 +1447,7 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_sj_itms_dispatchDtl_report',
-                authority: ['sjtms.bigData.arrange'],
+                authority: ['sjtms.bigData.dispatchDtl'],
               },
               {
                 path: '/bigData/loading/linereport',
@@ -1455,7 +1455,7 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_sj_itms_line_report',
-                authority: ['sjtms.bigData.arrange'],
+                authority: ['sjtms.bigData.linereport'],
               },
               {
                 path: '/bigData/loading/joindtlreport',
@@ -1463,7 +1463,7 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_sj_itms_joindtl_report',
-                authority: ['sjtms.bigData.arrange'],
+                authority: ['sjtms.bigData.joindtlreport'],
               },
               {
                 path: '/bigData/loading/owndtlreport',
@@ -1471,7 +1471,7 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_sj_itms_owndtl_report',
-                authority: ['sjtms.bigData.arrange'],
+                authority: ['sjtms.bigData.owndtlreport'],
               },
               {
                 path: '/bigData/loading/dispatchareastore',
@@ -1479,7 +1479,7 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_sj_dispatchareastore_report',
-                authority: ['sjtms.bigData.arrange'],
+                authority: ['sjtms.bigData.dispatchareastore'],
               },
               {
                 path: '/bigData/loading/dispatchmonth',
@@ -1487,7 +1487,7 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_sj_dispatchmonth_report',
-                authority: ['sjtms.bigData.arrange'],
+                authority: ['sjtms.bigData.dispatchmonth'],
               },
               {
                 path: '/bigData/loading/dispatchday',
@@ -1495,7 +1495,7 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_sj_dispatchday_report',
-                authority: ['sjtms.bigData.arrange'],
+                authority: ['sjtms.bigData.dispatchday'],
               },
               {
                 path: '/bigData/loading/vehiclesarrange',
@@ -1503,7 +1503,7 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_sj_vehiclesarrange_report',
-                authority: ['sjtms.bigData.arrange'],
+                authority: ['sjtms.bigData.vehiclesarrange'],
               },
               {
                 path: '/bigData/loading/employeeattendance',
@@ -1511,7 +1511,7 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_sj_employeeattendance_report',
-                authority: ['sjtms.bigData.arrange'],
+                authority: ['sjtms.bigData.employeeattendance'],
               },
             ],
           },
