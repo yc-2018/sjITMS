@@ -6,7 +6,7 @@
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineSystem.js
  */
-import { PureComponent } from 'react';
+import { createRef, PureComponent } from 'react';
 import { connect } from 'dva';
 import { Tabs } from 'antd';
 import Page from '@/pages/Component/Page/inner/Page';
@@ -18,16 +18,21 @@ const { TabPane } = Tabs;
   loading: loading.models.lineSystem,
 }))
 export default class LineSystem extends PureComponent {
+  onTabClick =(key)=>{
+    if(key=='HisLineSystemPage'){
+      this.setState({flag:new Date()});
+    }
+  }
   render() {
     return (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
-          <Tabs defaultActiveKey="LineSystemPage" style={{ height: '100%' }}>
+          <Tabs defaultActiveKey="LineSystemPage" style={{ height: '100%' }}  onChange={this.onTabClick}>
             <TabPane tab="当前线路" key="LineSystemPage">
               <LineSystemSearchPage />
             </TabPane>
             <TabPane tab="历史线路" key="HisLineSystemPage">
-              <LineSystemhisSearchPage />
+              <LineSystemhisSearchPage kedata = {this.state.flag}/>
             </TabPane>
           </Tabs>
         </Page>

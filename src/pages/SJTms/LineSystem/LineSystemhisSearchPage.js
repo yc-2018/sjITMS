@@ -30,6 +30,9 @@ export default class LineSystemhisSearchPage extends Component {
   componentDidMount() {
     this.queryLineSystem();
   }
+  componentWillReceiveProps(nextProps) {
+    this.queryLineSystem();
+  }
   //遍历树
   getLineSystemTree = (data, itemData, lineData) => {
     let treeNode = [];
