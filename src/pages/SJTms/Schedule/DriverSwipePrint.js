@@ -94,8 +94,8 @@ export default class DriverSwipePrint extends PureComponent {
         LODOP.NewPageA();
         LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
       });
-      //LODOP.PREVIEW();
-      LODOP.PRINT();
+      LODOP.PREVIEW();
+      //LODOP.PRINT();
       hide();
       this.setState({ printPage: undefined });
       
@@ -113,7 +113,11 @@ export default class DriverSwipePrint extends PureComponent {
     }
   };
    drawPrintPage = (schedule, scheduleDetails) => {
+    console.log("sch",schedule);
     if (loginOrg().uuid == '000000750000004') {
+     // const deliveryMan = schedule.memberDetails.filter (e=>e.memberType=='DeliveryMan').map(e=>'['+e.member.code+']'+e.member.name);
+      const stevedore = schedule.memberDetails.filter (e=>e.memberType=='Stevedore').map(e=>'['+e.member.code+']'+e.member.name);
+      const copilot = schedule.memberDetails.filter (e=>e.memberType=='Copilot').map(e=>'['+e.member.code+']'+e.member.name);
       return (
         <div>
           <table
@@ -176,7 +180,7 @@ export default class DriverSwipePrint extends PureComponent {
                     </div>
                     <div style={{ float: 'left', width: '25%' }}>
                       装车员：
-                      {"["+schedule.carrier.code+"]"+schedule.carrier.name}
+                      {stevedore.length>0?stevedore.join(','):''}
                     </div>
                     <div style={{ float: 'left', width: '25%' }}>
                       打印时间：
@@ -188,7 +192,7 @@ export default class DriverSwipePrint extends PureComponent {
               <tr>
                 <th colspan={16} style={{ border: 0, height: 20 }}>
                   <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
-                    <div style={{ float: 'left', width: '25%' }}>副司机： {schedule.DRIVER}</div>
+                    <div style={{ float: 'left', width: '25%' }}>副司机： {copilot.length>0?copilot.join(','):''}</div>
                   </div>
                 </th>
               </tr>
@@ -197,12 +201,12 @@ export default class DriverSwipePrint extends PureComponent {
                   <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                     <div style={{ float: 'left', width: '80%' }}>
                       粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为
-                      {schedule.ETCAmount}元<br />
+                      {schedule.etcamount}元<br />
                       [线路]去程入口:
-                      {schedule.ETCRoute}
+                      {schedule.etcroute}
                       <br />
                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;回程出口:
-                      {schedule.ETCRouteReturn}
+                      {schedule.etcrouteReturn}
                       <br />
                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如有异常需超额使用粤通卡的，请致电（670607）
                     </div>
@@ -277,12 +281,12 @@ export default class DriverSwipePrint extends PureComponent {
               )}
             </tbody>
             <tfoot border={0}>
-              <tr style={{ height: 20, border: 0 }} border={0}>
-                <td style={{ border: 0 }} colSpan={8}>
-                  总体积(m³):
+              <tr style={{ height: 20, border: 0 ,fontSize:'15px' }} border={0}>
+                <td style={{ border: 0,paddingTop:10 }} colSpan={8} >
+                  <div style={{paddingLeft:20}}>总体积(m³)：{schedule.volume}</div>
                 </td>
-                <td style={{ border: 0 }} colSpan={8}>
-                  脏筐数:_____________
+                <td style={{ border: 0 ,textAlign: 'right',paddingTop:10}} colSpan={8} >
+                  <div>脏筐数：_____________</div>
                 </td>
               </tr>
               <tr style={{ border: 0, height: 20 }}>

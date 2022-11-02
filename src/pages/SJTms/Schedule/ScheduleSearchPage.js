@@ -514,8 +514,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
 //出车单
 const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
   const driver = schedule.DRIVER ? schedule.DRIVER.substr(schedule.DRIVER.indexOf(']') + 1) : '';
-  const stevedore = schedule.STEVEDORE
-    ? schedule.STEVEDORE.substr(schedule.STEVEDORE.indexOf(']') + 1)
+  const DELIVERYMAN = schedule.DELIVERYMAN
+    ? schedule.DELIVERYMAN.substr(schedule.DELIVERYMAN.indexOf(']') + 1)
     : '';
   return (
     <div>
@@ -554,7 +554,7 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
                   车牌号： {schedule.VEHICLEPLATENUMBER}
                 </div>
                 <div style={{ float: 'left', width: '22%' }}>司机: {driver}</div>
-                <div style={{ float: 'left', width: '20%' }}>送货员： {stevedore}</div>
+                <div style={{ float: 'left', width: '20%' }}>送货员： {DELIVERYMAN}</div>
               </div>
             </th>
           </tr>
@@ -738,7 +738,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
             <tr>
               <th colspan={16} style={{ border: 0, height: 20 }}>
                 <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
-                  <div style={{ float: 'left', width: '25%' }}>副司机： {schedule.DRIVER}</div>
+                  <div style={{ float: 'left', width: '25%' }}>副司机： {schedule.COPILOT}</div>
                 </div>
               </th>
             </tr>
@@ -827,29 +827,18 @@ const drawPrintPage = (schedule, scheduleDetails) => {
             )}
           </tbody>
           <tfoot border={0}>
-            <tr style={{ height: 20, border: 0 }} border={0}>
-              <td style={{ border: 0 }} colSpan={8}>
-                总体积(m³):
+            <tr style={{ height: 20, border: 0 ,fontSize:'15px' ,}} border={0}>
+              <td style={{ border: 0,paddingTop:10 }} colSpan={8} >
+                <div style={{paddingLeft:20}}>总体积(m³)：{schedule.VEHICLEVOLUME}</div>
               </td>
-              <td style={{ border: 0 }} colSpan={8}>
-                脏筐数:_____________
+              <td style={{ border: 0 ,textAlign: 'right',paddingTop:10}} colSpan={8} >
+                <div>脏筐数：_____________</div>
               </td>
             </tr>
             <tr style={{ border: 0, height: 20 }}>
               <td style={{ border: 0 }} colspan={16}>
                 单据备注: 白色~收据，红色~驾驶员、配送员，黄色~发货
               </td>
-              {/* <td style={{ textAlign: 'center' }}>
-                  <font color="blue" tdata="AllSum" format="#,##" tindex="5">
-                    ######
-                  </font>
-                </td>
-                <td style={{ textAlign: 'center' }}>
-                  <font color="blue" tdata="AllSum" format="#,##" tindex="6">
-                    ######
-                  </font>
-                </td>
-                <td colspan={2} /> */}
             </tr>
             <tr style={{ border: 0, height: 20 }}>
               <td style={{ border: 0 }} colspan={6}>
