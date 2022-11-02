@@ -88,11 +88,11 @@ export async function findLineSystemTreeByStoreCode(payload) {
     &companyUuid=${payload.companyUuid}&dispatchcenterUuid=${payload.dispatchcenterUuid}`);
   }
   
-  export async function findLineByNameLike(payload) {
-    return request(`/itms-schedule/itms-schedule/LineSystem/findLineByNameLike/${payload}`, {
-      method: 'POST',
-    });
-  }
+  // export async function findLineByNameLike(payload) {
+  //   return request(`/itms-schedule/itms-schedule/LineSystem/findLineByNameLike/${payload}`, {
+  //     method: 'POST',
+  //   });
+  // }
   export async function addToNewLine(payload) {
     return request(
       `/itms-schedule/itms-schedule/itms-schedule/LineSystem/addToNewLine/${payload.lineuuid}`,
