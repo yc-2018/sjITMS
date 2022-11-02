@@ -32,7 +32,7 @@ export default class LineSystem extends PureComponent {
               <LineSystemSearchPage />
             </TabPane>
             <TabPane tab="历史线路" key="HisLineSystemPage">
-              <LineSystemhisSearchPage kedata = {this.state.flag}/>
+              <LineSystemhisSearchPage kedata = {this.state?.flag}/>
             </TabPane>
           </Tabs>
         </Page>
