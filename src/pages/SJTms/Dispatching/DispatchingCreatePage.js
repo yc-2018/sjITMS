@@ -558,6 +558,9 @@ export default class DispatchingCreatePage extends Component {
       realCartonCount: data ? sumBy(data.map(x => x.realCartonCount)) : 0,
       realScatteredCount: data ? sumBy(data.map(x => x.realScatteredCount)) : 0,
       realContainerCount: data ? sumBy(data.map(x => x.realContainerCount)) : 0,
+      stillCartonCount: data ? sumBy(data.map(x => x.stillCartonCount)) : 0,
+      stillScatteredCount: data ? sumBy(data.map(x => x.stillScatteredCount)) : 0,
+      stillContainerCount: data ? sumBy(data.map(x => x.stillContainerCount)) : 0,
       weight: data ? sumBy(data.map(x => Number(x.weight))) : 0,
       volume: data ? sumBy(data.map(x => Number(x.volume))) : 0,
       totalAmount: data ? sumBy(data.map(x => Number(x.amount))) : 0,
@@ -745,12 +748,13 @@ export default class DispatchingCreatePage extends Component {
   updateCartonCount = result => {
     const { orders } = this.state;
     const that = this;
-    if (result.count.cartonCount <= 0) {
+    const cartonCount = result.count.cartonCount;
+    if (cartonCount <= 0) {
       return;
     }
     let record = orders.find(x => x.billNumber == result.billNumber);
-    const remVolume = (result.count.cartonCount / record.cartonCount) * record.volume;
-    const remWeight = (result.count.cartonCount / record.cartonCount) * record.weight;
+    const remVolume = (cartonCount / record.stillCartonCount) * record.volume;
+    const remWeight = (cartonCount / record.stillCartonCount) * record.weight;
     const volumes =
       Math.round((sumBy(orders.map(x => x.volume)) - (record.volume - remVolume)) * 1000) / 1000;
     const weights =
@@ -759,10 +763,10 @@ export default class DispatchingCreatePage extends Component {
       title: '提示',
       content: `拆单后排车单体积为：${volumes}m³，重量为：${weights}t ，是否确定拆单？`,
       onOk() {
-        record.volume = remVolume;
-        record.weight = remWeight;
-        record.realCartonCount = result.count.cartonCount;
-        record.unDispatchCarton = record.cartonCount - result.count.cartonCount;
+        record.volume = remVolume.toFixed(3);
+        record.weight = remWeight.toFixed(3);
+        record.realCartonCount = cartonCount;
+        record.unDispatchCarton = record.stillCartonCount - cartonCount;
         that.setState({ orders, editPageVisible: false });
       },
       onCancel() {
@@ -966,7 +970,7 @@ export default class DispatchingCreatePage extends Component {
                     <div> 整件</div>
                     <div>
                       <span className={dispatchingStyles.orderTotalNumber}>
-                        {totalData.cartonCount}
+                        {totalData.stillCartonCount}
                       </span>
                     </div>
                   </div>
@@ -975,7 +979,7 @@ export default class DispatchingCreatePage extends Component {
                     <div>周转箱</div>
                     <div>
                       <span className={dispatchingStyles.orderTotalNumber}>
-                        {totalData.containerCount}
+                        {totalData.stillContainerCount}
                       </span>
                     </div>
                   </div>

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-31 16:23:53
+ * @LastEditTime: 2022-11-02 17:27:20
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -151,6 +151,9 @@ export default class OrderPoolPage extends Component {
         archLine: orders[0].archLine,
         owner: orders[0].owner,
         address: orders[0].deliveryPoint.address,
+        cartonCount: Math.round(sumBy(orders, 'stillCartonCount') * 1000) / 1000,
+        stillScatteredCount: Math.round(sumBy(orders, 'stillScatteredCount') * 1000) / 1000,
+        stillContainerCount: Math.round(sumBy(orders, 'stillContainerCount') * 1000) / 1000,
         cartonCount: Math.round(sumBy(orders, 'cartonCount') * 1000) / 1000,
         realCartonCount: Math.round(sumBy(orders, 'realCartonCount') * 1000) / 1000,
         scatteredCount: Math.round(sumBy(orders, 'scatteredCount') * 1000) / 1000,
@@ -386,6 +389,7 @@ export default class OrderPoolPage extends Component {
   //计算汇总
   groupByOrder = data => {
     data = data.filter(x => x.orderType !== 'OnlyBill');
+    console.log(data);
     if (data.length == 0) {
       return {
         realCartonCount: 0,
@@ -395,13 +399,18 @@ export default class OrderPoolPage extends Component {
         weight: 0,
       };
     }
+    data = data.map(x => {
+      if (x.orderNumber) {
+        x.stillCartonCount = x.cartonCount;
+        x.stillScatteredCount = x.scatteredCount;
+        x.stillContainerCount = x.containerCount;
+      }
+      return x;
+    });
     return {
-      realCartonCount:
-        Math.round(sumBy(data.map(x => x.realCartonCount || x.cartonCount)) * 100) / 100,
-      realScatteredCount:
-        Math.round(sumBy(data.map(x => x.realScatteredCount || x.scatteredCount)) * 100) / 100,
-      realContainerCount:
-        Math.round(sumBy(data.map(x => x.realContainerCount || x.containerCount)) * 100) / 100,
+      realCartonCount: Math.round(sumBy(data.map(x => x.stillCartonCount)) * 100) / 100,
+      realScatteredCount: Math.round(sumBy(data.map(x => x.stillScatteredCount)) * 100) / 100,
+      realContainerCount: Math.round(sumBy(data.map(x => x.stillContainerCount)) * 100) / 100,
       weight: Math.round(sumBy(data.map(x => Number(x.weight))) * 100) / 100,
       volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
     };

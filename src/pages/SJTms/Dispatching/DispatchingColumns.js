@@ -61,27 +61,24 @@ export const OrderColumns = [
   },
   {
     title: '整件数',
-    dataIndex: 'cartonCount',
+    dataIndex: 'stillCartonCount',
     sorter: true,
     width: 60,
-    render: (val, record) =>
-      val != undefined ? <span>{record.realCartonCount || val}</span> : <Empty />,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
     title: '散件数',
-    dataIndex: 'scatteredCount',
+    dataIndex: 'stillScatteredCount',
     sorter: true,
     width: 60,
-    render: (val, record) =>
-      val != undefined ? <span>{record.realScatteredCount || val}</span> : <Empty />,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
     title: '周转箱',
-    dataIndex: 'containerCount',
+    dataIndex: 'stillContainerCount',
     sorter: true,
     width: 60,
-    render: (val, record) =>
-      val != undefined ? <span>{record.realContainerCount || val}</span> : <Empty />,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
     title: '体积',
@@ -141,27 +138,24 @@ export const OrderCollectColumns = [
   },
   {
     title: '整件数',
-    dataIndex: 'cartonCount',
+    dataIndex: 'stillCartonCount',
     sorter: true,
     width: 60,
-    render: (val, record) =>
-      val != undefined ? <span>{record.realCartonCount || val}</span> : <Empty />,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
     title: '散件数',
-    dataIndex: 'scatteredCount',
+    dataIndex: 'stillScatteredCount',
     sorter: true,
     width: 60,
-    render: (val, record) =>
-      val != undefined ? <span>{record.realScatteredCount || val}</span> : <Empty />,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
     title: '周转箱',
-    dataIndex: 'containerCount',
+    dataIndex: 'stillContainerCount',
     sorter: true,
     width: 60,
-    render: (val, record) =>
-      val != undefined ? <span>{record.realContainerCount || val}</span> : <Empty />,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
     title: '体积',
@@ -200,24 +194,21 @@ export const OrderDetailColumns = [
   },
   {
     title: '整件数',
-    dataIndex: 'cartonCount',
+    dataIndex: 'stillCartonCount',
     width: 60,
-    render: (val, record) =>
-      val != undefined ? <span>{record.realCartonCount || val}</span> : <Empty />,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
     title: '散件数',
-    dataIndex: 'scatteredCount',
+    dataIndex: 'stillScatteredCount',
     width: 60,
-    render: (val, record) =>
-      val != undefined ? <span>{record.realScatteredCount || val}</span> : <Empty />,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
     title: '周转箱',
-    dataIndex: 'containerCount',
+    dataIndex: 'stillCartonCount',
     width: 60,
-    render: (val, record) =>
-      val != undefined ? <span>{record.realContainerCount || val}</span> : <Empty />,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
     title: '体积',
@@ -312,24 +303,21 @@ export const CreatePageOrderColumns = [
   },
   {
     title: '整件数',
-    dataIndex: 'cartonCount',
+    dataIndex: 'stillCartonCount',
     width: 60,
-    render: (val, record) =>
-      val ? <EllipsisCol colValue={record.realCartonCount || val} /> : <Empty />,
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '散件数',
-    dataIndex: 'scatteredCount',
+    dataIndex: 'stillScatteredCount',
     width: 60,
-    render: (val, record) =>
-      val ? <EllipsisCol colValue={record.realScatteredCount || val} /> : <Empty />,
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '周转箱',
-    dataIndex: 'containerCount',
+    dataIndex: 'stillContainerCount',
     width: 60,
-    render: (val, record) =>
-      val ? <EllipsisCol colValue={record.realContainerCount || val} /> : <Empty />,
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '体积',
