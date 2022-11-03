@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-01 15:58:47
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-06 15:26:54
+ * @LastEditTime: 2022-11-03 15:02:07
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -11,7 +11,7 @@ import OperateCol from '@/pages/Component/Form/OperateCol';
 import { Checkbox, Select, Input, Button, Popconfirm, message, Dropdown, Menu, Empty } from 'antd';
 import { loginCompany } from '@/utils/LoginContext';
 import { dynamicQuery, saveFormData } from '@/services/quick/Quick';
-import { confirm } from '@/services/sjitms/Checkreceipt';
+import { confirm, cancelReceipted } from '@/services/sjitms/Checkreceipt';
 
 const { Option } = Select;
 @connect(({ quick, loading }) => ({
@@ -57,6 +57,29 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
           message.success('保存成功');
           this.refreshTable();
         }
+      }
+    } else {
+      message.error('请至少选中一条数据！');
+    }
+  };
+
+  cancelReceipted = async () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length !== 0) {
+      let list = [];
+      selectedRows.forEach(row => {
+        let data = {
+          receipted: row.RECEIPTED == '0' ? false : true,
+          uuid: row.UUID,
+          dealMethod: row.DEALMETHOD,
+          note: row.NOTE,
+        };
+        list.push(data);
+      });
+      const result = await cancelReceipted(list);
+      if (result.success) {
+        message.success('取消成功');
+        this.refreshTable();
       }
     } else {
       message.error('请至少选中一条数据！');
@@ -158,7 +181,6 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
         <Checkbox
           checked={e.val == '0' ? false : true}
           key={e.record.UUID}
-          // onChange={v => (e.record.RECEIPTED = v.target.checked ? 1 : 0)}
           onChange={v => {
             e.record.RECEIPTED = v.target.checked ? 1 : 0;
             if (v.target.checked) {
@@ -186,10 +208,12 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
     } else if (e.column.fieldName == 'NOTE') {
       e.component = (
         <Input
-        defaultValue={e.val}
-        onFocus = {(e)=>{e.currentTarget.select()}}
-        placeholder="请输入备注"
-         onChange={v => (e.record.NOTE = v.target.value)} 
+          defaultValue={e.val}
+          onFocus={e => {
+            e.currentTarget.select();
+          }}
+          placeholder="请输入备注"
+          onChange={v => (e.record.NOTE = v.target.value)}
         />
       );
     }
@@ -229,6 +253,17 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
             <Button>批量设置处理方式</Button>
           </Dropdown>
         </span>
+      );
+    } else {
+      return (
+        <Popconfirm
+          title="确定取消回单所选的内容吗?"
+          onConfirm={() => this.cancelReceipted()}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Button>取消回单</Button>
+        </Popconfirm>
       );
     }
   };
