@@ -131,7 +131,11 @@ export default class DispatchingCreatePage extends Component {
         if (response.success) {
           let details = response.data.details
             ? response.data.details.map(item => {
-                return { ...item, billNumber: item.orderNumber };
+                return {
+                  ...item,
+                  billNumber: item.orderNumber,
+                  stillCartonCount: item.cartonCount,
+                };
               })
             : [];
           vehicles = await this.getRecommendByOrders(details, vehicles);
