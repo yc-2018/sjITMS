@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-18 11:18:56
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-18 11:35:15
+ * @LastEditTime: 2022-11-03 11:20:30
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -34,7 +34,6 @@ export default class CheckreceiptHistorySearch extends QuickFormSearchPage {
 
   onSearch = () => {
     const { record } = this.props;
-    console.log('record', record);
     const pageFilters = {
       ...this.state.pageFilters,
       superQuery: {
