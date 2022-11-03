@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-01 08:43:48
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-09-27 14:44:55
+ * @LastEditTime: 2022-11-03 15:16:30
  * @Description: 嵌套子表格组件
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingChildTable.js
  */
@@ -12,7 +12,7 @@ import { Table, Row, Col } from 'antd';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import dispatchingTableStyles from './DispatchingTable.less';
 import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
-import { orderBy } from 'lodash';
+import { orderBy, uniqBy } from 'lodash';
 
 const ResizeableTitle = props => {
   const { onResize, width, ...restProps } = props;
@@ -34,7 +34,11 @@ const ResizeableTitle = props => {
 };
 
 export default class DispatchingChildTable extends Component {
-  state = { columns: [...this.props.columns], nestColumns: [...this.props.nestColumns] };
+  state = {
+    columns: [...this.props.columns],
+    nestColumns: [...this.props.nestColumns],
+    lastIndex: undefined,
+  };
 
   components = {
     header: {
@@ -91,12 +95,27 @@ export default class DispatchingChildTable extends Component {
   };
 
   //表格行点击事件
-  onClickRow = record => {
+  onClickRow = (record, index, event) => {
     if (this.props.clickRow == undefined) return;
-    const { selectedRowKeys, changeSelectRows } = this.props;
-    const index = this.props.selectedRowKeys.indexOf(record.uuid);
-    index == -1 ? selectedRowKeys.push(record.uuid) : selectedRowKeys.splice(index, 1);
-    this.onChange(selectedRowKeys);
+    const { selectedRowKeys, dataSource } = this.props;
+    let { lastIndex } = this.state;
+    let rowKeys = [...selectedRowKeys];
+    let allRowKeys = [...dataSource].map(x => x.uuid);
+    const indicatrix = rowKeys.indexOf(record.uuid);
+    const selected = indicatrix == -1;
+    selected ? rowKeys.push(record.uuid) : rowKeys.splice(indicatrix, 1);
+    if (event.shiftKey && lastIndex >= 0) {
+      allRowKeys =
+        index > lastIndex
+          ? allRowKeys.filter((_, i) => i >= lastIndex && i <= index)
+          : allRowKeys.filter((_, i) => i >= index && i <= lastIndex);
+      rowKeys = selected
+        ? rowKeys.concat(allRowKeys)
+        : rowKeys.filter(x => allRowKeys.indexOf(x) == -1);
+    }
+    rowKeys = uniqBy(rowKeys);
+    this.onChange(rowKeys);
+    this.setState({ lastIndex: index });
   };
 
   //子表格行点击事件
@@ -223,7 +242,7 @@ export default class DispatchingChildTable extends Component {
       );
     };
     return (
-      <div style={{ position: 'relative' }}>
+      <div style={{ position: 'relative', userSelect: 'none' }}>
         {this.props.topBar}
         <Row>
           <Col span={20}>{this.props.settingColumnsBar}</Col>

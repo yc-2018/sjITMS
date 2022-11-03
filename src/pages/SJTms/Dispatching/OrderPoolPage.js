@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-02 17:47:18
+ * @LastEditTime: 2022-11-03 10:26:32
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -151,7 +151,7 @@ export default class OrderPoolPage extends Component {
         archLine: orders[0].archLine,
         owner: orders[0].owner,
         address: orders[0].deliveryPoint.address,
-        cartonCount: Math.round(sumBy(orders, 'stillCartonCount') * 1000) / 1000,
+        stillCartonCount: Math.round(sumBy(orders, 'stillCartonCount') * 1000) / 1000,
         stillScatteredCount: Math.round(sumBy(orders, 'stillScatteredCount') * 1000) / 1000,
         stillContainerCount: Math.round(sumBy(orders, 'stillContainerCount') * 1000) / 1000,
         cartonCount: Math.round(sumBy(orders, 'cartonCount') * 1000) / 1000,
