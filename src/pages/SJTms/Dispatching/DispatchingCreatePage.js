@@ -302,143 +302,19 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ orders, vehicles });
   };
 
-  //保存校验
-  handlSaveverify = async () => {
-    const { isEdit, orders, schedule, selectVehicle, selectEmployees } = this.state;
-    const orderSummary = this.groupByOrder(orders);
-    if (!this.verifySchedule(orderSummary, selectVehicle, selectEmployees)) {
-      return;
-    }
-    //校验载重
-    const exceedWeight =
-      orderSummary.weight - (selectVehicle.BEARWEIGHT ? selectVehicle.BEARWEIGHT : 0);
-    const exceedVolume =
-      orderSummary.volume - (selectVehicle.BEARVOLUME ? selectVehicle.BEARVOLUME : 0);
-    await getByDispatchcenterUuid(loginOrg().uuid).then(result => {
-      const wei = exceedWeight > 0;
-      const vol = exceedVolume > 0;
-      if (result.success) {
-        let confirmTitle = '';
-        if (result.data) {
-          const valumelimit = result.data.volume == 1;
-          const weightLimit = result.data.weight == 1;
-          if (valumelimit && weightLimit) {
-            if (wei && vol) {
-              message.error(
-                '排车重量超' +
-                  exceedWeight.toFixed(2) +
-                  'kg，体积超' +
-                  exceedVolume.toFixed(2) +
-                  'm³,请检查后重试！'
-              );
-              return false;
-            }
-            if (wei && !vol) {
-              message.error('排车重量超' + exceedWeight.toFixed(2) + 'kg,请检查后重试！');
-              return false;
-            }
-            if (!wei && vol) {
-              message.error('排车体积超' + exceedVolume.toFixed(2) + 'm³,请检查后重试！');
-              return false;
-            }
-          }
-          if (!valumelimit && !weightLimit) {
-            if (wei && vol) {
-              confirmTitle =
-                '排车重量超' +
-                exceedWeight.toFixed(2) +
-                'kg，体积超' +
-                exceedVolume.toFixed(2) +
-                'm³,确定继续吗?';
-              this.onConfirm(confirmTitle);
-              return false;
-            }
-            if (wei && !vol) {
-              confirmTitle = '排车重量超' + exceedWeight.toFixed(2) + 'kg,确定继续吗?';
-              this.onConfirm(confirmTitle);
-              return false;
-            }
-            if (!wei && vol) {
-              confirmTitle = '排车体积超' + exceedVolume.toFixed(2) + 'm³,确定继续吗?';
-              this.onConfirm(confirmTitle);
-              return false;
-            }
-          }
-          if (!valumelimit && weightLimit) {
-            if (wei && vol) {
-              message.error('排车重量超' + exceedWeight.toFixed(2) + 'kg,请检查后重试！');
-              return false;
-            }
-            if (wei && !vol) {
-              message.error('排车重量超' + exceedWeight.toFixed(2) + 'kg,请检查后重试！');
-              return false;
-            }
-            if (!wei && vol) {
-              confirmTitle = '排车体积超' + exceedVolume.toFixed(2) + 'm³,确定继续吗?';
-              this.onConfirm(confirmTitle);
-              return false;
-            }
-          }
-          if (valumelimit && !weightLimit) {
-            if (wei && vol) {
-              message.error('排车体积超' + exceedVolume.toFixed(2) + 'm³,请检查后重试！');
-              return false;
-            }
-            if (wei && !vol) {
-              confirmTitle = '排车重量超' + exceedWeight.toFixed(2) + 'kg,确定继续吗?';
-              this.onConfirm(confirmTitle);
-              return false;
-            }
-            if (!wei && vol) {
-              message.error('排车体积超' + exceedVolume.toFixed(2) + 'm³,请检查后重试！');
-              return false;
-            }
-          }
-          this.handleSave();
-        } else {
-          if (wei && vol) {
-            confirmTitle =
-              '排车重量超' +
-              exceedWeight.toFixed(2) +
-              'kg，体积超' +
-              exceedVolume.toFixed(2) +
-              'm³,确定继续吗?';
-            this.onConfirm(confirmTitle);
-            return false;
-          }
-          if (wei && !vol) {
-            confirmTitle = '排车重量超' + exceedWeight.toFixed(2) + 'kg,确定继续吗?';
-            this.onConfirm(confirmTitle);
-            return false;
-          }
-          if (!wei && vol) {
-            confirmTitle = '排车体积超' + exceedVolume.toFixed(2) + 'm³,确定继续吗?';
-            this.onConfirm(confirmTitle);
-            return false;
-          }
-          this.handleSave();
-        }
-      }
-    });
-  };
-
   onConfirm = content => {
     Modal.confirm({
       title: '提示',
       content: content,
       okText: '确认',
       cancelText: '取消',
-      onOk: () => this.handleSave(),
+      onOk: () => this.onSave(),
     });
   };
   //保存
-  handleSave = async () => {
+  onSave = async () => {
     const { isEdit, orders, schedule, selectVehicle, selectEmployees, note } = this.state;
     const orderSummary = this.groupByOrder(orders);
-    // if (!this.verifySchedule(orderSummary, selectVehicle, selectEmployees)) {
-    //   return;
-    // }
-
     const orderType = uniqBy(orders.map(x => x.orderType)).shift();
     const type = orderType == 'TakeDelivery' ? 'Task' : 'Job';
     const driver = selectEmployees.find(x => x.memberType == 'Driver');
@@ -488,47 +364,30 @@ export default class DispatchingCreatePage extends Component {
       this.setState({ visible: false, selectEmployees: [], selectVehicle: [], loading: false });
     }
   };
-
   //保存数据校验
-  verifySchedule = (orderSummary, selectVehicle, selectEmployees) => {
+  handleSave = async () => {
+    const { orders, selectVehicle, selectEmployees } = this.state;
+    const orderSummary = this.groupByOrder(orders);
     //校验订单
     if (orderSummary.orderCount == 0) {
       message.error('请选择运输订单！');
-      return false;
+      return;
     }
     const driver = selectEmployees.filter(x => x.memberType == 'Driver');
     //校验车辆必选
     if (isEmptyObj(selectVehicle)) {
       message.error('请选择车辆！');
-      return false;
+      return;
     }
     if (driver.length > 1) {
       message.error('只允许一位驾驶员！');
-      return false;
+      return;
     }
     //校验司机必选
     if (driver.length == 0) {
       message.error('请选择驾驶员！');
-      return false;
+      return;
     }
-    //校验容积
-    //const exceedVolume = orderCounts.volume - selectVehicle.BEARVOLUME;
-    // if (exceedVolume > 0) {
-    //   message.error(
-    //     '排车体积超过车辆可装载的最大体积，超出' + exceedVolume.toFixed(2) + 'm³，请检查后重试！'
-    //   );
-    //   return false;
-    // }
-    //校验载重
-    // const exceedWeight =
-    //   orderSummary.weight - (selectVehicle.BEARWEIGHT ? selectVehicle.BEARWEIGHT : 0);
-    // if (exceedWeight > 0) {
-    //   message.error(
-    //     '排车重量超过车辆可运输的最大限重，超出' + exceedWeight.toFixed(2) + 'kg，请检查后重试！'
-    //   );
-    //   return false;
-    // }
-
     let selectEmpLength = [];
     selectEmployees.forEach(item => {
       let length = selectEmployees.filter(
@@ -539,10 +398,36 @@ export default class DispatchingCreatePage extends Component {
     let checkRepeat = selectEmpLength.find(x => x.length > 1);
     if (checkRepeat != undefined) {
       message.error('排车随车人员存在相同人员重复职位，请检查后重试！');
-      return false;
+      return;
     }
-
-    return true;
+    const exceedWeight =
+      orderSummary.weight - (selectVehicle.BEARWEIGHT ? selectVehicle.BEARWEIGHT : 0);
+    const exceedVolume =
+      orderSummary.volume - (selectVehicle.BEARVOLUME ? selectVehicle.BEARVOLUME : 0);
+    const response = await getByDispatchcenterUuid(loginOrg().uuid);
+    if (response.success && response.data) {
+      //校验载重
+      if (exceedWeight > 0 && response.data.weight == 1) {
+        message.error('排车重量超' + exceedWeight.toFixed(2) + 'kg,请检查后重试！');
+        return;
+      }
+      //校验容积
+      if (exceedVolume > 0 && response.data.volume == 1) {
+        message.error('排车体积超' + exceedVolume.toFixed(2) + 'm³,请检查后重试！');
+        return;
+      }
+    }
+    //校验载重
+    if (exceedWeight > 0) {
+      this.onConfirm('排车重量超' + exceedWeight.toFixed(2) + 'kg,确定继续吗?');
+      return;
+    }
+    //校验容积
+    if (exceedVolume > 0) {
+      this.onConfirm('排车体积超' + exceedVolume.toFixed(2) + 'm³,确定继续吗?');
+      return;
+    }
+    this.onSave();
   };
 
   //汇总
@@ -803,39 +688,10 @@ export default class DispatchingCreatePage extends Component {
       };
     }
 
-    const buildRowOperation = {
-      title: '操作',
-      width: 100,
-      className: 'tools-center',
-      render: record => (
-        <div>
-          <div>
-            <Popconfirm
-              title="确定移除吗?"
-              onConfirm={() => this.removeDetail(record)}
-              okText="确定"
-              cancelText="取消"
-            >
-              <a href="#">移除</a>
-            </Popconfirm>
-
-            <Divider type="vertical" style={{ height: '1em' }} />
-            <a
-              href="#"
-              onClick={() => {
-                this.editSource(record);
-              }}
-            >
-              拆单
-            </a>
-          </div>
-        </div>
-      ),
-    };
     return (
       <Modal
         visible={this.state.visible}
-        onOk={e => this.handlSaveverify(e)}
+        onOk={() => this.handleSave()}
         onCancel={() => this.hide()}
         closable={false}
         destroyOnClose
@@ -847,7 +703,7 @@ export default class DispatchingCreatePage extends Component {
           <div>
             <Button onClick={this.exit}>取消</Button>
             <Button onClick={this.hide}>临时保存</Button>
-            <Button type="primary" onClick={e => this.handlSaveverify(e)} loading={loading}>
+            <Button type="primary" onClick={() => this.handleSave()} loading={loading}>
               生成排车单
             </Button>
           </div>,
