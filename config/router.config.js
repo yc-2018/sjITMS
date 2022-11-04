@@ -1579,6 +1579,28 @@ export default [
             ],
           },
           {
+            path: '/bigData/cs',
+            name: '茶山',
+            routes: [
+              {
+                path: '/bigData/cs/sj_tms_cswms_hend_check',
+                name: '茶山订单数据汇总核对报表',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'sj_tms_cswms_hend_check',
+                authority: ['sjtms.bigData.arrange'],
+              },
+              {
+                path: '/bigData/cs/sj_itms_wms_order_dtl_check',
+                name: '茶山订单数据明细核对报表',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'sj_itms_wms_order_dtl_check',
+                authority: ['sjtms.bigData.arrange'],
+              }
+            ]
+          },
+          {
             path: '/bigData/costReport',
             name: '费用报表',
             routes: [
