@@ -2,15 +2,18 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-31 17:49:20
+ * @LastEditTime: 2022-11-07 08:40:24
  * @Description: 排车单地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\schedule\ScheduleMap.js
  */
 import React, { Component } from 'react';
 import { Divider, Modal, Button } from 'antd';
-import { Map, Marker, CustomOverlay } from 'react-bmapgl';
+import { Map, CustomOverlay } from 'react-bmapgl';
 import { getDetailByBillUuids } from '@/services/sjitms/ScheduleBill';
+import { queryDriverRoutes } from '@/services/sjitms/OrderBill';
+import { queryDict } from '@/services/quick/Quick';
 import { getAddressByUuids } from '@/services/sjitms/StoreTeam';
+import { loginOrg } from '@/utils/LoginContext';
 import ShopsIcon from '@/assets/common/shops.png';
 import { uniqBy, orderBy } from 'lodash';
 
@@ -18,26 +21,50 @@ export default class DispatchMap extends Component {
   state = {
     visible: false,
     windowInfo: undefined,
+    startPoint: '',
+    rowKeys: [],
     orders: [],
   };
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
   };
 
-  drawIcon = num => {
-    const index = num % 20;
-    const multiple = 4;
-    const icon = new BMapGL.Icon(ShopsIcon, new BMapGL.Size(160 / multiple, 160 / multiple), {
-      imageOffset: new BMapGL.Size(
-        (160 / multiple) * (Math.ceil(index / 5) - 1),
-        (160 / multiple) * ((index % 5) - 1)
-      ),
-      imageSize: new BMapGL.Size(800 / multiple, 1000 / multiple),
+  colors = [
+    '#0069FF',
+    '#EF233C',
+    '#20BF55',
+    '#07BEB8',
+    '#FF715B',
+    '#523F38',
+    '#FF206E',
+    '#086375',
+    '#A9E5BB',
+    '#8F2D56',
+    '#004E98',
+    '#5D576B',
+    '#248232',
+    '#9A031E',
+    '#8E443D',
+    '#F15152',
+    '#F79256',
+    '#640D14',
+    '#3F88C5',
+    '#0FA3B1',
+  ];
+
+  show = rowKeys => {
+    queryDict('warehouse').then(res => {
+      this.setState({
+        startPoint: res.data.find(x => x.itemValue == loginOrg().uuid)?.description,
+      });
     });
-    return icon;
+    this.contextMenu = undefined;
+    this.initialize(rowKeys);
+    this.setState({ visible: true, rowKeys });
   };
 
-  show = async rowKeys => {
+  //初始化
+  initialize = async rowKeys => {
     if (rowKeys.length) {
       const response = await getDetailByBillUuids(rowKeys);
       if (response.success) {
@@ -59,17 +86,136 @@ export default class DispatchMap extends Component {
                 scheduleNum: index + 1,
               };
           });
-          orders = orders.filter(res => res);
-          orders = orderBy(orders, x => x.scheduleNum);
+          orders = orderBy(orders.filter(res => res), x => x.scheduleNum);
           this.setState({ orders });
-          const points = orders.map(point => {
-            return new BMapGL.Point(point.longitude, point.latitude);
-          });
-          setTimeout(() => this.map?.setViewport(points), 500);
+          setTimeout(() => {
+            this.map?.clearOverlays();
+            this.drawMarker(orders);
+            this.drawMenu();
+          }, 500);
         }
       }
     }
-    this.setState({ visible: true });
+  };
+
+  //送货点标注
+  drawMarker = points => {
+    points.forEach(pt => {
+      const point = new BMapGL.Point(pt.longitude, pt.latitude);
+      const marker = new BMapGL.Marker(point, {
+        icon: this.drawIcon(pt.scheduleNum),
+        shadow: true,
+      });
+      marker.addEventListener('mouseover', () => {
+        this.setState({ windowInfo: { point, order: pt } });
+      });
+      marker.addEventListener('mouseout', () => {
+        this.setState({ windowInfo: undefined });
+      });
+
+      this.map?.addOverlay(marker);
+    });
+  };
+
+  //标注icon
+  drawIcon = num => {
+    const index = num % 20;
+    const multiple = 5;
+    const icon = new BMapGL.Icon(ShopsIcon, new BMapGL.Size(160 / multiple, 160 / multiple), {
+      imageOffset: new BMapGL.Size(
+        (160 / multiple) * ((index % 5) - 1),
+        (160 / multiple) * (Math.ceil(index / 5) - 1)
+      ),
+      imageSize: new BMapGL.Size(800 / multiple, 1000 / multiple),
+    });
+    return icon;
+  };
+
+  //右键菜单
+  drawMenu = () => {
+    if (this.contextMenu) return;
+    const menuItems = [
+      {
+        text: '显示驾车路线',
+        callback: () => {
+          this.showLine();
+        },
+      },
+      {
+        text: '隐藏驾车路线',
+        callback: () => {
+          this.hideLine();
+        },
+      },
+    ];
+    const menu = new BMapGL.ContextMenu();
+    menuItems.forEach((item, index) => {
+      menu.addItem(
+        new BMapGL.MenuItem(item.text, item.callback, { width: 100, id: 'menu' + index })
+      );
+    });
+    this.contextMenu = menu;
+    this.map?.addContextMenu(menu);
+  };
+
+  //显示线路
+  showLine = () => {
+    const { rowKeys, orders } = this.state;
+    rowKeys.forEach(key => {
+      const points = orders.filter(res => res.billUuid == key);
+      this.searchRoute(points);
+    });
+  };
+  //隐藏线路
+  hideLine = () => {
+    const { orders } = this.state;
+    this.map?.clearOverlays();
+    this.drawMarker(orders);
+  };
+
+  //路线规划
+  searchRoute = async selectPoints => {
+    const pointArr = selectPoints.map(order => {
+      return (order.latitude + ',' + order.longitude).trim();
+    });
+    const { startPoint } = this.state;
+    const waypoints = pointArr.filter((_, index) => index < pointArr.length - 1);
+    const response = await queryDriverRoutes(
+      startPoint,
+      pointArr[pointArr.length - 1],
+      waypoints.join('|')
+    );
+    if (response.status == 0) {
+      const routePaths = response.result.routes[0].steps.map(x => x.path);
+      let pts = new Array();
+      routePaths.forEach(path => {
+        const points = path.split(';');
+        points.forEach(point => {
+          pts.push(new BMapGL.Point(point.split(',')[0], point.split(',')[1]));
+        });
+      });
+      const color = this.colors[selectPoints[0].scheduleNum - 1];
+      var polyline = new BMapGL.Polyline(pts, {
+        strokeColor: color,
+        strokeWeight: 6,
+        strokeOpacity: 0.7,
+      });
+      this.map?.addOverlay(polyline);
+      this.map?.addOverlay(
+        this.drawRouteMarker(startPoint.split(',')[1], startPoint.split(',')[0], 50, 80, 400, 278)
+      );
+      this.map?.setViewport(pts);
+    }
+  };
+  //路线规划标注
+  drawRouteMarker = (lng, lat, width, hieght, x, y) => {
+    const iconUrl = '//webmap1.bdimg.com/wolfman/static/common/images/markers_new2x_2960fb4.png';
+    return new BMapGL.Marker(new BMapGL.Point(lng, lat), {
+      icon: new BMapGL.Icon(iconUrl, new BMapGL.Size(width / 2, hieght / 2), {
+        imageOffset: new BMapGL.Size(x / 2, y / 2),
+        imageSize: new BMapGL.Size(600 / 2, 600 / 2),
+      }),
+    });
   };
 
   render() {
@@ -86,6 +232,7 @@ export default class DispatchMap extends Component {
       >
         {orders.length > 0 ? (
           <Map
+            center={{ lng: 113.809388, lat: 23.067107 }}
             zoom={10}
             minZoom={6}
             enableScrollWheelZoom
@@ -94,19 +241,6 @@ export default class DispatchMap extends Component {
             ref={ref => (this.map = ref?.map)}
             style={{ height: '100%' }}
           >
-            {orders.map(order => {
-              const point = new BMapGL.Point(order.longitude, order.latitude);
-              const icon = this.drawIcon(order.scheduleNum);
-              return (
-                <Marker
-                  position={point}
-                  icon={icon}
-                  shadow={true}
-                  onMouseover={() => this.setState({ windowInfo: { point, order } })}
-                  onMouseout={() => this.setState({ windowInfo: undefined })}
-                />
-              );
-            })}
             {windowInfo ? (
               <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
                 <div style={{ width: 250, height: 100, padding: 5, background: '#FFF' }}>

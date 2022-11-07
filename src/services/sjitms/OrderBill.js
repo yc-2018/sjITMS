@@ -2,10 +2,11 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-12 16:08:35
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-28 17:45:46
+ * @LastEditTime: 2022-11-04 10:21:44
  * @version: 1.0
  */
 import request from '@/utils/request';
+import fetch from 'dva/fetch';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
 export async function getAuditedOrder(searchKeyValues) {
@@ -18,6 +19,15 @@ export async function getAuditedOrder(searchKeyValues) {
       body: searchKeyValues,
     }
   );
+}
+export async function queryDriverRoutes(origin, destination, waypoints) {
+  return Promise.race([
+    fetch(
+      `/bmapapi/direction/v2/driving?origin=${origin}&destination=${destination}&waypoints=${waypoints}&alternatives=1&intelligent_plan=1&ak=DcXGLWmzGcdU8GLzuiYtmhhtdVCjffty`
+    ),
+  ]).then(response => {
+    return response.json();
+  });
 }
 export async function queryAuditedOrder(params) {
   return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/queryAuditedOrder`, {

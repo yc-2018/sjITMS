@@ -111,6 +111,12 @@ export default {
   manifest: {
     basePath: '/',
   },
-
+  proxy: {
+    '/bmapapi': {
+      target: 'https://api.map.baidu.com',
+      changeOrigin: true,
+      pathRewrite: { '^/bmapapi': '' },
+    },
+  },
   chainWebpack: webpackPlugin,
 };

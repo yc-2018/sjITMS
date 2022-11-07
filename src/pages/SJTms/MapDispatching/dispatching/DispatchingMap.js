@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-01 16:07:43
+ * @LastEditTime: 2022-11-04 14:31:42
  * @Description: 地图排车
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -13,12 +13,10 @@ import style from './DispatchingMap.less';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import emptySvg from '@/assets/common/img_empoty.svg';
 import SearchForm from './SearchForm';
-import { queryAuditedOrder } from '@/services/sjitms/OrderBill';
+import { queryAuditedOrder, queryDriverRoutes } from '@/services/sjitms/OrderBill';
+import { queryDict } from '@/services/quick/Quick';
 import ShopIcon from '@/assets/common/shop.svg';
 import ShopClickIcon from '@/assets/common/shopClick.svg';
-import start from '@/assets/common/start.svg';
-import end from '@/assets/common/end.svg';
-import pass from '@/assets/common/pass.svg';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
 export default class DispatchMap extends Component {
@@ -27,6 +25,7 @@ export default class DispatchMap extends Component {
     loading: true,
     windowInfo: undefined,
     loading: false,
+    startPoint: '',
     pageFilter: [],
     orders: [],
     driverTime: 0,
@@ -40,6 +39,11 @@ export default class DispatchMap extends Component {
   //显示modal
   show = () => {
     this.setState({ visible: true });
+    queryDict('warehouse').then(res => {
+      this.setState({
+        startPoint: res.data.find(x => x.itemValue == loginOrg().uuid)?.description,
+      });
+    });
   };
   //隐藏modal
   hide = () => {
@@ -86,11 +90,11 @@ export default class DispatchMap extends Component {
   };
 
   //自动聚焦
-  autoViewPort = orders => {
-    const points = orders.map(point => {
+  autoViewPort = points => {
+    const newPoints = points.map(point => {
       return new BMapGL.Point(point.longitude, point.latitude);
     });
-    this.map?.setViewport(points);
+    this.map?.setViewport(newPoints);
   };
 
   //选门店
@@ -185,51 +189,53 @@ export default class DispatchMap extends Component {
   };
 
   //路线规划
-  searchRoute = selectOrder => {
-    let map = this.map;
-    var driving = new BMapGL.DrivingRoute(map);
-    var poinArray = [];
-    for (var i = 0; i < selectOrder.length - 1; i++) {
-      var p1 = new BMapGL.Point(selectOrder[i].longitude, selectOrder[i].latitude);
-      var p2 = new BMapGL.Point(selectOrder[i + 1].longitude, selectOrder[i + 1].latitude);
-      poinArray.push(p1);
-      if (i == selectOrder.length - 2) {
-        poinArray.push(p2);
-      }
-      driving.search(p1, p2);
-    }
-    const startIcon = new BMapGL.Icon(start, new BMapGL.Size(30, 30));
-    const endIcon = new BMapGL.Icon(end, new BMapGL.Size(30, 30));
-    const passIcon = new BMapGL.Icon(pass, new BMapGL.Size(30, 30));
-    var startMarker = new BMapGL.Marker(poinArray[0], { icon: startIcon }); // 创建标注
-    var endMarker = new BMapGL.Marker(poinArray[poinArray.length - 1], { icon: endIcon }); // 创建标注
-    map.addOverlay(startMarker);
-    map.addOverlay(endMarker);
-    //途径点marker
-    for (let i = 1; i < poinArray.length - 1; i++) {
-      map.addOverlay(new BMapGL.Marker(poinArray[i], { icon: passIcon }));
-    }
-    map.setViewport(poinArray); //调整到最佳视野
-    let { driverTime, driverMileage } = this.state;
-    driving.setSearchCompleteCallback(function() {
-      var pts = driving
-        .getResults()
-        .getPlan(0)
-        .getRoute(0)
-        .getPath();
+  searchRoute = async selectPoints => {
+    this.clusterSetData([]);
+    const map = this.map;
+    const { startPoint } = this.state;
+    const pointArr = selectPoints.map(order => {
+      return (order.latitude + ',' + order.longitude).trim();
+    });
+    const waypoints = pointArr.filter((_, index) => index < pointArr.length - 1);
+    const response = await queryDriverRoutes(
+      startPoint,
+      pointArr[pointArr.length - 1],
+      waypoints.join('|')
+    );
+    if (response.status == 0) {
+      const routePaths = response.result.routes[0].steps.map(x => x.path);
+      let pts = new Array();
+      routePaths.forEach(path => {
+        const points = path.split(';');
+        points.forEach(point => {
+          pts.push(new BMapGL.Point(point.split(',')[0], point.split(',')[1]));
+        });
+      });
       var polyline = new BMapGL.Polyline(pts, {
-        strokeColor: '#00A6ED',
+        strokeColor: '#00bd01',
         strokeWeight: 6,
         strokeOpacity: 1,
       });
       map.addOverlay(polyline);
-      var plan = driving.getResults().getPlan(0);
-      if (plan) {
-        var dis = plan.getDistance(false); //获取总公里数
-        var t = plan.getDuration(false); ///获取总耗时
-        driverTime += t;
-        driverMileage += dis;
-      }
+      map.addOverlay(
+        this.drawRouteMaker(startPoint.split(',')[1], startPoint.split(',')[0], 50, 80, 400, 278)
+      );
+      selectPoints.forEach((point, index) => {
+        index == selectPoints.length - 1
+          ? map.addOverlay(this.drawRouteMaker(point.longitude, point.latitude, 50, 80, 450, 278))
+          : map.addOverlay(this.drawRouteMaker(point.longitude, point.latitude, 70, 80, 530, 420));
+      });
+      map.setViewport(pts);
+    }
+  };
+  //路线规划标注
+  drawRouteMaker = (lng, lat, width, hieght, x, y) => {
+    const iconUrl = '//webmap1.bdimg.com/wolfman/static/common/images/markers_new2x_2960fb4.png';
+    return new BMapGL.Marker(new BMapGL.Point(lng, lat), {
+      icon: new BMapGL.Icon(iconUrl, new BMapGL.Size(width / 2, hieght / 2), {
+        imageOffset: new BMapGL.Size(x / 2, y / 2),
+        imageSize: new BMapGL.Size(600 / 2, 600 / 2),
+      }),
     });
   };
 
@@ -241,24 +247,24 @@ export default class DispatchMap extends Component {
         text: '排车',
         callback: () => {
           const { orders } = this.state;
-          const selectOrder = orders.filter(x => x.isSelect);
-          if (selectOrder.length === 0) {
+          const selectPoints = orders.filter(x => x.isSelect);
+          if (selectPoints.length === 0) {
             message.error('请选择需要排车的门店！');
             return;
           }
-          this.props.dispatchingByMap(selectOrder);
+          this.props.dispatchingByMap(selectPoints);
         },
       },
       {
         text: '路线规划',
         callback: () => {
           const { orders } = this.state;
-          const selectOrder = orders.filter(x => x.isSelect);
-          if (selectOrder.length === 0) {
+          const selectPoints = orders.filter(x => x.isSelect);
+          if (selectPoints.length === 0) {
             message.error('请选择需要排车的门店！');
             return;
           }
-          this.searchRoute(selectOrder);
+          this.searchRoute(selectPoints);
         },
       },
     ];
@@ -272,7 +278,7 @@ export default class DispatchMap extends Component {
     this.map?.addContextMenu(menu);
   };
 
-  //画框选取marker
+  //画框选取送货点
   drawSelete = event => {
     let { orders } = this.state;
     let overlays = [];
@@ -338,9 +344,9 @@ export default class DispatchMap extends Component {
                   return (
                     <div
                       className={style.storeCard}
-                      onClick={() => this.onChangeSelect(!order.isSelect, order)}
+                      // onClick={() => this.onChangeSelect(!order.isSelect, order)}
                     >
-                      <div>
+                      <div className={style.storeCardTitle}>
                         {/* <Checkbox
                         checked={order.isSelect}
                         onChange={event => this.onChangeSelect(event.target.checked, order)}
@@ -354,12 +360,14 @@ export default class DispatchMap extends Component {
                       <Divider style={{ margin: 0, marginTop: 5 }} />
                       <div style={{ display: 'flex', marginTop: 5 }}>
                         <div style={{ flex: 1 }}>整件数</div>
-                        <div style={{ flex: 1 }}>周转箱数</div>
+                        <div style={{ flex: 1 }}>散件数</div>
+                        <div style={{ flex: 1 }}>周转箱</div>
                         <div style={{ flex: 1 }}>体积</div>
                         <div style={{ flex: 1 }}>重量</div>
                       </div>
                       <div style={{ display: 'flex' }}>
                         <div style={{ flex: 1 }}>{order.cartonCount}</div>
+                        <div style={{ flex: 1 }}>{order.scatteredCount}</div>
                         <div style={{ flex: 1 }}>{order.containerCount}</div>
                         <div style={{ flex: 1 }}>{order.volume}</div>
                         <div style={{ flex: 1 }}>{(order.weight / 1000).toFixed(3)}</div>
@@ -374,6 +382,7 @@ export default class DispatchMap extends Component {
                   description="暂无数据，请选择排车门店！"
                 />
               )}
+              <div id="routesResult" />
             </Col>
             <Col span={18}>
               {orders.length > 0 ? (
@@ -410,7 +419,7 @@ export default class DispatchMap extends Component {
 
                   {windowInfo ? (
                     <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
-                      <div style={{ width: 250, height: 100, padding: 5, background: '#FFF' }}>
+                      <div style={{ width: 280, height: 100, padding: 5, background: '#FFF' }}>
                         <div
                           style={{ fontWeight: 'bold', overflow: 'hidden', whiteSpace: 'nowrap' }}
                         >
@@ -424,12 +433,14 @@ export default class DispatchMap extends Component {
                         <Divider style={{ margin: 0, marginTop: 5 }} />
                         <div style={{ display: 'flex', marginTop: 5 }}>
                           <div style={{ flex: 1 }}>整件数</div>
-                          <div style={{ flex: 1 }}>周转箱数</div>
+                          <div style={{ flex: 1 }}>散件数</div>
+                          <div style={{ flex: 1 }}>周转箱</div>
                           <div style={{ flex: 1 }}>体积</div>
                           <div style={{ flex: 1 }}>重量</div>
                         </div>
                         <div style={{ display: 'flex' }}>
                           <div style={{ flex: 1 }}>{windowInfo.order.cartonCount}</div>
+                          <div style={{ flex: 1 }}>{windowInfo.order.scatteredCount}</div>
                           <div style={{ flex: 1 }}>{windowInfo.order.containerCount}</div>
                           <div style={{ flex: 1 }}>{windowInfo.order.volume}</div>
                           <div style={{ flex: 1 }}>
