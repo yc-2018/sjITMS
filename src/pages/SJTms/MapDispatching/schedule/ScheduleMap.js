@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-07 08:40:24
+ * @LastEditTime: 2022-11-07 18:44:31
  * @Description: 排车单地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\schedule\ScheduleMap.js
  */
@@ -161,9 +161,9 @@ export default class DispatchMap extends Component {
   //显示线路
   showLine = () => {
     const { rowKeys, orders } = this.state;
-    rowKeys.forEach(key => {
+    rowKeys.forEach(async key => {
       const points = orders.filter(res => res.billUuid == key);
-      this.searchRoute(points);
+      await this.searchRoute(points);
     });
   };
   //隐藏线路
@@ -185,8 +185,8 @@ export default class DispatchMap extends Component {
       pointArr[pointArr.length - 1],
       waypoints.join('|')
     );
-    if (response.status == 0) {
-      const routePaths = response.result.routes[0].steps.map(x => x.path);
+    if (response.success) {
+      const routePaths = response.data.result.routes[0].steps.map(x => x.path);
       let pts = new Array();
       routePaths.forEach(path => {
         const points = path.split(';');

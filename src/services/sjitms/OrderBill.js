@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-12 16:08:35
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-04 10:21:44
+ * @LastEditTime: 2022-11-07 18:52:21
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -21,13 +21,11 @@ export async function getAuditedOrder(searchKeyValues) {
   );
 }
 export async function queryDriverRoutes(origin, destination, waypoints) {
-  return Promise.race([
-    fetch(
-      `/bmapapi/direction/v2/driving?origin=${origin}&destination=${destination}&waypoints=${waypoints}&alternatives=1&intelligent_plan=1&ak=DcXGLWmzGcdU8GLzuiYtmhhtdVCjffty`
-    ),
-  ]).then(response => {
-    return response.json();
-  });
+  return request(
+    `/itms-schedule/itms-schedule/bmap/driving?origin=${origin}&destination=${destination}&waypoints=${encodeURI(
+      waypoints
+    )}&alternatives=1&intelligent_plan=1&ak=DcXGLWmzGcdU8GLzuiYtmhhtdVCjffty`
+  );
 }
 export async function queryAuditedOrder(params) {
   return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/queryAuditedOrder`, {
