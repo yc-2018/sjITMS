@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-01 15:58:47
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-03 15:02:07
+ * @LastEditTime: 2022-11-07 10:56:24
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -179,7 +179,7 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
     if (e.column.fieldName == 'RECEIPTED') {
       e.component = (
         <Checkbox
-          checked={e.val == '0' ? false : true}
+          checked={e.val == '1' ? true : false}
           key={e.record.UUID}
           onChange={v => {
             e.record.RECEIPTED = v.target.checked ? 1 : 0;
