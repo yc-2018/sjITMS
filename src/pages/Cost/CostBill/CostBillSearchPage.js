@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-06 16:31:01
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-05 15:37:52
+ * @LastEditTime: 2022-11-07 17:47:25
  * @version: 1.0
  */
 
@@ -362,11 +362,12 @@ export default class CostBillSearchPage extends PureComponent {
       return;
     }
     if (selectCords.length == 1) {
-      const response = this.haveCheck(selectCords[0]);
-      if (response && response.success) {
-        message.success('确认成功');
-        this.handleSarch();
-      }
+      this.haveCheck(selectCords[0]).then(response => {
+        if (response && response.success) {
+          message.success('确认成功');
+          this.handleSarch();
+        }
+      });
     } else {
       this.batchProcessConfirmRef.show('确认', selectCords, this.haveCheck, this.handleSarch);
     }
@@ -387,11 +388,12 @@ export default class CostBillSearchPage extends PureComponent {
       return;
     }
     if (selectCords.length == 1) {
-      const response = this.consumed(selectCords[0]);
-      if (response && response.success) {
-        message.success('核销成功');
-        this.handleSarch();
-      }
+      this.consumed(selectCords[0]).then(response => {
+        if (response && response.success) {
+          message.success('核销成功');
+          this.handleSarch();
+        }
+      });
     } else {
       this.batchProcessConfirmRef.show('核销', selectCords, this.consumed, this.handleSarch);
     }
