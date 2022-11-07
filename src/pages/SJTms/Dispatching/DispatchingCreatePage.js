@@ -537,7 +537,7 @@ export default class DispatchingCreatePage extends Component {
                             }}
                           >
                             <div>{employee.CODE}</div>
-                            <div>{employee.NAME}</div>
+                            <div>{employee.NAME.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')}</div>
                             <div>{employee.ROLE_TYPE2}</div>
                           </div>
                         </Col>
@@ -976,7 +976,10 @@ export default class DispatchingCreatePage extends Component {
                         }}
                       >
                         <Tooltip placement="topLeft" title={`[${employee.CODE}]` + employee.NAME}>
-                          <span>{`[${employee.CODE}]` + employee.NAME}</span>
+                          <span>
+                            {`[${employee.CODE}]` +
+                              employee.NAME.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')}
+                          </span>
                         </Tooltip>
                       </Col>
                       <Col span={8}>
