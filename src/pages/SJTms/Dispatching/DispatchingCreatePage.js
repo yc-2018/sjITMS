@@ -655,6 +655,8 @@ export default class DispatchingCreatePage extends Component {
         record.volume = remVolume.toFixed(3);
         record.weight = remWeight.toFixed(3);
         record.realCartonCount = cartonCount;
+        record.realScatteredCount = record.scatteredCount;
+        record.realContainerCount = record.containerCount;
         record.unDispatchCarton = record.stillCartonCount - cartonCount;
         that.setState({ orders, editPageVisible: false });
       },

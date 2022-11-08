@@ -303,24 +303,24 @@ export const CreatePageOrderColumns = [
   },
   {
     title: '整件数',
-    dataIndex: 'realCartonCount',
+    dataIndex: 'stillCartonCount',
     width: 60,
     render: (val, record) =>
-      val ? <EllipsisCol colValue={record.stillCartonCount || val} /> : <Empty />,
+      val ? <EllipsisCol colValue={record.realCartonCount || val} /> : <Empty />,
   },
   {
     title: '散件数',
-    dataIndex: 'realScatteredCount',
+    dataIndex: 'stillScatteredCount',
     width: 60,
     render: (val, record) =>
-      val ? <EllipsisCol colValue={record.stillScatteredCount || val} /> : <Empty />,
+      val ? <EllipsisCol colValue={record.realScatteredCount || val} /> : <Empty />,
   },
   {
     title: '周转箱',
-    dataIndex: 'realContainerCount',
+    dataIndex: 'stillContainerCount',
     width: 60,
     render: (val, record) =>
-      val ? <EllipsisCol colValue={record.stillContainerCount || val} /> : <Empty />,
+      val ? <EllipsisCol colValue={record.realContainerCount || val} /> : <Empty />,
   },
   {
     title: '体积',
