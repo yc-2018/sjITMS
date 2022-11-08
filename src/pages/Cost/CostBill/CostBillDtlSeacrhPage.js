@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-12 15:41:09
+ * @LastEditTime: 2022-11-08 12:32:04
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -50,15 +50,9 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
    * 查询处理
    */
   handleOnSertch = async data => {
-    let values = this.props.form.getFieldsValue();
     const { PLAN_UUID, BILL_MONTH } = this.props;
-    values.dateString = BILL_MONTH;
-    for (const i in values) {
-      if (values[i] == '') {
-        delete values[i];
-      }
-    }
-   // this.setState({ searchLoading: true });
+    let values = { dateString: BILL_MONTH };
+    // this.setState({ searchLoading: true });
     let params = {};
     if (data) {
       data.searchKeyValues = { ...values, ...data.searchKeyValues };
@@ -105,7 +99,7 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
       this.initConfig({
         columns: newColumns,
         sql: ' ccc',
-        reportHeadName: this.props.TITLE //this.props.params.TITLE,
+        reportHeadName: this.props.TITLE, //this.props.params.TITLE,
       });
     } else {
       message.error('当前查询无数据,请计算后再操作');
@@ -135,40 +129,40 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
     //   <Button>查看</Button>
     // </>
   };
-  onView = ()=>{
-    if(this.state.selectedRows.length==0){
-      message.info("请选择一条记录")
+  onView = () => {
+    if (this.state.selectedRows.length == 0) {
+      message.info('请选择一条记录');
       return;
     }
-  const {
-    plan: { subjectKeyField },
-    bill: { uuid: billUuid },
-  } = this.state;
-  const subjectUuid = this.state.selectedRows[0][subjectKeyField];
+    const {
+      plan: { subjectKeyField },
+      bill: { uuid: billUuid },
+    } = this.state;
+    const subjectUuid = this.state.selectedRows[0][subjectKeyField];
     this.props.switchTab('view', {
       billUuid,
       subjectUuid,
-      view:'query'
-      
-     // entityUuid: this.props.params.entityUuid,
-     // e,
-    })
-  }
+      view: 'query',
+      // entityUuid: this.props.params.entityUuid,
+      // e,
+    });
+  };
   drawTopButton = () => {
-  //   return <>
-    
-  //   <Button onClick={()=>this.showVilew()}>查看</Button>
-  // </>
+    //   return <>
+    //   <Button onClick={()=>this.showVilew()}>查看</Button>
+    // </>
   }; //扩展最上层按钮
   changeState = () => {
     this.setState({ title: this.props.params.TITLE });
   };
 
-  drawSearchPanel = () => {
-   
-  };
+  drawSearchPanel = () => {};
 
   render() {
-    return <Spin spinning={this.state.searchLoading}>{this.drawPage()}</Spin>;
+    return (
+      <div style={{ marginTop: '15px' }}>
+        <Spin spinning={this.state.searchLoading}>{this.drawPage()}</Spin>
+      </div>
+    );
   }
 }
