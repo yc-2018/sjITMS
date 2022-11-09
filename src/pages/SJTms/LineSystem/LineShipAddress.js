@@ -16,7 +16,10 @@ import {
   addToNewLine,
   findChildLine,
   updateStoreNum,
-  inScheduleStore
+  inScheduleStore,
+  batchDeleteByUuids,
+  batchAddScheduleStorePool,
+  checkStoreExist
 } from '@/services/sjtms/LineSystemHis';
 import {
   updateStoreAddressList
@@ -28,6 +31,7 @@ import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import LineShipAddressPlan from "./LineShipAddressPlan";
 import AlcNumModal from '@/pages/Wcs/Dps/Job/AlcNumModal';
 import { throttleSetter } from 'lodash-decorators';
+import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchForm';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -35,7 +39,6 @@ import { throttleSetter } from 'lodash-decorators';
 export default class LineShipAddress extends QuickFormSearchPage {
   state = {
     ...this.state,
-    canDragTable: true,
     noActionCol: false,
     unShowRow: false,
     isNotHd: true,
@@ -51,8 +54,8 @@ export default class LineShipAddress extends QuickFormSearchPage {
     lineValue: undefined,
     isModalVisible:false,
     noSettingColumns :true,
-    hasSettingColumns:false
-    
+    hasSettingColumns:false,
+    canDragTable:true,
   };
   constructor(props) {
     super(props);
@@ -60,19 +63,27 @@ export default class LineShipAddress extends QuickFormSearchPage {
   changeStatess = () => {
     this.setState({canDragTable:true}
       )}; //扩展state
-    componentWillMount() {
-      this.setState({canDragTable:this.props.canDragTables});
-      }
+  componentWillMount() {
+      this.setState(
+        {
+          //canDragTable:false,
+          lineuuid:this.props.lineuuid,
+          systemLineFlag:this.props.systemLineFlag
+      });
+  }
   getLineShipAddress = () => {
     return this.state.data;
   };
-  // componentWillReceiveProps(Props){
-  //   console.log("componentWillReceiveProps",this.props);
-  //   this.setState({canDragTable:false});
-    
-  //   //if(this.props.lineuuid != Props.lineuuid){
-      
-  // }
+  componentWillReceiveProps(nextProps){
+    console.log("nex'",nextProps.canDragTables);
+    if(nextProps.lineuuid != this.props.lineuuid){
+      this.state.lineuuid = nextProps.lineuuid;
+      this.state.systemLineFlag = nextProps.systemLineFlag;
+      this.state.buttonDisable = false;
+      this.state.canDragTable = nextProps.canDragTables;
+      this.onSearch();
+    }
+  }
 
   drawcell = event => {
     if (event.column.fieldName == 'ORDERNUM') {
@@ -98,10 +109,31 @@ export default class LineShipAddress extends QuickFormSearchPage {
   };
 
   exSearchFilter = async() => {
-    let e =  await findChildLine ({"uuid":this.props.lineuuid});
+    const {systemLineFlag,lineuuid} = this.state
+    if(!lineuuid){
+      return [];
+    }
     let parmas = []
+    if(systemLineFlag){
+      parmas = [{
+        field: 'SYSTEMUUID',
+        type: 'VarChar',
+        rule: 'eq',
+        val: lineuuid,
+      }
+      // ,{
+      //   field: 'DELFLAG',
+      //   type: 'VarChar',
+      //   rule: 'eq',
+      //   val: '1',
+      // }
+    ]
+      return parmas;
+    }
+    //updateStoreNum({"lineUuid":this.state.lineuuid});
+
+    let e =  await findChildLine ({"uuid":lineuuid});
       if(e && e.success){
-        updateStoreNum({"lineUuid":this.props.lineuuid});
         const uuids = e.data.map(d=>{
           return d.uuid;
         }).join("||");
@@ -110,14 +142,14 @@ export default class LineShipAddress extends QuickFormSearchPage {
             type: 'VarChar',
             rule: 'in',
             val: uuids,
-          },{
-            field: 'DELFLAG',
-            type: 'VarChar',
-            rule: 'eq',
-            val: '1',
           }]
+          // ,{
+          //   field: 'DELFLAG',
+          //   type: 'VarChar',
+          //   rule: 'eq',
+          //   val: '1',
+          // }]
         }
-        
         return parmas;  
     
   };
@@ -263,19 +295,17 @@ export default class LineShipAddress extends QuickFormSearchPage {
       transferColumnsTitle: '门店',
     });
   };
-  //添加供应商
-  handleAddVendor = () => {
-    this.setState({
-      modalVisible: true,
-      modalTitle: '添加供应商',
-      modalQuickuuid: 'sj_itms_vendor',
-      transferColumnsTitle: '供应商',
-    });
-  };
   //保存
-  handleStoreSave = () => {
+  handleStoreSave = async () => {
     const { targetKeys, transferDataSource, data } = this.state;
     const { lineuuid, linecode } = this.props;
+    if(targetKeys.length==0){
+      return ;
+    }
+    const existdata = await checkStoreExist({lineUuid:lineuuid,storeuuids:targetKeys});
+    if(!existdata?.success){
+      return ;
+    }
     const saveData = transferDataSource
       .filter(
         x =>
@@ -300,7 +330,8 @@ export default class LineShipAddress extends QuickFormSearchPage {
       });
     if (saveData.length > 0) {
       this.saveFormData2(saveData);
-    } else {
+      this.setState({targetKeys:[],transferDataSource:[]});
+    } else { 
       this.setState({ modalVisible: false });
     }
   };
@@ -359,6 +390,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
       targetKeys,
       lineModalVisible,
       lineData,
+      systemLineFlag
     } = this.state;
     const options = lineData.map(a => {
       return <Select.Option key={a.uuid}>{a.name}</Select.Option>;
@@ -392,7 +424,8 @@ export default class LineShipAddress extends QuickFormSearchPage {
           onOk={this.handleStoreSave}
           confirmLoading={false}
           onCancel={() => this.setState({ modalVisible: false })}
-          destroyOnClose
+          destroyOnClose ={true}
+          afterClose ={()=>this.setState({targetKeys:[],transferDataSource:[]})}
         >
           <TableTransfer
             targetKeys={targetKeys}
@@ -409,7 +442,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
           onOk={this.handleAddToNewLine}
           confirmLoading={false}
           onCancel={() => this.setState({ lineModalVisible: false })}
-          destroyOnClose
+          destroyOnClose ={true}
         >
           <Form ref="xlref">
             <Row>
@@ -443,16 +476,16 @@ export default class LineShipAddress extends QuickFormSearchPage {
             </Row>
           </Form>
         </Modal>
-        <Button type="primary" icon="plus" onClick={()=>this.setState({isModalVisible:true})}>
+        {!systemLineFlag && <Button type="primary" icon="plus" onClick={()=>this.setState({isModalVisible:true})}>
           待排门店
-        </Button>
-        <Button type="primary" icon="plus" onClick={this.handleAddStore}>
+        </Button>}
+       {!systemLineFlag && <Button type="primary" icon="plus" onClick={this.handleAddStore}>
           添加门店
-        </Button>
+        </Button>} 
         {/* <Button type="primary" icon="plus" onClick={this.handleAddVendor}>
           添加供应商
         </Button> */}
-        <Button onClick={() => this.lineCreatePageModalRef.show()}>添加子路线</Button>
+         {!systemLineFlag && <Button onClick={() => this.lineCreatePageModalRef.show()}>添加子路线</Button>}
         <CreatePageModal
           modal={{
             title: '添加子路线',
@@ -502,13 +535,48 @@ export default class LineShipAddress extends QuickFormSearchPage {
       });
     });
   };
+  //批量删除
+  onBatchStoreDelete = async ()=>{
+    const {selectedRows,pageFilters} = this.state;
+    if(selectedRows.length==0){
+      message.info("请选择一条或多条数据")
+      return;
+    }
+    await batchDeleteByUuids({uuids:selectedRows.map(e=>e.UUID)}).then(result =>{
+      if(result.success){
+        message.success('删除成功！');
+        this.getData(pageFilters);
+      }
+    });
+  }
+  //批量移入待排池
+  onBatchStorePool= async ()=>{
+    const {selectedRows,pageFilters} = this.state;
+    if(selectedRows.length==0){
+      message.info("请选择一条或多条数据")
+      return;
+    }
+    await batchAddScheduleStorePool({uuids:selectedRows.map(e=>e.UUID)}).then(result =>{
+      if(result.success){
+        message.success('移入成功！');
+        this.getData(pageFilters);
+      }
+    });
+  }
+
   drawToolbarPanel = () => {
     const { buttonDisable } = this.state;
-    return (
-      <div style={{ marginBottom: 15 }}>
-        {buttonDisable ? <Button onClick={this.tableSortSave}>排序并保存</Button> : <></>}
-        {/* <Button onClick={this.addToNewLine}>添加到新线路</Button> */}
-      </div>
+    return (<>
+      {buttonDisable ? <Button onClick={this.tableSortSave}>排序并保存</Button> : <></>}
+      <Button onClick={()=>Modal.confirm({
+      title:"确定批量删除这"+this.state.selectedRows.length+"条吗？"
+      ,onOk : ()=>{this.onBatchStoreDelete()}
+      }) }>批量移除</Button>
+      <Button onClick={()=>Modal.confirm({
+      title:"确定移入这"+this.state.selectedRows.length+"条到待排池吗？"
+      ,onOk : ()=>{this.onBatchStorePool()}
+      })}>批量移入待排池</Button>
+    </>
     );
   };
 
@@ -527,6 +595,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
     this.setState({ buttonDisable: true });
     //this.saveFormData(data.list);
   };
+
   addZero =(num)=>{
     if(num < 10){
       return '00'+num;
@@ -536,17 +605,9 @@ export default class LineShipAddress extends QuickFormSearchPage {
       return num;
     }
   }
+
   tableSortSave = () => {
     const { data } = this.state;
     this.saveFormData(data.list);
-  };
-
-  addToNewLine = () => {
-    const { selectedRows } = this.state;
-    if (selectedRows.length > 0) {
-      this.setState({ lineModalVisible: true, modalTitle: '添加到新的线路' });
-    } else {
-      message.warn('至少选择一条记录');
-    }
   };
 }

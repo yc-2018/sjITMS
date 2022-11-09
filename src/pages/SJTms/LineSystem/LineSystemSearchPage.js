@@ -46,6 +46,7 @@ import Select from '@/components/ExcelImport/Select';
 import request from '@/utils/request';
 import ExportJsonExcel from 'js-export-excel';
 import {LineSystemAddPage} from './LineSystemAddPage'
+import LineShipAddressSearchPage from './LineShipAddressSearchPage'
 const { Content, Sider } = Layout;
 const { TreeNode } = Tree;
 const { TabPane } = Tabs;
@@ -161,6 +162,7 @@ export default class LineSystemSearchPage extends Component {
       let lineData = [];
       if (response) {
         const data = response?.data;
+        console.log("data",data);
         data?.forEach(element => {
           let itemData = {};
           this.getLineSystemTree(element, itemData, lineData);
@@ -325,6 +327,7 @@ export default class LineSystemSearchPage extends Component {
   };
   //选中树节点
   onSelect = async (selectedKeys, event) => {
+    console.log("onSelect'",selectedKeys);
     const { lineTreeData, lineData } = this.state;
     let sdf = await this.pdChildren(lineTreeData, selectedKeys[0]);
     if (selectedKeys.length == 1 && selectedKeys[0] == undefined) {
@@ -333,152 +336,159 @@ export default class LineSystemSearchPage extends Component {
     }
     if (event && !event.selected) return;
 
-    const system = lineTreeData.find(x => x.key == selectedKeys[0]);
+    const systemuuid = lineTreeData.find(x => x.key == selectedKeys[0]);
     // const system = lineTreeData.find(x => x.key == selectedKeys[0]);
     // if (!system && sdf?.children) {
     //   this.setState({ rightContent: <></> });
     //   return;
     // }
-    const systemData = await this.swithCom(system, selectedKeys[0]);
+    //console.log("ssss'",system);
+    const systemData = await this.swithCom(systemuuid, selectedKeys[0]);
     this.setState({
-      rightContent: system ? (
-        <div>
-          <div className={linesStyles.navigatorPanelWrapper}>
-            <span className={linesStyles.sidertitle}>线路体系</span>
-            <div className={linesStyles.action}>
-              <Switch
-                checkedChildren="启用"
-                checked={systemData && systemData.ISENABLE == 1}
-                unCheckedChildren="禁用"
-                onClick={() => {
-                  Modal.confirm({
-                    title: systemData && systemData.ISENABLE == 1 ? '确定禁用?' : '确定启用',
-                    onOk: () => {
-                      this.swithChange(
-                        selectedKeys[0],
-                        systemData && systemData.ISENABLE == 1 ? 0 : 1
-                      );
-                    },
-                  });
-                }}
-              />
-              <Switch
-                checkedChildren="已批准"
-                checked={systemData && systemData.STATUS == 'Approved'}
-                unCheckedChildren="未批准"
-                onClick={() => {
-                  Modal.confirm({
-                    title:
-                      systemData && systemData.STATUS == 'Approved' ? '确定未批准?' : '确定已批准',
-                    onOk: () => {
-                      this.onApproval(
-                        selectedKeys[0],
-                        systemData && systemData.STATUS == 'Approved' ? 'Revising' : 'Approved'
-                      );
-                    },
-                  });
-                }}
-              />
-              <Button type="primary" onClick={e => this.lineSystemEditPage.handleSave(e)}>
-                保存
-              </Button>
-              {/* <Button
-                type="primary"
-                onClick={() => {
-                  Modal.confirm({
-                    title: '确定批准?',
-                    onOk: () => {
-                      this.onApproval(selectedKeys[0]);
-                    },
-                  });
-                }}
-              >
-                批准
-              </Button>
-              <Button
-                type="primary"
-                onClick={() => {
-                  Modal.confirm({
-                    title: '确定取消批准?',
-                    onOk: () => {
-                      this.onCancelApproval(selectedKeys[0]);
-                    },
-                  });
-                }}
-              >
-                取消批准
-              </Button> */}
-              <Button
-                type="danger"
-                onClick={() => {
-                  Modal.confirm({
-                    title: '确定作废?',
-                    onOk: () => {
-                      this.onInvalid(selectedKeys[0]);
-                    },
-                  });
-                }}
-              >
-                作废
-              </Button>
-              <Button type="primary" icon="plus" onClick={() => this.lineCreatePageModalRef.show()}>
-                添加路线
-              </Button>
-              <Button
-                type="primary"
-                onClick={() => {
-                  this.setState({ visible: true });
-                }}
-              >
-                备份
-              </Button>
-              {/* <Button
-                onClick={() => {
-                  Modal.confirm({
-                    title: '确定删除?',
-                    onOk: () => {
-                      this.handleDeleteSystem(selectedKeys[0]);
-                    },
-                  });
-                }}
-              >
-                删除
-              </Button> */}
-            </div>
-          </div>
-          <div style={{ width: '80%' }}>
-            <LineSystemCreatePage
-              quickuuid="sj_itms_create_linesystem"
-              showPageNow="update"
-              noBorder={true}
-              noCategory={true}
-              params={{ entityUuid: selectedKeys[0] }}
-              onRef={node => (this.lineSystemEditPage = node)}
-            />
-          </div>
-        </div>
-      ) : (
-        <Tabs defaultActiveKey={`Tab${selectedKeys[0]}`}>
-          <TabPane tab="线路门店" key="1">
-            <LineShipAddress
-              key={`Line${selectedKeys[0]}`}
-              quickuuid="sj_itms_line_shipaddress"
-              lineuuid={selectedKeys[0]}
-              lineTreeData={this.state.lineTreeData}
-              showadfa={() => this.queryLineSystem(this.state.selectLineUuid)}
-              canDragTables={sdf && sdf.children ? false : true}
-              linecode={
-                lineData.length > 0 ? lineData.find(x => x.uuid == selectedKeys[0]).code : ''
-              }
-            />
-          </TabPane>
-          <TabPane tab="门店地图" key="2">
-            <LineMap key={`Map${selectedKeys[0]}`} lineuuid={selectedKeys[0]} />
-          </TabPane>
-        </Tabs>
-      ),
       selectLineUuid: selectedKeys[0],
-    });
+      systemData :systemData,
+      systemuuid:systemuuid,
+      sdf:sdf
+    })
+    // this.setState({
+    //   rightContent: system ? (
+    //     <div>
+    //       <div className={linesStyles.navigatorPanelWrapper}>
+    //         <span className={linesStyles.sidertitle}>线路体系</span>
+    //         <div className={linesStyles.action}>
+    //           <Switch
+    //             checkedChildren="启用"
+    //             checked={systemData && systemData.ISENABLE == 1}
+    //             unCheckedChildren="禁用"
+    //             onClick={() => {
+    //               Modal.confirm({
+    //                 title: systemData && systemData.ISENABLE == 1 ? '确定禁用?' : '确定启用',
+    //                 onOk: () => {
+    //                   this.swithChange(
+    //                     selectedKeys[0],
+    //                     systemData && systemData.ISENABLE == 1 ? 0 : 1
+    //                   );
+    //                 },
+    //               });
+    //             }}
+    //           />
+    //           <Switch
+    //             checkedChildren="已批准"
+    //             checked={systemData && systemData.STATUS == 'Approved'}
+    //             unCheckedChildren="未批准"
+    //             onClick={() => {
+    //               Modal.confirm({
+    //                 title:
+    //                   systemData && systemData.STATUS == 'Approved' ? '确定未批准?' : '确定已批准',
+    //                 onOk: () => {
+    //                   this.onApproval(
+    //                     selectedKeys[0],
+    //                     systemData && systemData.STATUS == 'Approved' ? 'Revising' : 'Approved'
+    //                   );
+    //                 },
+    //               });
+    //             }}
+    //           />
+    //           <Button type="primary" onClick={e => this.lineSystemEditPage.handleSave(e)}>
+    //             保存
+    //           </Button>
+    //           {/* <Button
+    //             type="primary"
+    //             onClick={() => {
+    //               Modal.confirm({
+    //                 title: '确定批准?',
+    //                 onOk: () => {
+    //                   this.onApproval(selectedKeys[0]);
+    //                 },
+    //               });
+    //             }}
+    //           >
+    //             批准
+    //           </Button>
+    //           <Button
+    //             type="primary"
+    //             onClick={() => {
+    //               Modal.confirm({
+    //                 title: '确定取消批准?',
+    //                 onOk: () => {
+    //                   this.onCancelApproval(selectedKeys[0]);
+    //                 },
+    //               });
+    //             }}
+    //           >
+    //             取消批准
+    //           </Button> */}
+    //           <Button
+    //             type="danger"
+    //             onClick={() => {
+    //               Modal.confirm({
+    //                 title: '确定作废?',
+    //                 onOk: () => {
+    //                   this.onInvalid(selectedKeys[0]);
+    //                 },
+    //               });
+    //             }}
+    //           >
+    //             作废
+    //           </Button>
+    //           <Button type="primary" icon="plus" onClick={() => this.lineCreatePageModalRef.show()}>
+    //             添加路线
+    //           </Button>
+    //           <Button
+    //             type="primary"
+    //             onClick={() => {
+    //               this.setState({ visible: true });
+    //             }}
+    //           >
+    //             备份
+    //           </Button>
+    //           {/* <Button
+    //             onClick={() => {
+    //               Modal.confirm({
+    //                 title: '确定删除?',
+    //                 onOk: () => {
+    //                   this.handleDeleteSystem(selectedKeys[0]);
+    //                 },
+    //               });
+    //             }}
+    //           >
+    //             删除
+    //           </Button> */}
+    //         </div>
+    //       </div>
+    //       <div style={{ width: '80%' }}>
+    //         <LineSystemCreatePage
+    //           quickuuid="sj_itms_create_linesystem"
+    //           showPageNow="update"
+    //           noBorder={true}
+    //           noCategory={true}
+    //           params={{ entityUuid: selectedKeys[0] }}
+    //           onRef={node => (this.lineSystemEditPage = node)}
+    //         />
+    //       </div>
+    //     </div>
+    //   ) : (
+    //     <Tabs defaultActiveKey={`Tab${selectedKeys[0]}`}>
+    //       <TabPane tab="线路门店" key="1">
+    //         <LineShipAddress
+    //           key={`Line${selectedKeys[0]}`}
+    //           quickuuid="sj_itms_line_shipaddress"
+    //           lineuuid={selectedKeys[0]}
+    //           lineTreeData={this.state.lineTreeData}
+    //           showadfa={() => this.queryLineSystem(this.state.selectLineUuid)}
+    //           canDragTables={sdf && sdf.children ? false : true}
+    //           linecode={
+    //             lineData.length > 0 ? lineData.find(x => x.uuid == selectedKeys[0]).code : ''
+    //           }
+    //         />
+    //       </TabPane>
+    //       <TabPane tab="门店地图" key="2">
+    //         <LineMap key={`Map${selectedKeys[0]}`} lineuuid={selectedKeys[0]} />
+    //       </TabPane>
+    //     </Tabs>
+    //   ),
+    //   selectLineUuid: selectedKeys[0],
+    // });
   };
   //展开/收起节点
   onExpand = (_, event) => {
@@ -504,8 +514,13 @@ export default class LineSystemSearchPage extends Component {
         item.title = (
           <div>
             <span>{item.title}</span>
-            {item.system || item.key != selectLineUuid ? (
-              <span />
+            {item.key != selectLineUuid ? <></> : item.system? (
+                <a
+                style={{ marginRight: 15, marginLeft: 5 }}
+                onClick={() => this.lineSystemCreatePageModalRefupdate.show()}
+              >
+                编辑
+              </a>
             ) : (
               <span>
                 <a
@@ -606,7 +621,9 @@ export default class LineSystemSearchPage extends Component {
   };
   //绘制右侧内容
   drawContent = () => {
-    return this.state.rightContent;
+    return <LineShipAddressSearchPage></LineShipAddressSearchPage>
+    //return <></>
+    //return this.state.rightContent;
   };
   handleCancel = async () => {
     this.queryLineSystem(this.state.selectLineUuid);
@@ -635,14 +652,15 @@ export default class LineSystemSearchPage extends Component {
       }).then(result => {
         this.setState({ uploading: false });
         if (result && result.success) {
-          message.success('导入成功');
+          message.success('导入成功,共导入'+result.data+'家门店');
         }
       });
     });
   };
   render() {
+    console.log("this.state",this.state);
     this.lineSystemEditPage?.init();
-    const { selectLineUuid } = this.state;
+    const { selectLineUuid ,systemuuid} = this.state;
     const { getFieldDecorator } = this.props.form;
     const props = {
       name: 'file',
@@ -680,7 +698,7 @@ export default class LineSystemSearchPage extends Component {
                 bodyStyle: { marginRight: '40px' },
                 afterClose: this.handleCancel,
               }}
-              page={{ quickuuid: 'sj_itms_create_linesystem', noCategory: true }}
+              page={{ quickuuid: 'sj_itms_create_linesystem', noCategory: true, params: { entityUuid: selectLineUuid}, }}
               onRef={node => (this.lineSystemCreatePageModalRef = node)}
               customPage={LineSystemAddPage}
             />
@@ -703,11 +721,26 @@ export default class LineSystemSearchPage extends Component {
               }}
               page={{
                 quickuuid: 'sj_itms_create_lines',
-                params: { entityUuid: selectLineUuid },
+                params: { entityUuid: selectLineUuid},
                 showPageNow: 'update',
                 noCategory: true,
               }}
               onRef={node => (this.lineEditPageModalRef = node)}
+            />
+              <CreatePageModal
+              modal={{
+                title: '编辑线路体系',
+                width: 500,
+                bodyStyle: { marginRight: '40px' },
+                afterClose: this.handleCancel,
+              }}
+              page={{ quickuuid: 'sj_itms_create_linesystem',
+               noCategory: true,
+                params: { entityUuid: selectLineUuid},
+                showPageNow: 'update',
+               }}
+              onRef={node => (this.lineSystemCreatePageModalRefupdate = node)}
+              customPage={LineSystemAddPage}
             />
 
             <Modal
@@ -787,7 +820,6 @@ export default class LineSystemSearchPage extends Component {
                               params: [
                                 { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
                                 { field: 'DISPATCHCENTERUUID', rule: 'eq', val: [loginOrg().uuid] },
-                                { field: 'DELFLAG', rule: 'eq', val: [1] },
                               ],
                             },
                           }}
@@ -804,7 +836,18 @@ export default class LineSystemSearchPage extends Component {
             </Modal>
           </Sider>
           {/* 右侧内容 */}
-          <Content className={linesStyles.rightWrapper}>{this.drawContent()}</Content>
+          <Content className={linesStyles.rightWrapper}>
+           <LineShipAddressSearchPage
+             selectedKey ={selectLineUuid}
+             systemLineFlag = {systemuuid?true:false}
+             lineTreeData ={this.state.lineTreeData}
+             lineData  ={this.state.lineData}
+             systemData ={this.state.systemData}
+             sdf = {this.state.sdf}
+           />
+            {/* {{this.drawContent()}} */}
+            {/* <LineShipAddressSearchPage></LineShipAddressSearchPage> */}
+          </Content>
         </Layout>
       </Content>
     );

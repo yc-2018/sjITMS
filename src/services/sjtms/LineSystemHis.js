@@ -62,21 +62,38 @@ export async function findLineSystemTreeByStoreCode(payload) {
       }
     );
   }
-  export async function deleteLineStoreAddressById(payload) {
+  export  function deleteLineStoreAddressById(payload) {
     return request(`/itms-schedule/itms-schedule/lineShipAddress/deleteLineAddress/${payload}`, {
       method: 'get',
     });
   }
-  export async function inScheduleStore(payload) {
+  export  function batchDeleteByUuids(payload) {
+    return request(`/itms-schedule/itms-schedule/lineShipAddress/batchDeleteByUuids`, {
+      method: 'POST',
+      body:payload.uuids
+    });
+  }
+  export async function inScheduleStore(payload) {batchAddScheduleStorePool
     return request(`/itms-schedule/itms-schedule/lineShipAddress/inScheduleStore/${payload}`, {
       method: 'get',
     });
   }
-  
+  export async function batchAddScheduleStorePool(payload) {
+    return request(`/itms-schedule/itms-schedule/lineShipAddress/batchAddScheduleStorePool`, {
+      method: 'POST',
+      body:payload.uuids
+    });
+  }
+  export async function checkStoreExist(payload) {
+    return request(`/itms-schedule/itms-schedule/lineShipAddress/checkStoreExist/${payload.lineUuid}`, {
+      method: 'POST',
+      body:payload.storeuuids
+    });
+  }
   export async function updateState(LineSystemUuid,state){
     return request(`/itms-schedule/itms-schedule/LineSystem/updateState/${LineSystemUuid}/${state}`, {
       method: 'get',
-    });
+    });checkStoreExist
   }
   export async function isEnable(uuid,enable){
     return request(`/itms-schedule/itms-schedule/LineSystem/updateEnable?systemUuid=${uuid}&enable=${enable}
@@ -117,7 +134,7 @@ export async function findLineSystemTreeByStoreCode(payload) {
       `/itms-schedule/itms-schedule/lineShipAddress/updateStoreAddressList`,
       {
         method: 'POST',
-        body: payload.ddressList,
+        body: payload.addressList,
       }
     );
   }
