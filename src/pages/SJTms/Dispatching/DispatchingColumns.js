@@ -271,6 +271,16 @@ export const CreatePageOrderColumns = [
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
+    title: '线路',
+    dataIndex: 'archLine',
+    sorter: true,
+    sorterCode: true,
+    width: 120,
+    render: val => {
+      return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
+    },
+  },
+  {
     title: '订单号',
     dataIndex: 'billNumber',
     width: 140,
@@ -305,22 +315,19 @@ export const CreatePageOrderColumns = [
     title: '整件数',
     dataIndex: 'stillCartonCount',
     width: 60,
-    render: (val, record) =>
-      val ? <EllipsisCol colValue={record.realCartonCount || val} /> : <Empty />,
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '散件数',
     dataIndex: 'stillScatteredCount',
     width: 60,
-    render: (val, record) =>
-      val ? <EllipsisCol colValue={record.realScatteredCount || val} /> : <Empty />,
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '周转箱',
     dataIndex: 'stillContainerCount',
     width: 60,
-    render: (val, record) =>
-      val ? <EllipsisCol colValue={record.realContainerCount || val} /> : <Empty />,
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '体积',

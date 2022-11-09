@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-03 14:54:09
+ * @LastEditTime: 2022-11-09 15:39:26
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
@@ -142,6 +142,9 @@ export default class DispatchingTable extends Component {
           size="small"
           components={this.components}
           rowClassName={record => {
+            if (record.warning) {
+              return 'warningStyle';
+            }
             if (record.clicked) {
               return 'clickedStyle';
             }

@@ -10,7 +10,6 @@ import {
   Spin,
   message,
   Button,
-  Popconfirm,
   Icon,
   Badge,
   Tooltip,
@@ -21,11 +20,12 @@ import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import { isEmptyObj, guid } from '@/utils/utils';
 import { queryAllData, dynamicQuery, queryDictByCode } from '@/services/quick/Quick';
 import { getSchedule, save, modify, getRecommend } from '@/services/sjitms/ScheduleBill';
+import { getContainerByBillUuid } from '@/services/sjitms/OrderBill';
 import EditContainerNumberPageF from './EditContainerNumberPageF';
 import DispatchingTable from './DispatchingTable';
 import { CreatePageOrderColumns } from './DispatchingColumns';
 import dispatchingStyles from './Dispatching.less';
-import { sumBy, uniq, uniqBy } from 'lodash';
+import { sumBy, uniq, uniqBy, orderBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { getByDispatchcenterUuid } from '@/services/tms/DispatcherConfig';
 
@@ -125,61 +125,64 @@ export default class DispatchingCreatePage extends Component {
     });
     employees = employeesData.data.records;
 
+    let details = orderBy(record, x => x.archLine);
+    let schedule = undefined;
+    let selectEmployees = [];
+    let selectVehicle = undefined;
+    //编辑初始化排车单
     if (isEdit) {
-      //编辑初始化排车单
-      getSchedule(record.uuid).then(async response => {
-        if (response.success) {
-          let details = response.data.details
-            ? response.data.details.map(item => {
-                return {
-                  ...item,
-                  billNumber: item.orderNumber,
-                  stillCartonCount: item.cartonCount,
-                };
-              })
-            : [];
-          vehicles = await this.getRecommendByOrders(details, vehicles);
-          const selectVehicle = vehicles.find(x => x.UUID == response.data.vehicle.uuid);
-          //将选中车辆放到第一位
-          selectVehicle ? vehicles.unshift(selectVehicle) : {};
-          vehicles = uniqBy(vehicles, 'UUID');
-          //选中的人放到第一位
-          const memberList = response.data.memberDetails;
-          let selectEmployees = [];
-          if (memberList) {
-            memberList.forEach(item => {
-              let emp = employees.find(x => x.UUID == item.member.uuid);
-              if (emp) {
-                selectEmployees.push({
-                  ...emp,
-                  memberType: item.memberType,
-                  memberUuid: item.uuid,
-                });
-              }
+      const response = await getSchedule(record.uuid);
+      if (response.success) {
+        schedule = response.data;
+        details = schedule.details
+          ? schedule.details.map(item => {
+              return {
+                ...item,
+                billNumber: item.orderNumber,
+                stillCartonCount: item.realCartonCount || item.cartonCount,
+                stillScatteredCount: item.realScatteredCount || item.scatteredCount,
+                stillContainerCount: item.realContainerCount || item.containerCount,
+              };
+            })
+          : [];
+      }
+    }
+    vehicles = await this.getRecommendByOrders(details, vehicles);
+    if (schedule) {
+      //将选中车辆放到第一位
+      selectVehicle = vehicles.find(x => x.UUID == schedule.vehicle.uuid);
+      if (selectVehicle) {
+        vehicles.unshift(selectVehicle);
+      }
+      vehicles = uniqBy(vehicles, 'UUID');
+      //选中的人放到第一位
+      const memberList = schedule.memberDetails;
+      if (memberList) {
+        memberList.forEach(item => {
+          let emp = employees.find(x => x.UUID == item.member.uuid);
+          if (emp) {
+            selectEmployees.push({
+              ...emp,
+              memberType: item.memberType,
+              memberUuid: item.uuid,
             });
           }
-          employees = uniqBy([...selectEmployees, ...employees], 'CODE');
-
-          this.basicEmployee = employees;
-          this.basicVehicle = vehicles;
-          this.setState({
-            vehicles,
-            employees,
-            orders: [...details],
-            schedule: response.data,
-            note: response.data.note,
-            selectVehicle: selectVehicle == undefined ? {} : selectVehicle,
-            selectEmployees,
-            loading: false,
-          });
-        }
-      });
-    } else {
-      vehicles = await this.getRecommendByOrders(record, vehicles);
-      this.basicEmployee = employees;
-      this.basicVehicle = vehicles;
-      this.setState({ vehicles, employees, orders: [...record], loading: false });
+        });
+      }
+      employees = uniqBy([...selectEmployees, ...employees], 'CODE');
     }
+    this.basicEmployee = employees;
+    this.basicVehicle = vehicles;
+    this.setState({
+      schedule,
+      note: schedule ? schedule.note : '',
+      selectVehicle: selectVehicle == undefined ? {} : selectVehicle,
+      selectEmployees,
+      vehicles,
+      employees,
+      orders: [...details],
+      loading: false,
+    });
   };
 
   //显示
@@ -318,10 +321,31 @@ export default class DispatchingCreatePage extends Component {
   //保存
   onSave = async () => {
     const { isEdit, orders, schedule, selectVehicle, selectEmployees, note } = this.state;
-    const orderSummary = this.groupByOrder(orders);
     const orderType = uniqBy(orders.map(x => x.orderType)).shift();
     const type = orderType == 'TakeDelivery' ? 'Task' : 'Job';
     const driver = selectEmployees.find(x => x.memberType == 'Driver');
+    const details = orders.map(item => {
+      if (!item.isSplit) {
+        item.isSplit = item.cartonCount == item.stillCartonCount ? 0 : 1;
+        if (item.reviewed) {
+          item.isSplit = item.realCartonCount == item.stillCartonCount ? 0 : 1;
+        }
+      }
+      item.cartonCount = item.stillCartonCount;
+      item.scatteredCount = item.stillScatteredCount;
+      item.containerCount = item.stillContainerCount;
+      if (item.reviewed) {
+        item.realCartonCount = item.stillCartonCount;
+        item.realScatteredCount = item.stillScatteredCount;
+        item.realContainerCount = item.stillContainerCount;
+      }
+      return {
+        ...item,
+        orderUuid: item.orderUuid || item.uuid,
+        orderNumber: item.orderNumber || item.billNumber,
+      };
+    });
+    const orderSummary = this.groupByOrder(details);
     const paramBody = {
       type,
       vehicle: {
@@ -339,13 +363,7 @@ export default class DispatchingCreatePage extends Component {
         code: driver.CODE,
         name: driver.NAME,
       },
-      details: orders.map(item => {
-        return {
-          ...item,
-          orderUuid: item.orderUuid || item.uuid,
-          orderNumber: item.orderNumber || item.billNumber,
-        };
-      }),
+      details,
       memberDetails: selectEmployees.map((x, index) => {
         return {
           line: index + 1,
@@ -412,7 +430,7 @@ export default class DispatchingCreatePage extends Component {
     if (response.success && response.data) {
       //校验载重
       if (exceedWeight > 0 && response.data.weight == 1) {
-        message.error('排车重量超' + exceedWeight.toFixed(2) + 'kg,请检查后重试！');
+        message.error('排车重量超' + (exceedWeight / 1000).toFixed(2) + 't,请检查后重试！');
         return;
       }
       //校验容积
@@ -423,7 +441,7 @@ export default class DispatchingCreatePage extends Component {
     }
     //校验载重
     if (exceedWeight > 0) {
-      this.onConfirm('排车重量超' + exceedWeight.toFixed(2) + 'kg,确定继续吗?');
+      this.onConfirm('排车重量超' + (exceedWeight / 1000).toFixed(2) + 't,确定继续吗?');
       return;
     }
     //校验容积
@@ -441,9 +459,9 @@ export default class DispatchingCreatePage extends Component {
     data = data.filter(x => x.orderType !== 'OnlyBill');
     return {
       orderCount: data ? data.length : 0,
-      cartonCount: data ? sumBy(data.map(x => x.cartonCount)) : 0,
-      scatteredCount: data ? sumBy(data.map(x => x.scatteredCount)) : 0,
-      containerCount: data ? sumBy(data.map(x => x.containerCount)) : 0,
+      cartonCount: data ? sumBy(data.map(x => x.stillCartonCount)) : 0,
+      scatteredCount: data ? sumBy(data.map(x => x.stillScatteredCount)) : 0,
+      containerCount: data ? sumBy(data.map(x => x.stillContainerCount)) : 0,
       realCartonCount: data ? sumBy(data.map(x => x.realCartonCount)) : 0,
       realScatteredCount: data ? sumBy(data.map(x => x.realScatteredCount)) : 0,
       realContainerCount: data ? sumBy(data.map(x => x.realContainerCount)) : 0,
@@ -634,7 +652,7 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ editPageVisible: true, scheduleDetail: record });
   };
   //更新state订单整件排车件数
-  updateCartonCount = result => {
+  updateCartonCount = async result => {
     const { orders } = this.state;
     const that = this;
     const cartonCount = result.count.cartonCount;
@@ -642,8 +660,18 @@ export default class DispatchingCreatePage extends Component {
       return;
     }
     let record = orders.find(x => x.billNumber == result.billNumber);
-    const remVolume = (cartonCount / record.stillCartonCount) * record.volume;
-    const remWeight = (cartonCount / record.stillCartonCount) * record.weight;
+    let volume = record.volume;
+    let weight = record.weight;
+    const response = await getContainerByBillUuid(record.uuid);
+    if (response.success) {
+      const cartonNumber = response.data?.find(x => x.vehicleType == 'Carton');
+      if (cartonNumber) {
+        volume = cartonNumber.realVolume || cartonNumber.forecastVolume;
+        weight = cartonNumber.realWeight || cartonNumber.forecastWeight;
+      }
+    }
+    const remVolume = (cartonCount / record.stillCartonCount) * volume;
+    const remWeight = (cartonCount / record.stillCartonCount) * weight;
     const volumes =
       Math.round((sumBy(orders.map(x => x.volume)) - (record.volume - remVolume)) * 1000) / 1000;
     const weights =
@@ -654,14 +682,9 @@ export default class DispatchingCreatePage extends Component {
       onOk() {
         record.volume = remVolume.toFixed(3);
         record.weight = remWeight.toFixed(3);
-        record.realCartonCount = cartonCount;
-        if (record.realScatteredCount == 0) {
-          record.realScatteredCount = record.scatteredCount;
-        }
-        if (record.realContainerCount == 0) {
-          record.realContainerCount = record.containerCount;
-        }
         record.unDispatchCarton = record.stillCartonCount - cartonCount;
+        record.stillCartonCount = cartonCount;
+        record.isSplit = 1;
         that.setState({ orders, editPageVisible: false });
       },
       onCancel() {
@@ -903,8 +926,7 @@ export default class DispatchingCreatePage extends Component {
                                     : { color: 'red' }
                                 }
                               >
-                                {vehicleCalc.remainWeight}
-                                kg
+                                {(vehicleCalc.remainWeight / 1000).toFixed(2)}t
                               </span>
                             </div>
                           </div>
@@ -941,8 +963,7 @@ export default class DispatchingCreatePage extends Component {
                             <div>载重</div>
                             <div>
                               <span className={dispatchingStyles.orderTotalNumber}>
-                                {vehicleCalc.weight}
-                                kg
+                                {(vehicleCalc.weight / 1000).toFixed(2)}t
                               </span>
                             </div>
                           </div>
