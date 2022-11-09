@@ -358,7 +358,7 @@ export default class QuickCreatePage extends CreatePage {
   uniqueCheck = async (rule, value, callback, field) => {
     let params = [
       // { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
-      // { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
+      { field: 'DISPATCHCENTERUUID', rule: 'eq', val: [loginOrg().uuid] },
       { field: field.dbFieldName, rule: 'eq', val: [value] },
     ];
 
