@@ -746,8 +746,8 @@ const drawPrintPage = (schedule, scheduleDetails) => {
               <th colspan={16} style={{ border: 0, height: 20 }}>
                 <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                   <div style={{ float: 'left', width: '80%' }}>
-                    粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为
-                    {schedule.ETCAMOUNT}元<br />
+                  {schedule.USEETC=='是'?'粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为'+schedule.ETCAMOUNT+"元":'粤通卡信息：'}
+                      <br />
                     [线路]去程入口:
                     {schedule.ETCROUTE}
                     <br />

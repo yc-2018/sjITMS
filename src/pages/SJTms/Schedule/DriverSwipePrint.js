@@ -94,8 +94,8 @@ export default class DriverSwipePrint extends PureComponent {
         LODOP.NewPageA();
         LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
       });
-      LODOP.PREVIEW();
-      //LODOP.PRINT();
+      //LODOP.PREVIEW();
+      LODOP.PRINT();
       hide();
       this.setState({ printPage: undefined });
       
@@ -113,7 +113,6 @@ export default class DriverSwipePrint extends PureComponent {
     }
   };
    drawPrintPage = (schedule, scheduleDetails) => {
-    console.log("sch",schedule);
     if (loginOrg().uuid == '000000750000004') {
      // const deliveryMan = schedule.memberDetails.filter (e=>e.memberType=='DeliveryMan').map(e=>'['+e.member.code+']'+e.member.name);
       const stevedore = schedule.memberDetails.filter (e=>e.memberType=='Stevedore').map(e=>'['+e.member.code+']'+e.member.name);
@@ -200,8 +199,8 @@ export default class DriverSwipePrint extends PureComponent {
                 <th colspan={16} style={{ border: 0, height: 20 }}>
                   <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                     <div style={{ float: 'left', width: '80%' }}>
-                      粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为
-                      {schedule.etcamount}元<br />
+                      {schedule.useetc?'粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为'+schedule.etcamount+"元":'粤通卡信息：'}
+                      <br />
                       [线路]去程入口:
                       {schedule.etcroute}
                       <br />
