@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-12 09:51:03
+ * @LastEditTime: 2022-11-09 16:37:41
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -12,14 +12,19 @@ import Page from '@/pages/Component/Page/inner/Page';
 import { DndProvider } from 'react-dnd';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
-import { cancelIssue, applyIssue } from '@/services/sjitms/ETCIssueAndRecycle';
 import { message, Popconfirm, Button } from 'antd';
+import { deleteHead } from '@/services/sjitms/StoreTeam';
 
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
 export default class StoreTeamHeadSearchPage extends QuickFormSearchPage {
+  state = {
+    ...this.state,
+    showDelete: false,
+  };
+
   componentDidMount() {
     this.queryCoulumns();
     this.getCreateConfig();
@@ -44,8 +49,29 @@ export default class StoreTeamHeadSearchPage extends QuickFormSearchPage {
     this.createPageModalRef.show();
   };
 
+  delete = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.warn('请选中一条数据！');
+      return;
+    }
+    selectedRows.length == 1
+      ? this.setState({ showDelete: true })
+      : this.batchProcessConfirmRef.show(
+          '删除方案',
+          selectedRows,
+          this.handleDelete,
+          this.onSearch
+        );
+  };
+
+  handleDelete = async selectedRow => {
+    return await deleteHead(selectedRow.UUID);
+  };
+
   //该方法用于写中间的功能按钮 多个按钮用<span>包裹
   drawToolsButton = () => {
+    const { showDelete, selectedRows } = this.state;
     return (
       <span>
         <Button
@@ -55,6 +81,32 @@ export default class StoreTeamHeadSearchPage extends QuickFormSearchPage {
         >
           新增方案
         </Button>
+
+        <Popconfirm
+          title="你确定要删除所选中的方案吗?"
+          visible={showDelete}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showDelete: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showDelete: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showDelete: false });
+            this.handleDelete(selectedRows[0]).then(response => {
+              if (response.success) {
+                message.success('删除成功！');
+                this.onSearch();
+              }
+            });
+          }}
+        >
+          <Button type="danger" onClick={() => this.delete()}>
+            删除方案
+          </Button>
+        </Popconfirm>
+
+        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </span>
     );
   };
