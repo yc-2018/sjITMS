@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-10-15 14:13:22
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-24 16:51:27
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-11-09 16:38:34
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -31,6 +31,13 @@ export async function saveTableSort(payload) {
 
 export async function deleteDtl(payload) {
   return request(`/itms-schedule/itms-schedule/sj/storeTeam/deleteDtl`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function deleteHead(payload) {
+  return request(`/itms-schedule/itms-schedule/sj/storeTeam/delete?headUuid=${payload}`, {
     method: 'POST',
     body: payload,
   });
