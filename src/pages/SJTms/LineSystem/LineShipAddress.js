@@ -133,7 +133,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
     //updateStoreNum({"lineUuid":this.state.lineuuid});
 
     let e =  await findChildLine ({"uuid":lineuuid});
-      if(e && e.success){
+      if(e && e.success && e.data){
         const uuids = e.data.map(d=>{
           return d.uuid;
         }).join("||");

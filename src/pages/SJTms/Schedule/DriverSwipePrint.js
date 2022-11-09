@@ -173,7 +173,7 @@ export default class DriverSwipePrint extends PureComponent {
                     </div>
                   </div>
                   <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
-                    <div style={{ float: 'left', width: '25%' }}>车号：  {"["+schedule.vehicle.code+"]"+schedule.carrier.name}</div>
+                    <div style={{ float: 'left', width: '25%' }}>车号：  {"["+schedule.vehicle.code+"]"+schedule.vehicle.name}</div>
                     <div style={{ float: 'left', width: '25%' }}>
                       信箱号：
                       {schedule.pirs}

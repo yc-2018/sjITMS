@@ -79,7 +79,7 @@ function getLodop(oOBJECT, oEMBED) {
         LODOP = getCLodop();
       } catch (err) {}
       if (!LODOP && document.readyState !== "complete") {
-        //alert("网页还没下载完毕，请稍等一下再操作.");
+        document.getElementsByClassName('ant-card-body')[0].innerHTML=strCLodopInstall_1 + (CLodopIsLocal ? strCLodopInstall_2 : "") + strCLodopInstall_3+document.getElementsByClassName('ant-card-body')[0].innerHTML;
         return;
       }
       if (!LODOP) {
