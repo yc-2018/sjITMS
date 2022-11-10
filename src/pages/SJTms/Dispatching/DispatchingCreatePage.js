@@ -670,8 +670,8 @@ export default class DispatchingCreatePage extends Component {
         weight = cartonNumber.realWeight || cartonNumber.forecastWeight;
       }
     }
-    const remVolume = (cartonCount / record.stillCartonCount) * volume;
-    const remWeight = (cartonCount / record.stillCartonCount) * weight;
+    const remVolume = (cartonCount / record.stillCartonCount) * volume || 0;
+    const remWeight = (cartonCount / record.stillCartonCount) * weight || 0;
     const volumes =
       Math.round((sumBy(orders.map(x => x.volume)) - (record.volume - remVolume)) * 1000) / 1000;
     const weights =
