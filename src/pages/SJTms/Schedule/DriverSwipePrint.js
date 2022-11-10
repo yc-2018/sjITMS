@@ -82,7 +82,11 @@ export default class DriverSwipePrint extends PureComponent {
       let scheduleDetails = detailsResp.success ? detailsResp.data.records : [];
       const hide = message.loading('加载中...', 0);
       const LODOP = getLodop();
-      if (LODOP == undefined) return;
+      if (LODOP == undefined) {
+        this.setState({ loading: false, errMsg: undefined });
+        hide();
+        return;
+      };
       LODOP.PRINT_INIT('排车单打印');
       LODOP.SET_PRINT_PAGESIZE(1, 2100, 1400, '210mm*140mm'); //1代表横的打印 2代表竖的打印 3纵向打印，宽度固定，高度按打印内容的高度自适应；
       LODOP.SET_PRINT_MODE('PRINT_DUPLEX', 1); //去掉双面打印
@@ -94,8 +98,9 @@ export default class DriverSwipePrint extends PureComponent {
         LODOP.NewPageA();
         LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
       });
-      //LODOP.PREVIEW();
-      LODOP.PRINT();
+      //TODO 测试先显示打印界面 上线前改为直接打印
+      LODOP.PREVIEW();
+      //LODOP.PRINT();
       hide();
       this.setState({ printPage: undefined });
       
