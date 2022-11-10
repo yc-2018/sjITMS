@@ -28,7 +28,9 @@ import { throttleSetter } from 'lodash-decorators';
 export default class LineShipAddressSearchPage extends Component {
    
     state ={
-        loading :false
+        loading :false,
+        lineApprovedVisible:false,
+        approvedLoading:false
     }
     componentDidMount (){
         this.setState({
@@ -43,9 +45,8 @@ export default class LineShipAddressSearchPage extends Component {
 
     }
   componentWillReceiveProps (nextProps){
-    console.log("componentWillReceiveProps",nextProps);
     if(nextProps.selectedKey!=this.props.selectedKey){
-        console.log("componentWi",nextProps);
+      console.log("nex'",nextProps);
         this.setState({...this.state,...nextProps})
     }
    
@@ -57,42 +58,59 @@ export default class LineShipAddressSearchPage extends Component {
    */
   onApproval = async (systemUuid, systemData) => {
     const status = systemData && systemData.STATUS == 'Approved' ? 'Revising' : 'Approved';
-    if(status =='Revising'){
-        Modal.confirm({
-            title:'取消批准，是否需要确定备份？',
-            onOk:  () => {
-                this.onBackupAndUpdateApproved(systemUuid,status,systemData);
-            },
-            onCancel :()=>{
-                this.updateApprovedState(systemUuid,status,systemData);
-            }
-          })
-    }else{
-        this.updateApprovedState(systemUuid,status,systemData);
-    }
-  };
-  onBackupAndUpdateApproved = async (systemUuid,status,systemData) =>{
-    await this.onBackup("取消批准备份");
     await this.updateApprovedState(systemUuid,status,systemData);
+  };
+  //取消批准并备份
+  notApprovalAndBackup = async (systemUuid, systemData) => {
+    this.setState({approvedLoading:true})
+    const status = systemData && systemData.STATUS == 'Approved' ? 'Revising' : 'Approved';
+    if(status =='Revising'){
+      this.onBackupAndUpdateApproved(systemUuid,status,systemData);
+    }else{
+      message.error("状态异常");
+    }
+    //
+  };
+
+  onBackupAndUpdateApproved = async (systemUuid,status,systemData) =>{
+    const params = {
+      systemUuid: this.state.selectedKey,
+      note: '取消批准备份',
+      companyUuid: loginCompany().uuid,
+      dispatchcenterUuid: loginOrg().uuid,
+    };
+    await backupLineSystem(params).then(result => {
+    if (result.success) {
+      this.updateApprovedState(systemUuid,status,systemData);
+      this.setState({approvedLoading:false})
+    } else {
+      message.error('备份失败！');
+    }
+  });
+    
   } 
+
   updateApprovedState = async (systemUuid,  state,systemData)=>{
+    this.setState({loading:true})
     await updateState(systemUuid,  state).then(result => {
         if (result.success) {
           message.success('操作成功');
           systemData.STATUS = state;
-          this.setState({systemData:systemData});
+          this.setState({systemData:systemData,loading:false,lineApprovedVisible: false});
           //this.queryLineSystem(systemUuid);
         } else {
-          message.error('操作成功');
+          message.error('操作失败');
         }
       });
   }
   
-  onInvalid = async systemUuid => {
+  onInvalid = async (systemUuid,systemData) => {
     await updateState(systemUuid, 'Discard').then(result => {
       if (result && result.success) {
         message.success('作废成功！');
-        this.queryLineSystem();
+        systemData.STATUS = 'Discard';
+        this.setState({systemData:systemData});
+        this.props.queryLineSystem();
       } else {
         message.error('作废失败！');
       }
@@ -124,13 +142,18 @@ export default class LineShipAddressSearchPage extends Component {
       }
     });
   };
-  swithChange = async (systemUuid, enable) => {
+
+
+  swithChange = async (systemUuid, systemData) => {
+    const enable = systemData&& systemData.ISENABLE == 1 ? 0 : 1
     isEnable(systemUuid, enable).then(result => {
       if (result && result.success) {
-        message.success('操做成功！');
-        this.queryLineSystem(systemUuid);
+        message.success('操作成功！');
+        systemData.ISENABLE = enable;
+        this.setState({systemData:systemData})
+        //this.queryLineSystem(systemUuid);
       } else {
-        message.error('操做失败！');
+        message.error('操作失败！');
       }
     });
   };
@@ -147,8 +170,9 @@ export default class LineShipAddressSearchPage extends Component {
     }
   };
     render(){
-        console.log("redds",this.state);
+     
         const {systemData,selectedKey,lineTreeData,sdf,lineData,systemLineFlag} = this.state;
+        console.log("ressss'",selectedKey,systemLineFlag);
         return <>
         {systemLineFlag && 
           <div>
@@ -165,7 +189,7 @@ export default class LineShipAddressSearchPage extends Component {
                     onOk: () => {
                       this.swithChange(
                         selectedKey,
-                        systemData && systemData.ISENABLE == 1 ? 0 : 1
+                        systemData 
                       );
                     },
                   });
@@ -175,18 +199,19 @@ export default class LineShipAddressSearchPage extends Component {
                 checkedChildren="已批准"
                 checked={systemData && systemData.STATUS == 'Approved'}
                 unCheckedChildren="未批准"
-                onClick={() => {
-                  Modal.confirm({
-                    title:
-                      systemData && systemData.STATUS == 'Approved' ? '确定未批准?' : '确定已批准',
-                    onOk: () => {
-                      this.onApproval(
-                        selectedKey,
-                        systemData
-                      );
-                    },
-                  });
-                }}
+                onClick={ ()=>this.setState({lineApprovedVisible:true})
+                  // Modal.confirm({
+                  //   title:
+                  //     systemData && systemData.STATUS == 'Approved' ? '确定取消批准?' : '确定已批准?',
+                  //     footer: <><Button>取消</Button><Button>确定</Button><Button>确定并备份</Button></>,
+                  //     onOk: () => {
+                  //     this.onApproval(
+                  //       selectedKey,
+                  //       systemData
+                  //     );
+                  //   },
+                  // });
+                }
               />
               <Button
                 type="danger"
@@ -194,7 +219,7 @@ export default class LineShipAddressSearchPage extends Component {
                   Modal.confirm({
                     title: '确定作废?',
                     onOk: () => {
-                      this.onInvalid(selectedKey);
+                      this.onInvalid(selectedKey,systemData);
                     },
                   });
                 }}
@@ -239,6 +264,19 @@ export default class LineShipAddressSearchPage extends Component {
                   this.setState({ bfValue: value.target.value });
                 }}
               />
+            </Modal>
+            <Modal
+              title= {'提示'}
+              visible = {this.state.lineApprovedVisible}
+              footer= {<><Button onClick={()=>this.setState({lineApprovedVisible: false })}>取消</Button>
+              <Button type='primary' onClick={()=>this.onApproval(selectedKey,systemData)}>确定</Button>
+              {systemData && systemData.STATUS == 'Approved'&& <Button type='primary' loading ={this.state.approvedLoading} onClick={()=>this.notApprovalAndBackup(selectedKey,systemData)}>确定并备份</Button>} </>}
+              //onOk={()=>this.onBackup()}
+              onCancel = {()=>this.setState({lineApprovedVisible: false })}
+              loading={this.state.approvedLoading}
+              onRef={node => (this.lineApprovedModalRef = node)}
+            >
+              {systemData && systemData.STATUS == 'Approved' ? '确定取消批准?' : '确定已批准?'}
             </Modal>
         </div>
         }
