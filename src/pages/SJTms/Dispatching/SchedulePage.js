@@ -2,12 +2,23 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-26 10:05:34
+ * @LastEditTime: 2022-11-10 17:43:10
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
 import React, { Component } from 'react';
-import { Modal, Tabs, Button, message, Typography, Dropdown, Menu } from 'antd';
+import {
+  Modal,
+  Tabs,
+  Button,
+  message,
+  Typography,
+  Dropdown,
+  Menu,
+  Form,
+  Input,
+  InputNumber,
+} from 'antd';
 import DispatchingTable from './DispatchingTable';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import ScheduleSearchForm from './ScheduleSearchForm';
@@ -30,12 +41,14 @@ import {
   cancelAborted,
   aborted,
   remove,
+  vehicleApply,
 } from '@/services/sjitms/ScheduleBill';
 import ScheduleCreatePage from '@/pages/SJTms/Schedule/ScheduleCreatePage';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
 
+@Form.create()
 export default class SchedulePage extends Component {
   state = {
     loading: false,
@@ -47,6 +60,7 @@ export default class SchedulePage extends Component {
     activeTab: 'Saved',
     editPageVisible: false,
     scheduleDetail: {},
+    showUpdateWeigthPop: false,
   };
 
   componentDidMount() {
@@ -90,6 +104,31 @@ export default class SchedulePage extends Component {
   //新建排车单
   handleCreateSchedule = () => {
     this.createSchedulePageRef.show();
+  };
+
+  //申请调吨
+  showUpdateWeigthPop = () => {
+    const { savedRowKeys } = this.state;
+    if (savedRowKeys.length != 1) {
+      message.error('请选择一条数据');
+      return;
+    }
+    this.setState({ showUpdateWeigthPop: true });
+  };
+
+  //保存申请调吨
+  onSavedApplyWeight = async fieldsValue => {
+    const { savedRowKeys } = this.state;
+    let payload = {
+      scheduleUuid: savedRowKeys[0],
+      applyWeight: fieldsValue.applyWeight,
+      applyNote: fieldsValue.applyNote,
+    };
+    const response = await vehicleApply(payload);
+    if (response && response.success) {
+      message.success('发起成功!');
+      this.setState({ showUpdateWeigthPop: false });
+    }
   };
 
   //排车单编辑
@@ -340,7 +379,11 @@ export default class SchedulePage extends Component {
       approvedRowKeys,
       abortedRowKeys,
       activeTab,
+      showUpdateWeigthPop,
+      applyNote,
     } = this.state;
+
+    const { getFieldDecorator } = this.props.form;
 
     const buildOperations = () => {
       switch (activeTab) {
@@ -365,6 +408,9 @@ export default class SchedulePage extends Component {
           return (
             <div>
               <Button onClick={this.handleCreateSchedule}>新建</Button>
+              <Button onClick={this.showUpdateWeigthPop} style={{ marginLeft: 10 }}>
+                申请调吨
+              </Button>
               <Button type={'primary'} style={{ marginLeft: 10 }} onClick={this.handleApprove}>
                 批准
               </Button>
@@ -385,6 +431,7 @@ export default class SchedulePage extends Component {
         <EllipsisCol colValue={val} />
       );
     };
+
     return (
       <div>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
@@ -451,6 +498,36 @@ export default class SchedulePage extends Component {
               }}
               onRef={node => (this.createSchedulePageRef = node)}
             />
+
+            <Modal
+              title="申请调吨"
+              visible={showUpdateWeigthPop}
+              key={savedRowKeys[0]}
+              onOk={() => {
+                this.props.form.validateFields((err, fieldsValue) => {
+                  if (err) {
+                    return;
+                  }
+                  this.onSavedApplyWeight(fieldsValue);
+                });
+              }}
+              onCancel={() => {
+                this.setState({ showUpdateWeigthPop: false });
+              }}
+            >
+              <Form>
+                <Form.Item label="申请调限吨位:" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+                  {getFieldDecorator('applyWeight', {
+                    rules: [{ required: true, message: '申请调限吨位' }],
+                  })(<InputNumber />)}
+                </Form.Item>
+                <Form.Item labelCol={{ span: 6 }} wrapperCol={{ span: 15 }} label="超限原因说明">
+                  {getFieldDecorator('applyNote', { initialValue: '区域货重，需调整限重排车' })(
+                    <Input />
+                  )}
+                </Form.Item>
+              </Form>
+            </Modal>
           </TabPane>
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已批准</Text>} key="Approved">
             <ScheduleSearchForm refresh={this.refreshTable} />
