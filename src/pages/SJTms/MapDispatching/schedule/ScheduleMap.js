@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-07 18:44:31
+ * @LastEditTime: 2022-11-07 19:32:38
  * @Description: 排车单地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\schedule\ScheduleMap.js
  */
@@ -81,8 +81,8 @@ export default class DispatchMap extends Component {
             if (store)
               return {
                 ...order,
-                longitude: store.longitude || 0,
-                latitude: store.latitude || 0,
+                longitude: store.longitude || 113.809388,
+                latitude: store.latitude || 23.067107,
                 scheduleNum: index + 1,
               };
           });
@@ -100,6 +100,7 @@ export default class DispatchMap extends Component {
 
   //送货点标注
   drawMarker = points => {
+    console.log(points);
     points.forEach(pt => {
       const point = new BMapGL.Point(pt.longitude, pt.latitude);
       const marker = new BMapGL.Marker(point, {
@@ -185,7 +186,7 @@ export default class DispatchMap extends Component {
       pointArr[pointArr.length - 1],
       waypoints.join('|')
     );
-    if (response.success) {
+    if (response.success && response.data.status == 0) {
       const routePaths = response.data.result.routes[0].steps.map(x => x.path);
       let pts = new Array();
       routePaths.forEach(path => {

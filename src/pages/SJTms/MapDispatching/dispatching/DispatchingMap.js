@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-07 18:52:47
+ * @LastEditTime: 2022-11-10 10:03:01
  * @Description: 地图排车
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -18,6 +18,7 @@ import { queryDict } from '@/services/quick/Quick';
 import ShopIcon from '@/assets/common/shop.svg';
 import ShopClickIcon from '@/assets/common/shopClick.svg';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { sumBy, uniqBy } from 'lodash';
 
 export default class DispatchMap extends Component {
   state = {
@@ -179,8 +180,8 @@ export default class DispatchMap extends Component {
         geometry: { type: 'Point', coordinates: [point.longitude, point.latitude] },
         properties: {
           icon: [ShopIcon, ShopClickIcon][point.isSelect ? 1 : 0],
-          width: 40,
-          height: 40,
+          width: 32,
+          height: 32,
         },
         order: point,
       };
@@ -202,7 +203,7 @@ export default class DispatchMap extends Component {
       pointArr[pointArr.length - 1],
       waypoints.join('|')
     );
-    if (response.success) {
+    if (response.success && response.data.status == 0) {
       const routePaths = response.data.result.routes[0].steps.map(x => x.path);
       let pts = new Array();
       routePaths.forEach(path => {
@@ -308,6 +309,8 @@ export default class DispatchMap extends Component {
 
   render() {
     const { visible, loading, windowInfo, orders } = this.state;
+    const selectOrder = orders.filter(x => x.isSelect);
+    const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
     return (
       <Modal
         style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
@@ -339,42 +342,69 @@ export default class DispatchMap extends Component {
         >
           <Row type="flex" style={{ height: '100%' }}>
             <Col span={6} style={{ height: '100%', background: '#fff', overflow: 'auto' }}>
-              {orders.filter(x => x.isSelect).length > 0 ? (
-                orders.filter(x => x.isSelect).map(order => {
-                  return (
-                    <div
-                      className={style.storeCard}
-                      // onClick={() => this.onChangeSelect(!order.isSelect, order)}
-                    >
-                      <div className={style.storeCardTitle}>
-                        {/* <Checkbox
+              {selectOrder.length > 0 ? (
+                <div style={{ position: 'relative', height: '100%' }}>
+                  {selectOrder.map(order => {
+                    return (
+                      <div
+                        className={style.storeCard}
+                        onClick={() => this.onChangeSelect(!order.isSelect, order)}
+                      >
+                        <div className={style.storeCardTitle}>
+                          {/* <Checkbox
                         checked={order.isSelect}
                         onChange={event => this.onChangeSelect(event.target.checked, order)}
                       /> */}
-                        {`[${order.deliveryPoint.code}]` + order.deliveryPoint.name}
+                          {`[${order.deliveryPoint.code}]` + order.deliveryPoint.name}
+                        </div>
+                        <div>
+                          线路：
+                          {order.archLine?.code}
+                        </div>
+                        <Divider style={{ margin: 0, marginTop: 5 }} />
+                        <div style={{ display: 'flex', marginTop: 5 }}>
+                          <div style={{ flex: 1 }}>整件数</div>
+                          <div style={{ flex: 1 }}>散件数</div>
+                          <div style={{ flex: 1 }}>周转箱</div>
+                          <div style={{ flex: 1 }}>体积</div>
+                          <div style={{ flex: 1 }}>重量</div>
+                        </div>
+                        <div style={{ display: 'flex' }}>
+                          <div style={{ flex: 1 }}>{order.cartonCount}</div>
+                          <div style={{ flex: 1 }}>{order.scatteredCount}</div>
+                          <div style={{ flex: 1 }}>{order.containerCount}</div>
+                          <div style={{ flex: 1 }}>{order.volume}</div>
+                          <div style={{ flex: 1 }}>{(order.weight / 1000).toFixed(3)}</div>
+                        </div>
                       </div>
-                      <div>
-                        线路：
-                        {order.archLine?.code}
-                      </div>
-                      <Divider style={{ margin: 0, marginTop: 5 }} />
-                      <div style={{ display: 'flex', marginTop: 5 }}>
-                        <div style={{ flex: 1 }}>整件数</div>
-                        <div style={{ flex: 1 }}>散件数</div>
-                        <div style={{ flex: 1 }}>周转箱</div>
-                        <div style={{ flex: 1 }}>体积</div>
-                        <div style={{ flex: 1 }}>重量</div>
-                      </div>
-                      <div style={{ display: 'flex' }}>
-                        <div style={{ flex: 1 }}>{order.cartonCount}</div>
-                        <div style={{ flex: 1 }}>{order.scatteredCount}</div>
-                        <div style={{ flex: 1 }}>{order.containerCount}</div>
-                        <div style={{ flex: 1 }}>{order.volume}</div>
-                        <div style={{ flex: 1 }}>{(order.weight / 1000).toFixed(3)}</div>
-                      </div>
-                    </div>
-                  );
-                })
+                    );
+                  })}
+                  {/* <Row
+                    style={{
+                      position: 'sticky',
+                      bottom: 0,
+                      left: 0,
+                      background: '#fff',
+                      width: '100%',
+                    }}
+                  >
+                    <Col span={6}>
+                      门店数:
+                      {stores.length || 0}
+                    </Col>
+                    <Col span={6}>
+                      总体积:
+                      {Math.round(sumBy(selectOrder, 'weight') * 1000) / 1000}
+                    </Col>
+                    <Col span={6}>
+                      总重量:
+                      {Math.round(sumBy(selectOrder, 'volume') * 1000) / 1000}
+                    </Col>
+                    <Col span={6}>
+                      <Button>排车</Button>
+                    </Col>
+                  </Row> */}
+                </div>
               ) : (
                 <Empty
                   style={{ marginTop: 80 }}
@@ -382,7 +412,6 @@ export default class DispatchMap extends Component {
                   description="暂无数据，请选择排车门店！"
                 />
               )}
-              <div id="routesResult" />
             </Col>
             <Col span={18}>
               {orders.length > 0 ? (
