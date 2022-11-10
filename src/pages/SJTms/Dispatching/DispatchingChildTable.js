@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-01 08:43:48
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-03 15:16:30
+ * @LastEditTime: 2022-11-09 16:02:46
  * @Description: 嵌套子表格组件
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingChildTable.js
  */
@@ -230,6 +230,11 @@ export default class DispatchingChildTable extends Component {
             rowSelection={childSelectedRowKeys ? childRowSelection : ''}
             components={this.components}
             columns={nestColumns}
+            rowClassName={record => {
+              if (record.warning) {
+                return 'warningStyle';
+              }
+            }}
             size="small"
             rowKey={record => (record.uuid ? record.uuid : 'nestKey')}
             dataSource={mainRecord.details ? mainRecord.details : []}
@@ -264,6 +269,11 @@ export default class DispatchingChildTable extends Component {
           }}
           columns={columns}
           components={this.components}
+          rowClassName={record => {
+            if (record.warning) {
+              return 'warningStyle';
+            }
+          }}
           rowSelection={selectedRowKeys ? parentRowSelection : ''}
           size="small"
           rowKey={record => record.uuid}

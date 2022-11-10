@@ -2,11 +2,10 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-12 16:08:35
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-07 18:52:21
+ * @LastEditTime: 2022-11-09 11:33:28
  * @version: 1.0
  */
 import request from '@/utils/request';
-import fetch from 'dva/fetch';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
 export async function getAuditedOrder(searchKeyValues) {
@@ -17,6 +16,14 @@ export async function getAuditedOrder(searchKeyValues) {
     {
       method: 'POST',
       body: searchKeyValues,
+    }
+  );
+}
+export async function getContainerByBillUuid(billUuid) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/ordertms/getContainerByBillUuid?billUuid=${billUuid}`,
+    {
+      method: 'GET',
     }
   );
 }

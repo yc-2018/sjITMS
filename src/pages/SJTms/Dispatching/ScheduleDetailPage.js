@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-28 09:23:16
+ * @LastEditTime: 2022-11-09 16:02:04
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -58,6 +58,7 @@ export default class ScheduleDetailPage extends Component {
         archLine: orders[0].archLine,
         owner: orders[0].owner,
         address: orders[0].deliveryPoint.address,
+        warning: orders.some(x => x.warning),
         cartonCount: Math.round(sumBy(orders, 'cartonCount') * 1000) / 1000,
         realCartonCount: Math.round(sumBy(orders, 'realCartonCount') * 1000) / 1000,
         scatteredCount: Math.round(sumBy(orders, 'scatteredCount') * 1000) / 1000,
