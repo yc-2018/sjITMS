@@ -10,7 +10,7 @@ import { PureComponent } from 'react';
 import { Card, Col, Input, Row, Spin, Select, message } from 'antd';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import Empty from '@/pages/Component/Form/Empty';
-import { driverSwipe } from '@/services/sjitms/ScheduleProcess';
+import { driverswipeSign } from '@/services/sjitms/ScheduleProcess';
 import { queryDictByCode } from '@/services/quick/Quick';
 
 export default class Swiper extends PureComponent {
@@ -61,7 +61,7 @@ export default class Swiper extends PureComponent {
     }
     localStorage.setItem('showMessage', '0');
     this.setState({ loading: true, errMsg: undefined });
-    const response = await driverSwipe(event.target.value, companyUuid, dispatchUuid);
+    const response = await driverswipeSign(event.target.value, companyUuid, dispatchUuid);
     localStorage.setItem('showMessage', '1');
     if (response.success) {
       this.speech('刷卡成功');
@@ -134,7 +134,7 @@ export default class Swiper extends PureComponent {
                 color: dispatchName == undefined ? 'red' : 'black',
               }}
             >
-              {dispatchName == undefined ? '请选择调度中心' : dispatchName + '司机刷卡'}
+              {dispatchName == undefined ? '请选择调度中心' : dispatchName + '司机刷卡签到'}
             </div>
           </div>
 

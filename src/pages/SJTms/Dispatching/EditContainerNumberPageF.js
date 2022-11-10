@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-27 11:24:00
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-28 11:17:58
+ * @LastEditTime: 2022-11-10 17:41:06
  * @Description: 修改排车单 运输订单明细 整件配送数量
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\EditContainerNumberPageF.js
  */
@@ -39,7 +39,7 @@ export default class EditContainerNumberPageF extends Component {
           <Form.Item label="运输单号">{order.billNumber}</Form.Item>
           <Form.Item label="送货点">{convertCodeName(order.deliveryPoint)}</Form.Item>
           <Form.Item label="整件数（估/实）">
-            {order.cartonCount}/{order.realCartonCount}
+            {order.cartonCount}/{order.stillCartonCount}
           </Form.Item>
           <Form.Item label="本次排车整件数">
             {getFieldDecorator('cartonCount', {
@@ -49,7 +49,7 @@ export default class EditContainerNumberPageF extends Component {
                 placeholder="请输入排车件数"
                 min={0}
                 style={{ width: '100%' }}
-                max={order.cartonCount}
+                max={order.stillCartonCount}
               />
             )}
           </Form.Item>

@@ -75,8 +75,8 @@ export default class LineShipAddress extends QuickFormSearchPage {
     return this.state.data;
   };
   componentWillReceiveProps(nextProps){
-    console.log("nex'",nextProps.canDragTables);
     if(nextProps.lineuuid != this.props.lineuuid){
+      console.log('sadd',nextProps);
       this.state.lineuuid = nextProps.lineuuid;
       this.state.systemLineFlag = nextProps.systemLineFlag;
       this.state.buttonDisable = false;
@@ -154,6 +154,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
     
   };
   onSearch = async filter => {
+    console.log("onsearch");
     let exSearchFilter = await this.exSearchFilter();
     if (!exSearchFilter) exSearchFilter = [];
 

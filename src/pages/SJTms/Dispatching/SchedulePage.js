@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-10 17:43:10
+ * @LastEditTime: 2022-11-10 18:02:40
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -32,7 +32,7 @@ import dispatchingStyles from './Dispatching.less';
 import { convertDateToTime } from '@/utils/utils';
 import { loginUser } from '@/utils/LoginContext';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
-import { orderBy } from 'lodash';
+import { orderBy, flatten } from 'lodash';
 import { queryAllData } from '@/services/quick/Quick';
 import {
   querySchedule,
@@ -83,9 +83,24 @@ export default class SchedulePage extends Component {
     searchKeyValues.stat = stat;
     querySchedule(searchKeyValues).then(response => {
       if (response.success) {
+        let scheduleData = response.data;
+        const splitOrderUuids =
+          flatten(scheduleData?.filter(x => x.details).map(x => x.details))
+            .filter(order => order.isSplit == 1)
+            .map(x => x.orderUuid) || [];
+        scheduleData = scheduleData?.map(schedule => {
+          if (schedule.details) {
+            schedule.details = schedule.details.map(order => {
+              order.warning = splitOrderUuids.indexOf(order.orderUuid) != -1;
+              return order;
+            });
+            schedule.warning = schedule.details.some(x => x.warning);
+          }
+          return schedule;
+        });
         this.setState({
           loading: false,
-          scheduleData: response.data,
+          scheduleData,
           savedRowKeys: [],
           approvedRowKeys: [],
           abortedRowKeys: [],

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-28 09:23:42
+ * @LastEditTime: 2022-11-08 18:14:02
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -75,6 +75,9 @@ export default class PendingPage extends Component {
         archLine: orders[0].archLine,
         owner: orders[0].owner,
         address: orders[0].deliveryPoint.address,
+        stillCartonCount: Math.round(sumBy(orders, 'stillCartonCount') * 1000) / 1000,
+        stillScatteredCount: Math.round(sumBy(orders, 'stillScatteredCount') * 1000) / 1000,
+        stillContainerCount: Math.round(sumBy(orders, 'stillContainerCount') * 1000) / 1000,
         cartonCount: Math.round(sumBy(orders, 'cartonCount') * 1000) / 1000,
         realCartonCount: Math.round(sumBy(orders, 'realCartonCount') * 1000) / 1000,
         scatteredCount: Math.round(sumBy(orders, 'scatteredCount') * 1000) / 1000,
