@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-10 17:44:05
+ * @LastEditTime: 2022-11-11 14:36:43
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -168,6 +168,26 @@ export async function vehicleApply(payload) {
     `/itms-schedule/itms-schedule/sj/bill/schedule/vehicleApply?scheduleUuid=${
       payload.scheduleUuid
     }&weight=${payload.applyWeight}&note=${payload.applyNote}`,
+    {
+      method: 'POST',
+      body: payload,
+    }
+  );
+}
+
+export async function vehicleApplyAudit(payload) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/vehicleApplyAudit?uuid=${payload}`,
+    {
+      method: 'POST',
+      body: payload,
+    }
+  );
+}
+
+export async function vehicleApplyRejected(payload) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/vehicleApplyRejected?uuid=${payload}`,
     {
       method: 'POST',
       body: payload,

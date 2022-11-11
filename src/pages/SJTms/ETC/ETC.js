@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-18 09:26:02
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-28 15:17:25
+ * @LastEditTime: 2022-11-11 09:58:33
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -17,7 +17,6 @@ export default class DriverFee extends PureComponent {
   }
 
   onClose = record => {
-    console.log('record', record);
     if (record) {
       this.setState({ record });
     }

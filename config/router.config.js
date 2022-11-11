@@ -1293,6 +1293,15 @@ export default [
             authority: ['sjtms.core.dispatch'],
           },
           {
+            path: '/tmscode/vehicleweight',
+            name: '运管超限申请',
+            org: ['DISPATCH_CENTER'],
+            component: './SJTms/VehicleWeight/VehicleWeightForm',
+            quickuuid: 'v_sj_vehicleweight_apply',
+            authority: ['sjtms.core.schedule'],
+            divider: true,
+          },
+          {
             path: '/tmscode/schedule',
             name: 'schedule',
             org: ['DISPATCH_CENTER'],
@@ -1605,8 +1614,8 @@ export default [
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'sj_itms_wms_order_dtl_check',
                 authority: ['sjtms.bigData.arrange'],
-              }
-            ]
+              },
+            ],
           },
           {
             path: '/bigData/costReport',
