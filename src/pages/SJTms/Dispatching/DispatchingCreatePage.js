@@ -422,23 +422,22 @@ export default class DispatchingCreatePage extends Component {
       message.error('排车随车人员存在相同人员重复职位，请检查后重试！');
       return;
     }
-    const exceedWeight =
-      orderSummary.weight - (selectVehicle.BEARWEIGHT ? selectVehicle.BEARWEIGHT : 0);
+    const exceedWeight = orderSummary.weight - selectVehicle.BEARWEIGHT;
     const exceedVolume =
-      orderSummary.volume - (selectVehicle.BEARVOLUME ? selectVehicle.BEARVOLUME : 0);
-    const response = await getByDispatchcenterUuid(loginOrg().uuid);
-    if (response.success && response.data) {
-      //校验载重
-      if (exceedWeight > 0 && response.data.weight == 1) {
-        message.error('排车重量超' + (exceedWeight / 1000).toFixed(2) + 't,请检查后重试！');
-        return;
-      }
-      //校验容积
-      if (exceedVolume > 0 && response.data.volume == 1) {
-        message.error('排车体积超' + exceedVolume.toFixed(2) + 'm³,请检查后重试！');
-        return;
-      }
-    }
+      orderSummary.volume - selectVehicle.BEARVOLUME * (selectVehicle.BEARVOLUMERATE / 100);
+    // const response = await getByDispatchcenterUuid(loginOrg().uuid);
+    // if (response.success && response.data) {
+    //   //校验载重
+    //   if (exceedWeight > 0 && response.data.weight == 1) {
+    //     message.error('排车重量超' + (exceedWeight / 1000).toFixed(2) + 't,请检查后重试！');
+    //     return;
+    //   }
+    //   //校验容积
+    //   if (exceedVolume > 0 && response.data.volume == 1) {
+    //     message.error('排车体积超' + exceedVolume.toFixed(2) + 'm³,请检查后重试！');
+    //     return;
+    //   }
+    // }
     //校验载重
     if (exceedWeight > 0) {
       this.onConfirm('排车重量超' + (exceedWeight / 1000).toFixed(2) + 't,确定继续吗?');

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-03 10:26:32
+ * @LastEditTime: 2022-11-11 14:58:07
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -334,11 +334,11 @@ export default class OrderPoolPage extends Component {
   handleAddOrder = () => {
     const { auditedRowKeys } = this.state;
     const scheduleRowKeys = this.props.scheduleRowKeys();
-    if (scheduleRowKeys.length != 1 || scheduleRowKeys == undefined) {
+    if (scheduleRowKeys == undefined || scheduleRowKeys.length != 1) {
       message.warning('请选择一张排车单！');
       return;
     }
-    if (auditedRowKeys.length == 0 || auditedRowKeys == undefined) {
+    if (auditedRowKeys == undefined || auditedRowKeys.length == 0) {
       message.warning('请选择待定运输订单！');
       return;
     }

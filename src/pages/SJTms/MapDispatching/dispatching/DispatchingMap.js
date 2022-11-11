@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-10 10:03:01
+ * @LastEditTime: 2022-11-11 11:28:48
  * @Description: 地图排车
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -180,8 +180,8 @@ export default class DispatchMap extends Component {
         geometry: { type: 'Point', coordinates: [point.longitude, point.latitude] },
         properties: {
           icon: [ShopIcon, ShopClickIcon][point.isSelect ? 1 : 0],
-          width: 32,
-          height: 32,
+          width: 38,
+          height: 38,
         },
         order: point,
       };
