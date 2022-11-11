@@ -98,8 +98,6 @@ export default class LineShipAddressSearchPage extends Component {
           systemData.STATUS = state;
           this.setState({systemData:systemData,loading:false,lineApprovedVisible: false});
           //this.queryLineSystem(systemUuid);
-        } else {
-          message.error('操作失败');
         }
       });
   }
@@ -152,8 +150,6 @@ export default class LineShipAddressSearchPage extends Component {
         systemData.ISENABLE = enable;
         this.setState({systemData:systemData})
         //this.queryLineSystem(systemUuid);
-      } else {
-        message.error('操作失败！');
       }
     });
   };

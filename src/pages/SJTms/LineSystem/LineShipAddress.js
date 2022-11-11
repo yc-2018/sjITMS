@@ -60,9 +60,6 @@ export default class LineShipAddress extends QuickFormSearchPage {
   constructor(props) {
     super(props);
   }
-  changeStatess = () => {
-    this.setState({canDragTable:true}
-      )}; //扩展state
   componentWillMount() {
       this.setState(
         {
@@ -74,14 +71,18 @@ export default class LineShipAddress extends QuickFormSearchPage {
   getLineShipAddress = () => {
     return this.state.data;
   };
-  componentWillReceiveProps(nextProps){
+  componentWillReceiveProps= async (nextProps)=>{
     if(nextProps.lineuuid != this.props.lineuuid){
-      console.log('sadd',nextProps);
       this.state.lineuuid = nextProps.lineuuid;
       this.state.systemLineFlag = nextProps.systemLineFlag;
       this.state.buttonDisable = false;
       this.state.canDragTable = nextProps.canDragTables;
-      this.onSearch();
+      await this.onSearch();
+    }
+  }
+  componentDidUpdate(prevProps, prevState){
+    if(prevState.data?.pagination?.total!=this.state.data?.pagination?.total){
+      this.setState({title:'门店总数：'+this.state.data?.pagination?.total})
     }
   }
 
