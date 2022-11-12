@@ -1298,7 +1298,7 @@ export default [
             org: ['DISPATCH_CENTER'],
             component: './SJTms/VehicleWeight/VehicleWeightForm',
             quickuuid: 'v_sj_vehicleweight_apply',
-            authority: ['sjtms.core.schedule'],
+            authority: ['sjtms.core.vehicleweight'],
             divider: true,
           },
           {

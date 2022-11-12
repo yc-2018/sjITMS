@@ -2,14 +2,18 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-11 14:40:17
+ * @LastEditTime: 2022-11-12 11:46:20
  * @version: 1.0
  */
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { Button, Popconfirm, message } from 'antd';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
-import { vehicleApplyAudit, vehicleApplyRejected } from '@/services/sjitms/ScheduleBill';
+import {
+  vehicleApplyAudit,
+  vehicleApplyRejected,
+  portVehicleApply,
+} from '@/services/sjitms/ScheduleBill';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -20,6 +24,7 @@ export default class VehicleWeightSearchPage extends QuickFormSearchPage {
     ...this.state,
     showAuditPop: false,
     showRejectedPop: false,
+    noActionCol: true,
   };
 
   onBatchAudit = () => {
@@ -46,13 +51,11 @@ export default class VehicleWeightSearchPage extends QuickFormSearchPage {
 
   //审核
   onAudit = async record => {
-    // console.log('record', record);
     return await vehicleApplyAudit(record.UUID);
   };
 
   //审核
   onRejected = async record => {
-    // console.log('record', record);
     return await vehicleApplyRejected(record.UUID);
   };
 
@@ -104,9 +107,16 @@ export default class VehicleWeightSearchPage extends QuickFormSearchPage {
           <Button type="danger" onClick={() => this.onBatchRejected()}>
             驳回
           </Button>
+          <Button
+            onClick={() => {
+              portVehicleApply(this.state.pageFilters);
+            }}
+          >
+            导出
+          </Button>
         </Popconfirm>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </span>
     );
-  }; //扩展中间功能按钮
+  };
 }
