@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-12 11:46:20
+ * @LastEditTime: 2022-11-12 17:30:32
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -25,6 +25,11 @@ export default class VehicleWeightSearchPage extends QuickFormSearchPage {
     showAuditPop: false,
     showRejectedPop: false,
     noActionCol: true,
+  };
+
+  port = async () => {
+    const { pageFilters } = this.state;
+    await portVehicleApply(pageFilters);
   };
 
   onBatchAudit = () => {
@@ -107,13 +112,7 @@ export default class VehicleWeightSearchPage extends QuickFormSearchPage {
           <Button type="danger" onClick={() => this.onBatchRejected()}>
             驳回
           </Button>
-          <Button
-            onClick={() => {
-              portVehicleApply(this.state.pageFilters);
-            }}
-          >
-            导出
-          </Button>
+          <Button onClick={() => this.port()}>导出</Button>
         </Popconfirm>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </span>

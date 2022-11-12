@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-12 17:19:11
+ * @LastEditTime: 2022-11-12 17:33:34
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -204,7 +204,7 @@ export async function vehicleApplyRejected(payload) {
 //   });
 // }
 
-export function portVehicleApply(payload) {
+export async function portVehicleApply(payload) {
   axios(
     configs[API_ENV].API_SERVER + `/itms-schedule/itms-schedule/sj/bill/schedule/portVehicleApply`,
     {
@@ -219,8 +219,8 @@ export function portVehicleApply(payload) {
     }
   ).then(res => {
     const date = new Date();
-    const month = date.getMonth();
-    const day = date.getDay();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
     const url = window.URL.createObjectURL(new Blob([res.data]));
     const link = document.createElement('a');
     link.href = url;
