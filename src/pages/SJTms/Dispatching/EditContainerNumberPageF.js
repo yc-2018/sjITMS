@@ -2,20 +2,19 @@
  * @Author: guankongjin
  * @Date: 2022-04-27 11:24:00
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-10 17:41:06
+ * @LastEditTime: 2022-11-14 12:00:35
  * @Description: 修改排车单 运输订单明细 整件配送数量
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\EditContainerNumberPageF.js
  */
 import React, { Component } from 'react';
-import { Modal, Form, InputNumber, Select, message } from 'antd';
+import { Modal, Form, InputNumber } from 'antd';
 import { convertCodeName } from '@/utils/utils';
-import { modifyNumber } from '@/services/sjitms/ScheduleBill';
 
 @Form.create()
 export default class EditContainerNumberPageF extends Component {
   //保存
   handleSave = () => {
-    const { order, onCancel, form, updateCartonCount } = this.props;
+    const { order, form, updateCartonCount } = this.props;
 
     form.validateFields((err, fieldsValue) => {
       if (err) return;
