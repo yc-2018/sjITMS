@@ -533,16 +533,6 @@ export const ScheduleDetailCollectColumns = [
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
-    title: '线路',
-    dataIndex: 'archLine',
-    sorter: true,
-    sorterCode: true,
-    width: 120,
-    render: val => {
-      return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
-    },
-  },
-  {
     title: '货主',
     dataIndex: 'owner',
     sorterCode: true,
