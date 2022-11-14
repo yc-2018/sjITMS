@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-11 15:09:48
+ * @LastEditTime: 2022-11-14 11:30:39
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -30,7 +30,6 @@ import {
   cancelAborted,
   aborted,
   remove,
-  vehicleApply,
 } from '@/services/sjitms/ScheduleBill';
 import ScheduleCreatePage from '@/pages/SJTms/Schedule/ScheduleCreatePage';
 import WeightApplyModal from './WeightApplyModal';
