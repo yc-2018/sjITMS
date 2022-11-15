@@ -50,16 +50,15 @@ export default class SimpleQuery extends SearchForm {
         continue;
       }
       if (field.searchShowtype == 'datetime' && val instanceof Array) {
-        val = val.map(x => x.format('YYYY-MM-DD hh:mm')).join('||');
+        val = val.map(x => x.format('YYYY-MM-DD HH:mm:ss')).join('||');
       }
       if (field.searchShowtype == 'date' && val instanceof Array) {
         val = val.map(x => x.format('YYYY-MM-DD')).join('||');
       }
       if (field.searchShowtype == 'auto_complete' || field.searchShowtype == 'sel_tree') {
-        if(val instanceof Object){
+        if (val instanceof Object) {
           val = val.value;
         }
-        
       }
       //多选下拉框时修改入参,非下拉框暂时不支持in 改为like
       if (field.searchCondition == 'in' || field.searchCondition == 'notIn') {
