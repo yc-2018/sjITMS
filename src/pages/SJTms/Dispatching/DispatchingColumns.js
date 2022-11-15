@@ -125,7 +125,7 @@ export const OrderCollectColumns = [
     sorterCode: true,
     width: 120,
     render: val => {
-      return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
+      return val ? <EllipsisCol colValue={val.code} /> : <Empty />;
     },
   },
   {
@@ -277,7 +277,7 @@ export const CreatePageOrderColumns = [
     sorterCode: true,
     width: 120,
     render: val => {
-      return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
+      return val ? <EllipsisCol colValue={val.code} /> : <Empty />;
     },
   },
   {
@@ -447,7 +447,7 @@ export const ScheduleDetailColumns = [
     sorterCode: true,
     width: 120,
     render: val => {
-      return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
+      return val ? <EllipsisCol colValue={val.code} /> : <Empty />;
     },
   },
   {
@@ -523,7 +523,7 @@ export const ScheduleDetailCollectColumns = [
     sorterCode: true,
     width: 120,
     render: val => {
-      return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
+      return val ? <EllipsisCol colValue={val.code} /> : <Empty />;
     },
   },
   {
@@ -531,16 +531,6 @@ export const ScheduleDetailCollectColumns = [
     dataIndex: 'address',
     width: 150,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
-  },
-  {
-    title: '线路',
-    dataIndex: 'archLine',
-    sorter: true,
-    sorterCode: true,
-    width: 120,
-    render: val => {
-      return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
-    },
   },
   {
     title: '货主',

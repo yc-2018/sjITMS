@@ -1298,7 +1298,7 @@ export default [
             org: ['DISPATCH_CENTER'],
             component: './SJTms/VehicleWeight/VehicleWeightForm',
             quickuuid: 'v_sj_vehicleweight_apply',
-            authority: ['sjtms.core.schedule'],
+            authority: ['sjtms.core.vehicleweight'],
             divider: true,
           },
           {
@@ -1434,6 +1434,22 @@ export default [
             path: '/bigData/loading',
             name: '排车装车',
             routes: [
+              {
+                path: '/bigData/loading/scheduleReport',
+                name: '排车单查询',
+                org: ['DISPATCH_CENTER'],
+                component: './SJTms/ScheduleReport/ScheduleReportForm',
+                quickuuid: 'sj_itms_schedule',
+                authority: ['sjtms.bigData.arrange'],
+              },
+              {
+                path: '/bigData/loading/scheduleDtlReport',
+                name: '排车单明细查询',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'sj_itms_schedule_order',
+                authority: ['sjtms.bigData.arrange'],
+              },
               {
                 path: '/bigData/loading/arrange',
                 name: '车辆安排查询',

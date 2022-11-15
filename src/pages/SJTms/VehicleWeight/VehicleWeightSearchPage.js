@@ -2,14 +2,19 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-11 14:40:17
+ * @LastEditTime: 2022-11-14 09:38:10
  * @version: 1.0
  */
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { Button, Popconfirm, message } from 'antd';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
-import { vehicleApplyAudit, vehicleApplyRejected } from '@/services/sjitms/ScheduleBill';
+import { havePermission } from '@/utils/authority';
+import {
+  vehicleApplyAudit,
+  vehicleApplyRejected,
+  portVehicleApply,
+} from '@/services/sjitms/ScheduleBill';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -20,6 +25,12 @@ export default class VehicleWeightSearchPage extends QuickFormSearchPage {
     ...this.state,
     showAuditPop: false,
     showRejectedPop: false,
+    noActionCol: true,
+  };
+
+  port = async () => {
+    const { pageFilters } = this.state;
+    await portVehicleApply(pageFilters);
   };
 
   onBatchAudit = () => {
@@ -46,13 +57,11 @@ export default class VehicleWeightSearchPage extends QuickFormSearchPage {
 
   //审核
   onAudit = async record => {
-    // console.log('record', record);
     return await vehicleApplyAudit(record.UUID);
   };
 
   //审核
   onRejected = async record => {
-    // console.log('record', record);
     return await vehicleApplyRejected(record.UUID);
   };
 
@@ -104,9 +113,34 @@ export default class VehicleWeightSearchPage extends QuickFormSearchPage {
           <Button type="danger" onClick={() => this.onBatchRejected()}>
             驳回
           </Button>
+          {/* <Button onClick={() => this.port()}>导出</Button> */}
         </Popconfirm>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </span>
     );
-  }; //扩展中间功能按钮
+  };
+
+  /**
+   * 绘制右上角按钮
+   */
+  drawActionButton = () => {
+    //额外的菜单选项
+    const menus = [];
+    menus.push({
+      // disabled: !havePermission(STORE_RES.CREATE), //权限认证
+      name: '测试', //功能名称
+      onClick: this.test, //功能实现
+    });
+    return (
+      <div>
+        <Button
+          hidden={!havePermission(this.state.authority + '.port')}
+          onClick={this.port}
+          type="primary"
+        >
+          导出
+        </Button>
+      </div>
+    );
+  };
 }

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-06 10:17:42
+ * @LastEditTime: 2022-11-11 17:25:53
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -19,6 +19,7 @@ import {
 import { queryColumns } from '@/services/quick/Quick';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import moment from 'moment';
 
 const { RangePicker } = DatePicker;
 const isOrgQuery = [
@@ -206,6 +207,9 @@ export default class OrderPoolSearchForm extends Component {
           .add(-item.searchDefVal, 'days')
           .format('YYYY-MM-DD');
         item.searchDefVal = `${startDate}||${endDate}`;
+      }
+      if (item.fieldName == 'WAVENUM') {
+        item.searchDefVal = moment(new Date()).format('YYMMDD') + '0001';
       }
       return item;
     });

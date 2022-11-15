@@ -654,11 +654,11 @@ export default class DispatchingCreatePage extends Component {
   updateCartonCount = async result => {
     const { orders } = this.state;
     const that = this;
+    let record = orders.find(x => x.billNumber == result.billNumber);
     const cartonCount = result.count.cartonCount;
     if (cartonCount <= 0) {
       return;
     }
-    let record = orders.find(x => x.billNumber == result.billNumber);
     let volume = record.volume;
     let weight = record.weight;
     const response = await getContainerByBillUuid(record.uuid);
@@ -669,8 +669,8 @@ export default class DispatchingCreatePage extends Component {
         weight = cartonNumber.realWeight || cartonNumber.forecastWeight;
       }
     }
-    const remVolume = (cartonCount / record.stillCartonCount) * volume || 0;
-    const remWeight = (cartonCount / record.stillCartonCount) * weight || 0;
+    const remVolume = (cartonCount / record.stillCartonCount) * volume;
+    const remWeight = (cartonCount / record.stillCartonCount) * weight;
     const volumes =
       Math.round((sumBy(orders.map(x => x.volume)) - (record.volume - remVolume)) * 1000) / 1000;
     const weights =
@@ -679,8 +679,8 @@ export default class DispatchingCreatePage extends Component {
       title: '提示',
       content: `拆单后排车单体积为：${volumes}m³，重量为：${weights}t ，是否确定拆单？`,
       onOk() {
-        record.volume = remVolume.toFixed(3);
-        record.weight = remWeight.toFixed(3);
+        record.volume = Number(remVolume.toFixed(3));
+        record.weight = Number(remWeight.toFixed(3));
         record.unDispatchCarton = record.stillCartonCount - cartonCount;
         record.stillCartonCount = cartonCount;
         record.isSplit = 1;

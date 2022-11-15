@@ -18,7 +18,6 @@ export function getFile(param) {
     }
   ).then(res => {
     console.log(res);
-    const { data, headers } = res;
     const url = window.URL.createObjectURL(new Blob([res.data]));
     const link = document.createElement('a');
     link.href = url;
@@ -97,12 +96,11 @@ export async function savePlan(payload) {
 
 export async function copyPlan(uuid) {
   return request(`/itms-cost/itms-cost/costplan/copyPlan/${uuid}`, {
-    method: 'GET'
+    method: 'GET',
   });
 }
 export async function addHistory(uuid) {
   return request(`/itms-cost/itms-cost/costplan/addHistory/${uuid}`, {
-    method: 'GET'
+    method: 'GET',
   });
 }
-
