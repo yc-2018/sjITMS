@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-15 12:35:19
+ * @LastEditTime: 2022-11-15 14:31:38
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -363,6 +363,14 @@ export default class OrderPoolPage extends Component {
           <Text>已选:</Text>
           <Text> {auditedRowKeys.length}</Text>
         </Col>
+        <Col span={3}>
+          <Text> 总:</Text>
+          <Text style={totalTextStyle}>
+            {Number(selectOrders.realCartonCount) +
+              Number(selectOrders.realScatteredCount) +
+              Number(selectOrders.realContainerCount) * 2}
+          </Text>
+        </Col>
         <Col span={4}>
           <Text> 整件:</Text>
           <Text style={totalTextStyle}>{selectOrders.realCartonCount}</Text>
@@ -371,15 +379,15 @@ export default class OrderPoolPage extends Component {
           <Text> 散件:</Text>
           <Text style={totalTextStyle}>{selectOrders.realScatteredCount}</Text>
         </Col>
-        <Col span={4}>
+        <Col span={3}>
           <Text> 周转筐:</Text>
           <Text style={totalTextStyle}>{selectOrders.realContainerCount}</Text>
         </Col>
-        <Col span={5}>
+        <Col span={4}>
           <Text> 体积:</Text>
           <Text style={totalTextStyle}>{selectOrders.volume.toFixed(2)}</Text>
         </Col>
-        <Col span={5}>
+        <Col span={4}>
           <Text> 重量:</Text>
           <Text style={totalTextStyle}>{(selectOrders.weight / 1000).toFixed(2)}</Text>
         </Col>
@@ -409,7 +417,7 @@ export default class OrderPoolPage extends Component {
     return {
       realCartonCount: Math.round(sumBy(data.map(x => x.stillCartonCount)) * 100) / 100,
       realScatteredCount: Math.round(sumBy(data.map(x => x.stillScatteredCount)) * 100) / 100,
-      realContainerCount: (Math.round(sumBy(data.map(x => x.stillContainerCount)) * 100) / 100) * 2,
+      realContainerCount: Math.round(sumBy(data.map(x => x.stillContainerCount)) * 100) / 100,
       weight: Math.round(sumBy(data.map(x => Number(x.weight))) * 100) / 100,
       volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
     };
