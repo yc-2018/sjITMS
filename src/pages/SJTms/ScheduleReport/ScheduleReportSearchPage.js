@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-14 14:44:22
+ * @LastEditTime: 2022-11-15 09:32:20
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -88,6 +88,8 @@ export default class ScheduleReportSearchPage extends QuickFormSearchPage {
           sheetHeader: sheetheader,
         },
       ];
+      var toExcel = new ExportJsonExcel(option);
+      toExcel.saveExcel();
     } else {
       this.props.dispatch({
         type: 'quick/queryAllData',
@@ -102,11 +104,11 @@ export default class ScheduleReportSearchPage extends QuickFormSearchPage {
                 sheetHeader: sheetheader,
               },
             ];
+            var toExcel = new ExportJsonExcel(option);
+            toExcel.saveExcel();
           }
         },
       });
     }
-    var toExcel = new ExportJsonExcel(option);
-    toExcel.saveExcel();
   };
 }
