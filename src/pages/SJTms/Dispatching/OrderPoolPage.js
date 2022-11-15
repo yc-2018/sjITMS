@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-11 14:58:07
+ * @LastEditTime: 2022-11-15 12:35:19
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -91,7 +91,7 @@ export default class OrderPoolPage extends Component {
       filter.pageSize = pages.pageSize;
     } else {
       filter.page = searchPagination.current;
-      filter.pageSize = searchPagination.pageSize;
+      filter.pageSize = searchPagination.pageSize || 200;
     }
     filter.superQuery.queryParams = [
       ...pageFilter,
@@ -409,7 +409,7 @@ export default class OrderPoolPage extends Component {
     return {
       realCartonCount: Math.round(sumBy(data.map(x => x.stillCartonCount)) * 100) / 100,
       realScatteredCount: Math.round(sumBy(data.map(x => x.stillScatteredCount)) * 100) / 100,
-      realContainerCount: Math.round(sumBy(data.map(x => x.stillContainerCount)) * 100) / 100,
+      realContainerCount: (Math.round(sumBy(data.map(x => x.stillContainerCount)) * 100) / 100) * 2,
       weight: Math.round(sumBy(data.map(x => Number(x.weight))) * 100) / 100,
       volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
     };

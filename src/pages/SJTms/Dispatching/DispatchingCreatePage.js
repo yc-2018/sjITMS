@@ -27,7 +27,6 @@ import { CreatePageOrderColumns } from './DispatchingColumns';
 import dispatchingStyles from './Dispatching.less';
 import { sumBy, uniq, uniqBy, orderBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { getByDispatchcenterUuid } from '@/services/tms/DispatcherConfig';
 
 const { Search } = Input;
 const { confirm } = Modal;
@@ -346,6 +345,13 @@ export default class DispatchingCreatePage extends Component {
       };
     });
     const orderSummary = this.groupByOrder(details);
+    const carrier = driver
+      ? {
+          uuid: driver.UUID,
+          code: driver.CODE,
+          name: driver.NAME,
+        }
+      : {};
     const paramBody = {
       type,
       vehicle: {
@@ -358,11 +364,7 @@ export default class DispatchingCreatePage extends Component {
         code: selectVehicle.VEHICLETYPECODE,
         name: selectVehicle.VEHICLETYPENAME,
       },
-      carrier: {
-        uuid: driver.UUID,
-        code: driver.CODE,
-        name: driver.NAME,
-      },
+      carrier: { ...carrier },
       details,
       memberDetails: selectEmployees.map((x, index) => {
         return {
@@ -395,21 +397,21 @@ export default class DispatchingCreatePage extends Component {
       message.error('请选择运输订单！');
       return;
     }
-    const driver = selectEmployees.filter(x => x.memberType == 'Driver');
-    //校验车辆必选
-    if (isEmptyObj(selectVehicle)) {
-      message.error('请选择车辆！');
-      return;
-    }
-    if (driver.length > 1) {
-      message.error('只允许一位驾驶员！');
-      return;
-    }
-    //校验司机必选
-    if (driver.length == 0) {
-      message.error('请选择驾驶员！');
-      return;
-    }
+    // const driver = selectEmployees.filter(x => x.memberType == 'Driver');
+    // //校验车辆必选
+    // if (isEmptyObj(selectVehicle)) {
+    //   message.error('请选择车辆！');
+    //   return;
+    // }
+    // if (driver.length > 1) {
+    //   message.error('只允许一位驾驶员！');
+    //   return;
+    // }
+    // //校验司机必选
+    // if (driver.length == 0) {
+    //   message.error('请选择驾驶员！');
+    //   return;
+    // }
     let selectEmpLength = [];
     selectEmployees.forEach(item => {
       let length = selectEmployees.filter(
@@ -672,9 +674,8 @@ export default class DispatchingCreatePage extends Component {
     const remVolume = (cartonCount / record.stillCartonCount) * volume;
     const remWeight = (cartonCount / record.stillCartonCount) * weight;
     const volumes =
-      Math.round((sumBy(orders.map(x => x.volume)) - (record.volume - remVolume)) * 1000) / 1000;
-    const weights =
-      Math.round(sumBy(orders.map(x => x.weight)) - (record.weight - remWeight)) / 1000;
+      Math.round((sumBy(orders.map(x => x.volume)) - (volume - remVolume)) * 1000) / 1000;
+    const weights = Math.round(sumBy(orders.map(x => x.weight)) - (weight - remWeight)) / 1000;
     confirm({
       title: '提示',
       content: `拆单后排车单体积为：${volumes}m³，重量为：${weights}t ，是否确定拆单？`,
