@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-25 10:17:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-27 10:02:44
+ * @LastEditTime: 2022-11-15 17:51:34
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -67,7 +67,6 @@ export default class ScheduleCreatePage extends QuickCreatePage {
               key: this.tableKey++,
             });
           });
-
           cc = member.find(x => x.WORKTYPE == 'Driver');
           if (cc != undefined) {
             this.entity['sj_itms_schedule'][0] = {
@@ -94,6 +93,13 @@ export default class ScheduleCreatePage extends QuickCreatePage {
         }
         form.validateFields();
       });
+    } else if (fieldName == 'MEMBERCODE' && valueEvent) {
+      this.entity['sj_itms_schedule'][0] = {
+        ...this.entity['sj_itms_schedule'][0],
+        CARRIERUUID: valueEvent.record.UUID,
+        CARRIERCODE: valueEvent.record.CODE,
+        CARRIERNAME: valueEvent.record.NAME,
+      };
     }
   };
 
