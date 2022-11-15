@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-31 14:37:31
+ * @LastEditTime: 2022-11-15 15:55:01
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -746,13 +746,20 @@ const drawPrintPage = (schedule, scheduleDetails) => {
               <th colspan={16} style={{ border: 0, height: 20 }}>
                 <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                   <div style={{ float: 'left', width: '80%' }}>
-                  {schedule.USEETC=='是'?'粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为'+schedule.ETCAMOUNT+"元":'粤通卡信息：'}
-                      <br />
+                    {schedule.USEETC == '是'
+                      ? '粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为' +
+                        schedule.ETCAMOUNT +
+                        '元'
+                      : '粤通卡信息：'}
+                    <br />
                     [线路]去程入口:
                     {schedule.ETCROUTE}
                     <br />
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;回程出口:
                     {schedule.ETCROUTERETURN}
+                    <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;途径高速:
+                    {schedule.ETCROUTEINFO}
                     <br />
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如有异常需超额使用粤通卡的，请致电（670607）
                   </div>
@@ -827,11 +834,14 @@ const drawPrintPage = (schedule, scheduleDetails) => {
             )}
           </tbody>
           <tfoot border={0}>
-            <tr style={{ height: 20, border: 0 ,fontSize:'15px' ,}} border={0}>
-              <td style={{ border: 0,paddingTop:10 }} colSpan={8} >
-                <div style={{paddingLeft:20}}>总体积(m³)：{schedule.VEHICLEVOLUME}</div>
+            <tr style={{ height: 20, border: 0, fontSize: '15px' }} border={0}>
+              <td style={{ border: 0, paddingTop: 10 }} colSpan={8}>
+                <div style={{ paddingLeft: 20 }}>
+                  总体积(m³)：
+                  {schedule.VEHICLEVOLUME}
+                </div>
               </td>
-              <td style={{ border: 0 ,textAlign: 'right',paddingTop:10}} colSpan={8} >
+              <td style={{ border: 0, textAlign: 'right', paddingTop: 10 }} colSpan={8}>
                 <div>脏筐数：_____________</div>
               </td>
             </tr>
