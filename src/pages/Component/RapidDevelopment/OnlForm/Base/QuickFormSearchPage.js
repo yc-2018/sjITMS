@@ -773,11 +773,23 @@ export default class QuickFormSearchPage extends SearchPage {
     let filterValue = {};
     if (superQuery) {
       for (const item of superQuery.queryParams) {
-        if (item.type == 'Date' || item.type == 'DateTime' || item.type == 'Time') {
+        if (item.type == 'Date') {
           let dateVal = item.val.split('||');
           filterValue[item.field] = [
             moment(dateVal[0], 'YYYY-MM-DD'),
             moment(dateVal[1], 'YYYY-MM-DD'),
+          ];
+        } else if (item.type == 'DateTime') {
+          let dateVal = item.val.split('||');
+          filterValue[item.field] = [
+            moment(dateVal[0], 'YYYY-MM-DD HH:mm:ss'),
+            moment(dateVal[1], 'YYYY-MM-DD HH:mm:ss'),
+          ];
+        } else if (item.type == 'Time') {
+          let dateVal = item.val.split('||');
+          filterValue[item.field] = [
+            moment(dateVal[0], 'HH:mm:ss'),
+            moment(dateVal[1], 'HH:mm:ss'),
           ];
         } else {
           filterValue[item.field] = item.val;

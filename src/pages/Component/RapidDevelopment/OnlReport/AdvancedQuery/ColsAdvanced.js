@@ -112,7 +112,7 @@ export default class ColsAdvanced extends Component {
           }
           //日期格式化
           if (searchField.searchShowtype == 'datetime' && val instanceof Array) {
-            data.val = val[index].map(x => x.format('YYYY-MM-DD hh:mm')).join('||');
+            data.val = val[index].map(x => x.format('YYYY-MM-DD HH:mm:ss')).join('||');
           }
           if (searchField.searchShowtype == 'date' && val instanceof Array) {
             data.val = val[index].map(x => x.format('YYYY-MM-DD')).join('||');
