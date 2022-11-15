@@ -2,12 +2,12 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-26 16:04:34
+ * @LastEditTime: 2022-11-15 11:13:21
  * @version: 1.0
  */
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { Button, Popconfirm, message, Steps } from 'antd';
+import { Button, Popconfirm, message, Modal, Form, Input } from 'antd';
 import { handleBill } from '@/services/sjitms/TollFee';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { havePermission } from '@/utils/authority';
@@ -16,23 +16,28 @@ import { havePermission } from '@/utils/authority';
   quick,
   loading: loading.models.quick,
 }))
+@Form.create()
 export default class DriverFeeSearchPage extends QuickFormSearchPage {
   state = {
     ...this.state,
     showAuditPop: false,
-    showRejectedPop: false,
+    showRejectedModal: false,
     showCheckPop: false,
     operation: '',
   };
 
-  handleBill = async data => {
+  handleBill = async (data, fieldsValue) => {
+    if (fieldsValue == undefined) {
+      fieldsValue = '';
+    }
     const { operation } = this.state;
-    return await handleBill(data, operation);
+    return await handleBill(data, operation, fieldsValue.note);
   };
 
   //该方法用于写中间的功能按钮 多个按钮用<span>包裹
   drawToolsButton = () => {
-    const { showAuditPop, showCheckPop, selectedRows, showRejectedPop } = this.state;
+    const { showAuditPop, showCheckPop, selectedRows, showRejectedModal } = this.state;
+    const { getFieldDecorator } = this.props.form;
 
     return (
       <span>
@@ -47,7 +52,7 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
           }}
           onConfirm={() => {
             this.setState({ showCheckPop: false, operation: 'Checked' });
-            this.handleBill(selectedRows[0]).then(response => {
+            this.handleBill(selectedRows[0], '').then(response => {
               if (response.success) {
                 message.success('核对成功！');
                 this.setState({ operation: '' });
@@ -75,7 +80,7 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
           }}
           onConfirm={() => {
             this.setState({ showAuditPop: false, operation: 'Approved' });
-            this.handleBill(selectedRows[0]).then(response => {
+            this.handleBill(selectedRows[0], '').then(response => {
               if (response.success) {
                 message.success('审核成功！');
                 this.setState({ operation: '' });
@@ -91,34 +96,41 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
             审批
           </Button>
         </Popconfirm>
-        <Popconfirm
-          title="你确定要驳回所选中的内容吗?"
-          visible={showRejectedPop}
-          onVisibleChange={visible => {
-            if (!visible) this.setState({ showRejectedPop: visible });
-          }}
-          onCancel={() => {
-            this.setState({ showRejectedPop: false });
-          }}
-          onConfirm={() => {
-            this.setState({ showRejectedPop: false, operation: 'Rejected' });
-            this.handleBill(selectedRows[0]).then(response => {
-              if (response.success) {
-                message.success('驳回成功！');
-                this.setState({ operation: '' });
-                this.onSearch();
+        <Button
+          hidden={!havePermission(this.state.authority + '.rejected')}
+          onClick={() => this.onBatchRejected()}
+        >
+          驳回
+        </Button>
+        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
+        <Modal
+          title="驳回申请"
+          visible={showRejectedModal}
+          key={selectedRows[0]}
+          onOk={() => {
+            this.props.form.validateFields((err, fieldsValue) => {
+              if (err) {
+                return;
               }
+              this.handleBill(selectedRows[0], fieldsValue).then(response => {
+                if (response.success) {
+                  message.success('驳回成功！');
+                  this.setState({ operation: '', showRejectedModal: false });
+                  this.onSearch();
+                }
+              });
             });
           }}
+          onCancel={() => {
+            this.setState({ showRejectedModal: false });
+          }}
         >
-          <Button
-            hidden={!havePermission(this.state.authority + '.rejected')}
-            onClick={() => this.onBatchRejected()}
-          >
-            驳回
-          </Button>
-        </Popconfirm>
-        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
+          <Form>
+            <Form.Item labelCol={{ span: 6 }} wrapperCol={{ span: 15 }} label="驳回原因">
+              {getFieldDecorator('note', {})(<Input />)}
+            </Form.Item>
+          </Form>
+        </Modal>
       </span>
     );
   };
@@ -132,12 +144,7 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
     this.setState({ operation: 'Checked' });
     selectedRows.length == 1
       ? this.setState({ showCheckPop: true })
-      : this.batchProcessConfirmRef.show(
-          '核对',
-          selectedRows,
-          this.approvedOrRejected,
-          this.onSearch
-        );
+      : this.batchProcessConfirmRef.show('核对', selectedRows, this.handleBill, this.onSearch);
   };
 
   onBatchApproved = () => {
@@ -149,29 +156,21 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
     this.setState({ operation: 'Approved' });
     selectedRows.length == 1
       ? this.setState({ showAuditPop: true })
-      : this.batchProcessConfirmRef.show(
-          '审核',
-          selectedRows,
-          this.approvedOrRejected,
-          this.onSearch
-        );
+      : this.batchProcessConfirmRef.show('审核', selectedRows, this.handleBill, this.onSearch);
   };
 
   onBatchRejected = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length == 0) {
+    console.log('selectedRows', selectedRows);
+    if (selectedRows.length != 1) {
       message.warn('请选中一条数据！');
       return;
     }
-    this.setState({ operation: 'Rejected' });
-    selectedRows.length == 1
-      ? this.setState({ showRejectedPop: true })
-      : this.batchProcessConfirmRef.show(
-          '驳回',
-          selectedRows,
-          this.approvedOrRejected,
-          this.onSearch
-        );
+    if (selectedRows[0].FEESTAT == 'DispatcherApproved') {
+      message.error('该申请已审批，不能驳回');
+      return;
+    }
+    this.setState({ showRejectedModal: true });
   };
 
   drawcell = e => {
