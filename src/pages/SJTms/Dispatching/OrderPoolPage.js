@@ -2,12 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-15 14:31:38
+ * @LastEditTime: 2022-11-15 17:54:10
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
 import React, { Component } from 'react';
-import { Switch, Button, Row, Col, Tabs, message, Typography, Modal } from 'antd';
+import { Switch, Button, Row, Col, Tabs, message, Typography, Icon } from 'antd';
 import DispatchingTable from './DispatchingTable';
 import DispatchingChildTable from './DispatchingChildTable';
 import {
@@ -353,18 +353,13 @@ export default class OrderPoolPage extends Component {
 
   //汇总数据
   buildTitle = () => {
-    const { auditedRowKeys } = this.state;
     const { totalOrder } = this.props;
     let selectOrders = this.groupByOrder(totalOrder);
     const totalTextStyle = { fontSize: 16, fontWeight: 700, marginLeft: 2, color: '#333' };
     return (
       <Row type="flex" style={{ fontSize: 14 }}>
-        <Col span={2} style={{ fontSize: 12, lineHeight: '25px' }}>
-          <Text>已选:</Text>
-          <Text> {auditedRowKeys.length}</Text>
-        </Col>
-        <Col span={3}>
-          <Text> 总:</Text>
+        <Col span={4}>
+          <Text> 总件数:</Text>
           <Text style={totalTextStyle}>
             {Number(selectOrders.realCartonCount) +
               Number(selectOrders.realScatteredCount) +
@@ -379,7 +374,7 @@ export default class OrderPoolPage extends Component {
           <Text> 散件:</Text>
           <Text style={totalTextStyle}>{selectOrders.realScatteredCount}</Text>
         </Col>
-        <Col span={3}>
+        <Col span={4}>
           <Text> 周转筐:</Text>
           <Text style={totalTextStyle}>{selectOrders.realContainerCount}</Text>
         </Col>
@@ -508,14 +503,18 @@ export default class OrderPoolPage extends Component {
           {auditedData.length == 0 ? (
             <></>
           ) : (
-            <div style={{ position: 'absolute', bottom: 0, left: 10 }}>
-              <span>门店汇总：</span>
-              <Switch
-                checked={this.props.isOrderCollect}
-                onClick={isOrderCollect => {
-                  this.props.refreshOrderCollect(isOrderCollect);
-                }}
-              />
+            <div className={dispatchingStyles.orderPoolFooter}>
+              <div className={dispatchingStyles.orderTotalPane}>
+                <Icon type="info-circle" theme="filled" twoToneColor="#3B77E3" />
+                <span style={{ marginLeft: 5 }}>
+                  已选择
+                  <span style={{ color: '#3B77E3', margin: '0 2px' }}>{auditedRowKeys.length}</span>
+                  项
+                </span>
+                <a href="#" style={{ marginLeft: 10 }} onClick={() => this.tableChangeRows(_, [])}>
+                  取消全部
+                </a>
+              </div>
             </div>
           )}
           <div style={{ position: 'absolute', top: 12, left: 160 }}>
@@ -523,6 +522,15 @@ export default class OrderPoolPage extends Component {
               <img src={mapIcon} style={{ width: 20, height: 20 }} />
               地图
             </a>
+            <Switch
+              style={{ marginLeft: 15 }}
+              checked={this.props.isOrderCollect}
+              checkedChildren="门店汇总"
+              unCheckedChildren="门店汇总"
+              onClick={isOrderCollect => {
+                this.props.refreshOrderCollect(isOrderCollect);
+              }}
+            />
           </div>
           {/* 排车modal */}
           <DispatchingCreatePage
