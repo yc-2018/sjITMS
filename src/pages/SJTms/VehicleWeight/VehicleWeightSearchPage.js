@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-14 09:38:10
+ * @LastEditTime: 2022-11-15 14:40:40
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -14,7 +14,7 @@ import {
   vehicleApplyAudit,
   vehicleApplyRejected,
   portVehicleApply,
-} from '@/services/sjitms/ScheduleBill';
+} from '@/services/sjitms/VehicleWeight';
 
 @connect(({ quick, loading }) => ({
   quick,
