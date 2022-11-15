@@ -39,7 +39,7 @@ import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchF
 export default class LineShipAddress extends QuickFormSearchPage {
   state = {
     ...this.state,
-    noActionCol: false,
+    noActionCol: true,
     unShowRow: false,
     isNotHd: true,
     modalVisible: false,
@@ -60,6 +60,84 @@ export default class LineShipAddress extends QuickFormSearchPage {
   constructor(props) {
     super(props);
   }
+
+    //获取列配置
+    queryCoulumns = () => {
+      const { dispatch } = this.props;
+      dispatch({
+        type: 'quick/queryColumns',
+        payload: {
+          reportCode: this.state.reportCode,
+          sysCode: 'tms',
+        },
+        callback: response => {
+          if (response.result) {
+            this.initConfig(response.result);
+            //解决用户列展示失效问题 暂时解决方法（赋值两次）
+            this.initConfig(response.result);
+            //查询必填
+            let queryRequired = response.result.columns.find(item => item.searchRequire);
+  
+            let companyuuid = response.result.columns.find(
+              item => item.fieldName.toLowerCase() == 'companyuuid'
+            );
+            let orgName =
+              loginOrg().type.toLowerCase() == 'dc'
+                ? loginOrg().type.toLowerCase() + 'Uuid'
+                : 'dispatchcenteruuid';
+            let org = response.result.columns.find(item => item.fieldName.toLowerCase() == orgName);
+  
+            if (companyuuid) {
+              this.state.isOrgQuery = [
+                {
+                  field: 'companyuuid',
+                  type: 'VarChar',
+                  rule: 'eq',
+                  val: loginCompany().uuid,
+                },
+              ];
+            }
+  
+            if (org) {
+              this.setState({
+                isOrgQuery: response.result.reportHead.organizationQuery
+                  ? [
+                      {
+                        field:
+                          loginOrg().type.toLowerCase() == 'dc'
+                            ? loginOrg().type.toLowerCase() + 'Uuid'
+                            : 'dispatchCenterUuid',
+                        type: 'VarChar',
+                        rule: 'like',
+                        val: loginOrg().uuid,
+                      },
+                      ...this.state.isOrgQuery,
+                    ]
+                  : [...this.state.isOrgQuery],
+              });
+            }
+  
+            // let defaultSortColumn = response.result.columns.find(item => item.orderType > 1);
+            // if (defaultSortColumn) {
+            //   let defaultSort =
+            //     defaultSortColumn.orderType == 2
+            //       ? defaultSortColumn.fieldName + ',ascend'
+            //       : defaultSortColumn.fieldName + ',descend';
+            //   this.setState({ defaultSort });
+            // }
+  
+            //查询条件有必填时默认不查询
+            //if (queryRequired) return;
+  
+            //配置查询成功后再去查询数据
+            this.onSearch();
+  
+            //扩展State
+            this.changeState();
+          }
+        },
+      });
+    };
   componentWillMount() {
       this.setState(
         {
@@ -89,21 +167,34 @@ export default class LineShipAddress extends QuickFormSearchPage {
   drawcell = event => {
     if (event.column.fieldName == 'ORDERNUM') {
       const component = (
-        <Input
-          defaultValue={event.val}
-          value={event.val}
-          style={{ width: 80, textAlign: 'center' }}
-          onChange={event => {}}
-        />
+        <span>{event.val}</span>
+        // <Input
+        //   defaultValue={event.val}
+        //   value={event.val}
+        //   style={{ width: 50, textAlign: 'center' }}
+        //   disabled
+        //   onChange={event => {}}
+        // />
       );
       event.component = component;
     }
     
     if(event.column.fieldName == 'TYPE'){
       const component = (
-        <a onClick={()=>this.fetchOperateSheculeStore(event.record)}>
+        <>
+         <Button size='small' style={{color:'#3b77e3'}}  onClick={()=>this.fetchOperateSheculeStore(event.record)}>
              {"移入待定池"}
-        </a>
+        </Button>
+        <Button size='small' style={{color:'#ef2525'}} onClick={()=> Modal.confirm({
+            title: '是否移除' + event.record.ADDRESSNAME + '门店?',
+            onOk: () => {
+              this.handleDelete(event.record.UUID);
+            },
+          })}>
+             {"移除"}
+        </Button>
+        </>
+       
       );
       event.component = component;
     }
@@ -236,12 +327,12 @@ export default class LineShipAddress extends QuickFormSearchPage {
     
   }
   //列删除操作
-  renderOperateCol = record => {
-    return <>
-    <OperateCol menus={this.fetchOperatePropsCommon(record)} />
-    </>
+  // renderOperateCol = record => {
+  //   return <>
+  //   <OperateCol  menus={this.fetchOperatePropsCommon(record)} />
+  //   </>
     
-  };
+  // };
   fetchOperatePropsCommon = record => {
     return [
       {
@@ -253,6 +344,18 @@ export default class LineShipAddress extends QuickFormSearchPage {
               this.handleDelete(record.UUID);
             },
           });
+        },
+      },
+      {
+        name: '移入待定池',
+        onClick: () => {
+          Modal.confirm({
+            title:  record.ADDRESSNAME + '是否移入待定池?',
+            onOk: () => {
+              this.inScheduleStore(record.UUID);
+            }
+            },
+          );
         },
       },
     ];
