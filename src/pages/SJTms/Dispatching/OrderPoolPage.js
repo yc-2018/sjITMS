@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-15 17:54:10
+ * @LastEditTime: 2022-11-16 17:32:24
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -430,6 +430,7 @@ export default class OrderPoolPage extends Component {
       scheduledData,
       activeTab,
     } = this.state;
+    const { isOrderCollect } = this.props;
     const buildOperations = () => {
       switch (activeTab) {
         case 'Scheduled':
@@ -464,7 +465,7 @@ export default class OrderPoolPage extends Component {
             refreshOrderPool={this.refreshOrderPool}
           />
           {/* 待排订单列表 */}
-          {this.props.isOrderCollect ? (
+          {isOrderCollect ? (
             <DispatchingChildTable
               comId="orderPool"
               clickRow
@@ -511,7 +512,16 @@ export default class OrderPoolPage extends Component {
                   <span style={{ color: '#3B77E3', margin: '0 2px' }}>{auditedRowKeys.length}</span>
                   项
                 </span>
-                <a href="#" style={{ marginLeft: 10 }} onClick={() => this.tableChangeRows(_, [])}>
+                <a
+                  href="#"
+                  style={{ marginLeft: 10 }}
+                  onClick={() => {
+                    this.tableChangeRows(_, []);
+                    if (isOrderCollect) {
+                      this.setState({ auditedParentRowKeys: [] });
+                    }
+                  }}
+                >
                   取消全部
                 </a>
               </div>
