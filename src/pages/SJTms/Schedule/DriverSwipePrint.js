@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-01 11:47:33
+ * @LastEditTime: 2022-11-16 14:51:08
  * @Description: 司机刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipe.js
  */
@@ -12,7 +12,7 @@ import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import Empty from '@/pages/Component/Form/Empty';
 import { driverSwipePrint } from '@/services/sjitms/ScheduleProcess';
 import { queryDictByCode } from '@/services/quick/Quick';
-import{ScheduleSearchPage} from './ScheduleSearchPage'
+import { ScheduleSearchPage } from './ScheduleSearchPage';
 import { loginOrg, loginUser } from '@/utils/LoginContext';
 import scher from '@/assets/common/scher.jpg';
 import { convertDate, convertDateToTime } from '@/utils/utils';
@@ -32,7 +32,7 @@ export default class DriverSwipePrint extends PureComponent {
     dispatchName: undefined,
   };
   componentDidMount() {
-   // ScheduleSearchPage.drawPrintPage();
+    // ScheduleSearchPage.drawPrintPage();
     this.empInputRef.focus();
     // 查询字典
     queryDictByCode(['dispatchCenter']).then(res => this.setState({ dict: res.data }));
@@ -86,11 +86,11 @@ export default class DriverSwipePrint extends PureComponent {
         this.setState({ loading: false, errMsg: undefined });
         hide();
         return;
-      };
+      }
       LODOP.PRINT_INIT('排车单打印');
       LODOP.SET_PRINT_PAGESIZE(1, 2100, 1400, '210mm*140mm'); //1代表横的打印 2代表竖的打印 3纵向打印，宽度固定，高度按打印内容的高度自适应；
       LODOP.SET_PRINT_MODE('PRINT_DUPLEX', 1); //去掉双面打印
-     const  printPagess = await this.drawPrintPage(response.data,scheduleDetails);
+      const printPagess = await this.drawPrintPage(response.data, scheduleDetails);
       this.setState({ printPage: printPagess });
       LODOP.SET_SHOW_MODE('SKIN_TYPE', 1);
       const printPages = document.getElementById('printPage').childNodes;
@@ -103,25 +103,28 @@ export default class DriverSwipePrint extends PureComponent {
       //LODOP.PRINT();
       hide();
       this.setState({ printPage: undefined });
-      
+
       this.setState({
         empId: '',
         loading: false,
         scheduleBill: response.data,
         message: '刷卡打印成功',
-       // isShip: response.data.message.indexOf('装车') != -1,
+        // isShip: response.data.message.indexOf('装车') != -1,
       });
-
     } else {
       this.speech('刷卡打印失败');
       this.setState({ empId: '', loading: false, scheduleBill: {}, errMsg: response.message });
     }
   };
-   drawPrintPage = (schedule, scheduleDetails) => {
+  drawPrintPage = (schedule, scheduleDetails) => {
     if (loginOrg().uuid == '000000750000004') {
-     // const deliveryMan = schedule.memberDetails.filter (e=>e.memberType=='DeliveryMan').map(e=>'['+e.member.code+']'+e.member.name);
-      const stevedore = schedule.memberDetails.filter (e=>e.memberType=='Stevedore').map(e=>'['+e.member.code+']'+e.member.name);
-      const copilot = schedule.memberDetails.filter (e=>e.memberType=='Copilot').map(e=>'['+e.member.code+']'+e.member.name);
+      // const deliveryMan = schedule.memberDetails.filter (e=>e.memberType=='DeliveryMan').map(e=>'['+e.member.code+']'+e.member.name);
+      const stevedore = schedule.memberDetails
+        .filter(e => e.memberType == 'Stevedore')
+        .map(e => '[' + e.member.code + ']' + e.member.name);
+      const copilot = schedule.memberDetails
+        .filter(e => e.memberType == 'Copilot')
+        .map(e => '[' + e.member.code + ']' + e.member.name);
       return (
         <div>
           <table
@@ -145,7 +148,11 @@ export default class DriverSwipePrint extends PureComponent {
                       ##
                     </font>
                     <span>页/共</span>
-                    <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
+                    <font
+                      color="blue"
+                      style={{ textDecoration: 'underline blue' }}
+                      tdata="PageCount"
+                    >
                       ##
                     </font>
                     <span>页</span>
@@ -171,20 +178,24 @@ export default class DriverSwipePrint extends PureComponent {
                       排车序号： {schedule.billNumber}
                     </div>
                     <div style={{ float: 'left', width: '25%' }}>操作员： {loginUser().name}</div>
-                    <div style={{ float: 'left', width: '25%' }}>驾驶员： {"["+schedule.carrier.code+"]"+schedule.carrier.name}</div>
+                    <div style={{ float: 'left', width: '25%' }}>
+                      驾驶员： {'[' + schedule.carrier.code + ']' + schedule.carrier.name}
+                    </div>
                     <div style={{ float: 'left', width: '25%' }}>
                       排车单号： {schedule.billNumber}
                     </div>
                   </div>
                   <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
-                    <div style={{ float: 'left', width: '25%' }}>车号：  {"["+schedule.vehicle.code+"]"+schedule.vehicle.name}</div>
+                    <div style={{ float: 'left', width: '25%' }}>
+                      车号： {'[' + schedule.vehicle.code + ']' + schedule.vehicle.name}
+                    </div>
                     <div style={{ float: 'left', width: '25%' }}>
                       信箱号：
                       {schedule.pirs}
                     </div>
                     <div style={{ float: 'left', width: '25%' }}>
                       装车员：
-                      {stevedore.length>0?stevedore.join(','):''}
+                      {stevedore.length > 0 ? stevedore.join(',') : ''}
                     </div>
                     <div style={{ float: 'left', width: '25%' }}>
                       打印时间：
@@ -196,7 +207,9 @@ export default class DriverSwipePrint extends PureComponent {
               <tr>
                 <th colspan={16} style={{ border: 0, height: 20 }}>
                   <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
-                    <div style={{ float: 'left', width: '25%' }}>副司机： {copilot.length>0?copilot.join(','):''}</div>
+                    <div style={{ float: 'left', width: '25%' }}>
+                      副司机： {copilot.length > 0 ? copilot.join(',') : ''}
+                    </div>
                   </div>
                 </th>
               </tr>
@@ -204,13 +217,20 @@ export default class DriverSwipePrint extends PureComponent {
                 <th colspan={16} style={{ border: 0, height: 20 }}>
                   <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                     <div style={{ float: 'left', width: '80%' }}>
-                      {schedule.useetc?'粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为'+schedule.etcamount+"元":'粤通卡信息：'}
+                      {schedule.useetc
+                        ? '粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为' +
+                          schedule.etcamount +
+                          '元'
+                        : '粤通卡信息：'}
                       <br />
                       [线路]去程入口:
                       {schedule.etcroute}
                       <br />
                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;回程出口:
                       {schedule.etcrouteReturn}
+                      <br />
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;途径高速:
+                      {schedule.ETCROUTEINFO}
                       <br />
                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如有异常需超额使用粤通卡的，请致电（670607）
                     </div>
@@ -259,24 +279,24 @@ export default class DriverSwipePrint extends PureComponent {
                 scheduleDetails.map((item, index) => {
                   return (
                     <tr style={{ textAlign: 'center', height: 20 }}>
-                     <td width={100}>{item.ARCHLINECODE}</td>
-                    <td width={80}>{item.SCATTEREDCOLLECTBIN}</td>
-                    <td width={120}>
-                      {'[' + item.DELIVERYPOINTCODE + ']' + item.DELIVERYPOINTNAME}
-                    </td>
-                    <td width={80}>{item.REALCARTONCOUNT}</td>
-                    <td width={80}>{item.REALSCATTEREDCOUNT}</td>
-                    <td width={80}>{item.REALCONTAINERCOUNT}</td>
-                    <td width={80}>{0}</td>
-                    <td width={80}>{item.REALCONTAINERCOUNT + 0}</td>
-                    <td width={80}>{}</td>
-                    <td width={80}>{}</td>
-                    <td width={80}>{}</td>
-                    <td width={80}>{}</td>
-                    <td width={80}>{}</td>
-                    <td width={80}>{}</td>
-                    <td width={100}>{item.COLLECTBIN}</td>
-                    <td width={60}>{0}</td>
+                      <td width={100}>{item.ARCHLINECODE}</td>
+                      <td width={80}>{item.SCATTEREDCOLLECTBIN}</td>
+                      <td width={120}>
+                        {'[' + item.DELIVERYPOINTCODE + ']' + item.DELIVERYPOINTNAME}
+                      </td>
+                      <td width={80}>{item.REALCARTONCOUNT}</td>
+                      <td width={80}>{item.REALSCATTEREDCOUNT}</td>
+                      <td width={80}>{item.REALCONTAINERCOUNT}</td>
+                      <td width={80}>{0}</td>
+                      <td width={80}>{item.REALCONTAINERCOUNT + 0}</td>
+                      <td width={80}>{}</td>
+                      <td width={80}>{}</td>
+                      <td width={80}>{}</td>
+                      <td width={80}>{}</td>
+                      <td width={80}>{}</td>
+                      <td width={80}>{}</td>
+                      <td width={100}>{item.COLLECTBIN}</td>
+                      <td width={60}>{0}</td>
                     </tr>
                   );
                 })
@@ -285,11 +305,14 @@ export default class DriverSwipePrint extends PureComponent {
               )}
             </tbody>
             <tfoot border={0}>
-              <tr style={{ height: 20, border: 0 ,fontSize:'15px' }} border={0}>
-                <td style={{ border: 0,paddingTop:10 }} colSpan={8} >
-                  <div style={{paddingLeft:20}}>总体积(m³)：{schedule.volume}</div>
+              <tr style={{ height: 20, border: 0, fontSize: '15px' }} border={0}>
+                <td style={{ border: 0, paddingTop: 10 }} colSpan={8}>
+                  <div style={{ paddingLeft: 20 }}>
+                    总体积(m³)：
+                    {schedule.volume}
+                  </div>
                 </td>
-                <td style={{ border: 0 ,textAlign: 'right',paddingTop:10}} colSpan={8} >
+                <td style={{ border: 0, textAlign: 'right', paddingTop: 10 }} colSpan={8}>
                   <div>脏筐数：_____________</div>
                 </td>
               </tr>
@@ -323,7 +346,11 @@ export default class DriverSwipePrint extends PureComponent {
                       ##
                     </font>
                     <span>页/共</span>
-                    <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
+                    <font
+                      color="blue"
+                      style={{ textDecoration: 'underline blue' }}
+                      tdata="PageCount"
+                    >
                       ##
                     </font>
                     <span>页</span>
@@ -361,7 +388,9 @@ export default class DriverSwipePrint extends PureComponent {
               <tr style={{ height: 50 }}>
                 <th colspan={2} style={{ border: 0 }} />
                 <th colspan={4} style={{ border: 0 }}>
-                  <div style={{ fontSize: 18, textAlign: 'center' }}>广东时捷物流有限公司装车单</div>
+                  <div style={{ fontSize: 18, textAlign: 'center' }}>
+                    广东时捷物流有限公司装车单
+                  </div>
                 </th>
                 <th colspan={2} style={{ border: 0 }}>
                   <div style={{ fontSize: 14, textAlign: 'center' }}>
@@ -370,7 +399,11 @@ export default class DriverSwipePrint extends PureComponent {
                       ##
                     </font>
                     <span>页/共</span>
-                    <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
+                    <font
+                      color="blue"
+                      style={{ textDecoration: 'underline blue' }}
+                      tdata="PageCount"
+                    >
                       ##
                     </font>
                     <span>页</span>
@@ -473,7 +506,7 @@ export default class DriverSwipePrint extends PureComponent {
       );
     }
   };
-  
+
   render() {
     const {
       loading,
@@ -484,11 +517,11 @@ export default class DriverSwipePrint extends PureComponent {
       message,
       isShip,
       dispatchName,
-      printPage
+      printPage,
     } = this.state;
     return (
       <div style={{ height: '100vh' }} onClick={() => this.empInputRef.focus()}>
-         <div id="printPage" style={{ display: 'none' }}>
+        <div id="printPage" style={{ display: 'none' }}>
           {printPage}
         </div>
         <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-15 11:13:21
+ * @LastEditTime: 2022-11-16 14:48:43
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -166,8 +166,8 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
       message.warn('请选中一条数据！');
       return;
     }
-    if (selectedRows[0].FEESTAT == 'DispatcherApproved') {
-      message.error('该申请已审批，不能驳回');
+    if (selectedRows[0].FEESTAT != 'Committed' || selectedRows[0].FEESTAT != 'Checked') {
+      message.error('该申请当前状态不是已提交或已审核，不能驳回');
       return;
     }
     this.setState({ showRejectedModal: true });
