@@ -112,10 +112,19 @@ export async function findLineSystemTreeByStoreCode(payload) {
   // }
   export async function addToNewLine(payload) {
     return request(
-      `/itms-schedule/itms-schedule/itms-schedule/LineSystem/addToNewLine/${payload.lineuuid}`,
+      `/itms-schedule/itms-schedule/lineShipAddress/addToNewLine`,
       {
         method: 'POST',
-        body: payload.addressIds,
+        body: payload,
+      }
+    );
+  }
+  export async function switchLineAddress(payload) {
+    return request(
+      `/itms-schedule/itms-schedule/lineShipAddress/switchLineAddress`,
+      {
+        method: 'POST',
+        body: payload,
       }
     );
   }
