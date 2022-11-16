@@ -1294,7 +1294,7 @@ export default [
           },
           {
             path: '/tmscode/vehicleweight',
-            name: '运管超限申请',
+            name: '配送超限申请',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/VehicleWeight/VehicleWeightForm',
             quickuuid: 'v_sj_vehicleweight_apply',
