@@ -1341,7 +1341,7 @@ export default [
         name: '运输执行',
         org: ['DISPATCH_CENTER'],
         authority: ['sjtms.exec'],
-        icon: 'icon-menu_yunshuguanli1',
+        icon: 'icon-menu_wuliusheshi',
         routes: [
           {
             path: '/tmsexec/checkin',
