@@ -19,7 +19,8 @@ import {
   inScheduleStore,
   batchDeleteByUuids,
   batchAddScheduleStorePool,
-  checkStoreExist
+  checkStoreExist,
+  switchLineAddress
 } from '@/services/sjtms/LineSystemHis';
 import {
   updateStoreAddressList
@@ -179,7 +180,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
       event.component = component;
     }
     
-    if(event.column.fieldName == 'TYPE'){
+    if(event.column.fieldName == 'TYPE' && this.state.canDragTable){
       const component = (
         <>
          <Button size='small' style={{color:'#3b77e3'}}  onClick={()=>this.fetchOperateSheculeStore(event.record)}>
@@ -447,6 +448,8 @@ export default class LineShipAddress extends QuickFormSearchPage {
         message.success("修改成功");
           this.setState({ modalVisible: false });
           this.getData(pageFilters);
+      }else{
+        this.getData(pageFilters);
       }
     })
    
@@ -568,6 +571,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
         {options}
       </Select> */}
                   <TreeSelect
+                   showSearch
                     allowClear={true}
                     optionFilterProp="children"
                     treeData={this.props.lineTreeData}
@@ -581,16 +585,16 @@ export default class LineShipAddress extends QuickFormSearchPage {
             </Row>
           </Form>
         </Modal>
-        {!systemLineFlag && <Button type="primary" icon="plus" onClick={()=>this.setState({isModalVisible:true})}>
+        {this.state.canDragTable && <Button type="primary" icon="plus" onClick={()=>this.setState({isModalVisible:true})}>
           待排门店
         </Button>}
-       {!systemLineFlag && <Button type="primary" icon="plus" onClick={this.handleAddStore}>
+       {this.state.canDragTable && <Button type="primary" icon="plus" onClick={this.handleAddStore}>
           添加门店
         </Button>} 
         {/* <Button type="primary" icon="plus" onClick={this.handleAddVendor}>
           添加供应商
         </Button> */}
-         {!systemLineFlag && <Button onClick={() => this.lineCreatePageModalRef.show()}>添加子路线</Button>}
+         {  <Button onClick={() => this.lineCreatePageModalRef.show()}>添加子路线</Button>}
         <CreatePageModal
           modal={{
             title: '添加子路线',
@@ -620,25 +624,49 @@ export default class LineShipAddress extends QuickFormSearchPage {
     this.setState({ lineValue: e });
   };
   handleAddToNewLine = async () => {
-    const { selectedRows, lineValue } = this.state;
-
-    let params = {
-      lineuuid: lineValue.value,
-      addressIds: selectedRows.map(e => e.UUID),
-    };
-    await addToNewLine(params).then(result => {
-      if (result.success) {
-        message.success('添加成功');
-      } else {
-        // message.error('添加失败');
-      }
-      this.setState({
-        lineValue: undefined,
-        lineData: [],
-        selectedRows: [],
-        lineModalVisible: false,
+    const { selectedRows, lineValue ,pageFilters,lineuuid,addToNewLine} = this.state;
+      console.log("sad",lineValue);
+    //true 添加到新线路
+    if(addToNewLine){
+      let params = {
+        lineUuid: lineValue.value,
+        addressIds: selectedRows.map(e => e.UUID),
+      };
+      await addToNewLine(params).then(result => {
+        if (result.success) {
+          message.success('添加成功');
+          this.getData(pageFilters);
+        } else {
+          // message.error('添加失败');
+        }
+        this.setState({
+          lineValue: undefined,
+          lineData: [],
+          selectedRows: [],
+          lineModalVisible: false,
+        });
       });
-    });
+    }else{
+      let params = {
+        sourceLineUuid: lineuuid,
+        targetLineUuid: lineValue.value,
+      };
+      await switchLineAddress(params).then(result => {
+        if (result.success) {
+          message.success('调换成功');
+          this.getData(pageFilters);
+        } else {
+          // message.error('添加失败');
+        }
+        this.setState({
+          lineValue: undefined,
+          lineData: [],
+          selectedRows: [],
+          lineModalVisible: false,
+        });
+      });
+    }
+   
   };
   //批量删除
   onBatchStoreDelete = async ()=>{
@@ -673,14 +701,27 @@ export default class LineShipAddress extends QuickFormSearchPage {
     const { buttonDisable } = this.state;
     return (<>
       {buttonDisable ? <Button onClick={this.tableSortSave}>排序并保存</Button> : <></>}
-      <Button onClick={()=>Modal.confirm({
+      {this.state.canDragTable &&
+       <><Button onClick={()=>Modal.confirm({
       title:"确定批量删除这"+this.state.selectedRows.length+"条吗？"
       ,onOk : ()=>{this.onBatchStoreDelete()}
-      }) }>批量移除</Button>
+      }) }>批量移除</Button> 
       <Button onClick={()=>Modal.confirm({
-      title:"确定移入这"+this.state.selectedRows.length+"条到待排池吗？"
-      ,onOk : ()=>{this.onBatchStorePool()}
-      })}>批量移入待排池</Button>
+        title:"确定移入这"+this.state.selectedRows.length+"条到待排池吗？"
+        ,onOk : ()=>{this.onBatchStorePool()}
+        })}>批量移入待排池</Button>
+      <Button onClick={()=>
+          this.setState({lineModalVisible:true,addToNewLine:false})
+      }>对调线路</Button>
+      <Button onClick={()=>{
+        if(this.state.selectedRows.length==0){
+          message.info("请选择记录")
+          return 
+        }
+        this.setState({lineModalVisible:true,addToNewLine:true})
+        }}>移入到新线路</Button>
+      </>
+      }
     </>
     );
   };
@@ -696,8 +737,8 @@ export default class LineShipAddress extends QuickFormSearchPage {
       record.LINECODE  = linecode;
       return record;
     });
-     
-    this.setState({ buttonDisable: true });
+    this.saveFormData(data.list);
+    //this.setState({ buttonDisable: true });
     //this.saveFormData(data.list);
   };
 

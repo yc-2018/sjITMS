@@ -506,6 +506,8 @@ export default class LineSystemSearchPage extends Component {
         this.setState({ uploading: false });
         if (result && result.success) {
           message.success('导入成功,共导入'+result.data+'家门店');
+        }else{
+          this.setState({errorMessage:result.message,errorMessageVisible:true});
         }
       });
     });
@@ -625,6 +627,17 @@ export default class LineSystemSearchPage extends Component {
                 </Button>
               </Upload>
             </Modal>
+            <Modal
+              title="错误提示"
+             visible={this.state.errorMessageVisible}
+              onOk={()=>this.setState({errorMessageVisible:false})}
+              onCancel={()=>this.setState({errorMessageVisible:false})}
+            >{
+              this.state.errorMessage?.split(",").map(e=>{
+                return <p>{e}</p>
+              })
+            }
+        </Modal>
             <Modal
               title="导入线路"
               visible={this.state.uploadLineVisible}
