@@ -442,12 +442,12 @@ export default class DispatchingCreatePage extends Component {
     // }
     //校验载重
     if (exceedWeight > 0) {
-      this.onConfirm('排车重量超' + (exceedWeight / 1000).toFixed(2) + 't,确定继续吗?');
+      this.onConfirm('排车重量超' + (exceedWeight / 1000).toFixed(3) + 't,确定继续吗?');
       return;
     }
     //校验容积
     if (exceedVolume > 0) {
-      this.onConfirm('排车体积超' + exceedVolume.toFixed(2) + 'm³,确定继续吗?');
+      this.onConfirm('排车体积超' + exceedVolume.toFixed(3) + 'm³,确定继续吗?');
       return;
     }
     this.onSave();

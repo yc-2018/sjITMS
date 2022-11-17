@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-16 17:32:24
+ * @LastEditTime: 2022-11-17 17:14:54
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -380,11 +380,11 @@ export default class OrderPoolPage extends Component {
         </Col>
         <Col span={4}>
           <Text> 体积:</Text>
-          <Text style={totalTextStyle}>{selectOrders.volume.toFixed(2)}</Text>
+          <Text style={totalTextStyle}>{selectOrders.volume}</Text>
         </Col>
         <Col span={4}>
           <Text> 重量:</Text>
-          <Text style={totalTextStyle}>{(selectOrders.weight / 1000).toFixed(2)}</Text>
+          <Text style={totalTextStyle}>{selectOrders.weight}</Text>
         </Col>
       </Row>
     );
@@ -413,8 +413,8 @@ export default class OrderPoolPage extends Component {
       realCartonCount: Math.round(sumBy(data.map(x => x.stillCartonCount)) * 100) / 100,
       realScatteredCount: Math.round(sumBy(data.map(x => x.stillScatteredCount)) * 100) / 100,
       realContainerCount: Math.round(sumBy(data.map(x => x.stillContainerCount)) * 100) / 100,
-      weight: Math.round(sumBy(data.map(x => Number(x.weight))) * 100) / 100,
-      volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
+      weight: Math.round(sumBy(data.map(x => Number(x.weight))) * 1000) / 1000,
+      volume: Math.round(sumBy(data.map(x => Number(x.volume)))) / 1000,
     };
   };
 
