@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-17 12:02:10
+ * @LastEditTime: 2022-11-17 14:04:12
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -54,12 +54,12 @@ export default class SchedulePage extends Component {
 
   componentDidMount() {
     this.setState({ loading: true });
-    this.getSchedules(this.state.activeTab);
     query({}).then(res => {
       if (res.success) {
         this.setState({ users: res.data.records });
       }
     });
+    this.getSchedules(this.state.activeTab, { creatorId: loginUser().uuid });
   }
   //刷新
   refreshTable = searchKeyValues => {

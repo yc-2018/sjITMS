@@ -625,7 +625,7 @@ export default class RyzeSettingDrowDown extends Component {
             display: 'flex',
             justifyContent: 'flex-end',
             position: 'absolute',
-            right: '2px',
+            right: '-2px',
             top: '-20px',
           }
         : {

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-17 12:03:42
+ * @LastEditTime: 2022-11-17 14:13:13
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleSearchForm.js
  */
@@ -72,7 +72,7 @@ export default class ScheduleSearchForm extends Component {
           <Col span={2}>
             <Button
               type={'primary'}
-              style={{ marginLeft: 12 }}
+              style={{ marginLeft: 5 }}
               loading={this.props.loading}
               htmlType="submit"
             >
