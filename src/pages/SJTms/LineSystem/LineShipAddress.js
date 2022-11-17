@@ -448,6 +448,8 @@ export default class LineShipAddress extends QuickFormSearchPage {
         message.success("修改成功");
           this.setState({ modalVisible: false });
           this.getData(pageFilters);
+      }else{
+        this.getData(pageFilters);
       }
     })
    
