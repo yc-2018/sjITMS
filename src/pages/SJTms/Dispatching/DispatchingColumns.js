@@ -581,6 +581,6 @@ export const pagination = {
   defaultPageSize: 200,
   size: 'small',
   showSizeChanger: true,
-  pageSizeOptions: ['20', '50', '100', '200', '500'],
+  pageSizeOptions: ['20', '50', '100', '200', '500', '1000'],
   showTotal: total => `共 ${total} 条`,
 };

@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-14 11:30:39
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-11-17 12:02:10
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -31,6 +31,7 @@ import {
   aborted,
   remove,
 } from '@/services/sjitms/ScheduleBill';
+import { query } from '@/services/account/User';
 import ScheduleCreatePage from '@/pages/SJTms/Schedule/ScheduleCreatePage';
 import WeightApplyModal from './WeightApplyModal';
 
@@ -48,11 +49,17 @@ export default class SchedulePage extends Component {
     activeTab: 'Saved',
     editPageVisible: false,
     scheduleDetail: {},
+    users: [],
   };
 
   componentDidMount() {
     this.setState({ loading: true });
     this.getSchedules(this.state.activeTab);
+    query({}).then(res => {
+      if (res.success) {
+        this.setState({ users: res.data.records });
+      }
+    });
   }
   //刷新
   refreshTable = searchKeyValues => {
@@ -366,6 +373,7 @@ export default class SchedulePage extends Component {
       approvedRowKeys,
       abortedRowKeys,
       activeTab,
+      users,
     } = this.state;
 
     const buildOperations = () => {
@@ -424,7 +432,7 @@ export default class SchedulePage extends Component {
           tabBarExtraContent={buildOperations()}
         >
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>排车单</Text>} key="Saved">
-            <ScheduleSearchForm refresh={this.refreshTable} />
+            <ScheduleSearchForm refresh={this.refreshTable} users={users} />
             <Dropdown
               overlay={
                 <Menu>
@@ -488,7 +496,7 @@ export default class SchedulePage extends Component {
             />
           </TabPane>
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已批准</Text>} key="Approved">
-            <ScheduleSearchForm refresh={this.refreshTable} />
+            <ScheduleSearchForm refresh={this.refreshTable} users={users} />
             <div id="printSchedule" style={{ display: 'none' }}>
               {printPage}
             </div>
@@ -508,7 +516,7 @@ export default class SchedulePage extends Component {
             />
           </TabPane>
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已作废</Text>} key="Aborted">
-            <ScheduleSearchForm refresh={this.refreshTable} />
+            <ScheduleSearchForm refresh={this.refreshTable} users={users} />
             <DispatchingTable
               comId="abortedSchedule"
               pagination={pagination}
