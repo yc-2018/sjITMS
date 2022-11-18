@@ -838,7 +838,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
               <td style={{ border: 0, paddingTop: 10 }} colSpan={8}>
                 <div style={{ paddingLeft: 20 }}>
                   总体积(m³)：
-                  {schedule.VEHICLEVOLUME}
+                  {schedule.VOLUME}
                 </div>
               </td>
               <td style={{ border: 0, textAlign: 'right', paddingTop: 10 }} colSpan={8}>

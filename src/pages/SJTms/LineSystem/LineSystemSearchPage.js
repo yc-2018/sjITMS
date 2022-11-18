@@ -505,7 +505,8 @@ export default class LineSystemSearchPage extends Component {
       }).then(result => {
         this.setState({ uploading: false });
         if (result && result.success) {
-          message.success('导入成功,共导入'+result.data+'家门店');
+          //message.success('导入成功,共导入'+result.data+'家门店');
+          this.setState({errorMessage:'导入成功,共导入'+result.data+'家门店',errorMessageVisible:true});
         }else{
           this.setState({errorMessage:result.message,errorMessageVisible:true});
         }
