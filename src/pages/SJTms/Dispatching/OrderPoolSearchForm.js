@@ -15,6 +15,7 @@ import {
   SimpleSelect,
   SimpleRadio,
   SimpleAutoComplete,
+  SimpleAutoCompleteEasy,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { queryColumns } from '@/services/quick/Quick';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
@@ -159,14 +160,25 @@ export default class OrderPoolSearchForm extends Component {
       case 'radio':
         return <SimpleRadio {...searchProperties} />;
       case 'sel_search':
+        if (searchField.searchCondition == 'in' || searchField.searchCondition == 'notIn') {
+          return (
+            <SimpleSelect
+              showSearch
+              allowClear
+              placeholder={'请输入' + searchField.fieldTxt}
+              reportCode={this.props.reportCode}
+              searchField={searchField}
+              isOrgQuery={this.props.isOrgQuery}
+            />
+          );
+        }
         return (
-          <SimpleSelect
-            showSearch
-            allowClear
+          <SimpleAutoCompleteEasy
             placeholder={'请输入' + searchField.fieldTxt}
+            reportCode={this.props.reportCode}
             searchField={searchField}
-            reportCode={this.state.quickuuid}
-            isOrgQuery={isOrgQuery}
+            isOrgQuery={this.props.isOrgQuery}
+            {...searchProperties}
           />
         );
       case 'auto_complete':
