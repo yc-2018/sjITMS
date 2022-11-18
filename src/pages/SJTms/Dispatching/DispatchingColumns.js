@@ -195,36 +195,42 @@ export const OrderDetailColumns = [
   {
     title: '整件数',
     dataIndex: 'stillCartonCount',
+    sorter: true,
     width: 60,
     render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
     title: '散件数',
     dataIndex: 'stillScatteredCount',
+    sorter: true,
     width: 60,
     render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
     title: '周转箱',
     dataIndex: 'stillCartonCount',
+    sorter: true,
     width: 60,
     render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
     title: '体积',
     dataIndex: 'volume',
+    sorter: true,
     width: 80,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '重量',
     dataIndex: 'weight',
+    sorter: true,
     width: 80,
     render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
   },
   {
     title: '金额',
     dataIndex: 'amount',
+    sorter: true,
     width: 80,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
@@ -267,6 +273,7 @@ export const CreatePageOrderColumns = [
   {
     title: '来源单号',
     dataIndex: 'sourceNum',
+    sorter: true,
     width: 120,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
@@ -283,12 +290,14 @@ export const CreatePageOrderColumns = [
   {
     title: '订单号',
     dataIndex: 'billNumber',
+    sorter: true,
     width: 140,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '收货方',
     dataIndex: 'deliveryPoint',
+    sorter: true,
     width: 120,
     render: val => {
       return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
@@ -296,6 +305,7 @@ export const CreatePageOrderColumns = [
   },
   {
     title: '收货方地址',
+    sorter: true,
     width: 120,
     render: (val, record) => {
       return record.deliveryPoint ? (
@@ -308,30 +318,35 @@ export const CreatePageOrderColumns = [
   {
     title: '单据类型',
     dataIndex: 'orderType',
+    sorter: true,
     width: 80,
     render: val => (val ? <EllipsisCol colValue={OrderType[val].caption} /> : <Empty />),
   },
   {
     title: '整件数',
     dataIndex: 'stillCartonCount',
+    sorter: true,
     width: 60,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '散件数',
     dataIndex: 'stillScatteredCount',
+    sorter: true,
     width: 60,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '周转箱',
     dataIndex: 'stillContainerCount',
+    sorter: true,
     width: 60,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '体积',
     dataIndex: 'volume',
+    sorter: true,
     width: 60,
     sorter: true,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
@@ -339,6 +354,7 @@ export const CreatePageOrderColumns = [
   {
     title: '重量',
     dataIndex: 'weight',
+    sorter: true,
     width: 60,
     sorter: true,
     render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
@@ -349,54 +365,63 @@ export const ScheduleColumns = [
   {
     title: '单号',
     dataIndex: 'billNumber',
+    sorter: true,
     width: 150,
     sorter: true,
   },
   {
     title: '送货点',
     dataIndex: 'deliveryPointCount',
+    sorter: true,
     width: 80,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '车辆信息',
     dataIndex: 'vehicle',
+    sorter: true,
     width: 120,
     render: val => (val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />),
   },
   {
     title: '司机',
     dataIndex: 'carrier',
+    sorter: true,
     width: 100,
     render: val => (val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />),
   },
   {
     title: '整件数',
     dataIndex: 'cartonCount',
+    sorter: true,
     width: 100,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '散件数',
     dataIndex: 'scatteredCount',
+    sorter: true,
     width: 100,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '周转箱',
     dataIndex: 'containerCount',
+    sorter: true,
     width: 100,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '体积',
     dataIndex: 'volume',
+    sorter: true,
     width: 80,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '重量',
     dataIndex: 'weight',
+    sorter: true,
     width: 80,
     render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
   },
@@ -409,12 +434,14 @@ export const ScheduleColumns = [
   {
     title: '创建人',
     dataIndex: 'createInfo',
+    sorter: true,
     width: 80,
     render: val => (val ? <span>{val.operator.fullName}</span> : <Empty />),
   },
   {
     title: '创建时间',
     dataIndex: 'createTime',
+    sorter: true,
     width: 80,
     render: (_, record) =>
       record.createInfo.time ? <span>{record.createInfo.time}</span> : <Empty />,
@@ -428,6 +455,7 @@ export const ScheduleColumns = [
   {
     title: '最后修改时间',
     dataIndex: 'lastModifyTime',
+    sorter: true,
     width: 80,
     render: (_, record) =>
       record.lastModifyInfo.time ? <span>{record.lastModifyInfo.time}</span> : <Empty />,
@@ -437,6 +465,7 @@ export const ScheduleDetailColumns = [
   {
     title: '订单号',
     dataIndex: 'orderNumber',
+    sorter: true,
     width: 150,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
@@ -453,48 +482,56 @@ export const ScheduleDetailColumns = [
   {
     title: '来源单号',
     dataIndex: 'sourceNum',
+    sorter: true,
     width: 120,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '送货点',
     dataIndex: 'deliveryPoint',
+    sorter: true,
     width: 150,
     render: val => (val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />),
   },
   {
     title: '整件数',
     dataIndex: 'cartonCount',
+    sorter: true,
     width: 80,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '散件数',
     dataIndex: 'scatteredCount',
+    sorter: true,
     width: 80,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '周转箱',
     dataIndex: 'containerCount',
+    sorter: true,
     width: 80,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '体积',
     dataIndex: 'volume',
+    sorter: true,
     width: 80,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '重量',
     dataIndex: 'weight',
+    sorter: true,
     width: 80,
     render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
   },
   {
     title: '金额',
     dataIndex: 'amount',
+    sorter: true,
     width: 80,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
@@ -529,6 +566,7 @@ export const ScheduleDetailCollectColumns = [
   {
     title: '送货地址',
     dataIndex: 'address',
+    sorter: true,
     width: 150,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
