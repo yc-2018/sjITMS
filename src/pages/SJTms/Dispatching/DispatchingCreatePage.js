@@ -447,7 +447,7 @@ export default class DispatchingCreatePage extends Component {
     }
     //校验容积
     if (exceedVolume > 0) {
-      this.onConfirm('排车体积超' + exceedVolume.toFixed(3) + 'm³,确定继续吗?');
+      this.onConfirm('排车体积超' + exceedVolume.toFixed(2) + 'm³,确定继续吗?');
       return;
     }
     this.onSave();
@@ -674,7 +674,7 @@ export default class DispatchingCreatePage extends Component {
     const remVolume = (cartonCount / record.stillCartonCount) * volume;
     const remWeight = (cartonCount / record.stillCartonCount) * weight;
     const volumes =
-      Math.round((sumBy(orders.map(x => x.volume)) - (volume - remVolume)) * 1000) / 1000;
+      Math.round((sumBy(orders.map(x => x.volume)) - (volume - remVolume)) * 100) / 100;
     const weights = Math.round(sumBy(orders.map(x => x.weight)) - (weight - remWeight)) / 1000;
     confirm({
       title: '提示',
@@ -830,7 +830,7 @@ export default class DispatchingCreatePage extends Component {
                   <div style={{ flex: 1 }}>
                     <div>体积</div>
                     <div className={dispatchingStyles.orderTotalNumber}>
-                      {Math.round(totalData.volume * 1000) / 1000}
+                      {Math.round(totalData.volume * 100) / 100}
                       m³
                     </div>
                   </div>

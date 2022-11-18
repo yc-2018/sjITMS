@@ -176,12 +176,14 @@ export const OrderDetailColumns = [
   {
     title: '运输单号',
     dataIndex: 'billNumber',
+    sorter: true,
     width: 120,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '来源单号',
     dataIndex: 'sourceNum',
+    sorter: true,
     width: 120,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
@@ -348,7 +350,6 @@ export const CreatePageOrderColumns = [
     dataIndex: 'volume',
     sorter: true,
     width: 60,
-    sorter: true,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
@@ -367,7 +368,6 @@ export const ScheduleColumns = [
     dataIndex: 'billNumber',
     sorter: true,
     width: 150,
-    sorter: true,
   },
   {
     title: '送货点',
@@ -428,8 +428,59 @@ export const ScheduleColumns = [
   {
     title: '总金额',
     dataIndex: 'totalAmount',
+    sorter: true,
     width: 100,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+  },
+  {
+    title: '总件数',
+    dataIndex: 'realCartonCount',
+    sorter: true,
+    width: 80,
+    render: (_, record) => (
+      <EllipsisCol
+        colValue={
+          Number(record.realCartonCount) +
+          Number(record.realScatteredCount) +
+          Number(record.realContainerCount) * 2
+        }
+      />
+    ),
+  },
+  {
+    title: '承重',
+    dataIndex: 'vehicleInfo',
+    sorter: true,
+    width: 80,
+    render: val => (val ? <EllipsisCol colValue={val.bearweight / 1000} /> : <Empty />),
+  },
+  {
+    title: '装载率',
+    dataIndex: 'vehicleInfo',
+    sorter: true,
+    width: 80,
+    render: (val, record) =>
+      val ? (
+        <EllipsisCol colValue={Math.round((record.weight / val.bearweight) * 10000) / 100 + '%'} />
+      ) : (
+        <Empty />
+      ),
+  },
+  {
+    title: '车辆容积',
+    dataIndex: 'vehicleInfo',
+    sorter: true,
+    width: 80,
+    render: val =>
+      val ? (
+        <EllipsisCol
+          colValue={
+            Math.round(((val.width * val.height * val.length) / 1000000) * val.bearvolumerate) / 100
+          }
+        />
+      ) : (
+        <Empty />
+      ),
   },
   {
     title: '创建人',
@@ -449,6 +500,7 @@ export const ScheduleColumns = [
   {
     title: '最后修改人',
     dataIndex: 'lastModifyInfo',
+    sorter: true,
     width: 80,
     render: val => (val ? <span>{val.operator.fullName}</span> : <Empty />),
   },
@@ -538,6 +590,7 @@ export const ScheduleDetailColumns = [
   {
     title: '货主',
     dataIndex: 'owner',
+    sorter: true,
     width: 100,
     render: val => (val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />),
   },
