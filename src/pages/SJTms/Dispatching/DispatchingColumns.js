@@ -276,7 +276,7 @@ export const CreatePageOrderColumns = [
     title: '来源单号',
     dataIndex: 'sourceNum',
     sorter: true,
-    width: 120,
+    width: 100,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
@@ -284,7 +284,7 @@ export const CreatePageOrderColumns = [
     dataIndex: 'archLine',
     sorter: true,
     sorterCode: true,
-    width: 120,
+    width: 100,
     render: val => {
       return val ? <EllipsisCol colValue={val.code} /> : <Empty />;
     },
@@ -293,14 +293,14 @@ export const CreatePageOrderColumns = [
     title: '订单号',
     dataIndex: 'billNumber',
     sorter: true,
-    width: 140,
+    width: 100,
     render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '收货方',
     dataIndex: 'deliveryPoint',
     sorter: true,
-    width: 120,
+    width: 180,
     render: val => {
       return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
     },
@@ -308,7 +308,7 @@ export const CreatePageOrderColumns = [
   {
     title: '收货方地址',
     sorter: true,
-    width: 120,
+    width: 180,
     render: (val, record) => {
       return record.deliveryPoint ? (
         <EllipsisCol colValue={record.deliveryPoint.address} />
@@ -449,38 +449,24 @@ export const ScheduleColumns = [
   },
   {
     title: '承重',
-    dataIndex: 'vehicleInfo',
+    dataIndex: 'vehicleWeight',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val.bearweight / 1000} /> : <Empty />),
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '装载率',
-    dataIndex: 'vehicleInfo',
+    dataIndex: 'bearweight',
     sorter: true,
     width: 80,
-    render: (val, record) =>
-      val ? (
-        <EllipsisCol colValue={Math.round((record.weight / val.bearweight) * 10000) / 100 + '%'} />
-      ) : (
-        <Empty />
-      ),
+    render: val => (val ? <EllipsisCol colValue={val + '%'} /> : <Empty />),
   },
   {
     title: '车辆容积',
-    dataIndex: 'vehicleInfo',
+    dataIndex: 'bearvolume',
     sorter: true,
     width: 80,
-    render: val =>
-      val ? (
-        <EllipsisCol
-          colValue={
-            Math.round(((val.width * val.height * val.length) / 1000000) * val.bearvolumerate) / 100
-          }
-        />
-      ) : (
-        <Empty />
-      ),
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
   },
   {
     title: '创建人',

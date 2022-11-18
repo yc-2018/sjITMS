@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-17 14:04:12
+ * @LastEditTime: 2022-11-18 19:00:13
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -89,6 +89,19 @@ export default class SchedulePage extends Component {
               return order;
             });
             schedule.warning = schedule.details.some(x => x.warning);
+          }
+          if (schedule.vehicleInfo) {
+            schedule.vehicleWeight = (schedule.vehicleInfo.bearweight || 0) / 1000;
+            schedule.bearweight =
+              Math.round((schedule.weight / schedule.vehicleInfo.bearweight || 0) * 10000) / 100;
+            schedule.bearvolume =
+              Math.round(
+                (((schedule.vehicleInfo.width || 0) *
+                  (schedule.vehicleInfo.height || 0) *
+                  (schedule.vehicleInfo.length || 0)) /
+                  1000000) *
+                  (schedule.vehicleInfo.bearvolumerate || 0)
+              ) / 100;
           }
           return schedule;
         });
