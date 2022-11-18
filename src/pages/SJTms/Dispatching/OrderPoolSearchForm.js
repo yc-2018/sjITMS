@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-11 17:25:53
+ * @LastEditTime: 2022-11-18 09:31:40
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -35,6 +35,7 @@ export default class OrderPoolSearchForm extends Component {
     pageFilter: {},
     selectFields: [],
     advancedFields: [],
+    isOrgQuery: [{ field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid }],
   };
 
   async componentDidMount() {
@@ -166,18 +167,19 @@ export default class OrderPoolSearchForm extends Component {
               showSearch
               allowClear
               placeholder={'请输入' + searchField.fieldTxt}
-              reportCode={this.props.reportCode}
+              reportCode={this.state.quickuuid}
               searchField={searchField}
-              isOrgQuery={this.props.isOrgQuery}
+              isOrgQuery={this.state.isOrgQuery}
             />
           );
         }
         return (
           <SimpleAutoCompleteEasy
             placeholder={'请输入' + searchField.fieldTxt}
-            reportCode={this.props.reportCode}
+            allowClear
+            reportCode={this.state.quickuuid}
             searchField={searchField}
-            isOrgQuery={this.props.isOrgQuery}
+            isOrgQuery={this.state.isOrgQuery}
             {...searchProperties}
           />
         );
