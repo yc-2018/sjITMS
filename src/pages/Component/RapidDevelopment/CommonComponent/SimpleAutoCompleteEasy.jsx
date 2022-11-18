@@ -57,6 +57,7 @@ export default class SimpleAutoCompleteEasy extends Component {
         onSelect={this.onSelect}
         onChange={this.onChange}
         value={this.state.value}
+        {...this.props}
       >
         {children}
       </AutoComplete>
