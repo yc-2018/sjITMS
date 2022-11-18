@@ -89,6 +89,7 @@ export default class SimpleSelect extends PureComponent {
   onSearch = value => {
     if (this.props.isOrgQuery) {
       const searchField = this.props.searchField;
+      console.log('searchField', searchField);
       let params = new Array();
       params.push({
         field: searchField.fieldName,
