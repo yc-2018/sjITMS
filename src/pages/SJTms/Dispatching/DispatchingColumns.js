@@ -244,6 +244,70 @@ export const OrderDetailColumns = [
   },
 ];
 
+export const VehicleColumns = [
+  {
+    title: '车辆代码',
+    dataIndex: 'CODE',
+    sorter: true,
+    width: 80,
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+  },
+  {
+    title: '车牌号',
+    dataIndex: 'PLATENUMBER',
+    sorter: true,
+    width: 100,
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+  },
+  {
+    title: '司机',
+    dataIndex: 'DRIVERNAME',
+    sorter: true,
+    width: 80,
+    render: val => {
+      return val ? <EllipsisCol colValue={val} /> : <Empty />;
+    },
+  },
+  {
+    title: '送货员',
+    dataIndex: 'DELIVERYMAN',
+    sorter: true,
+    width: 80,
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+  },
+  {
+    title: '限载重量',
+    dataIndex: 'BEARWEIGHT',
+    sorter: true,
+    width: 80,
+    render: val => {
+      return val ? <EllipsisCol colValue={val} /> : <Empty />;
+    },
+  },
+  {
+    title: '限制体积',
+    dataIndex: 'BEARVOLUME',
+    sorter: true,
+    width: 80,
+    render: (val, record) =>
+      val ? <EllipsisCol colValue={Math.round(val * record.BEARVOLUMERATE) / 100} /> : <Empty />,
+  },
+  {
+    title: '当前任务数',
+    dataIndex: 'BILLCOUNTS',
+    sorter: true,
+    width: 80,
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+  },
+  {
+    title: '组队',
+    dataIndex: 'VEHICLEGROUP',
+    sorter: true,
+    width: 80,
+    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+  },
+];
+
 const OrderType = {
   Delivery: {
     name: 'Delivery',

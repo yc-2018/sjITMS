@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-29 14:03:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-10-28 09:24:28
+ * @LastEditTime: 2022-11-19 09:09:59
  * @Description: 配送调度主页面
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\Dispatching.js
  */
@@ -83,7 +83,7 @@ export default class Dispatching extends Component {
           >
             <Content className={dispatchingStyles.dispatchingContent}>
               <Layout className={dispatchingStyles.dispatchingLayout}>
-                <Row gutter={[8, 8]}>
+                <Row gutter={[5, 5]}>
                   <Col span={12}>
                     <div className={dispatchingStyles.dispatchingCard}>
                       <OrderPoolPage
@@ -110,7 +110,7 @@ export default class Dispatching extends Component {
                     </div>
                   </Col>
                   <Col span={12}>
-                    <div className={dispatchingStyles.dispatchingCard}>
+                    <div className={dispatchingStyles.dispatchingBottomCard}>
                       <PendingPage
                         scheduleRowKeys={this.getScheduleRowKeys}
                         isOrderCollect={this.state.isOrderCollect}
@@ -122,7 +122,7 @@ export default class Dispatching extends Component {
                     </div>
                   </Col>
                   <Col span={12}>
-                    <div className={dispatchingStyles.dispatchingCard}>
+                    <div className={dispatchingStyles.dispatchingBottomCard}>
                       <ScheduleDetailPage
                         ref={ref => (this.scheduleDetailPageRef = ref)}
                         isOrderCollect={this.state.isOrderCollect}

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-18 10:45:50
+ * @LastEditTime: 2022-11-19 16:06:50
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -14,32 +14,40 @@ import {
   OrderColumns,
   OrderCollectColumns,
   OrderDetailColumns,
+  VehicleColumns,
   pagination,
 } from './DispatchingColumns';
 import OrderPoolSearchForm from './OrderPoolSearchForm';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import DispatchMap from '@/pages/SJTms/MapDispatching/dispatching/DispatchingMap';
+import VehicleSearchForm from './VehicleSearchForm';
 import dispatchingStyles from './Dispatching.less';
-import { queryAuditedOrder, getOrderByStat, savePending } from '@/services/sjitms/OrderBill';
+import { queryAuditedOrder, savePending } from '@/services/sjitms/OrderBill';
+import { queryData } from '@/services/quick/Quick';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
-import { groupBy, sumBy, uniqBy, isEmpty } from 'lodash';
+import { groupBy, sumBy, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
-
+const isOrgQuery = [
+  { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+  { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
+];
 export default class OrderPoolPage extends Component {
   state = {
     loading: false,
     auditedData: [],
     searchPagination: false,
     pageFilter: [],
+    vehiclePagination: false,
+    vehicleFilter: [],
     auditedCollectData: [],
-    scheduledData: [],
+    vehicleData: [],
     auditedParentRowKeys: [],
     auditedRowKeys: [],
-    scheduledRowKeys: [],
+    vehicleRowKeys: [],
     activeTab: 'Audited',
   };
 
@@ -56,8 +64,8 @@ export default class OrderPoolPage extends Component {
   refreshTable = () => {
     const { activeTab } = this.state;
     switch (activeTab) {
-      case 'Scheduled':
-        this.getScheduledOrders(activeTab);
+      case 'Vehicle':
+        this.refreshVehiclePool();
         break;
       default:
         this.refreshOrderPool();
@@ -77,10 +85,6 @@ export default class OrderPoolPage extends Component {
         pageFilter = params;
       }
     }
-    const isOrgQuery = [
-      { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
-      { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
-    ];
     if (sorter && sorter.column)
       filter.order =
         (sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey) +
@@ -91,7 +95,7 @@ export default class OrderPoolPage extends Component {
       filter.pageSize = pages.pageSize;
     } else {
       filter.page = searchPagination.current;
-      filter.pageSize = searchPagination.pageSize || 200;
+      filter.pageSize = searchPagination.pageSize || 100;
     }
     filter.superQuery.queryParams = [
       ...pageFilter,
@@ -115,7 +119,7 @@ export default class OrderPoolPage extends Component {
           auditedCollectData: this.groupData(data),
           auditedParentRowKeys: [],
           auditedRowKeys: [],
-          scheduledRowKeys: [],
+          vehicleRowKeys: [],
           activeTab: 'Audited',
         });
       }
@@ -124,18 +128,53 @@ export default class OrderPoolPage extends Component {
     });
   };
 
-  //获取已排运输订单
-  getScheduledOrders = activeKey => {
-    this.setState({ activeTab: activeKey, loading: true });
-    getOrderByStat(activeKey).then(response => {
+  refreshVehiclePool = (params, pages, sorter) => {
+    this.setState({ loading: true });
+    let { vehicleFilter, vehiclePagination } = this.state;
+    let filter = { superQuery: { matchType: 'and', queryParams: [] } };
+    if (params) {
+      if (params.superQuery) {
+        filter = params;
+        vehicleFilter = params.superQuery.queryParams;
+      } else {
+        vehicleFilter = params;
+      }
+    }
+    if (sorter && sorter.column)
+      filter.order =
+        (sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey) +
+        ',' +
+        sorter.order;
+    if (pages) {
+      filter.page = pages.current;
+      filter.pageSize = pages.pageSize;
+    } else {
+      filter.page = vehiclePagination.current;
+      filter.pageSize = vehiclePagination.pageSize || 100;
+    }
+    filter.superQuery.queryParams = [...vehicleFilter, ...isOrgQuery];
+    filter.quickuuid = 'v_sj_itms_vehicle_stat';
+    queryData(filter).then(response => {
       if (response.success) {
+        vehiclePagination = {
+          ...pagination,
+          total: response.data.paging.recordCount,
+          pageSize: response.data.paging.pageSize,
+          current: response.data.page,
+          showTotal: total => `共 ${total} 条`,
+        };
+        let vehicleData = response.data.records ? response.data.records : [];
+        vehicleData = vehicleData.map(vehicle => {
+          return { ...vehicle, uuid: vehicle.UUID };
+        });
         this.setState({
-          loading: false,
-          scheduledData: response.data,
+          vehiclePagination,
+          vehicleData,
           auditedRowKeys: [],
-          scheduledRowKeys: [],
+          vehicleRowKeys: [],
         });
       }
+      this.setState({ activeTab: 'Vehicle', loading: false, vehicleFilter });
     });
   };
 
@@ -173,8 +212,8 @@ export default class OrderPoolPage extends Component {
   //标签页切换事件
   handleTabChange = activeKey => {
     switch (activeKey) {
-      case 'Scheduled':
-        this.getScheduledOrders(activeKey);
+      case 'Vehicle':
+        this.refreshVehiclePool();
         break;
       default:
         this.setState({ activeTab: activeKey });
@@ -185,8 +224,8 @@ export default class OrderPoolPage extends Component {
   //表格行选择
   tableChangeRows = (tableType, selectedRowKeys) => {
     switch (tableType) {
-      case 'Scheduled':
-        this.setState({ scheduledRowKeys: selectedRowKeys });
+      case 'Vehicle':
+        this.setState({ vehicleRowKeys: selectedRowKeys });
         break;
       default:
         const { auditedData } = this.state;
@@ -231,36 +270,36 @@ export default class OrderPoolPage extends Component {
       message.error('提货类型运输订单不能与其它类型订单混排，请检查！');
       return;
     }
-    //不可共配校验
-    let owners = orders.map(x => {
-      return { ...x.owner, noJointlyOwnerCodes: x.noJointlyOwnerCode };
-    });
-    owners = uniqBy(owners, 'uuid');
-    const checkOwners = owners.filter(x => x.noJointlyOwnerCodes);
-    let noJointlyOwner = undefined;
-    checkOwners.forEach(owner => {
-      //不可共配货主
-      const noJointlyOwnerCodes = owner.noJointlyOwnerCodes.split(',');
-      const noJointlyOwners = owners.filter(
-        x => noJointlyOwnerCodes.indexOf(x.code) != -1 && x.code != owner.code
-      );
-      if (noJointlyOwners.length > 0) {
-        noJointlyOwner = {
-          ownerName: owner.name,
-          owners: noJointlyOwners.map(x => x.name).join(','),
-        };
-      }
-    });
-    if (noJointlyOwner != undefined) {
-      message.error(
-        '货主：' +
-          noJointlyOwner.ownerName +
-          '与[' +
-          noJointlyOwner.owners +
-          ']不可共配，请检查货主配置!'
-      );
-      return;
-    }
+    // //不可共配校验
+    // let owners = orders.map(x => {
+    //   return { ...x.owner, noJointlyOwnerCodes: x.noJointlyOwnerCode };
+    // });
+    // owners = uniqBy(owners, 'uuid');
+    // const checkOwners = owners.filter(x => x.noJointlyOwnerCodes);
+    // let noJointlyOwner = undefined;
+    // checkOwners.forEach(owner => {
+    //   //不可共配货主
+    //   const noJointlyOwnerCodes = owner.noJointlyOwnerCodes.split(',');
+    //   const noJointlyOwners = owners.filter(
+    //     x => noJointlyOwnerCodes.indexOf(x.code) != -1 && x.code != owner.code
+    //   );
+    //   if (noJointlyOwners.length > 0) {
+    //     noJointlyOwner = {
+    //       ownerName: owner.name,
+    //       owners: noJointlyOwners.map(x => x.name).join(','),
+    //     };
+    //   }
+    // });
+    // if (noJointlyOwner != undefined) {
+    //   message.error(
+    //     '货主：' +
+    //       noJointlyOwner.ownerName +
+    //       '与[' +
+    //       noJointlyOwner.owners +
+    //       ']不可共配，请检查货主配置!'
+    //   );
+    //   return;
+    // }
     this.createPageModalRef.show(false, orders);
   };
 
@@ -314,6 +353,15 @@ export default class OrderPoolPage extends Component {
     this.createPageModalRef.show(false, orders);
   };
 
+  //创建排车单
+  createSchedule = () => {
+    const { vehicleRowKeys, vehicleData } = this.state;
+    if (vehicleRowKeys.length != 1) {
+      message.warning('请选择车辆！');
+      return;
+    }
+  };
+
   //添加到待定池
   handleAddPending = () => {
     const { auditedRowKeys } = this.state;
@@ -352,39 +400,42 @@ export default class OrderPoolPage extends Component {
   };
 
   //汇总数据
-  buildTitle = () => {
+  drawCollect = footer => {
     const { totalOrder } = this.props;
-    let selectOrders = this.groupByOrder(totalOrder);
-    const totalTextStyle = { fontSize: 16, fontWeight: 700, marginLeft: 2, color: '#333' };
+    const { auditedData } = this.state;
+    const orders = this.groupByOrder(footer ? auditedData : totalOrder);
+    const totalTextStyle = footer
+      ? {}
+      : { fontSize: 16, fontWeight: 700, marginLeft: 2, color: '#333' };
     return (
       <Row type="flex" style={{ fontSize: 14 }}>
         <Col span={4}>
           <Text> 总件数:</Text>
           <Text style={totalTextStyle}>
-            {Number(selectOrders.realCartonCount) +
-              Number(selectOrders.realScatteredCount) +
-              Number(selectOrders.realContainerCount) * 2}
+            {Number(orders.realCartonCount) +
+              Number(orders.realScatteredCount) +
+              Number(orders.realContainerCount) * 2}
           </Text>
         </Col>
         <Col span={4}>
           <Text> 整件:</Text>
-          <Text style={totalTextStyle}>{selectOrders.realCartonCount}</Text>
+          <Text style={totalTextStyle}>{orders.realCartonCount}</Text>
         </Col>
         <Col span={4}>
           <Text> 散件:</Text>
-          <Text style={totalTextStyle}>{selectOrders.realScatteredCount}</Text>
+          <Text style={totalTextStyle}>{orders.realScatteredCount}</Text>
         </Col>
         <Col span={4}>
           <Text> 周转筐:</Text>
-          <Text style={totalTextStyle}>{selectOrders.realContainerCount}</Text>
+          <Text style={totalTextStyle}>{orders.realContainerCount}</Text>
         </Col>
         <Col span={4}>
           <Text> 体积:</Text>
-          <Text style={totalTextStyle}>{selectOrders.volume}</Text>
+          <Text style={totalTextStyle}>{orders.volume}</Text>
         </Col>
         <Col span={4}>
           <Text> 重量:</Text>
-          <Text style={totalTextStyle}>{selectOrders.weight}</Text>
+          <Text style={totalTextStyle}>{orders.weight}</Text>
         </Col>
       </Row>
     );
@@ -425,16 +476,21 @@ export default class OrderPoolPage extends Component {
       auditedRowKeys,
       auditedData,
       searchPagination,
+      vehiclePagination,
       auditedCollectData,
-      scheduledRowKeys,
-      scheduledData,
+      vehicleRowKeys,
+      vehicleData,
       activeTab,
     } = this.state;
     const { isOrderCollect } = this.props;
     const buildOperations = () => {
       switch (activeTab) {
-        case 'Scheduled':
-          return undefined;
+        case 'Vehicle':
+          return (
+            <Button type={'primary'} onClick={this.createSchedule}>
+              生成排车单
+            </Button>
+          );
         default:
           return (
             <>
@@ -481,8 +537,9 @@ export default class OrderPoolPage extends Component {
               childSelectedRowKeys={auditedRowKeys}
               columns={OrderCollectColumns}
               nestColumns={OrderDetailColumns}
-              scrollY="calc(68vh - 220px)"
-              title={this.buildTitle}
+              scrollY="calc(75vh - 235px)"
+              title={() => this.drawCollect(false)}
+              footer={() => this.drawCollect(true)}
             />
           ) : (
             <DispatchingTable
@@ -497,8 +554,9 @@ export default class OrderPoolPage extends Component {
               changeSelectRows={selectedRowKeys => this.tableChangeRows('Audited', selectedRowKeys)}
               selectedRowKeys={auditedRowKeys}
               columns={OrderColumns}
-              scrollY="calc(68vh - 220px)"
-              title={this.buildTitle}
+              scrollY="calc(75vh - 235px)"
+              title={() => this.drawCollect(false)}
+              footer={() => this.drawCollect(true)}
             />
           )}
           {auditedData.length == 0 ? (
@@ -557,25 +615,22 @@ export default class OrderPoolPage extends Component {
             onRef={node => (this.dispatchMapRef = node)}
           />
         </TabPane>
-        <TabPane
-          tab={<Text className={dispatchingStyles.cardTitle}>已排订单</Text>}
-          key="Scheduled"
-        >
-          {/* 已排列表 */}
+        <TabPane tab={<Text className={dispatchingStyles.cardTitle}>运力池</Text>} key="Vehicle">
+          <VehicleSearchForm refresh={this.refreshVehiclePool} />
+          {/* 运力池 */}
           <DispatchingTable
-            comId="scheduleOrder"
+            comId="vehicles"
             clickRow
-            pagination={pagination}
+            pagination={vehiclePagination || false}
             loading={loading}
-            dataSource={scheduledData}
-            refreshDataSource={scheduledData => {
-              this.tableChangeRows('Scheduled', []);
-              this.setState({ scheduledData });
+            dataSource={vehicleData}
+            refreshDataSource={(_, pagination, sorter) => {
+              this.refreshVehiclePool(undefined, pagination, sorter);
             }}
-            changeSelectRows={selectedRowKeys => this.tableChangeRows('Scheduled', selectedRowKeys)}
-            selectedRowKeys={scheduledRowKeys}
-            columns={[{ title: '排车单号', dataIndex: 'scheduleNum', width: 150 }, ...OrderColumns]}
-            scrollY="calc(68vh - 115px)"
+            changeSelectRows={rowKeys => this.tableChangeRows('Vehicle', rowKeys)}
+            selectedRowKeys={vehicleRowKeys}
+            columns={VehicleColumns}
+            scrollY="calc(75vh - 145px)"
           />
         </TabPane>
       </Tabs>

@@ -5,17 +5,20 @@
 
   :global {
     .ant-tabs-bar {
-      margin: 0 0 8px 0;
+      margin: 0 5px 5px 5px;
     }
-
     .ant-form-item {
       margin-bottom: 5px !important;
     }
   }
 
   .dispatchingCard {
-    padding: 0 5px;
-    height: 68vh;
+    height: 75vh;
+    border: 1px solid #e8e8e8;
+    border-radius: 4px;
+  }
+  .dispatchingBottomCard {
+    height: 60vh;
     border: 1px solid #e8e8e8;
     border-radius: 4px;
   }
@@ -37,11 +40,10 @@
     border-radius: 3px;
   }
 }
-
+.createPageLoading {
+  height: 100%;
+}
 .dispatchingCreatePage {
-  width: 96vw !important;
-  height: 96vh;
-
   :global {
     .tools-center {
       text-align: center;
@@ -59,30 +61,40 @@
     .ant-tabs .ant-tabs-large-bar .ant-tabs-tab {
       padding: 8px 16px;
     }
-    .ant-modal {
-      padding-bottom: 0;
+    .ant-spin-container {
+      height: 100%;
     }
     .ant-modal-content {
       max-height: unset;
-      height: 96vh;
+    }
+    .ant-badge-count {
+      min-width: 14px;
+      height: 14px;
+      line-height: 14px;
+      padding: 0px 4px;
     }
   }
 
-  .vehicleCardWapper {
+  .panel {
     border: 2px solid #3b77e3;
-    border-radius: 5px;
     color: #000000a6;
+    border-radius: 5px;
     font-weight: bold;
-    width: 180px;
-    height: 80px;
+    width: 130px;
+    height: 60px;
     display: inline-block;
     text-align: center;
-    margin: 0 0 8px 10px;
+    margin: 0 0 4px 5px;
   }
+  .panelSelect {
+    border-color: #20bf55;
+    color: #20bf55;
+  }
+
   .vehicleCardContent {
     align-items: center;
     display: flex;
-    padding: 20px 0 20px 24px;
+    padding: 10px 0 10px 12px;
   }
   .employeeCardContent {
     height: 100%;
@@ -93,17 +105,11 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
-
-  .selectedCehicleCardWapper {
-    border: 2px solid #20bf55;
-    border-radius: 5px;
-    font-weight: bold;
-    color: #20bf55;
-    width: 180px;
-    height: 80px;
-    display: inline-block;
-    text-align: center;
-    margin: 0 0 8px 10px;
+  .employeeName {
+    width: 100%;
+    line-height: 24px;
+    text-align: end;
+    margin-right: 15px;
   }
 
   .selectCary {
@@ -132,21 +138,11 @@
     display: flex;
     align-items: center;
   }
-
-  .orderTotalCardBody2 {
-    margin: 5px 0;
-    text-align: center;
-    display: flex;
-    align-items: center;
-  }
   .orderTotalNumber {
     margin-top: 5px;
     font-size: 20px;
     font-weight: bold;
     color: black;
-  }
-  .orderTotalCol {
-    border-right: 1px solid #e8e8e8;
   }
 }
 
@@ -162,11 +158,17 @@
     tr.ant-table-expanded-row td > .ant-table-wrapper {
       margin: 5px 0 -5px;
     }
+    .ant-table-tbody > tr > td {
+      padding: 2px !important;
+    }
     .ant-table-thead > tr > th.ant-table-row-cell-break-word,
     .ant-table-tbody > tr > td.ant-table-row-cell-break-word {
       overflow: hidden;
       white-space: nowrap;
       text-overflow: ellipsis;
+    }
+    .ant-table-title {
+      padding: 4px;
     }
     .ant-table-placeholder {
       position: absolute;
@@ -178,7 +180,7 @@
     }
     .ant-table-pagination.ant-pagination {
       float: right;
-      margin: 8px 0 0;
+      margin: 4px 0 0;
     }
     .react-resizable {
       position: relative;
@@ -196,6 +198,10 @@
     .clickedStyle {
       background-color: #bccff5;
     }
+    .warningStyle {
+      background-color: #ff000073;
+    }
+
     ::-webkit-scrollbar {
       height: 10px;
       width: 10px;

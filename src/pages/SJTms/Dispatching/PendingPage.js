@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-08 18:14:02
+ * @LastEditTime: 2022-11-19 10:07:07
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -210,7 +210,7 @@ export default class PendingPage extends Component {
         </Row>
         {this.props.isOrderCollect ? (
           <DispatchingChildTable
-            comId="pendingOrder"
+            comId="collectPendingOrder"
             clickRow
             settingColumnsBar={settingColumnsBar}
             // childSettingCol
@@ -227,7 +227,7 @@ export default class PendingPage extends Component {
             childSelectedRowKeys={pendingRowKeys}
             columns={OrderCollectColumns}
             nestColumns={OrderDetailColumns}
-            scrollY="calc(68vh - 130px)"
+            scrollY="calc(60vh - 135px)"
             title={this.buildTitle}
           />
         ) : (
@@ -246,7 +246,7 @@ export default class PendingPage extends Component {
             changeSelectRows={this.tableChangeRows}
             selectedRowKeys={pendingRowKeys}
             columns={OrderColumns}
-            scrollY="calc(68vh - 130px)"
+            scrollY="calc(60vh - 135px)"
           />
         )}
       </div>

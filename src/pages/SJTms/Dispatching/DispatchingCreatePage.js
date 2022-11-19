@@ -20,11 +20,10 @@ import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import { isEmptyObj, guid } from '@/utils/utils';
 import { queryAllData, dynamicQuery, queryDictByCode } from '@/services/quick/Quick';
 import { getSchedule, save, modify, getRecommend } from '@/services/sjitms/ScheduleBill';
-import { getContainerByBillUuid } from '@/services/sjitms/OrderBill';
 import EditContainerNumberPageF from './EditContainerNumberPageF';
 import DispatchingTable from './DispatchingTable';
 import { CreatePageOrderColumns } from './DispatchingColumns';
-import dispatchingStyles from './Dispatching.less';
+import disStyle from './Dispatching.less';
 import { sumBy, uniq, uniqBy, orderBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
@@ -146,7 +145,7 @@ export default class DispatchingCreatePage extends Component {
           : [];
       }
     }
-    vehicles = await this.getRecommendByOrders(details, vehicles);
+    // vehicles = await this.getRecommendByOrders(details, vehicles);
     if (schedule) {
       //将选中车辆放到第一位
       selectVehicle = vehicles.find(x => x.UUID == schedule.vehicle.uuid);
@@ -297,14 +296,14 @@ export default class DispatchingCreatePage extends Component {
   removeDetail = async record => {
     const { orders } = this.state;
     orders.splice(orders.findIndex(x => x.uuid == record.uuid), 1);
-    let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
+    // let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
     this.setState({ orders, vehicles });
   };
   removeDetails = async records => {
     let { orders } = this.state;
     const uuids = records.map(x => x.uuid);
     orders = orders.filter(x => uuids.indexOf(x.uuid) == -1);
-    let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
+    // let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
     this.setState({ orders, vehicles });
   };
 
@@ -483,7 +482,7 @@ export default class DispatchingCreatePage extends Component {
     return (
       <Card
         title="员工"
-        bodyStyle={{ padding: 0, paddingTop: 8, height: '34vh', overflowY: 'auto' }}
+        bodyStyle={{ padding: 0, paddingTop: 8, height: '28vh', overflowY: 'auto' }}
         extra={
           <div>
             <Select
@@ -535,28 +534,23 @@ export default class DispatchingCreatePage extends Component {
                   <Badge count={employee.BILLCOUNTS} style={{ backgroundColor: 'orange' }}>
                     <a
                       href="#"
-                      className={
+                      className={`${disStyle.panel} ${
                         selectEmployees.find(x => x.UUID == employee.UUID)
-                          ? dispatchingStyles.selectedCehicleCardWapper
-                          : dispatchingStyles.vehicleCardWapper
-                      }
+                          ? disStyle.panelSelect
+                          : ''
+                      }`}
                       onClick={() => this.handleEmployee(employee)}
                     >
                       <Row justify="space-between" style={{ height: '100%' }}>
-                        <Col span={10} className={dispatchingStyles.employeeCardContent}>
-                          <Icon type="user" style={{ fontSize: '40px' }} />
+                        <Col span={10} className={disStyle.employeeCardContent}>
+                          <Icon type="user" style={{ fontSize: 32 }} />
                         </Col>
-                        <Col span={14} className={dispatchingStyles.employeeCardContent}>
-                          <div
-                            style={{
-                              width: '100%',
-                              lineHeight: '24px',
-                              textAlign: 'end',
-                              marginRight: 15,
-                            }}
-                          >
-                            <div>{employee.CODE}</div>
-                            <div>{employee.NAME.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')}</div>
+                        <Col span={14} className={disStyle.employeeCardContent}>
+                          <div className={disStyle.employeeName}>
+                            <div>
+                              {`[${employee.CODE}]` +
+                                employee.NAME.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')}
+                            </div>
                             <div>{employee.ROLE_TYPE2}</div>
                           </div>
                         </Col>
@@ -574,7 +568,7 @@ export default class DispatchingCreatePage extends Component {
     return (
       <Card
         title="车辆"
-        bodyStyle={{ padding: 0, paddingTop: 8, height: '34vh', overflowY: 'auto' }}
+        bodyStyle={{ padding: 0, paddingTop: 8, height: '28vh', overflowY: 'auto' }}
         extra={
           <div>
             <Select
@@ -609,35 +603,37 @@ export default class DispatchingCreatePage extends Component {
               <Badge count={vehicle.BILLCOUNTS} style={{ backgroundColor: 'orange' }}>
                 <a
                   href="#"
-                  className={
-                    vehicle.UUID == selectVehicle.UUID
-                      ? dispatchingStyles.selectedCehicleCardWapper
-                      : dispatchingStyles.vehicleCardWapper
-                  }
+                  className={`${disStyle.panel} ${
+                    vehicle.UUID == selectVehicle.UUID ? disStyle.panelSelect : ''
+                  }`}
                   onClick={() => this.handleVehicle(vehicle)}
                 >
                   <Row>
-                    <Col
-                      span={vehicle.pro > 0 ? 18 : 24}
-                      className={dispatchingStyles.vehicleCardContent}
-                    >
-                      <Icon type="car" style={{ fontSize: '40px' }} />
-                      <span style={{ marginLeft: 5 }}> {vehicle.PLATENUMBER}</span>
+                    <Col span={10} className={disStyle.vehicleCardContent}>
+                      <Icon type="car" style={{ fontSize: 32 }} />
                     </Col>
-                    {vehicle.pro > 0 ? (
-                      <Col span={6} style={{ marginTop: 10 }}>
-                        <Badge
-                          style={{
-                            backgroundColor:
-                              vehicle.pro >= 40 ? '#52c41a' : vehicle.pro >= 20 ? 'orange' : 'red',
-                          }}
-                          count={vehicle.pro.toFixed(0) + '%'}
-                          title={'熟练度' + vehicle.pro.toFixed(0) + '%'}
-                        />
-                      </Col>
+                    <Col span={14} className={disStyle.vehicleCardContent}>
+                      <div className={disStyle.employeeName}>
+                        <div>{vehicle.PLATENUMBER}</div>
+                        {vehicle.DRIVERNAME ? (
+                          <div>{vehicle.DRIVERNAME.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')}</div>
+                        ) : (
+                          <></>
+                        )}
+                      </div>
+                    </Col>
+                    {/* {vehicle.pro > 0 ? (
+                      <Badge
+                        style={{
+                          backgroundColor:
+                            vehicle.pro >= 40 ? '#52c41a' : vehicle.pro >= 20 ? 'orange' : 'red',
+                        }}
+                        count={vehicle.pro.toFixed(0) + '%'}
+                        title={'熟练度' + vehicle.pro.toFixed(0) + '%'}
+                      />
                     ) : (
                       <></>
-                    )}
+                    )} */}
                   </Row>
                 </a>
               </Badge>
@@ -653,37 +649,18 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ editPageVisible: true, scheduleDetail: record });
   };
   //更新state订单整件排车件数
-  updateCartonCount = async result => {
+  updateCartonCount = result => {
     const { orders } = this.state;
     const that = this;
     let record = orders.find(x => x.billNumber == result.billNumber);
-    const cartonCount = result.count.cartonCount;
-    if (cartonCount <= 0) {
-      return;
-    }
-    let volume = record.volume;
-    let weight = record.weight;
-    const response = await getContainerByBillUuid(record.uuid);
-    if (response.success) {
-      const cartonNumber = response.data?.find(x => x.vehicleType == 'Carton');
-      if (cartonNumber) {
-        volume = cartonNumber.realVolume || cartonNumber.forecastVolume;
-        weight = cartonNumber.realWeight || cartonNumber.forecastWeight;
-      }
-    }
-    const remVolume = (cartonCount / record.stillCartonCount) * volume;
-    const remWeight = (cartonCount / record.stillCartonCount) * weight;
-    const volumes =
-      Math.round((sumBy(orders.map(x => x.volume)) - (volume - remVolume)) * 100) / 100;
-    const weights = Math.round(sumBy(orders.map(x => x.weight)) - (weight - remWeight)) / 1000;
     confirm({
       title: '提示',
-      content: `拆单后排车单体积为：${volumes}m³，重量为：${weights}t ，是否确定拆单？`,
+      content: `拆单后排车单体积为：${result.volume}m³，重量为：${result.weight}t ，是否确定拆单？`,
       onOk() {
-        record.volume = Number(remVolume.toFixed(3));
-        record.weight = Number(remWeight.toFixed(3));
-        record.unDispatchCarton = record.stillCartonCount - cartonCount;
-        record.stillCartonCount = cartonCount;
+        record.volume = Number(result.remVolume.toFixed(3));
+        record.weight = Number(result.remWeight.toFixed(3));
+        record.unDispatchCarton = record.stillCartonCount - result.cartonCount;
+        record.stillCartonCount = result.cartonCount;
         record.isSplit = 1;
         that.setState({ orders, editPageVisible: false });
       },
@@ -727,30 +704,36 @@ export default class DispatchingCreatePage extends Component {
         onOk={() => this.handleSave()}
         onCancel={() => this.hide()}
         closable={false}
-        destroyOnClose
-        centered
+        destroyOnClose={true}
         {...this.props.modal}
-        className={dispatchingStyles.dispatchingCreatePage}
-        bodyStyle={{ margin: -24, height: '90vh' }}
-        footer={[
+        className={disStyle.dispatchingCreatePage}
+        style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
+        width="100vw"
+        bodyStyle={{ margin: -24, height: 'calc(100vh - 48px)' }}
+        footer={
           <div>
             <Button onClick={this.exit}>取消</Button>
             <Button onClick={this.hide}>临时保存</Button>
             <Button type="primary" onClick={() => this.handleSave()} loading={loading}>
               生成排车单
             </Button>
-          </div>,
-        ]}
+          </div>
+        }
       >
         <EditContainerNumberPageF
           modal={{ title: '拆单' }}
           updateCartonCount={e => this.updateCartonCount(e)}
           visible={editPageVisible}
           order={scheduleDetail}
+          totalData={totalData}
           onCancel={() => this.setState({ editPageVisible: false })}
         />
-        <Spin indicator={LoadingIcon('default')} spinning={loading}>
-          <Row gutter={[5, 0]}>
+        <Spin
+          indicator={LoadingIcon('default')}
+          spinning={loading}
+          wrapperClassName={disStyle.createPageLoading}
+        >
+          <Row gutter={[5, 0]} style={{ height: '100%' }}>
             <Col span={16}>
               <Dropdown
                 overlay={
@@ -799,7 +782,7 @@ export default class DispatchingCreatePage extends Component {
                   <DispatchingTable
                     loading={loading}
                     clickRow
-                    className={dispatchingStyles.dispatchingTable}
+                    className={disStyle.dispatchingTable}
                     columns={CreatePageOrderColumns}
                     dataSource={orders}
                     refreshDataSource={orders => {
@@ -810,11 +793,11 @@ export default class DispatchingCreatePage extends Component {
                     }
                     selectedRowKeys={rowKeys}
                     pagination={false}
-                    scrollY="40vh"
+                    scrollY="50vh"
                   />
                 </div>
               </Dropdown>
-              <Row gutter={[5, 0]} style={{ marginTop: 5 }}>
+              <Row gutter={[0, 0]}>
                 <Col span={12}>{this.buildSelectVehicleCard()}</Col>
                 <Col span={12}>{this.buildSelectEmployeeCard()}</Col>
               </Row>
@@ -822,14 +805,14 @@ export default class DispatchingCreatePage extends Component {
             <Col span={8}>
               {/* 订单汇总 */}
               <Card
-                title={<div className={dispatchingStyles.selectCary}>订单汇总</div>}
+                title={<div className={disStyle.selectCary}>订单汇总</div>}
                 style={{ height: '22vh', overflow: 'auto' }}
                 bodyStyle={{ padding: 0, fontSize: 14 }}
               >
-                <div className={dispatchingStyles.orderTotalCardBody}>
+                <div className={disStyle.orderTotalCardBody}>
                   <div style={{ flex: 1 }}>
                     <div>体积</div>
-                    <div className={dispatchingStyles.orderTotalNumber}>
+                    <div className={disStyle.orderTotalNumber}>
                       {Math.round(totalData.volume * 100) / 100}
                       m³
                     </div>
@@ -837,28 +820,26 @@ export default class DispatchingCreatePage extends Component {
                   <Divider type="vertical" style={{ height: '3.5em' }} />
                   <div style={{ flex: 1 }}>
                     <div>重量</div>
-                    <div className={dispatchingStyles.orderTotalNumber}>
+                    <div className={disStyle.orderTotalNumber}>
                       {Math.round(totalData.weight) / 1000}t
                     </div>
                   </div>
                 </div>
-                <div className={dispatchingStyles.orderTotalCardBody}>
+                <div className={disStyle.orderTotalCardBody}>
                   <div style={{ flex: 1 }}>
                     <div>送货点数</div>
-                    <div className={dispatchingStyles.orderTotalNumber}>
-                      {totalData.deliveryPointCount}
-                    </div>
+                    <div className={disStyle.orderTotalNumber}>{totalData.deliveryPointCount}</div>
                   </div>
                   <Divider type="vertical" style={{ height: '3.5em' }} />
                   <div style={{ flex: 1 }}>
                     <div>订单数</div>
-                    <div className={dispatchingStyles.orderTotalNumber}>{totalData.orderCount}</div>
+                    <div className={disStyle.orderTotalNumber}>{totalData.orderCount}</div>
                   </div>
                   <Divider type="vertical" style={{ height: '3.5em' }} />
                   <div style={{ flex: 1 }}>
                     <div> 整件</div>
                     <div>
-                      <span className={dispatchingStyles.orderTotalNumber}>
+                      <span className={disStyle.orderTotalNumber}>
                         {totalData.stillCartonCount}
                       </span>
                     </div>
@@ -867,7 +848,7 @@ export default class DispatchingCreatePage extends Component {
                   <div style={{ flex: 1 }}>
                     <div>周转箱</div>
                     <div>
-                      <span className={dispatchingStyles.orderTotalNumber}>
+                      <span className={disStyle.orderTotalNumber}>
                         {totalData.stillContainerCount}
                       </span>
                     </div>
@@ -876,15 +857,13 @@ export default class DispatchingCreatePage extends Component {
               </Card>
               {/* 已选车辆 */}
               <Card
-                style={{ height: '22vh', marginTop: 5, overflow: 'auto' }}
+                style={{ height: '25vh', marginTop: 5, overflow: 'auto' }}
                 bodyStyle={{ padding: 0, paddingTop: 5, fontSize: 14 }}
                 title={
                   <div>
                     <span
                       className={
-                        selectVehicle.PLATENUMBER
-                          ? dispatchingStyles.selectCary
-                          : dispatchingStyles.selectCarn
+                        selectVehicle.PLATENUMBER ? disStyle.selectCary : disStyle.selectCarn
                       }
                     >
                       已选车辆
@@ -899,10 +878,10 @@ export default class DispatchingCreatePage extends Component {
                   ) : (
                     <Row>
                       <Col>
-                        <div className={dispatchingStyles.orderTotalCardBody}>
+                        <div className={disStyle.orderTotalCardBody}>
                           <div style={{ flex: 1 }}>
                             <div>剩余可装容积</div>
-                            <div className={dispatchingStyles.orderTotalNumber}>
+                            <div className={disStyle.orderTotalNumber}>
                               <span
                                 style={
                                   vehicleCalc.remainVolume > 0
@@ -918,7 +897,7 @@ export default class DispatchingCreatePage extends Component {
                           <Divider type="vertical" style={{ height: '3.5em' }} />
                           <div style={{ flex: 1 }}>
                             <div>剩余可装重量</div>
-                            <div className={dispatchingStyles.orderTotalNumber}>
+                            <div className={disStyle.orderTotalNumber}>
                               <span
                                 style={
                                   vehicleCalc.remainWeight > 0
@@ -931,20 +910,17 @@ export default class DispatchingCreatePage extends Component {
                             </div>
                           </div>
                         </div>
-                        <div className={dispatchingStyles.orderTotalCardBody2}>
+                        <div className={disStyle.orderTotalCardBody}>
                           <div style={{ flex: 1 }}>
                             <div>车型</div>
-                            <div
-                              className={dispatchingStyles.orderTotalNumber}
-                              style={{ fontSize: '18px' }}
-                            >
+                            <div className={disStyle.orderTotalNumber} style={{ fontSize: '18px' }}>
                               {selectVehicle.VEHICLETYPE}
                             </div>
                           </div>
                           <Divider type="vertical" style={{ height: '3.5em' }} />
                           <div style={{ flex: 1 }}>
                             <div>容积</div>
-                            <div className={dispatchingStyles.orderTotalNumber}>
+                            <div className={disStyle.orderTotalNumber}>
                               {vehicleCalc.volume}
                               m³
                             </div>
@@ -953,7 +929,7 @@ export default class DispatchingCreatePage extends Component {
                           <div style={{ flex: 1 }}>
                             <div>容积率</div>
                             <div>
-                              <span className={dispatchingStyles.orderTotalNumber}>
+                              <span className={disStyle.orderTotalNumber}>
                                 {selectVehicle.BEARVOLUMERATE || 0}%
                               </span>
                             </div>
@@ -962,7 +938,7 @@ export default class DispatchingCreatePage extends Component {
                           <div style={{ flex: 1 }}>
                             <div>载重</div>
                             <div>
-                              <span className={dispatchingStyles.orderTotalNumber}>
+                              <span className={disStyle.orderTotalNumber}>
                                 {(vehicleCalc.weight / 1000).toFixed(2)}t
                               </span>
                             </div>
@@ -980,16 +956,14 @@ export default class DispatchingCreatePage extends Component {
                 title={
                   <div
                     className={
-                      selectEmployees.length > 0
-                        ? dispatchingStyles.selectCary
-                        : dispatchingStyles.selectCarn
+                      selectEmployees.length > 0 ? disStyle.selectCary : disStyle.selectCarn
                     }
                   >
                     已选人员
                   </div>
                 }
                 style={{ marginTop: 5 }}
-                bodyStyle={{ height: '28vh', padding: 10, overflowY: 'auto' }}
+                bodyStyle={{ height: '30vh', padding: 10, overflowY: 'auto' }}
               >
                 {selectEmployees.map(employee => {
                   return (
@@ -1045,7 +1019,7 @@ export default class DispatchingCreatePage extends Component {
                 })}
               </Card>
               {/* 备注 */}
-              <Row style={{ marginTop: 5 }}>
+              <Row style={{ marginTop: 2 }}>
                 <Col span={4} style={{ fontWeight: 'bold', lineHeight: '24px', fontSize: 14 }}>
                   备注：
                 </Col>

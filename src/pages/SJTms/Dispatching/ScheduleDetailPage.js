@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-09 16:02:04
+ * @LastEditTime: 2022-11-19 10:07:10
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -149,7 +149,7 @@ export default class ScheduleDetailPage extends Component {
           </Col>
           <Col span={12} style={{ textAlign: 'right' }}>
             {schedule.stat == 'Saved' ? (
-              <Button style={{ marginLeft: 10 }} onClick={() => this.handleRemoveDetail()}>
+              <Button style={{ marginRight: 30 }} onClick={() => this.handleRemoveDetail()}>
                 移除
               </Button>
             ) : (
@@ -159,10 +159,9 @@ export default class ScheduleDetailPage extends Component {
         </Row>
         {this.props.isOrderCollect ? (
           <DispatchingChildTable
-            comId="scheduleDetail"
+            comId="collectScheduleDetail"
             clickRow
             // childSettingCol
-            noToolbarPanel={true}
             pagination={false}
             loading={loading}
             dataSource={scheduleCollectDetail}
@@ -175,7 +174,7 @@ export default class ScheduleDetailPage extends Component {
             childSelectedRowKeys={selectedRowKeys}
             columns={ScheduleDetailCollectColumns}
             nestColumns={ScheduleDetailColumns}
-            scrollY="calc(68vh - 107px)"
+            scrollY="calc(60vh - 80px)"
           />
         ) : (
           <DispatchingTable
@@ -183,7 +182,6 @@ export default class ScheduleDetailPage extends Component {
             clickRow
             pagination={false}
             loading={loading}
-            noToolbarPanel={true}
             dataSource={scheduleDetail}
             refreshDataSource={scheduleDetail => {
               this.tableChangeRows([]);
@@ -192,7 +190,7 @@ export default class ScheduleDetailPage extends Component {
             changeSelectRows={this.tableChangeRows}
             selectedRowKeys={selectedRowKeys}
             columns={ScheduleDetailColumns}
-            scrollY="calc(68vh - 107px)"
+            scrollY="calc(60vh - 80px)"
           />
         )}
         {/* 修改排车数量  */}
