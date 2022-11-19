@@ -139,6 +139,15 @@ export async function updatePris(uuid, pris) {
     }
   );
 }
+//修改出车顺序
+export async function updateOutSerialApi(uuid,outSerial){
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/updateOutSerial?uuid=${uuid}&outSerial=${outSerial}`,
+    {
+      method: 'PUT',
+    }
+  );
+}
 
 //移车
 export async function removeCar(payload) {

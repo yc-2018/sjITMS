@@ -73,7 +73,16 @@ export async function findLineSystemTreeByStoreCode(payload) {
       body:payload.uuids
     });
   }
-  export async function inScheduleStore(payload) {batchAddScheduleStorePool
+  export async function deleteAddressPlanByUuids(payload) {
+    return  request(
+     `/itms-schedule/itms-schedule/lineShipAddress/deleteAddressPlanByUuids`,
+     {
+       method: 'POST',
+       body:payload.uuids
+       
+     })
+  }
+  export async function inScheduleStore(payload) {
     return request(`/itms-schedule/itms-schedule/lineShipAddress/inScheduleStore/${payload}`, {
       method: 'get',
     });
@@ -163,5 +172,6 @@ export async function findLineSystemTreeByStoreCode(payload) {
        method: 'GET'
        
      }
+    
    );
  }

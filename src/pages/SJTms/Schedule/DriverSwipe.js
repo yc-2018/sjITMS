@@ -206,13 +206,13 @@ export default class Swiper extends PureComponent {
               <Col span={6}>
                 <span style={{ fontSize: 15 }}>
                   重量(t)：
-                  {scheduleBill.weight ? scheduleBill.weight : <Empty />}
+                  {scheduleBill.weight ? new Number(scheduleBill.weight)/1000 : <Empty />}
                 </span>
               </Col>
               <Col span={6}>
                 <span style={{ fontSize: 15 }}>
                   体积(m³)：
-                  {scheduleBill.volume ? scheduleBill.volume : <Empty />}
+                  {scheduleBill.volume ? new Number(scheduleBill.volume).toFixed(2) : <Empty />}
                 </span>
               </Col>
               <Col span={6}>

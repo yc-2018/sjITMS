@@ -24,7 +24,7 @@ import { loginOrg, loginUser } from '@/utils/LoginContext';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { queryAllData } from '@/services/quick/Quick';
-import { aborted, shipRollback, abortedAndReset, updatePris } from '@/services/sjitms/ScheduleBill';
+import { aborted, shipRollback, abortedAndReset, updatePris,updateOutSerialApi } from '@/services/sjitms/ScheduleBill';
 import { depart, back } from '@/services/sjitms/ScheduleProcess';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 import { groupBy, sumBy, orderBy } from 'lodash';
@@ -46,6 +46,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     isNotHd: true,
     showAbortAndReset: false,
     showUpdatePirsPop: false,
+    showUpdateOutSerial:false,
+    outSerial:'1',
     newPirs: '',
     sourceData: [],
   };
@@ -130,6 +132,14 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       message.warn('请选择一条数据！');
     }
   };
+  onUpdateOutSerial =()=>{
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 1) {
+      this.setState({ showUpdateOutSerial: true });
+    } else {
+      message.warn('请选择一条数据！');
+    }
+  }
 
   //添加操作列
   drawExColumns = e => {
@@ -168,6 +178,24 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     }
   };
 
+  updateOutSerial = async()=>{
+    const { selectedRows,outSerial} = this.state;
+    console.log("ss",outSerial);
+    if (selectedRows[0].STAT != 'Approved') {
+     message.warn('该排车单不是批准状态，不能修改顺序！');
+     return;
+    }else if(outSerial == undefined){
+      message.warn("请填写顺序");
+      return;
+    }
+    await updateOutSerialApi(selectedRows[0].UUID,outSerial).then(result=>{
+      if(result.success){
+        message.success("修改成功！")
+        this.queryCoulumns();
+      }
+    });
+  }
+
   handleMenuClick = e => {
     this.handlePrint(e.key);
   };
@@ -180,6 +208,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       showAbortPop,
       showAbortAndReset,
       showUpdatePirsPop,
+      showUpdateOutSerial
     } = this.state;
     const menu = (
       <Menu onClick={this.handleMenuClick}>
@@ -260,6 +289,13 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         >
           修改码头
         </Button>
+        <Button
+          onClick={() => {
+            this.onUpdateOutSerial();
+          }}
+        >
+          修改出车顺序
+        </Button>
         <Button onClick={() => this.onMoveCar()}>移车</Button>
         <Dropdown overlay={menu}>
           <Button onClick={() => this.handlePrint()} icon="printer">
@@ -307,6 +343,45 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
               >
                 {this.buildOptions()}
               </Select>
+            </Form.Item>
+          </Form>
+        </Modal>
+        <Modal
+          title="修改出车顺序"
+          visible={showUpdateOutSerial}
+          onOk={() => {
+            this.updateOutSerial();
+          }}
+          onCancel={() => {
+            this.setState({ showUpdateOutSerial: false });
+          }}
+        >
+          <Form>
+            <Form.Item label="排车单号" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              <span>{selectedRows.length == 1 ? selectedRows[0].BILLNUMBER : ''}</span>
+            </Form.Item>
+            <Form.Item label="原顺序号" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              <span>{selectedRows.length == 1 ? selectedRows[0].OUTSERIAL : '空'}</span>
+            </Form.Item>
+            <Form.Item label="修改出车顺序" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              {/* <Input
+                onChange={e => {
+                  this.setState({ newPirs: e.target.value });
+                }}
+              /> */}
+              <InputNumber 
+                allowClear
+                step={0.1}
+                min={0.1} 
+                max={100}
+                defaultValue={1}
+                // value={e.val}
+                style={{ width: 120}}
+                onChange={v => {
+                  this.setState({ outSerial: v });
+                }}
+              >
+              </InputNumber >
             </Form.Item>
           </Form>
         </Modal>

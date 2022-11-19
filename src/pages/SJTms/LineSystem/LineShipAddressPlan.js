@@ -7,8 +7,10 @@ import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonCom
 import { calculateMemberWage } from '@/services/cost/CostCalculation';
 import { dynamicqueryById, dynamicDelete, dynamicQuery } from '@/services/quick/Quick';
 import {
-  savePlan
+  savePlan,
+  deleteAddressPlanByUuids
 } from '@/services/sjtms/LineSystemHis';
+import { havePermission } from '@/utils/authority';
 @connect(({ quick, loading }) => ({
   quick,
 
@@ -25,6 +27,7 @@ export default class LineShipAddressPlan extends QuickFormSearchPage {
     deliveredDutyMdodalVisible: false,
     nocheckInfoVisible: false,
     checkRejectionResendMdodalVisible: false,
+    noToolbar:false
   };
 
   exSearchFilter = () => {
@@ -66,6 +69,19 @@ export default class LineShipAddressPlan extends QuickFormSearchPage {
       </>
     );
   };
+  onBatchDelete  = async ()=>{
+    const {selectedRows} = this.state;
+    if(selectedRows && selectedRows.length ==0){
+      message.info("请至少选择一条记录");
+    }
+   await deleteAddressPlanByUuids({uuids:selectedRows.map(e=>e.UUID)}).then(result =>{
+      if(result.success){
+        message.success("移除成功！");
+        this.onSearch();
+      }
+    });
+
+  }
   checkSave =async()=>{
     const {selectedRows} = this.state;
     if(selectedRows && selectedRows.length ==0){
@@ -99,6 +115,15 @@ export default class LineShipAddressPlan extends QuickFormSearchPage {
           <Button type={'primary'} style={{ marginLeft: 10 }}>
             添加
           </Button>
+        </Popconfirm>
+        <Popconfirm
+          title="你确定要删除所选中的内容吗?"
+          onConfirm={() => this.onBatchDelete()}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Button >批量移除</Button>
+          {/* //hidden={!havePermission(this.state.authority + '.delete')} */}
         </Popconfirm>
       </div>
     );
