@@ -325,9 +325,6 @@ export default class DispatchingCreatePage extends Component {
     const details = orders.map(item => {
       if (!item.isSplit) {
         item.isSplit = item.cartonCount == item.stillCartonCount ? 0 : 1;
-        if (item.reviewed) {
-          item.isSplit = item.realCartonCount == item.stillCartonCount ? 0 : 1;
-        }
       }
       item.cartonCount = item.stillCartonCount;
       item.scatteredCount = item.stillScatteredCount;
