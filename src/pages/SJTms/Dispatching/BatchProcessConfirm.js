@@ -260,6 +260,7 @@ export default class BatchProcessConfirm extends Component {
       progressPercent,
       showFailedResultModal,
       confirmLoading,
+      errMsg,
     } = this.state;
 
     return (
@@ -313,6 +314,14 @@ export default class BatchProcessConfirm extends Component {
             <Button type="primary" onClick={this.handleRerty}>
               重试
             </Button>
+            {errMsg.length > 0 ? (
+              <div style={{ marginTop: '15px', color: 'red' }}>
+                失败原因
+                {errMsg.map(err => {
+                  return <p style={{ marginTop: '5px' }}>{err}</p>;
+                })}
+              </div>
+            ) : null}
           </div>
         </Modal>
       </div>
