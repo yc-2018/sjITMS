@@ -59,6 +59,7 @@ export default class SchedulePage extends PureComponent {
               refreshSelectedRow={this.refreshSelectedRow}
               memberModalClick={this.memberModalClick}
               removeCarModalClick={this.removeCarModalClick}
+              authority={this.props.route?.authority ? this.props.route.authority : null}
             />
             <div style={{ minHeight: 600 }}>
               {!isShowDetail ? (

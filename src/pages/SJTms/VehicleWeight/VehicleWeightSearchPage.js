@@ -88,7 +88,12 @@ export default class VehicleWeightSearchPage extends QuickFormSearchPage {
             });
           }}
         >
-          <Button onClick={() => this.onBatchAudit()}>审核</Button>
+          <Button
+            onClick={() => this.onBatchAudit()}
+            hidden={!havePermission(this.state.authority + '.audit')}
+          >
+            审核
+          </Button>
         </Popconfirm>
 
         <Popconfirm
@@ -110,7 +115,11 @@ export default class VehicleWeightSearchPage extends QuickFormSearchPage {
             });
           }}
         >
-          <Button type="danger" onClick={() => this.onBatchRejected()}>
+          <Button
+            type="danger"
+            onClick={() => this.onBatchRejected()}
+            hidden={!havePermission(this.state.authority + '.rejected')}
+          >
             驳回
           </Button>
           {/* <Button onClick={() => this.port()}>导出</Button> */}

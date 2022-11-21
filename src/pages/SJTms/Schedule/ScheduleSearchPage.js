@@ -36,6 +36,8 @@ import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 import { groupBy, sumBy, orderBy } from 'lodash';
 import scher from '@/assets/common/scher.jpg';
 import { dynamicQuery } from '@/services/quick/Quick';
+import { havePermission } from '@/utils/authority';
+
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -56,6 +58,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     outSerial: '1',
     newPirs: '',
     sourceData: [],
+    authority: this.props.authority ? this.props.authority[0] : null,
   };
 
   componentDidMount() {
@@ -243,7 +246,12 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
             });
           }}
         >
-          <Button onClick={() => this.onBatchRollBack()}>取消批准</Button>
+          <Button
+            onClick={() => this.onBatchRollBack()}
+            hidden={!havePermission(this.state.authority + '.rollBack')}
+          >
+            取消批准
+          </Button>
         </Popconfirm>
         <Popconfirm
           title="确定作废选中排车单?"
@@ -264,7 +272,12 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
             });
           }}
         >
-          <Button onClick={() => this.onBatchAbort()}>作废</Button>
+          <Button
+            onClick={() => this.onBatchAbort()}
+            hidden={!havePermission(this.state.authority + '.aborted')}
+          >
+            作废
+          </Button>
         </Popconfirm>
 
         <Popconfirm
@@ -286,12 +299,18 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
             });
           }}
         >
-          <Button onClick={() => this.onBatchAbortAndReset()}>作废并重排</Button>
+          <Button
+            onClick={() => this.onBatchAbortAndReset()}
+            hidden={!havePermission(this.state.authority + '.abortAndReset')}
+          >
+            作废并重排
+          </Button>
         </Popconfirm>
         <Button
           onClick={() => {
             this.onUpdatePirs();
           }}
+          hidden={!havePermission(this.state.authority + '.updatePirs')}
         >
           修改码头
         </Button>
@@ -299,21 +318,36 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
           onClick={() => {
             this.onUpdateOutSerial();
           }}
+          hidden={!havePermission(this.state.authority + '.updateOutSerial')}
         >
           修改出车顺序
         </Button>
-        <Button onClick={() => this.onMoveCar()}>移车</Button>
+        <Button
+          onClick={() => this.onMoveCar()}
+          hidden={!havePermission(this.state.authority + '.moveCar')}
+        >
+          移车
+        </Button>
         <Dropdown overlay={menu}>
-          <Button onClick={() => this.handlePrint()} icon="printer">
+          <Button
+            onClick={() => this.handlePrint()}
+            icon="printer"
+            hidden={!havePermission(this.state.authority + '.print')}
+          >
             打印 <Icon type="down" />
           </Button>
         </Dropdown>
         <Popconfirm title="确定发运选中排车单?" onConfirm={this.handleDepart}>
-          <Button type="primary" ghost>
+          <Button type="primary" ghost hidden={!havePermission(this.state.authority + '.depart')}>
             发运
           </Button>
         </Popconfirm>
-        <Button type="danger" ghost onClick={this.handleBack}>
+        <Button
+          type="danger"
+          ghost
+          onClick={this.handleBack}
+          hidden={!havePermission(this.state.authority + '.back')}
+        >
           回厂
         </Button>
         <Modal
