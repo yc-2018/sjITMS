@@ -34,6 +34,7 @@ import {
 import { query } from '@/services/account/User';
 import ScheduleCreatePage from '@/pages/SJTms/Schedule/ScheduleCreatePage';
 import WeightApplyModal from './WeightApplyModal';
+import { havePermission } from '@/utils/authority';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
@@ -51,6 +52,7 @@ export default class SchedulePage extends Component {
     editPageVisible: false,
     scheduleDetail: {},
     users: [],
+    authority: this.props.authority ? this.props.authority[0] : null,
   };
 
   componentDidMount() {
@@ -394,31 +396,61 @@ export default class SchedulePage extends Component {
         case 'Approved':
           return (
             <div>
-              <Button style={{ marginLeft: 10 }} onClick={this.handlePrint}>
+              <Button
+                style={{ marginLeft: 10 }}
+                onClick={this.handlePrint}
+                hidden={!havePermission(this.state.authority + '.print')}
+              >
                 打印
               </Button>
-              <Button style={{ marginLeft: 10 }} onClick={this.handleCancelApprove}>
+              <Button
+                style={{ marginLeft: 10 }}
+                onClick={this.handleCancelApprove}
+                hidden={!havePermission(this.state.authority + '.cancelApprove')}
+              >
                 取消批准
               </Button>
             </div>
           );
         case 'Aborted':
           return (
-            <Button style={{ marginLeft: 10 }} onClick={this.handleCancelAborted}>
+            <Button
+              style={{ marginLeft: 10 }}
+              onClick={this.handleCancelAborted}
+              hidden={!havePermission(this.state.authority + '.cancelInvalid')}
+            >
               取消作废
             </Button>
           );
         default:
           return (
             <div>
-              <Button onClick={this.handleCreateSchedule}>新建</Button>
-              <Button onClick={this.showUpdateWeigthPop} style={{ marginLeft: 10 }}>
+              <Button
+                onClick={this.handleCreateSchedule}
+                hidden={!havePermission(this.state.authority + '.create')}
+              >
+                新建
+              </Button>
+              <Button
+                onClick={this.showUpdateWeigthPop}
+                style={{ marginLeft: 10 }}
+                hidden={!havePermission(this.state.authority + '.ton')}
+              >
                 申请调吨
               </Button>
-              <Button type={'primary'} style={{ marginLeft: 10 }} onClick={this.handleApprove}>
+              <Button
+                type={'primary'}
+                style={{ marginLeft: 10 }}
+                onClick={this.handleApprove}
+                hidden={!havePermission(this.state.authority + '.approve')}
+              >
                 批准
               </Button>
-              <Button style={{ marginLeft: 10 }} onClick={this.handleAborted}>
+              <Button
+                style={{ marginLeft: 10 }}
+                onClick={this.handleAborted}
+                hidden={!havePermission(this.state.authority + '.invalid')}
+              >
                 作废
               </Button>
             </div>
