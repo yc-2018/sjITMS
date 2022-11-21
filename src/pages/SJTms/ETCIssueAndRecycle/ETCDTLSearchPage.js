@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-07 11:23:41
+ * @LastEditTime: 2022-11-21 11:33:18
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -74,6 +74,7 @@ export default class ETCSearchPage extends QuickFormSearchPage {
   };
 
   handleCancelIssue = async selectedRow => {
+    this.props.refreshSelectedRow({});
     return await cancelIssue(selectedRow.BILLNUMBER);
   };
 

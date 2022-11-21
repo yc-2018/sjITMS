@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-09-23 16:17:11
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-11 16:52:21
+ * @LastEditTime: 2022-11-21 11:23:35
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -65,6 +65,7 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
     const response = await issue(data);
     if (response.success) {
       message.success('发放成功');
+      this.setState({ selectRows: {} });
       this.handlePage.onSearch();
     }
   };

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-17 14:53:10
+ * @LastEditTime: 2022-11-18 08:35:01
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -161,7 +161,6 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
 
   onBatchRejected = () => {
     const { selectedRows } = this.state;
-    console.log('selectedRows', selectedRows);
     if (selectedRows.length != 1) {
       message.warn('请选中一条数据！');
       return;
