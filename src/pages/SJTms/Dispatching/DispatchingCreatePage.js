@@ -244,10 +244,10 @@ export default class DispatchingCreatePage extends Component {
     index == -1
       ? employees.push(emp)
       : (employees = employees.filter(x => x.memberUuid != emp.memberUuid));
-    // if (employees.filter(item => item.memberType == 'Driver').length >= 2) {
-    //   message.error('只允许一位驾驶员！');
-    //   return;
-    // }
+    if (employees.filter(item => item.memberType == 'Driver').length >= 2) {
+      message.error('只允许一位驾驶员！');
+      return;
+    }
     this.setState({ selectEmployees: employees });
   };
   //人员筛选
@@ -524,7 +524,7 @@ export default class DispatchingCreatePage extends Component {
                   title={
                     employee.BILLCOUNTS
                       ? `[${employee.CODE}]` +
-                        employee.NAME +
+                        employee.NAME.replace(/\([^\)]*\)|\（[^\)]*\）/g, '') +
                         '在' +
                         employee.BILLNUMBERS +
                         '排车单中有未完成的任务'
@@ -542,10 +542,10 @@ export default class DispatchingCreatePage extends Component {
                       onClick={() => this.handleEmployee(employee)}
                     >
                       <Row justify="space-between" style={{ height: '100%' }}>
-                        <Col span={10} className={disStyle.employeeCardContent}>
-                          <Icon type="user" style={{ fontSize: 32 }} />
+                        <Col span={8} className={disStyle.employeeCardContent}>
+                          <Icon type="user" style={{ fontSize: 28 }} />
                         </Col>
-                        <Col span={14} className={disStyle.employeeCardContent}>
+                        <Col span={16} className={disStyle.employeeCardContent}>
                           <div className={disStyle.employeeName}>
                             <div>
                               {`[${employee.CODE}]` +
@@ -608,11 +608,11 @@ export default class DispatchingCreatePage extends Component {
                   }`}
                   onClick={() => this.handleVehicle(vehicle)}
                 >
-                  <Row>
-                    <Col span={10} className={disStyle.vehicleCardContent}>
-                      <Icon type="car" style={{ fontSize: 32 }} />
+                  <Row justify="space-between" style={{ height: '100%' }}>
+                    <Col span={8} className={disStyle.employeeCardContent}>
+                      <Icon type="car" style={{ fontSize: 28 }} />
                     </Col>
-                    <Col span={14} className={disStyle.vehicleCardContent}>
+                    <Col span={16} className={disStyle.employeeCardContent}>
                       <div className={disStyle.employeeName}>
                         <div>{vehicle.PLATENUMBER}</div>
                         {vehicle.DRIVERNAME ? (
@@ -976,7 +976,13 @@ export default class DispatchingCreatePage extends Component {
                           textOverflow: 'ellipsis',
                         }}
                       >
-                        <Tooltip placement="topLeft" title={`[${employee.CODE}]` + employee.NAME}>
+                        <Tooltip
+                          placement="topLeft"
+                          title={
+                            `[${employee.CODE}]` +
+                            employee.NAME.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')
+                          }
+                        >
                           <span>
                             {`[${employee.CODE}]` +
                               employee.NAME.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')}

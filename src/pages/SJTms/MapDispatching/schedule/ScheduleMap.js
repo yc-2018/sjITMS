@@ -2,12 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-07 19:32:38
+ * @LastEditTime: 2022-11-21 14:24:03
  * @Description: 排车单地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\schedule\ScheduleMap.js
  */
 import React, { Component } from 'react';
-import { Divider, Modal, Button } from 'antd';
+import { Divider, Modal, Button, Row, Col } from 'antd';
 import { Map, CustomOverlay } from 'react-bmapgl';
 import { getDetailByBillUuids } from '@/services/sjitms/ScheduleBill';
 import { queryDriverRoutes } from '@/services/sjitms/OrderBill';
@@ -100,7 +100,6 @@ export default class DispatchMap extends Component {
 
   //送货点标注
   drawMarker = points => {
-    console.log(points);
     points.forEach(pt => {
       const point = new BMapGL.Point(pt.longitude, pt.latitude);
       const marker = new BMapGL.Marker(point, {
@@ -227,7 +226,14 @@ export default class DispatchMap extends Component {
         width="100vw"
         bodyStyle={{ margin: -24, height: '100vh' }}
         visible={visible}
-        footer={<Button onClick={() => this.setState({ visible: false })}>关闭</Button>}
+        title={
+          <Row type="flex" justify="space-between">
+            <Col span={22} />
+            <Col span={1}>
+              <Button onClick={() => this.setState({ visible: false })}>关闭</Button>
+            </Col>
+          </Row>
+        }
         closable={false}
         destroyOnClose={true}
       >

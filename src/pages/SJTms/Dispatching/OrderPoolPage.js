@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-21 10:59:49
+ * @LastEditTime: 2022-11-21 14:48:27
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -581,7 +581,7 @@ export default class OrderPoolPage extends Component {
               childSelectedRowKeys={auditedRowKeys}
               columns={OrderCollectColumns}
               nestColumns={OrderDetailColumns}
-              scrollY="calc(75vh - 235px)"
+              scrollY="calc(86vh - 235px)"
               title={() => this.drawCollect(false)}
               footer={() => this.drawCollect(true)}
             />
@@ -598,7 +598,7 @@ export default class OrderPoolPage extends Component {
               changeSelectRows={selectedRowKeys => this.tableChangeRows('Audited', selectedRowKeys)}
               selectedRowKeys={auditedRowKeys}
               columns={OrderColumns}
-              scrollY="calc(75vh - 235px)"
+              scrollY="calc(86vh - 235px)"
               title={() => this.drawCollect(false)}
               footer={() => this.drawCollect(true)}
             />
@@ -674,7 +674,7 @@ export default class OrderPoolPage extends Component {
             changeSelectRows={rowKeys => this.tableChangeRows('Vehicle', rowKeys)}
             selectedRowKeys={vehicleRowKeys}
             columns={VehicleColumns}
-            scrollY="calc(75vh - 145px)"
+            scrollY="calc(86vh - 145px)"
           />
         </TabPane>
       </Tabs>

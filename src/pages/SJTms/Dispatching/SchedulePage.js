@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-21 11:06:42
+ * @LastEditTime: 2022-11-21 14:48:29
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -474,7 +474,7 @@ export default class SchedulePage extends Component {
                     this.setState({ scheduleData });
                   }}
                   columns={columns}
-                  scrollY="calc(75vh - 145px)"
+                  scrollY="calc(86vh - 145px)"
                 />
               </div>
             </Dropdown>
@@ -525,7 +525,7 @@ export default class SchedulePage extends Component {
                 this.setState({ scheduleData });
               }}
               columns={columns}
-              scrollY="calc(75vh - 145px)"
+              scrollY="calc(86vh - 145px)"
             />
           </TabPane>
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已作废</Text>} key="Aborted">
@@ -542,7 +542,7 @@ export default class SchedulePage extends Component {
                 this.setState({ scheduleData });
               }}
               columns={columns}
-              scrollY="calc(75vh - 145px)"
+              scrollY="calc(86vh - 145px)"
             />
           </TabPane>
         </Tabs>
