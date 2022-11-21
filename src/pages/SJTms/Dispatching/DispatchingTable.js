@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-09 15:39:26
+ * @LastEditTime: 2022-11-21 11:01:49
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
@@ -51,7 +51,8 @@ export default class DispatchingTable extends Component {
     let allRowKeys = [...dataSource].map(x => x.uuid);
     const indicatrix = rowKeys.indexOf(record.uuid);
     const selected = indicatrix == -1;
-    selected ? rowKeys.push(record.uuid) : rowKeys.splice(indicatrix, 1);
+    // selected ? rowKeys.push(record.uuid) : rowKeys.splice(indicatrix, 1);
+    rowKeys = [record.uuid];
     if (event.shiftKey && lastIndex >= 0) {
       allRowKeys =
         index > lastIndex

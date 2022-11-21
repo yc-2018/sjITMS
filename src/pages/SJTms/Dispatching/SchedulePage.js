@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-19 09:05:44
+ * @LastEditTime: 2022-11-21 11:06:42
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -42,6 +42,7 @@ export default class SchedulePage extends Component {
   state = {
     loading: false,
     columns: [...ScheduleColumns],
+    searchKeyValues: {},
     savedRowKeys: [],
     approvedRowKeys: [],
     abortedRowKeys: [],
@@ -73,7 +74,7 @@ export default class SchedulePage extends Component {
   };
   //获取排车单
   getSchedules = (stat, searchKeyValues) => {
-    if (searchKeyValues == undefined) searchKeyValues = {};
+    if (searchKeyValues == undefined) searchKeyValues = this.state.searchKeyValues;
     searchKeyValues.stat = stat;
     querySchedule(searchKeyValues).then(response => {
       if (response.success) {
@@ -112,9 +113,8 @@ export default class SchedulePage extends Component {
           approvedRowKeys: [],
           abortedRowKeys: [],
         });
-      } else {
-        this.setState({ loading: false });
       }
+      this.setState({ loading: false, searchKeyValues });
     });
   };
   //标签页切换

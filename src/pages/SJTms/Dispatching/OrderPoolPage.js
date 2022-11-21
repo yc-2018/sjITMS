@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-19 16:06:50
+ * @LastEditTime: 2022-11-21 10:59:49
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -23,6 +23,7 @@ import DispatchMap from '@/pages/SJTms/MapDispatching/dispatching/DispatchingMap
 import VehicleSearchForm from './VehicleSearchForm';
 import dispatchingStyles from './Dispatching.less';
 import { queryAuditedOrder, savePending } from '@/services/sjitms/OrderBill';
+import { save } from '@/services/sjitms/ScheduleBill';
 import { queryData } from '@/services/quick/Quick';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
 import { groupBy, sumBy, uniqBy } from 'lodash';
@@ -31,10 +32,7 @@ import mapIcon from '@/assets/common/map.svg';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
-const isOrgQuery = [
-  { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
-  { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
-];
+
 export default class OrderPoolPage extends Component {
   state = {
     loading: false,
@@ -59,6 +57,10 @@ export default class OrderPoolPage extends Component {
       });
     }
   }
+  isOrgQuery = [
+    { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+    { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
+  ];
 
   //刷新
   refreshTable = () => {
@@ -99,7 +101,7 @@ export default class OrderPoolPage extends Component {
     }
     filter.superQuery.queryParams = [
       ...pageFilter,
-      ...isOrgQuery,
+      ...this.isOrgQuery,
       { field: 'STAT', type: 'VarChar', rule: 'in', val: 'Audited||PartScheduled' },
       { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
     ];
@@ -152,7 +154,7 @@ export default class OrderPoolPage extends Component {
       filter.page = vehiclePagination.current;
       filter.pageSize = vehiclePagination.pageSize || 100;
     }
-    filter.superQuery.queryParams = [...vehicleFilter, ...isOrgQuery];
+    filter.superQuery.queryParams = [...vehicleFilter, ...this.isOrgQuery];
     filter.quickuuid = 'v_sj_itms_vehicle_stat';
     queryData(filter).then(response => {
       if (response.success) {
@@ -354,11 +356,53 @@ export default class OrderPoolPage extends Component {
   };
 
   //创建排车单
-  createSchedule = () => {
+  createSchedule = async () => {
     const { vehicleRowKeys, vehicleData } = this.state;
-    if (vehicleRowKeys.length != 1) {
+    const vehicle = vehicleData.find(x => x.uuid == vehicleRowKeys);
+    if (!vehicle) {
       message.warning('请选择车辆！');
       return;
+    }
+    const carrier = vehicle.DRIVERUUID
+      ? {
+          uuid: vehicle.DRIVERUUID,
+          code: vehicle.DRIVERCODE,
+          name: vehicle.DRIVERNAME,
+        }
+      : {};
+    const delivery = vehicle.DELIVERYUUID
+      ? {
+          uuid: vehicle.DELIVERYUUID,
+          code: vehicle.DELIVERYCODE,
+          name: vehicle.DELIVERYNAME,
+        }
+      : {};
+    const paramBody = {
+      type: 'Job',
+      vehicle: {
+        uuid: vehicle.UUID,
+        code: vehicle.CODE,
+        name: vehicle.PLATENUMBER,
+      },
+      vehicleType: {
+        uuid: vehicle.VEHICLETYPEUUID,
+        code: vehicle.VEHICLETYPECODE,
+        name: vehicle.VEHICLETYPENAME,
+      },
+      carrier: { ...carrier },
+      details: [],
+      memberDetails: [
+        { member: carrier, memberType: 'Driver' },
+        { member: delivery, memberType: 'DeliveryMan' },
+      ],
+      companyUuid: loginCompany().uuid,
+      dispatchCenterUuid: loginOrg().uuid,
+    };
+    const response = await save(paramBody);
+    if (response.success) {
+      message.success('保存成功！');
+      this.props.refreshSchedule();
+      this.setState({ vehicleRowKeys: [] });
     }
   };
 
