@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-21 15:39:06
+ * @LastEditTime: 2022-11-21 16:53:12
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -23,7 +23,11 @@ import DispatchingCreatePage from './DispatchingCreatePage';
 import DispatchMap from '@/pages/SJTms/MapDispatching/dispatching/DispatchingMap';
 import VehicleSearchForm from './VehicleSearchForm';
 import dispatchingStyles from './Dispatching.less';
-import { queryAuditedOrder, savePending } from '@/services/sjitms/OrderBill';
+import {
+  queryAuditedOrder,
+  queryCollectAuditedOrder,
+  savePending,
+} from '@/services/sjitms/OrderBill';
 import { save } from '@/services/sjitms/ScheduleBill';
 import { queryData } from '@/services/quick/Quick';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
@@ -48,6 +52,7 @@ export default class OrderPoolPage extends Component {
     auditedRowKeys: [],
     vehicleRowKeys: [],
     activeTab: 'Audited',
+    waveOrder: {},
   };
 
   componentWillReceiveProps(nextProps) {
@@ -106,7 +111,7 @@ export default class OrderPoolPage extends Component {
       { field: 'STAT', type: 'VarChar', rule: 'in', val: 'Audited||PartScheduled' },
       { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
     ];
-    queryAuditedOrder(filter).then(response => {
+    queryAuditedOrder(filter).then(async response => {
       if (response.success) {
         searchPagination = {
           ...pagination,
@@ -116,6 +121,7 @@ export default class OrderPoolPage extends Component {
           showTotal: total => `共 ${total} 条`,
         };
         const data = response.data.records ? response.data.records : [];
+        const collectResponse = await queryCollectAuditedOrder(filter);
         this.setState({
           searchPagination,
           auditedData: data,
@@ -124,6 +130,7 @@ export default class OrderPoolPage extends Component {
           auditedRowKeys: [],
           vehicleRowKeys: [],
           activeTab: 'Audited',
+          waveOrder: collectResponse.success ? collectResponse.data : {},
         });
       }
       this.props.refreshSelectRowOrder([], ['Audited', 'PartScheduled']);
@@ -457,10 +464,7 @@ export default class OrderPoolPage extends Component {
   };
 
   //汇总数据
-  drawCollect = footer => {
-    const { totalOrder } = this.props;
-    const { auditedData } = this.state;
-    const orders = this.groupByOrder(footer ? auditedData : totalOrder);
+  drawCollect = orders => {
     const totalTextStyle = footer
       ? {}
       : { fontSize: 16, fontWeight: 700, marginLeft: 2, color: '#333' };
@@ -538,8 +542,9 @@ export default class OrderPoolPage extends Component {
       vehicleRowKeys,
       vehicleData,
       activeTab,
+      waveOrder,
     } = this.state;
-    const { isOrderCollect } = this.props;
+    const { isOrderCollect, totalOrder } = this.props;
     const buildOperations = () => {
       switch (activeTab) {
         case 'Vehicle':
@@ -564,6 +569,7 @@ export default class OrderPoolPage extends Component {
           );
       }
     };
+    const collectOrder = this.groupByOrder(totalOrder);
 
     return (
       <div>
@@ -597,8 +603,8 @@ export default class OrderPoolPage extends Component {
                 columns={OrderCollectColumns}
                 nestColumns={OrderDetailColumns}
                 scrollY="calc(86vh - 235px)"
-                title={() => this.drawCollect(false)}
-                footer={() => this.drawCollect(true)}
+                title={() => this.drawCollect(collectOrder)}
+                footer={() => this.drawCollect(waveOrder)}
               />
             ) : (
               <DispatchingTable
@@ -616,8 +622,8 @@ export default class OrderPoolPage extends Component {
                 selectedRowKeys={auditedRowKeys}
                 columns={OrderColumns}
                 scrollY="calc(86vh - 235px)"
-                title={() => this.drawCollect(false)}
-                footer={() => this.drawCollect(true)}
+                title={() => this.drawCollect(collectOrder)}
+                footer={() => this.drawCollect(waveOrder)}
               />
             )}
             {auditedData.length == 0 ? (

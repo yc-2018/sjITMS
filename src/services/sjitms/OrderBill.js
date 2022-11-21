@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-12 16:08:35
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-09 11:33:28
+ * @LastEditTime: 2022-11-21 16:51:14
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -36,6 +36,12 @@ export async function queryDriverRoutes(origin, destination, waypoints) {
 }
 export async function queryAuditedOrder(params) {
   return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/queryAuditedOrder`, {
+    method: 'POST',
+    body: params,
+  });
+}
+export async function queryCollectAuditedOrder(params) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/queryCollectAuditedOrder`, {
     method: 'POST',
     body: params,
   });
