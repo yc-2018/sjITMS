@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-21 14:48:27
+ * @LastEditTime: 2022-11-21 15:39:06
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -18,6 +18,7 @@ import {
   pagination,
 } from './DispatchingColumns';
 import OrderPoolSearchForm from './OrderPoolSearchForm';
+import BatchProcessConfirm from './BatchProcessConfirm';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import DispatchMap from '@/pages/SJTms/MapDispatching/dispatching/DispatchingMap';
 import VehicleSearchForm from './VehicleSearchForm';
@@ -355,14 +356,31 @@ export default class OrderPoolPage extends Component {
     this.createPageModalRef.show(false, orders);
   };
 
-  //创建排车单
-  createSchedule = async () => {
-    const { vehicleRowKeys, vehicleData } = this.state;
-    const vehicle = vehicleData.find(x => x.uuid == vehicleRowKeys);
-    if (!vehicle) {
+  handleCreateSchedule = () => {
+    const { vehicleRowKeys } = this.state;
+    if (vehicleRowKeys.length == 0) {
       message.warning('请选择车辆！');
       return;
     }
+    if (vehicleRowKeys.length == 1) {
+      this.createSchedule(vehicleRowKeys[0]).then(response => {
+        if (response.success) {
+          message.success('保存成功！');
+          this.props.refreshSchedule();
+          this.setState({ vehicleRowKeys: [] });
+        }
+      });
+    } else {
+      this.batchProcessConfirmRef.show('创建排车单', vehicleRowKeys, this.createSchedule, () => {
+        this.props.refreshSchedule();
+        this.setState({ vehicleRowKeys: [] });
+      });
+    }
+  };
+  //创建排车单
+  createSchedule = async uuid => {
+    const { vehicleData } = this.state;
+    const vehicle = vehicleData.find(x => x.uuid == uuid);
     const carrier = vehicle.DRIVERUUID
       ? {
           uuid: vehicle.DRIVERUUID,
@@ -398,12 +416,7 @@ export default class OrderPoolPage extends Component {
       companyUuid: loginCompany().uuid,
       dispatchCenterUuid: loginOrg().uuid,
     };
-    const response = await save(paramBody);
-    if (response.success) {
-      message.success('保存成功！');
-      this.props.refreshSchedule();
-      this.setState({ vehicleRowKeys: [] });
-    }
+    return await save(paramBody);
   };
 
   //添加到待定池
@@ -531,7 +544,7 @@ export default class OrderPoolPage extends Component {
       switch (activeTab) {
         case 'Vehicle':
           return (
-            <Button type={'primary'} onClick={this.createSchedule}>
+            <Button type={'primary'} onClick={this.handleCreateSchedule}>
               生成排车单
             </Button>
           );
@@ -553,131 +566,138 @@ export default class OrderPoolPage extends Component {
     };
 
     return (
-      <Tabs
-        activeKey={activeTab}
-        onChange={this.handleTabChange}
-        tabBarExtraContent={buildOperations()}
-      >
-        <TabPane tab={<Text className={dispatchingStyles.cardTitle}>订单池</Text>} key="Audited">
-          {/* 查询表单 */}
-          <OrderPoolSearchForm
-            refresh={this.refreshTable}
-            refreshOrderPool={this.refreshOrderPool}
-          />
-          {/* 待排订单列表 */}
-          {isOrderCollect ? (
-            <DispatchingChildTable
-              comId="orderPool"
-              clickRow
-              childSettingCol
-              pagination={searchPagination || false}
-              loading={loading}
-              dataSource={auditedCollectData}
-              refreshDataSource={(_, pagination, sorter) => {
-                this.refreshOrderPool(undefined, pagination, sorter);
-              }}
-              changeSelectRows={this.childTableChangeRows}
-              selectedRowKeys={auditedParentRowKeys}
-              childSelectedRowKeys={auditedRowKeys}
-              columns={OrderCollectColumns}
-              nestColumns={OrderDetailColumns}
-              scrollY="calc(86vh - 235px)"
-              title={() => this.drawCollect(false)}
-              footer={() => this.drawCollect(true)}
+      <div>
+        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
+        <Tabs
+          activeKey={activeTab}
+          onChange={this.handleTabChange}
+          tabBarExtraContent={buildOperations()}
+        >
+          <TabPane tab={<Text className={dispatchingStyles.cardTitle}>订单池</Text>} key="Audited">
+            {/* 查询表单 */}
+            <OrderPoolSearchForm
+              refresh={this.refreshTable}
+              refreshOrderPool={this.refreshOrderPool}
             />
-          ) : (
-            <DispatchingTable
-              comId="orderPool"
-              clickRow
-              pagination={searchPagination || false}
-              loading={loading}
-              dataSource={auditedData}
-              refreshDataSource={(_, pagination, sorter) => {
-                this.refreshOrderPool(undefined, pagination, sorter);
-              }}
-              changeSelectRows={selectedRowKeys => this.tableChangeRows('Audited', selectedRowKeys)}
-              selectedRowKeys={auditedRowKeys}
-              columns={OrderColumns}
-              scrollY="calc(86vh - 235px)"
-              title={() => this.drawCollect(false)}
-              footer={() => this.drawCollect(true)}
-            />
-          )}
-          {auditedData.length == 0 ? (
-            <></>
-          ) : (
-            <div className={dispatchingStyles.orderPoolFooter}>
-              <div className={dispatchingStyles.orderTotalPane}>
-                <Icon type="info-circle" theme="filled" twoToneColor="#3B77E3" />
-                <span style={{ marginLeft: 5 }}>
-                  已选择
-                  <span style={{ color: '#3B77E3', margin: '0 2px' }}>{auditedRowKeys.length}</span>
-                  项
-                </span>
-                <a
-                  href="#"
-                  style={{ marginLeft: 10 }}
-                  onClick={() => {
-                    this.tableChangeRows(_, []);
-                    if (isOrderCollect) {
-                      this.setState({ auditedParentRowKeys: [] });
-                    }
-                  }}
-                >
-                  取消全部
-                </a>
+            {/* 待排订单列表 */}
+            {isOrderCollect ? (
+              <DispatchingChildTable
+                comId="orderPool"
+                clickRow
+                childSettingCol
+                pagination={searchPagination || false}
+                loading={loading}
+                dataSource={auditedCollectData}
+                refreshDataSource={(_, pagination, sorter) => {
+                  this.refreshOrderPool(undefined, pagination, sorter);
+                }}
+                changeSelectRows={this.childTableChangeRows}
+                selectedRowKeys={auditedParentRowKeys}
+                childSelectedRowKeys={auditedRowKeys}
+                columns={OrderCollectColumns}
+                nestColumns={OrderDetailColumns}
+                scrollY="calc(86vh - 235px)"
+                title={() => this.drawCollect(false)}
+                footer={() => this.drawCollect(true)}
+              />
+            ) : (
+              <DispatchingTable
+                comId="orderPool"
+                clickRow
+                pagination={searchPagination || false}
+                loading={loading}
+                dataSource={auditedData}
+                refreshDataSource={(_, pagination, sorter) => {
+                  this.refreshOrderPool(undefined, pagination, sorter);
+                }}
+                changeSelectRows={selectedRowKeys =>
+                  this.tableChangeRows('Audited', selectedRowKeys)
+                }
+                selectedRowKeys={auditedRowKeys}
+                columns={OrderColumns}
+                scrollY="calc(86vh - 235px)"
+                title={() => this.drawCollect(false)}
+                footer={() => this.drawCollect(true)}
+              />
+            )}
+            {auditedData.length == 0 ? (
+              <></>
+            ) : (
+              <div className={dispatchingStyles.orderPoolFooter}>
+                <div className={dispatchingStyles.orderTotalPane}>
+                  <Icon type="info-circle" theme="filled" twoToneColor="#3B77E3" />
+                  <span style={{ marginLeft: 5 }}>
+                    已选择
+                    <span style={{ color: '#3B77E3', margin: '0 2px' }}>
+                      {auditedRowKeys.length}
+                    </span>
+                    项
+                  </span>
+                  <a
+                    href="#"
+                    style={{ marginLeft: 10 }}
+                    onClick={() => {
+                      this.tableChangeRows(_, []);
+                      if (isOrderCollect) {
+                        this.setState({ auditedParentRowKeys: [] });
+                      }
+                    }}
+                  >
+                    取消全部
+                  </a>
+                </div>
               </div>
+            )}
+            <div style={{ position: 'absolute', top: 12, left: 160 }}>
+              <a href="#" onClick={() => this.dispatchMapRef.show()}>
+                <img src={mapIcon} style={{ width: 20, height: 20 }} />
+                地图
+              </a>
+              <Switch
+                style={{ marginLeft: 15 }}
+                checked={this.props.isOrderCollect}
+                checkedChildren="门店汇总"
+                unCheckedChildren="门店汇总"
+                onClick={isOrderCollect => {
+                  this.props.refreshOrderCollect(isOrderCollect);
+                }}
+              />
             </div>
-          )}
-          <div style={{ position: 'absolute', top: 12, left: 160 }}>
-            <a href="#" onClick={() => this.dispatchMapRef.show()}>
-              <img src={mapIcon} style={{ width: 20, height: 20 }} />
-              地图
-            </a>
-            <Switch
-              style={{ marginLeft: 15 }}
-              checked={this.props.isOrderCollect}
-              checkedChildren="门店汇总"
-              unCheckedChildren="门店汇总"
-              onClick={isOrderCollect => {
-                this.props.refreshOrderCollect(isOrderCollect);
+            {/* 排车modal */}
+            <DispatchingCreatePage
+              modal={{ title: '排车' }}
+              refresh={() => {
+                this.refreshTable();
+                this.props.refreshPending();
+                this.props.refreshSchedule();
               }}
+              onRef={node => (this.createPageModalRef = node)}
             />
-          </div>
-          {/* 排车modal */}
-          <DispatchingCreatePage
-            modal={{ title: '排车' }}
-            refresh={() => {
-              this.refreshTable();
-              this.props.refreshPending();
-              this.props.refreshSchedule();
-            }}
-            onRef={node => (this.createPageModalRef = node)}
-          />
-          <DispatchMap
-            dispatchingByMap={this.dispatchingByMap}
-            onRef={node => (this.dispatchMapRef = node)}
-          />
-        </TabPane>
-        <TabPane tab={<Text className={dispatchingStyles.cardTitle}>运力池</Text>} key="Vehicle">
-          <VehicleSearchForm refresh={this.refreshVehiclePool} />
-          {/* 运力池 */}
-          <DispatchingTable
-            comId="vehicles"
-            clickRow
-            pagination={vehiclePagination || false}
-            loading={loading}
-            dataSource={vehicleData}
-            refreshDataSource={(_, pagination, sorter) => {
-              this.refreshVehiclePool(undefined, pagination, sorter);
-            }}
-            changeSelectRows={rowKeys => this.tableChangeRows('Vehicle', rowKeys)}
-            selectedRowKeys={vehicleRowKeys}
-            columns={VehicleColumns}
-            scrollY="calc(86vh - 145px)"
-          />
-        </TabPane>
-      </Tabs>
+            <DispatchMap
+              dispatchingByMap={this.dispatchingByMap}
+              onRef={node => (this.dispatchMapRef = node)}
+            />
+          </TabPane>
+          <TabPane tab={<Text className={dispatchingStyles.cardTitle}>运力池</Text>} key="Vehicle">
+            <VehicleSearchForm refresh={this.refreshVehiclePool} />
+            {/* 运力池 */}
+            <DispatchingTable
+              comId="vehicles"
+              clickRow
+              pagination={vehiclePagination || false}
+              loading={loading}
+              dataSource={vehicleData}
+              refreshDataSource={(_, pagination, sorter) => {
+                this.refreshVehiclePool(undefined, pagination, sorter);
+              }}
+              changeSelectRows={rowKeys => this.tableChangeRows('Vehicle', rowKeys)}
+              selectedRowKeys={vehicleRowKeys}
+              columns={VehicleColumns}
+              scrollY="calc(86vh - 145px)"
+            />
+          </TabPane>
+        </Tabs>
+      </div>
     );
   }
 }
