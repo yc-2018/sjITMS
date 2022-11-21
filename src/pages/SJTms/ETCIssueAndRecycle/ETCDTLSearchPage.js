@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-21 11:33:18
+ * @LastEditTime: 2022-11-21 15:09:10
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -12,12 +12,13 @@ import Page from '@/pages/Component/Page/inner/Page';
 import { DndProvider } from 'react-dnd';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { cancelIssue, applyIssue } from '@/services/sjitms/ETCIssueAndRecycle';
-import { message, Popconfirm, Button } from 'antd';
+import { message, Popconfirm, Button, Form, Modal, Input } from 'antd';
 
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
+@Form.create()
 export default class ETCSearchPage extends QuickFormSearchPage {
   state = {
     ...this.state,
@@ -57,20 +58,13 @@ export default class ETCSearchPage extends QuickFormSearchPage {
   };
 
   //申请发卡
-  applyIssue = () => {
+  clickApplyIssue = () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
       message.warn('请选中一条数据！');
       return;
     }
-    selectedRows.length == 1
-      ? this.setState({ showApply: true })
-      : this.batchProcessConfirmRef.show(
-          '申请发卡',
-          selectedRows,
-          this.handleApplyIssue,
-          this.onSearch
-        );
+    this.setState({ showApply: true });
   };
 
   handleCancelIssue = async selectedRow => {
@@ -78,35 +72,48 @@ export default class ETCSearchPage extends QuickFormSearchPage {
     return await cancelIssue(selectedRow.BILLNUMBER);
   };
 
-  handleApplyIssue = async selectedRow => {
-    return await applyIssue(selectedRow.BILLNUMBER);
+  handleApplyIssue = async (selectedRow, fieldsValue) => {
+    console.log('selectedRow', selectedRow);
+    console.log('fieldsValue', fieldsValue);
+    return await applyIssue(selectedRow.BILLNUMBER, fieldsValue.note);
   };
 
   drawToolsButton = () => {
     const { showCancel, showApply, selectedRows } = this.state;
+    const { getFieldDecorator } = this.props.form;
+
     return (
       <span>
-        <Popconfirm
-          title="是否确认对该排车单发起发卡申请?"
+        <Button onClick={() => this.clickApplyIssue()}>申请发卡</Button>
+
+        <Modal
+          title="申请发卡"
           visible={showApply}
-          onVisibleChange={visible => {
-            if (!visible) this.setState({ showApply: visible });
+          key={selectedRows[0]}
+          onOk={() => {
+            this.props.form.validateFields((err, fieldsValue) => {
+              if (err) {
+                return;
+              }
+              this.handleApplyIssue(selectedRows[0], fieldsValue).then(response => {
+                if (response.success) {
+                  message.success('发起成功！');
+                  this.setState({ showApply: false });
+                  this.onSearch();
+                }
+              });
+            });
           }}
           onCancel={() => {
             this.setState({ showApply: false });
           }}
-          onConfirm={() => {
-            this.setState({ showApply: false });
-            this.handleApplyIssue(selectedRows[0]).then(response => {
-              if (response.success) {
-                message.success('发起成功！');
-                this.onSearch();
-              }
-            });
-          }}
         >
-          <Button onClick={() => this.applyIssue()}>申请发卡</Button>
-        </Popconfirm>
+          <Form>
+            <Form.Item labelCol={{ span: 6 }} wrapperCol={{ span: 15 }} label="申请原因">
+              {getFieldDecorator('note', {})(<Input />)}
+            </Form.Item>
+          </Form>
+        </Modal>
 
         <Popconfirm
           title="你确定要取消发卡所选中的排车单吗?"

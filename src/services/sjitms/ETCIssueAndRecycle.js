@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-09-27 09:50:55
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-07 10:03:10
+ * @LastEditTime: 2022-11-21 15:25:55
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -55,11 +55,11 @@ export async function recycle(payload) {
 }
 
 //申请发卡
-export async function applyIssue(billNumber) {
+export async function applyIssue(billNumber, note) {
   return request(
     `/itms-schedule/itms-schedule/sj/etc/applyIssue?billNumber=${billNumber}&companyUuid=${
       loginCompany().uuid
-    }&dcUuid=${loginOrg().uuid}`,
+    }&dcUuid=${loginOrg().uuid}&note=${note}`,
     {
       method: 'POST',
     }
