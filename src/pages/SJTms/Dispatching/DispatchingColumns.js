@@ -719,7 +719,7 @@ export const ScheduleDetailCollectColumns = [
 ];
 
 export const pagination = {
-  defaultPageSize: 200,
+  defaultPageSize: 100,
   size: 'small',
   showSizeChanger: true,
   pageSizeOptions: ['20', '50', '100', '200', '500', '1000'],

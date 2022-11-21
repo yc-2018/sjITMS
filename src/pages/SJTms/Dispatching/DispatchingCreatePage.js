@@ -145,7 +145,7 @@ export default class DispatchingCreatePage extends Component {
           : [];
       }
     }
-    // vehicles = await this.getRecommendByOrders(details, vehicles);
+    vehicles = await this.getRecommendByOrders(details, vehicles);
     if (schedule) {
       //将选中车辆放到第一位
       selectVehicle = vehicles.find(x => x.UUID == schedule.vehicle.uuid);
@@ -296,14 +296,14 @@ export default class DispatchingCreatePage extends Component {
   removeDetail = async record => {
     const { orders } = this.state;
     orders.splice(orders.findIndex(x => x.uuid == record.uuid), 1);
-    // let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
+    let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
     this.setState({ orders, vehicles });
   };
   removeDetails = async records => {
     let { orders } = this.state;
     const uuids = records.map(x => x.uuid);
     orders = orders.filter(x => uuids.indexOf(x.uuid) == -1);
-    // let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
+    let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
     this.setState({ orders, vehicles });
   };
 
@@ -726,7 +726,7 @@ export default class DispatchingCreatePage extends Component {
           visible={editPageVisible}
           order={scheduleDetail}
           totalData={totalData}
-          onCancel={() => this.setState({ editPageVisible: false })}
+          onCancel={() => this.setState({ editPageVisible: false, scheduleDetail: {} })}
         />
         <Spin
           indicator={LoadingIcon('default')}
