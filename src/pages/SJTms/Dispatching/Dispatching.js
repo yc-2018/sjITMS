@@ -106,6 +106,7 @@ export default class Dispatching extends Component {
                         refreshOrder={this.refreshOrderTable}
                         refreshPending={this.refreshPendingTable}
                         refreshDetail={this.refreshSelectScheduleTable}
+                        authority={this.props.route?.authority ? this.props.route.authority : null}
                       />
                     </div>
                   </Col>
