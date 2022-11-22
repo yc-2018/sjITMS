@@ -206,7 +206,7 @@ export default class Swiper extends PureComponent {
               <Col span={6}>
                 <span style={{ fontSize: 15 }}>
                   重量(t)：
-                  {scheduleBill.weight ? new Number(scheduleBill.weight)/1000 : <Empty />}
+                  {scheduleBill.weight ?  (new Number(scheduleBill.weight)/1000).toFixed(3) : <Empty />}
                 </span>
               </Col>
               <Col span={6}>

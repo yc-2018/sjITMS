@@ -166,6 +166,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
   }
 
   drawcell = event => {
+    console.log(event);
     if (event.column.fieldName == 'ORDERNUM') {
       const component = (
         <span>{event.val}</span>
@@ -177,6 +178,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
         //   onChange={event => {}}
         // />
       );
+    
       event.component = component;
     }
     
@@ -199,6 +201,16 @@ export default class LineShipAddress extends QuickFormSearchPage {
       );
       event.component = component;
     }
+
+    if(event.column.fieldName=='LASTMODIFIED'){
+      let component =<></>;
+      if(new Date(event.val).getTime() > new Date().getTime()-3*60*1000){
+           component = (<span style={{color:'red'}}>{event.val}</span>) ;
+          }else{
+             component  = (<span>{event.val}</span>) ;
+          }
+          event.component = component;  
+      }
   };
 
   exSearchFilter = async() => {

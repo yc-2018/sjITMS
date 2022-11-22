@@ -194,6 +194,14 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           <Button>保存</Button>
         </Popconfirm>
         <Popconfirm
+          title="确定取消?"
+          onConfirm={() => this.cancelRecordMiles()}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Button>取消公里数</Button>
+        </Popconfirm>
+        <Popconfirm
           title="确定提交至审批?"
           visible={showAuditPop}
           onVisibleChange={visible => {
@@ -260,7 +268,26 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
       ? this.setState({ showAuditPop: true })
       : this.batchProcessConfirmRef.show('审核', selectedRows, this.onTollFeeAudits, this.onSearch);
   };
-
+  cancelRecordMiles  = async ()=>{
+    const { selectedRows } = this.state;
+    if (selectedRows.length != 1) {
+      message.warn('请选择一条记录');
+      return;
+    }
+    this.props.dispatch(
+      {
+        type: 'dispatchReturnStore/cancelRecordMiles',
+        payload: selectedRows.map(e=>e.UUID)[0],
+        callback: response => {
+          this.setState({ selectedRows: [] });
+          if (response && response.success) {
+            this.refreshTable();
+            message.success(commonLocale.saveSuccessLocale);
+          }
+        },
+      }
+    )
+  }
   onTollFeeAudits = async rows => {
     return await submitFee(rows.BILLNUMBER);
   };

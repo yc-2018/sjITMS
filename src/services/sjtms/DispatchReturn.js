@@ -31,6 +31,12 @@ export async function confirm(payload) {
   });
 }
 
+export async function cancelRecordMiles(payload) {
+  return request(`/itms-schedule/itms-schedule/newoperation/dispatchreturn/cancelRecordMiles?uuid=${payload}`, {
+    method: 'POST'
+  });
+}
+
 export async function confirmByStore(payload) {
   return request(`/itms-schedule/itms-schedule/operation/dispatchreturn/confirm/store`, {
     method: 'POST',

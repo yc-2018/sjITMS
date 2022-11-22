@@ -234,6 +234,15 @@ export default class LineShipAddressSearchPage extends Component {
               >
                 备份
               </Button>
+              <Button
+                type="primary"
+                onClick={() => {
+                  this.setState({ visible: true });
+                }}
+               
+              >
+                配置对调线路
+              </Button>
             </div>
           </div>
           <CreatePageModal

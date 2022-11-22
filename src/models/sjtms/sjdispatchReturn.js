@@ -1,4 +1,12 @@
-import { query,queryByStore,confirm,confirmByStore,audit,queryByPage,confirmStoreFee } from '@/services/sjtms/DispatchReturn';
+import { query,
+  queryByStore,
+  confirm,
+  confirmByStore,
+  audit,
+  queryByPage,
+  confirmStoreFee,
+  cancelRecordMiles
+ } from '@/services/sjtms/DispatchReturn';
 
 export default {
     namespace: 'dispatchReturnStore',
@@ -76,6 +84,10 @@ export default {
             const response = yield call(confirm, payload);
             if (callback) callback(response);
         },
+        *cancelRecordMiles({ payload, callback }, { call, put }) {
+          const response = yield call(cancelRecordMiles, payload);
+          if (callback) callback(response);
+      },
         *onConfirmByStore({ payload, callback }, { call, put }) {
             const response = yield call(confirmStoreFee, payload);
             if (callback) callback(response);
