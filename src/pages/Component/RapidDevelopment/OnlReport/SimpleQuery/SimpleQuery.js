@@ -18,6 +18,7 @@ import {
   SimpleAutoComplete,
   SimpleAutoCompleteEasy,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
+import moment from 'moment';
 const { RangePicker } = DatePicker;
 
 @Form.create()
@@ -89,11 +90,25 @@ export default class SimpleQuery extends SearchForm {
       : '';
     switch (searchField.searchShowtype) {
       case 'date':
-        return <RangePicker style={{ width: '100%' }} />;
+        return <RangePicker showToday={true} style={{ width: '100%' }} />;
       case 'datetime':
-        return <RangePicker style={{ width: '100%' }} showTime />;
+        return (
+          <RangePicker
+            style={{ width: '100%' }}
+            showTime={{
+              defaultValue: [moment('00:00:00', 'HH:mm:ss'), moment('11:59:59', 'HH:mm:ss')],
+            }}
+          />
+        );
       case 'time':
-        return <RangePicker style={{ width: '100%' }} showTime />;
+        return (
+          <RangePicker
+            style={{ width: '100%' }}
+            showTime={{
+              defaultValue: [moment('00:00:00', 'HH:mm:ss'), moment('11:59:59', 'HH:mm:ss')],
+            }}
+          />
+        );
       case 'list':
         return (
           <SimpleSelect
