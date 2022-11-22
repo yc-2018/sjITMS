@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-21 16:53:12
+ * @LastEditTime: 2022-11-21 18:30:43
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -464,7 +464,7 @@ export default class OrderPoolPage extends Component {
   };
 
   //汇总数据
-  drawCollect = orders => {
+  drawCollect = (footer, orders) => {
     const totalTextStyle = footer
       ? {}
       : { fontSize: 16, fontWeight: 700, marginLeft: 2, color: '#333' };
@@ -603,8 +603,9 @@ export default class OrderPoolPage extends Component {
                 columns={OrderCollectColumns}
                 nestColumns={OrderDetailColumns}
                 scrollY="calc(86vh - 235px)"
-                title={() => this.drawCollect(collectOrder)}
-                footer={() => this.drawCollect(waveOrder)}
+                scrollToFirstRowOnChange
+                title={() => this.drawCollect(false, collectOrder)}
+                footer={() => this.drawCollect(true, waveOrder)}
               />
             ) : (
               <DispatchingTable
@@ -619,11 +620,13 @@ export default class OrderPoolPage extends Component {
                 changeSelectRows={selectedRowKeys =>
                   this.tableChangeRows('Audited', selectedRowKeys)
                 }
+                ref={ref => (this.orderPageRef = ref)}
                 selectedRowKeys={auditedRowKeys}
                 columns={OrderColumns}
                 scrollY="calc(86vh - 235px)"
-                title={() => this.drawCollect(collectOrder)}
-                footer={() => this.drawCollect(waveOrder)}
+                scrollToFirstRowOnChange
+                title={() => this.drawCollect(false, collectOrder)}
+                footer={() => this.drawCollect(true, waveOrder)}
               />
             )}
             {auditedData.length == 0 ? (
