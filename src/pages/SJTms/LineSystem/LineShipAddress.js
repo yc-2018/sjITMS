@@ -449,7 +449,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
           ORDERNUM: orderNum,
           COMPANYUUID: loginCompany().uuid,
           DISPATCHCENTERUUID: loginOrg().uuid,
-          LASTMODIFIED:new Date()
+          LASTMODIFIED: new Date(),
         };
       });
     if (saveData.length > 0) {
@@ -709,10 +709,18 @@ export default class LineShipAddress extends QuickFormSearchPage {
   getMatchLine = async () => {
     const { lineuuid } = this.state;
     let res = await getMatchLine(lineuuid);
+    if (res.success) {
+      this.setState({
+        lineValue: { value: res.data.uuid },
+      });
+    } else {
+      this.setState({
+        lineValue: '',
+      });
+    }
     this.setState({
       lineModalVisible: true,
       addToNewLine: false,
-      lineValue: { value: res.data.uuid },
     });
   };
 
