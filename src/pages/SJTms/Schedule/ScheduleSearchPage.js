@@ -551,7 +551,13 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     const printPages = document.getElementById('printPage').childNodes;
     printPages.forEach(page => {
       LODOP.NewPageA();
-      LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
+      if(loginOrg().uuid == '000000750000004'){
+        LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
+      }else{
+        LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
+      }
+      
+      
     });
     LODOP.PREVIEW();
     //LODOP.PRINT();
@@ -825,7 +831,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
               <th colspan={16} style={{ border: 0, height: 20 }}>
                 <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                   <div style={{ float: 'left', width: '25%' }}>
-                    排车序号： {schedule.BILLNUMBER}
+                    排车序号： 
                   </div>
                   <div style={{ float: 'left', width: '25%' }}>操作员： {loginUser().name}</div>
                   <div style={{ float: 'left', width: '25%' }}>驾驶员： {schedule.DRIVER}</div>

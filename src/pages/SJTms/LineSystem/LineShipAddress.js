@@ -208,9 +208,9 @@ export default class LineShipAddress extends QuickFormSearchPage {
       event.component = component;
     }
 
-    if (event.column.fieldName == 'LASTMODIFIED') {
+    if (event.column.fieldName == 'LINECODE') {
       let component = <></>;
-      if (new Date(event.val).getTime() > new Date().getTime() - 3 * 60 * 1000) {
+      if (new Date(event.record['LASTMODIFIED']).getTime() > new Date().getTime() - 2 * 60 * 1000) {
         component = <span style={{ color: 'red' }}>{event.val}</span>;
       } else {
         component = <span>{event.val}</span>;
@@ -449,6 +449,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
           ORDERNUM: orderNum,
           COMPANYUUID: loginCompany().uuid,
           DISPATCHCENTERUUID: loginOrg().uuid,
+          LASTMODIFIED:new Date()
         };
       });
     if (saveData.length > 0) {
