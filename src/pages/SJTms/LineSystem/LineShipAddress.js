@@ -571,6 +571,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
               <Col>
                 <Form.Item label="线路">
                   <TreeSelect
+                    treeNodeFilterProp="title"  
                     showSearch
                     allowClear={true}
                     optionFilterProp="children"
