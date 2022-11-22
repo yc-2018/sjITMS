@@ -20,16 +20,15 @@ import {
   batchDeleteByUuids,
   batchAddScheduleStorePool,
   checkStoreExist,
-  switchLineAddress
+  switchLineAddress,
+  getMatchLine,
 } from '@/services/sjtms/LineSystemHis';
-import {
-  updateStoreAddressList
-} from '@/services/sjtms/LineSystemHis';
+import { updateStoreAddressList } from '@/services/sjtms/LineSystemHis';
 import { dynamicqueryById, dynamicDelete, dynamicQuery } from '@/services/quick/Quick';
 import { commonLocale } from '@/utils/CommonLocale';
 import TableTransfer from './TableTransfer';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import LineShipAddressPlan from "./LineShipAddressPlan";
+import LineShipAddressPlan from './LineShipAddressPlan';
 import AlcNumModal from '@/pages/Wcs/Dps/Job/AlcNumModal';
 import { throttleSetter } from 'lodash-decorators';
 import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchForm';
@@ -53,120 +52,118 @@ export default class LineShipAddress extends QuickFormSearchPage {
     lineModalVisible: false,
     lineData: [],
     lineValue: undefined,
-    isModalVisible:false,
-    noSettingColumns :true,
-    hasSettingColumns:false,
-    canDragTable:true,
+    isModalVisible: false,
+    noSettingColumns: true,
+    hasSettingColumns: false,
+    canDragTable: true,
   };
   constructor(props) {
     super(props);
   }
 
-    //获取列配置
-    queryCoulumns = () => {
-      const { dispatch } = this.props;
-      dispatch({
-        type: 'quick/queryColumns',
-        payload: {
-          reportCode: this.state.reportCode,
-          sysCode: 'tms',
-        },
-        callback: response => {
-          if (response.result) {
-            this.initConfig(response.result);
-            //解决用户列展示失效问题 暂时解决方法（赋值两次）
-            this.initConfig(response.result);
-            //查询必填
-            let queryRequired = response.result.columns.find(item => item.searchRequire);
-  
-            let companyuuid = response.result.columns.find(
-              item => item.fieldName.toLowerCase() == 'companyuuid'
-            );
-            let orgName =
-              loginOrg().type.toLowerCase() == 'dc'
-                ? loginOrg().type.toLowerCase() + 'Uuid'
-                : 'dispatchcenteruuid';
-            let org = response.result.columns.find(item => item.fieldName.toLowerCase() == orgName);
-  
-            if (companyuuid) {
-              this.state.isOrgQuery = [
-                {
-                  field: 'companyuuid',
-                  type: 'VarChar',
-                  rule: 'eq',
-                  val: loginCompany().uuid,
-                },
-              ];
-            }
-  
-            if (org) {
-              this.setState({
-                isOrgQuery: response.result.reportHead.organizationQuery
-                  ? [
-                      {
-                        field:
-                          loginOrg().type.toLowerCase() == 'dc'
-                            ? loginOrg().type.toLowerCase() + 'Uuid'
-                            : 'dispatchCenterUuid',
-                        type: 'VarChar',
-                        rule: 'like',
-                        val: loginOrg().uuid,
-                      },
-                      ...this.state.isOrgQuery,
-                    ]
-                  : [...this.state.isOrgQuery],
-              });
-            }
-  
-            // let defaultSortColumn = response.result.columns.find(item => item.orderType > 1);
-            // if (defaultSortColumn) {
-            //   let defaultSort =
-            //     defaultSortColumn.orderType == 2
-            //       ? defaultSortColumn.fieldName + ',ascend'
-            //       : defaultSortColumn.fieldName + ',descend';
-            //   this.setState({ defaultSort });
-            // }
-  
-            //查询条件有必填时默认不查询
-            //if (queryRequired) return;
-  
-            //配置查询成功后再去查询数据
-            this.onSearch();
-  
-            //扩展State
-            this.changeState();
+  //获取列配置
+  queryCoulumns = () => {
+    const { dispatch } = this.props;
+    dispatch({
+      type: 'quick/queryColumns',
+      payload: {
+        reportCode: this.state.reportCode,
+        sysCode: 'tms',
+      },
+      callback: response => {
+        if (response.result) {
+          this.initConfig(response.result);
+          //解决用户列展示失效问题 暂时解决方法（赋值两次）
+          this.initConfig(response.result);
+          //查询必填
+          let queryRequired = response.result.columns.find(item => item.searchRequire);
+
+          let companyuuid = response.result.columns.find(
+            item => item.fieldName.toLowerCase() == 'companyuuid'
+          );
+          let orgName =
+            loginOrg().type.toLowerCase() == 'dc'
+              ? loginOrg().type.toLowerCase() + 'Uuid'
+              : 'dispatchcenteruuid';
+          let org = response.result.columns.find(item => item.fieldName.toLowerCase() == orgName);
+
+          if (companyuuid) {
+            this.state.isOrgQuery = [
+              {
+                field: 'companyuuid',
+                type: 'VarChar',
+                rule: 'eq',
+                val: loginCompany().uuid,
+              },
+            ];
           }
-        },
-      });
-    };
+
+          if (org) {
+            this.setState({
+              isOrgQuery: response.result.reportHead.organizationQuery
+                ? [
+                    {
+                      field:
+                        loginOrg().type.toLowerCase() == 'dc'
+                          ? loginOrg().type.toLowerCase() + 'Uuid'
+                          : 'dispatchCenterUuid',
+                      type: 'VarChar',
+                      rule: 'like',
+                      val: loginOrg().uuid,
+                    },
+                    ...this.state.isOrgQuery,
+                  ]
+                : [...this.state.isOrgQuery],
+            });
+          }
+
+          // let defaultSortColumn = response.result.columns.find(item => item.orderType > 1);
+          // if (defaultSortColumn) {
+          //   let defaultSort =
+          //     defaultSortColumn.orderType == 2
+          //       ? defaultSortColumn.fieldName + ',ascend'
+          //       : defaultSortColumn.fieldName + ',descend';
+          //   this.setState({ defaultSort });
+          // }
+
+          //查询条件有必填时默认不查询
+          //if (queryRequired) return;
+
+          //配置查询成功后再去查询数据
+          this.onSearch();
+
+          //扩展State
+          this.changeState();
+        }
+      },
+    });
+  };
   componentWillMount() {
-      this.setState(
-        {
-          //canDragTable:false,
-          lineuuid:this.props.lineuuid,
-          systemLineFlag:this.props.systemLineFlag
-      });
+    this.setState({
+      //canDragTable:false,
+      lineuuid: this.props.lineuuid,
+      systemLineFlag: this.props.systemLineFlag,
+    });
   }
   getLineShipAddress = () => {
     return this.state.data;
   };
-  componentWillReceiveProps= async (nextProps)=>{
-    if(nextProps.lineuuid != this.props.lineuuid){
+  componentWillReceiveProps = async nextProps => {
+    if (nextProps.lineuuid != this.props.lineuuid) {
       this.state.lineuuid = nextProps.lineuuid;
       this.state.systemLineFlag = nextProps.systemLineFlag;
       this.state.buttonDisable = false;
       this.state.canDragTable = nextProps.canDragTables;
       await this.onSearch();
     }
-  }
-  componentDidUpdate(prevProps, prevState){
-    if(prevState.data?.pagination?.total!=this.state.data?.pagination?.total){
-      this.setState({title:'门店总数：'+this.state.data?.pagination?.total})
+  };
+  componentDidUpdate(prevProps, prevState) {
+    if (prevState.data?.pagination?.total != this.state.data?.pagination?.total) {
+      this.setState({ title: '门店总数：' + this.state.data?.pagination?.total });
     }
   }
 
   drawcell = event => {
-    console.log(event);
     if (event.column.fieldName == 'ORDERNUM') {
       const component = (
         <span>{event.val}</span>
@@ -178,88 +175,100 @@ export default class LineShipAddress extends QuickFormSearchPage {
         //   onChange={event => {}}
         // />
       );
-    
+
       event.component = component;
     }
-    
-    if(event.column.fieldName == 'TYPE' && this.state.canDragTable){
+
+    if (event.column.fieldName == 'TYPE' && this.state.canDragTable) {
       const component = (
         <>
-         <Button size='small' style={{color:'#3b77e3'}}  onClick={()=>this.fetchOperateSheculeStore(event.record)}>
-             {"移入待定池"}
-        </Button>
-        <Button size='small' style={{color:'#ef2525'}} onClick={()=> Modal.confirm({
-            title: '是否移除' + event.record.ADDRESSNAME + '门店?',
-            onOk: () => {
-              this.handleDelete(event.record.UUID);
-            },
-          })}>
-             {"移除"}
-        </Button>
+          <Button
+            size="small"
+            style={{ color: '#3b77e3' }}
+            onClick={() => this.fetchOperateSheculeStore(event.record)}
+          >
+            {'移入待定池'}
+          </Button>
+          <Button
+            size="small"
+            style={{ color: '#ef2525' }}
+            onClick={() =>
+              Modal.confirm({
+                title: '是否移除' + event.record.ADDRESSNAME + '门店?',
+                onOk: () => {
+                  this.handleDelete(event.record.UUID);
+                },
+              })
+            }
+          >
+            {'移除'}
+          </Button>
         </>
-       
       );
       event.component = component;
     }
 
-    if(event.column.fieldName=='LASTMODIFIED'){
-      let component =<></>;
-      if(new Date(event.val).getTime() > new Date().getTime()-3*60*1000){
-           component = (<span style={{color:'red'}}>{event.val}</span>) ;
-          }else{
-             component  = (<span>{event.val}</span>) ;
-          }
-          event.component = component;  
+    if (event.column.fieldName == 'LASTMODIFIED') {
+      let component = <></>;
+      if (new Date(event.val).getTime() > new Date().getTime() - 3 * 60 * 1000) {
+        component = <span style={{ color: 'red' }}>{event.val}</span>;
+      } else {
+        component = <span>{event.val}</span>;
       }
+      event.component = component;
+    }
   };
 
-  exSearchFilter = async() => {
-    const {systemLineFlag,lineuuid} = this.state
-    if(!lineuuid){
+  exSearchFilter = async () => {
+    const { systemLineFlag, lineuuid } = this.state;
+    if (!lineuuid) {
       return [];
     }
-    let parmas = []
-    if(systemLineFlag){
-      parmas = [{
-        field: 'SYSTEMUUID',
-        type: 'VarChar',
-        rule: 'eq',
-        val: lineuuid,
-      }
+    let parmas = [];
+    if (systemLineFlag) {
+      parmas = [
+        {
+          field: 'SYSTEMUUID',
+          type: 'VarChar',
+          rule: 'eq',
+          val: lineuuid,
+        },
+        // ,{
+        //   field: 'DELFLAG',
+        //   type: 'VarChar',
+        //   rule: 'eq',
+        //   val: '1',
+        // }
+      ];
+      return parmas;
+    }
+    //updateStoreNum({"lineUuid":this.state.lineuuid});
+
+    let e = await findChildLine({ uuid: lineuuid });
+    if (e && e.success && e.data) {
+      const uuids = e.data
+        .map(d => {
+          return d.uuid;
+        })
+        .join('||');
+      parmas = [
+        {
+          field: 'LINEUUID',
+          type: 'VarChar',
+          rule: 'in',
+          val: uuids,
+        },
+      ];
       // ,{
       //   field: 'DELFLAG',
       //   type: 'VarChar',
       //   rule: 'eq',
       //   val: '1',
-      // }
-    ]
-      return parmas;
+      // }]
     }
-    //updateStoreNum({"lineUuid":this.state.lineuuid});
-
-    let e =  await findChildLine ({"uuid":lineuuid});
-      if(e && e.success && e.data){
-        const uuids = e.data.map(d=>{
-          return d.uuid;
-        }).join("||");
-        parmas = [{
-            field: 'LINEUUID',
-            type: 'VarChar',
-            rule: 'in',
-            val: uuids,
-          }]
-          // ,{
-          //   field: 'DELFLAG',
-          //   type: 'VarChar',
-          //   rule: 'eq',
-          //   val: '1',
-          // }]
-        }
-        return parmas;  
-    
+    return parmas;
   };
   onSearch = async filter => {
-    console.log("onsearch");
     let exSearchFilter = await this.exSearchFilter();
     if (!exSearchFilter) exSearchFilter = [];
 
@@ -319,7 +328,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
       this.refreshTable();
     }
   };
-  drawExColumns =(e)=>{
+  drawExColumns = e => {
     // const c = {
     //   title: '移入待定池',
     //   //dataIndex: '移入待定池',
@@ -335,16 +344,13 @@ export default class LineShipAddress extends QuickFormSearchPage {
     //   },
     // };
     // return c;
-    
-      
-    
-  }
+  };
   //列删除操作
   // renderOperateCol = record => {
   //   return <>
   //   <OperateCol  menus={this.fetchOperatePropsCommon(record)} />
   //   </>
-    
+
   // };
   fetchOperatePropsCommon = record => {
     return [
@@ -363,23 +369,22 @@ export default class LineShipAddress extends QuickFormSearchPage {
         name: '移入待定池',
         onClick: () => {
           Modal.confirm({
-            title:  record.ADDRESSNAME + '是否移入待定池?',
+            title: record.ADDRESSNAME + '是否移入待定池?',
             onOk: () => {
               this.inScheduleStore(record.UUID);
-            }
             },
-          );
+          });
         },
       },
     ];
   };
   fetchOperateSheculeStore = record => {
-          Modal.confirm({
-            title:  record.ADDRESSNAME + '是否移入待定池?',
-            onOk: () => {
-              this.inScheduleStore(record.UUID);
-            },
-          });
+    Modal.confirm({
+      title: record.ADDRESSNAME + '是否移入待定池?',
+      onOk: () => {
+        this.inScheduleStore(record.UUID);
+      },
+    });
   };
   //删除执行
   handleDelete = async shipAddressUuid => {
@@ -393,14 +398,14 @@ export default class LineShipAddress extends QuickFormSearchPage {
       }
     });
   };
-   //添加待排门店池
-   inScheduleStore = async shipAddressUuid => {
+  //添加待排门店池
+  inScheduleStore = async shipAddressUuid => {
     const { pageFilters } = this.state;
     await inScheduleStore(shipAddressUuid).then(result => {
       if (result.success) {
         message.success('操作成功');
         this.getData(pageFilters);
-      } 
+      }
     });
   };
 
@@ -417,12 +422,12 @@ export default class LineShipAddress extends QuickFormSearchPage {
   handleStoreSave = async () => {
     const { targetKeys, transferDataSource, data } = this.state;
     const { lineuuid, linecode } = this.props;
-    if(targetKeys.length==0){
-      return ;
+    if (targetKeys.length == 0) {
+      return;
     }
-    const existdata = await checkStoreExist({lineUuid:lineuuid,storeuuids:targetKeys});
-    if(!existdata?.success){
-      return ;
+    const existdata = await checkStoreExist({ lineUuid: lineuuid, storeuuids: targetKeys });
+    if (!existdata?.success) {
+      return;
     }
     const saveData = transferDataSource
       .filter(
@@ -448,28 +453,26 @@ export default class LineShipAddress extends QuickFormSearchPage {
       });
     if (saveData.length > 0) {
       this.saveFormData2(saveData);
-      this.setState({targetKeys:[],transferDataSource:[]});
-    } else { 
+      this.setState({ targetKeys: [], transferDataSource: [] });
+    } else {
       this.setState({ modalVisible: false });
     }
   };
-  saveFormData =async saveData => {
+  saveFormData = async saveData => {
     const { pageFilters } = this.state;
-    await  updateStoreAddressList({addressList:saveData}).then(e=>{
-      if(e && e.success){
-        message.success("修改成功");
-          this.setState({ modalVisible: false });
-          this.getData(pageFilters);
-      }else{
+    await updateStoreAddressList({ addressList: saveData }).then(e => {
+      if (e && e.success) {
+        message.success('修改成功');
+        this.setState({ modalVisible: false });
+        this.getData(pageFilters);
+      } else {
         this.getData(pageFilters);
       }
-    })
-   
-   
+    });
   };
-  saveFormData2 = (saveData)=>{
+  saveFormData2 = saveData => {
     const { pageFilters } = this.state;
-     const param = {
+    const param = {
       code: 'sj_itms_line_shipaddress',
       entity: { SJ_ITMS_LINE_SHIPADDRESS: saveData },
     };
@@ -484,24 +487,22 @@ export default class LineShipAddress extends QuickFormSearchPage {
         }
       },
     });
-  }
+  };
   onTransferChange = targetKeys => {
     this.setState({ targetKeys });
   };
   onTranferFetch = dataSource => {
     this.setState({ transferDataSource: dataSource });
   };
-  handleOk = ()=>{
-
-  }
-  handleCancel = ()=>{
-      this.setState({isModalVisible:false})
-  }
-  ofterClosePlan =()=>{
+  handleOk = () => {};
+  handleCancel = () => {
+    this.setState({ isModalVisible: false });
+  };
+  ofterClosePlan = () => {
     this.onSearch();
-  }
-  drawActionButton =  () => {
-// const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = this.props;
+  };
+  drawActionButton = () => {
+    // const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = this.props;
     const {
       modalVisible,
       modalTitle,
@@ -510,32 +511,32 @@ export default class LineShipAddress extends QuickFormSearchPage {
       targetKeys,
       lineModalVisible,
       lineData,
-      systemLineFlag
+      systemLineFlag,
     } = this.state;
     const options = lineData.map(a => {
       return <Select.Option key={a.uuid}>{a.name}</Select.Option>;
     });
     return (
       <div>
-         <Modal
+        <Modal
           visible={this.state.isModalVisible}
           onOk={this.handleOk.bind()}
           onCancel={this.handleCancel.bind()}
           width={'80%'}
           bodyStyle={{ height: 'calc(70vh)', overflowY: 'auto' }}
-          destroyOnClose= {true}
-          afterClose = {this.ofterClosePlan}
-          footer = {null}
+          destroyOnClose={true}
+          afterClose={this.ofterClosePlan}
+          footer={null}
         >
           {/* <CostBillDtlSeacrhPage key={e.UUID} params={e} /> */}
           <LineShipAddressPlan
             //key={e.UUID}
             //showPageNow="query"
             quickuuid="sj_itms_line_shipAddress_plan"
-           // location={{ pathname: '1' }}
-           lineuuid = {this.props.lineuuid}
-           //pageFilters={{queryParams :[{field:"systemuuid", type:"VarChar", rule:"eq", val:"000000750000004"}]}}
-           />
+            // location={{ pathname: '1' }}
+            lineuuid={this.props.lineuuid}
+            //pageFilters={{queryParams :[{field:"systemuuid", type:"VarChar", rule:"eq", val:"000000750000004"}]}}
+          />
         </Modal>
         <Modal
           title={modalTitle}
@@ -544,8 +545,8 @@ export default class LineShipAddress extends QuickFormSearchPage {
           onOk={this.handleStoreSave}
           confirmLoading={false}
           onCancel={() => this.setState({ modalVisible: false })}
-          destroyOnClose ={true}
-          afterClose ={()=>this.setState({targetKeys:[],transferDataSource:[]})}
+          destroyOnClose={true}
+          afterClose={() => this.setState({ targetKeys: [], transferDataSource: [] })}
         >
           <TableTransfer
             targetKeys={targetKeys}
@@ -562,28 +563,14 @@ export default class LineShipAddress extends QuickFormSearchPage {
           onOk={this.handleAddToNewLine}
           confirmLoading={false}
           onCancel={() => this.setState({ lineModalVisible: false })}
-          destroyOnClose ={true}
+          destroyOnClose={true}
         >
           <Form ref="xlref">
             <Row>
               <Col>
                 <Form.Item label="线路">
-                  {/* <Select
-        showSearch
-        value={this.state.lineValue}
-        placeholder={this.props.placeholder}
-        style={this.props.style}
-        defaultActiveFirstOption={false}
-        showArrow={false}
-        filterOption={false}
-        onSearch={this.handleSearch}
-        onChange={this.handleChange}
-        notFoundContent={null}
-      >
-        {options}
-      </Select> */}
                   <TreeSelect
-                   showSearch
+                    showSearch
                     allowClear={true}
                     optionFilterProp="children"
                     treeData={this.props.lineTreeData}
@@ -597,16 +584,24 @@ export default class LineShipAddress extends QuickFormSearchPage {
             </Row>
           </Form>
         </Modal>
-        {this.state.canDragTable && <Button type="primary" icon="plus" onClick={()=>this.setState({isModalVisible:true})}>
-          待排门店
-        </Button>}
-       {this.state.canDragTable && <Button type="primary" icon="plus" onClick={this.handleAddStore}>
-          添加门店
-        </Button>} 
+        {this.state.canDragTable && (
+          <Button
+            type="primary"
+            icon="plus"
+            onClick={() => this.setState({ isModalVisible: true })}
+          >
+            待排门店
+          </Button>
+        )}
+        {this.state.canDragTable && (
+          <Button type="primary" icon="plus" onClick={this.handleAddStore}>
+            添加门店
+          </Button>
+        )}
         {/* <Button type="primary" icon="plus" onClick={this.handleAddVendor}>
           添加供应商
         </Button> */}
-         {  <Button onClick={() => this.lineCreatePageModalRef.show()}>添加子路线</Button>}
+        {<Button onClick={() => this.lineCreatePageModalRef.show()}>添加子路线</Button>}
         <CreatePageModal
           modal={{
             title: '添加子路线',
@@ -633,13 +628,14 @@ export default class LineShipAddress extends QuickFormSearchPage {
   //   }
   // };
   handleChange = e => {
+    console.log('e', e);
     this.setState({ lineValue: e });
   };
   handleAddToNewLine = async () => {
-    const { selectedRows, lineValue ,pageFilters,lineuuid,addToNewLine} = this.state;
-      console.log("sad",lineValue);
+    const { selectedRows, lineValue, pageFilters, lineuuid, addToNewLine } = this.state;
+    console.log('sad', lineValue);
     //true 添加到新线路
-    if(addToNewLine){
+    if (addToNewLine) {
       let params = {
         lineUuid: lineValue.value,
         addressIds: selectedRows.map(e => e.UUID),
@@ -658,7 +654,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
           lineModalVisible: false,
         });
       });
-    }else{
+    } else {
       let params = {
         sourceLineUuid: lineuuid,
         targetLineUuid: lineValue.value,
@@ -678,63 +674,93 @@ export default class LineShipAddress extends QuickFormSearchPage {
         });
       });
     }
-   
   };
   //批量删除
-  onBatchStoreDelete = async ()=>{
-    const {selectedRows,pageFilters} = this.state;
-    if(selectedRows.length==0){
-      message.info("请选择一条或多条数据")
+  onBatchStoreDelete = async () => {
+    const { selectedRows, pageFilters } = this.state;
+    if (selectedRows.length == 0) {
+      message.info('请选择一条或多条数据');
       return;
     }
-    await batchDeleteByUuids({uuids:selectedRows.map(e=>e.UUID)}).then(result =>{
-      if(result.success){
+    await batchDeleteByUuids({ uuids: selectedRows.map(e => e.UUID) }).then(result => {
+      if (result.success) {
         message.success('删除成功！');
         this.getData(pageFilters);
       }
     });
-  }
+  };
   //批量移入待排池
-  onBatchStorePool= async ()=>{
-    const {selectedRows,pageFilters} = this.state;
-    if(selectedRows.length==0){
-      message.info("请选择一条或多条数据")
+  onBatchStorePool = async () => {
+    const { selectedRows, pageFilters } = this.state;
+    if (selectedRows.length == 0) {
+      message.info('请选择一条或多条数据');
       return;
     }
-    await batchAddScheduleStorePool({uuids:selectedRows.map(e=>e.UUID)}).then(result =>{
-      if(result.success){
+    await batchAddScheduleStorePool({ uuids: selectedRows.map(e => e.UUID) }).then(result => {
+      if (result.success) {
         message.success('移入成功！');
         this.getData(pageFilters);
       }
     });
-  }
+  };
+
+  //对调线路门店匹配
+  getMatchLine = async () => {
+    const { lineuuid } = this.state;
+    let res = await getMatchLine(lineuuid);
+    this.setState({
+      lineModalVisible: true,
+      addToNewLine: false,
+      lineValue: { value: res.data.uuid },
+    });
+  };
 
   drawToolbarPanel = () => {
     const { buttonDisable } = this.state;
-    return (<>
-      {buttonDisable ? <Button onClick={this.tableSortSave}>排序并保存</Button> : <></>}
-      {this.state.canDragTable &&
-       <><Button onClick={()=>Modal.confirm({
-      title:"确定批量删除这"+this.state.selectedRows.length+"条吗？"
-      ,onOk : ()=>{this.onBatchStoreDelete()}
-      }) }>批量移除</Button> 
-      <Button onClick={()=>Modal.confirm({
-        title:"确定移入这"+this.state.selectedRows.length+"条到待排池吗？"
-        ,onOk : ()=>{this.onBatchStorePool()}
-        })}>批量移入待排池</Button>
-      <Button onClick={()=>
-          this.setState({lineModalVisible:true,addToNewLine:false})
-      }>对调线路</Button>
-      <Button onClick={()=>{
-        if(this.state.selectedRows.length==0){
-          message.info("请选择记录")
-          return 
-        }
-        this.setState({lineModalVisible:true,addToNewLine:true})
-        }}>移入到新线路</Button>
+    return (
+      <>
+        {buttonDisable ? <Button onClick={this.tableSortSave}>排序并保存</Button> : <></>}
+        {this.state.canDragTable && (
+          <>
+            <Button
+              onClick={() =>
+                Modal.confirm({
+                  title: '确定批量删除这' + this.state.selectedRows.length + '条吗？',
+                  onOk: () => {
+                    this.onBatchStoreDelete();
+                  },
+                })
+              }
+            >
+              批量移除
+            </Button>
+            <Button
+              onClick={() =>
+                Modal.confirm({
+                  title: '确定移入这' + this.state.selectedRows.length + '条到待排池吗？',
+                  onOk: () => {
+                    this.onBatchStorePool();
+                  },
+                })
+              }
+            >
+              批量移入待排池
+            </Button>
+            <Button onClick={this.getMatchLine}>对调线路</Button>
+            <Button
+              onClick={() => {
+                if (this.state.selectedRows.length == 0) {
+                  message.info('请选择记录');
+                  return;
+                }
+                this.setState({ lineModalVisible: true, addToNewLine: true });
+              }}
+            >
+              移入到新线路
+            </Button>
+          </>
+        )}
       </>
-      }
-    </>
     );
   };
 
@@ -744,9 +770,9 @@ export default class LineShipAddress extends QuickFormSearchPage {
     data.list = list.map((record, index) => {
       record.ORDERNUM = index + 1;
       let linecode = record.LINECODE;
-      linecode = linecode.substr(0,linecode.lastIndexOf("-"));
-      linecode = linecode+"-"+ this.addZero(record.ORDERNUM );
-      record.LINECODE  = linecode;
+      linecode = linecode.substr(0, linecode.lastIndexOf('-'));
+      linecode = linecode + '-' + this.addZero(record.ORDERNUM);
+      record.LINECODE = linecode;
       return record;
     });
     this.saveFormData(data.list);
@@ -754,15 +780,15 @@ export default class LineShipAddress extends QuickFormSearchPage {
     //this.saveFormData(data.list);
   };
 
-  addZero =(num)=>{
-    if(num < 10){
-      return '00'+num;
-    }else if(num < 100){
-      return '0'+num;
-    }else if (num <1000){
+  addZero = num => {
+    if (num < 10) {
+      return '00' + num;
+    } else if (num < 100) {
+      return '0' + num;
+    } else if (num < 1000) {
       return num;
     }
-  }
+  };
 
   tableSortSave = () => {
     const { data } = this.state;

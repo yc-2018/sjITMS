@@ -8,71 +8,67 @@
  */
 import React, { Component } from 'react';
 import linesStyles from './LineSystem.less';
-import {Tabs,Button,Modal,Switch,message,Input} from 'antd'
+import { Tabs, Button, Modal, Switch, message, Input } from 'antd';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import LineShipAddress from './LineShipAddress';
 const { TabPane } = Tabs;
 import LineMap from './LineMap';
 import {
-    findLineSystemTree,
-    deleteLines,
-    deleteLineSystemTree,
-    backupLineSystem,
-    isEnable,
-    updateState,
-    findLineSystemTreeByStoreCode,
-}from '@/services/sjtms/LineSystemHis';
+  findLineSystemTree,
+  deleteLines,
+  deleteLineSystemTree,
+  backupLineSystem,
+  isEnable,
+  updateState,
+  findLineSystemTreeByStoreCode,
+} from '@/services/sjtms/LineSystemHis';
 import { loginKey, loginCompany, loginOrg } from '@/utils/LoginContext';
 import { throttleSetter } from 'lodash-decorators';
 
 export default class LineShipAddressSearchPage extends Component {
-   
-    state ={
-        loading :false,
-        lineApprovedVisible:false,
-        approvedLoading:false
+  state = {
+    loading: false,
+    lineApprovedVisible: false,
+    approvedLoading: false,
+  };
+  componentDidMount() {
+    this.setState({
+      systemData: this.props.systemData,
+      selectedKey: this.props.selectedKey,
+      lineTreeData: this.lineTreeData,
+      lineData: this.props.lineData,
+      systemLineFlag: this.props.systemLineFlag,
+    });
+  }
+  handleCancel = () => {};
+  componentWillReceiveProps(nextProps) {
+    if (nextProps.selectedKey != this.props.selectedKey) {
+      console.log("nex'", nextProps);
+      this.setState({ ...this.state, ...nextProps });
     }
-    componentDidMount (){
-        this.setState({
-            systemData : this.props.systemData,
-            selectedKey: this.props.selectedKey,
-            lineTreeData :this.lineTreeData,
-            lineData :this.props.lineData,
-            systemLineFlag :this.props.systemLineFlag  
-        })
-    }
-    handleCancel =()=>{
-
-    }
-  componentWillReceiveProps (nextProps){
-    if(nextProps.selectedKey!=this.props.selectedKey){
-      console.log("nex'",nextProps);
-        this.setState({...this.state,...nextProps})
-    }
-   
   }
   /**
    * 批准
-   * @param {} systemUuid 
-   * @param {*} systemData 
+   * @param {} systemUuid
+   * @param {*} systemData
    */
   onApproval = async (systemUuid, systemData) => {
     const status = systemData && systemData.STATUS == 'Approved' ? 'Revising' : 'Approved';
-    await this.updateApprovedState(systemUuid,status,systemData);
+    await this.updateApprovedState(systemUuid, status, systemData);
   };
   //取消批准并备份
   notApprovalAndBackup = async (systemUuid, systemData) => {
-    this.setState({approvedLoading:true})
+    this.setState({ approvedLoading: true });
     const status = systemData && systemData.STATUS == 'Approved' ? 'Revising' : 'Approved';
-    if(status =='Revising'){
-      this.onBackupAndUpdateApproved(systemUuid,status,systemData);
-    }else{
-      message.error("状态异常");
+    if (status == 'Revising') {
+      this.onBackupAndUpdateApproved(systemUuid, status, systemData);
+    } else {
+      message.error('状态异常');
     }
     //
   };
 
-  onBackupAndUpdateApproved = async (systemUuid,status,systemData) =>{
+  onBackupAndUpdateApproved = async (systemUuid, status, systemData) => {
     const params = {
       systemUuid: this.state.selectedKey,
       note: '取消批准备份',
@@ -80,34 +76,33 @@ export default class LineShipAddressSearchPage extends Component {
       dispatchcenterUuid: loginOrg().uuid,
     };
     await backupLineSystem(params).then(result => {
-    if (result.success) {
-      this.updateApprovedState(systemUuid,status,systemData);
-      this.setState({approvedLoading:false})
-    } else {
-      message.error('备份失败！');
-    }
-  });
-    
-  } 
+      if (result.success) {
+        this.updateApprovedState(systemUuid, status, systemData);
+        this.setState({ approvedLoading: false });
+      } else {
+        message.error('备份失败！');
+      }
+    });
+  };
 
-  updateApprovedState = async (systemUuid,  state,systemData)=>{
-    this.setState({loading:true})
-    await updateState(systemUuid,  state).then(result => {
-        if (result.success) {
-          message.success('操作成功');
-          systemData.STATUS = state;
-          this.setState({systemData:systemData,loading:false,lineApprovedVisible: false});
-          //this.queryLineSystem(systemUuid);
-        }
-      });
-  }
-  
-  onInvalid = async (systemUuid,systemData) => {
+  updateApprovedState = async (systemUuid, state, systemData) => {
+    this.setState({ loading: true });
+    await updateState(systemUuid, state).then(result => {
+      if (result.success) {
+        message.success('操作成功');
+        systemData.STATUS = state;
+        this.setState({ systemData: systemData, loading: false, lineApprovedVisible: false });
+        //this.queryLineSystem(systemUuid);
+      }
+    });
+  };
+
+  onInvalid = async (systemUuid, systemData) => {
     await updateState(systemUuid, 'Discard').then(result => {
       if (result && result.success) {
         message.success('作废成功！');
         systemData.STATUS = 'Discard';
-        this.setState({systemData:systemData});
+        this.setState({ systemData: systemData });
         this.props.queryLineSystem();
       } else {
         message.error('作废失败！');
@@ -117,21 +112,21 @@ export default class LineShipAddressSearchPage extends Component {
   /**
    * 备份
    */
-  onBackup = async (bfValue) => {
-   const note =  bfValue?bfValue:this.state.bfValue;
-   if(!note){
-    message.info("请填写备注")
-    return;
-   }
+  onBackup = async bfValue => {
+    const note = bfValue ? bfValue : this.state.bfValue;
+    if (!note) {
+      message.info('请填写备注');
+      return;
+    }
     const params = {
       systemUuid: this.state.selectedKey,
       note: note,
       companyUuid: loginCompany().uuid,
       dispatchcenterUuid: loginOrg().uuid,
     };
-    this.setState({loading:true})
+    this.setState({ loading: true });
     await backupLineSystem(params).then(result => {
-        this.setState({loading:false})
+      this.setState({ loading: false });
       if (result.success) {
         message.success('备份成功！');
         this.setState({ visible: false });
@@ -141,14 +136,13 @@ export default class LineShipAddressSearchPage extends Component {
     });
   };
 
-
   swithChange = async (systemUuid, systemData) => {
-    const enable = systemData&& systemData.ISENABLE == 1 ? 0 : 1
+    const enable = systemData && systemData.ISENABLE == 1 ? 0 : 1;
     isEnable(systemUuid, enable).then(result => {
       if (result && result.success) {
         message.success('操作成功！');
         systemData.ISENABLE = enable;
-        this.setState({systemData:systemData})
+        this.setState({ systemData: systemData });
         //this.queryLineSystem(systemUuid);
       }
     });
@@ -165,87 +159,87 @@ export default class LineShipAddressSearchPage extends Component {
       return isenable.result?.records[0];
     }
   };
-    render(){
-     
-        const {systemData,selectedKey,lineTreeData,sdf,lineData,systemLineFlag} = this.state;
-        console.log("ressss'",selectedKey,systemLineFlag);
-        return <>
-        {systemLineFlag && 
+  render() {
+    const { systemData, selectedKey, lineTreeData, sdf, lineData, systemLineFlag } = this.state;
+    console.log("ressss'", selectedKey, systemLineFlag);
+    return (
+      <>
+        {systemLineFlag && (
           <div>
-          <div className={linesStyles.navigatorPanelWrapper}>
-            <span className={linesStyles.sidertitle}>线路体系</span>
-            <div className={linesStyles.action}>
-              <Switch
-                checkedChildren="启用"
-                checked={systemData && systemData.ISENABLE == 1}
-                unCheckedChildren="禁用"
-                onClick={() => {
-                  Modal.confirm({
-                    title: systemData && systemData.ISENABLE == 1 ? '确定禁用?' : '确定启用',
-                    onOk: () => {
-                      this.swithChange(
-                        selectedKey,
-                        systemData 
-                      );
-                    },
-                  });
-                }}
-              />
-              <Switch
-                checkedChildren="已批准"
-                checked={systemData && systemData.STATUS == 'Approved'}
-                unCheckedChildren="未批准"
-                onClick={ ()=>this.setState({lineApprovedVisible:true})
-                  // Modal.confirm({
-                  //   title:
-                  //     systemData && systemData.STATUS == 'Approved' ? '确定取消批准?' : '确定已批准?',
-                  //     footer: <><Button>取消</Button><Button>确定</Button><Button>确定并备份</Button></>,
-                  //     onOk: () => {
-                  //     this.onApproval(
-                  //       selectedKey,
-                  //       systemData
-                  //     );
-                  //   },
-                  // });
-                }
-              />
-              <Button
-                type="danger"
-                onClick={() => {
-                  Modal.confirm({
-                    title: '确定作废?',
-                    onOk: () => {
-                      this.onInvalid(selectedKey,systemData);
-                    },
-                  });
-                }}
-              >
-                作废
-              </Button>
-              <Button type="primary" icon="plus" onClick={() => this.lineCreatePageModalRef.show()}>
-                添加路线
-              </Button>
-              <Button
-                type="primary"
-                onClick={() => {
-                  this.setState({ visible: true });
-                }}
-               
-              >
-                备份
-              </Button>
-              <Button
-                type="primary"
-                onClick={() => {
-                  this.setState({ visible: true });
-                }}
-               
-              >
-                配置对调线路
-              </Button>
+            <div className={linesStyles.navigatorPanelWrapper}>
+              <span className={linesStyles.sidertitle}>线路体系</span>
+              <div className={linesStyles.action}>
+                <Switch
+                  checkedChildren="启用"
+                  checked={systemData && systemData.ISENABLE == 1}
+                  unCheckedChildren="禁用"
+                  onClick={() => {
+                    Modal.confirm({
+                      title: systemData && systemData.ISENABLE == 1 ? '确定禁用?' : '确定启用',
+                      onOk: () => {
+                        this.swithChange(selectedKey, systemData);
+                      },
+                    });
+                  }}
+                />
+                <Switch
+                  checkedChildren="已批准"
+                  checked={systemData && systemData.STATUS == 'Approved'}
+                  unCheckedChildren="未批准"
+                  onClick={
+                    () => this.setState({ lineApprovedVisible: true })
+                    // Modal.confirm({
+                    //   title:
+                    //     systemData && systemData.STATUS == 'Approved' ? '确定取消批准?' : '确定已批准?',
+                    //     footer: <><Button>取消</Button><Button>确定</Button><Button>确定并备份</Button></>,
+                    //     onOk: () => {
+                    //     this.onApproval(
+                    //       selectedKey,
+                    //       systemData
+                    //     );
+                    //   },
+                    // });
+                  }
+                />
+                <Button
+                  type="danger"
+                  onClick={() => {
+                    Modal.confirm({
+                      title: '确定作废?',
+                      onOk: () => {
+                        this.onInvalid(selectedKey, systemData);
+                      },
+                    });
+                  }}
+                >
+                  作废
+                </Button>
+                <Button
+                  type="primary"
+                  icon="plus"
+                  onClick={() => this.lineCreatePageModalRef.show()}
+                >
+                  添加路线
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    this.setState({ visible: true });
+                  }}
+                >
+                  备份
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    this.setState({ visible: true });
+                  }}
+                >
+                  配置对调线路
+                </Button>
+              </div>
             </div>
-          </div>
-          <CreatePageModal
+            <CreatePageModal
               modal={{
                 title: '添加线路',
                 width: 500,
@@ -256,9 +250,9 @@ export default class LineShipAddressSearchPage extends Component {
               onRef={node => (this.lineCreatePageModalRef = node)}
             />
             <Modal
-              title="备份"
+              title="对调线路配置"
               visible={this.state.visible}
-              onOk={()=>this.onBackup()}
+              onOk={() => this.onBackup()}
               onCancel={() => this.setState({ visible: false })}
               confirmLoading={this.state.loading}
             >
@@ -271,42 +265,62 @@ export default class LineShipAddressSearchPage extends Component {
               />
             </Modal>
             <Modal
-              title= {'提示'}
-              visible = {this.state.lineApprovedVisible}
-              footer= {<><Button onClick={()=>this.setState({lineApprovedVisible: false })}>取消</Button>
-              <Button type='primary' onClick={()=>this.onApproval(selectedKey,systemData)}>确定</Button>
-              {systemData && systemData.STATUS == 'Approved'&& <Button type='primary' loading ={this.state.approvedLoading} onClick={()=>this.notApprovalAndBackup(selectedKey,systemData)}>确定并备份</Button>} </>}
+              title={'提示'}
+              visible={this.state.lineApprovedVisible}
+              footer={
+                <>
+                  <Button onClick={() => this.setState({ lineApprovedVisible: false })}>
+                    取消
+                  </Button>
+                  <Button type="primary" onClick={() => this.onApproval(selectedKey, systemData)}>
+                    确定
+                  </Button>
+                  {systemData &&
+                    systemData.STATUS == 'Approved' && (
+                      <Button
+                        type="primary"
+                        loading={this.state.approvedLoading}
+                        onClick={() => this.notApprovalAndBackup(selectedKey, systemData)}
+                      >
+                        确定并备份
+                      </Button>
+                    )}{' '}
+                </>
+              }
               //onOk={()=>this.onBackup()}
-              onCancel = {()=>this.setState({lineApprovedVisible: false })}
+              onCancel={() => this.setState({ lineApprovedVisible: false })}
               loading={this.state.approvedLoading}
               onRef={node => (this.lineApprovedModalRef = node)}
             >
               {systemData && systemData.STATUS == 'Approved' ? '确定取消批准?' : '确定已批准?'}
             </Modal>
+          </div>
+        )}
+        <div>
+          <Tabs defaultActiveKey={'lineShipAddress'}>
+            <TabPane tab="线路门店" key="1">
+              <LineShipAddress
+                key="lineShipAddress"
+                quickuuid="sj_itms_line_shipaddress"
+                lineuuid={selectedKey}
+                lineTreeData={lineTreeData}
+                systemLineFlag={systemLineFlag}
+                //showadfa={() => this.queryLineSystem(this.state.selectLineUuid)}
+                canDragTables={sdf && sdf.children ? false : true}
+                linecode={
+                  lineData?.length > 0 ? lineData?.find(x => x.uuid == selectedKey).code : ''
+                }
+                systemData={systemData}
+              />
+            </TabPane>
+            {!systemLineFlag && (
+              <TabPane tab="门店地图" key="2">
+                <LineMap key="storeMap" lineuuid={selectedKey} />
+              </TabPane>
+            )}
+          </Tabs>
         </div>
-        }
-      <div>
-      <Tabs defaultActiveKey={"lineShipAddress"}>
-        <TabPane tab="线路门店" key="1">
-          <LineShipAddress
-            key="lineShipAddress"
-            quickuuid="sj_itms_line_shipaddress"
-            lineuuid={selectedKey}
-            lineTreeData={lineTreeData}
-            systemLineFlag = {systemLineFlag}
-            //showadfa={() => this.queryLineSystem(this.state.selectLineUuid)}
-            canDragTables={sdf && sdf.children ? false : true}
-            linecode={
-              lineData?.length > 0 ? lineData?.find(x => x.uuid == selectedKey).code : ''
-            }
-          />
-        </TabPane>
-       {!systemLineFlag && <TabPane tab="门店地图" key="2">
-          <LineMap key="storeMap" lineuuid={selectedKey} />
-        </TabPane>} 
-      </Tabs>
-      </div>
-    
       </>
-    }
+    );
+  }
 }
