@@ -50,9 +50,7 @@ export default class DispatchingCreatePage extends Component {
     note: '',
     schedule: {},
     editPageVisible: false,
-    scheduleDetail: {},
-    confirmTitle: '',
-    confirmVisible: false,
+    currentOrder: {},
     carLoading: false,
     carEmpNums: 20,
   };
@@ -187,8 +185,9 @@ export default class DispatchingCreatePage extends Component {
 
   //显示
   show = (isEdit, record) => {
-    this.setState({ visible: true, isEdit, loading: true, rowKeys: [] });
-    this.initData(isEdit, record);
+    this.setState({ visible: true, isEdit, loading: true, rowKeys: [] }, () => {
+      this.initData(isEdit, record);
+    });
   };
   //取消隐藏
   hide = () => {
@@ -667,7 +666,7 @@ export default class DispatchingCreatePage extends Component {
 
   //拆单
   editSource = record => {
-    this.setState({ editPageVisible: true, scheduleDetail: record });
+    this.setState({ editPageVisible: true, currentOrder: record });
   };
   //更新state订单整件排车件数
   updateCartonCount = result => {
@@ -678,8 +677,8 @@ export default class DispatchingCreatePage extends Component {
       title: '提示',
       content: `拆单后排车单体积为：${result.volume}m³，重量为：${result.weight}t ，是否确定拆单？`,
       onOk() {
-        record.volume = Number(result.remVolume.toFixed(3));
-        record.weight = Number(result.remWeight.toFixed(3));
+        record.volume = Number(result.remVolume);
+        record.weight = Number(result.remWeight);
         record.unDispatchCarton = record.stillCartonCount - result.cartonCount;
         record.stillCartonCount = result.cartonCount;
         record.isSplit = 1;
@@ -698,7 +697,7 @@ export default class DispatchingCreatePage extends Component {
       selectEmployees,
       selectVehicle,
       rowKeys,
-      scheduleDetail,
+      currentOrder,
       editPageVisible,
       note,
     } = this.state;
@@ -745,9 +744,9 @@ export default class DispatchingCreatePage extends Component {
           modal={{ title: '拆单' }}
           updateCartonCount={e => this.updateCartonCount(e)}
           visible={editPageVisible}
-          order={scheduleDetail}
+          order={currentOrder}
           totalData={totalData}
-          onCancel={() => this.setState({ editPageVisible: false, scheduleDetail: {} })}
+          onCancel={() => this.setState({ editPageVisible: false, currentOrder: {} })}
         />
         <Spin
           indicator={LoadingIcon('default')}
