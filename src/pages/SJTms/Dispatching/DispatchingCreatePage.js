@@ -503,6 +503,16 @@ export default class DispatchingCreatePage extends Component {
         extra={
           <div>
             <Select
+              onChange={e => this.setState({ carEmpNums: e })}
+              value={this.state.carEmpNums}
+              style={{ width: 60, marginRight: '15px' }}
+            >
+              <Select.Option value={20}>20</Select.Option>
+              <Select.Option value={50}>50</Select.Option>
+              <Select.Option value={100}>100</Select.Option>
+              <Select.Option value={'all'}>全部</Select.Option>
+            </Select>
+            <Select
               placeholder="员工归属"
               onChange={value => this.employeeFilter('relation', value)}
               allowClear={true}
@@ -591,6 +601,16 @@ export default class DispatchingCreatePage extends Component {
         bodyStyle={{ padding: 0, paddingTop: 8, height: '28vh', overflowY: 'auto' }}
         extra={
           <div>
+            <Select
+              onChange={e => this.setState({ carEmpNums: e })}
+              value={this.state.carEmpNums}
+              style={{ width: 60, marginRight: '15px' }}
+            >
+              <Select.Option value={20}>20</Select.Option>
+              <Select.Option value={50}>50</Select.Option>
+              <Select.Option value={100}>100</Select.Option>
+              <Select.Option value={'all'}>全部</Select.Option>
+            </Select>
             <Select
               placeholder="车辆归属"
               onChange={value => this.vehicleFilter('vehicleOwner', value)}
@@ -732,17 +752,6 @@ export default class DispatchingCreatePage extends Component {
         bodyStyle={{ margin: -24, height: 'calc(100vh - 48px)' }}
         footer={
           <div>
-            显示数量：
-            <Select
-              onChange={e => this.setState({ carEmpNums: e })}
-              value={this.state.carEmpNums}
-              style={{ width: 60, marginRight: '50%' }}
-            >
-              <Select.Option value={20}>20</Select.Option>
-              <Select.Option value={50}>50</Select.Option>
-              <Select.Option value={100}>100</Select.Option>
-              <Select.Option value={'all'}>全部</Select.Option>
-            </Select>
             <Button onClick={this.exit}>取消</Button>
             <Button onClick={this.hide}>临时保存</Button>
             <Button type="primary" onClick={() => this.handleSave()} loading={loading}>
