@@ -502,16 +502,16 @@ export default class DispatchingCreatePage extends Component {
         bodyStyle={{ padding: 0, paddingTop: 8, height: '28vh', overflowY: 'auto' }}
         extra={
           <div>
-            <Select
+            {/* <Select
               onChange={e => this.setState({ carEmpNums: e })}
               value={this.state.carEmpNums}
-              style={{ width: 60, marginRight: '15px' }}
+              style={{ width: 55, marginRight: '8px' }}
             >
               <Select.Option value={20}>20</Select.Option>
               <Select.Option value={50}>50</Select.Option>
               <Select.Option value={100}>100</Select.Option>
               <Select.Option value={'all'}>全部</Select.Option>
-            </Select>
+            </Select> */}
             <Select
               placeholder="员工归属"
               onChange={value => this.employeeFilter('relation', value)}
@@ -604,7 +604,7 @@ export default class DispatchingCreatePage extends Component {
             <Select
               onChange={e => this.setState({ carEmpNums: e })}
               value={this.state.carEmpNums}
-              style={{ width: 60, marginRight: '15px' }}
+              style={{ width: 55, marginRight: '8px' }}
             >
               <Select.Option value={20}>20</Select.Option>
               <Select.Option value={50}>50</Select.Option>
