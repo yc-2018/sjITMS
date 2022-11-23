@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-21 18:30:43
+ * @LastEditTime: 2022-11-23 09:55:28
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -280,36 +280,36 @@ export default class OrderPoolPage extends Component {
       message.error('提货类型运输订单不能与其它类型订单混排，请检查！');
       return;
     }
-    // //不可共配校验
-    // let owners = orders.map(x => {
-    //   return { ...x.owner, noJointlyOwnerCodes: x.noJointlyOwnerCode };
-    // });
-    // owners = uniqBy(owners, 'uuid');
-    // const checkOwners = owners.filter(x => x.noJointlyOwnerCodes);
-    // let noJointlyOwner = undefined;
-    // checkOwners.forEach(owner => {
-    //   //不可共配货主
-    //   const noJointlyOwnerCodes = owner.noJointlyOwnerCodes.split(',');
-    //   const noJointlyOwners = owners.filter(
-    //     x => noJointlyOwnerCodes.indexOf(x.code) != -1 && x.code != owner.code
-    //   );
-    //   if (noJointlyOwners.length > 0) {
-    //     noJointlyOwner = {
-    //       ownerName: owner.name,
-    //       owners: noJointlyOwners.map(x => x.name).join(','),
-    //     };
-    //   }
-    // });
-    // if (noJointlyOwner != undefined) {
-    //   message.error(
-    //     '货主：' +
-    //       noJointlyOwner.ownerName +
-    //       '与[' +
-    //       noJointlyOwner.owners +
-    //       ']不可共配，请检查货主配置!'
-    //   );
-    //   return;
-    // }
+    //不可共配校验
+    let owners = orders.map(x => {
+      return { ...x.owner, noJointlyOwnerCodes: x.noJointlyOwnerCode };
+    });
+    owners = uniqBy(owners, 'uuid');
+    const checkOwners = owners.filter(x => x.noJointlyOwnerCodes);
+    let noJointlyOwner = undefined;
+    checkOwners.forEach(owner => {
+      //不可共配货主
+      const noJointlyOwnerCodes = owner.noJointlyOwnerCodes.split(',');
+      const noJointlyOwners = owners.filter(
+        x => noJointlyOwnerCodes.indexOf(x.code) != -1 && x.code != owner.code
+      );
+      if (noJointlyOwners.length > 0) {
+        noJointlyOwner = {
+          ownerName: owner.name,
+          owners: noJointlyOwners.map(x => x.name).join(','),
+        };
+      }
+    });
+    if (noJointlyOwner != undefined) {
+      message.error(
+        '货主：' +
+          noJointlyOwner.ownerName +
+          '与[' +
+          noJointlyOwner.owners +
+          ']不可共配，请检查货主配置!'
+      );
+      return;
+    }
     this.createPageModalRef.show(false, orders);
   };
 
