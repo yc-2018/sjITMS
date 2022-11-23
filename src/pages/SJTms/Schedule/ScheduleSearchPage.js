@@ -788,7 +788,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
     return (
       <div>
         <table
-          style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0 }}
+          style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0 ,fontWeight: 'bold'}}
           border={1}
           cellPadding={0}
           cellSpacing={0}
@@ -798,7 +798,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
               <th colspan={2} style={{ border: 0 }}>
                 <img style={{ height: 30, width: 120 }} src={scher} />
               </th>
-              <th colspan={10} style={{ border: 0 }}>
+              <th colspan={8} style={{ border: 0 }}>
                 <div style={{ fontSize: 18, textAlign: 'center' }}>时捷物流配送装车/出车单</div>
               </th>
               <th colspan={4} style={{ border: 0 }}>
@@ -829,43 +829,46 @@ const drawPrintPage = (schedule, scheduleDetails) => {
               </tr> */}
             <tr>
               <th colspan={16} style={{ border: 0, height: 20 }}>
-                <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
-                  <div style={{ float: 'left', width: '25%' }}>
+                <div style={{ textAlign: 'left', fontWeight: 'bold' }}>
+                  {/* <div style={{ float: 'left', width: '25%' }}>
                     排车序号： 
-                  </div>
-                  <div style={{ float: 'left', width: '25%' }}>操作员： {loginUser().name}</div>
-                  <div style={{ float: 'left', width: '25%' }}>驾驶员： {schedule.DRIVER}</div>
-                  <div style={{ float: 'left', width: '25%' }}>
+                  </div> */}
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>操作员： {loginUser().name}</div>
+                  <div style={{ float: 'left', width: '25%' , fontWeight: 'bold'}}>驾驶员： {schedule.DRIVER}</div>
+                  <div style={{ float: 'left', width: '25%' , fontWeight: 'bold'}}>
                     排车单号： {schedule.BILLNUMBER}
                   </div>
                 </div>
-                <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
-                  <div style={{ float: 'left', width: '25%' }}>车号： {schedule.VEHICLECODE}</div>
-                  <div style={{ float: 'left', width: '25%' }}>
+                <div style={{ textAlign: 'left', fontWeight: 'bold' }}>
+                  <div style={{ float: 'left', width: '25%' , fontWeight: 'bold'}}>车号： {schedule.VEHICLECODE}</div>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
                     信箱号：
                     {schedule.pirs}
                   </div>
-                  <div style={{ float: 'left', width: '25%' }}>
+                  <div style={{ float: 'left', width: '25%' , fontWeight: 'bold'}}>
                     装车员：
                     {schedule.STEVEDORE}
                   </div>
-                  <div style={{ float: 'left', width: '25%' }}>
+                  <div style={{ textAlign: 'left', fontWeight: 'bold' }}>
+                    <div style={{ float: 'left', width: '25%' , fontWeight: 'bold'}}>副司机： {schedule.COPILOT}</div>
+                  </div>
+                  <div style={{ float: 'left', width: '25%' ,fontWeight: 'bold' }}>
                     打印时间：
                     {convertDateToTime(new Date())}
                   </div>
                 </div>
               </th>
             </tr>
-            <tr>
+            {/* <tr>
               <th colspan={16} style={{ border: 0, height: 20 }}>
                 <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                   <div style={{ float: 'left', width: '25%' }}>副司机： {schedule.COPILOT}</div>
                 </div>
               </th>
-            </tr>
+            </tr> */}
             <tr>
               <th colspan={16} style={{ border: 0, height: 20 }}>
-                <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                <div style={{ textAlign: 'left', fontWeight: 'bold' }}>
                   <div style={{ float: 'left', width: '80%' }}>
                     {schedule.USEETC == '是'
                       ? '粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为' +
@@ -897,17 +900,17 @@ const drawPrintPage = (schedule, scheduleDetails) => {
               <th width={50} rowSpan={2}>
                 门店名称
               </th>
-              <th width={170} colSpan={8}>
+              <th width={170} colSpan={6}>
                 送出
               </th>
-              <th width={170} colSpan={3}>
+              <th width={170} colSpan={1}>
                 回收
               </th>
               <th width={50} rowSpan={2}>
                 整箱板位
               </th>
-              <th width={50} rowSpan={2}>
-                电商
+              <th width={50} rowSpan={3}>
+                装车排序
               </th>
             </tr>
             <tr style={{ height: 25 }}>
@@ -917,10 +920,10 @@ const drawPrintPage = (schedule, scheduleDetails) => {
               <th>欠筐数</th>
               <th>箱总数</th>
               <th>腾箱数</th>
-              <th>福袋数</th>
+              {/* <th>福袋数</th>
               <th>深通卡</th>
               <th>退货单</th>
-              <th>差异单</th>
+              <th>差异单</th> */}
               <th>箱数</th>
             </tr>
           </thead>
@@ -937,16 +940,16 @@ const drawPrintPage = (schedule, scheduleDetails) => {
                     <td width={80}>{item.REALCARTONCOUNT}</td>
                     <td width={80}>{item.REALSCATTEREDCOUNT}</td>
                     <td width={80}>{item.REALCONTAINERCOUNT}</td>
-                    <td width={80}>{0}</td>
-                    <td width={80}>{item.REALCONTAINERCOUNT + 0}</td>
+                    <td width={80}>{item.OWECARTONCOUNT}</td>
+                    <td width={80}>{item.REALCONTAINERCOUNT + item.OWECARTONCOUNT}</td>
                     <td width={80}>{}</td>
                     <td width={80}>{}</td>
+                    {/* <td width={80}>{}</td>
                     <td width={80}>{}</td>
                     <td width={80}>{}</td>
-                    <td width={80}>{}</td>
-                    <td width={80}>{}</td>
+                    <td width={80}>{}</td> */}
                     <td width={100}>{item.COLLECTBIN}</td>
-                    <td width={60}>{0}</td>
+                    <td width={60}></td>
                   </tr>
                 );
               })
@@ -957,29 +960,29 @@ const drawPrintPage = (schedule, scheduleDetails) => {
           <tfoot border={0}>
             <tr style={{ height: 20, border: 0, fontSize: '15px' }} border={0}>
               <td style={{ border: 0, paddingTop: 10 }} colSpan={8}>
-                <div style={{ paddingLeft: 20 }}>
+                <div style={{ paddingLeft: 20 , fontWeight: 'bold'}}>
                   总体积(m³)：
                   {schedule.VOLUME}
                 </div>
               </td>
-              <td style={{ border: 0, textAlign: 'right', paddingTop: 10 }} colSpan={8}>
+              <td style={{ border: 0, textAlign: 'right', paddingTop: 10, fontWeight: 'bold' }} colSpan={8}>
                 <div>脏筐数：_____________</div>
               </td>
             </tr>
             <tr style={{ border: 0, height: 20 }}>
-              <td style={{ border: 0 }} colspan={16}>
+              <td style={{ border: 0 , fontWeight: 'bold'}} colspan={16}>
                 单据备注: 白色~收据，红色~驾驶员、配送员，黄色~发货
               </td>
             </tr>
             <tr style={{ border: 0, height: 20 }}>
-              <td style={{ border: 0 }} colspan={6}>
+              <td style={{ border: 0, fontWeight: 'bold' }} colspan={8}>
                 驾驶/配送员签字：
               </td>
-              <td style={{ border: 0 }} colspan={6}>
+              {/* <td style={{ border: 0 }} colspan={6}>
                 收退货签字：
-              </td>
-              <td style={{ border: 0 }} colspan={4}>
-                <div border={0} style={{ fontSize: 14, textAlign: 'center' }}>
+              </td> */}
+              <td style={{ border: 0 }} colspan={7}>
+                <div border={0} style={{ fontSize: 14, textAlign: 'center', fontWeight: 'bold' }}>
                   <span>第</span>
                   <font tdata="PageNO" color="blue">
                     ##
