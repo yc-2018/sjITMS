@@ -813,7 +813,11 @@ export default class DispatchingCreatePage extends Component {
                       this.setState({ rowKeys: selectedRowKeys })
                     }
                     selectedRowKeys={rowKeys}
-                    pagination={false}
+                    pagination={{
+                      defaultPageSize: 50,
+                      pageSizeOptions: ['50', '100', '500'],
+                      showSizeChanger: true,
+                    }}
                     scrollY="50vh"
                   />
                 </div>
@@ -822,7 +826,7 @@ export default class DispatchingCreatePage extends Component {
                 <Col span={12}>{this.buildSelectVehicleCard()}</Col>
                 <Col span={12}>{this.buildSelectEmployeeCard()}</Col>
               </Row>
-              <div style={{ marginLeft: 500, marginTop: '8px' }}>
+              <div style={{ marginLeft: 500, marginTop: '15px' }}>
                 显示数量：
                 <Select
                   onChange={e => this.setState({ carEmpNums: e })}
