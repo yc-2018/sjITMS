@@ -732,6 +732,17 @@ export default class DispatchingCreatePage extends Component {
         bodyStyle={{ margin: -24, height: 'calc(100vh - 48px)' }}
         footer={
           <div>
+            显示数量：
+            <Select
+              onChange={e => this.setState({ carEmpNums: e })}
+              value={this.state.carEmpNums}
+              style={{ width: 60, marginRight: '50%' }}
+            >
+              <Select.Option value={20}>20</Select.Option>
+              <Select.Option value={50}>50</Select.Option>
+              <Select.Option value={100}>100</Select.Option>
+              <Select.Option value={'all'}>全部</Select.Option>
+            </Select>
             <Button onClick={this.exit}>取消</Button>
             <Button onClick={this.hide}>临时保存</Button>
             <Button type="primary" onClick={() => this.handleSave()} loading={loading}>
@@ -825,19 +836,6 @@ export default class DispatchingCreatePage extends Component {
                 <Col span={12}>{this.buildSelectVehicleCard()}</Col>
                 <Col span={12}>{this.buildSelectEmployeeCard()}</Col>
               </Row>
-              <div style={{ marginLeft: 500, marginTop: '15px' }}>
-                显示数量：
-                <Select
-                  onChange={e => this.setState({ carEmpNums: e })}
-                  value={this.state.carEmpNums}
-                  style={{ width: 60 }}
-                >
-                  <Select.Option value={20}>20</Select.Option>
-                  <Select.Option value={50}>50</Select.Option>
-                  <Select.Option value={100}>100</Select.Option>
-                  <Select.Option value={'all'}>全部</Select.Option>
-                </Select>
-              </div>
             </Col>
             <Col span={8}>
               {/* 订单汇总 */}
