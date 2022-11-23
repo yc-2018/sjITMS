@@ -13,7 +13,7 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import {
   deleteLineStoreAddressById,
-  addToNewLine,
+  addToNewLine as addToNewLines,
   findChildLine,
   updateStoreNum,
   inScheduleStore,
@@ -642,7 +642,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
         lineUuid: lineValue.value,
         addressIds: selectedRows.map(e => e.UUID),
       };
-      await addToNewLine(params).then(result => {
+      await addToNewLines(params).then(result => {
         if (result.success) {
           message.success('添加成功');
           this.getData(pageFilters);

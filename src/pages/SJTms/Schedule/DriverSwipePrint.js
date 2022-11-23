@@ -96,7 +96,11 @@ export default class DriverSwipePrint extends PureComponent {
       const printPages = document.getElementById('printPage').childNodes;
       printPages.forEach(page => {
         LODOP.NewPageA();
-        LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
+        if(loginOrg().uuid == '000000750000004'){
+          LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
+        }else{
+          LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
+        }
       });
       //TODO 测试先显示打印界面 上线前改为直接打印
       LODOP.PREVIEW();
@@ -128,7 +132,7 @@ export default class DriverSwipePrint extends PureComponent {
       return (
         <div>
           <table
-            style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0 }}
+            style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0,fontWeight: bold }}
             border={1}
             cellPadding={0}
             cellSpacing={0}
@@ -175,7 +179,7 @@ export default class DriverSwipePrint extends PureComponent {
                 <th colspan={16} style={{ border: 0, height: 20 }}>
                   <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                     <div style={{ float: 'left', width: '25%' }}>
-                      排车序号： {schedule.billNumber}
+                      排车序号： 
                     </div>
                     <div style={{ float: 'left', width: '25%' }}>操作员： {loginUser().name}</div>
                     <div style={{ float: 'left', width: '25%' }}>
