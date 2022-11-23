@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-21 16:02:03
+ * @LastEditTime: 2022-11-23 10:10:35
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -147,6 +147,24 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       this.setState({ showUpdateOutSerial: true });
     } else {
       message.warn('请选择一条数据！');
+    }
+  };
+
+  drawcell = e => {
+    if (e.column.fieldName == 'SHIPAREANAME') {
+      const { AREAUUID, SHIPAREA } = e.record;
+      let sizeColor = '';
+      let list;
+      if (AREAUUID != undefined) {
+        list = AREAUUID.split(',');
+        list.map(data => {
+          if (SHIPAREA == undefined || SHIPAREA.indexOf(data) < 0) {
+            sizeColor = 'Red';
+          }
+        });
+      }
+      const component = <span style={{ color: sizeColor }}>{e.record.SHIPAREANAME}</span>;
+      e.component = component;
     }
   };
 
@@ -551,13 +569,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     const printPages = document.getElementById('printPage').childNodes;
     printPages.forEach(page => {
       LODOP.NewPageA();
-      if(loginOrg().uuid == '000000750000004'){
+      if (loginOrg().uuid == '000000750000004') {
         LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
-      }else{
+      } else {
         LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
       }
-      
-      
     });
     LODOP.PREVIEW();
     //LODOP.PRINT();

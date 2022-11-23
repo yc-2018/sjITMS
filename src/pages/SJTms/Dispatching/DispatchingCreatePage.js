@@ -50,9 +50,9 @@ export default class DispatchingCreatePage extends Component {
     note: '',
     schedule: {},
     editPageVisible: false,
-    scheduleDetail: {},
-    confirmTitle: '',
-    confirmVisible: false,
+    currentOrder: {},
+    carLoading: false,
+    carEmpNums: 20,
   };
 
   componentDidMount = () => {
@@ -145,7 +145,7 @@ export default class DispatchingCreatePage extends Component {
           : [];
       }
     }
-    vehicles = await this.getRecommendByOrders(details, vehicles);
+    // vehicles = await this.getRecommendByOrders(details, vehicles);
     if (schedule) {
       //将选中车辆放到第一位
       selectVehicle = vehicles.find(x => x.UUID == schedule.vehicle.uuid);
@@ -185,8 +185,9 @@ export default class DispatchingCreatePage extends Component {
 
   //显示
   show = (isEdit, record) => {
-    this.setState({ visible: true, isEdit, loading: true, rowKeys: [] });
-    this.initData(isEdit, record);
+    this.setState({ visible: true, isEdit, loading: true, rowKeys: [] }, () => {
+      this.initData(isEdit, record);
+    });
   };
   //取消隐藏
   hide = () => {
@@ -194,11 +195,20 @@ export default class DispatchingCreatePage extends Component {
   };
   //临时保存
   exit = () => {
-    this.setState({ visible: false, note: '', selectEmployees: [], selectVehicle: [] });
+    this.setState({
+      visible: false,
+      note: '',
+      selectEmployees: [],
+      selectVehicle: [],
+      carEmpNums: 20,
+    });
   };
 
   //选车
   handleVehicle = async vehicle => {
+    this.setState({
+      selectVehicle: vehicle,
+    });
     let param = {
       tableName: 'v_sj_itms_vehicle_employee_z',
       condition: {
@@ -215,7 +225,9 @@ export default class DispatchingCreatePage extends Component {
         };
       });
     }
-    this.setState({ selectVehicle: vehicle, selectEmployees: [...vehicleEmployees] });
+    this.setState({
+      selectEmployees: [...vehicleEmployees],
+    });
   };
   //车辆筛选
   vehicleFilter = (key, value) => {
@@ -381,7 +393,13 @@ export default class DispatchingCreatePage extends Component {
       message.success('保存成功！');
       this.props.refresh();
       //保存后清空选中的车与人
-      this.setState({ visible: false, selectEmployees: [], selectVehicle: [], loading: false });
+      this.setState({
+        visible: false,
+        selectEmployees: [],
+        selectVehicle: [],
+        loading: false,
+        carEmpNums: 20,
+      });
     }
   };
   //保存数据校验
@@ -476,12 +494,24 @@ export default class DispatchingCreatePage extends Component {
 
   buildSelectEmployeeCard = () => {
     const { employees, selectEmployees } = this.state;
+    let sliceEmployees =
+      this.state.carEmpNums == 'all' ? employees : employees.slice(0, this.state.carEmpNums);
     return (
       <Card
         title="员工"
         bodyStyle={{ padding: 0, paddingTop: 8, height: '28vh', overflowY: 'auto' }}
         extra={
           <div>
+            {/* <Select
+              onChange={e => this.setState({ carEmpNums: e })}
+              value={this.state.carEmpNums}
+              style={{ width: 55, marginRight: '8px' }}
+            >
+              <Select.Option value={20}>20</Select.Option>
+              <Select.Option value={50}>50</Select.Option>
+              <Select.Option value={100}>100</Select.Option>
+              <Select.Option value={'all'}>全部</Select.Option>
+            </Select> */}
             <Select
               placeholder="员工归属"
               onChange={value => this.employeeFilter('relation', value)}
@@ -512,9 +542,9 @@ export default class DispatchingCreatePage extends Component {
           </div>
         }
       >
-        {isEmptyObj(employees)
+        {isEmptyObj(sliceEmployees)
           ? null
-          : employees.map(employee => {
+          : sliceEmployees.map(employee => {
               return (
                 <Tooltip
                   placement="top"
@@ -562,12 +592,25 @@ export default class DispatchingCreatePage extends Component {
   };
   buildSelectVehicleCard = () => {
     const { vehicles, selectVehicle } = this.state;
+    let sliceVehicles =
+      this.state.carEmpNums == 'all' ? vehicles : vehicles.slice(0, this.state.carEmpNums);
     return (
       <Card
+        // loading={this.state.carLoading}
         title="车辆"
         bodyStyle={{ padding: 0, paddingTop: 8, height: '28vh', overflowY: 'auto' }}
         extra={
           <div>
+            <Select
+              onChange={e => this.setState({ carEmpNums: e })}
+              value={this.state.carEmpNums}
+              style={{ width: 55, marginRight: '8px' }}
+            >
+              <Select.Option value={20}>20</Select.Option>
+              <Select.Option value={50}>50</Select.Option>
+              <Select.Option value={100}>100</Select.Option>
+              <Select.Option value={'all'}>全部</Select.Option>
+            </Select>
             <Select
               placeholder="车辆归属"
               onChange={value => this.vehicleFilter('vehicleOwner', value)}
@@ -587,7 +630,7 @@ export default class DispatchingCreatePage extends Component {
           </div>
         }
       >
-        {vehicles?.map(vehicle => {
+        {sliceVehicles?.map(vehicle => {
           return (
             <Tooltip
               placement="top"
@@ -643,7 +686,7 @@ export default class DispatchingCreatePage extends Component {
 
   //拆单
   editSource = record => {
-    this.setState({ editPageVisible: true, scheduleDetail: record });
+    this.setState({ editPageVisible: true, currentOrder: record });
   };
   //更新state订单整件排车件数
   updateCartonCount = result => {
@@ -654,8 +697,8 @@ export default class DispatchingCreatePage extends Component {
       title: '提示',
       content: `拆单后排车单体积为：${result.volume}m³，重量为：${result.weight}t ，是否确定拆单？`,
       onOk() {
-        record.volume = Number(result.remVolume.toFixed(3));
-        record.weight = Number(result.remWeight.toFixed(3));
+        record.volume = Number(result.remVolume);
+        record.weight = Number(result.remWeight);
         record.unDispatchCarton = record.stillCartonCount - result.cartonCount;
         record.stillCartonCount = result.cartonCount;
         record.isSplit = 1;
@@ -674,7 +717,7 @@ export default class DispatchingCreatePage extends Component {
       selectEmployees,
       selectVehicle,
       rowKeys,
-      scheduleDetail,
+      currentOrder,
       editPageVisible,
       note,
     } = this.state;
@@ -701,7 +744,7 @@ export default class DispatchingCreatePage extends Component {
         onOk={() => this.handleSave()}
         onCancel={() => this.hide()}
         closable={false}
-        destroyOnClose={true}
+        // destroyOnClose={true}
         {...this.props.modal}
         className={disStyle.dispatchingCreatePage}
         style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
@@ -721,9 +764,9 @@ export default class DispatchingCreatePage extends Component {
           modal={{ title: '拆单' }}
           updateCartonCount={e => this.updateCartonCount(e)}
           visible={editPageVisible}
-          order={scheduleDetail}
+          order={currentOrder}
           totalData={totalData}
-          onCancel={() => this.setState({ editPageVisible: false, scheduleDetail: {} })}
+          onCancel={() => this.setState({ editPageVisible: false, currentOrder: {} })}
         />
         <Spin
           indicator={LoadingIcon('default')}
@@ -789,7 +832,11 @@ export default class DispatchingCreatePage extends Component {
                       this.setState({ rowKeys: selectedRowKeys })
                     }
                     selectedRowKeys={rowKeys}
-                    pagination={false}
+                    pagination={{
+                      defaultPageSize: 50,
+                      pageSizeOptions: ['50', '100', '500'],
+                      showSizeChanger: true,
+                    }}
                     scrollY="50vh"
                   />
                 </div>
