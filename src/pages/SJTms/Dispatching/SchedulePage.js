@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-21 14:48:29
+ * @LastEditTime: 2022-11-24 10:10:47
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -155,12 +155,17 @@ export default class SchedulePage extends Component {
       return;
     }
     if (savedRowKeys.length == 1) {
-      this.abortedSchedule(savedRowKeys[0]).then(response => {
-        if (response.success) {
-          message.success('作废成功！');
-          this.getSchedules(activeTab);
-          this.props.refreshPending();
-        }
+      Modal.confirm({
+        title: '是否确认作废排车单？',
+        onOk: async () => {
+          this.abortedSchedule(savedRowKeys[0]).then(response => {
+            if (response.success) {
+              message.success('作废成功！');
+              this.getSchedules(activeTab);
+              this.props.refreshPending();
+            }
+          });
+        },
       });
     } else {
       this.batchProcessConfirmRef.show(
