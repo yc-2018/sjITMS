@@ -2,14 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-09 11:05:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-15 16:26:34
- * @version: 1.0
- */
-/*
- * @Author: Liaorongchang
- * @Date: 2022-04-11 17:30:59
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-04-18 15:29:57
+ * @LastEditTime: 2022-11-24 17:13:22
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -17,7 +10,6 @@ import { Checkbox, Select, Input, Button, Popconfirm, message } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { guid } from '@/utils/utils';
-import { SimpleSelect } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { saveOfUpdateLifecycle } from '@/services/sjitms/ScheduleBill';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
@@ -61,6 +53,12 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
       message.error('进入状态不能为空');
     }
     list.forEach((row, index) => {
+      let b = '';
+      if (row.INVALID && row.INVALID.length < 3) {
+        b = row.INVALID.join(',');
+      } else {
+        b = row.INVALID;
+      }
       entity.push({
         ALLOWSTAT: row.ALLOWSTAT,
         FLOW: row.FLOW,
@@ -69,6 +67,7 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
         COMPANYUUID: loginCompany().uuid,
         DISPATCHCENTERUUID: loginOrg().uuid,
         LINE: index + 1,
+        INVALID: b,
       });
     });
     this.onSaveData(entity);
@@ -85,6 +84,7 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
         skip: row.SKIP == '0' ? false : true,
         scheduleType: row.SCHEDULETYPE,
         line: row.LINE,
+        invalid: row.INVALID,
       };
       params.push(data);
     });
@@ -181,6 +181,38 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
           allowClear={true}
         />
       );
+    } else if (e.column.fieldName == 'INVALID') {
+      let a =
+        e.val == '<空>' || e.val.length == 0
+          ? []
+          : e.val.indexOf(',') < 0
+            ? e.val
+            : e.val.split(',');
+      e.component =
+        e.record.FLOW == 'Ship' ? (
+          <Select
+            style={{ width: '100%' }}
+            mode="multiple"
+            onChange={v => (e.record.INVALID = v)}
+            defaultValue={a}
+          >
+            <Option key={'Shipping'}>装车开始</Option>
+            <Option key={'Shiped'}>装车结束</Option>
+          </Select>
+        ) : (
+          <Select
+            disabled={
+              e.record.FLOW == 'DeliveredConfirm' || e.record.FLOW == 'TaskConfirm' ? true : false
+            }
+            style={{ width: '100%' }}
+            mode="multiple"
+            onChange={v => (e.record.INVALID = v)}
+            defaultValue={a}
+          >
+            <Option key={'Delivering'}>已出车</Option>
+            <Option key={'Returned'}>已回车</Option>
+          </Select>
+        );
     }
   };
 }
