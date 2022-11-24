@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-27 11:24:00
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-23 11:44:45
+ * @LastEditTime: 2022-11-24 10:25:39
  * @Description: 修改排车单 运输订单明细 整件配送数量
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\EditContainerNumberPageF.js
  */
@@ -94,7 +94,7 @@ export default class EditContainerNumberPageF extends Component {
   };
 
   render() {
-    const { modal, order, visible, onCancel } = this.props;
+    const { modal, order, totalData, visible, onCancel } = this.props;
     const { collectCount, collectVolume, collectWeight, delCarton } = this.state;
     const { getFieldDecorator } = this.props.form;
     return (
@@ -131,7 +131,12 @@ export default class EditContainerNumberPageF extends Component {
               Number(order.stillScatteredCount) +
               Number(order.stillContainerCount) * 2}
           </Form.Item>
-          <Form.Item label="排车单总件数">{collectCount}</Form.Item>
+          <Form.Item label="排车单总件数">
+            {Number(totalData.stillCartonCount) -
+              Number(delCarton) +
+              Number(totalData.stillScatteredCount) +
+              Number(totalData.stillContainerCount) * 2}
+          </Form.Item>
           <Form.Item label="排车单总体积">{collectVolume}</Form.Item>
           <Form.Item label="排车单总重量">{collectWeight}</Form.Item>
         </Form>
