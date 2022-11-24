@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-21 11:01:49
+ * @LastEditTime: 2022-11-24 09:11:05
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
@@ -51,16 +51,19 @@ export default class DispatchingTable extends Component {
     let allRowKeys = [...dataSource].map(x => x.uuid);
     const indicatrix = rowKeys.indexOf(record.uuid);
     const selected = indicatrix == -1;
-    // selected ? rowKeys.push(record.uuid) : rowKeys.splice(indicatrix, 1);
-    rowKeys = [record.uuid];
-    if (event.shiftKey && lastIndex >= 0) {
+    if (event.ctrlKey) {
+      selected ? rowKeys.push(record.uuid) : rowKeys.splice(indicatrix, 1);
+    } else if (event.shiftKey && lastIndex >= 0) {
       allRowKeys =
         index > lastIndex
           ? allRowKeys.filter((_, i) => i >= lastIndex && i <= index)
           : allRowKeys.filter((_, i) => i >= index && i <= lastIndex);
-      rowKeys = selected
-        ? rowKeys.concat(allRowKeys)
-        : rowKeys.filter(x => allRowKeys.indexOf(x) == -1);
+      rowKeys = rowKeys.concat(allRowKeys);
+      // rowKeys = selected
+      //   ? rowKeys.concat(allRowKeys)
+      //   : rowKeys.filter(x => allRowKeys.indexOf(x) == -1);
+    } else {
+      rowKeys = [record.uuid];
     }
     rowKeys = uniqBy(rowKeys);
     this.props.changeSelectRows(rowKeys);
