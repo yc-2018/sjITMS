@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-10-25 10:25:16
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-01 11:27:14
+ * @LastEditTime: 2022-11-23 17:11:06
  * @Description:地图排车查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\SearchForm.js
  */
@@ -119,12 +119,36 @@ export default class SearchForm extends Component {
     this.props.form.resetFields();
     this.props.refresh();
   };
-
+  handLinkFields = searchProperties => {
+    const { linkFields } = searchProperties;
+    const { outField } = linkFields[0];
+    const { form } = this.props;
+    return (searchProperties = {
+      ...searchProperties,
+      onChange: data => {
+        const filter = { field: outField, rule: 'eq', val: [data] };
+        form.setFieldsValue({ SHIPAREA: undefined });
+        this.setState({ linkFilter: filter });
+      },
+    });
+  };
   //生成查询控件
   buildSearchItem = searchField => {
-    const searchProperties = searchField.searchProperties
+    let searchProperties = searchField.searchProperties
       ? JSON.parse(searchField.searchProperties)
       : '';
+    if (searchField.searchShowtype == 'auto_complete' && searchProperties.linkFields) {
+      searchProperties = this.handLinkFields(searchProperties);
+    }
+    if (searchField.searchShowtype == 'auto_complete' && searchProperties.isLink) {
+      const { linkFilter } = this.state;
+      if (linkFilter != undefined) {
+        searchProperties = {
+          ...searchProperties,
+          linkFilter: [linkFilter],
+        };
+      }
+    }
     switch (searchField.searchShowtype) {
       case 'date':
         return <RangePicker style={{ width: '100%' }} />;
