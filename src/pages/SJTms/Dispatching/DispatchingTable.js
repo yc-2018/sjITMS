@@ -8,11 +8,13 @@
  */
 import React, { Component } from 'react';
 import { Resizable } from 'react-resizable';
-import { Table, Row, Col } from 'antd';
+import { Table, Row, Col, Tooltip } from 'antd';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import RyzeSettingDrowDown from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
 import dispatchingTableStyles from './DispatchingTable.less';
 import { orderBy, uniqBy } from 'lodash';
+import { guid } from '@/utils/utils';
+import ReactDOM from 'react-dom';
 
 const ResizeableTitle = props => {
   const { onResize, width, ...restProps } = props;
@@ -106,7 +108,53 @@ export default class DispatchingTable extends Component {
     this.setState({ columns });
   };
 
+  //table列数据超长了才显示
+  refreshColumns = columns => {
+    columns.forEach(e => {
+      if (e.width) {
+        e.onCell = () => {
+          let comId = guid();
+          return {
+            style: {
+              maxWidth: e.width,
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis',
+              cursor: 'pointer',
+            },
+            id: comId,
+            onMouseEnter: event => {
+              const spanEl = document.getElementById(comId);
+              let clientWidth = spanEl.clientWidth;
+              let scrollWidth = spanEl.scrollWidth;
+
+              if (clientWidth < scrollWidth) {
+                if (spanEl.innerHTML.indexOf('hastooltip') > -1) {
+                  return;
+                }
+
+                let targetEl = spanEl;
+                while (targetEl.childElementCount > 0) {
+                  targetEl = targetEl.firstElementChild;
+                }
+                var html = { __html: targetEl.innerHTML };
+                ReactDOM.render(
+                  <Tooltip placement="topLeft" title={targetEl.innerText}>
+                    <span id={'hastooltip'} dangerouslySetInnerHTML={html} />
+                  </Tooltip>,
+                  targetEl
+                );
+              }
+            },
+          };
+        };
+      }
+    });
+  };
+
   render() {
+    this.refreshColumns(this.props.columns);
+
     const { selectedRowKeys } = this.props;
     const rowSelection = selectedRowKeys
       ? {

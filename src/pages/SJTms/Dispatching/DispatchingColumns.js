@@ -1,5 +1,4 @@
 import Empty from '@/pages/Component/Form/Empty';
-import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
 import { convertCodeName } from '@/utils/utils';
 
 export const OrderColumns = [
@@ -8,14 +7,14 @@ export const OrderColumns = [
     dataIndex: 'billNumber',
     sorter: true,
     width: 130,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '作业号',
     dataIndex: 'waveNum',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '线路',
@@ -24,7 +23,7 @@ export const OrderColumns = [
     sorterCode: true,
     width: 60,
     render: val => {
-      return val ? <EllipsisCol colValue={val.code} /> : <Empty />;
+      return val ? <span>{val.code}</span> : <Empty />;
     },
   },
   {
@@ -32,7 +31,7 @@ export const OrderColumns = [
     dataIndex: 'orderType',
     sorter: true,
     width: 60,
-    render: val => (val ? <EllipsisCol colValue={OrderType[val].caption} /> : <Empty />),
+    render: val => (val ? <span>{OrderType[val].caption}</span> : <Empty />),
   },
   {
     title: '送货点',
@@ -41,7 +40,7 @@ export const OrderColumns = [
     sorterCode: true,
     width: 150,
     render: val => {
-      return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
+      return val ? <span>{convertCodeName(val)}</span> : <Empty />;
     },
   },
   {
@@ -50,14 +49,14 @@ export const OrderColumns = [
     sorterCode: true,
     sorter: true,
     width: 100,
-    render: val => (val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />),
+    render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty />),
   },
   {
     title: '来源单号',
     dataIndex: 'sourceNum',
     sorter: true,
     width: 120,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '整件数',
@@ -85,14 +84,14 @@ export const OrderColumns = [
     dataIndex: 'volume',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '重量',
     dataIndex: 'weight',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
+    render: val => (val ? <span>{(val / 1000).toFixed(3)}</span> : <Empty />),
   },
   {
     title: '备注',
@@ -109,14 +108,14 @@ export const OrderCollectColumns = [
     sorterCode: true,
     width: 150,
     render: val => {
-      return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
+      return val ? <span>{convertCodeName(val)}</span> : <Empty />;
     },
   },
   {
     title: '送货地址',
     dataIndex: 'address',
     width: 150,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '线路',
@@ -125,7 +124,7 @@ export const OrderCollectColumns = [
     sorterCode: true,
     width: 120,
     render: val => {
-      return val ? <EllipsisCol colValue={val.code} /> : <Empty />;
+      return val ? <span>{val.code}</span> : <Empty />;
     },
   },
   {
@@ -134,7 +133,7 @@ export const OrderCollectColumns = [
     sorterCode: true,
     sorter: true,
     width: 150,
-    render: val => (val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />),
+    render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty />),
   },
   {
     title: '整件数',
@@ -162,14 +161,14 @@ export const OrderCollectColumns = [
     dataIndex: 'volume',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '重量',
     dataIndex: 'weight',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
+    render: val => (val ? <span>{(val / 1000).toFixed(3)}</span> : <Empty />),
   },
 ];
 export const OrderDetailColumns = [
@@ -178,21 +177,21 @@ export const OrderDetailColumns = [
     dataIndex: 'billNumber',
     sorter: true,
     width: 120,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '来源单号',
     dataIndex: 'sourceNum',
     sorter: true,
     width: 120,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '单据类型',
     dataIndex: 'orderType',
     sorter: true,
     width: 60,
-    render: val => (val ? <EllipsisCol colValue={OrderType[val].caption} /> : <Empty />),
+    render: val => (val ? <span>{OrderType[val].caption}</span> : <Empty />),
   },
   {
     title: '整件数',
@@ -227,7 +226,7 @@ export const OrderDetailColumns = [
     dataIndex: 'weight',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
+    render: val => (val ? <span>{(val / 1000).toFixed(3)}</span> : <Empty />),
   },
   {
     title: '金额',
@@ -250,14 +249,14 @@ export const VehicleColumns = [
     dataIndex: 'CODE',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '车牌号',
     dataIndex: 'PLATENUMBER',
     sorter: true,
     width: 100,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '司机',
@@ -265,7 +264,7 @@ export const VehicleColumns = [
     sorter: true,
     width: 80,
     render: val => {
-      return val ? <EllipsisCol colValue={val} /> : <Empty />;
+      return val ? <span>{val}</span> : <Empty />;
     },
   },
   {
@@ -273,7 +272,7 @@ export const VehicleColumns = [
     dataIndex: 'DELIVERYMAN',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '限载重量',
@@ -281,7 +280,7 @@ export const VehicleColumns = [
     sorter: true,
     width: 80,
     render: val => {
-      return val ? <EllipsisCol colValue={val} /> : <Empty />;
+      return val ? <span>{val}</span> : <Empty />;
     },
   },
   {
@@ -290,21 +289,21 @@ export const VehicleColumns = [
     sorter: true,
     width: 80,
     render: (val, record) =>
-      val ? <EllipsisCol colValue={Math.round(val * record.BEARVOLUMERATE) / 100} /> : <Empty />,
+      val ? <span>{Math.round(val * record.BEARVOLUMERATE) / 100}</span> : <Empty />,
   },
   {
     title: '当前任务数',
     dataIndex: 'BILLCOUNTS',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '组队',
     dataIndex: 'VEHICLEGROUP',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
 ];
 
@@ -341,7 +340,7 @@ export const CreatePageOrderColumns = [
     dataIndex: 'sourceNum',
     sorter: true,
     width: 100,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '线路',
@@ -350,7 +349,7 @@ export const CreatePageOrderColumns = [
     sorterCode: true,
     width: 100,
     render: val => {
-      return val ? <EllipsisCol colValue={val.code} /> : <Empty />;
+      return val ? <span>{val.code}</span> : <Empty />;
     },
   },
   {
@@ -358,7 +357,7 @@ export const CreatePageOrderColumns = [
     dataIndex: 'billNumber',
     sorter: true,
     width: 100,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '收货方',
@@ -366,7 +365,7 @@ export const CreatePageOrderColumns = [
     sorter: true,
     width: 180,
     render: val => {
-      return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
+      return val ? <span>{convertCodeName(val)}</span> : <Empty />;
     },
   },
   {
@@ -375,7 +374,7 @@ export const CreatePageOrderColumns = [
     width: 180,
     render: (val, record) => {
       return record.deliveryPoint ? (
-        <EllipsisCol colValue={record.deliveryPoint.address} />
+        <span>{convertCodeName(record.deliveryPoint.address)}</span>
       ) : (
         <Empty />
       );
@@ -386,35 +385,35 @@ export const CreatePageOrderColumns = [
     dataIndex: 'orderType',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={OrderType[val].caption} /> : <Empty />),
+    render: val => (val ? <span>{OrderType[val].caption}</span> : <Empty />),
   },
   {
     title: '整件数',
     dataIndex: 'stillCartonCount',
     sorter: true,
     width: 60,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '散件数',
     dataIndex: 'stillScatteredCount',
     sorter: true,
     width: 60,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '周转箱',
     dataIndex: 'stillContainerCount',
     sorter: true,
     width: 60,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '体积',
     dataIndex: 'volume',
     sorter: true,
     width: 60,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '重量',
@@ -422,7 +421,7 @@ export const CreatePageOrderColumns = [
     sorter: true,
     width: 60,
     sorter: true,
-    render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
+    render: val => (val ? <span>{(val / 1000).toFixed(3)}</span> : <Empty />),
   },
 ];
 
@@ -438,63 +437,63 @@ export const ScheduleColumns = [
     dataIndex: 'deliveryPointCount',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '车辆信息',
     dataIndex: 'vehicle',
     sorter: true,
     width: 120,
-    render: val => (val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />),
+    render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty />),
   },
   {
     title: '司机',
     dataIndex: 'carrier',
     sorter: true,
     width: 100,
-    render: val => (val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />),
+    render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty />),
   },
   {
     title: '整件数',
     dataIndex: 'cartonCount',
     sorter: true,
     width: 100,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '散件数',
     dataIndex: 'scatteredCount',
     sorter: true,
     width: 100,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '周转箱',
     dataIndex: 'containerCount',
     sorter: true,
     width: 100,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '体积',
     dataIndex: 'volume',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '重量',
     dataIndex: 'weight',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
+    render: val => (val ? <span>{(val / 1000).toFixed(3)}</span> : <Empty />),
   },
   {
     title: '总金额',
     dataIndex: 'totalAmount',
     sorter: true,
     width: 100,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '总件数',
@@ -502,13 +501,11 @@ export const ScheduleColumns = [
     sorter: true,
     width: 80,
     render: (_, record) => (
-      <EllipsisCol
-        colValue={
-          Number(record.realCartonCount) +
+      <span>
+        {Number(record.realCartonCount) +
           Number(record.realScatteredCount) +
-          Number(record.realContainerCount) * 2
-        }
-      />
+          Number(record.realContainerCount) * 2}
+      </span>
     ),
   },
   {
@@ -516,21 +513,21 @@ export const ScheduleColumns = [
     dataIndex: 'vehicleWeight',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '装载率',
     dataIndex: 'bearweight',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val + '%'} /> : <Empty />),
+    render: val => (val ? <span>{val + '%'}</span> : <Empty />),
   },
   {
     title: '车辆容积',
     dataIndex: 'bearvolume',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '创建人',
@@ -569,7 +566,7 @@ export const ScheduleDetailColumns = [
     dataIndex: 'orderNumber',
     sorter: true,
     width: 150,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '线路',
@@ -578,7 +575,7 @@ export const ScheduleDetailColumns = [
     sorterCode: true,
     width: 120,
     render: val => {
-      return val ? <EllipsisCol colValue={val.code} /> : <Empty />;
+      return val ? <span>{val.code}</span> : <Empty />;
     },
   },
   {
@@ -586,63 +583,63 @@ export const ScheduleDetailColumns = [
     dataIndex: 'sourceNum',
     sorter: true,
     width: 120,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '送货点',
     dataIndex: 'deliveryPoint',
     sorter: true,
     width: 150,
-    render: val => (val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />),
+    render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty />),
   },
   {
     title: '整件数',
     dataIndex: 'cartonCount',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '散件数',
     dataIndex: 'scatteredCount',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '周转箱',
     dataIndex: 'containerCount',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '体积',
     dataIndex: 'volume',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '重量',
     dataIndex: 'weight',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
+    render: val => (val ? <span>{(val / 1000).toFixed(3)}</span> : <Empty />),
   },
   {
     title: '金额',
     dataIndex: 'amount',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '货主',
     dataIndex: 'owner',
     sorter: true,
     width: 100,
-    render: val => (val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />),
+    render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty />),
   },
 ];
 export const ScheduleDetailCollectColumns = [
@@ -653,7 +650,7 @@ export const ScheduleDetailCollectColumns = [
     sorterCode: true,
     width: 150,
     render: val => {
-      return val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />;
+      return val ? <span>{convertCodeName(val)}</span> : <Empty />;
     },
   },
   {
@@ -663,7 +660,7 @@ export const ScheduleDetailCollectColumns = [
     sorterCode: true,
     width: 120,
     render: val => {
-      return val ? <EllipsisCol colValue={val.code} /> : <Empty />;
+      return val ? <span>{val.code}</span> : <Empty />;
     },
   },
   {
@@ -671,7 +668,7 @@ export const ScheduleDetailCollectColumns = [
     dataIndex: 'address',
     sorter: true,
     width: 150,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '货主',
@@ -679,42 +676,42 @@ export const ScheduleDetailCollectColumns = [
     sorterCode: true,
     sorter: true,
     width: 150,
-    render: val => (val ? <EllipsisCol colValue={convertCodeName(val)} /> : <Empty />),
+    render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty />),
   },
   {
     title: '整件数',
     dataIndex: 'cartonCount',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '散件数',
     dataIndex: 'scatteredCount',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '周转箱',
     dataIndex: 'containerCount',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '体积',
     dataIndex: 'volume',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={val} /> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '重量',
     dataIndex: 'weight',
     sorter: true,
     width: 80,
-    render: val => (val ? <EllipsisCol colValue={(val / 1000).toFixed(3)} /> : <Empty />),
+    render: val => (val ? <span>{(val / 1000).toFixed(3)}</span> : <Empty />),
   },
 ];
 
