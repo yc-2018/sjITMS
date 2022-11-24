@@ -836,6 +836,7 @@ export default class DispatchingCreatePage extends Component {
                       defaultPageSize: 50,
                       pageSizeOptions: ['50', '100', '500'],
                       showSizeChanger: true,
+                      hideOnSinglePage: true,
                     }}
                     scrollY="50vh"
                   />
