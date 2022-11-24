@@ -73,7 +73,7 @@ export default {
     'font-size-base': '12px',
     'btn-height-base': '28px',
     'input-height-base': '28px',
-    'text-color': 'rgba(0, 0, 0, 0.75)', // 主文本色
+    'text-color': '#000', // 主文本色
     'menu-inline-toplevel-item-height': '30px',
     'menu-item-height': '30px',
     'menu-collapsed-width': defaultSettings.closeSiderNavigatorWidth,
