@@ -2,15 +2,15 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-24 10:10:47
+ * @LastEditTime: 2022-11-25 18:45:47
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
 import React, { Component } from 'react';
-import { Modal, Tabs, Button, message, Typography, Dropdown, Menu } from 'antd';
+import { Modal, Tabs, Button, message, Typography, Dropdown, Menu, Icon } from 'antd';
 import DispatchingTable from './DispatchingTable';
 import DispatchingCreatePage from './DispatchingCreatePage';
-import ScheduleSearchForm from './ScheduleSearchForm';
+import OrderPoolSearchForm from './OrderPoolSearchForm';
 import BatchProcessConfirm from './BatchProcessConfirm';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
@@ -19,12 +19,11 @@ import { ScheduleColumns, pagination } from './DispatchingColumns';
 import DispatchMap from '@/pages/SJTms/MapDispatching/schedule/ScheduleMap';
 import dispatchingStyles from './Dispatching.less';
 import { convertDateToTime } from '@/utils/utils';
-import { loginUser } from '@/utils/LoginContext';
+import { loginUser, loginCompany, loginOrg } from '@/utils/LoginContext';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
-import { orderBy, flatten } from 'lodash';
-import { queryAllData } from '@/services/quick/Quick';
+import { orderBy } from 'lodash';
+import { queryAllData, queryData } from '@/services/quick/Quick';
 import {
-  querySchedule,
   approve,
   cancelApprove,
   cancelAborted,
@@ -43,86 +42,106 @@ export default class SchedulePage extends Component {
   state = {
     loading: false,
     columns: [...ScheduleColumns],
-    searchKeyValues: {},
     savedRowKeys: [],
     approvedRowKeys: [],
     abortedRowKeys: [],
+    activeKey: 'Saved',
+    searchPagination: false,
+    searchFilter: [],
     scheduleData: [],
-    activeTab: 'Saved',
+    approvedData: [],
+    abortedData: [],
     editPageVisible: false,
-    scheduleDetail: {},
     users: [],
     authority: this.props.authority ? this.props.authority[0] : null,
   };
 
   componentDidMount() {
-    this.setState({ loading: true });
     query({}).then(res => {
       if (res.success) {
         this.setState({ users: res.data.records });
       }
     });
-    this.getSchedules(this.state.activeTab, { creatorId: loginUser().uuid });
+    this.refreshSchedulePool([
+      { field: 'CREATORID', type: 'VarChar', rule: 'eq', val: loginUser().uuid },
+    ]);
   }
+  isOrgQuery = [
+    { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+    { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
+  ];
   //刷新
   refreshTable = searchKeyValues => {
-    this.setState({ loading: true });
-    this.getSchedules(this.state.activeTab, searchKeyValues);
+    this.refreshSchedulePool(searchKeyValues);
     this.props.refreshDetail(undefined);
   };
   refreshScheduleAndpending = () => {
     this.refreshTable();
     this.props.refreshPending();
   };
+
   //获取排车单
-  getSchedules = (stat, searchKeyValues) => {
-    if (searchKeyValues == undefined) searchKeyValues = this.state.searchKeyValues;
-    searchKeyValues.stat = stat;
-    querySchedule(searchKeyValues).then(response => {
-      if (response.success) {
-        let scheduleData = response.data;
-        const splitOrderUuids =
-          flatten(scheduleData?.filter(x => x.details).map(x => x.details))
-            .filter(order => order.isSplit == 1)
-            .map(x => x.orderUuid) || [];
-        scheduleData = scheduleData?.map(schedule => {
-          if (schedule.details) {
-            schedule.details = schedule.details.map(order => {
-              order.warning = splitOrderUuids.indexOf(order.orderUuid) != -1;
-              return order;
-            });
-            schedule.warning = schedule.details.some(x => x.warning);
-          }
-          if (schedule.vehicleInfo) {
-            schedule.vehicleWeight = (schedule.vehicleInfo.bearweight || 0) / 1000;
-            schedule.bearweight =
-              Math.round((schedule.weight / schedule.vehicleInfo.bearweight || 0) * 10000) / 100;
-            schedule.bearvolume =
-              Math.round(
-                (((schedule.vehicleInfo.width || 0) *
-                  (schedule.vehicleInfo.height || 0) *
-                  (schedule.vehicleInfo.length || 0)) /
-                  1000000) *
-                  (schedule.vehicleInfo.bearvolumerate || 0)
-              ) / 100;
-          }
-          return schedule;
-        });
-        this.setState({
-          loading: false,
-          scheduleData,
-          savedRowKeys: [],
-          approvedRowKeys: [],
-          abortedRowKeys: [],
-        });
+  refreshSchedulePool = async (params, pages, sorter) => {
+    this.setState({ loading: true });
+    let { activeKey, searchFilter, searchPagination } = this.state;
+    let filter = { superQuery: { matchType: 'and', queryParams: [] } };
+    if (params) {
+      if (params.superQuery) {
+        filter = params;
+        searchFilter = params.superQuery.queryParams;
+      } else {
+        searchFilter = params;
       }
-      this.setState({ loading: false, searchKeyValues });
-    });
+    }
+    if (sorter && sorter.column)
+      filter.order =
+        (sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey) +
+        ',' +
+        sorter.order;
+    if (pages) {
+      filter.page = pages.current;
+      filter.pageSize = pages.pageSize;
+    } else {
+      filter.page = searchPagination.current;
+      filter.pageSize = searchPagination.pageSize || 100;
+    }
+    filter.superQuery.queryParams = [
+      ...searchFilter,
+      ...this.isOrgQuery,
+      { field: 'STAT', type: 'VarChar', rule: 'eq', val: activeKey },
+    ];
+    filter.quickuuid = 'sj_itms_schedulepool';
+    const response = await queryData(filter);
+    if (response.success) {
+      searchPagination = {
+        ...pagination,
+        total: response.data.paging.recordCount,
+        pageSize: response.data.paging.pageSize,
+        current: response.data.page,
+        showTotal: total => `共 ${total} 条`,
+      };
+      let scheduleData = response.data.records ? response.data.records : [];
+      scheduleData = scheduleData?.map(order => {
+        order.uuid = `${order.UUID}`;
+        order.warning = order.ISSPLIT > 0;
+        return order;
+      });
+      this.setState({
+        searchPagination,
+        scheduleData,
+        savedRowKeys: [],
+        approvedRowKeys: [],
+        abortedRowKeys: [],
+      });
+    }
+    this.setState({ loading: false, searchFilter });
   };
+
   //标签页切换
   handleTabChange = activeKey => {
-    this.setState({ activeTab: activeKey, loading: true });
-    this.getSchedules(activeKey);
+    this.setState({ activeKey, scheduleData: [] }, () => {
+      this.refreshTable();
+    });
   };
 
   //新建排车单
@@ -149,7 +168,7 @@ export default class SchedulePage extends Component {
 
   //作废
   handleAborted = () => {
-    const { activeTab, savedRowKeys } = this.state;
+    const { savedRowKeys } = this.state;
     if (savedRowKeys.length == 0) {
       message.warning('请选择排车单！');
       return;
@@ -161,7 +180,7 @@ export default class SchedulePage extends Component {
           this.abortedSchedule(savedRowKeys[0]).then(response => {
             if (response.success) {
               message.success('作废成功！');
-              this.getSchedules(activeTab);
+              this.refreshSchedulePool();
               this.props.refreshPending();
             }
           });
@@ -179,7 +198,7 @@ export default class SchedulePage extends Component {
   abortedSchedule = async uuid => {
     const { scheduleData } = this.state;
     const schedule = scheduleData.find(x => x.uuid == uuid);
-    if (schedule.stat != 'Saved') {
+    if (schedule.STAT != 'Saved') {
       return null;
     }
     return await aborted(schedule.uuid);
@@ -187,7 +206,7 @@ export default class SchedulePage extends Component {
 
   //取消作废
   handleCancelAborted = () => {
-    const { activeTab, abortedRowKeys } = this.state;
+    const { abortedRowKeys } = this.state;
     if (abortedRowKeys.length == 0) {
       message.warning('请选择排车单！');
       return;
@@ -196,7 +215,7 @@ export default class SchedulePage extends Component {
       this.cancelAbortedSchedule(abortedRowKeys[0]).then(response => {
         if (response.success) {
           message.success('取消作废成功！');
-          this.getSchedules(activeTab);
+          this.refreshSchedulePool();
           this.props.refreshPending();
         }
       });
@@ -212,15 +231,15 @@ export default class SchedulePage extends Component {
   cancelAbortedSchedule = async uuid => {
     const { scheduleData } = this.state;
     const schedule = scheduleData.find(x => x.uuid == uuid);
-    if (schedule.stat != 'Aborted') {
+    if (schedule.STAT != 'Aborted') {
       return null;
     }
-    return await cancelAborted(schedule.uuid, schedule.version);
+    return await cancelAborted(schedule.uuid, schedule.VERSION);
   };
 
   //取消批准
   handleCancelApprove = () => {
-    const { approvedRowKeys, activeTab } = this.state;
+    const { approvedRowKeys } = this.state;
     if (approvedRowKeys.length == 0) {
       message.warning('请选择排车单！');
       return;
@@ -229,7 +248,7 @@ export default class SchedulePage extends Component {
       this.cancelApproveSchedule(approvedRowKeys[0]).then(response => {
         if (response.success) {
           message.success('取消批准成功！');
-          this.getSchedules(activeTab);
+          this.refreshSchedulePool();
         }
       });
     } else {
@@ -244,15 +263,15 @@ export default class SchedulePage extends Component {
   cancelApproveSchedule = async uuid => {
     const { scheduleData } = this.state;
     const schedule = scheduleData.find(x => x.uuid == uuid);
-    if (schedule.stat != 'Approved') {
+    if (schedule.STAT != 'Approved') {
       return null;
     }
-    return await cancelApprove(schedule.uuid, schedule.version);
+    return await cancelApprove(schedule.uuid, schedule.VERSION);
   };
 
   //批准
   handleApprove = () => {
-    const { savedRowKeys, activeTab } = this.state;
+    const { savedRowKeys } = this.state;
     if (savedRowKeys.length == 0) {
       message.warning('请选择排车单！');
       return;
@@ -261,7 +280,7 @@ export default class SchedulePage extends Component {
       this.approveSchedule(savedRowKeys[0]).then(response => {
         if (response.success) {
           message.success('批准成功！');
-          this.getSchedules(activeTab);
+          this.refreshSchedulePool();
         }
       });
     } else {
@@ -276,15 +295,15 @@ export default class SchedulePage extends Component {
   approveSchedule = async uuid => {
     const { scheduleData } = this.state;
     const schedule = scheduleData.find(x => x.uuid == uuid);
-    if (schedule.stat != 'Saved') {
+    if (schedule.STAT != 'Saved') {
       return null;
     }
-    return await approve(schedule.uuid, schedule.version);
+    return await approve(schedule.uuid, schedule.VERSION);
   };
 
   //删除
   handleDelete = () => {
-    const { activeTab, savedRowKeys } = this.state;
+    const { savedRowKeys } = this.state;
     if (savedRowKeys.length != 1) {
       message.error('一次只允许删除一张排车单！');
       return;
@@ -295,7 +314,7 @@ export default class SchedulePage extends Component {
         remove(savedRowKeys[0]).then(response => {
           if (response.success) {
             message.success('删除成功！');
-            this.getSchedules(activeTab);
+            this.refreshSchedulePool();
             this.props.refreshOrder();
             this.props.refreshPending();
           }
@@ -332,8 +351,9 @@ export default class SchedulePage extends Component {
       item.clicked = selected && !item.clicked;
       return item;
     });
-    this.setState({ scheduleData: newScheduleData });
-    this.props.refreshDetail(selectSchedule);
+    this.setState({ scheduleData: newScheduleData }, () => {
+      this.props.refreshDetail(selectSchedule);
+    });
   };
 
   //打印
@@ -383,88 +403,89 @@ export default class SchedulePage extends Component {
     this.setState({ printPage: printPages });
   };
 
+  buildOperations = activeKey => {
+    switch (activeKey) {
+      case 'Approved':
+        return (
+          <div>
+            <Button
+              style={{ marginLeft: 10 }}
+              onClick={this.handlePrint}
+              hidden={!havePermission(this.state.authority + '.print')}
+            >
+              打印
+            </Button>
+            <Button
+              style={{ marginLeft: 10 }}
+              onClick={this.handleCancelApprove}
+              hidden={!havePermission(this.state.authority + '.cancelApprove')}
+            >
+              取消批准
+            </Button>
+          </div>
+        );
+      case 'Aborted':
+        return (
+          <Button
+            style={{ marginLeft: 10 }}
+            onClick={this.handleCancelAborted}
+            hidden={!havePermission(this.state.authority + '.cancelInvalid')}
+          >
+            取消作废
+          </Button>
+        );
+      default:
+        return (
+          <div>
+            <Button
+              onClick={this.handleCreateSchedule}
+              hidden={!havePermission(this.state.authority + '.create')}
+            >
+              新建
+            </Button>
+            <Button
+              onClick={this.showUpdateWeigthPop}
+              style={{ marginLeft: 10 }}
+              hidden={!havePermission(this.state.authority + '.ton')}
+            >
+              申请调吨
+            </Button>
+            <Button
+              type={'primary'}
+              style={{ marginLeft: 10 }}
+              onClick={this.handleApprove}
+              hidden={!havePermission(this.state.authority + '.approve')}
+            >
+              批准
+            </Button>
+            <Button
+              style={{ marginLeft: 10 }}
+              onClick={this.handleAborted}
+              hidden={!havePermission(this.state.authority + '.invalid')}
+            >
+              作废
+            </Button>
+          </div>
+        );
+    }
+  };
+
   render() {
     const {
-      scheduleData,
       loading,
       columns,
       printPage,
+      users,
+      searchPagination,
+      scheduleData,
+      activeKey,
       savedRowKeys,
       approvedRowKeys,
       abortedRowKeys,
-      activeTab,
-      users,
     } = this.state;
 
-    const buildOperations = () => {
-      switch (activeTab) {
-        case 'Approved':
-          return (
-            <div>
-              <Button
-                style={{ marginLeft: 10 }}
-                onClick={this.handlePrint}
-                hidden={!havePermission(this.state.authority + '.print')}
-              >
-                打印
-              </Button>
-              <Button
-                style={{ marginLeft: 10 }}
-                onClick={this.handleCancelApprove}
-                hidden={!havePermission(this.state.authority + '.cancelApprove')}
-              >
-                取消批准
-              </Button>
-            </div>
-          );
-        case 'Aborted':
-          return (
-            <Button
-              style={{ marginLeft: 10 }}
-              onClick={this.handleCancelAborted}
-              hidden={!havePermission(this.state.authority + '.cancelInvalid')}
-            >
-              取消作废
-            </Button>
-          );
-        default:
-          return (
-            <div>
-              <Button
-                onClick={this.handleCreateSchedule}
-                hidden={!havePermission(this.state.authority + '.create')}
-              >
-                新建
-              </Button>
-              <Button
-                onClick={this.showUpdateWeigthPop}
-                style={{ marginLeft: 10 }}
-                hidden={!havePermission(this.state.authority + '.ton')}
-              >
-                申请调吨
-              </Button>
-              <Button
-                type={'primary'}
-                style={{ marginLeft: 10 }}
-                onClick={this.handleApprove}
-                hidden={!havePermission(this.state.authority + '.approve')}
-              >
-                批准
-              </Button>
-              <Button
-                style={{ marginLeft: 10 }}
-                onClick={this.handleAborted}
-                hidden={!havePermission(this.state.authority + '.invalid')}
-              >
-                作废
-              </Button>
-            </div>
-          );
-      }
-    };
-
     columns[0].render = (val, record) => {
-      return record.stat == 'Saved' ? (
+      return record.STAT == 'Saved' ? (
         <a href="#" onClick={this.editTable(record)}>
           {val}
         </a>
@@ -475,14 +496,50 @@ export default class SchedulePage extends Component {
 
     return (
       <div>
+        {/* 批量操作 */}
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
+        <DispatchMap onRef={node => (this.dispatchMapRef = node)} />
+        {/* 编辑排车单 */}
+        <DispatchingCreatePage
+          modal={{ title: '编辑排车单' }}
+          refresh={() => {
+            this.refreshScheduleAndpending();
+            this.props.refreshOrder();
+          }}
+          onRef={node => (this.createPageModalRef = node)}
+        />
+        {/* 新建排车单 */}
+        <CreatePageModal
+          modal={{ title: '新建排车单', width: 1000 }}
+          page={{
+            quickuuid: 'sj_itms_schedule',
+            showPageNow: 'create',
+          }}
+          customPage={ScheduleCreatePage}
+          onSaved={() => {
+            this.createSchedulePageRef.hide();
+            this.refreshTable();
+          }}
+          onRef={node => (this.createSchedulePageRef = node)}
+        />
+        {/*申请调吨 */}
+        <WeightApplyModal
+          savedRowKeys={savedRowKeys[0]}
+          onRef={node => (this.weightApplyModalRef = node)}
+        />
         <Tabs
-          activeKey={activeTab}
+          activeKey={activeKey}
           onChange={this.handleTabChange}
-          tabBarExtraContent={buildOperations()}
+          tabBarExtraContent={this.buildOperations(activeKey)}
         >
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>排车单</Text>} key="Saved">
-            <ScheduleSearchForm refresh={this.refreshTable} users={users} />
+            {/* <ScheduleSearchForm refresh={this.refreshTable} users={users} /> */}
+            {/* 查询表单 */}
+            <OrderPoolSearchForm
+              quickuuid="sj_itms_schedulepool"
+              users={users}
+              refreshOrderPool={this.refreshTable}
+            />
             <Dropdown
               overlay={
                 <Menu>
@@ -501,86 +558,145 @@ export default class SchedulePage extends Component {
               <div>
                 <DispatchingTable
                   comId="saveSchedule"
-                  pagination={pagination}
+                  clickRow
+                  pagination={searchPagination || false}
                   loading={loading}
                   onClickRow={this.onClickRow}
                   selectedRowKeys={savedRowKeys}
+                  refreshDataSource={(_, pagination, sorter) => {
+                    this.refreshSchedulePool(undefined, pagination, sorter);
+                  }}
                   changeSelectRows={this.tableChangeRows()}
                   dataSource={scheduleData}
-                  refreshDataSource={scheduleData => {
-                    this.setState({ scheduleData });
-                  }}
                   columns={columns}
-                  scrollY="calc(86vh - 145px)"
+                  scrollY="calc(86vh - 180px)"
                 />
               </div>
             </Dropdown>
-            <DispatchMap onRef={node => (this.dispatchMapRef = node)} />
-            {/* 编辑排车单 */}
-            <DispatchingCreatePage
-              modal={{ title: '编辑排车单' }}
-              refresh={() => {
-                this.refreshScheduleAndpending();
-                this.props.refreshOrder();
-              }}
-              onRef={node => (this.createPageModalRef = node)}
-            />
-            {/* 新建排车单 */}
-            <CreatePageModal
-              modal={{ title: '新建排车单', width: 1000 }}
-              page={{
-                quickuuid: 'sj_itms_schedule',
-                showPageNow: 'create',
-              }}
-              customPage={ScheduleCreatePage}
-              onSaved={() => {
-                this.createSchedulePageRef.hide();
-                this.refreshTable();
-              }}
-              onRef={node => (this.createSchedulePageRef = node)}
-            />
-            {/*申请调吨 */}
-            <WeightApplyModal
-              savedRowKeys={savedRowKeys[0]}
-              onRef={node => (this.weightApplyModalRef = node)}
-            />
+            {scheduleData.length == 0 ? (
+              <></>
+            ) : (
+              <div className={dispatchingStyles.orderPoolFooter}>
+                <div className={dispatchingStyles.orderTotalPane}>
+                  <Icon type="info-circle" theme="filled" twoToneColor="#3B77E3" />
+                  <span style={{ marginLeft: 5 }}>
+                    已选择
+                    <span style={{ color: '#3B77E3', margin: '0 2px' }}>{savedRowKeys.length}</span>
+                    项
+                  </span>
+                  <a
+                    href="#"
+                    style={{ marginLeft: 10 }}
+                    onClick={() => {
+                      this.setState({ savedRowKeys: [] });
+                    }}
+                  >
+                    取消全部
+                  </a>
+                </div>
+              </div>
+            )}
           </TabPane>
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已批准</Text>} key="Approved">
-            <ScheduleSearchForm refresh={this.refreshTable} users={users} />
+            {/* <ScheduleSearchForm refresh={this.refreshTable} users={users} /> */}
+            {/* 查询表单 */}
+            <OrderPoolSearchForm
+              quickuuid="sj_itms_schedulepool"
+              users={users}
+              refreshOrderPool={this.refreshTable}
+            />
             <div id="printSchedule" style={{ display: 'none' }}>
               {printPage}
             </div>
             <DispatchingTable
               comId="approvedSchedule"
-              pagination={pagination}
+              clickRow
+              pagination={searchPagination || false}
               loading={loading}
               onClickRow={this.onClickRow}
               selectedRowKeys={approvedRowKeys}
               changeSelectRows={this.tableChangeRows('Approved')}
               dataSource={scheduleData}
-              refreshDataSource={scheduleData => {
-                this.setState({ scheduleData });
+              refreshDataSource={(_, pagination, sorter) => {
+                this.refreshSchedulePool(undefined, pagination, sorter);
               }}
               columns={columns}
-              scrollY="calc(86vh - 145px)"
+              scrollY="calc(86vh - 180px)"
             />
+            {scheduleData.length == 0 ? (
+              <></>
+            ) : (
+              <div className={dispatchingStyles.orderPoolFooter}>
+                <div className={dispatchingStyles.orderTotalPane}>
+                  <Icon type="info-circle" theme="filled" twoToneColor="#3B77E3" />
+                  <span style={{ marginLeft: 5 }}>
+                    已选择
+                    <span style={{ color: '#3B77E3', margin: '0 2px' }}>
+                      {approvedRowKeys.length}
+                    </span>
+                    项
+                  </span>
+                  <a
+                    href="#"
+                    style={{ marginLeft: 10 }}
+                    onClick={() => {
+                      this.setState({ approvedRowKeys: [] });
+                    }}
+                  >
+                    取消全部
+                  </a>
+                </div>
+              </div>
+            )}
           </TabPane>
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已作废</Text>} key="Aborted">
-            <ScheduleSearchForm refresh={this.refreshTable} users={users} />
+            {/* <ScheduleSearchForm refresh={this.refreshTable} users={users} /> */}
+            {/* 查询表单 */}
+            <OrderPoolSearchForm
+              quickuuid="sj_itms_schedulepool"
+              users={users}
+              refreshOrderPool={this.refreshTable}
+            />
             <DispatchingTable
               comId="abortedSchedule"
-              pagination={pagination}
+              clickRow
+              pagination={searchPagination || false}
               loading={loading}
               onClickRow={this.onClickRow}
               selectedRowKeys={abortedRowKeys}
               changeSelectRows={this.tableChangeRows('Aborted')}
               dataSource={scheduleData}
-              refreshDataSource={scheduleData => {
-                this.setState({ scheduleData });
+              refreshDataSource={(_, pagination, sorter) => {
+                this.refreshSchedulePool(undefined, pagination, sorter);
               }}
               columns={columns}
-              scrollY="calc(86vh - 145px)"
+              scrollY="calc(86vh - 180px)"
             />
+            {scheduleData.length == 0 ? (
+              <></>
+            ) : (
+              <div className={dispatchingStyles.orderPoolFooter}>
+                <div className={dispatchingStyles.orderTotalPane}>
+                  <Icon type="info-circle" theme="filled" twoToneColor="#3B77E3" />
+                  <span style={{ marginLeft: 5 }}>
+                    已选择
+                    <span style={{ color: '#3B77E3', margin: '0 2px' }}>
+                      {abortedRowKeys.length}
+                    </span>
+                    项
+                  </span>
+                  <a
+                    href="#"
+                    style={{ marginLeft: 10 }}
+                    onClick={() => {
+                      this.setState({ abortedRowKeys: [] });
+                    }}
+                  >
+                    取消全部
+                  </a>
+                </div>
+              </div>
+            )}
           </TabPane>
         </Tabs>
       </div>
@@ -621,8 +737,10 @@ const drawPrintPage = (schedule, scheduleDetails) => {
           <tr>
             <th colspan={8} style={{ border: 0, height: 20 }}>
               <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
-                <div style={{ float: 'left', width: '25%' }}>单号： {schedule.billNumber}</div>
-                <div style={{ float: 'left', width: '25%' }}>车牌号： {schedule.vehicle.name}</div>
+                <div style={{ float: 'left', width: '25%' }}>单号： {schedule.BILLNUMBER}</div>
+                <div style={{ float: 'left', width: '25%' }}>
+                  车牌号： {schedule.VEHICLEPLATENUMBER}
+                </div>
                 <div style={{ float: 'left', width: '25%' }}>
                   打印时间： {convertDateToTime(new Date())}
                 </div>

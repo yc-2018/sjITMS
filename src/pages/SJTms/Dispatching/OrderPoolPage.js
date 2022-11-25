@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-23 09:55:28
+ * @LastEditTime: 2022-11-25 18:08:46
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -583,6 +583,8 @@ export default class OrderPoolPage extends Component {
             {/* 查询表单 */}
             <OrderPoolSearchForm
               refresh={this.refreshTable}
+              quickuuid="sj_itms_dispatching_orderpool"
+              dispatchcenterSearch={true}
               refreshOrderPool={this.refreshOrderPool}
             />
             {/* 待排订单列表 */}
@@ -603,7 +605,6 @@ export default class OrderPoolPage extends Component {
                 columns={OrderCollectColumns}
                 nestColumns={OrderDetailColumns}
                 scrollY="calc(86vh - 235px)"
-                scrollToFirstRowOnChange
                 title={() => this.drawCollect(false, collectOrder)}
                 footer={() => this.drawCollect(true, waveOrder)}
               />
@@ -624,7 +625,6 @@ export default class OrderPoolPage extends Component {
                 selectedRowKeys={auditedRowKeys}
                 columns={OrderColumns}
                 scrollY="calc(86vh - 235px)"
-                scrollToFirstRowOnChange
                 title={() => this.drawCollect(false, collectOrder)}
                 footer={() => this.drawCollect(true, waveOrder)}
               />

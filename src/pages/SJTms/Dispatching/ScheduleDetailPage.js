@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-19 10:07:10
+ * @LastEditTime: 2022-11-25 18:48:33
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -15,6 +15,7 @@ import DispatchingTable from './DispatchingTable';
 import DispatchingChildTable from './DispatchingChildTable';
 import dispatchingStyles from './Dispatching.less';
 import { removeOrders } from '@/services/sjitms/ScheduleBill';
+import { getDetailByBillUuids } from '@/services/sjitms/ScheduleBill';
 import { groupBy, sumBy } from 'lodash';
 
 const { Text } = Typography;
@@ -31,17 +32,29 @@ export default class ScheduleDetailPage extends Component {
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.isOrderCollect != this.props.isOrderCollect) {
-      this.setState({ selectedRowKeys: [], selectedParentRowKeys: [] });
+      this.setState({
+        selectedRowKeys: [],
+        selectedParentRowKeys: [],
+        scheduleDetail: [],
+        scheduleCollectDetail: [],
+      });
     }
   }
 
-  refreshTable = schedule => {
+  refreshTable = async schedule => {
+    this.setState({ loading: true });
+    let details = [];
+    if (schedule) {
+      const response = await getDetailByBillUuids([schedule.uuid]);
+      details = response.success && response.data ? response.data : [];
+    }
     this.setState({
       schedule,
-      scheduleDetail: schedule ? schedule.details : [],
-      scheduleCollectDetail: schedule ? this.groupData(schedule.details) : [],
+      scheduleDetail: details,
+      scheduleCollectDetail: details.length > 0 ? this.groupData(details) : [],
       selectedRowKeys: [],
       childSelectedRowKeys: [],
+      loading: false,
     });
     this.props.refreshSelectRowOrder([], ['Schedule']);
   };

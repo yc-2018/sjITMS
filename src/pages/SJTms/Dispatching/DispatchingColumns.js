@@ -428,136 +428,140 @@ export const CreatePageOrderColumns = [
 export const ScheduleColumns = [
   {
     title: '单号',
-    dataIndex: 'billNumber',
+    dataIndex: 'BILLNUMBER',
     sorter: true,
     width: 150,
   },
   {
     title: '送货点',
-    dataIndex: 'deliveryPointCount',
+    dataIndex: 'DELIVERYPOINTCOUNT',
     sorter: true,
     width: 80,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '车辆信息',
-    dataIndex: 'vehicle',
+    dataIndex: 'VEHICLECODE',
     sorter: true,
     width: 120,
-    render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty />),
+    render: (val, record) =>
+      val ? <span>{`[${val}]${record.VEHICLEPLATENUMBER}`}</span> : <Empty />,
   },
   {
     title: '司机',
-    dataIndex: 'carrier',
+    dataIndex: 'CARRIERCODE',
     sorter: true,
     width: 100,
-    render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty />),
+    render: (val, record) =>
+      val ? (
+        <span>{`[${val}]${record.CARRIERNAME.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')}`}</span>
+      ) : (
+        <Empty />
+      ),
   },
   {
     title: '整件数',
-    dataIndex: 'cartonCount',
+    dataIndex: 'CARTONCOUNT',
     sorter: true,
     width: 100,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '散件数',
-    dataIndex: 'scatteredCount',
+    dataIndex: 'SCATTEREDCOUNT',
     sorter: true,
     width: 100,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '周转箱',
-    dataIndex: 'containerCount',
+    dataIndex: 'CONTAINERCOUNT',
     sorter: true,
     width: 100,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '体积',
-    dataIndex: 'volume',
+    dataIndex: 'VOLUME',
     sorter: true,
     width: 80,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '重量',
-    dataIndex: 'weight',
+    dataIndex: 'WEIGHT',
     sorter: true,
     width: 80,
-    render: val => (val ? <span>{(val / 1000).toFixed(3)}</span> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '总金额',
-    dataIndex: 'totalAmount',
+    dataIndex: 'TOTALAMOUNT',
     sorter: true,
     width: 100,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '总件数',
-    dataIndex: 'realCartonCount',
+    dataIndex: 'REALCARTONCOUNT',
     sorter: true,
     width: 80,
     render: (_, record) => (
       <span>
-        {Number(record.realCartonCount) +
-          Number(record.realScatteredCount) +
-          Number(record.realContainerCount) * 2}
+        {Number(record.REALCARTONCOUNT) +
+          Number(record.REALSCATTEREDCOUNT) +
+          Number(record.REALCONTAINERCOUNT) * 2}
       </span>
     ),
   },
   {
     title: '承重',
-    dataIndex: 'vehicleWeight',
+    dataIndex: 'BEARWEIGHT',
     sorter: true,
     width: 80,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '装载率',
-    dataIndex: 'bearweight',
+    dataIndex: 'VEHICLEWEIGHT',
     sorter: true,
     width: 80,
     render: val => (val ? <span>{val + '%'}</span> : <Empty />),
   },
   {
     title: '车辆容积',
-    dataIndex: 'bearvolume',
+    dataIndex: 'BEARVOLUME',
     sorter: true,
     width: 80,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '创建人',
-    dataIndex: 'createInfo',
+    dataIndex: 'CREATORNAME',
     sorter: true,
     width: 80,
-    render: val => (val ? <span>{val.operator.fullName}</span> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '创建时间',
-    dataIndex: 'createTime',
+    dataIndex: 'CREATED',
     sorter: true,
     width: 80,
-    render: (_, record) =>
-      record.createInfo.time ? <span>{record.createInfo.time}</span> : <Empty />,
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '最后修改人',
-    dataIndex: 'lastModifyInfo',
+    dataIndex: 'LASTMODIFIERNAME',
     sorter: true,
     width: 80,
-    render: val => (val ? <span>{val.operator.fullName}</span> : <Empty />),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '最后修改时间',
-    dataIndex: 'lastModifyTime',
+    dataIndex: 'LASTMODIFIED',
     sorter: true,
     width: 80,
-    render: (_, record) =>
-      record.lastModifyInfo.time ? <span>{record.lastModifyInfo.time}</span> : <Empty />,
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
 ];
 export const ScheduleDetailColumns = [

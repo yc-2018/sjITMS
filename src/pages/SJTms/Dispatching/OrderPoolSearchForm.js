@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-25 09:35:01
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-11-25 18:30:40
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -19,7 +19,7 @@ import {
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { queryColumns } from '@/services/quick/Quick';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
-import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { loginCompany, loginOrg, loginUser } from '@/utils/LoginContext';
 import moment from 'moment';
 
 const { RangePicker } = DatePicker;
@@ -30,7 +30,6 @@ const isOrgQuery = [
 @Form.create()
 export default class OrderPoolSearchForm extends Component {
   state = {
-    quickuuid: 'sj_itms_dispatching_orderpool',
     loading: false,
     pageFilter: {},
     selectFields: [],
@@ -41,21 +40,23 @@ export default class OrderPoolSearchForm extends Component {
 
   async componentDidMount() {
     this.setState({ loading: true });
-    const response = await queryColumns({ reportCode: this.state.quickuuid, sysCode: 'tms' });
+    const response = await queryColumns({ reportCode: this.props.quickuuid, sysCode: 'tms' });
     const { form } = this.props;
     if (response.success) {
       let selectFields = response.result.columns.filter(data => data.isSearch);
-      const field = response.result.columns.find(x => x.fieldName == 'DISPATCHCENTERUUID');
-      const fieldProperties = field.searchProperties.searchParams
-        ? field.searchProperties
-        : JSON.parse(field.searchProperties);
-      if (fieldProperties) {
-        const search = fieldProperties.searchParams.find(x => x.dispatch == loginOrg().uuid);
-        if (search) {
-          selectFields = response.result.columns.filter(
-            data => search.searchFields.indexOf(data.fieldName) != -1
-          );
+      if (this.props.dispatchcenterSearch) {
+        if (fieldProperties) {
+          const search = fieldProperties.searchParams.find(x => x.dispatch == loginOrg().uuid);
+          if (search) {
+            selectFields = response.result.columns.filter(
+              data => search.searchFields.indexOf(data.fieldName) != -1
+            );
+          }
         }
+        const field = response.result.columns.find(x => x.fieldName == 'DISPATCHCENTERUUID');
+        const fieldProperties = field.searchProperties.searchParams
+          ? field.searchProperties
+          : JSON.parse(field.searchProperties);
       }
       this.setState(
         {
@@ -170,6 +171,23 @@ export default class OrderPoolSearchForm extends Component {
         };
       }
     }
+    if (searchField.fieldName == 'CREATORID') {
+      const creatorParam = {
+        textField: '%name%',
+        valueField: 'uuid',
+        label: 'name',
+        sourceData: this.props.users,
+        searchField: 'code,name',
+        mode: 'multiple',
+        multipleSplit: ',',
+        maxTagCount: 1,
+      };
+      searchProperties = {
+        ...searchProperties,
+        ...creatorParam,
+      };
+    }
+
     switch (searchField.searchShowtype) {
       case 'date':
         return <RangePicker style={{ width: '100%' }} />;
@@ -195,7 +213,7 @@ export default class OrderPoolSearchForm extends Component {
               showSearch
               allowClear
               placeholder={'请输入' + searchField.fieldTxt}
-              reportCode={this.state.quickuuid}
+              reportCode={this.props.quickuuid}
               searchField={searchField}
               isOrgQuery={this.state.isOrgQuery}
             />
@@ -205,7 +223,7 @@ export default class OrderPoolSearchForm extends Component {
           <SimpleAutoCompleteEasy
             placeholder={'请输入' + searchField.fieldTxt}
             allowClear
-            reportCode={this.state.quickuuid}
+            reportCode={this.props.quickuuid}
             searchField={searchField}
             isOrgQuery={this.state.isOrgQuery}
             {...searchProperties}
@@ -253,6 +271,9 @@ export default class OrderPoolSearchForm extends Component {
       if (item.fieldName == 'WAVENUM') {
         item.searchDefVal = moment(new Date()).format('YYMMDD') + '0001';
       }
+      if (item.fieldName == 'CREATORID') {
+        item.searchDefVal = loginUser().uuid;
+      }
       return item;
     });
     return (
@@ -283,7 +304,7 @@ export default class OrderPoolSearchForm extends Component {
             })}
             <Col span={4} style={{ paddingLeft: 12 }}>
               <AdvanceQuery
-                reportCode={this.state.quickuuid}
+                reportCode={this.props.quickuuid}
                 searchFields={this.state.advancedFields}
                 isOrgQuery={isOrgQuery}
                 refresh={this.onAdvanceSearch}
