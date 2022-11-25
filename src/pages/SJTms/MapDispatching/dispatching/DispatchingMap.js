@@ -7,7 +7,7 @@
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
 import React, { Component } from 'react';
-import { Divider, Modal, Button, Row, Col, Empty, Spin, message } from 'antd';
+import { Divider, Modal, Button, Row, Col, Empty, Spin, message, Input } from 'antd';
 import { Map, Marker, CustomOverlay, DrawingManager } from 'react-bmapgl';
 import style from './DispatchingMap.less';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
@@ -15,12 +15,17 @@ import emptySvg from '@/assets/common/img_empoty.svg';
 import SearchForm from './SearchForm';
 import { queryAuditedOrder, queryDriverRoutes } from '@/services/sjitms/OrderBill';
 import { queryDict } from '@/services/quick/Quick';
-import ShopIcon from '@/assets/common/shop.svg';
-import ShopClickIcon from '@/assets/common/shopClick.svg';
+import ShopIcon from '@/assets/common/myj.png';
+
+import ShopClickIcon from '@/assets/common/myjClick.png';
+
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { sumBy, uniqBy } from 'lodash';
 
+const { Search } = Input;
+
 export default class DispatchMap extends Component {
+  basicOrders = [];
   state = {
     visible: false,
     loading: true,
@@ -31,6 +36,7 @@ export default class DispatchMap extends Component {
     orders: [],
     driverTime: 0,
     driverMileage: 0,
+    isPoly: false,
   };
 
   componentDidMount = () => {
@@ -75,6 +81,7 @@ export default class DispatchMap extends Component {
       if (response.success) {
         let data = response.data.records ? response.data.records : [];
         data = data.filter(x => x.longitude && x.latitude);
+        this.basicOrders = data;
         this.setState({ orders: data }, () => {
           setTimeout(() => {
             this.drawClusterLayer();
@@ -142,6 +149,7 @@ export default class DispatchMap extends Component {
     if (this.clusterLayer) {
       return;
     }
+    const { isPoly } = this.state; //取消聚合
     const that = this;
     const view = new mapvgl.View({ map: this?.map });
     this.clusterLayer = new mapvgl.ClusterLayer({
@@ -149,8 +157,8 @@ export default class DispatchMap extends Component {
       maxSize: 80,
       clusterRadius: 150,
       gradient: { 0: '#E6AA68', 0.5: '#309900', 1.0: '#CA3C25' },
-      maxZoom: 15,
-      minZoom: 5,
+      maxZoom: isPoly ? 15 : 9999,
+      minZoom: isPoly ? 5 : 9999,
       showText: true,
       textOptions: { fontSize: 14, color: '#FFF' },
       enablePicked: true,
@@ -175,18 +183,21 @@ export default class DispatchMap extends Component {
   };
   //标注点聚合图层数据加载
   clusterSetData = data => {
+    console.log('data', data);
+    // this.clusterLayer?.setData([]);
     const markers = data.map(point => {
       return {
         geometry: { type: 'Point', coordinates: [point.longitude, point.latitude] },
         properties: {
           icon: [ShopIcon, ShopClickIcon][point.isSelect ? 1 : 0],
-          width: 38,
-          height: 38,
+          width: 42, //38
+          height: 42, //38
         },
         order: point,
       };
     });
     this.clusterLayer?.setData(markers);
+    console.log('this.clusterLayer', this.clusterLayer);
   };
 
   //路线规划
@@ -307,6 +318,20 @@ export default class DispatchMap extends Component {
     return point.lng >= sw.lng && point.lng <= ne.lng && point.lat >= sw.lat && point.lat <= ne.lat;
   };
 
+  storeFilter = (key, e) => {
+    let serachStores = this.basicOrders.filter(
+      item => item.deliveryPoint.code.search(e) != -1 || item.deliveryPoint.name.search(e) != -1
+    );
+    this.setState({ orders: serachStores, storeInfo: e }, () => {
+      setTimeout(() => {
+        this.drawClusterLayer();
+        this.drawMenu();
+        this.clusterSetData(serachStores);
+        this.autoViewPort(serachStores);
+      }, 500);
+    });
+  };
+
   render() {
     const { visible, loading, windowInfo, orders } = this.state;
     const selectOrder = orders.filter(x => x.isSelect);
@@ -320,8 +345,17 @@ export default class DispatchMap extends Component {
         visible={visible}
         title={
           <Row type="flex" justify="space-between">
-            <Col span={20}>
+            <Col span={18}>
               <SearchForm refresh={this.refresh} />
+            </Col>
+            <Col span={1}>
+              <Search
+                placeholder="请输入门店编号或名称"
+                allowClear
+                onChange={event => this.storeFilter('storeInfo', event.target.value)}
+                style={{ width: 150, marginLeft: -80 }}
+                value={this.state.storeInfo}
+              />
             </Col>
             <Col span={1}>
               <Button onClick={() => this.onReset()}>清空</Button>
