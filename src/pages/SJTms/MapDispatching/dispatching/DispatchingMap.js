@@ -144,6 +144,8 @@ export default class DispatchMap extends Component {
     });
   };
 
+  //数字
+
   //标注点聚合图层初始化
   drawClusterLayer = () => {
     if (this.clusterLayer) {
@@ -183,7 +185,6 @@ export default class DispatchMap extends Component {
   };
   //标注点聚合图层数据加载
   clusterSetData = data => {
-    console.log('data', data);
     // this.clusterLayer?.setData([]);
     const markers = data.map(point => {
       return {
@@ -197,7 +198,6 @@ export default class DispatchMap extends Component {
       };
     });
     this.clusterLayer?.setData(markers);
-    console.log('this.clusterLayer', this.clusterLayer);
   };
 
   //路线规划
