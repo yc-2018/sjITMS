@@ -53,6 +53,13 @@ export default class DispatchingCreatePage extends Component {
     currentOrder: {},
     carLoading: false,
     carEmpNums: 20,
+    carEmpSearch: {
+      // vehicleOwner: '',
+      // vehicleCode: '',
+      // empOwner: '',
+      // empType: '',
+      // empInfo: '',
+    },
   };
 
   componentDidMount = () => {
@@ -201,6 +208,7 @@ export default class DispatchingCreatePage extends Component {
       selectEmployees: [],
       selectVehicle: [],
       carEmpNums: 20,
+      carEmpSearch: {},
     });
   };
 
@@ -244,6 +252,11 @@ export default class DispatchingCreatePage extends Component {
     if (vehicleParam.vehicleOwner) {
       serachVeh = serachVeh.filter(x => x.OWNER == vehicleParam.vehicleOwner);
     }
+    if (key == 'vehicleOwner') {
+      this.setState({ carEmpSearch: { ...this.state.carEmpSearch, vehicleOwner: value } });
+    } else {
+      this.setState({ carEmpSearch: { ...this.state.carEmpSearch, vehicleCode: value } });
+    }
     this.setState({ vehicles: serachVeh });
   };
   //选人
@@ -278,6 +291,13 @@ export default class DispatchingCreatePage extends Component {
     }
     if (empParams.relation) {
       searchEmp = searchEmp.filter(x => x.HIRED_TYPE == empParams.relation);
+    }
+    if (key == 'relation') {
+      this.setState({ carEmpSearch: { ...this.state.carEmpSearch, empOwner: value } });
+    } else if (key == 'employeeType') {
+      this.setState({ carEmpSearch: { ...this.state.carEmpSearch, empType: value } });
+    } else {
+      this.setState({ carEmpSearch: { ...this.state.carEmpSearch, empInfo: value } });
     }
     this.setState({ employees: searchEmp, empParams });
   };
@@ -399,6 +419,7 @@ export default class DispatchingCreatePage extends Component {
         selectVehicle: [],
         loading: false,
         carEmpNums: 20,
+        carEmpSearch: {},
       });
     }
   };
@@ -517,6 +538,7 @@ export default class DispatchingCreatePage extends Component {
               onChange={value => this.employeeFilter('relation', value)}
               allowClear={true}
               style={{ width: 100 }}
+              value={this.state.carEmpSearch.empOwner}
             >
               {this.dict.filter(x => x.dictCode == 'relation').map(d => (
                 <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
@@ -527,6 +549,7 @@ export default class DispatchingCreatePage extends Component {
               onChange={value => this.employeeFilter('employeeType', value)}
               allowClear={true}
               style={{ width: 100, marginLeft: 5 }}
+              value={this.state.carEmpSearch.empType}
             >
               {this.dict.filter(x => x.dictCode == 'employeeType').map(d => (
                 <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
@@ -538,6 +561,7 @@ export default class DispatchingCreatePage extends Component {
               allowClear
               onChange={event => this.employeeFilter('searchKey', event.target.value)}
               style={{ width: 150, marginLeft: 5 }}
+              value={this.state.carEmpSearch.empInfo}
             />
           </div>
         }
@@ -616,6 +640,7 @@ export default class DispatchingCreatePage extends Component {
               onChange={value => this.vehicleFilter('vehicleOwner', value)}
               allowClear={true}
               style={{ width: 100 }}
+              value={this.state.carEmpSearch.vehicleOwner}
             >
               {this.dict.filter(x => x.dictCode == 'vehicleOwner').map(d => (
                 <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
@@ -626,6 +651,7 @@ export default class DispatchingCreatePage extends Component {
               placeholder="请输入车牌号/编号"
               onChange={event => this.vehicleFilter('searchKey', event.target.value)}
               style={{ width: 150, marginLeft: 5 }}
+              value={this.state.carEmpSearch.vehicleCode}
             />
           </div>
         }
