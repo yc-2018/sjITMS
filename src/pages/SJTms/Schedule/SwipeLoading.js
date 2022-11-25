@@ -22,7 +22,7 @@ export default class Swipe extends PureComponent {
     message: undefined,
     errMsg: '',
     isShip: false,
-    swipeFlag:"all"//刷卡标识用于区分出回车，开始结束装车 刷卡
+    swipeFlag:"loading"//刷卡标识用于区分出回车，开始结束装车 刷卡
   };
   componentDidMount() {
     this.empInputRef.focus();

@@ -9,9 +9,9 @@
 import request from '@/utils/request';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 //刷卡
-export async function swipe(empId) {
+export async function swipe(empId,swipeFlag) {
   return request(
-    `/itms-schedule/itms-schedule/sj/bill/schedule/process/swipe?empId=${empId}&companyUuid=${
+    `/itms-schedule/itms-schedule/sj/bill/schedule/process/swipe?empId=${empId}&swipeFlag=${swipeFlag}&companyUuid=${
       loginCompany().uuid
     }&dispatchUuid=${loginOrg().uuid}`,
     {
@@ -20,9 +20,9 @@ export async function swipe(empId) {
   );
 }
 //司机刷卡
-export async function driverSwipe(empId, companyUuid, dispatchUuid) {
+export async function driverSwipe(empId, companyUuid, dispatchUuid,swipeFlag) {
   return request(
-    `/itms-schedule/itms-schedule/openapi/bill/schedule/process/swipe?empId=${empId}&companyUuid=${companyUuid}&dispatchUuid=${dispatchUuid}`,
+    `/itms-schedule/itms-schedule/openapi/bill/schedule/process/swipe?empId=${empId}&swipeFlag=${swipeFlag}&companyUuid=${companyUuid}&dispatchUuid=${dispatchUuid}`,
     {
       method: 'POST',
     }

@@ -13,6 +13,8 @@ export default [
     component: '../layouts/DriverLayout',
     routes: [
       { path: '/driver/swipe', component: './SJTms/Schedule/DriverSwipe' },
+      { path: '/driver/swipeLoading', component: './SJTms/Schedule/DriverSwipeLoading' },
+      { path: '/driver/swipeInAndOut', component: './SJTms/Schedule/DriverSwipeInAndOut' },
       { path: '/driver/DriverSwipePrint', component: './SJTms/Schedule/DriverSwipePrint' },
       { path: '/driver/DriverSwipeSign', component: './SJTms/Schedule/DriverSwipeSign' },
     ],
@@ -1348,6 +1350,20 @@ export default [
             name: '司机刷卡',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/Schedule/Swipe',
+            authority: ['sjtms.exec.checkin'],
+          },
+          {
+            path: '/tmsexec/checkinLoading',
+            name: '司机装车刷卡',
+            org: ['DISPATCH_CENTER'],
+            component: './SJTms/Schedule/SwipeLoading',
+            authority: ['sjtms.exec.checkin'],
+          },
+          {
+            path: '/tmsexec/checkinInAndOut',
+            name: '司机出入厂刷卡',
+            org: ['DISPATCH_CENTER'],
+            component: './SJTms/Schedule/SwipeInAndOut',
             authority: ['sjtms.exec.checkin'],
           },
           {

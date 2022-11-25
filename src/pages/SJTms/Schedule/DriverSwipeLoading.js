@@ -25,7 +25,7 @@ export default class Swiper extends PureComponent {
     companyUuid: undefined,
     dispatchUuid: undefined,
     dispatchName: undefined,
-    swipeFlag:"all"//刷卡标识用于区分出回车，开始结束装车 刷卡
+    swipeFlag:"loading"//刷卡标识用于区分出回车，开始结束装车 刷卡
   };
   componentDidMount() {
     this.empInputRef.focus();
@@ -55,7 +55,7 @@ export default class Swiper extends PureComponent {
 
   //刷卡
   onSubmit = async event => {
-    const { dispatchUuid, companyUuid,swipeFlag } = this.state;
+    const { dispatchUuid, companyUuid } = this.state;
     if (dispatchUuid == undefined || companyUuid == undefined) {
       message.error('企业中心或调度中心值缺失！');
       return;
