@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-22 16:48:54
+ * @LastEditTime: 2022-11-25 09:35:01
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -145,7 +145,7 @@ export default class OrderPoolSearchForm extends Component {
     return (searchProperties = {
       ...searchProperties,
       onChange: data => {
-        const filter = { field: outField, rule: 'eq', val: [data] };
+        const filter = { field: outField, rule: 'like', val: [data] };
         form.setFieldsValue({ SHIPAREA: undefined });
         this.setState({ linkFilter: filter });
       },
