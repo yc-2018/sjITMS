@@ -457,11 +457,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     selectedRows.length == 1
       ? this.setState({ showRollBackPop: true })
       : this.batchProcessConfirmRef.show(
-          '取消批准',
-          selectedRows,
-          this.onRollBack,
-          this.queryCoulumns
-        );
+        '取消批准',
+        selectedRows,
+        this.onRollBack,
+        this.queryCoulumns
+      );
   };
 
   //批量作废
@@ -486,11 +486,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     selectedRows.length == 1
       ? this.setState({ showAbortAndReset: true })
       : this.batchProcessConfirmRef.show(
-          '作废',
-          selectedRows,
-          this.abortedAndReset,
-          this.queryCoulumns
-        );
+        '作废',
+        selectedRows,
+        this.abortedAndReset,
+        this.queryCoulumns
+      );
   };
 
   //移车
@@ -804,7 +804,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
     return (
       <div>
         <table
-          style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0 ,fontWeight: 'bold'}}
+          style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0, fontWeight: 'bold' }}
           border={1}
           cellPadding={0}
           cellSpacing={0}
@@ -844,31 +844,31 @@ const drawPrintPage = (schedule, scheduleDetails) => {
                 </th>
               </tr> */}
             <tr>
-              <th colspan={16} style={{ border: 0, height: 20 }}>
+              <th colspan={12} style={{ border: 0, height: 20 }}>
                 <div style={{ textAlign: 'left', fontWeight: 'bold' }}>
                   {/* <div style={{ float: 'left', width: '25%' }}>
                     排车序号： 
                   </div> */}
                   <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>操作员： {loginUser().name}</div>
-                  <div style={{ float: 'left', width: '25%' , fontWeight: 'bold'}}>驾驶员： {schedule.DRIVER}</div>
-                  <div style={{ float: 'left', width: '25%' , fontWeight: 'bold'}}>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>驾驶员： {schedule.DRIVER}</div>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
                     排车单号： {schedule.BILLNUMBER}
                   </div>
                 </div>
                 <div style={{ textAlign: 'left', fontWeight: 'bold' }}>
-                  <div style={{ float: 'left', width: '25%' , fontWeight: 'bold'}}>车号： {schedule.VEHICLECODE}</div>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>车号： {schedule.VEHICLECODE}</div>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
                     信箱号：
                     {schedule.pirs}
                   </div>
-                  <div style={{ float: 'left', width: '25%' , fontWeight: 'bold'}}>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
                     装车员：
                     {schedule.STEVEDORE}
                   </div>
                   <div style={{ textAlign: 'left', fontWeight: 'bold' }}>
-                    <div style={{ float: 'left', width: '25%' , fontWeight: 'bold'}}>副司机： {schedule.COPILOT}</div>
+                    <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>副司机： {schedule.COPILOT}</div>
                   </div>
-                  <div style={{ float: 'left', width: '25%' ,fontWeight: 'bold' }}>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
                     打印时间：
                     {convertDateToTime(new Date())}
                   </div>
@@ -883,13 +883,13 @@ const drawPrintPage = (schedule, scheduleDetails) => {
               </th>
             </tr> */}
             <tr>
-              <th colspan={16} style={{ border: 0, height: 20 }}>
+              <th colspan={12} style={{ border: 0, height: 20 }}>
                 <div style={{ textAlign: 'left', fontWeight: 'bold' }}>
                   <div style={{ float: 'left', width: '80%' }}>
                     {schedule.USEETC == '是'
                       ? '粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为' +
-                        schedule.ETCAMOUNT +
-                        '元'
+                      schedule.ETCAMOUNT +
+                      '元'
                       : '粤通卡信息：'}
                     <br />
                     [线路]去程入口:
@@ -910,22 +910,22 @@ const drawPrintPage = (schedule, scheduleDetails) => {
               <th width={50} rowSpan={2}>
                 线路
               </th>
-              <th width={50} rowSpan={2}>
+              <th width={100} rowSpan={2}>
                 零板位
               </th>
-              <th width={50} rowSpan={2}>
+              <th width={170} rowSpan={2}>
                 门店名称
               </th>
-              <th width={170} colSpan={6}>
+              <th width={150} colSpan={6}>
                 送出
               </th>
-              <th width={170} colSpan={1}>
+              <th width={50} colSpan={1}>
                 回收
               </th>
-              <th width={50} rowSpan={2}>
+              <th width={120} rowSpan={2}>
                 整箱板位
               </th>
-              <th width={50} rowSpan={3}>
+              <th width={50} rowSpan={2}>
                 装车排序
               </th>
             </tr>
@@ -949,23 +949,28 @@ const drawPrintPage = (schedule, scheduleDetails) => {
                 return (
                   <tr style={{ textAlign: 'center', height: 20 }}>
                     <td width={100}>{item.ARCHLINECODE}</td>
-                    <td width={80}>{item.SCATTEREDCOLLECTBIN}</td>
+                    <td width={80}
+                      style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} >
+                      {item.SCATTEREDCOLLECTBIN}
+                    </td>
                     <td width={120}>
                       {'[' + item.DELIVERYPOINTCODE + ']' + item.DELIVERYPOINTNAME}
                     </td>
-                    <td width={80}>{item.REALCARTONCOUNT}</td>
-                    <td width={80}>{item.REALSCATTEREDCOUNT}</td>
-                    <td width={80}>{item.REALCONTAINERCOUNT}</td>
-                    <td width={80}>{item.OWECARTONCOUNT}</td>
-                    <td width={80}>{item.REALCONTAINERCOUNT + item.OWECARTONCOUNT}</td>
-                    <td width={80}>{}</td>
-                    <td width={80}>{}</td>
+                    <td width={50}>{item.REALCARTONCOUNT}</td>
+                    <td width={50}>{item.REALSCATTEREDCOUNT}</td>
+                    <td width={50}>{item.REALCONTAINERCOUNT}</td>
+                    <td width={50}>{item.OWECARTONCOUNT}</td>
+                    <td width={50}>{item.REALCONTAINERCOUNT + item.OWECARTONCOUNT}</td>
+                    <td width={50}>{ }</td>
+                    <td width={50}>{ }</td>
                     {/* <td width={80}>{}</td>
                     <td width={80}>{}</td>
                     <td width={80}>{}</td>
                     <td width={80}>{}</td> */}
-                    <td width={100}>{item.COLLECTBIN}</td>
-                    <td width={60}></td>
+                    <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
+                      {item.COLLECTBIN}
+                    </td>
+                    <td width={50}></td>
                   </tr>
                 );
               })
@@ -976,7 +981,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
           <tfoot border={0}>
             <tr style={{ height: 20, border: 0, fontSize: '15px' }} border={0}>
               <td style={{ border: 0, paddingTop: 10 }} colSpan={8}>
-                <div style={{ paddingLeft: 20 , fontWeight: 'bold'}}>
+                <div style={{ paddingLeft: 20, fontWeight: 'bold' }}>
                   总体积(m³)：
                   {schedule.VOLUME}
                 </div>
@@ -986,7 +991,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
               </td>
             </tr>
             <tr style={{ border: 0, height: 20 }}>
-              <td style={{ border: 0 , fontWeight: 'bold'}} colspan={16}>
+              <td style={{ border: 0, fontWeight: 'bold' }} colspan={16}>
                 单据备注: 白色~收据，红色~驾驶员、配送员，黄色~发货
               </td>
             </tr>
