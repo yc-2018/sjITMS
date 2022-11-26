@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-25 18:30:40
+ * @LastEditTime: 2022-11-26 09:14:40
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -45,6 +45,10 @@ export default class OrderPoolSearchForm extends Component {
     if (response.success) {
       let selectFields = response.result.columns.filter(data => data.isSearch);
       if (this.props.dispatchcenterSearch) {
+        const field = response.result.columns.find(x => x.fieldName == 'DISPATCHCENTERUUID');
+        const fieldProperties = field.searchProperties.searchParams
+          ? field.searchProperties
+          : JSON.parse(field.searchProperties);
         if (fieldProperties) {
           const search = fieldProperties.searchParams.find(x => x.dispatch == loginOrg().uuid);
           if (search) {
@@ -53,10 +57,6 @@ export default class OrderPoolSearchForm extends Component {
             );
           }
         }
-        const field = response.result.columns.find(x => x.fieldName == 'DISPATCHCENTERUUID');
-        const fieldProperties = field.searchProperties.searchParams
-          ? field.searchProperties
-          : JSON.parse(field.searchProperties);
       }
       this.setState(
         {

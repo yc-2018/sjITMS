@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-25 18:48:33
+ * @LastEditTime: 2022-11-26 09:07:28
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -158,7 +158,7 @@ export default class ScheduleDetailPage extends Component {
       <div style={{ padding: 5 }}>
         <Row style={{ marginBottom: 5, lineHeight: '28px' }}>
           <Col span={12}>
-            <Text className={dispatchingStyles.cardTitle}>排车单： {schedule.billNumber}</Text>
+            <Text className={dispatchingStyles.cardTitle}>排车单： {schedule.BILLNUMBER}</Text>
           </Col>
           <Col span={12} style={{ textAlign: 'right' }}>
             {schedule.stat == 'Saved' ? (
