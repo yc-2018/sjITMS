@@ -47,7 +47,6 @@ export default class ScheduleDetailPage extends Component {
     if (schedule) {
       const response = await getDetailByBillUuids([schedule.uuid]);
       details = response.success && response.data ? response.data : [];
-      console.log('details', details);
     }
     this.setState({
       schedule,
