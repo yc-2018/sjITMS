@@ -97,12 +97,12 @@ export default class ScheduleDetailPage extends Component {
 
   //删除明细
   handleRemoveDetail = () => {
-    const { selectedRowKeys, schedule } = this.state;
+    const { selectedRowKeys, schedule, scheduleDetail } = this.state;
     if (selectedRowKeys.length == 0 || selectedRowKeys == undefined) {
       message.warning('请选择订单明细！');
       return;
     }
-    const orderUuids = schedule.details
+    const orderUuids = scheduleDetail
       .filter(x => selectedRowKeys.indexOf(x.uuid) != -1)
       .map(x => x.orderUuid);
     removeOrders({ billUuid: schedule.uuid, orderUuids }).then(response => {
