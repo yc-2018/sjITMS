@@ -47,6 +47,7 @@ export default class ScheduleDetailPage extends Component {
     if (schedule) {
       const response = await getDetailByBillUuids([schedule.uuid]);
       details = response.success && response.data ? response.data : [];
+      console.log('details', details);
     }
     this.setState({
       schedule,
@@ -117,8 +118,9 @@ export default class ScheduleDetailPage extends Component {
 
   //更新选中行
   tableChangeRows = selectedRowKeys => {
-    const { schedule } = this.state;
-    let orders = schedule.details;
+    const { scheduleDetail } = this.state;
+    if (!scheduleDetail) return;
+    let orders = scheduleDetail;
     orders = orders.map(item => {
       return { ...item, billNumber: item.orderNumber, stat: 'Schedule' };
     });
@@ -128,9 +130,10 @@ export default class ScheduleDetailPage extends Component {
     this.setState({ selectedRowKeys });
   };
   childTableChangeRows = result => {
-    const { schedule } = this.state;
-    let orders = schedule.details;
-    orders = orders.map(item => {
+    const { scheduleDetail } = this.state;
+    if (!scheduleDetail) return;
+    let orders = scheduleDetail;
+    orders = orders?.map(item => {
       return { ...item, billNumber: item.orderNumber, stat: 'Schedule' };
     });
     this.props.refreshSelectRowOrder(
@@ -161,7 +164,7 @@ export default class ScheduleDetailPage extends Component {
             <Text className={dispatchingStyles.cardTitle}>排车单： {schedule.BILLNUMBER}</Text>
           </Col>
           <Col span={12} style={{ textAlign: 'right' }}>
-            {schedule.stat == 'Saved' ? (
+            {schedule.STAT == 'Saved' ? (
               <Button style={{ marginRight: 30 }} onClick={() => this.handleRemoveDetail()}>
                 移除
               </Button>
