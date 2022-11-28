@@ -908,6 +908,17 @@ export default class DispatchingCreatePage extends Component {
                   </div>
                   <Divider type="vertical" style={{ height: '3.5em' }} />
                   <div style={{ flex: 1 }}>
+                    <div> 总件数</div>
+                    <div>
+                      <span className={disStyle.orderTotalNumber}>
+                        {totalData.stillCartonCount +
+                          totalData.stillScatteredCount +
+                          totalData.stillContainerCount * 2}
+                      </span>
+                    </div>
+                  </div>
+                  <Divider type="vertical" style={{ height: '3.5em' }} />
+                  <div style={{ flex: 1 }}>
                     <div> 整件</div>
                     <div>
                       <span className={disStyle.orderTotalNumber}>

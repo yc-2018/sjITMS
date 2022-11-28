@@ -299,6 +299,13 @@ export const VehicleColumns = [
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
+    title: '当前门店数',
+    dataIndex: 'DELIVERYPOINTS',
+    sorter: true,
+    width: 80,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
     title: '组队',
     dataIndex: 'VEHICLEGROUP',
     sorter: true,
