@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-28 11:38:46
+ * @LastEditTime: 2022-11-28 12:34:25
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -83,6 +83,10 @@ export default class OrderPoolPage extends Component {
 
   refreshOrderPool = (params, pages, sorter) => {
     this.setState({ loading: true });
+    let body = document.querySelector('.ant-table-body');
+    if (body) {
+      body.scrollTop = 0;
+    }
     let { pageFilter, searchPagination } = this.state;
     let filter = { superQuery: { matchType: 'and', queryParams: [] } };
     if (params) {
@@ -619,7 +623,6 @@ export default class OrderPoolPage extends Component {
                 comId="orderPool"
                 clickRow
                 childSettingCol
-                scrollTop
                 pagination={searchPagination || false}
                 loading={loading}
                 dataSource={auditedCollectData}
@@ -639,7 +642,6 @@ export default class OrderPoolPage extends Component {
               <DispatchingTable
                 comId="orderPool"
                 clickRow
-                scrollTop
                 pagination={searchPagination || false}
                 loading={loading}
                 dataSource={auditedData}
