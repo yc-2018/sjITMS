@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-28 14:20:24
+ * @LastEditTime: 2022-11-28 16:13:24
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
@@ -70,7 +70,9 @@ export default class DispatchingTable extends Component {
     rowKeys = uniqBy(rowKeys);
     this.props.changeSelectRows(rowKeys);
     this.setState({ lastIndex: index });
-    this.props.onClickRow(record);
+    if (this.props.onClickRow) {
+      this.props.onClickRow(record);
+    }
   };
 
   onChange = selectedRowKeys => {
