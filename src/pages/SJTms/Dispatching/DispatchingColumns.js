@@ -284,7 +284,7 @@ export const VehicleColumns = [
     },
   },
   {
-    title: '限制体积',
+    title: '限载体积',
     dataIndex: 'BEARVOLUME',
     sorter: true,
     width: 80,

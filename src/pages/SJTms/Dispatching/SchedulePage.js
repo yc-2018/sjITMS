@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-28 11:14:33
+ * @LastEditTime: 2022-11-28 14:35:41
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -350,8 +350,9 @@ export default class SchedulePage extends Component {
       const selected = item.uuid == record.uuid;
       if (selected && !item.clicked) {
         selectSchedule = item;
+        selectSchedule.isSelect = true;
       }
-      item.clicked = selected && !item.clicked;
+      // item.clicked = selected && !item.clicked;
       return item;
     });
     this.setState({ scheduleData: newScheduleData }, () => {
