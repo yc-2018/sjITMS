@@ -379,12 +379,8 @@ export const CreatePageOrderColumns = [
     title: '收货方地址',
     sorter: true,
     width: 180,
-    render: (val, record) => {
-      return record.deliveryPoint ? (
-        <span>{convertCodeName(record.deliveryPoint.address)}</span>
-      ) : (
-        <Empty />
-      );
+    render: record => {
+      return record.deliveryPoint ? <span>{record.deliveryPoint.address}</span> : <Empty />;
     },
   },
   {
