@@ -467,7 +467,7 @@ export const ScheduleColumns = [
     dataIndex: 'CARTONCOUNT',
     sorter: true,
     width: 100,
-    render: val => (val ? <span>{val}</span> : <Empty />),
+    render: val => (val ? <span>{Math.round(val * 100) / 100}</span> : <Empty />),
   },
   {
     title: '散件数',
@@ -604,7 +604,7 @@ export const ScheduleDetailColumns = [
     dataIndex: 'cartonCount',
     sorter: true,
     width: 80,
-    render: val => (val ? <span>{val}</span> : <Empty />),
+    render: val => (val ? <span>{Math.round(val * 100) / 100}</span> : <Empty />),
   },
   {
     title: '散件数',
@@ -690,7 +690,7 @@ export const ScheduleDetailCollectColumns = [
     dataIndex: 'cartonCount',
     sorter: true,
     width: 80,
-    render: val => (val ? <span>{val}</span> : <Empty />),
+    render: val => (val ? <span>{Math.round(val * 100) / 100}</span> : <Empty />),
   },
   {
     title: '散件数',

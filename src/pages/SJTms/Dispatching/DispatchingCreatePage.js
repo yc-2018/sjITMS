@@ -911,9 +911,12 @@ export default class DispatchingCreatePage extends Component {
                     <div> 总件数</div>
                     <div>
                       <span className={disStyle.orderTotalNumber}>
-                        {totalData.stillCartonCount +
-                          totalData.stillScatteredCount +
-                          totalData.stillContainerCount * 2}
+                        {Math.round(
+                          (Number(totalData.stillCartonCount) +
+                            Number(totalData.stillScatteredCount) +
+                            Number(totalData.stillContainerCount) * 2) *
+                            100
+                        ) / 100}
                       </span>
                     </div>
                   </div>
@@ -922,7 +925,7 @@ export default class DispatchingCreatePage extends Component {
                     <div> 整件</div>
                     <div>
                       <span className={disStyle.orderTotalNumber}>
-                        {totalData.stillCartonCount}
+                        {Math.round(totalData.stillCartonCount * 100) / 100}
                       </span>
                     </div>
                   </div>
