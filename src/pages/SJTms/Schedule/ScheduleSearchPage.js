@@ -457,11 +457,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     selectedRows.length == 1
       ? this.setState({ showRollBackPop: true })
       : this.batchProcessConfirmRef.show(
-          '取消批准',
-          selectedRows,
-          this.onRollBack,
-          this.queryCoulumns
-        );
+        '取消批准',
+        selectedRows,
+        this.onRollBack,
+        this.queryCoulumns
+      );
   };
 
   //批量作废
@@ -486,11 +486,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     selectedRows.length == 1
       ? this.setState({ showAbortAndReset: true })
       : this.batchProcessConfirmRef.show(
-          '作废',
-          selectedRows,
-          this.abortedAndReset,
-          this.queryCoulumns
-        );
+        '作废',
+        selectedRows,
+        this.abortedAndReset,
+        this.queryCoulumns
+      );
   };
 
   //移车
@@ -569,7 +569,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     const printPages = document.getElementById('printPage').childNodes;
     printPages.forEach(page => {
       LODOP.NewPageA();
-      if (loginOrg().uuid == '000000750000004') {
+      if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001') {
         LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
       } else {
         LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
@@ -634,6 +634,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     for (let index = 0; selectedRows.length > index; index++) {
       const response = await queryAllData({
         quickuuid: 'sj_itms_print_schedule_order',
+        order:"ARCHLINECODE,dascend",
         superQuery: {
           queryParams: [
             { field: 'billuuid', type: 'VarChar', rule: 'eq', val: selectedRows[index].UUID },
@@ -851,28 +852,26 @@ const drawPrintPage = (schedule, scheduleDetails) => {
                 </th>
               </tr> */}
             <tr>
-              <th colspan={12} style={{ border: 0, height: 20 }}>
+              <th colspan={12} style={{ border: 0, height: 30 }}>
                 <div style={{ textAlign: 'left', fontWeight: 'bold' }}>
                   {/* <div style={{ float: 'left', width: '25%' }}>
                     排车序号： 
                   </div> */}
                   <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
-                    操作员： {loginUser().name}
-                  </div>
-                  <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
-                    驾驶员： {schedule.DRIVER}
-                  </div>
-                  <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
                     排车单号： {schedule.BILLNUMBER}
                   </div>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
+                    车牌号： {schedule.VEHICLECODE}
+                  </div>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
+                    码头：
+                    {schedule.PIRS}
+                  </div>
+
                 </div>
                 <div style={{ textAlign: 'left', fontWeight: 'bold' }}>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
-                    车号： {schedule.VEHICLECODE}
-                  </div>
-                  <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
-                    信箱号：
-                    {schedule.pirs}
+                    驾驶员： {schedule.DRIVER}
                   </div>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
                     装车员：
@@ -880,8 +879,11 @@ const drawPrintPage = (schedule, scheduleDetails) => {
                   </div>
                   <div style={{ textAlign: 'left', fontWeight: 'bold' }}>
                     <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
-                      副司机： {schedule.COPILOT}
+                      副驾驶员： {schedule.COPILOT}
                     </div>
+                  </div>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
+                    操作员： {loginUser().name}
                   </div>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
                     打印时间：
@@ -903,8 +905,8 @@ const drawPrintPage = (schedule, scheduleDetails) => {
                   <div style={{ float: 'left', width: '80%' }}>
                     {schedule.USEETC == '是'
                       ? '粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为' +
-                        schedule.ETCAMOUNT +
-                        '元'
+                      schedule.ETCAMOUNT +
+                      '元'
                       : '粤通卡信息：'}
                     <br />
                     [线路]去程入口:
@@ -962,7 +964,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
             {scheduleDetails ? (
               scheduleDetails.map((item, index) => {
                 return (
-                  <tr style={{ textAlign: 'center', height: 20 }}>
+                  <tr style={{ textAlign: 'center', height: 25 }}>
                     <td width={100}>{item.ARCHLINECODE}</td>
                     <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                       {item.SCATTEREDCOLLECTBIN}
@@ -975,8 +977,8 @@ const drawPrintPage = (schedule, scheduleDetails) => {
                     <td width={50}>{item.REALCONTAINERCOUNT}</td>
                     <td width={50}>{item.OWECARTONCOUNT}</td>
                     <td width={50}>{item.REALCONTAINERCOUNT + item.OWECARTONCOUNT}</td>
-                    <td width={50}>{}</td>
-                    <td width={50}>{}</td>
+                    <td width={50}>{ }</td>
+                    <td width={50}>{ }</td>
                     {/* <td width={80}>{}</td>
                     <td width={80}>{}</td>
                     <td width={80}>{}</td>
