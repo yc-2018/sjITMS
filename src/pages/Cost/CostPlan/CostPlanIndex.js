@@ -1,14 +1,25 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
-import { Form, Button, Layout, Spin, Card, Row, Col, Input, Empty ,Popconfirm, message} from 'antd';
+import {
+  Form,
+  Button,
+  Layout,
+  Spin,
+  Card,
+  Row,
+  Col,
+  Input,
+  Empty,
+  Popconfirm,
+  message,
+} from 'antd';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
-import { savePlan,copyPlan } from '@/services/cost/Cost';
+import { savePlan, copyPlan } from '@/services/cost/Cost';
 import Page from '@/pages/Component/Page/inner/Page';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import { updateEntity,dynamicQuery } from '@/services/quick/Quick';
-import { res } from '@/pages/In/Move/PlaneMovePermission';
-import { LOGIN_COMPANY } from '@/utils/constants';
+import { updateEntity, dynamicQuery } from '@/services/quick/Quick';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 const { Header, Footer, Sider, Content } = Layout;
 
 export default class CostPlanIndex extends PureComponent {
@@ -19,7 +30,7 @@ export default class CostPlanIndex extends PureComponent {
     title: '计费方案',
     data: [],
     SCHEM_ENAME: '',
-    tableName:'COST_PLAN'
+    tableName: 'COST_PLAN',
   };
   componentDidMount() {
     this.handleSarch();
@@ -27,14 +38,14 @@ export default class CostPlanIndex extends PureComponent {
   onClickPlan = e => {
     this.props.switchTab('update', { entityUuid: e });
   };
-  isEnable=(e)=>{
+  isEnable = e => {
     let param = {
-      tableName:this.state.tableName,
-      sets:{"NOT_ENABLE":e.NOT_ENABLE==1?0:1},
+      tableName: this.state.tableName,
+      sets: { NOT_ENABLE: e.NOT_ENABLE == 1 ? 0 : 1 },
       condition: {
         params: [
           {
-            field:'UUID',
+            field: 'UUID',
             rule: 'eq',
             val: [e.UUID],
           },
@@ -42,29 +53,28 @@ export default class CostPlanIndex extends PureComponent {
       },
       updateAll: false,
     };
-    const result = updateEntity(param).then(e=>{
-     if(e.result>0){
-      this.handleSarch();
-      message.success("操作成功！")
-     }
-    });
-  }
-  copyPlan=(data)=>{
-    console.log("data",data);
-    copyPlan(data.UUID).then(e=>{
-      if(e.success){
+    const result = updateEntity(param).then(e => {
+      if (e.result > 0) {
         this.handleSarch();
-        message.success("复制成功");
+        message.success('操作成功！');
       }
     });
-  }
+  };
+  copyPlan = data => {
+    copyPlan(data.UUID).then(e => {
+      if (e.success) {
+        this.handleSarch();
+        message.success('复制成功');
+      }
+    });
+  };
   drowe = () => {
     const records = this.state.data?.result?.records;
     return records && records != 'false' ? (
       <Row
         children={records.map(e => {
           return (
-            <Col style={{ paddingBottom: 20,}} span={6}>
+            <Col style={{ paddingBottom: 20 }} span={6}>
               <Card
                 hoverable
                 key={e.UUID}
@@ -98,23 +108,26 @@ export default class CostPlanIndex extends PureComponent {
           编辑
         </Button>
         <Popconfirm
-      title={'确定复制吗？'}
-      onConfirm={() => this.copyPlan(e)}
-      okText="确定"
-      cancelText="取消"
-    >
-    <Button style={{ marginRight: '10px' }} >{'复制'}</Button>
-    </Popconfirm>
-    <Popconfirm
-    title={e.NOT_ENABLE==0?'确定停用？':'确定启用?'}
-    onConfirm={() => this.isEnable(e)}
-    okText="确定"
-    cancelText="取消"
-  >
-    {e.NOT_ENABLE===0?<Button type="primary" >{'已启用'}</Button>:<Button type="danger" >{'已停用'}</Button>}
-    </Popconfirm>
-   
-     </div>
+          title={'确定复制吗？'}
+          onConfirm={() => this.copyPlan(e)}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Button style={{ marginRight: '10px' }}>{'复制'}</Button>
+        </Popconfirm>
+        <Popconfirm
+          title={e.NOT_ENABLE == 0 ? '确定停用？' : '确定启用?'}
+          onConfirm={() => this.isEnable(e)}
+          okText="确定"
+          cancelText="取消"
+        >
+          {e.NOT_ENABLE === 0 ? (
+            <Button type="primary">{'已启用'}</Button>
+          ) : (
+            <Button type="danger">{'已停用'}</Button>
+          )}
+        </Popconfirm>
+      </div>
     );
   };
   handleShowExcelImportPage = () => {
@@ -139,12 +152,23 @@ export default class CostPlanIndex extends PureComponent {
         const queryData = {
           tableName: 'COST_PLAN',
         };
-        let params = [];
+        let params = [
+          {
+            field: 'COMPANYUUID',
+            rule: 'eq',
+            val: [loginCompany().uuid],
+          },
+          {
+            field: 'DISPATCHCENTERUUID',
+            rule: 'eq',
+            val: [loginOrg().uuid],
+          },
+        ];
         if (values.SCHEM_ENAME) {
           params = [...params, { field: 'SCHEME_NAME', rule: 'like', val: [values.SCHEM_ENAME] }];
         }
         queryData.condition = { params };
-        queryData.orderBy = ["NOT_ENABLE+","CREATED+"] 
+        queryData.orderBy = ['NOT_ENABLE+', 'CREATED+'];
 
         dynamicQuery(queryData).then(e => {
           this.setState({ data: e });
