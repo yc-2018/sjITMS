@@ -109,8 +109,20 @@ export default class DispatchMap extends Component {
   onChangeSelect = (checked, record) => {
     let { orders } = this.state;
     let order = orders.find(x => x.uuid == record.uuid);
+    let num = orders.filter(e => {
+      return e.isSelect;
+    }).length;
+    if (!checked) {
+      //取消时-1
+      orders.map(e => {
+        if (e.sort > record.sort) {
+          e.sort -= 1;
+        }
+      });
+    }
     if (order) {
       order.isSelect = checked;
+      order.sort = checked ? num + 1 : null;
       this.setState({ orders }, () => {
         this.clusterSetData(orders);
       });
@@ -120,11 +132,14 @@ export default class DispatchMap extends Component {
   //重置
   onReset = () => {
     let { orders } = this.state;
-    orders.map(order => (order.isSelect = false));
-    this.setState({ orders, driverMileage: 0 }, () => {
+    orders.map(order => {
+      (order.isSelect = false), (order.sort = null);
+    });
+    this.setState({ orders, driverMileage: 0, storeInfo: '' }, () => {
       this.map?.clearOverlays();
       this.clusterSetData(orders);
     });
+    this.storeFilter('');
   };
 
   //标注点
@@ -186,8 +201,25 @@ export default class DispatchMap extends Component {
   //标注点聚合图层数据加载
   clusterSetData = data => {
     // this.clusterLayer?.setData([]);
-    const markers = data.map(point => {
-      return {
+    //const markers =
+    let markers = [];
+    //清除所有label
+    var allOverlay = this.map?.getOverlays();
+    if (allOverlay?.length) {
+      for (var i = 0; i < allOverlay.length; i++) {
+        this.map?.removeOverlay(allOverlay[i]);
+      }
+    }
+    data.map(point => {
+      if (point.sort) {
+        var opts = {
+          position: new BMapGL.Point(point.longitude, point.latitude), // 指定文本标注所在的地理位置
+          offset: new BMapGL.Size(30, -30), // 设置文本偏移量
+        };
+        var label = new BMapGL.Label(point.sort, opts);
+        this.map?.addOverlay(label);
+      }
+      markers.push({
         geometry: { type: 'Point', coordinates: [point.longitude, point.latitude] },
         properties: {
           icon: [ShopIcon, ShopClickIcon][point.isSelect ? 1 : 0],
@@ -195,7 +227,7 @@ export default class DispatchMap extends Component {
           height: 42, //38
         },
         order: point,
-      };
+      });
     });
     this.clusterLayer?.setData(markers);
   };
@@ -303,7 +335,11 @@ export default class DispatchMap extends Component {
 
     for (const order of orders.filter(x => !x.isSelect)) {
       var pt = new BMapGL.Point(order.longitude, order.latitude);
+      let num = orders.filter(e => {
+        return e.isSelect;
+      }).length;
       order.isSelect = this.isPointInRect(pt, bds);
+      order.sort = num + 1;
     }
     this.map.removeOverlay(event.overlay);
     this.setState({ orders }, () => {

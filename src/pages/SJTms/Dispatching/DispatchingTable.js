@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-24 09:11:05
+ * @LastEditTime: 2022-11-28 16:13:24
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
@@ -70,6 +70,9 @@ export default class DispatchingTable extends Component {
     rowKeys = uniqBy(rowKeys);
     this.props.changeSelectRows(rowKeys);
     this.setState({ lastIndex: index });
+    if (this.props.onClickRow) {
+      this.props.onClickRow(record);
+    }
   };
 
   onChange = selectedRowKeys => {
@@ -202,7 +205,7 @@ export default class DispatchingTable extends Component {
             }
           }}
           columns={columns}
-          onRowClick={this.props.onClickRow || this.onClickRow}
+          onRowClick={this.onClickRow}
           onChange={this.handleStandardTableChange}
           rowKey={record => record.uuid}
           rowSelection={rowSelection}

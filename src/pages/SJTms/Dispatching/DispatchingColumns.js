@@ -284,7 +284,7 @@ export const VehicleColumns = [
     },
   },
   {
-    title: '限制体积',
+    title: '限载体积',
     dataIndex: 'BEARVOLUME',
     sorter: true,
     width: 80,
@@ -294,6 +294,13 @@ export const VehicleColumns = [
   {
     title: '当前任务数',
     dataIndex: 'BILLCOUNTS',
+    sorter: true,
+    width: 80,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '当前门店数',
+    dataIndex: 'DELIVERYPOINTS',
     sorter: true,
     width: 80,
     render: val => (val ? <span>{val}</span> : <Empty />),
@@ -372,12 +379,8 @@ export const CreatePageOrderColumns = [
     title: '收货方地址',
     sorter: true,
     width: 180,
-    render: (val, record) => {
-      return record.deliveryPoint ? (
-        <span>{convertCodeName(record.deliveryPoint.address)}</span>
-      ) : (
-        <Empty />
-      );
+    render: record => {
+      return record.deliveryPoint ? <span>{record.deliveryPoint.address}</span> : <Empty />;
     },
   },
   {

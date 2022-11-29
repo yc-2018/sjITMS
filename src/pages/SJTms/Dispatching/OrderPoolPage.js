@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-25 18:08:46
+ * @LastEditTime: 2022-11-28 12:34:25
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -51,7 +51,7 @@ export default class OrderPoolPage extends Component {
     auditedParentRowKeys: [],
     auditedRowKeys: [],
     vehicleRowKeys: [],
-    activeTab: 'Audited',
+    activeKey: 'Audited',
     waveOrder: {},
   };
 
@@ -70,8 +70,8 @@ export default class OrderPoolPage extends Component {
 
   //刷新
   refreshTable = () => {
-    const { activeTab } = this.state;
-    switch (activeTab) {
+    const { activeKey } = this.state;
+    switch (activeKey) {
       case 'Vehicle':
         this.refreshVehiclePool();
         break;
@@ -83,6 +83,10 @@ export default class OrderPoolPage extends Component {
 
   refreshOrderPool = (params, pages, sorter) => {
     this.setState({ loading: true });
+    let body = document.querySelector('.ant-table-body');
+    if (body) {
+      body.scrollTop = 0;
+    }
     let { pageFilter, searchPagination } = this.state;
     let filter = { superQuery: { matchType: 'and', queryParams: [] } };
     if (params) {
@@ -129,12 +133,11 @@ export default class OrderPoolPage extends Component {
           auditedParentRowKeys: [],
           auditedRowKeys: [],
           vehicleRowKeys: [],
-          activeTab: 'Audited',
           waveOrder: collectResponse.success ? collectResponse.data : {},
         });
       }
       this.props.refreshSelectRowOrder([], ['Audited', 'PartScheduled']);
-      this.setState({ loading: false, pageFilter });
+      this.setState({ activeKey: 'Audited', loading: false, pageFilter });
     });
   };
 
@@ -184,7 +187,7 @@ export default class OrderPoolPage extends Component {
           vehicleRowKeys: [],
         });
       }
-      this.setState({ activeTab: 'Vehicle', loading: false, vehicleFilter });
+      this.setState({ activeKey: 'Vehicle', loading: false, vehicleFilter });
     });
   };
 
@@ -226,7 +229,7 @@ export default class OrderPoolPage extends Component {
         this.refreshVehiclePool();
         break;
       default:
-        this.setState({ activeTab: activeKey });
+        this.setState({ activeKey });
         break;
     }
   };
@@ -529,6 +532,57 @@ export default class OrderPoolPage extends Component {
       volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
     };
   };
+  //运力池汇总
+  drawVehicleCollect = (vehicles, rowKeys) => {
+    const totalTextStyle = { fontSize: 16, fontWeight: 700, marginLeft: 2, color: '#333' };
+    vehicles = vehicles.filter(x => rowKeys.indexOf(x.uuid) != -1);
+    return (
+      <Row type="flex" justify="space-around" style={{ fontSize: 14 }}>
+        <Col span={5}>
+          <Text> 车辆数:</Text>
+          <Text style={totalTextStyle}>{vehicles.length}</Text>
+        </Col>
+        <Col span={5}>
+          <Text> 总限重:</Text>
+          <Text style={totalTextStyle}>
+            {Math.round(sumBy(vehicles.map(x => x.BEARWEIGHT)) * 100) / 100}
+          </Text>
+        </Col>
+        <Col span={5}>
+          <Text> 总容积:</Text>
+          <Text style={totalTextStyle}>
+            {Math.round(sumBy(vehicles.map(x => (x.BEARVOLUME * x.BEARVOLUMERATE) / 100)) * 100) /
+              100}
+          </Text>
+        </Col>
+      </Row>
+    );
+  };
+
+  buildOperations = activeKey => {
+    switch (activeKey) {
+      case 'Vehicle':
+        return (
+          <Button type={'primary'} onClick={this.handleCreateSchedule}>
+            生成排车单
+          </Button>
+        );
+      default:
+        return (
+          <>
+            <Button type={'primary'} onClick={this.dispatching}>
+              排车
+            </Button>
+            <Button style={{ marginLeft: 10 }} onClick={() => this.handleAddOrder()}>
+              添加到排车单
+            </Button>
+            <Button style={{ marginLeft: 10 }} onClick={this.handleAddPending}>
+              添加到待定池
+            </Button>
+          </>
+        );
+    }
+  };
 
   render() {
     const {
@@ -541,43 +595,19 @@ export default class OrderPoolPage extends Component {
       auditedCollectData,
       vehicleRowKeys,
       vehicleData,
-      activeTab,
+      activeKey,
       waveOrder,
     } = this.state;
     const { isOrderCollect, totalOrder } = this.props;
-    const buildOperations = () => {
-      switch (activeTab) {
-        case 'Vehicle':
-          return (
-            <Button type={'primary'} onClick={this.handleCreateSchedule}>
-              生成排车单
-            </Button>
-          );
-        default:
-          return (
-            <>
-              <Button type={'primary'} onClick={this.dispatching}>
-                排车
-              </Button>
-              <Button style={{ marginLeft: 10 }} onClick={() => this.handleAddOrder()}>
-                添加到排车单
-              </Button>
-              <Button style={{ marginLeft: 10 }} onClick={this.handleAddPending}>
-                添加到待定池
-              </Button>
-            </>
-          );
-      }
-    };
     const collectOrder = this.groupByOrder(totalOrder);
 
     return (
       <div>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
         <Tabs
-          activeKey={activeTab}
+          activeKey={activeKey}
           onChange={this.handleTabChange}
-          tabBarExtraContent={buildOperations()}
+          tabBarExtraContent={this.buildOperations(activeKey)}
         >
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>订单池</Text>} key="Audited">
             {/* 查询表单 */}
@@ -621,7 +651,6 @@ export default class OrderPoolPage extends Component {
                 changeSelectRows={selectedRowKeys =>
                   this.tableChangeRows('Audited', selectedRowKeys)
                 }
-                ref={ref => (this.orderPageRef = ref)}
                 selectedRowKeys={auditedRowKeys}
                 columns={OrderColumns}
                 scrollY="calc(86vh - 235px)"
@@ -702,8 +731,34 @@ export default class OrderPoolPage extends Component {
               changeSelectRows={rowKeys => this.tableChangeRows('Vehicle', rowKeys)}
               selectedRowKeys={vehicleRowKeys}
               columns={VehicleColumns}
-              scrollY="calc(86vh - 145px)"
+              scrollY="calc(86vh - 180px)"
+              title={() => this.drawVehicleCollect(vehicleData, vehicleRowKeys)}
             />
+            {/* {vehicleData.length == 0 ? (
+              <></>
+            ) : (
+              <div className={dispatchingStyles.orderPoolFooter}>
+                <div className={dispatchingStyles.orderTotalPane}>
+                  <Icon type="info-circle" theme="filled" twoToneColor="#3B77E3" />
+                  <span style={{ marginLeft: 5 }}>
+                    已选择
+                    <span style={{ color: '#3B77E3', margin: '0 2px' }}>
+                      {vehicleRowKeys.length}
+                    </span>
+                    项
+                  </span>
+                  <a
+                    href="#"
+                    style={{ marginLeft: 10 }}
+                    onClick={() => {
+                      this.tableChangeRows('Vehicle', []);
+                    }}
+                  >
+                    取消全部
+                  </a>
+                </div>
+              </div>
+            )} */}
           </TabPane>
         </Tabs>
       </div>

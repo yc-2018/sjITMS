@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-25 18:45:47
+ * @LastEditTime: 2022-11-28 16:34:00
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -47,7 +47,7 @@ export default class SchedulePage extends Component {
     abortedRowKeys: [],
     activeKey: 'Saved',
     searchPagination: false,
-    searchFilter: [],
+    searchFilter: { Saved: [], Approved: [], Aborted: [] },
     scheduleData: [],
     approvedData: [],
     abortedData: [],
@@ -71,8 +71,8 @@ export default class SchedulePage extends Component {
     { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
   ];
   //刷新
-  refreshTable = searchKeyValues => {
-    this.refreshSchedulePool(searchKeyValues);
+  refreshTable = (searchKeyValues, key) => {
+    this.refreshSchedulePool(searchKeyValues, undefined, undefined, key);
     this.props.refreshDetail(undefined);
   };
   refreshScheduleAndpending = () => {
@@ -81,23 +81,24 @@ export default class SchedulePage extends Component {
   };
 
   //获取排车单
-  refreshSchedulePool = async (params, pages, sorter) => {
-    this.setState({ loading: true });
-    let { activeKey, searchFilter, searchPagination } = this.state;
+  refreshSchedulePool = (params, pages, sorter, key) => {
+    let { searchFilter, searchPagination } = this.state;
+    const activeKey = key ? key : this.state.activeKey;
     let filter = { superQuery: { matchType: 'and', queryParams: [] } };
     if (params) {
       if (params.superQuery) {
         filter = params;
-        searchFilter = params.superQuery.queryParams;
+        searchFilter[activeKey] = params.superQuery.queryParams;
       } else {
-        searchFilter = params;
+        searchFilter[activeKey] = params;
       }
     }
-    if (sorter && sorter.column)
+    if (sorter && sorter.column) {
       filter.order =
         (sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey) +
         ',' +
         sorter.order;
+    }
     if (pages) {
       filter.page = pages.current;
       filter.pageSize = pages.pageSize;
@@ -106,11 +107,15 @@ export default class SchedulePage extends Component {
       filter.pageSize = searchPagination.pageSize || 100;
     }
     filter.superQuery.queryParams = [
-      ...searchFilter,
+      ...searchFilter[activeKey],
       ...this.isOrgQuery,
       { field: 'STAT', type: 'VarChar', rule: 'eq', val: activeKey },
     ];
     filter.quickuuid = 'sj_itms_schedulepool';
+    this.searchSchedulePool(filter, searchFilter, searchPagination, activeKey);
+  };
+  searchSchedulePool = async (filter, searchFilter, searchPagination, activeKey) => {
+    this.setState({ loading: true });
     const response = await queryData(filter);
     if (response.success) {
       searchPagination = {
@@ -134,14 +139,12 @@ export default class SchedulePage extends Component {
         abortedRowKeys: [],
       });
     }
-    this.setState({ loading: false, searchFilter });
+    this.setState({ activeKey, loading: false, searchFilter });
   };
 
   //标签页切换
   handleTabChange = activeKey => {
-    this.setState({ activeKey, scheduleData: [] }, () => {
-      this.refreshTable();
-    });
+    this.refreshTable(undefined, activeKey);
   };
 
   //新建排车单
@@ -347,8 +350,9 @@ export default class SchedulePage extends Component {
       const selected = item.uuid == record.uuid;
       if (selected && !item.clicked) {
         selectSchedule = item;
+        selectSchedule.isSelect = true;
       }
-      item.clicked = selected && !item.clicked;
+      // item.clicked = selected && !item.clicked;
       return item;
     });
     this.setState({ scheduleData: newScheduleData }, () => {
@@ -589,6 +593,7 @@ export default class SchedulePage extends Component {
                     style={{ marginLeft: 10 }}
                     onClick={() => {
                       this.setState({ savedRowKeys: [] });
+                      this.props.refreshDetail(undefined);
                     }}
                   >
                     取消全部
@@ -641,6 +646,7 @@ export default class SchedulePage extends Component {
                     style={{ marginLeft: 10 }}
                     onClick={() => {
                       this.setState({ approvedRowKeys: [] });
+                      this.props.refreshDetail(undefined);
                     }}
                   >
                     取消全部
@@ -690,6 +696,7 @@ export default class SchedulePage extends Component {
                     style={{ marginLeft: 10 }}
                     onClick={() => {
                       this.setState({ abortedRowKeys: [] });
+                      this.props.refreshDetail(undefined);
                     }}
                   >
                     取消全部
@@ -797,7 +804,7 @@ const drawPrintPage = (schedule, scheduleDetails) => {
           <tr style={{ height: 20 }}>
             <td colspan={8}>
               备注：
-              {schedule.note}
+              {schedule.NOTE}
             </td>
           </tr>
           <tr style={{ height: 25 }}>

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-26 09:07:28
+ * @LastEditTime: 2022-11-28 15:09:41
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -48,15 +48,22 @@ export default class ScheduleDetailPage extends Component {
       const response = await getDetailByBillUuids([schedule.uuid]);
       details = response.success && response.data ? response.data : [];
     }
+    details = details.map(item => {
+      return { ...item, billNumber: item.orderNumber, stat: 'Schedule' };
+    });
+    const isSelect = schedule?.isSelect;
+    let scheduleCollectDetail = [];
+    const { isOrderCollect } = this.props;
+    if (isOrderCollect) scheduleCollectDetail = this.groupData(details);
     this.setState({
       schedule,
       scheduleDetail: details,
-      scheduleCollectDetail: details.length > 0 ? this.groupData(details) : [],
-      selectedRowKeys: [],
-      childSelectedRowKeys: [],
+      scheduleCollectDetail,
+      selectedRowKeys: isSelect ? details.map(x => x.uuid) : [],
+      selectedParentRowKeys: isSelect ? scheduleCollectDetail.map(x => x.uuid) : [],
       loading: false,
     });
-    this.props.refreshSelectRowOrder([], ['Schedule']);
+    this.props.refreshSelectRowOrder(isSelect ? [...details] : [], ['Schedule']);
   };
 
   //按送货点汇总运输订单
@@ -119,24 +126,17 @@ export default class ScheduleDetailPage extends Component {
   tableChangeRows = selectedRowKeys => {
     const { scheduleDetail } = this.state;
     if (!scheduleDetail) return;
-    let orders = scheduleDetail;
-    orders = orders.map(item => {
-      return { ...item, billNumber: item.orderNumber, stat: 'Schedule' };
-    });
-    this.props.refreshSelectRowOrder(orders.filter(x => selectedRowKeys.indexOf(x.uuid) != -1), [
-      'Schedule',
-    ]);
+    this.props.refreshSelectRowOrder(
+      scheduleDetail.filter(x => selectedRowKeys.indexOf(x.uuid) != -1),
+      ['Schedule']
+    );
     this.setState({ selectedRowKeys });
   };
   childTableChangeRows = result => {
     const { scheduleDetail } = this.state;
     if (!scheduleDetail) return;
-    let orders = scheduleDetail;
-    orders = orders?.map(item => {
-      return { ...item, billNumber: item.orderNumber, stat: 'Schedule' };
-    });
     this.props.refreshSelectRowOrder(
-      orders.filter(x => result.childSelectedRowKeys.indexOf(x.uuid) != -1),
+      scheduleDetail.filter(x => result.childSelectedRowKeys.indexOf(x.uuid) != -1),
       ['Schedule']
     );
     this.setState({
