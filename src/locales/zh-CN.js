@@ -477,7 +477,7 @@ export default {
   'menu.sjtms.core': '运输管理',
   'menu.sjtms.core.order': '运输订单',
   'menu.sjtms.core.dispatch': '配送调度',
-  'menu.sjtms.core.schedule': '排车单',
+  'menu.sjtms.core.schedule': '排车单管理',
   'menu.sjtms.core.cardLoading': '刷卡装车',
   'menu.sjtms.core.checkin': '司机刷卡',
   'menu.sjtms.core.confirm': '回车送货确认',
