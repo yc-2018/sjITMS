@@ -228,7 +228,8 @@ export default class SearchForm extends Component {
           autoComplete="off"
         >
           <Row justify="space-around">
-            {newSelectFields.filter((_, index) => index < 4).map(searchField => {
+            {newSelectFields.filter((_, index) => index < 6).map(searchField => {
+              console.log('searchField', searchField);
               return (
                 <Col span={5}>
                   <Form.Item key={searchField.id} label={searchField.fieldTxt}>

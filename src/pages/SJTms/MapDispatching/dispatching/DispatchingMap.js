@@ -384,7 +384,7 @@ export default class DispatchMap extends Component {
             <Col span={18}>
               <SearchForm refresh={this.refresh} />
             </Col>
-            <Col span={1}>
+            {/* <Col span={1}>
               <Search
                 placeholder="请输入门店编号或名称"
                 allowClear
@@ -392,7 +392,7 @@ export default class DispatchMap extends Component {
                 style={{ width: 150, marginLeft: -80 }}
                 value={this.state.storeInfo}
               />
-            </Col>
+            </Col> */}
             <Col span={1}>
               <Button onClick={() => this.onReset()}>清空</Button>
             </Col>

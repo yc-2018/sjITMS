@@ -312,7 +312,7 @@ export default class OrderPoolSearchForm extends Component {
             </Col>
           </Row>
           <Row justify="space-around">
-            {newSelectFields.filter((_, index) => index > 1).map(searchField => {
+            {newSelectFields.filter((_, index) => index > 1 && index < 4).map(searchField => {
               return (
                 <Col span={10}>
                   <Form.Item key={searchField.id} label={searchField.fieldTxt}>
