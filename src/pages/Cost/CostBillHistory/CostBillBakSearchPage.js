@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-06 16:31:01
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-10 16:30:30
+ * @LastEditTime: 2022-11-30 16:00:36
  * @version: 1.0
  */
 
@@ -32,6 +32,7 @@ import CostBillDtlSeacrhPage from './CostBillDtlBakSeacrhPage';
 import { getBill } from '@/services/cost/CostCalculation';
 import { routerRedux } from 'dva/router';
 import { SimpleTreeSelect } from '@/pages/Component/RapidDevelopment/CommonComponent';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
 const { Header, Footer, Content } = Layout;
 const { RangePicker } = DatePicker;
@@ -161,7 +162,19 @@ export default class CostBillSearchPage extends PureComponent {
                 queryParams={{
                   tableName: 'cost_plan',
                   condition: {
-                    params: [{ field: 'NOT_ENABLE', rule: 'eq', val: [0] }],
+                    params: [
+                      { field: 'NOT_ENABLE', rule: 'eq', val: [0] },
+                      {
+                        field: 'COMPANYUUID',
+                        rule: 'eq',
+                        val: [loginCompany().uuid],
+                      },
+                      {
+                        field: 'DISPATCHCENTERUUID',
+                        rule: 'eq',
+                        val: [loginOrg().uuid],
+                      },
+                    ],
                   },
                 }}
                 showSearch

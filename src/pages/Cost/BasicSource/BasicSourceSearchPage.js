@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-20 10:17:49
+ * @LastEditTime: 2022-11-29 17:59:29
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -33,7 +33,6 @@ export default class BasicSourceSearchPage extends Component {
   }
 
   componentDidMount = () => {
-    console.log(this.props);
     this.queryTree();
   };
 

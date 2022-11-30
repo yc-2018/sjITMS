@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-01 16:01:34
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-19 09:59:28
+ * @LastEditTime: 2022-11-30 15:31:04
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -10,9 +10,14 @@ import request from '@/utils/request';
 import { loginOrg, loginCompany } from '@/utils/LoginContext';
 
 export async function findSourceTree() {
-  return request(`/itms-cost/itms-cost/source/findAllSource`, {
-    method: 'GET',
-  });
+  return request(
+    `/itms-cost/itms-cost/source/findAllSource?companyUuid=${loginCompany().uuid}&&dcUuid=${
+      loginOrg().uuid
+    }`,
+    {
+      method: 'GET',
+    }
+  );
 }
 
 export async function deleteSourceTree(uuid) {

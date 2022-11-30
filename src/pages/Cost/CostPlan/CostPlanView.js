@@ -54,7 +54,6 @@ export default class CostPlanView extends QuickViewPage {
    */
 
   isShow = item => {
-    console.log('entity', this.entity);
     item = this.entity.cost_plan[0];
     if (item != 'false' && item.ACCESSORY_NAME) {
       let downloadsName = item.ACCESSORY_NAME.split(',');

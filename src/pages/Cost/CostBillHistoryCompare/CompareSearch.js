@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-11 17:13:55
+ * @LastEditTime: 2022-11-30 16:02:05
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -155,6 +155,20 @@ export default class CostBillDtlView extends QuickFormSearchPage {
             searchField="BILL_NUMBER"
             queryParams={{
               tableName: 'COST_BILL',
+              condition: {
+                params: [
+                  {
+                    field: 'COMPANYUUID',
+                    rule: 'eq',
+                    val: [loginCompany().uuid],
+                  },
+                  {
+                    field: 'DISPATCHCENTERUUID',
+                    rule: 'eq',
+                    val: [loginOrg().uuid],
+                  },
+                ],
+              },
             }}
             noRecord
             autoComplete
@@ -177,6 +191,20 @@ export default class CostBillDtlView extends QuickFormSearchPage {
             searchField="BILL_NUMBER"
             queryParams={{
               tableName: 'COST_BILL_BAK',
+              condition: {
+                params: [
+                  {
+                    field: 'COMPANYUUID',
+                    rule: 'eq',
+                    val: [loginCompany().uuid],
+                  },
+                  {
+                    field: 'DISPATCHCENTERUUID',
+                    rule: 'eq',
+                    val: [loginOrg().uuid],
+                  },
+                ],
+              },
             }}
             noRecord
             autoComplete

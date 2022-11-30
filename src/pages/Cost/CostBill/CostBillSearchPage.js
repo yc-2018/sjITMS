@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-06 16:31:01
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-07 17:47:25
+ * @LastEditTime: 2022-11-30 16:00:02
  * @version: 1.0
  */
 
@@ -32,7 +32,6 @@ import Page from '@/pages/Component/Page/inner/Page';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import { dynamicQuery } from '@/services/quick/Quick';
-import CostBillDtlSeacrhPage from './CostBillDtlSeacrhPage';
 import { haveCheck, consumed, uploadFile, deleteFile } from '@/services/cost/CostCalculation';
 import { getFile } from '@/services/cost/Cost';
 import {
@@ -40,8 +39,8 @@ import {
   SimpleAutoComplete,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
-import { rotate } from '@antv/g2/lib/util/transform';
 import CostBillViewForm from './CostBillViewForm';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
 const { Header, Footer, Content } = Layout;
 const { RangePicker } = DatePicker;
@@ -83,8 +82,19 @@ export default class CostBillSearchPage extends PureComponent {
       tableName: 'V_COST_BILL',
       ...pageFilter,
     };
+    let params = [
+      {
+        field: 'COMPANYUUID',
+        rule: 'eq',
+        val: [loginCompany().uuid],
+      },
+      {
+        field: 'DISPATCHCENTERUUID',
+        rule: 'eq',
+        val: [loginOrg().uuid],
+      },
+    ];
     this.props.form.validateFields((err, values) => {
-      let params = [];
       if (values.TITLE) {
         params = [...params, { field: 'TITLE', rule: 'like', val: [values.TITLE] }];
       }
@@ -173,7 +183,19 @@ export default class CostBillSearchPage extends PureComponent {
                 queryParams={{
                   tableName: 'cost_plan',
                   condition: {
-                    params: [{ field: 'NOT_ENABLE', rule: 'eq', val: [0] }],
+                    params: [
+                      { field: 'NOT_ENABLE', rule: 'eq', val: [0] },
+                      {
+                        field: 'COMPANYUUID',
+                        rule: 'eq',
+                        val: [loginCompany().uuid],
+                      },
+                      {
+                        field: 'DISPATCHCENTERUUID',
+                        rule: 'eq',
+                        val: [loginOrg().uuid],
+                      },
+                    ],
                   },
                 }}
                 showSearch
