@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-26 09:14:40
+ * @LastEditTime: 2022-11-30 10:42:26
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -258,6 +258,7 @@ export default class OrderPoolSearchForm extends Component {
   render() {
     const { getFieldDecorator } = this.props.form;
     let { selectFields, loading } = this.state;
+    const column = selectFields.length > 4 ? 3 : 2;
     const newSelectFields = selectFields.map(item => {
       if (item.fieldType == 'Date') {
         let days = parseInt(item.searchDefVal);
@@ -279,15 +280,15 @@ export default class OrderPoolSearchForm extends Component {
     return (
       <Skeleton active loading={loading} title={false} paragraph={{ rows: 2 }}>
         <Form
-          labelCol={{ span: 6 }}
-          wrapperCol={{ span: 18 }}
+          labelCol={{ span: 8 }}
+          wrapperCol={{ span: 16 }}
           onSubmit={this.onSubmit}
           autoComplete="off"
         >
           <Row justify="space-around">
-            {newSelectFields.filter((_, index) => index < 2).map(searchField => {
+            {newSelectFields.filter((_, index) => index < column * 1).map(searchField => {
               return (
-                <Col span={10}>
+                <Col span={column == 2 ? 10 : 7}>
                   <Form.Item key={searchField.id} label={searchField.fieldTxt}>
                     {getFieldDecorator(searchField.fieldName, {
                       initialValue: searchField.searchDefVal || undefined,
@@ -302,7 +303,7 @@ export default class OrderPoolSearchForm extends Component {
                 </Col>
               );
             })}
-            <Col span={4} style={{ paddingLeft: 12 }}>
+            <Col span={3} style={{ paddingLeft: 5 }}>
               <AdvanceQuery
                 reportCode={this.props.quickuuid}
                 searchFields={this.state.advancedFields}
@@ -312,27 +313,29 @@ export default class OrderPoolSearchForm extends Component {
             </Col>
           </Row>
           <Row justify="space-around">
-            {newSelectFields.filter((_, index) => index > 1 && index < 4).map(searchField => {
-              return (
-                <Col span={10}>
-                  <Form.Item key={searchField.id} label={searchField.fieldTxt}>
-                    {getFieldDecorator(searchField.fieldName, {
-                      initialValue: searchField.searchDefVal || undefined,
-                      rules: [
-                        {
-                          required: searchField.searchRequire,
-                          message: notNullLocale(searchField.fieldTxt),
-                        },
-                      ],
-                    })(this.buildSearchItem(searchField))}
-                  </Form.Item>
-                </Col>
-              );
-            })}
-            <Col span={4}>
+            {newSelectFields
+              .filter((_, index) => index > column * 1 - 1 && index < column * 2 + 1)
+              .map(searchField => {
+                return (
+                  <Col span={column == 2 ? 10 : 7}>
+                    <Form.Item key={searchField.id} label={searchField.fieldTxt}>
+                      {getFieldDecorator(searchField.fieldName, {
+                        initialValue: searchField.searchDefVal || undefined,
+                        rules: [
+                          {
+                            required: searchField.searchRequire,
+                            message: notNullLocale(searchField.fieldTxt),
+                          },
+                        ],
+                      })(this.buildSearchItem(searchField))}
+                    </Form.Item>
+                  </Col>
+                );
+              })}
+            <Col span={3}>
               <Button
                 type={'primary'}
-                style={{ marginLeft: 12 }}
+                style={{ marginLeft: 5 }}
                 loading={this.props.loading}
                 htmlType="submit"
               >
