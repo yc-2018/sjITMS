@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-11-11 15:02:14
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-15 14:40:28
+ * @LastEditTime: 2022-12-01 11:09:43
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -46,8 +46,8 @@ export default class CreatePageModal extends Component {
   render() {
     const { visible } = this.state;
     const { getFieldDecorator } = this.props.form;
-    const { savedRowKeys } = this.props;
-
+    const { savedRowKeys, maxAdjustWeight } = this.props;
+    let adjustWeight = maxAdjustWeight == undefined ? null : maxAdjustWeight / 1000;
     return (
       <Modal
         title="申请调吨"
@@ -68,6 +68,7 @@ export default class CreatePageModal extends Component {
         <Form>
           <Form.Item label="申请调限吨位:" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
             {getFieldDecorator('applyWeight', {
+              initialValue: adjustWeight,
               rules: [{ required: true, message: '申请调限吨位' }],
             })(<InputNumber style={{ width: '100%' }} />)}
           </Form.Item>

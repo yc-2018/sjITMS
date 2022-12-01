@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-29 15:45:49
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-12-01 11:14:13
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -29,6 +29,7 @@ import {
   cancelAborted,
   aborted,
   remove,
+  getVehicleByScheduleUuid,
 } from '@/services/sjitms/ScheduleBill';
 import { query } from '@/services/account/User';
 import ScheduleCreatePage from '@/pages/SJTms/Schedule/ScheduleCreatePage';
@@ -54,6 +55,7 @@ export default class SchedulePage extends Component {
     editPageVisible: false,
     users: [],
     authority: this.props.authority ? this.props.authority[0] : null,
+    maxAdjustWeight: '',
   };
 
   componentDidMount() {
@@ -153,13 +155,18 @@ export default class SchedulePage extends Component {
   };
 
   //申请调吨
-  showUpdateWeigthPop = () => {
+  showUpdateWeigthPop = async () => {
     const { savedRowKeys } = this.state;
     if (savedRowKeys.length != 1) {
       message.error('请选择一条数据');
       return;
     }
-    this.weightApplyModalRef.show();
+    await getVehicleByScheduleUuid(savedRowKeys[0]).then(result => {
+      if (result.success && result.data) {
+        this.setState({ maxAdjustWeight: result.data.maxAdjustWeight });
+      }
+      this.weightApplyModalRef.show();
+    });
   };
 
   //排车单编辑
@@ -486,6 +493,7 @@ export default class SchedulePage extends Component {
       savedRowKeys,
       approvedRowKeys,
       abortedRowKeys,
+      maxAdjustWeight,
     } = this.state;
 
     columns[0].render = (val, record) => {
@@ -528,6 +536,8 @@ export default class SchedulePage extends Component {
         />
         {/*申请调吨 */}
         <WeightApplyModal
+          key={savedRowKeys[0]}
+          maxAdjustWeight={maxAdjustWeight}
           savedRowKeys={savedRowKeys[0]}
           onRef={node => (this.weightApplyModalRef = node)}
         />

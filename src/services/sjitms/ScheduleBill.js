@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-15 14:43:38
+ * @LastEditTime: 2022-12-01 10:20:56
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -140,7 +140,7 @@ export async function updatePris(uuid, pris) {
   );
 }
 //修改出车顺序
-export async function updateOutSerialApi(uuid,outSerial){
+export async function updateOutSerialApi(uuid, outSerial) {
   return request(
     `/itms-schedule/itms-schedule/sj/bill/schedule/updateOutSerial?uuid=${uuid}&outSerial=${outSerial}`,
     {
@@ -158,7 +158,6 @@ export async function removeCar(payload) {
 }
 
 export async function saveOfUpdateLifecycle(payload) {
-  console.log('payload', payload);
   return request(`/itms-schedule/itms-schedule/sj/bill/schedule/saveOfUpdateLifecycle`, {
     method: 'POST',
     body: payload,
@@ -170,4 +169,13 @@ export async function getRecommend(payload) {
     method: 'POST',
     body: payload,
   });
+}
+
+export async function getVehicleByScheduleUuid(payload) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/getVehicleByScheduleUuid?uuid=${payload}`,
+    {
+      method: 'POST',
+    }
+  );
 }
