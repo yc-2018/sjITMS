@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-10-25 10:25:16
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-23 17:11:06
+ * @LastEditTime: 2022-12-01 09:17:29
  * @Description:地图排车查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\SearchForm.js
  */
@@ -45,7 +45,7 @@ export default class SearchForm extends Component {
         ? field.searchProperties
         : JSON.parse(field.searchProperties);
       if (fieldProperties) {
-        const search = fieldProperties.searchParams.find(x => x.dispatch == loginOrg().uuid);
+        const search = fieldProperties.mapParams.find(x => x.dispatch == loginOrg().uuid);
         if (search) {
           selectFields = response.result.columns.filter(
             data => search.searchFields.indexOf(data.fieldName) != -1
@@ -222,16 +222,15 @@ export default class SearchForm extends Component {
     return (
       <Skeleton active loading={loading} title={false} paragraph={{ rows: 1 }}>
         <Form
-          labelCol={{ span: 6 }}
-          wrapperCol={{ span: 18 }}
+          labelCol={{ span: 8 }}
+          wrapperCol={{ span: 16 }}
           onSubmit={this.onSubmit}
           autoComplete="off"
         >
           <Row justify="space-around">
-            {newSelectFields.filter((_, index) => index < 6).map(searchField => {
-              console.log('searchField', searchField);
+            {newSelectFields.filter((_, index) => index < 5).map(searchField => {
               return (
-                <Col span={5}>
+                <Col span={4}>
                   <Form.Item key={searchField.id} label={searchField.fieldTxt}>
                     {getFieldDecorator(searchField.fieldName, {
                       initialValue: searchField.searchDefVal || undefined,

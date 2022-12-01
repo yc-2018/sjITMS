@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-11 11:28:48
+ * @LastEditTime: 2022-12-01 09:21:37
  * @Description: 地图排车
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -15,8 +15,8 @@ import emptySvg from '@/assets/common/img_empoty.svg';
 import SearchForm from './SearchForm';
 import { queryAuditedOrder, queryDriverRoutes } from '@/services/sjitms/OrderBill';
 import { queryDict } from '@/services/quick/Quick';
-import ShopIcon from '@/assets/common/myj.png';
 
+import ShopIcon from '@/assets/common/myj.png';
 import ShopClickIcon from '@/assets/common/myjClick.png';
 
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
@@ -381,7 +381,7 @@ export default class DispatchMap extends Component {
         visible={visible}
         title={
           <Row type="flex" justify="space-between">
-            <Col span={18}>
+            <Col span={21}>
               <SearchForm refresh={this.refresh} />
             </Col>
             {/* <Col span={1}>
