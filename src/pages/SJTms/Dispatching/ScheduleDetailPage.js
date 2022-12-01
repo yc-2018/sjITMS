@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-28 15:09:41
+ * @LastEditTime: 2022-12-01 09:06:04
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -49,7 +49,7 @@ export default class ScheduleDetailPage extends Component {
       details = response.success && response.data ? response.data : [];
     }
     details = details.map(item => {
-      return { ...item, billNumber: item.orderNumber, stat: 'Schedule' };
+      return { ...item, billNumber: item.orderNumber, stat: 'Schedule', warning: item.isSplit };
     });
     const isSelect = schedule?.isSelect;
     let scheduleCollectDetail = [];
@@ -87,6 +87,7 @@ export default class ScheduleDetailPage extends Component {
         realContainerCount: Math.round(sumBy(orders, 'realContainerCount') * 1000) / 1000,
         volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
         weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
+        warning: orders.findIndex(x => x.isSplit) >= 0,
       };
     });
     deliveryPointGroupArr.forEach(data => {
