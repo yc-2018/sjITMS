@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-12-01 11:14:13
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-12-01 11:48:24
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -599,7 +599,7 @@ export default class SchedulePage extends Component {
                     项
                   </span>
                   <a
-                    href="#"
+                    href="##"
                     style={{ marginLeft: 10 }}
                     onClick={() => {
                       this.setState({ savedRowKeys: [] });
@@ -652,7 +652,7 @@ export default class SchedulePage extends Component {
                     项
                   </span>
                   <a
-                    href="#"
+                    href="##"
                     style={{ marginLeft: 10 }}
                     onClick={() => {
                       this.setState({ approvedRowKeys: [] });
@@ -702,7 +702,7 @@ export default class SchedulePage extends Component {
                     项
                   </span>
                   <a
-                    href="#"
+                    href="##"
                     style={{ marginLeft: 10 }}
                     onClick={() => {
                       this.setState({ abortedRowKeys: [] });
