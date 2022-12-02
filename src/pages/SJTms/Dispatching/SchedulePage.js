@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-02 15:47:25
+ * @LastEditTime: 2022-12-02 17:32:52
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -549,6 +549,7 @@ export default class SchedulePage extends Component {
             <OrderPoolSearchForm
               quickuuid="sj_itms_schedulepool"
               users={users}
+              dispatchcenterSearch={true}
               refreshOrderPool={this.refreshTable}
             />
             <Dropdown
@@ -615,6 +616,7 @@ export default class SchedulePage extends Component {
             <OrderPoolSearchForm
               quickuuid="sj_itms_schedulepool"
               users={users}
+              dispatchcenterSearch={true}
               refreshOrderPool={this.refreshTable}
             />
             <div id="printSchedule" style={{ display: 'none' }}>
@@ -668,6 +670,7 @@ export default class SchedulePage extends Component {
             <OrderPoolSearchForm
               quickuuid="sj_itms_schedulepool"
               users={users}
+              dispatchcenterSearch={true}
               refreshOrderPool={this.refreshTable}
             />
             <DispatchingTable
