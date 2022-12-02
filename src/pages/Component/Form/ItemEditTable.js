@@ -49,13 +49,13 @@ export default class ItemEditTable extends PureComponent {
       selectedRows: [...selectedRows],
       selectedRowKeys: selectedRowKeys,
     });
-    if (this.props.rowSelection)
-      this.props.rowSelection(selectedRowKeys, selectedRows);
+    if (this.props.rowSelection) this.props.rowSelection(selectedRowKeys, selectedRows);
   };
 
   rowSelection = {
     columnWidth: 40,
-    onChange: (selectedRowKeys, selectedRows) => this.rowSelectionChange(selectedRowKeys, selectedRows),
+    onChange: (selectedRowKeys, selectedRows) =>
+      this.rowSelectionChange(selectedRowKeys, selectedRows),
   };
 
   componentDidMount() {
@@ -70,7 +70,10 @@ export default class ItemEditTable extends PureComponent {
     this.setState({
       data: nextProps.data,
     });
-    if (nextProps.selectedRows && (nextProps.selectedRows.length == 0 && this.state.selectedRows.length != 0)) {
+    if (
+      nextProps.selectedRows &&
+      (nextProps.selectedRows.length == 0 && this.state.selectedRows.length != 0)
+    ) {
       this.setState({
         selectedRows: nextProps.selectedRows ? nextProps.selectedRows : [],
         selectedRowKeys: nextProps.selectedRowKeys ? nextProps.selectedRowKeys : [],
@@ -78,7 +81,7 @@ export default class ItemEditTable extends PureComponent {
     }
   }
 
-  remove = (line) => {
+  remove = line => {
     const { data, index } = this.state;
     for (let i = data.length - 1; i >= 0; i--) {
       if (data[i].line === line) {
@@ -110,38 +113,38 @@ export default class ItemEditTable extends PureComponent {
       message.warn('请先选择要删除行！');
       return;
     }
-    this.props.batchRemove ? this.props.batchRemove(selectedRowKeys) :
-      Modal.confirm({
-        title: '是否要删除选择行？',
-        okText: '确定',
-        cancelText: '取消',
-        onOk: () => {
-
-          if (this.props.batchRemove) {
-            this.props.batchRemove(selectedRowKeys);
-            this.setState({
-              selectedRows: [],
-              selectedRowKeys: [],
-            });
-          } else {
-            for (let i = data.length - 1; i >= 0; i--) {
-              if (selectedRowKeys.indexOf(data[i].line) >= 0) {
-                data.splice(i, 1);
+    this.props.batchRemove
+      ? this.props.batchRemove(selectedRowKeys)
+      : Modal.confirm({
+          title: '是否要删除选择行？',
+          okText: '确定',
+          cancelText: '取消',
+          onOk: () => {
+            if (this.props.batchRemove) {
+              this.props.batchRemove(selectedRowKeys);
+              this.setState({
+                selectedRows: [],
+                selectedRowKeys: [],
+              });
+            } else {
+              for (let i = data.length - 1; i >= 0; i--) {
+                if (selectedRowKeys.indexOf(data[i].line) >= 0) {
+                  data.splice(i, 1);
+                }
               }
+              for (let i = 0; i < data.length; i++) {
+                data[i].line = i + 1;
+              }
+              this.props.handleRemove && this.props.handleRemove(data);
+              this.setState({
+                data: data,
+                index: index + 1,
+                selectedRows: [],
+                selectedRowKeys: [],
+              });
             }
-            for (let i = 0; i < data.length; i++) {
-              data[i].line = i + 1;
-            }
-            this.props.handleRemove && this.props.handleRemove(data);
-            this.setState({
-              data: data,
-              index: index + 1,
-              selectedRows: [],
-              selectedRowKeys: [],
-            });
-          }
-        },
-      });
+          },
+        });
   };
 
   newMember = () => {
@@ -157,8 +160,8 @@ export default class ItemEditTable extends PureComponent {
     data.push({
       line: data.length + 1,
     });
-    let remainder = (data.length) % 10;
-    let integer = parseInt((data.length) / 10);
+    let remainder = data.length % 10;
+    let integer = parseInt(data.length / 10);
 
     if (remainder != 0 && integer == current) {
       this.setState({
@@ -226,34 +229,34 @@ export default class ItemEditTable extends PureComponent {
     }
 
     if (!columns.find(item => item.key === 'line')) {
-      columns.unshift(
-        {
-          title: commonLocale.lineLocal,
-          dataIndex: 'line',
-          key: 'line',
-          width: itemColWidth.lineColWidth,
-          render: (text, record, index) => <span>{record.line}</span>,
-        },
-      );
+      columns.unshift({
+        title: commonLocale.lineLocal,
+        dataIndex: 'line',
+        key: 'line',
+        width: itemColWidth.lineColWidth,
+        render: (text, record, index) => <span>{record.line}</span>,
+      });
     }
-    !this.props.notNote ? columns.push({
-      title: commonLocale.noteLocale,
-      dataIndex: 'note',
-      width: itemColWidth.noteEditColWidth,
-      key: 'note',
-      render: (text, record) => {
-        return (
-          <Input
-            maxLength={255}
-            value={record.note}
-            onChange={e => this.handleFieldChange(e, 'note', record.line)}
-            //   onKeyPress={e => this.handleKeyPress(e, record.key)}
-            onKeyDown={e => this.handleKeyDown(e, true)}
-            placeholder={placeholderLocale(commonLocale.noteLocale)}
-          />
-        );
-      },
-    }) : null;
+    !this.props.notNote
+      ? columns.push({
+          title: commonLocale.noteLocale,
+          dataIndex: 'note',
+          width: itemColWidth.noteEditColWidth,
+          key: 'note',
+          render: (text, record) => {
+            return (
+              <Input
+                maxLength={255}
+                value={record.note}
+                onChange={e => this.handleFieldChange(e, 'note', record.line)}
+                //   onKeyPress={e => this.handleKeyPress(e, record.key)}
+                onKeyDown={e => this.handleKeyDown(e, true)}
+                placeholder={placeholderLocale(commonLocale.noteLocale)}
+              />
+            );
+          },
+        })
+      : null;
     // !this.props.noAddandDelete && columns.push(
     //   {
     //     title: '操作',
@@ -275,7 +278,7 @@ export default class ItemEditTable extends PureComponent {
     return columns;
   };
 
-  getTotalWidth = (columns) => {
+  getTotalWidth = columns => {
     let totalWidth = 0;
     columns.forEach(e => {
       if (e.key !== 'action' && e.width) {
@@ -287,12 +290,10 @@ export default class ItemEditTable extends PureComponent {
   };
 
   handleFetch = () => {
-    if (!this.state.data)
-      return;
+    if (!this.state.data) return;
 
     let startIndex = this.state.infinityData.length;
-    if (startIndex >= this.state.data.length)
-      return;
+    if (startIndex >= this.state.data.length) return;
 
     let infinityData = this.state.infinityData;
     let newData = this.state.data.slice(startIndex, startIndex + 10);
@@ -302,7 +303,7 @@ export default class ItemEditTable extends PureComponent {
     });
   };
 
-  refreshColumns = (columns) => {
+  refreshColumns = columns => {
     columns.forEach(e => {
       if (e.width) {
         e.onCell = () => {
@@ -349,11 +350,11 @@ export default class ItemEditTable extends PureComponent {
         }
       });
       this.setState({
-        data: [...data]
+        data: [...data],
       });
     }
     this.setState({
-      current: pagination.current
+      current: pagination.current,
     });
   };
 
@@ -361,12 +362,17 @@ export default class ItemEditTable extends PureComponent {
     const { data } = this.state;
     this.rowSelection.selectedRowKeys = this.state.selectedRowKeys;
     let rMargin = 100 + parseInt(data.length / 10) * 24 + 'px';
-    let waveTotal = <div
-      style={{
-        float: 'right',
-        marginTop: '-40px',
-        marginRight: rMargin,
-      }}>共 {data.length} 条</div>;
+    let waveTotal = (
+      <div
+        style={{
+          float: 'right',
+          marginTop: '-40px',
+          marginRight: rMargin,
+        }}
+      >
+        共 {data.length} 条
+      </div>
+    );
     const ncolumns = this.buildColumns();
     const columns = [];
     ncolumns.forEach(e => {
@@ -387,29 +393,36 @@ export default class ItemEditTable extends PureComponent {
     let height = footerPos.top - pos.top - 90;
     let dataHeight = data ? (data.length <= 10 ? data.length : 10) * 50 : 0;
     if (dataHeight > height) {
-      scroll.y = height < 30 ? 30 : height - 40;
+      scroll.y = height < 100 ? 100 : height - 40;
     }
     // x 轴滚动与自适应宽度
-    if ((totalWidth > tableWidth || (totalWidth + noteWidth) > tableWidth) && tableWidth > 0) {
-      scroll.x = (totalWidth + noteWidth);
+    if ((totalWidth > tableWidth || totalWidth + noteWidth > tableWidth) && tableWidth > 0) {
+      scroll.x = totalWidth + noteWidth;
     } else {
       let moreWidth = tableWidth - totalWidth - noteWidth;
       let newTotalWidth = 0;
       ncolumns.forEach(e => {
-        if (e.key === 'action' || e.key === 'line' || e.title === commonLocale.operateLocale
-          || e.key === commonLocale.lineLocal) {
+        if (
+          e.key === 'action' ||
+          e.key === 'line' ||
+          e.title === commonLocale.operateLocale ||
+          e.key === commonLocale.lineLocal
+        ) {
           totalWidth = totalWidth - e.width;
           newTotalWidth = newTotalWidth + e.width;
         }
       });
       for (let idx = ncolumns.length - 1; idx >= 0; idx--) {
-        if (ncolumns[idx].key === 'action' || ncolumns[idx].key === 'line' ||
+        if (
+          ncolumns[idx].key === 'action' ||
+          ncolumns[idx].key === 'line' ||
           ncolumns[idx].title === commonLocale.operateLocale ||
-          ncolumns[idx].title === commonLocale.lineLocal) {
+          ncolumns[idx].title === commonLocale.lineLocal
+        ) {
           continue;
         }
 
-        let newWidth = ncolumns[idx].width + ncolumns[idx].width / totalWidth * moreWidth;
+        let newWidth = ncolumns[idx].width + (ncolumns[idx].width / totalWidth) * moreWidth;
         if (newWidth + newTotalWidth > tableWidth) {
           ncolumns[idx].width = tableWidth - newTotalWidth;
         } else {
@@ -425,35 +438,63 @@ export default class ItemEditTable extends PureComponent {
       total: data.length,
       size: 'small',
     };
-    let showToolbar = !this.props.noAddandDelete || this.props.onlyAdd || this.props.batchAdd || this.props.drawBatchButton || this.props.drawTotalInfo;
-    let addItemIcon = <a onClick={this.newMember}>
-      <IconFont type='icon-add2'
-                style={{ fontSize: '16px', position: 'relative', top: '1px' }}/>&nbsp;{commonLocale.addItemLocal}
-    </a>;
-    let batchRemoveIcon = <a onClick={this.batchRemove}>
-      <IconFont type='icon-remove'
-                style={{ fontSize: '16px', position: 'relative', top: '1px' }}/>&nbsp;{commonLocale.batchRemoveLocale}
-    </a>;
-    let batchAddIcon = <a onClick={this.batchAdd}>
-      <IconFont type='icon-add_batch'
-                style={{ fontSize: '16px', position: 'relative', top: '1px' }}/>&nbsp;{commonLocale.batchAddDataLocale}
-    </a>;
+    let showToolbar =
+      !this.props.noAddandDelete ||
+      this.props.onlyAdd ||
+      this.props.batchAdd ||
+      this.props.drawBatchButton ||
+      this.props.drawTotalInfo;
+    let addItemIcon = (
+      <a onClick={this.newMember}>
+        <IconFont type="icon-add2" style={{ fontSize: '16px', position: 'relative', top: '1px' }} />
+        &nbsp;
+        {commonLocale.addItemLocal}
+      </a>
+    );
+    let batchRemoveIcon = (
+      <a onClick={this.batchRemove}>
+        <IconFont
+          type="icon-remove"
+          style={{ fontSize: '16px', position: 'relative', top: '1px' }}
+        />
+        &nbsp;
+        {commonLocale.batchRemoveLocale}
+      </a>
+    );
+    let batchAddIcon = (
+      <a onClick={this.batchAdd}>
+        <IconFont
+          type="icon-add_batch"
+          style={{ fontSize: '16px', position: 'relative', top: '1px' }}
+        />
+        &nbsp;
+        {commonLocale.batchAddDataLocale}
+      </a>
+    );
     return (
       <div id="editTable" className={style.itemEditTable}>
-        {showToolbar &&
-        <ToolbarPanel>
-          <div className={style.toolbarIcon} style={{ float: 'left' }}>
-            {this.props.batchAdd ? null : ((this.props.noAddandDelete && !this.props.onlyAdd) ? null : addItemIcon)}
-            {this.props.batchAdd ? batchAddIcon : null}&nbsp;&nbsp;&nbsp;
-            {!this.props.noAddandDelete && batchRemoveIcon}&nbsp;&nbsp;&nbsp;
-            {this.props.drawBatchButton && this.props.drawBatchButton(this.state.selectedRowKeys)}&nbsp;&nbsp;&nbsp;
-            {this.props.drawOther && this.props.drawOther()}
-          </div>
-          <div style={{ float: 'right' }}>
-            {this.props.drawTotalInfo && this.props.drawTotalInfo()}
-          </div>&nbsp;
-        </ToolbarPanel>
-        }
+        {showToolbar && (
+          <ToolbarPanel>
+            <div className={style.toolbarIcon} style={{ float: 'left' }}>
+              {this.props.batchAdd
+                ? null
+                : this.props.noAddandDelete && !this.props.onlyAdd
+                  ? null
+                  : addItemIcon}
+              {this.props.batchAdd ? batchAddIcon : null}
+              &nbsp;&nbsp;&nbsp;
+              {!this.props.noAddandDelete && batchRemoveIcon}
+              &nbsp;&nbsp;&nbsp;
+              {this.props.drawBatchButton && this.props.drawBatchButton(this.state.selectedRowKeys)}
+              &nbsp;&nbsp;&nbsp;
+              {this.props.drawOther && this.props.drawOther()}
+            </div>
+            <div style={{ float: 'right' }}>
+              {this.props.drawTotalInfo && this.props.drawTotalInfo()}
+            </div>
+            &nbsp;
+          </ToolbarPanel>
+        )}
         <Table
           rowSelection={!this.props.unShowRow ? this.rowSelection : ''}
           rowKey={record => record.line}
@@ -462,12 +503,10 @@ export default class ItemEditTable extends PureComponent {
           onChange={this.handleStandardTableChange}
           pagination={pagination}
           scroll={this.props.scroll ? this.props.scroll : scroll}
-          size='middle'
+          size="middle"
           onkeyDown={this.newMember}
         />
-        {
-          this.props.batchAdd ? waveTotal : null
-        }
+        {this.props.batchAdd ? waveTotal : null}
       </div>
     );
   };
