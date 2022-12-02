@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-28 12:34:25
+ * @LastEditTime: 2022-12-01 10:31:52
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -906,7 +906,7 @@ export default class OrderPoolPage extends Component {
                     项
                   </span>
                   <a
-                    href="#"
+                    href="##"
                     style={{ marginLeft: 10 }}
                     onClick={() => {
                       this.tableChangeRows(_, []);
@@ -982,7 +982,7 @@ export default class OrderPoolPage extends Component {
                     项
                   </span>
                   <a
-                    href="#"
+                    href="##"
                     style={{ marginLeft: 10 }}
                     onClick={() => {
                       this.tableChangeRows('Vehicle', []);

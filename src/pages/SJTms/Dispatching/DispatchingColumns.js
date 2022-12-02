@@ -94,6 +94,13 @@ export const OrderColumns = [
     render: val => (val ? <span>{(val / 1000).toFixed(3)}</span> : <Empty />),
   },
   {
+    title: '到效日期',
+    dataIndex: 'expiryDate',
+    width: 80,
+    sorter: true,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
     title: '备注',
     dataIndex: 'note',
     width: 80,
@@ -233,6 +240,13 @@ export const OrderDetailColumns = [
     dataIndex: 'amount',
     sorter: true,
     width: 80,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '到效日期',
+    dataIndex: 'expiryDate',
+    width: 80,
+    sorter: true,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
@@ -506,16 +520,10 @@ export const ScheduleColumns = [
   },
   {
     title: '总件数',
-    dataIndex: 'REALCARTONCOUNT',
+    dataIndex: 'TOTALCARTONCOUNT',
     sorter: true,
     width: 80,
-    render: (_, record) => (
-      <span>
-        {Number(record.REALCARTONCOUNT) +
-          Number(record.REALSCATTEREDCOUNT) +
-          Number(record.REALCONTAINERCOUNT) * 2}
-      </span>
-    ),
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '承重',
