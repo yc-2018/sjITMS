@@ -868,12 +868,12 @@ export default class DriverSwipePrint extends PureComponent {
                   {scheduleBill.vehicle ? scheduleBill.vehicle.name : <Empty />}
                 </span>
               </Col>
-              <Col span={6}>
+              {/* <Col span={6}>
                 <span style={{ fontSize: 15 }}>
                   重量(t)：
                   {scheduleBill.weight ? scheduleBill.weight : <Empty />}
                 </span>
-              </Col>
+              </Col> */}
               <Col span={6}>
                 <span style={{ fontSize: 15 }}>
                   体积(m³)：
