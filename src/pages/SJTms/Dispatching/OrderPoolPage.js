@@ -598,8 +598,8 @@ export default class OrderPoolPage extends Component {
     const schedules = searchParams.map((e) => {
       let item = {};
       item.isSplit = 1;
-      const delVolume = (Number(e.number) / orders[0].stillCartonCount) * cartonVolume;
-      const delWeight = (Number(e.number) / orders[0].stillCartonCount) * cartonWeight;
+      let delVolume = (Number(e.number) / orders[0].stillCartonCount) * cartonVolume;
+      let delWeight = (Number(e.number) / orders[0].stillCartonCount) * cartonWeight;
       if (e.key == 1) {
         item.cartonCount = e.number;
         item.scatteredCount = orders[0].stillScatteredCount;
@@ -787,7 +787,6 @@ export default class OrderPoolPage extends Component {
       waveOrder,
       countUnit
     } = this.state;
-    console.log(auditedRowKeys);
     const { isOrderCollect, totalOrder } = this.props;
     const collectOrder = this.groupByOrder(totalOrder);
     let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
