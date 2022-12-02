@@ -326,6 +326,13 @@ export const VehicleColumns = [
     width: 80,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
+  {
+    title: '配送区域',
+    dataIndex: 'SHIPAREANAME',
+    sorter: true,
+    width: 100,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
 ];
 
 const OrderType = {

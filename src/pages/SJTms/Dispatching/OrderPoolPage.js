@@ -2,14 +2,24 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-01 10:31:52
+ * @LastEditTime: 2022-12-02 14:43:41
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
 import React, { Component } from 'react';
 import {
   Switch,
-  Button, Row, Col, Tabs, message, Typography, Icon, Dropdown, Menu, Modal, Input, Form, Select, InputNumber
+  Button,
+  Row,
+  Col,
+  Tabs,
+  message,
+  Typography,
+  Icon,
+  Dropdown,
+  Menu,
+  Modal,
+  InputNumber,
 } from 'antd';
 import DispatchingTable from './DispatchingTable';
 import DispatchingChildTable from './DispatchingChildTable';
@@ -30,7 +40,7 @@ import {
   queryAuditedOrder,
   queryCollectAuditedOrder,
   savePending,
-  getContainerByBillUuid
+  getContainerByBillUuid,
 } from '@/services/sjitms/OrderBill';
 import { save, batchSave } from '@/services/sjitms/ScheduleBill';
 import { queryData } from '@/services/quick/Quick';
@@ -38,8 +48,6 @@ import { addOrders } from '@/services/sjitms/ScheduleBill';
 import { groupBy, sumBy, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
-import imTemplate from '@/models/account/imTemplate';
-import order from '@/models/in/order';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
@@ -61,7 +69,7 @@ export default class OrderPoolPage extends Component {
     modalVisible: false,
     searchParams: [],
     queryKey: 1,
-    countUnit: 0
+    countUnit: 0,
   };
 
   componentWillReceiveProps(nextProps) {
@@ -315,10 +323,10 @@ export default class OrderPoolPage extends Component {
     if (noJointlyOwner != undefined) {
       message.error(
         '货主：' +
-        noJointlyOwner.ownerName +
-        '与[' +
-        noJointlyOwner.owners +
-        ']不可共配，请检查货主配置!'
+          noJointlyOwner.ownerName +
+          '与[' +
+          noJointlyOwner.owners +
+          ']不可共配，请检查货主配置!'
       );
       return;
     }
@@ -364,10 +372,10 @@ export default class OrderPoolPage extends Component {
     if (noJointlyOwner != undefined) {
       message.error(
         '货主：' +
-        noJointlyOwner.ownerName +
-        '与[' +
-        noJointlyOwner.owners +
-        ']不可共配，请检查货主配置!'
+          noJointlyOwner.ownerName +
+          '与[' +
+          noJointlyOwner.owners +
+          ']不可共配，请检查货主配置!'
       );
       return;
     }
@@ -402,17 +410,17 @@ export default class OrderPoolPage extends Component {
     const vehicle = vehicleData.find(x => x.uuid == uuid);
     const carrier = vehicle.DRIVERUUID
       ? {
-        uuid: vehicle.DRIVERUUID,
-        code: vehicle.DRIVERCODE,
-        name: vehicle.DRIVERNAME,
-      }
+          uuid: vehicle.DRIVERUUID,
+          code: vehicle.DRIVERCODE,
+          name: vehicle.DRIVERNAME,
+        }
       : {};
     const delivery = vehicle.DELIVERYUUID
       ? {
-        uuid: vehicle.DELIVERYUUID,
-        code: vehicle.DELIVERYCODE,
-        name: vehicle.DELIVERYNAME,
-      }
+          uuid: vehicle.DELIVERYUUID,
+          code: vehicle.DELIVERYCODE,
+          name: vehicle.DELIVERYNAME,
+        }
       : {};
     const paramBody = {
       type: 'Job',
@@ -479,7 +487,7 @@ export default class OrderPoolPage extends Component {
     const { searchParams, queryKey } = this.state;
     const nextSearchParams = searchParams.concat({
       key: queryKey,
-      number: undefined
+      number: undefined,
     });
     this.setState({ searchParams: nextSearchParams, queryKey: queryKey + 1 });
   };
@@ -489,16 +497,15 @@ export default class OrderPoolPage extends Component {
     const newSearchParams = searchParams.filter(x => x.key !== key).map((e, index) => {
       return {
         key: index + 1,
-        number: e.number
-      }
-    }
-    );
+        number: e.number,
+      };
+    });
     let countUnit = 0;
     newSearchParams.forEach(item => {
       if (item.number) {
         countUnit += Number(item.number);
       }
-    })
+    });
     this.setState({ searchParams: newSearchParams, countUnit });
   };
   onChangeNum = (key, e) => {
@@ -506,14 +513,14 @@ export default class OrderPoolPage extends Component {
     let countUnit = 0;
     searchParams.forEach(item => {
       if (item.key == key) {
-        item.number = e
+        item.number = e;
       }
       if (item.number) {
         countUnit += Number(item.number);
       }
-    })
+    });
     this.setState({ countUnit, searchParams });
-  }
+  };
   //汇总
   groupByOrder = data => {
     const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0;
@@ -542,32 +549,29 @@ export default class OrderPoolPage extends Component {
     const { auditedData, searchParams, auditedRowKeys, countUnit } = this.state;
     let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
     if (countUnit > orders[0].stillCartonCount) {
-      message.error("存在数量多拆,请检查");
+      message.error('存在数量多拆,请检查');
       return;
     }
     if (searchParams.filter(e => e.number == undefined).length > 0) {
-      message.error("存在未填写的拆单数");
+      message.error('存在未填写的拆单数');
       return;
     }
     if (searchParams.length == 1) {
-      message.error("请拆多份");
+      message.error('请拆多份');
       return;
     }
     if (countUnit < orders[0].stillCartonCount) {
-      Modal.confirm(
-        {
-          title: "提示",
-          onOk: () => this.onBatchSave(orders, searchParams),
-          content: '还剩' + (orders[0].stillCartonCount - countUnit) + "件没有拆完,确定提交吗？"
-        }
-      )
+      Modal.confirm({
+        title: '提示',
+        onOk: () => this.onBatchSave(orders, searchParams),
+        content: '还剩' + (orders[0].stillCartonCount - countUnit) + '件没有拆完,确定提交吗？',
+      });
     } else {
       this.onBatchSave(orders, searchParams);
     }
-
-  }
+  };
   onBatchSave = async (orders, searchParams) => {
-    this.setState({ loading: true })
+    this.setState({ loading: true });
     const orderType = uniqBy(orders.map(x => x.orderType)).shift();
     const type = orderType == 'TakeDelivery' ? 'Task' : 'Job';
     //const driver = selectEmployees.find(x => x.memberType == 'Driver');
@@ -595,7 +599,7 @@ export default class OrderPoolPage extends Component {
         scatteredWeight = scatteredNumber.realWeight || scatteredNumber.forecastWeight;
       }
     }
-    const schedules = searchParams.map((e) => {
+    const schedules = searchParams.map(e => {
       let item = {};
       item.isSplit = 1;
       let delVolume = (Number(e.number) / orders[0].stillCartonCount) * cartonVolume;
@@ -604,13 +608,13 @@ export default class OrderPoolPage extends Component {
         item.cartonCount = e.number;
         item.scatteredCount = orders[0].stillScatteredCount;
         item.containerCount = orders[0].stillContainerCount;
-        if(item.scatteredCount!=0){
-          delWeight =  delWeight+Number(scatteredWeight);
-          delVolume = delVolume+Number(scatteredVolume);
+        if (item.scatteredCount != 0) {
+          delWeight = delWeight + Number(scatteredWeight);
+          delVolume = delVolume + Number(scatteredVolume);
         }
-        if(item.containerCount!=0){
-          delWeight =  delWeight+Number(containerWeight);
-          delVolume = delVolume+Number(containerVolume);
+        if (item.containerCount != 0) {
+          delWeight = delWeight + Number(containerWeight);
+          delVolume = delVolume + Number(containerVolume);
         }
       } else {
         item.cartonCount = e.number;
@@ -622,12 +626,14 @@ export default class OrderPoolPage extends Component {
       item.realScatteredCount = 0;
       item.realContainerCount = 0;
       item.realCartonCount = 0;
-      const details = [{
-        ...orders[0],
-        ...item,
-        orderUuid: item.orderUuid || orders[0].uuid,
-        orderNumber: item.orderNumber || orders[0].billNumber,
-      }];
+      const details = [
+        {
+          ...orders[0],
+          ...item,
+          orderUuid: item.orderUuid || orders[0].uuid,
+          orderNumber: item.orderNumber || orders[0].billNumber,
+        },
+      ];
       const orderSummary = this.groupByOrder(details);
       return {
         type,
@@ -642,17 +648,17 @@ export default class OrderPoolPage extends Component {
         dispatchCenterUuid: loginOrg().uuid,
         note: '',
       };
-    })
+    });
     await batchSave(schedules).then(result => {
       if (result && result.success) {
-        message.success("生成成功");
-        this.setState({ modalVisible: false })
+        message.success('生成成功');
+        this.setState({ modalVisible: false });
         this.refreshTable();
         this.props.refreshSchedule();
       }
-    })
-    this.setState({ loading: true })
-  }
+    });
+    this.setState({ loading: true });
+  };
   //汇总数据
   drawCollect = (footer, orders) => {
     const totalTextStyle = footer
@@ -785,19 +791,22 @@ export default class OrderPoolPage extends Component {
       activeKey,
       searchParams,
       waveOrder,
-      countUnit
+      countUnit,
     } = this.state;
     const { isOrderCollect, totalOrder } = this.props;
     const collectOrder = this.groupByOrder(totalOrder);
     let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
-    const formItems = searchParams.map((searchParam) => (
+    const formItems = searchParams.map(searchParam => (
       <Row gutter={16} key={searchParam.key}>
         <Col span={9}>
-          <span>{"第" + (searchParam.key) + "份排车单"}</span>
+          <span>{'第' + searchParam.key + '份排车单'}</span>
         </Col>
         <Col span={4}>
-          <InputNumber min={1} onChange={this.onChangeNum.bind(this, searchParam.key)}
-            value={searchParam.number}></InputNumber>
+          <InputNumber
+            min={1}
+            onChange={this.onChangeNum.bind(this, searchParam.key)}
+            value={searchParam.number}
+          />
         </Col>
         <Col span={1} offset={7}>
           {searchParams.length > 1 ? (
@@ -896,7 +905,7 @@ export default class OrderPoolPage extends Component {
             ) : (
               <div className={dispatchingStyles.orderPoolFooter}>
                 <div className={dispatchingStyles.orderTotalPane}>
-                  <Icon type="info-circle" theme="filled" twoToneColor="#3B77E3" />
+                  <Icon type="info-circle" theme="filled" style={{ color: '#3B77E3' }} />
                   <span style={{ marginLeft: 5 }}>
                     已选择
                     <span style={{ color: '#3B77E3', margin: '0 2px' }}>
@@ -964,7 +973,7 @@ export default class OrderPoolPage extends Component {
               changeSelectRows={rowKeys => this.tableChangeRows('Vehicle', rowKeys)}
               selectedRowKeys={vehicleRowKeys}
               columns={VehicleColumns}
-              scrollY="calc(86vh - 180px)"
+              scrollY="calc(86vh - 215px)"
               title={() => this.drawVehicleCollect(vehicleData, vehicleRowKeys)}
             />
             {/* {vehicleData.length == 0 ? (
@@ -972,7 +981,7 @@ export default class OrderPoolPage extends Component {
             ) : (
               <div className={dispatchingStyles.orderPoolFooter}>
                 <div className={dispatchingStyles.orderTotalPane}>
-                  <Icon type="info-circle" theme="filled" twoToneColor="#3B77E3" />
+                  <Icon type="info-circle" theme="filled" style={{ color: '#3B77E3' }} />
                   <span style={{ marginLeft: 5 }}>
                     已选择
                     <span style={{ color: '#3B77E3', margin: '0 2px' }}>
@@ -997,7 +1006,9 @@ export default class OrderPoolPage extends Component {
         <Modal
           visible={this.state.modalVisible}
           onCancel={() => this.setState({ modalVisible: false })}
-          afterClose={() => { this.setState({ queryKey: 1, countUnit: 0, searchParams: [] }) }}
+          afterClose={() => {
+            this.setState({ queryKey: 1, countUnit: 0, searchParams: [] });
+          }}
           onOk={() => this.handAddSchedule()}
           confirmLoading={loading}
         >
@@ -1006,7 +1017,10 @@ export default class OrderPoolPage extends Component {
               <span>{'整件数:' + orders[0]?.stillCartonCount}</span>
             </Col>
             <Col span={3}>
-              <span>剩余数:{orders && orders[0] != undefined ? orders[0].stillCartonCount - countUnit : 0}</span>
+              <span>
+                剩余数:
+                {orders && orders[0] != undefined ? orders[0].stillCartonCount - countUnit : 0}
+              </span>
             </Col>
             <Col span={1} offset={7}>
               <Button type="dashed" onClick={this.add}>

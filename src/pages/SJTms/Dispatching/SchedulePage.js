@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-01 11:48:24
+ * @LastEditTime: 2022-12-02 12:00:28
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -592,7 +592,7 @@ export default class SchedulePage extends Component {
             ) : (
               <div className={dispatchingStyles.orderPoolFooter}>
                 <div className={dispatchingStyles.orderTotalPane}>
-                  <Icon type="info-circle" theme="filled" twoToneColor="#3B77E3" />
+                  <Icon type="info-circle" theme="filled" style={{ color: '#3B77E3' }} />
                   <span style={{ marginLeft: 5 }}>
                     已选择
                     <span style={{ color: '#3B77E3', margin: '0 2px' }}>{savedRowKeys.length}</span>
@@ -643,7 +643,7 @@ export default class SchedulePage extends Component {
             ) : (
               <div className={dispatchingStyles.orderPoolFooter}>
                 <div className={dispatchingStyles.orderTotalPane}>
-                  <Icon type="info-circle" theme="filled" twoToneColor="#3B77E3" />
+                  <Icon type="info-circle" theme="filled" style={{ color: '#3B77E3' }} />
                   <span style={{ marginLeft: 5 }}>
                     已选择
                     <span style={{ color: '#3B77E3', margin: '0 2px' }}>
@@ -693,7 +693,7 @@ export default class SchedulePage extends Component {
             ) : (
               <div className={dispatchingStyles.orderPoolFooter}>
                 <div className={dispatchingStyles.orderTotalPane}>
-                  <Icon type="info-circle" theme="filled" twoToneColor="#3B77E3" />
+                  <Icon type="info-circle" theme="filled" style={{ color: '#3B77E3' }} />
                   <span style={{ marginLeft: 5 }}>
                     已选择
                     <span style={{ color: '#3B77E3', margin: '0 2px' }}>

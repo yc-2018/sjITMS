@@ -2,12 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-19 15:58:53
+ * @LastEditTime: 2022-12-02 14:56:19
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\VehicleSearchForm.js
  */
 import React, { Component } from 'react';
-import { Form, Button, Row, Col } from 'antd';
+import { Form, Button, Row, Col, Input } from 'antd';
 import {
   SimpleSelect,
   SimpleAutoComplete,
@@ -38,7 +38,7 @@ export default class VehicleSearchForm extends Component {
       if (val == null || val == undefined) {
         continue;
       }
-      params.push({ field: param, type: 'String', rule: 'eq', val });
+      params.push({ field: param, type: 'String', rule: 'like', val });
     }
     await this.props.refresh(params);
   };
@@ -51,10 +51,15 @@ export default class VehicleSearchForm extends Component {
   render() {
     const { getFieldDecorator } = this.props.form;
     return (
-      <Form onSubmit={this.onSubmit} autoComplete="off">
-        <Row justify="space-around">
-          <Col span={6}>
-            <Form.Item label="代码" labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
+      <Form
+        onSubmit={this.onSubmit}
+        labelCol={{ span: 8 }}
+        wrapperCol={{ span: 16 }}
+        autoComplete="off"
+      >
+        <Row justify="start">
+          <Col span={10}>
+            <Form.Item label="代码">
               {getFieldDecorator('CODE', {})(
                 <SimpleSelect
                   placeholder="请输入车辆代码"
@@ -67,8 +72,8 @@ export default class VehicleSearchForm extends Component {
               )}
             </Form.Item>
           </Col>
-          <Col span={7}>
-            <Form.Item label="车牌号" labelCol={{ span: 8 }} wrapperCol={{ span: 16 }}>
+          <Col span={10}>
+            <Form.Item label="车牌号">
               {getFieldDecorator('PLATENUMBER', {})(
                 <SimpleSelect
                   placeholder="请输入车牌号"
@@ -81,10 +86,17 @@ export default class VehicleSearchForm extends Component {
               )}
             </Form.Item>
           </Col>
-          <Col span={7}>
-            <Form.Item label="组队" labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
+          <Col span={10}>
+            <Form.Item label="组队">
               {getFieldDecorator('VEHICLEGROUP', {})(
-                <SimpleAutoComplete placeholder={'请选择组队'} dictCode="csTeam" noRecord />
+                <SimpleAutoComplete placeholder="请选择组队" dictCode="csTeam" noRecord />
+              )}
+            </Form.Item>
+          </Col>
+          <Col span={10}>
+            <Form.Item label="配送区域">
+              {getFieldDecorator('SHIPAREANAME', {})(
+                <Input placeholder="请输入配送区域" allowClear />
               )}
             </Form.Item>
           </Col>
