@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-02 12:00:28
+ * @LastEditTime: 2022-12-02 15:47:25
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -64,9 +64,6 @@ export default class SchedulePage extends Component {
         this.setState({ users: res.data.records });
       }
     });
-    this.refreshSchedulePool([
-      { field: 'CREATORID', type: 'VarChar', rule: 'eq', val: loginUser().uuid },
-    ]);
   }
   isOrgQuery = [
     { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },

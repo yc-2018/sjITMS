@@ -2,12 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-19 10:07:07
+ * @LastEditTime: 2022-12-02 11:59:04
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
 import React, { Component } from 'react';
-import { Button, Row, Col, Typography, message } from 'antd';
+import { Button, Row, Col, Typography, message, Icon } from 'antd';
 import {
   OrderColumns,
   OrderCollectColumns,
@@ -174,19 +174,29 @@ export default class PendingPage extends Component {
       pendingRowKeys,
     } = this.state;
     const settingColumnsBar = (
-      <>
-        <span style={{ fontSize: 14 }}>
-          已选：
-          {pendingRowKeys.length}
+      // <>
+      //   <span style={{ fontSize: 14 }}>
+      //     已选：
+      //     {pendingRowKeys.length}
+      //   </span>
+      //   <Button
+      //     style={{ marginLeft: 20, marginBottom: 5 }}
+      //     size="small"
+      //     onClick={this.handleCancelRow}
+      //   >
+      //     取消
+      //   </Button>
+      // </>
+      <div className={dispatchingStyles.orderTotalPane}>
+        <Icon type="info-circle" theme="filled" style={{ color: '#3B77E3' }} />
+        <span style={{ marginLeft: 5 }}>
+          已选择
+          <span style={{ color: '#3B77E3', margin: '0 2px' }}>{pendingRowKeys.length}</span>项
         </span>
-        <Button
-          style={{ marginLeft: 20, marginBottom: 5 }}
-          size="small"
-          onClick={this.handleCancelRow}
-        >
-          取消
-        </Button>
-      </>
+        <a href="##" style={{ marginLeft: 10 }} onClick={() => this.handleCancelRow()}>
+          取消全部
+        </a>
+      </div>
     );
     return (
       <div style={{ padding: 5 }}>
