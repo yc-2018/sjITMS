@@ -108,7 +108,6 @@ export default class StoreModal extends Component {
 
   save = async params => {
     const response = await saveOrUpdateFee(params);
-    console.log('response', response);
     if (response && response.data > 0) {
       message.success('保存成功');
     } else if (response && response.data && response.data.indexOf('确认保存') > 0) {
