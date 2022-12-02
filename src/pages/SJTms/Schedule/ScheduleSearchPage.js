@@ -178,6 +178,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         render: (_, record) => {
           return (
             <a
+              hidden={!havePermission(this.state.authority + '.editor')}
               disabled={!editableState.includes(record.STAT)}
               onClick={() => {
                 this.props.memberModalClick(record);
@@ -457,11 +458,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     selectedRows.length == 1
       ? this.setState({ showRollBackPop: true })
       : this.batchProcessConfirmRef.show(
-        '取消批准',
-        selectedRows,
-        this.onRollBack,
-        this.queryCoulumns
-      );
+          '取消批准',
+          selectedRows,
+          this.onRollBack,
+          this.queryCoulumns
+        );
   };
 
   //批量作废
@@ -486,11 +487,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     selectedRows.length == 1
       ? this.setState({ showAbortAndReset: true })
       : this.batchProcessConfirmRef.show(
-        '作废',
-        selectedRows,
-        this.abortedAndReset,
-        this.queryCoulumns
-      );
+          '作废',
+          selectedRows,
+          this.abortedAndReset,
+          this.queryCoulumns
+        );
   };
 
   //移车
@@ -634,7 +635,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     for (let index = 0; selectedRows.length > index; index++) {
       const response = await queryAllData({
         quickuuid: 'sj_itms_print_schedule_order',
-        order:"ARCHLINECODE,dascend",
+        order: 'ARCHLINECODE,dascend',
         superQuery: {
           queryParams: [
             { field: 'billuuid', type: 'VarChar', rule: 'eq', val: selectedRows[index].UUID },
@@ -867,7 +868,6 @@ const drawPrintPage = (schedule, scheduleDetails) => {
                     码头：
                     {schedule.PIRS}
                   </div>
-
                 </div>
                 <div style={{ textAlign: 'left', fontWeight: 'bold' }}>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
@@ -905,8 +905,8 @@ const drawPrintPage = (schedule, scheduleDetails) => {
                   <div style={{ float: 'left', width: '80%' }}>
                     {schedule.USEETC == '是'
                       ? '粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为' +
-                      schedule.ETCAMOUNT +
-                      '元'
+                        schedule.ETCAMOUNT +
+                        '元'
                       : '粤通卡信息：'}
                     <br />
                     [线路]去程入口:
@@ -977,8 +977,8 @@ const drawPrintPage = (schedule, scheduleDetails) => {
                     <td width={50}>{item.REALCONTAINERCOUNT}</td>
                     <td width={50}>{item.OWECARTONCOUNT}</td>
                     <td width={50}>{item.REALCONTAINERCOUNT + item.OWECARTONCOUNT}</td>
-                    <td width={50}>{ }</td>
-                    <td width={50}>{ }</td>
+                    <td width={50}>{}</td>
+                    <td width={50}>{}</td>
                     {/* <td width={80}>{}</td>
                     <td width={80}>{}</td>
                     <td width={80}>{}</td>
