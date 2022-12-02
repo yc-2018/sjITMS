@@ -42,6 +42,13 @@ export async function save(payload) {
     body: payload,
   });
 }
+//保存
+export async function batchSave(payload) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/batchSave`, {
+    method: 'POST',
+    body: payload,
+  });
+}
 //排车单添加运输订单
 export async function addOrders(payload) {
   return request(`/itms-schedule/itms-schedule/sj/bill/schedule/addOrders`, {

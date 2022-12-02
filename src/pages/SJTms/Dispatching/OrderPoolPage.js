@@ -7,7 +7,10 @@
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
 import React, { Component } from 'react';
-import { Switch, Button, Row, Col, Tabs, message, Typography, Icon } from 'antd';
+import {
+  Switch,
+  Button, Row, Col, Tabs, message, Typography, Icon, Dropdown, Menu, Modal, Input, Form, Select, InputNumber
+} from 'antd';
 import DispatchingTable from './DispatchingTable';
 import DispatchingChildTable from './DispatchingChildTable';
 import {
@@ -27,17 +30,19 @@ import {
   queryAuditedOrder,
   queryCollectAuditedOrder,
   savePending,
+  getContainerByBillUuid
 } from '@/services/sjitms/OrderBill';
-import { save } from '@/services/sjitms/ScheduleBill';
+import { save, batchSave } from '@/services/sjitms/ScheduleBill';
 import { queryData } from '@/services/quick/Quick';
 import { addOrders } from '@/services/sjitms/ScheduleBill';
 import { groupBy, sumBy, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
+import imTemplate from '@/models/account/imTemplate';
+import order from '@/models/in/order';
 
 const { Text } = Typography;
 const { TabPane } = Tabs;
-
 export default class OrderPoolPage extends Component {
   state = {
     loading: false,
@@ -53,6 +58,10 @@ export default class OrderPoolPage extends Component {
     vehicleRowKeys: [],
     activeKey: 'Audited',
     waveOrder: {},
+    modalVisible: false,
+    searchParams: [],
+    queryKey: 1,
+    countUnit: 0
   };
 
   componentWillReceiveProps(nextProps) {
@@ -306,10 +315,10 @@ export default class OrderPoolPage extends Component {
     if (noJointlyOwner != undefined) {
       message.error(
         '货主：' +
-          noJointlyOwner.ownerName +
-          '与[' +
-          noJointlyOwner.owners +
-          ']不可共配，请检查货主配置!'
+        noJointlyOwner.ownerName +
+        '与[' +
+        noJointlyOwner.owners +
+        ']不可共配，请检查货主配置!'
       );
       return;
     }
@@ -355,10 +364,10 @@ export default class OrderPoolPage extends Component {
     if (noJointlyOwner != undefined) {
       message.error(
         '货主：' +
-          noJointlyOwner.ownerName +
-          '与[' +
-          noJointlyOwner.owners +
-          ']不可共配，请检查货主配置!'
+        noJointlyOwner.ownerName +
+        '与[' +
+        noJointlyOwner.owners +
+        ']不可共配，请检查货主配置!'
       );
       return;
     }
@@ -393,17 +402,17 @@ export default class OrderPoolPage extends Component {
     const vehicle = vehicleData.find(x => x.uuid == uuid);
     const carrier = vehicle.DRIVERUUID
       ? {
-          uuid: vehicle.DRIVERUUID,
-          code: vehicle.DRIVERCODE,
-          name: vehicle.DRIVERNAME,
-        }
+        uuid: vehicle.DRIVERUUID,
+        code: vehicle.DRIVERCODE,
+        name: vehicle.DRIVERNAME,
+      }
       : {};
     const delivery = vehicle.DELIVERYUUID
       ? {
-          uuid: vehicle.DELIVERYUUID,
-          code: vehicle.DELIVERYCODE,
-          name: vehicle.DELIVERYNAME,
-        }
+        uuid: vehicle.DELIVERYUUID,
+        code: vehicle.DELIVERYCODE,
+        name: vehicle.DELIVERYNAME,
+      }
       : {};
     const paramBody = {
       type: 'Job',
@@ -465,7 +474,185 @@ export default class OrderPoolPage extends Component {
       }
     });
   };
+  //添加
+  add = () => {
+    const { searchParams, queryKey } = this.state;
+    const nextSearchParams = searchParams.concat({
+      key: queryKey,
+      number: undefined
+    });
+    this.setState({ searchParams: nextSearchParams, queryKey: queryKey + 1 });
+  };
+  //删除拆单条件
+  remove = key => {
+    const { searchParams } = this.state;
+    const newSearchParams = searchParams.filter(x => x.key !== key).map((e, index) => {
+      return {
+        key: index + 1,
+        number: e.number
+      }
+    }
+    );
+    let countUnit = 0;
+    newSearchParams.forEach(item => {
+      if (item.number) {
+        countUnit += Number(item.number);
+      }
+    })
+    this.setState({ searchParams: newSearchParams, countUnit });
+  };
+  onChangeNum = (key, e) => {
+    const { searchParams } = this.state;
+    let countUnit = 0;
+    searchParams.forEach(item => {
+      if (item.key == key) {
+        item.number = e
+      }
+      if (item.number) {
+        countUnit += Number(item.number);
+      }
+    })
+    this.setState({ countUnit, searchParams });
+  }
+  //汇总
+  groupByOrder = data => {
+    const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0;
+    const pickupPointCount = data ? uniq(data.map(x => x.pickUpPoint.code)).length : 0;
+    data = data.filter(x => x.orderType !== 'OnlyBill');
+    return {
+      orderCount: data ? data.length : 0,
+      cartonCount: data ? sumBy(data.map(x => x.stillCartonCount)) : 0,
+      scatteredCount: data ? sumBy(data.map(x => x.stillScatteredCount)) : 0,
+      containerCount: data ? sumBy(data.map(x => x.stillContainerCount)) : 0,
+      realCartonCount: data ? sumBy(data.map(x => x.realCartonCount)) : 0,
+      realScatteredCount: data ? sumBy(data.map(x => x.realScatteredCount)) : 0,
+      realContainerCount: data ? sumBy(data.map(x => x.realContainerCount)) : 0,
+      stillCartonCount: data ? sumBy(data.map(x => x.stillCartonCount)) : 0,
+      stillScatteredCount: data ? sumBy(data.map(x => x.stillScatteredCount)) : 0,
+      stillContainerCount: data ? sumBy(data.map(x => x.stillContainerCount)) : 0,
+      weight: data ? sumBy(data.map(x => Number(x.weight))) : 0,
+      volume: data ? sumBy(data.map(x => Number(x.volume))) : 0,
+      totalAmount: data ? sumBy(data.map(x => Number(x.amount))) : 0,
+      deliveryPointCount,
+      pickupPointCount,
+      ownerCount: data ? uniq(data.map(x => x.owner.code)).length : 0,
+    };
+  };
+  handAddSchedule = async () => {
+    const { auditedData, searchParams, auditedRowKeys, countUnit } = this.state;
+    let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
+    if (countUnit > orders[0].stillCartonCount) {
+      message.error("存在数量多拆,请检查");
+      return;
+    }
+    if (searchParams.filter(e => e.number == undefined).length > 0) {
+      message.error("存在未填写的拆单数");
+      return;
+    }
+    if (searchParams.length == 1) {
+      message.error("请拆多份");
+      return;
+    }
+    if (countUnit < orders[0].stillCartonCount) {
+      Modal.confirm(
+        {
+          title: "提示",
+          onOk: () => this.onBatchSave(orders, searchParams),
+          content: '还剩' + (orders[0].stillCartonCount - countUnit) + "件没有拆完,确定提交吗？"
+        }
+      )
+    } else {
+      this.onBatchSave(orders, searchParams);
+    }
 
+  }
+  onBatchSave = async (orders, searchParams) => {
+    this.setState({ loading: true })
+    const orderType = uniqBy(orders.map(x => x.orderType)).shift();
+    const type = orderType == 'TakeDelivery' ? 'Task' : 'Job';
+    //const driver = selectEmployees.find(x => x.memberType == 'Driver');
+    const response = await getContainerByBillUuid(orders[0].uuid);
+    let cartonVolume = undefined;
+    let cartonWeight = undefined;
+    let containerVolume = 0;
+    let containerWeight = 0;
+    let scatteredVolume = 0;
+    let scatteredWeight = 0;
+    if (response.success) {
+      const cartonNumber = response.data?.find(x => x.vehicleType == 'Carton');
+      const containerNumber = response.data?.find(x => x.vehicleType == 'Container');
+      const scatteredNumber = response.data?.find(x => x.vehicleType == 'Scattered');
+      if (cartonNumber) {
+        cartonVolume = cartonNumber.realVolume || cartonNumber.forecastVolume;
+        cartonWeight = cartonNumber.realWeight || cartonNumber.forecastWeight;
+      }
+      if (containerNumber) {
+        containerVolume = containerNumber.realVolume || containerNumber.forecastVolume;
+        containerWeight = containerNumber.realWeight || containerNumber.forecastWeight;
+      }
+      if (scatteredNumber) {
+        scatteredVolume = scatteredNumber.realVolume || scatteredNumber.forecastVolume;
+        scatteredWeight = scatteredNumber.realWeight || scatteredNumber.forecastWeight;
+      }
+    }
+    const schedules = searchParams.map((e) => {
+      let item = {};
+      item.isSplit = 1;
+      const delVolume = (Number(e.number) / orders[0].stillCartonCount) * cartonVolume;
+      const delWeight = (Number(e.number) / orders[0].stillCartonCount) * cartonWeight;
+      if (e.key == 1) {
+        item.cartonCount = e.number;
+        item.scatteredCount = orders[0].stillScatteredCount;
+        item.containerCount = orders[0].stillContainerCount;
+        if(item.scatteredCount!=0){
+          delWeight =  delWeight+Number(scatteredWeight);
+          delVolume = delVolume+Number(scatteredVolume);
+        }
+        if(item.containerCount!=0){
+          delWeight =  delWeight+Number(containerWeight);
+          delVolume = delVolume+Number(containerVolume);
+        }
+      } else {
+        item.cartonCount = e.number;
+        item.scatteredCount = 0;
+        item.containerCount = 0;
+      }
+      item.weight = delWeight;
+      item.volume = delVolume;
+      item.realScatteredCount = 0;
+      item.realContainerCount = 0;
+      item.realCartonCount = 0;
+      const details = [{
+        ...orders[0],
+        ...item,
+        orderUuid: item.orderUuid || orders[0].uuid,
+        orderNumber: item.orderNumber || orders[0].billNumber,
+      }];
+      const orderSummary = this.groupByOrder(details);
+      return {
+        type,
+        deliveryPointCount: details.length,
+        details,
+        vehicle: {},
+        vehicleType: {},
+        carrier: {},
+        memberDetails: [],
+        ...orderSummary,
+        companyUuid: loginCompany().uuid,
+        dispatchCenterUuid: loginOrg().uuid,
+        note: '',
+      };
+    })
+    await batchSave(schedules).then(result => {
+      if (result && result.success) {
+        message.success("生成成功");
+        this.setState({ modalVisible: false })
+        this.refreshTable();
+        this.props.refreshSchedule();
+      }
+    })
+    this.setState({ loading: true })
+  }
   //汇总数据
   drawCollect = (footer, orders) => {
     const totalTextStyle = footer
@@ -596,11 +783,34 @@ export default class OrderPoolPage extends Component {
       vehicleRowKeys,
       vehicleData,
       activeKey,
+      searchParams,
       waveOrder,
+      countUnit
     } = this.state;
+    console.log(auditedRowKeys);
     const { isOrderCollect, totalOrder } = this.props;
     const collectOrder = this.groupByOrder(totalOrder);
-
+    let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
+    const formItems = searchParams.map((searchParam) => (
+      <Row gutter={16} key={searchParam.key}>
+        <Col span={9}>
+          <span>{"第" + (searchParam.key) + "份排车单"}</span>
+        </Col>
+        <Col span={4}>
+          <InputNumber min={1} onChange={this.onChangeNum.bind(this, searchParam.key)}
+            value={searchParam.number}></InputNumber>
+        </Col>
+        <Col span={1} offset={7}>
+          {searchParams.length > 1 ? (
+            <Icon
+              className="dynamic-delete-button"
+              type="minus-circle-o"
+              onClick={() => this.remove(searchParam.key)}
+            />
+          ) : null}
+        </Col>
+      </Row>
+    ));
     return (
       <div>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
@@ -617,47 +827,71 @@ export default class OrderPoolPage extends Component {
               dispatchcenterSearch={true}
               refreshOrderPool={this.refreshOrderPool}
             />
-            {/* 待排订单列表 */}
-            {isOrderCollect ? (
-              <DispatchingChildTable
-                comId="orderPool"
-                clickRow
-                childSettingCol
-                pagination={searchPagination || false}
-                loading={loading}
-                dataSource={auditedCollectData}
-                refreshDataSource={(_, pagination, sorter) => {
-                  this.refreshOrderPool(undefined, pagination, sorter);
-                }}
-                changeSelectRows={this.childTableChangeRows}
-                selectedRowKeys={auditedParentRowKeys}
-                childSelectedRowKeys={auditedRowKeys}
-                columns={OrderCollectColumns}
-                nestColumns={OrderDetailColumns}
-                scrollY="calc(86vh - 235px)"
-                title={() => this.drawCollect(false, collectOrder)}
-                footer={() => this.drawCollect(true, waveOrder)}
-              />
-            ) : (
-              <DispatchingTable
-                comId="orderPool"
-                clickRow
-                pagination={searchPagination || false}
-                loading={loading}
-                dataSource={auditedData}
-                refreshDataSource={(_, pagination, sorter) => {
-                  this.refreshOrderPool(undefined, pagination, sorter);
-                }}
-                changeSelectRows={selectedRowKeys =>
-                  this.tableChangeRows('Audited', selectedRowKeys)
-                }
-                selectedRowKeys={auditedRowKeys}
-                columns={OrderColumns}
-                scrollY="calc(86vh - 235px)"
-                title={() => this.drawCollect(false, collectOrder)}
-                footer={() => this.drawCollect(true, waveOrder)}
-              />
-            )}
+            <Dropdown
+              overlay={
+                <Menu>
+                  <Menu.Item
+                    onClick={() => {
+                      const { auditedRowKeys, auditedData } = this.state;
+                      const selectPending = this.props.selectPending();
+                      if (auditedRowKeys.length + selectPending.length != 1) {
+                        message.warning('请选择一条运输订单！');
+                        return;
+                      }
+                      this.setState({ modalVisible: true });
+                    }}
+                  >
+                    拆单
+                  </Menu.Item>
+                </Menu>
+              }
+              trigger={['contextMenu']}
+            >
+              <div>
+                {/* 待排订单列表 */}
+                {isOrderCollect ? (
+                  <DispatchingChildTable
+                    comId="orderPool"
+                    clickRow
+                    childSettingCol
+                    pagination={searchPagination || false}
+                    loading={loading}
+                    dataSource={auditedCollectData}
+                    refreshDataSource={(_, pagination, sorter) => {
+                      this.refreshOrderPool(undefined, pagination, sorter);
+                    }}
+                    changeSelectRows={this.childTableChangeRows}
+                    selectedRowKeys={auditedParentRowKeys}
+                    childSelectedRowKeys={auditedRowKeys}
+                    columns={OrderCollectColumns}
+                    nestColumns={OrderDetailColumns}
+                    scrollY="calc(86vh - 235px)"
+                    title={() => this.drawCollect(false, collectOrder)}
+                    footer={() => this.drawCollect(true, waveOrder)}
+                  />
+                ) : (
+                  <DispatchingTable
+                    comId="orderPool"
+                    clickRow
+                    pagination={searchPagination || false}
+                    loading={loading}
+                    dataSource={auditedData}
+                    refreshDataSource={(_, pagination, sorter) => {
+                      this.refreshOrderPool(undefined, pagination, sorter);
+                    }}
+                    changeSelectRows={selectedRowKeys =>
+                      this.tableChangeRows('Audited', selectedRowKeys)
+                    }
+                    selectedRowKeys={auditedRowKeys}
+                    columns={OrderColumns}
+                    scrollY="calc(86vh - 235px)"
+                    title={() => this.drawCollect(false, collectOrder)}
+                    footer={() => this.drawCollect(true, waveOrder)}
+                  />
+                )}
+              </div>
+            </Dropdown>
+
             {auditedData.length == 0 ? (
               <></>
             ) : (
@@ -761,6 +995,28 @@ export default class OrderPoolPage extends Component {
             )} */}
           </TabPane>
         </Tabs>
+        <Modal
+          visible={this.state.modalVisible}
+          onCancel={() => this.setState({ modalVisible: false })}
+          afterClose={() => { this.setState({ queryKey: 1, countUnit: 0, searchParams: [] }) }}
+          onOk={() => this.handAddSchedule()}
+          confirmLoading={loading}
+        >
+          <Row>
+            <Col span={9}>
+              <span>{'整件数:' + orders[0]?.stillCartonCount}</span>
+            </Col>
+            <Col span={3}>
+              <span>剩余数:{orders && orders[0] != undefined ? orders[0].stillCartonCount - countUnit : 0}</span>
+            </Col>
+            <Col span={1} offset={7}>
+              <Button type="dashed" onClick={this.add}>
+                <Icon type="plus" /> 添加
+              </Button>
+            </Col>
+          </Row>
+          {formItems}
+        </Modal>
       </div>
     );
   }
