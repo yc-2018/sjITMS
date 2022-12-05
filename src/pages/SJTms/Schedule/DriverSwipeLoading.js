@@ -55,7 +55,7 @@ export default class Swiper extends PureComponent {
 
   //刷卡
   onSubmit = async event => {
-    const { dispatchUuid, companyUuid } = this.state;
+    const { dispatchUuid, companyUuid,swipeFlag } = this.state;
     if (dispatchUuid == undefined || companyUuid == undefined) {
       message.error('企业中心或调度中心值缺失！');
       return;
@@ -204,12 +204,12 @@ export default class Swiper extends PureComponent {
                   {scheduleBill.vehicle ? scheduleBill.vehicle.name : <Empty />}
                 </span>
               </Col>
-              <Col span={6}>
+              {/* <Col span={6}>
                 <span style={{ fontSize: 15 }}>
                   重量(t)：
                   {scheduleBill.weight ?  (new Number(scheduleBill.weight)/1000).toFixed(3) : <Empty />}
                 </span>
-              </Col>
+              </Col> */}
               <Col span={6}>
                 <span style={{ fontSize: 15 }}>
                   体积(m³)：

@@ -125,7 +125,7 @@ export default class DriverSwipePrint extends PureComponent {
     if (loginOrg().uuid == '000000750000004' || loginOrg().uuid =='000008150000001') {
       // const deliveryMan = schedule.memberDetails.filter (e=>e.memberType=='DeliveryMan').map(e=>'['+e.member.code+']'+e.member.name);
       const stevedore = schedule.memberDetails
-        .filter(e => e.memberType == 'Stevedore')
+        .filter(e => e.memberType == 'DeliveryMan')
         .map(e => '[' + e.member.code + ']' + e.member.name);
       const copilot = schedule.memberDetails
         .filter(e => e.memberType == 'Copilot')
@@ -189,7 +189,7 @@ export default class DriverSwipePrint extends PureComponent {
                         驾驶员： {'[' + schedule.carrier.code + ']' + schedule.carrier.name}
                       </div>
                       <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
-                        装车员：
+                        送货员：
                         {stevedore.length > 0 ? stevedore.join(',') : ''}
                       </div>
                       <div style={{ textAlign: 'left', fontWeight: 'bold' }}>

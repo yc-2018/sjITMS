@@ -874,8 +874,8 @@ const drawPrintPage = (schedule, scheduleDetails) => {
                     驾驶员： {schedule.DRIVER}
                   </div>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
-                    装车员：
-                    {schedule.STEVEDORE}
+                    送货员:
+                    {schedule.DELIVERYMAN}
                   </div>
                   <div style={{ textAlign: 'left', fontWeight: 'bold' }}>
                     <div style={{ float: 'left', width: '25%', fontWeight: 'bold' }}>
