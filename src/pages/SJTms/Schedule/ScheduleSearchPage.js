@@ -351,7 +351,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
           <Button
             onClick={() => this.handlePrint()}
             icon="printer"
-            hidden={!havePermission(this.state.authority + '.print')}
+            // hidden={!havePermission(this.state.authority + '.print')}
           >
             打印 <Icon type="down" />
           </Button>
