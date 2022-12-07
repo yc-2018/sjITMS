@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-28 17:56:07
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-12-07 09:18:27
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -208,7 +208,6 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
 
   updateOutSerial = async () => {
     const { selectedRows, outSerial } = this.state;
-    console.log('ss', outSerial);
     if (selectedRows[0].STAT != 'Approved') {
       message.warn('该排车单不是批准状态，不能修改顺序！');
       return;
@@ -219,6 +218,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     await updateOutSerialApi(selectedRows[0].UUID, outSerial).then(result => {
       if (result.success) {
         message.success('修改成功！');
+        this.initOptionsData();
         this.queryCoulumns();
       }
     });
