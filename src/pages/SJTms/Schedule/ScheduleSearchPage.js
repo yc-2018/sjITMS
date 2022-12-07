@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-12-07 09:18:27
+ * @LastEditTime: 2022-12-07 09:26:46
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -64,7 +64,6 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   componentDidMount() {
     this.queryCoulumns();
     this.getCreateConfig();
-    this.initOptionsData();
   }
 
   initOptionsData = async () => {
@@ -136,6 +135,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   onUpdatePirs = () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 1) {
+      this.initOptionsData();
       this.setState({ showUpdatePirsPop: true });
     } else {
       message.warn('请选择一条数据！');
@@ -371,6 +371,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         </Button>
         <Modal
           title="修改码头"
+          key={selectedRows[0]?.UUID}
           visible={showUpdatePirsPop}
           onOk={() => {
             this.updatePirs();
