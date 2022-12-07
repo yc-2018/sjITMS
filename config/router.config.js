@@ -1516,7 +1516,7 @@ export default [
                 authority: ['sjtms.bigData.joindtlreport'],
               },
               {
-                path: '/bigData/loading/joindtlreport',
+                path: '/bigData/loading/joinStoreDtlReport',
                 name: '加盟车费用查询（明细）',
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
