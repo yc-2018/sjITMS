@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-07 12:17:56
+ * @LastEditTime: 2022-12-07 14:08:07
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -722,7 +722,7 @@ export default class OrderPoolPage extends Component {
       realScatteredCount: Math.round(sumBy(data.map(x => x.stillScatteredCount)) * 100) / 100,
       realContainerCount: Math.round(sumBy(data.map(x => x.stillContainerCount)) * 100) / 100,
       weight: Math.round(sumBy(data.map(x => Number(x.weight)))) / 1000,
-      volume: Math.round(sumBy(data.map(x => Number(x.volume)))),
+      volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
     };
   };
   //运力池汇总
