@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-02 14:43:41
+ * @LastEditTime: 2022-12-07 10:30:42
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -688,17 +688,17 @@ export default class OrderPoolPage extends Component {
         </Col>
         <Col span={4}>
           <Text> 体积:</Text>
-          <Text style={totalTextStyle}>{orders.volume}</Text>
+          <Text style={totalTextStyle}>{Number(orders.volume.toFixed(2))}</Text>
         </Col>
         <Col span={4}>
           <Text> 重量:</Text>
-          <Text style={totalTextStyle}>{orders.weight}</Text>
+          <Text style={totalTextStyle}>{Number(orders.weight.toFixed(3))}</Text>
         </Col>
       </Row>
     );
   };
   //计算汇总
-  groupByOrder = data => {
+  collectByOrder = data => {
     data = data.filter(x => x.orderType !== 'OnlyBill');
     if (data.length == 0) {
       return {
@@ -722,7 +722,7 @@ export default class OrderPoolPage extends Component {
       realScatteredCount: Math.round(sumBy(data.map(x => x.stillScatteredCount)) * 100) / 100,
       realContainerCount: Math.round(sumBy(data.map(x => x.stillContainerCount)) * 100) / 100,
       weight: Math.round(sumBy(data.map(x => Number(x.weight)))) / 1000,
-      volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
+      volume: Math.round(sumBy(data.map(x => Number(x.volume)))),
     };
   };
   //运力池汇总
@@ -794,7 +794,7 @@ export default class OrderPoolPage extends Component {
       countUnit,
     } = this.state;
     const { isOrderCollect, totalOrder } = this.props;
-    const collectOrder = this.groupByOrder(totalOrder);
+    const collectOrder = this.collectByOrder(totalOrder);
     let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
     const formItems = searchParams.map(searchParam => (
       <Row gutter={16} key={searchParam.key}>
