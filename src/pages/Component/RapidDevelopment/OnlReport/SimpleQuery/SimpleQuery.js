@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-01-15 16:03:07
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-02-25 11:53:11
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-12-08 10:09:50
  * @Description: 快速开发简单查询
  * @FilePath: \iwms-web\src\pages\Component\RapidDevelopment\OnlReport\SimpleQuery\SimpleQuery.js
  */
@@ -40,6 +40,8 @@ export default class SimpleQuery extends SearchForm {
   onReset = () => {
     this.props.refresh('reset');
   };
+
+  presets = () => {};
 
   //查询console
   onSearch = searchParam => {
@@ -94,9 +96,29 @@ export default class SimpleQuery extends SearchForm {
       case 'datetime':
         return (
           <RangePicker
+            ranges={{
+              近三天: [
+                moment()
+                  .startOf('day')
+                  .subtract(3, 'day'),
+                moment('23:59:59', 'HH:mm:ss'),
+              ],
+              近七天: [
+                moment()
+                  .startOf('day')
+                  .subtract(1, 'weeks'),
+                moment('23:59:59', 'HH:mm:ss'),
+              ],
+              近一月: [
+                moment()
+                  .startOf('day')
+                  .subtract(1, 'month'),
+                moment('23:59:59', 'HH:mm:ss'),
+              ],
+            }}
             style={{ width: '100%' }}
             showTime={{
-              defaultValue: [moment('00:00:00', 'HH:mm:ss'), moment('11:59:59', 'HH:mm:ss')],
+              defaultValue: [moment('00:00:00', 'HH:mm:ss'), moment('23:59:59', 'HH:mm:ss')],
             }}
           />
         );
@@ -105,7 +127,7 @@ export default class SimpleQuery extends SearchForm {
           <RangePicker
             style={{ width: '100%' }}
             showTime={{
-              defaultValue: [moment('00:00:00', 'HH:mm:ss'), moment('11:59:59', 'HH:mm:ss')],
+              defaultValue: [moment('00:00:00', 'HH:mm:ss'), moment('23:59:59', 'HH:mm:ss')],
             }}
           />
         );
