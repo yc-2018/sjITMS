@@ -2,16 +2,18 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-01 15:58:47
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-07 10:56:24
+ * @LastEditTime: 2022-12-08 16:56:04
  * @version: 1.0
  */
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import OperateCol from '@/pages/Component/Form/OperateCol';
 import { Checkbox, Select, Input, Button, Popconfirm, message, Dropdown, Menu, Empty } from 'antd';
-import { loginCompany } from '@/utils/LoginContext';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { dynamicQuery, saveFormData } from '@/services/quick/Quick';
 import { confirm, cancelReceipted } from '@/services/sjitms/Checkreceipt';
+import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
+import { havePermission } from '@/utils/authority';
 
 const { Option } = Select;
 @connect(({ quick, loading }) => ({
@@ -110,9 +112,34 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
       name: '测试', //功能名称
       onClick: this.test, //功能实现
     });
+    const dispatchCenterUuid = loginOrg().uuid;
     return (
       <div>
-        <Button onClick={() => this.onType()}>管理回单处理方式</Button>
+        <Button
+          hidden={!havePermission(this.state.authority + '.management')}
+          onClick={() => this.onType()}
+        >
+          管理回单处理方式
+        </Button>
+        <Button
+          hidden={!havePermission(this.state.authority + '.setUp')}
+          onClick={() => this.updateDtlModalRef.show()}
+        >
+          设置
+        </Button>
+        <CreatePageModal
+          modal={{
+            title: '设置',
+            width: 500,
+          }}
+          page={{
+            quickuuid: 'sj_itms_receiptbill_config',
+            noCategory: true,
+            showPageNow: 'update',
+            params: { entityUuid: dispatchCenterUuid },
+          }}
+          onRef={node => (this.updateDtlModalRef = node)}
+        />
       </div>
     );
   };
@@ -239,7 +266,9 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
             okText="确定"
             cancelText="取消"
           >
-            <Button type="primary">保存</Button>
+            <Button hidden={!havePermission(this.state.authority + '.save')} type="primary">
+              保存
+            </Button>
           </Popconfirm>
           <Popconfirm
             title="确定选中的内容都为已回单吗?"
@@ -247,10 +276,14 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
             okText="确定"
             cancelText="取消"
           >
-            <Button>全部回单</Button>
+            <Button hidden={!havePermission(this.state.authority + '.allReceipted')}>
+              全部回单
+            </Button>
           </Popconfirm>
           <Dropdown overlay={this.buildMenu.bind()}>
-            <Button>批量设置处理方式</Button>
+            <Button hidden={!havePermission(this.state.authority + '.batchHandle')}>
+              批量设置处理方式
+            </Button>
           </Dropdown>
         </span>
       );
@@ -262,7 +295,9 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
           okText="确定"
           cancelText="取消"
         >
-          <Button>取消回单</Button>
+          <Button hidden={!havePermission(this.state.authority + '.cancleReceipted')}>
+            取消回单
+          </Button>
         </Popconfirm>
       );
     }
