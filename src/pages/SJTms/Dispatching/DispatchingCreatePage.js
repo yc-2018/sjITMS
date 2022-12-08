@@ -1024,7 +1024,7 @@ export default class DispatchingCreatePage extends Component {
                             <div>载重</div>
                             <div>
                               <span className={disStyle.orderTotalNumber}>
-                                {(vehicleCalc.weight / 1000).toFixed(2)}t
+                                {vehicleCalc.weight}t
                               </span>
                             </div>
                           </div>
