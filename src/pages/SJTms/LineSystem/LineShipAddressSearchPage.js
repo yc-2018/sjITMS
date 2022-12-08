@@ -23,6 +23,7 @@ import {
   findLineSystemTreeByStoreCode,
 } from '@/services/sjtms/LineSystemHis';
 import { loginKey, loginCompany, loginOrg } from '@/utils/LoginContext';
+import { havePermission } from '@/utils/authority';
 import { throttleSetter } from 'lodash-decorators';
 
 export default class LineShipAddressSearchPage extends Component {
@@ -30,6 +31,7 @@ export default class LineShipAddressSearchPage extends Component {
     loading: false,
     lineApprovedVisible: false,
     approvedLoading: false,
+    authority: this.props.authority,
   };
   componentDidMount() {
     this.setState({
@@ -43,7 +45,6 @@ export default class LineShipAddressSearchPage extends Component {
   handleCancel = () => {};
   componentWillReceiveProps(nextProps) {
     if (nextProps.selectedKey != this.props.selectedKey) {
-      console.log("nex'", nextProps);
       this.setState({ ...this.state, ...nextProps });
     }
   }
@@ -161,7 +162,6 @@ export default class LineShipAddressSearchPage extends Component {
   };
   render() {
     const { systemData, selectedKey, lineTreeData, sdf, lineData, systemLineFlag } = this.state;
-    console.log("ressss'", selectedKey, systemLineFlag);
     return (
       <>
         {systemLineFlag && (
@@ -170,6 +170,7 @@ export default class LineShipAddressSearchPage extends Component {
               <span className={linesStyles.sidertitle}>线路体系</span>
               <div className={linesStyles.action}>
                 <Switch
+                  hidden={!havePermission(this.state.authority + '.isOpen')}
                   checkedChildren="启用"
                   checked={systemData && systemData.ISENABLE == 1}
                   unCheckedChildren="禁用"
@@ -183,6 +184,7 @@ export default class LineShipAddressSearchPage extends Component {
                   }}
                 />
                 <Switch
+                  hidden={!havePermission(this.state.authority + '.isApprove')}
                   checkedChildren="已批准"
                   checked={systemData && systemData.STATUS == 'Approved'}
                   unCheckedChildren="未批准"
@@ -202,6 +204,7 @@ export default class LineShipAddressSearchPage extends Component {
                   }
                 />
                 <Button
+                  hidden={!havePermission(this.state.authority + '.abort')}
                   type="danger"
                   onClick={() => {
                     Modal.confirm({
