@@ -352,7 +352,7 @@ export default class DispatchingCreatePage extends Component {
   onSave = async () => {
     const { isEdit, orders, schedule, selectVehicle, selectEmployees, note } = this.state;
     const orderType = uniqBy(orders.map(x => x.orderType)).shift();
-    const type = orderType == 'TakeDelivery' ? 'Task' : 'Job';
+    const type = (orderType == 'TakeDelivery' || orderType =='AdjustWarehouse') ? 'Task' : 'Job';
     const driver = selectEmployees.find(x => x.memberType == 'Driver');
     const details = orders.map(item => {
       if (!item.isSplit) {

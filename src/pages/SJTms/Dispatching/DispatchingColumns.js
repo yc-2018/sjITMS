@@ -360,6 +360,10 @@ const OrderType = {
     name: 'Returnable',
     caption: '门店退货',
   },
+  AdjustWarehouse: {
+    name: 'AdjustWarehouse',
+    caption: '调仓',
+  },
 };
 
 export const CreatePageOrderColumns = [
