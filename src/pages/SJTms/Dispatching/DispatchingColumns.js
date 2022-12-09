@@ -52,6 +52,13 @@ export const OrderColumns = [
     render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty />),
   },
   {
+    title: '到货类型',
+    dataIndex: 'arrivalType',
+    width: 80,
+    sorter: true,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
     title: '来源单号',
     dataIndex: 'sourceNum',
     sorter: true,
