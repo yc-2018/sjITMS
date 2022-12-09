@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-18 11:18:56
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-28 15:06:43
+ * @LastEditTime: 2022-12-09 10:08:32
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -40,7 +40,7 @@ export default class StorePakingFeeSearch extends QuickFormSearchPage {
         matchType: '',
         queryParams: [
           {
-            field: 'BILLUUID',
+            field: 'UUID',
             type: 'VarChar',
             rule: 'eq',
             val: record,

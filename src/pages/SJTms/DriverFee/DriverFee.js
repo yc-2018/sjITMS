@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-18 09:26:02
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-07 17:02:01
+ * @LastEditTime: 2022-12-09 10:10:36
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -42,7 +42,7 @@ export default class DriverFee extends PureComponent {
         >
           <StorePakingFeeSearch
             {...this.props}
-            quickuuid={'sj_itms_schedule_store_fee'}
+            quickuuid={'v_sj_itms_schedule_store_fee'}
             record={record}
           />
         </Drawer>
