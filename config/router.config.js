@@ -1464,7 +1464,7 @@ export default [
                 name: '排车单明细查询',
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
-                quickuuid: 'sj_itms_schedule_order',
+                quickuuid: 'sj_itms_schedule_order_report',
                 authority: ['sjtms.bigData.scheduleOrder'],
               },
               {
