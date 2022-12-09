@@ -52,6 +52,19 @@ export default class QuickFormSearchPage extends SearchPage {
           rule: item.searchCondition,
           val: `${startDate}||${endDate}`,
         };
+      } else if (item.fieldType == 'DateTime') {
+        let days = parseInt(item.searchDefVal);
+        if (days != days) days = 0;
+        let endDate = moment(new Date()).format('YYYY-MM-DD 23:59:59');
+        let startDate = moment(new Date())
+          .add(-item.searchDefVal, 'days')
+          .format('YYYY-MM-DD 00:00:00');
+        exSearchFilter = {
+          field: item.fieldName,
+          type: item.fieldType,
+          rule: item.searchCondition,
+          val: `${startDate}||${endDate}`,
+        };
       } else {
         exSearchFilter = {
           field: item.fieldName,

@@ -2,8 +2,6 @@
 
 .dispatchingLayout {
   background: #ffffff;
-  color: rgba(0, 0, 0, 0.95);
-
   :global {
     .ant-tabs-bar {
       margin: 0 5px 5px 5px;
@@ -41,6 +39,7 @@
     background-color: rgb(234, 241, 252);
     border: 1px solid rgb(59, 119, 227);
     padding: 3px;
+    width: fit-content;
     border-radius: 3px;
   }
 }
@@ -156,6 +155,7 @@
       border: 1px solid #e8e8e8;
       border-radius: 4px;
     }
+
     .ant-table colgroup > col.ant-table-selection-col {
       width: 35px;
     }
@@ -165,6 +165,9 @@
     .ant-table-tbody > tr > td {
       padding: 2px !important;
     }
+    // .ant-table-tbody > tr.ant-table-row-selected td {
+    //   background: #ececf0;
+    // }
     .ant-table-thead > tr > th.ant-table-row-cell-break-word,
     .ant-table-tbody > tr > td.ant-table-row-cell-break-word {
       overflow: hidden;

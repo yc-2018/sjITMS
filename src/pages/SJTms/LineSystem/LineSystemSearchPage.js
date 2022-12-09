@@ -22,7 +22,7 @@ import {
   Row,
   Col,
   Form,
-  Divider
+  Divider,
 } from 'antd';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import LineShipAddress from './LineShipAddress';
@@ -45,11 +45,13 @@ import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonCom
 import Select from '@/components/ExcelImport/Select';
 import request from '@/utils/request';
 import ExportJsonExcel from 'js-export-excel';
-import {LineSystemAddPage} from './LineSystemAddPage'
-import LineShipAddressSearchPage from './LineShipAddressSearchPage'
+import { LineSystemAddPage } from './LineSystemAddPage';
+import LineShipAddressSearchPage from './LineShipAddressSearchPage';
 const { Content, Sider } = Layout;
 const { TreeNode } = Tree;
 const { TabPane } = Tabs;
+import { havePermission } from '@/utils/authority';
+
 @connect(({ lineSystem, loading }) => ({
   lineSystem,
   loading: loading.models.lineSystem,
@@ -71,6 +73,7 @@ export default class LineSystemSearchPage extends Component {
       lineSystemValue: '',
       file: {},
       uploading: false,
+      authority: props.authority,
     };
   }
   componentDidMount() {
@@ -155,7 +158,7 @@ export default class LineSystemSearchPage extends Component {
     const parmas = {
       company: loginCompany().uuid,
       dcUuid: loginOrg().uuid,
-      code: this.state.lineStoreCode ? this.state.lineStoreCode : ''
+      code: this.state.lineStoreCode ? this.state.lineStoreCode : '',
     };
     await findLineSystemTreeByStoreCode(parmas).then(response => {
       let lineTreeData = [];
@@ -334,15 +337,13 @@ export default class LineSystemSearchPage extends Component {
     }
     if (event && !event.selected) return;
     const systemuuid = lineTreeData.find(x => x.key == selectedKeys[0]);
-    console.log("system",systemuuid);
     const systemData = await this.swithCom(systemuuid, selectedKeys[0]);
     this.setState({
       selectLineUuid: selectedKeys[0],
-      systemData :systemData,
-      systemuuid:systemuuid,
-      sdf:sdf
-    })
-   
+      systemData: systemData,
+      systemuuid: systemuuid,
+      sdf: sdf,
+    });
   };
   //展开/收起节点
   onExpand = (_, event) => {
@@ -367,10 +368,13 @@ export default class LineSystemSearchPage extends Component {
         item.title = (
           <div>
             <span>{item.title}</span>
-            {item.key != selectLineUuid ? <></> : item.system? (
-                <a
+            {item.key != selectLineUuid ? (
+              <></>
+            ) : item.system ? (
+              <a
                 style={{ marginRight: 15, marginLeft: 5 }}
                 onClick={() => this.lineSystemCreatePageModalRefupdate.show()}
+                hidden={!havePermission(this.state.authority + '.leftEdit')}
               >
                 编辑
               </a>
@@ -379,6 +383,7 @@ export default class LineSystemSearchPage extends Component {
                 <a
                   style={{ marginRight: 15, marginLeft: 5 }}
                   onClick={() => this.lineEditPageModalRef.show()}
+                  hidden={!havePermission(this.state.authority + '.leftDelete')}
                 >
                   编辑
                 </a>
@@ -401,46 +406,45 @@ export default class LineSystemSearchPage extends Component {
       return nodeArr;
     };
     return (
-      <div style={{height:'100%'}}>
+      <div style={{ height: '100%' }}>
         <div className={linesStyles.navigatorPanelWrapper}>
-        {/* className={linesStyles.action} */}
+          {/* className={linesStyles.action} */}
           {/* <span className={linesStyles.sidertitle}>线路体系</span> */}
-          
+
           <div>
-            <Row gutter={[_,2]} align ='middle' type ='flex'>
+            <Row gutter={[_, 2]} align="middle" type="flex">
               <Col span={9}>
-                  <Input
-                    placeholder="线路编号或者门店号"
-                    onBlur={e => this.setState({ lineStoreCode: e.target.value })}
-                  />
+                <Input
+                  placeholder="线路编号或者门店号"
+                  onBlur={e => this.setState({ lineStoreCode: e.target.value })}
+                />
               </Col>
               <Col span={3} push={1}>
-                <Button type="primary" size="small" onClick={()=>this.handleSubmitLine()}>
+                <Button type="primary" size="small" onClick={() => this.handleSubmitLine()}>
                   查询
                 </Button>
               </Col>
               <Col span={6} push={2}>
                 <Button
-                type="primary"
-                size="small"
-                onClick={() => this.lineSystemCreatePageModalRef.show()}
-              >
-                新建体系
-              </Button>
+                  type="primary"
+                  size="small"
+                  onClick={() => this.lineSystemCreatePageModalRef.show()}
+                >
+                  新建体系
+                </Button>
               </Col>
               <Col span={6} push={1}>
                 <Button
-                type="primary"
-                size="small"
-                onClick={() => this.setState({ uploadLineVisible: true })}
-              >
-                导入线路
-              </Button>
+                  type="primary"
+                  size="small"
+                  onClick={() => this.setState({ uploadLineVisible: true })}
+                >
+                  导入线路
+                </Button>
               </Col>
             </Row>
           </div>
-          <div > 
-          </div>
+          <div />
         </div>
         <div style={{ height: '90%', overflow: 'auto' }}>
           <Tree
@@ -474,7 +478,7 @@ export default class LineSystemSearchPage extends Component {
   };
   //绘制右侧内容
   drawContent = () => {
-    return <LineShipAddressSearchPage></LineShipAddressSearchPage>
+    return <LineShipAddressSearchPage authority={this.props.authority} />;
     //return <></>
     //return this.state.rightContent;
   };
@@ -483,7 +487,7 @@ export default class LineSystemSearchPage extends Component {
   };
 
   handleSubmitLine = e => {
-        this.queryLineSystem();
+    this.queryLineSystem();
   };
   /**
    * 导入线路
@@ -506,17 +510,19 @@ export default class LineSystemSearchPage extends Component {
         this.setState({ uploading: false });
         if (result && result.success) {
           //message.success('导入成功,共导入'+result.data+'家门店');
-          this.setState({errorMessage:'导入成功,共导入'+result.data+'家门店',errorMessageVisible:true});
-        }else{
-          this.setState({errorMessage:result.message,errorMessageVisible:true});
+          this.setState({
+            errorMessage: '导入成功,共导入' + result.data + '家门店',
+            errorMessageVisible: true,
+          });
+        } else {
+          this.setState({ errorMessage: result.message, errorMessageVisible: true });
         }
       });
     });
   };
   render() {
     this.lineSystemEditPage?.init();
-    const { selectLineUuid ,systemuuid} = this.state;
-    console.log("systemuuid",systemuuid);
+    const { selectLineUuid, systemuuid } = this.state;
     const { getFieldDecorator } = this.props.form;
     const props = {
       name: 'file',
@@ -554,7 +560,11 @@ export default class LineSystemSearchPage extends Component {
                 bodyStyle: { marginRight: '40px' },
                 afterClose: this.handleCancel,
               }}
-              page={{ quickuuid: 'sj_itms_create_linesystem', noCategory: true, params: { entityUuid: selectLineUuid}, }}
+              page={{
+                quickuuid: 'sj_itms_create_linesystem',
+                noCategory: true,
+                params: { entityUuid: selectLineUuid },
+              }}
               onRef={node => (this.lineSystemCreatePageModalRef = node)}
               customPage={LineSystemAddPage}
             />
@@ -577,24 +587,25 @@ export default class LineSystemSearchPage extends Component {
               }}
               page={{
                 quickuuid: 'sj_itms_create_lines',
-                params: { entityUuid: selectLineUuid},
+                params: { entityUuid: selectLineUuid },
                 showPageNow: 'update',
                 noCategory: true,
               }}
               onRef={node => (this.lineEditPageModalRef = node)}
             />
-              <CreatePageModal
+            <CreatePageModal
               modal={{
                 title: '编辑线路体系',
                 width: 500,
                 bodyStyle: { marginRight: '40px' },
                 afterClose: this.handleCancel,
               }}
-              page={{ quickuuid: 'sj_itms_create_linesystem',
-               noCategory: true,
-                params: { entityUuid: selectLineUuid},
+              page={{
+                quickuuid: 'sj_itms_create_linesystem',
+                noCategory: true,
+                params: { entityUuid: selectLineUuid },
                 showPageNow: 'update',
-               }}
+              }}
               onRef={node => (this.lineSystemCreatePageModalRefupdate = node)}
               customPage={LineSystemAddPage}
             />
@@ -630,15 +641,14 @@ export default class LineSystemSearchPage extends Component {
             </Modal>
             <Modal
               title="错误提示"
-             visible={this.state.errorMessageVisible}
-              onOk={()=>this.setState({errorMessageVisible:false})}
-              onCancel={()=>this.setState({errorMessageVisible:false})}
-            >{
-              this.state.errorMessage?.split(",").map(e=>{
-                return <p>{e}</p>
-              })
-            }
-        </Modal>
+              visible={this.state.errorMessageVisible}
+              onOk={() => this.setState({ errorMessageVisible: false })}
+              onCancel={() => this.setState({ errorMessageVisible: false })}
+            >
+              {this.state.errorMessage?.split(',').map(e => {
+                return <p>{e}</p>;
+              })}
+            </Modal>
             <Modal
               title="导入线路"
               visible={this.state.uploadLineVisible}
@@ -649,12 +659,12 @@ export default class LineSystemSearchPage extends Component {
               afterClose={() => this.queryLineSystem(this.state.selectLineUuid)}
               destroyOnClose={true}
             >
-              <Form layout="inline"  ref={node => (this.formRef = node)}>
-                <Row gutter={[8,8]}>
+              <Form layout="inline" ref={node => (this.formRef = node)}>
+                <Row gutter={[8, 8]}>
                   <Col span={24}>
-                  <a onClick={() => this.downloadTemplate()}>点击下载导入模板</a>
+                    <a onClick={() => this.downloadTemplate()}>点击下载导入模板</a>
                   </Col>
-                  <Divider/>
+                  <Divider />
                   <Col span={8}>
                     <Form.Item label="文件">
                       {getFieldDecorator('file', {
@@ -682,7 +692,7 @@ export default class LineSystemSearchPage extends Component {
                           //value={this.state.lineSystemValue}
                           queryParams={{
                             tableName: 'SJ_ITMS_LINESYSTEM',
-                            isCache:'false',
+                            isCache: 'false',
                             condition: {
                               params: [
                                 { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
@@ -704,16 +714,17 @@ export default class LineSystemSearchPage extends Component {
           </Sider>
           {/* 右侧内容 */}
           <Content className={linesStyles.rightWrapper}>
-           <LineShipAddressSearchPage
-             selectedKey ={selectLineUuid}
-             systemLineFlag = {systemuuid?true:false}
-             systemuuid ={systemuuid}
-             lineTreeData ={this.state.lineTreeData}
-             lineData  ={this.state.lineData}
-             systemData ={this.state.systemData}
-             queryLineSystem = {this.queryLineSystem}
-             sdf = {this.state.sdf}
-           />
+            <LineShipAddressSearchPage
+              selectedKey={selectLineUuid}
+              systemLineFlag={systemuuid ? true : false}
+              systemuuid={systemuuid}
+              lineTreeData={this.state.lineTreeData}
+              lineData={this.state.lineData}
+              systemData={this.state.systemData}
+              queryLineSystem={this.queryLineSystem}
+              sdf={this.state.sdf}
+              authority={this.props.authority}
+            />
             {/* {{this.drawContent()}} */}
             {/* <LineShipAddressSearchPage></LineShipAddressSearchPage> */}
           </Content>

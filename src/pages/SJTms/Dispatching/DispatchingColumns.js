@@ -513,14 +513,14 @@ export const ScheduleColumns = [
     dataIndex: 'VOLUME',
     sorter: true,
     width: 80,
-    render: val => (val ? <span>{val}</span> : <Empty />),
+    render: val => (val ? <span>{Math.round(val * 100) / 100}</span> : <Empty />),
   },
   {
     title: '重量',
     dataIndex: 'WEIGHT',
     sorter: true,
     width: 80,
-    render: val => (val ? <span>{val}</span> : <Empty />),
+    render: val => (val ? <span>{Math.round(val * 1000) / 1000}</span> : <Empty />),
   },
   {
     title: '总金额',

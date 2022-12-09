@@ -18,21 +18,30 @@ const { TabPane } = Tabs;
   loading: loading.models.lineSystem,
 }))
 export default class LineSystem extends PureComponent {
-  onTabClick =(key)=>{
-    if(key=='HisLineSystemPage'){
-      this.setState({flag:new Date()});
+  onTabClick = key => {
+    if (key == 'HisLineSystemPage') {
+      this.setState({ flag: new Date() });
     }
-  }
+  };
   render() {
     return (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
-          <Tabs defaultActiveKey="LineSystemPage" style={{ height: '100%' }}  onChange={this.onTabClick}>
+          <Tabs
+            defaultActiveKey="LineSystemPage"
+            style={{ height: '100%' }}
+            onChange={this.onTabClick}
+          >
             <TabPane tab="当前线路" key="LineSystemPage">
-              <LineSystemSearchPage />
+              <LineSystemSearchPage
+                authority={this.props.route?.authority ? this.props.route.authority[0] : null}
+              />
             </TabPane>
             <TabPane tab="历史线路" key="HisLineSystemPage">
-              <LineSystemhisSearchPage kedata = {this.state?.flag}/>
+              <LineSystemhisSearchPage
+                kedata={this.state?.flag}
+                authority={this.props.route?.authority ? this.props.route.authority[0] : null}
+              />
             </TabPane>
           </Tabs>
         </Page>

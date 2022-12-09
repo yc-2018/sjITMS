@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-28 17:56:07
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-12-08 17:21:08
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -64,7 +64,6 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   componentDidMount() {
     this.queryCoulumns();
     this.getCreateConfig();
-    this.initOptionsData();
   }
 
   initOptionsData = async () => {
@@ -136,6 +135,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   onUpdatePirs = () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 1) {
+      this.initOptionsData();
       this.setState({ showUpdatePirsPop: true });
     } else {
       message.warn('请选择一条数据！');
@@ -198,6 +198,10 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       message.warn('该排车单未签到或不是批准状态，不能修改码头！');
       return;
     }
+    if (newPirs == '') {
+      message.warn('修改码头不能为空！');
+      return;
+    }
     const response = await updatePris(selectedRows[0].UUID, newPirs);
     if (response.success) {
       message.success('修改成功！');
@@ -208,7 +212,6 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
 
   updateOutSerial = async () => {
     const { selectedRows, outSerial } = this.state;
-    console.log('ss', outSerial);
     if (selectedRows[0].STAT != 'Approved') {
       message.warn('该排车单不是批准状态，不能修改顺序！');
       return;
@@ -219,6 +222,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     await updateOutSerialApi(selectedRows[0].UUID, outSerial).then(result => {
       if (result.success) {
         message.success('修改成功！');
+        this.initOptionsData();
         this.queryCoulumns();
       }
     });
@@ -351,7 +355,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
           <Button
             onClick={() => this.handlePrint()}
             icon="printer"
-            hidden={!havePermission(this.state.authority + '.print')}
+            // hidden={!havePermission(this.state.authority + '.print')}
           >
             打印 <Icon type="down" />
           </Button>
@@ -371,6 +375,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         </Button>
         <Modal
           title="修改码头"
+          key={selectedRows[0]?.UUID}
           visible={showUpdatePirsPop}
           onOk={() => {
             this.updatePirs();

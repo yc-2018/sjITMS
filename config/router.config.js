@@ -1516,6 +1516,14 @@ export default [
                 authority: ['sjtms.bigData.joindtlreport'],
               },
               {
+                path: '/bigData/loading/joinStoreDtlReport',
+                name: '加盟车费用查询（明细）',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_sj_itms_joinStoreDtl_report',
+                authority: ['sjtms.bigData.joinStoreDtlReport'],
+              },
+              {
                 path: '/bigData/loading/owndtlreport',
                 name: '自有车配送明细_按车',
                 org: ['DISPATCH_CENTER'],

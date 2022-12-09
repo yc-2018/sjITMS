@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-02-10 14:16:00
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-05-26 11:55:57
+ * @LastEditTime: 2022-12-08 10:05:00
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -89,7 +89,6 @@ export default class SimpleSelect extends PureComponent {
   onSearch = value => {
     if (this.props.isOrgQuery) {
       const searchField = this.props.searchField;
-      console.log('searchField', searchField);
       let params = new Array();
       params.push({
         field: searchField.fieldName,
