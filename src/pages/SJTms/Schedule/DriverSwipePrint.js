@@ -94,7 +94,7 @@ export default class DriverSwipePrint extends PureComponent {
       const printPagess = await this.drawPrintPage(response.data, scheduleDetails);
       this.setState({ printPage: printPagess });
       LODOP.SET_SHOW_MODE('SKIN_TYPE', 1);
-      const printPages = document.getElementById('printPage').childNodes;
+      const printPages = document.getElementById('printCell').childNodes;
       printPages.forEach(page => {
         LODOP.NewPageA();
         if(loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001'){
@@ -752,7 +752,7 @@ export default class DriverSwipePrint extends PureComponent {
     } = this.state;
     return (
       <div style={{ height: '100vh' }} onClick={() => this.empInputRef.focus()}>
-        <div id="printPage" style={{ display: 'none' }}>
+        <div id="printCell" style={{ display: 'none' }}>
           {printPage}
         </div>
         <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
