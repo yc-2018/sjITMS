@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-12-09 08:51:33
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-10 09:21:57
+ * @LastEditTime: 2022-12-10 10:00:01
  * @Description: 签到大屏
  * @FilePath: \iwms-web\src\pages\SJTms\PreView\Sign\View.js
  */
@@ -44,7 +44,7 @@ export default class View extends PureComponent {
     const response = await queryData(filter);
     if (response.success) {
       let scheduleData = response.data.records ? response.data.records : [];
-      scheduleData = scheduleData.filter(x => x.REVIEWTIME);
+      scheduleData = scheduleData.filter(x => x.REVIEWTIME && !x.hasOwnProperty('CHECKTIME'));
       this.setState({ scheduleData });
     }
   };
