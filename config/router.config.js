@@ -17,6 +17,7 @@ export default [
       { path: '/driver/swipeInAndOut', component: './SJTms/Schedule/DriverSwipeInAndOut' },
       { path: '/driver/DriverSwipePrint', component: './SJTms/Schedule/DriverSwipePrint' },
       { path: '/driver/DriverSwipeSign', component: './SJTms/Schedule/DriverSwipeSign' },
+      { path: '/driver/sign', component: './SJTms/PreView/Sign/View' },
     ],
   },
   {
