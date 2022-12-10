@@ -64,17 +64,27 @@ export default class PlanConfig extends ConfigSearchPage {
       title: dispatcherConfigLocale.shipTime,
       dataIndex: 'shipTime',
       render: (val, record) => (
-        <Input defaultValue={val} onBlur={event => this.onChange(record, 'shipTime', event)} />
+        <Input
+          defaultValue={val}
+          onBlur={event => this.onInputChange(record, 'shipTime', event.target.value)}
+        />
       ),
     },
   ];
 
   onChange = (record, field, event) => {
-    if (event.target.checked == undefined) {
-      record[field] = Number(event.target.value);
-    } else {
-      record[field] = event.target.checked ? 1 : 0;
-    }
+    record[field] = event.target.checked ? 1 : 0;
+    this.props
+      .dispatch({
+        type: 'dispatcherconfig/update',
+        payload: record,
+      })
+      .then(() => {
+        this.refreshTable();
+      });
+  };
+  onInputChange = (record, field, val) => {
+    record[field] = Number(val);
     this.props
       .dispatch({
         type: 'dispatcherconfig/update',
