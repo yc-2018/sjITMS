@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-07 14:08:07
+ * @LastEditTime: 2022-12-12 09:17:38
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -523,26 +523,23 @@ export default class OrderPoolPage extends Component {
   };
   //汇总
   groupByOrder = data => {
-    const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0;
-    const pickupPointCount = data ? uniq(data.map(x => x.pickUpPoint.code)).length : 0;
     data = data.filter(x => x.orderType !== 'OnlyBill');
+    const deliveryPointCount = data ? uniqBy(data.map(x => x.deliveryPoint.code)).length : 0;
+    const pickupPointCount = data ? uniqBy(data.map(x => x.pickUpPoint.code)).length : 0;
     return {
       orderCount: data ? data.length : 0,
-      cartonCount: data ? sumBy(data.map(x => x.stillCartonCount)) : 0,
-      scatteredCount: data ? sumBy(data.map(x => x.stillScatteredCount)) : 0,
-      containerCount: data ? sumBy(data.map(x => x.stillContainerCount)) : 0,
+      cartonCount: data ? sumBy(data.map(x => x.cartonCount)) : 0,
+      scatteredCount: data ? sumBy(data.map(x => x.scatteredCount)) : 0,
+      containerCount: data ? sumBy(data.map(x => x.containerCount)) : 0,
       realCartonCount: data ? sumBy(data.map(x => x.realCartonCount)) : 0,
       realScatteredCount: data ? sumBy(data.map(x => x.realScatteredCount)) : 0,
       realContainerCount: data ? sumBy(data.map(x => x.realContainerCount)) : 0,
-      stillCartonCount: data ? sumBy(data.map(x => x.stillCartonCount)) : 0,
-      stillScatteredCount: data ? sumBy(data.map(x => x.stillScatteredCount)) : 0,
-      stillContainerCount: data ? sumBy(data.map(x => x.stillContainerCount)) : 0,
       weight: data ? sumBy(data.map(x => Number(x.weight))) : 0,
       volume: data ? sumBy(data.map(x => Number(x.volume))) : 0,
       totalAmount: data ? sumBy(data.map(x => Number(x.amount))) : 0,
       deliveryPointCount,
       pickupPointCount,
-      ownerCount: data ? uniq(data.map(x => x.owner.code)).length : 0,
+      ownerCount: data ? uniqBy(data.map(x => x.owner.code)).length : 0,
     };
   };
   handAddSchedule = async () => {
