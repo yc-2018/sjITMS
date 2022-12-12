@@ -8,7 +8,9 @@ import { loginOrg, loginCompany } from '@/utils/LoginContext';
 import Empty from '@/pages/Component/Form/Empty';
 import { dispatchReturnLocale } from './DispatchReturnLocale';
 import { query, saveOrUpdateFee } from '@/services/sjtms/OtherFeeService';
-
+import {
+  queryByPage,
+} from '@/services/sjtms/DispatchReturn';
 @connect(({ dispatchReturnStore, loading }) => ({
   dispatchReturnStore,
   loading: loading.models.dispatchReturnStore,
@@ -19,13 +21,13 @@ export default class StoreModal extends Component {
     this.state = {
       visible: props.visible,
       shipBillTmsUuid: props.shipBillTmsUuid,
-      data: this.props.dispatchReturnStore.dataForStore,
+      data: {},
       selectedRows: [],
       isView: props.isView,
       totalAmountAll: '',
       pageFilter: {
         page: 0,
-        pageSize: 10,
+        pageSize: 20,
         sortFields: {},
         searchKeyValues: {
           companyUuid: loginCompany().uuid,
@@ -37,44 +39,47 @@ export default class StoreModal extends Component {
       ParkingFee: undefined,
       confirmModal: false,
       confirmMessage: '',
+      tableLoading: false
     };
   }
-  componentWillMount() {
-    if (this.state.storeUuid) {
-      this.refresh();
-    }
-  }
+  // componentWillMount() {
+  //   if (this.state.storeUuid) {
+  //     this.refresh();
+  //   }
+  // }
   componentWillReceiveProps(nextProps) {
     if (nextProps.scheduleBillNumber != this.props.scheduleBillNumber) {
+      let { pageFilter } = this.state;
       this.state.pageFilter.searchKeyValues.scheduleBillNumber = nextProps.scheduleBillNumber;
-      this.setState({
-        scheduleBillNumber: nextProps.scheduleBillNumber,
-        shipBillTmsUuid: nextProps.shipBillTmsUuid,
-        pageFilter: this.state.pageFilter,
-      });
-      this.refresh(this.state.pageFilter);
+      this.state.scheduleBillNumber = nextProps.scheduleBillNumber;
+      this.state.shipBillTmsUuid = nextProps.shipBillTmsUuid;
+      this.getTotalAmount(pageFilter);
+      this.refresh(pageFilter);
     }
     if (nextProps.visible != this.props.visible) {
-      this.setState({
-        visible: nextProps.visible,
-      });
-    }
-
-    if (
-      nextProps.dispatchReturnStore.dataForStore &&
-      nextProps.dispatchReturnStore.dataForStore != this.props.dispatchReturnStore.dataForStore
-    ) {
-      this.setState({
-        data: nextProps.dispatchReturnStore.dataForStore,
-      });
+      this.state.visible = nextProps.visible;
     }
   }
 
   refresh = async pageFilter => {
-    this.getTotalAmount(pageFilter);
+    this.setState({ tableLoading: true })
     this.props.dispatch({
       type: 'dispatchReturnStore/queryByStore',
       payload: pageFilter ? pageFilter : this.state.pageFilter,
+      callback: response => {
+        if (response.success) {
+          const data = {
+            list: response.data.records ? response.data.records : [],
+            pagination: {
+              total: response.data.paging.recordCount,
+              pageSize: response.data.paging.pageSize,
+              current: response.data.page + 1,
+              showTotal: total => `共 ${total} 条`,
+            }
+          }
+          this.setState({ ...this.state, data: data, tableLoading: false })
+        }
+      },
     });
   };
 
@@ -124,7 +129,12 @@ export default class StoreModal extends Component {
   handleOnChange = e => {
     this.setState({ totalAmountAll: e });
   };
-
+  handleTableOnChange = (pagination, filtersArg, sortere) => {
+    const { pageFilter } = this.state;
+    pageFilter.page = pagination.current - 1;
+    this.setState({ pageFilter: pageFilter })
+    this.refresh(pageFilter);
+  }
   columns = [
     {
       title: dispatchReturnLocale.archLine,
@@ -172,14 +182,14 @@ export default class StoreModal extends Component {
       totalAmountAll,
       confirmModal,
       confirmMessage,
+      scheduleBillNumber
     } = this.state;
+
     return (
       <div>
         <Modal
           title={
-            '排车单门店明细费用信息（排车单号：' +
-            (data.list[0] ? data.list[0].billnumber : '') +
-            '）'
+            '排车单门店明细费用信息（排车单号：' + scheduleBillNumber + '）'
           }
           visible={visible}
           destroyOnClose={true}
@@ -213,12 +223,13 @@ export default class StoreModal extends Component {
             </div>
           </div>
           <StandardTable
-            rowKey={record => record.uuid}
+            // rowKey={record => record.uuid}
             selectedRows={selectedRows}
-            unShowRow={isView == true ? true : false}
-            loading={this.props.loading}
+            unShowRow={true}
+            loading={this.state.tableLoading}
             data={data}
             columns={this.columns}
+            onChange={this.handleTableOnChange}
           />
         </Modal>
         <Modal

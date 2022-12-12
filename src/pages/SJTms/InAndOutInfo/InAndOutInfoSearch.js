@@ -154,9 +154,9 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     this.setState({ data: newData });
   };
 
-  convertCodeName = () => {};
+  convertCodeName = () => { };
   //该方法用于写最上层的按钮 多个按钮用<span>包裹
-  drawTopButton = () => {};
+  drawTopButton = () => { };
 
   onPreview = async file => {
     let src = file.url;
@@ -268,7 +268,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
       ? this.setState({ showAuditPop: true })
       : this.batchProcessConfirmRef.show('审核', selectedRows, this.onTollFeeAudits, this.onSearch);
   };
-  cancelRecordMiles  = async ()=>{
+  cancelRecordMiles = async () => {
     const { selectedRows } = this.state;
     if (selectedRows.length != 1) {
       message.warn('请选择一条记录');
@@ -277,7 +277,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     this.props.dispatch(
       {
         type: 'dispatchReturnStore/cancelRecordMiles',
-        payload: selectedRows.map(e=>e.UUID)[0],
+        payload: selectedRows.map(e => e.UUID)[0],
         callback: response => {
           this.setState({ selectedRows: [] });
           if (response && response.success) {

@@ -63,20 +63,20 @@ export default {
       
         *queryByStore({ payload, callback }, { call, put }) {
             const response = yield call(queryByPage, payload);
-            if (response.success) {
-              yield put({
-                type: 'saveByStore',
-                payload: {
-                  list: response.data.records ? response.data.records : [],
-                  pagination: {
-                    total: response.data.paging.recordCount,
-                    pageSize: response.data.paging.pageSize,
-                    current: response.data.page + 1,
-                    showTotal: total => `共 ${total} 条`,
-                  },
-                },
-              });
-            }
+            //if (response.success) {
+              // yield put({
+              //   type: 'saveByStore',
+              //   payload: {
+              //     list: response.data.records ? response.data.records : [],
+              //     pagination: {
+              //       total: response.data.paging.recordCount,
+              //       pageSize: response.data.paging.pageSize,
+              //       current: response.data.page + 1,
+              //       showTotal: total => `共 ${total} 条`,
+              //     },
+              //   },
+              // });
+            //}
             if (callback) callback(response);
         },
 
