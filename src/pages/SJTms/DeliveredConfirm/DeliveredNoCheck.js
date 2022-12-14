@@ -162,10 +162,10 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
       type: 'deliveredConfirm1/updateNoDelivered',
       payload: selectedRows,
       callback: response => {
+        this.setState({batchLoading:false})
         if (response && response.success) {
           this.refreshTable();
           message.success('更新成功');
-          this.setState({batchLoading:false})
           this.calculate(selectedRows);
         }
       },
