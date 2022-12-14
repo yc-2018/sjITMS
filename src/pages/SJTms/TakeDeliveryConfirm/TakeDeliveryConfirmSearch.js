@@ -1,15 +1,15 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-04-11 17:30:59
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-12 14:13:23
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2022-12-14 16:19:42
  * @version: 1.0
  */
 import React from 'react';
-import { Button, InputNumber, message, Popconfirm } from 'antd';
+import { Button, InputNumber, message, Popconfirm, Input, Modal, Form } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { saveFormData } from '@/services/quick/Quick';
+import { saveFormData, updateEntity } from '@/services/quick/Quick';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -17,6 +17,13 @@ import { saveFormData } from '@/services/quick/Quick';
 }))
 //继承QuickFormSearchPage Search页面扩展
 export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
+  state = {
+    ...this.state,
+    showUpdateNotePop: false,
+    updateRowUuid: '',
+    updateNote: '',
+  };
+
   drawActionButton = () => {};
 
   drawcell = e => {
@@ -25,12 +32,53 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
         e.record.STATE == '0' ? (
           <InputNumber
             style={{ width: '90%' }}
-            placeholder="请输入提货数量"
+            placeholder="请输入实提数量"
             min={0}
+            defaultValue={e.record.TAKEDELIVERYQTY}
             onChange={v => (e.record.TAKEDELIVERYQTY = v)}
           />
         ) : (
           <span>{e.val}</span>
+        );
+      e.component = component;
+    } else if (e.column.fieldName == 'REALQTY') {
+      const component =
+        e.record.STATE == '0' ? (
+          <InputNumber
+            style={{ width: '90%' }}
+            placeholder="请输入收货数量"
+            min={0}
+            defaultValue={e.record.REALQTY}
+            onChange={v => (e.record.REALQTY = v)}
+          />
+        ) : (
+          <span>{e.val}</span>
+        );
+      e.component = component;
+    } else if (e.column.fieldName == 'NOTE') {
+      const component =
+        e.record.STATE == '0' ? (
+          <Input
+            style={{ width: '90%' }}
+            placeholder="请输入备注"
+            min={0}
+            defaultValue={e.val == '<空>' ? null : e.val}
+            onChange={v => (e.record.NOTE = v.target.value)}
+          />
+        ) : (
+          <div>
+            <a
+              onClick={() => {
+                this.setState({
+                  showUpdateNotePop: true,
+                  updateRowUuid: e.record.UUID,
+                  updateNote: e.record.NOTE,
+                });
+              }}
+            >
+              {e.val}
+            </a>
+          </div>
         );
       e.component = component;
     }
@@ -47,13 +95,15 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
           isReturn = 1;
         }
         deliveryList.push({
-          ORDERDELUUID: rows.UUID,
+          ORDERDELUUID: rows.ORDERUUID,
           ORDERNUMBER: rows.ORDERNNUM,
           SOURCENUM: rows.SOURCENUM,
           ARTICLECODE: rows.ARTICLECODE,
           ORDERQTY: rows.QTY,
           TAKEDELIVERYQTY: rows.TAKEDELIVERYQTY,
           SCHEDULEUUID: rows.SCHEDULEUUID,
+          REALQTY: rows.REALQTY,
+          NOTE: rows.NOTE,
         });
       });
       if (isReturn == 1) {
@@ -78,19 +128,82 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
     }
   };
 
+  updateNote = async () => {
+    const { updateRowUuid, updateNote } = this.state;
+    let param = {
+      tableName: 'sj_itms_takedeliveryconfirm',
+      sets: { NOTE: updateNote },
+      condition: {
+        params: [
+          {
+            field: 'UUID',
+            rule: 'eq',
+            val: [updateRowUuid],
+          },
+        ],
+      },
+      updateAll: false,
+    };
+    await updateEntity(param).then(e => {
+      if (e.result > 0) {
+        this.setState({ showUpdateNotePop: false });
+        this.onSearch();
+        message.success('操作成功！');
+      }
+    });
+  };
+
   //该方法用于写中间的功能按钮 多个按钮用<span>包裹
   drawToolsButton = () => {
-    return (
-      <span>
-        <Popconfirm
-          title="你确定要审核所选中的内容吗?"
-          onConfirm={() => this.comfirm()}
-          okText="确定"
-          cancelText="取消"
+    const { showUpdateNotePop, updateNote, updateRowUuid } = this.state;
+    const superQuery = this.state.pageFilters.superQuery;
+    let c;
+    if (superQuery) {
+      const queryParams = superQuery.queryParams;
+      const receipted = queryParams.find(x => x.field === 'STATE');
+      if (receipted) {
+        c = receipted.val;
+      }
+    }
+    if (c === '0') {
+      return (
+        <span>
+          <Popconfirm
+            title="你确定要审核所选中的内容吗?"
+            onConfirm={() => this.comfirm()}
+            okText="确定"
+            cancelText="取消"
+          >
+            <Button>确认</Button>
+          </Popconfirm>
+        </span>
+      );
+    } else {
+      return (
+        <Modal
+          title="修改备注"
+          key={updateRowUuid}
+          visible={showUpdateNotePop}
+          onOk={() => this.updateNote()}
+          onCancel={() => {
+            this.setState({ showUpdateNotePop: false });
+          }}
         >
-          <Button>确认</Button>
-        </Popconfirm>
-      </span>
-    );
+          <Form>
+            <Form.Item label="备注" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              <Input
+                style={{ width: '90%' }}
+                placeholder="请输入备注"
+                min={0}
+                defaultValue={updateNote}
+                onChange={v => {
+                  this.setState({ updateNote: v.target.value });
+                }}
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
+      );
+    }
   };
 }

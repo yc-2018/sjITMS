@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-11 14:37:55
+ * @LastEditTime: 2022-12-14 15:37:32
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -24,7 +24,6 @@ export default class ETCSearchPage extends QuickFormSearchPage {
    */
   onUpdate = () => {
     const { selectedRows } = this.state;
-    console.log('selectedRows', selectedRows);
     if (selectedRows.length !== 0) {
       if (selectedRows[0].STATE == 'Using') {
         message.error('该粤通卡已发卡，不可编辑');
