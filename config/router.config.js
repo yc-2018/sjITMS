@@ -108,6 +108,14 @@ export default [
             component: './Inner/BillImport/BillImport',
             authority: ['iwms.account.billImport'],
           },
+          {
+            path: '/compmgr/docLog',
+            name: '单据同步日志查询',
+            org: ['DISPATCH_CENTER'],
+            component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+            quickuuid: 'doc_log_datax',
+            // authority: ['sjtms.bigData.arrange'],
+          },
         ],
       },
       // {
@@ -1329,6 +1337,13 @@ export default [
             quickuuid: 'sj_itms_shippingorder',
             authority: ['sjtms.core.shippingorder'],
             divider: true,
+          },
+          {
+            path: '/tmscode/storesMap',
+            name: '门店地图',
+            org: ['DISPATCH_CENTER'],
+            component: './SJTms/MapDispatching/stores/StoresMap',
+            authority: ['sjtms.core.taskCenter'],
           },
           {
             path: '/tmscode/taskCenter',
