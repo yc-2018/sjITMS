@@ -37,14 +37,15 @@ export default class RyzeSearchPage extends Component {
       selectedRows: [],
       pageFilter: {
         page: 0,
-        pageSize: sessionStorage.getItem('searchPageLine')
-          ? parseInt(sessionStorage.getItem('searchPageLine'))
+        pageSize: sessionStorage.getItem(props.quickuuid + 'searchPageLine')
+          ? parseInt(sessionStorage.getItem(props.quickuuid + 'searchPageLine'))
           : 20,
         sortFields: {},
         searchKeyValues: {},
         likeKeyValues: {},
       },
     };
+    console.log('111', sessionStorage.getItem(props.quickuuid + 'searchPageLine'));
     let pageFilters = { quickuuid: props.quickuuid, changePage: true };
     //查缓存中是否有搜索条件
     if (getPageFilter(getActiveKey() + props.quickuuid)) {
@@ -57,8 +58,8 @@ export default class RyzeSearchPage extends Component {
       if (!queryFilter.pageFilter) {
         queryFilter.pageFilter = {
           page: 0,
-          pageSize: sessionStorage.getItem('searchPageLine')
-            ? parseInt(sessionStorage.getItem('searchPageLine'))
+          pageSize: sessionStorage.getItem(props.quickuuid + 'searchPageLine')
+            ? parseInt(sessionStorage.getItem(props.quickuuid + 'searchPageLine'))
             : 20,
           sortFields: {},
           searchKeyValues: {},
@@ -194,12 +195,15 @@ export default class RyzeSearchPage extends Component {
         {this.drawToolbarTwo()}
         {!this.state.noTable ? (
           <StandardTable
+            quickuuid={this.props.quickuuid}
             minHeight={this.state.minHeight}
             colTotal={this.state.colTotal ? this.state.colTotal : []}
             unShowRow={this.state.unShowRow ? this.state.unShowRow : false}
             onRow={this.handleOnRow}
             rowKey={record => record.uuid}
-            hasSettingColumns = {this.state.hasSettingColumns==undefined?true:this.state.hasSettingColumns}
+            hasSettingColumns={
+              this.state.hasSettingColumns == undefined ? true : this.state.hasSettingColumns
+            }
             selectedRows={selectedRows}
             loading={tableLoading}
             tableHeight={this.state.tableHeight}

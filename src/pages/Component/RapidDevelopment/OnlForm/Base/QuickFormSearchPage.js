@@ -604,6 +604,11 @@ export default class QuickFormSearchPage extends SearchPage {
     let defaultSearch = this.defaultSearch();
     if (!defaultSearch) defaultSearch = [];
 
+    //增加查询页数从缓存中读取
+    let pageSize = sessionStorage.getItem(this.props.quickuuid + 'searchPageLine')
+      ? parseInt(sessionStorage.getItem(this.props.quickuuid + 'searchPageLine'))
+      : 20;
+
     if (typeof filter == 'undefined') {
       // console.log('this.state.pageFilters', this.state.pageFilters);
       let queryParams = this.state.pageFilters.superQuery?.queryParams?.filter(item => {
@@ -613,10 +618,10 @@ export default class QuickFormSearchPage extends SearchPage {
           item.field != 'companyuuid'
         );
       });
-      // console.log('queryParams', queryParams);
       let pageFilters = this.state.pageFilters;
       if (this.state.pageFilters.superQuery && exSearchFilter.length == 0) {
         pageFilters = {
+          pageSize,
           ...this.state.pageFilters,
           superQuery: {
             ...this.state.pageFilters.superQuery,
@@ -627,6 +632,7 @@ export default class QuickFormSearchPage extends SearchPage {
         this.getData(pageFilters);
       } else {
         this.state.pageFilters = {
+          pageSize,
           order: this.state.defaultSort,
           quickuuid: this.props.quickuuid,
           superQuery: {
@@ -639,6 +645,7 @@ export default class QuickFormSearchPage extends SearchPage {
     } else if (filter == 'reset') {
       //点击重置时，重置搜索条件
       this.state.pageFilters = {
+        pageSize,
         order: this.state.defaultSort,
         quickuuid: this.props.quickuuid,
         superQuery: {
@@ -651,6 +658,7 @@ export default class QuickFormSearchPage extends SearchPage {
       const { dispatch } = this.props;
       const { columns } = this.state;
       const pageFilters = {
+        pageSize,
         ...this.state.pageFilters,
         superQuery: {
           matchType: filter.matchType,
@@ -681,6 +689,8 @@ export default class QuickFormSearchPage extends SearchPage {
         page: filter.page + 1,
         pageSize: filter.pageSize,
       };
+      //设置页码缓存
+      sessionStorage.setItem(this.state.reportCode + 'searchPageLine', filter.pageSize);
     } else {
       //查询页码重置为1
       queryFilter.page = 1;
