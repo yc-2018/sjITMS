@@ -12,7 +12,10 @@ import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import Empty from '@/pages/Component/Form/Empty';
 import { driverSwipe } from '@/services/sjitms/ScheduleProcess';
 import { queryDictByCode } from '@/services/quick/Quick';
-
+import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
+import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
+import Page from '@/pages/Component/Page/inner/Page';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 export default class Swiper extends PureComponent {
   state = {
     loading: false,
@@ -90,8 +93,12 @@ export default class Swiper extends PureComponent {
       dispatchName,
     } = this.state;
     return (
-      <div style={{ height: '100vh' }} onClick={() => this.empInputRef.focus()}>
+      // <FreshPageHeaderWrapper>
+      <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
         <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
+        <div style={{ height: '100vh' }} onClick={() => this.empInputRef.focus()}>
+        <NavigatorPanel title="司机出入厂刷卡" 
+        canFullScreen={this.props.location.pathname =='/driver/swipeInAndOut'?false:true} />
           <div
             style={{
               height: 100,
@@ -129,13 +136,13 @@ export default class Swiper extends PureComponent {
             <div
               style={{
                 fontSize: 55,
-                fontWeight: 'bold',
+                fontWeight: 'normal',
                 textAlign: 'center',
                 marginRight: '15%',
                 color: dispatchName == undefined ? 'red' : 'black',
               }}
             >
-              {dispatchName == undefined ? '请选择调度中心' : dispatchName + '司机刷卡'}
+              {dispatchName == undefined ? '请选择调度中心' : dispatchName + '出入厂刷卡'}
             </div>
           </div>
 
@@ -171,7 +178,7 @@ export default class Swiper extends PureComponent {
           <Card
             title="刷卡结果"
             bordered={true}
-            style={{ height: '35vh', boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
+            //style={{ height: '18vh', boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
             bodyStyle={{
               height: '25vh',
               display: 'flex',
@@ -204,12 +211,12 @@ export default class Swiper extends PureComponent {
                   {scheduleBill.vehicle ? scheduleBill.vehicle.name : <Empty />}
                 </span>
               </Col>
-              <Col span={6}>
+              {/* <Col span={6}>
                 <span style={{ fontSize: 15 }}>
                   重量(t)：
                   {scheduleBill.weight ?  (new Number(scheduleBill.weight)/1000).toFixed(3) : <Empty />}
                 </span>
-              </Col>
+              </Col> */}
               <Col span={6}>
                 <span style={{ fontSize: 15 }}>
                   体积(m³)：
@@ -240,8 +247,10 @@ export default class Swiper extends PureComponent {
               </Col>
             </Row>
           </Card>
+          </div>
         </Spin>
-      </div>
+        </Page>
+       //</FreshPageHeaderWrapper>
     );
   }
 }

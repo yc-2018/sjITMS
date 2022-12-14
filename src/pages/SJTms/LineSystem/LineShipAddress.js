@@ -154,6 +154,9 @@ export default class LineShipAddress extends QuickFormSearchPage {
       this.state.systemLineFlag = nextProps.systemLineFlag;
       this.state.buttonDisable = false;
       this.state.canDragTable = nextProps.canDragTables;
+      if(!this.state.systemData){
+        this.state.systemData = this.props.lineTreeData
+      }
       await this.onSearch();
     }
   };
@@ -575,7 +578,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
                     showSearch
                     allowClear={true}
                     optionFilterProp="children"
-                    treeData={this.props.lineTreeData}
+                    treeData={this.state.systemData}
                     labelInValue={true}
                     // 将value进行了一层包装，以方便日后扩展
                     value={this.state.lineValue}
@@ -630,12 +633,10 @@ export default class LineShipAddress extends QuickFormSearchPage {
   //   }
   // };
   handleChange = e => {
-    console.log('e', e);
     this.setState({ lineValue: e });
   };
   handleAddToNewLine = async () => {
     const { selectedRows, lineValue, pageFilters, lineuuid, addToNewLine } = this.state;
-    console.log('sad', lineValue);
     //true 添加到新线路
     if (addToNewLine) {
       let params = {

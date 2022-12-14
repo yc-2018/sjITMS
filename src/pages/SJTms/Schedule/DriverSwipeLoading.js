@@ -7,13 +7,16 @@
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipe.js
  */
 import { PureComponent } from 'react';
-import { Card, Col, Input, Row, Spin, Select, message } from 'antd';
+import { Card, Col, Input, Row, Spin, Select, message, InputNumber } from 'antd';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import Empty from '@/pages/Component/Form/Empty';
 import { driverSwipe } from '@/services/sjitms/ScheduleProcess';
 import { queryDictByCode } from '@/services/quick/Quick';
-
-export default class Swiper extends PureComponent {
+import SwipeLoadingSearchPage from './SwipeLoadingSearchPage'
+import Page from '@/pages/Component/Page/inner/Page';
+import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
+import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
+export default class DriverSwipeLoading extends PureComponent {
   state = {
     loading: false,
     dict: [],
@@ -25,7 +28,9 @@ export default class Swiper extends PureComponent {
     companyUuid: undefined,
     dispatchUuid: undefined,
     dispatchName: undefined,
-    swipeFlag:"loading"//刷卡标识用于区分出回车，开始结束装车 刷卡
+    swipeFlag: "loading",//刷卡标识用于区分出回车，开始结束装车 刷卡
+    interval: 30,
+    groupNo: ''
   };
   componentDidMount() {
     this.empInputRef.focus();
@@ -42,8 +47,13 @@ export default class Swiper extends PureComponent {
         companyUuid: localStorage.getItem('companyUuid'),
       });
     }
+    this.timer = setInterval(() => {
+      this.setState({ time: new Date() })
+    }, this.state.interval * 1000);
   }
-
+  componentWillUnmount() {   // 离开页面关闭定时器
+    clearInterval(this.timer);
+  }
   speech = message => {
     var Speech = new SpeechSynthesisUtterance();
     Speech.lang = 'zh';
@@ -53,16 +63,29 @@ export default class Swiper extends PureComponent {
     speechSynthesis.speak(Speech);
   };
 
+  onChangeHandle = (value) => {
+    this.setState({ interval: value })
+    clearInterval(this.timer);
+    if (value <= 0) {
+      return;
+    }
+    this.timer = setInterval(() => {
+      this.setState({ time: new Date() })
+    }, value * 1000);
+
+
+  }
+
   //刷卡
   onSubmit = async event => {
-    const { dispatchUuid, companyUuid,swipeFlag } = this.state;
+    const { dispatchUuid, companyUuid, swipeFlag } = this.state;
     if (dispatchUuid == undefined || companyUuid == undefined) {
       message.error('企业中心或调度中心值缺失！');
       return;
     }
     localStorage.setItem('showMessage', '0');
     this.setState({ loading: true, errMsg: undefined });
-    const response = await driverSwipe(event.target.value, companyUuid, dispatchUuid,swipeFlag);
+    const response = await driverSwipe(event.target.value, companyUuid, dispatchUuid, swipeFlag);
     localStorage.setItem('showMessage', '1');
     if (response.success) {
       this.speech('刷卡成功');
@@ -90,8 +113,13 @@ export default class Swiper extends PureComponent {
       dispatchName,
     } = this.state;
     return (
-      <div style={{ height: '100vh' }} onClick={() => this.empInputRef.focus()}>
+      //   <FreshPageHeaderWrapper>
+     // <div style={{ height: '100vh' }} onClick={() => this.empInputRef.focus()}>
+      <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
         <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
+          <NavigatorPanel 
+          title="司机装车刷卡" 
+          canFullScreen={this.props.location.pathname=='/driver/swipeLoading'?false:true} />
           <div
             style={{
               height: 100,
@@ -129,13 +157,13 @@ export default class Swiper extends PureComponent {
             <div
               style={{
                 fontSize: 55,
-                fontWeight: 'bold',
+                fontWeight: 'normal',
                 textAlign: 'center',
                 marginRight: '15%',
                 color: dispatchName == undefined ? 'red' : 'black',
               }}
             >
-              {dispatchName == undefined ? '请选择调度中心' : dispatchName + '司机刷卡'}
+              {dispatchName == undefined ? '请选择调度中心' : dispatchName + '装车刷卡'}
             </div>
           </div>
 
@@ -171,12 +199,13 @@ export default class Swiper extends PureComponent {
           <Card
             title="刷卡结果"
             bordered={true}
-            style={{ height: '35vh', boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
+            //style={{ height: '25vh',  }}
             bodyStyle={{
-              height: '25vh',
+              height: '15vh',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
             }}
           >
             {errMsg ? (
@@ -187,7 +216,7 @@ export default class Swiper extends PureComponent {
               <div style={{ color: '#1354DA', fontSize: '45px', margin: 'auto' }}>{message}</div>
             )}
           </Card>
-          <Card
+          {/* <Card
             title="排车单信息"
             style={{ height: 250, marginTop: 20, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
           >
@@ -204,12 +233,7 @@ export default class Swiper extends PureComponent {
                   {scheduleBill.vehicle ? scheduleBill.vehicle.name : <Empty />}
                 </span>
               </Col>
-              {/* <Col span={6}>
-                <span style={{ fontSize: 15 }}>
-                  重量(t)：
-                  {scheduleBill.weight ?  (new Number(scheduleBill.weight)/1000).toFixed(3) : <Empty />}
-                </span>
-              </Col> */}
+          
               <Col span={6}>
                 <span style={{ fontSize: 15 }}>
                   体积(m³)：
@@ -239,9 +263,51 @@ export default class Swiper extends PureComponent {
                 </span>
               </Col>
             </Row>
+          </Card> */}
+          <Card
+            title={<>
+              <span>刷卡列表</span><div style={{ float: 'right' }}>
+                刷新间隔(秒)：<InputNumber onChange={this.onChangeHandle} min={0}
+                  style={{ width: 50 }}
+                  value={this.state.interval}
+                />
+                <Input style={{ width: 100, marginRight: 10, marginLeft: 20 }}
+                  onChange={(e) => { this.setState({ groupNo: e.target.value, time: new Date() }) }}
+                  placeholder="作业号" />
+              </div>
+            </>}
+            style={{ 
+              marginTop: 5,
+               boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+              // height: 'calc(100vh-30px)',
+              
+               zoom:1 
+               }}//height: 'calc(60vh-30px)',
+            bodyStyle={{
+              height:'calc(29vh)',
+              padding:0
+              //paddingTop: 5,
+              //height: 'calc(30vh-300px)',
+              //scroll: {y: 'calc(50vh - 300px)'}
+
+            }}
+            headStyle={{
+              height: '1vh',
+
+            }}
+
+          >
+            <SwipeLoadingSearchPage
+              quickuuid='v_sj_itms_swipe_loading'
+              selectedRows={this.state.groupNo}
+              interval={this.state.interval}
+              time={this.state.time}
+            />
           </Card>
+         
         </Spin>
-      </div>
+      </Page>
+   
     );
   }
 }
