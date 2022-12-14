@@ -347,7 +347,7 @@ class StandardTable extends Component {
       optionsList: optionsList, // 绘制的列
       pageSize:
         props.comId && props.comId.indexOf('search') > -1
-          ? sessionStorage.getItem(props.quickuuid + 'searchPageLine')
+          ? localStorage.getItem(props.quickuuid + 'searchPageLine')
           : sessionStorage.getItem('viewPageLine'),
       // pageSize: sessionStorage.getItem(props.quickuuid + 'searchPageLine'),
       list: list,

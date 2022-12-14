@@ -102,11 +102,11 @@ export default class SchedulePage extends Component {
       filter.page = pages.current;
       filter.pageSize = pages.pageSize;
       //设置页码缓存
-      sessionStorage.setItem('SchedulePageSize', filter.pageSize);
+      localStorage.setItem('SchedulePageSize', filter.pageSize);
     } else {
       //增加查询页数从缓存中读取
-      let pageSize = sessionStorage.getItem('SchedulePageSize')
-        ? parseInt(sessionStorage.getItem('SchedulePageSize'))
+      let pageSize = localStorage.getItem('SchedulePageSize')
+        ? parseInt(localStorage.getItem('SchedulePageSize'))
         : 100;
       filter.page = searchPagination.current;
       filter.pageSize = searchPagination.pageSize || pageSize;

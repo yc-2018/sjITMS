@@ -123,11 +123,11 @@ export default class OrderPoolPage extends Component {
       filter.page = pages.current;
       filter.pageSize = pages.pageSize;
       //设置页码缓存
-      sessionStorage.setItem('OrderPoolPageSize', filter.pageSize);
+      localStorage.setItem('OrderPoolPageSize', filter.pageSize);
     } else {
       //增加查询页数从缓存中读取
-      let pageSize = sessionStorage.getItem('OrderPoolPageSize')
-        ? parseInt(sessionStorage.getItem('OrderPoolPageSize'))
+      let pageSize = localStorage.getItem('OrderPoolPageSize')
+        ? parseInt(localStorage.getItem('OrderPoolPageSize'))
         : 100;
       filter.page = searchPagination.current;
       filter.pageSize = searchPagination.pageSize || pageSize;
@@ -185,13 +185,12 @@ export default class OrderPoolPage extends Component {
       filter.page = pages.current;
       filter.pageSize = pages.pageSize;
       //设置页码缓存
-      sessionStorage.setItem('VehiclePoolPageSize', filter.pageSize);
+      localStorage.setItem('VehiclePoolPageSize', filter.pageSize);
     } else {
       //增加查询页数从缓存中读取
-      let pageSize = sessionStorage.getItem('VehiclePoolPageSize')
-        ? parseInt(sessionStorage.getItem('VehiclePoolPageSize'))
+      let pageSize = localStorage.getItem('VehiclePoolPageSize')
+        ? parseInt(localStorage.getItem('VehiclePoolPageSize'))
         : 100;
-      console.log('pageSize', pageSize);
       filter.page = vehiclePagination.current;
       filter.pageSize = vehiclePagination.pageSize || pageSize;
     }

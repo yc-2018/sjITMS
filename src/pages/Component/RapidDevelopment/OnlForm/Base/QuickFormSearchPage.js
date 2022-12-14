@@ -605,8 +605,8 @@ export default class QuickFormSearchPage extends SearchPage {
     if (!defaultSearch) defaultSearch = [];
 
     //增加查询页数从缓存中读取
-    let pageSize = sessionStorage.getItem(this.props.quickuuid + 'searchPageLine')
-      ? parseInt(sessionStorage.getItem(this.props.quickuuid + 'searchPageLine'))
+    let pageSize = localStorage.getItem(this.props.quickuuid + 'searchPageLine')
+      ? parseInt(localStorage.getItem(this.props.quickuuid + 'searchPageLine'))
       : 20;
 
     if (typeof filter == 'undefined') {
@@ -690,7 +690,7 @@ export default class QuickFormSearchPage extends SearchPage {
         pageSize: filter.pageSize,
       };
       //设置页码缓存
-      sessionStorage.setItem(this.state.reportCode + 'searchPageLine', filter.pageSize);
+      localStorage.setItem(this.state.reportCode + 'searchPageLine', filter.pageSize);
     } else {
       //查询页码重置为1
       queryFilter.page = 1;
