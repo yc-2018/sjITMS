@@ -101,9 +101,15 @@ export default class SchedulePage extends Component {
     if (pages) {
       filter.page = pages.current;
       filter.pageSize = pages.pageSize;
+      //设置页码缓存
+      sessionStorage.setItem('SchedulePageSize', filter.pageSize);
     } else {
+      //增加查询页数从缓存中读取
+      let pageSize = sessionStorage.getItem('SchedulePageSize')
+        ? parseInt(sessionStorage.getItem('SchedulePageSize'))
+        : 100;
       filter.page = searchPagination.current;
-      filter.pageSize = searchPagination.pageSize || 100;
+      filter.pageSize = searchPagination.pageSize || pageSize;
     }
     filter.superQuery.queryParams = [
       ...searchFilter[activeKey],

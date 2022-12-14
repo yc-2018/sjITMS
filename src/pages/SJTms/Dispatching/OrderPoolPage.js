@@ -122,9 +122,15 @@ export default class OrderPoolPage extends Component {
     if (pages) {
       filter.page = pages.current;
       filter.pageSize = pages.pageSize;
+      //设置页码缓存
+      sessionStorage.setItem('OrderPoolPageSize', filter.pageSize);
     } else {
+      //增加查询页数从缓存中读取
+      let pageSize = sessionStorage.getItem('OrderPoolPageSize')
+        ? parseInt(sessionStorage.getItem('OrderPoolPageSize'))
+        : 100;
       filter.page = searchPagination.current;
-      filter.pageSize = searchPagination.pageSize || 100;
+      filter.pageSize = searchPagination.pageSize || pageSize;
     }
     filter.superQuery.queryParams = [
       ...pageFilter,
@@ -178,9 +184,16 @@ export default class OrderPoolPage extends Component {
     if (pages) {
       filter.page = pages.current;
       filter.pageSize = pages.pageSize;
+      //设置页码缓存
+      sessionStorage.setItem('VehiclePoolPageSize', filter.pageSize);
     } else {
+      //增加查询页数从缓存中读取
+      let pageSize = sessionStorage.getItem('VehiclePoolPageSize')
+        ? parseInt(sessionStorage.getItem('VehiclePoolPageSize'))
+        : 100;
+      console.log('pageSize', pageSize);
       filter.page = vehiclePagination.current;
-      filter.pageSize = vehiclePagination.pageSize || 100;
+      filter.pageSize = vehiclePagination.pageSize || pageSize;
     }
     filter.superQuery.queryParams = [...vehicleFilter, ...this.isOrgQuery];
     filter.quickuuid = 'v_sj_itms_vehicle_stat';
