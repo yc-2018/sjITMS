@@ -1,12 +1,11 @@
 import React, { PureComponent } from 'react';
-import { Button, message, Modal,Tag ,Popconfirm } from 'antd';
+import { Button, message, Modal, Tag, Popconfirm } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import DeliveredNoCheck from './DeliveredNoCheck';
 import { loginOrg, loginCompany } from '@/utils/LoginContext';
-import { commonLocale } from '@/utils/CommonLocale';
-import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
-import { calculatePlan } from '@/services/cost/CostCalculation';
+import { havePermission } from '@/utils/authority';
+
 @connect(({ quick, deliveredConfirm, loading }) => ({
   quick,
   deliveredConfirm,
@@ -19,6 +18,7 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
     storeItemConfirmModalVisible: false,
     isShowStandardTable: false,
     isNotHd: true,
+    authority: this.props.authority,
   };
   drawTopButton = () => {};
   drawToolsButton = () => {};
@@ -31,9 +31,11 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
           onCancel={this.handleCancel}
           centered
           width={'90%'}
-         // bodyStyle={{ margin: -12 }}
+          // bodyStyle={{ margin: -12 }}
           bodyStyle={{ height: 'calc(80vh)', overflowY: 'auto' }}
-          footer={<Button onClick={()=>this.setState({isShowStandardTable:false})}>取消</Button>}
+          footer={
+            <Button onClick={() => this.setState({ isShowStandardTable: false })}>取消</Button>
+          }
         >
           <DeliveredNoCheck
             quickuuid="sj_schedule_order_no_check"
@@ -44,35 +46,41 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
             // }}
           />
         </Modal>
-      
+
         {/* <Button onClick={this.saveDelivered} type={'primary'}>
           保存门店送货
         </Button> */}
-         <Popconfirm
-    title="确定设置为待处理?"
-    onConfirm={()=>this.deliveredConfirmSchedule("Pending")}
-    okText="确定"
-    cancelText="取消"
-  >
-  <Button type={'primary'}>待处理</Button>
-  </Popconfirm>
-  <Popconfirm
-    title="确定设置为送达?"
-    onConfirm={()=>this.deliveredConfirmSchedule("Delivered")}
-    okText="确定"
-    cancelText="取消"
-  >
-  <Button type={'primary'}>送达</Button>
-  </Popconfirm>
-  <Popconfirm
-    title="确定设置为未送达?"
-    onConfirm={()=>this.deliveredConfirmSchedule("NotDelivered")}
-    okText="确定"
-    cancelText="取消"
-  >
-  <Button  type={'danger'}>未送达</Button>
-  </Popconfirm>
-    </>
+        <Popconfirm
+          title="确定设置为待处理?"
+          onConfirm={() => this.deliveredConfirmSchedule('Pending')}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Button type={'primary'} hidden={!havePermission(this.state.authority + '.processed')}>
+            待处理
+          </Button>
+        </Popconfirm>
+        <Popconfirm
+          title="确定设置为送达?"
+          onConfirm={() => this.deliveredConfirmSchedule('Delivered')}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Button type={'primary'} hidden={!havePermission(this.state.authority + '.ok')}>
+            送达
+          </Button>
+        </Popconfirm>
+        <Popconfirm
+          title="确定设置为未送达?"
+          onConfirm={() => this.deliveredConfirmSchedule('NotDelivered')}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Button type={'danger'} hidden={!havePermission(this.state.authority + '.noOk')}>
+            未送达
+          </Button>
+        </Popconfirm>
+      </>
     );
   };
   drawSearchPanel = () => {};
@@ -85,13 +93,13 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
   drawcell = e => {
     //找到fieldName为CODE这一列 更改它的component
     if (e.column.fieldName == 'DELIVERED') {
-      let component =<span>{"<空>"}</span>;
-      if(e.record.DELIVERED==='Delivered'){
-        component = <Tag color="green">{e.record.DELIVERED_CN}</Tag>
-      }else if(e.record.DELIVERED==='NotDelivered'){
-        component = <Tag color="red">{e.record.DELIVERED_CN}</Tag>
-      }else if(e.record.DELIVERED==='Pending'){
-        component = <Tag color="cyan">{e.record.DELIVERED_CN}</Tag>
+      let component = <span>{'<空>'}</span>;
+      if (e.record.DELIVERED === 'Delivered') {
+        component = <Tag color="green">{e.record.DELIVERED_CN}</Tag>;
+      } else if (e.record.DELIVERED === 'NotDelivered') {
+        component = <Tag color="red">{e.record.DELIVERED_CN}</Tag>;
+      } else if (e.record.DELIVERED === 'Pending') {
+        component = <Tag color="cyan">{e.record.DELIVERED_CN}</Tag>;
       }
       e.component = component;
     }
@@ -118,33 +126,33 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
     records[colum.fieldName] = e.value;
   };
   // 全部送达/未送达/待处理
-  deliveredConfirmSchedule = (value) => {
-    if(!value){
-      return ;
+  deliveredConfirmSchedule = value => {
+    if (!value) {
+      return;
     }
-    if(this.state.selectedRows.length==0){
-      message.info("至少选择一条数据！");
-      return ;
+    if (this.state.selectedRows.length == 0) {
+      message.info('至少选择一条数据！');
+      return;
     }
     this.props.dispatch({
-          type: 'deliveredConfirm1/deliveredConfirmSchedule',
-          payload: this.state.selectedRows.map(e => {
-            return {
-              ... e,
-              DELIVERED:value,
-              companyUuid : loginCompany().uuid,
-              dispatchCenterUuid : loginOrg().uuid
-            }
-          }),
-          callback: response => {
-            if (response && response.success) {
-              this.refreshTable();
-              message.success("保存成功");
-            }
-          },
-      });
+      type: 'deliveredConfirm1/deliveredConfirmSchedule',
+      payload: this.state.selectedRows.map(e => {
+        return {
+          ...e,
+          DELIVERED: value,
+          companyUuid: loginCompany().uuid,
+          dispatchCenterUuid: loginOrg().uuid,
+        };
+      }),
+      callback: response => {
+        if (response && response.success) {
+          this.refreshTable();
+          message.success('保存成功');
+        }
+      },
+    });
   };
-  
+
   //取消
   handleCancel = () => {
     this.setState({ isShowStandardTable: false });
@@ -153,8 +161,18 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
   showNoDelivered = () => {
     this.setState({ isShowStandardTable: true });
   };
-  changeState = () => {this.setState({title:''})}; //扩展state
+  changeState = () => {
+    this.setState({ title: '' });
+  }; //扩展state
   drawActionButton = () => {
-  return <Button  type="primary" onClick={this.showNoDelivered}>回车未送达确认</Button>
+    return (
+      <Button
+        type="primary"
+        onClick={this.showNoDelivered}
+        hidden={!havePermission(this.state.authority + '.backNoOk')}
+      >
+        回车未送达确认
+      </Button>
+    );
   };
 }

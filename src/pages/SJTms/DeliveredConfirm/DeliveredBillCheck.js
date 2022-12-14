@@ -7,6 +7,7 @@ import Result from '@/components/Result';
 import { res } from '@/pages/In/Move/PlaneMovePermission';
 import { queryIdleAndThisPostionUseing } from '@/services/facility/Container';
 import { loginOrg, loginCompany, loginUser } from '@/utils/LoginContext';
+import { havePermission } from '@/utils/authority';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -16,6 +17,7 @@ export default class DeliveredBillCheck extends QuickFormSearchPage {
     ...this.state,
     isNotHd: true,
     pageData: [],
+    authority: this.props.authority,
   };
   drawToolbarPanel = () => {};
   drawTopButton = () => {};
@@ -36,7 +38,12 @@ export default class DeliveredBillCheck extends QuickFormSearchPage {
   drawActionButton = () => {
     return (
       <>
-        <Button onClick={this.checkAndSave}>核对并保存单据</Button>
+        <Button
+          onClick={this.checkAndSave}
+          hidden={!havePermission(this.state.authority + '.checkAndSave')}
+        >
+          核对并保存单据
+        </Button>
       </>
     );
   };
