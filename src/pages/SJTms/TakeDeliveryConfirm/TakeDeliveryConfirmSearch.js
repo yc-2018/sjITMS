@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-11 17:30:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-12-14 16:19:42
+ * @LastEditTime: 2022-12-15 11:32:51
  * @version: 1.0
  */
 import React from 'react';
@@ -95,7 +95,7 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
           isReturn = 1;
         }
         deliveryList.push({
-          ORDERDELUUID: rows.ORDERUUID,
+          ORDERDTLUUID: rows.ORDERUUID,
           ORDERNUMBER: rows.ORDERNNUM,
           SOURCENUM: rows.SOURCENUM,
           ARTICLECODE: rows.ARTICLECODE,
