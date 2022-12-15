@@ -172,9 +172,9 @@ export default class FullScreenButton extends PureComponent {
    */
   sectionRequestFullScreen = () => {
     var activeDom = document.getElementById(getActiveKey());
-    var dom = activeDom.getElementsByClassName('ant-card antd-pro-pages-component-page-inner-page-contentWrapper')[0] ?
-      activeDom.getElementsByClassName('ant-card antd-pro-pages-component-page-inner-page-contentWrapper')[0] :
-      activeDom.getElementsByClassName('ant-card antd-pro\\pages\\-component\\-page\\inner\\-page-contentWrapper')[0];
+    var dom = activeDom?.getElementsByClassName('ant-card antd-pro-pages-component-page-inner-page-contentWrapper')[0]?
+      activeDom?.getElementsByClassName('ant-card antd-pro-pages-component-page-inner-page-contentWrapper')[0] :
+      activeDom?.getElementsByClassName('ant-card antd-pro\\pages\\-component\\-page\\inner\\-page-contentWrapper')[0];
     if (!dom) {
       return;
     }

@@ -1365,14 +1365,14 @@ export default [
             path: '/tmsexec/checkinLoading',
             name: '司机装车刷卡',
             org: ['DISPATCH_CENTER'],
-            component: './SJTms/Schedule/SwipeLoading',
+            component: './SJTms/Schedule/DriverSwipeLoading',
             authority: ['sjtms.exec.checkin'],
           },
           {
             path: '/tmsexec/checkinInAndOut',
             name: '司机出入厂刷卡',
             org: ['DISPATCH_CENTER'],
-            component: './SJTms/Schedule/SwipeInAndOut',
+            component: './SJTms/Schedule/DriverSwipeInAndOut',
             authority: ['sjtms.exec.checkin'],
           },
           {

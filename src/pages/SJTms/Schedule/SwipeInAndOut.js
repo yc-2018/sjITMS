@@ -3,7 +3,7 @@
  * @Date: 2022-07-13 14:22:18
  * @LastEditors: guankongjin
  * @LastEditTime: 2022-08-03 08:50:23
- * @Description: 司机刷卡
+ * @Description: 司机刷卡 弃用
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\Swipe.js
  */
 import { PureComponent } from 'react';
