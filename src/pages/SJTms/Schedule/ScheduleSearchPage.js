@@ -566,7 +566,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       message.warn('请选择需要打印的排车单！');
       return;
     }
-    const hide = message.loading('加载中...', 0);
+    const hide = key =='loadNow'? message.loading('打印中，请稍后...', 6):message.loading('加载中...',5);
     const LODOP = getLodop();
     if (LODOP == undefined) return;
     LODOP.PRINT_INIT('排车单打印');
@@ -587,7 +587,12 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     console.log(key=='loadNow'?'是':"否");
     key =='loadNow'?LODOP.PRINT():LODOP.PREVIEW();
    // LODOP.PREVIEW();
-    hide();
+    if(key =='loadNow'){
+      setTimeout(() => {
+        message.success("打印成功！",5)
+      }, 7000);
+    }
+    
     this.setState({ printPage: undefined });
   };
 

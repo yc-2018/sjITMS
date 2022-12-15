@@ -72,7 +72,7 @@ export default class SwipeLoadingSearchPage extends QuickFormSearchPage {
         ]
       }
     }
-    pageFilters.pageSize = 150;
+    pageFilters.pageSize = 300;
     this.state.pageFilters = pageFilters;
     this.refreshTable();
   };

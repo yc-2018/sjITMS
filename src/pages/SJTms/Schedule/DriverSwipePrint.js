@@ -81,7 +81,7 @@ export default class DriverSwipePrint extends PureComponent {
         },
       });
       let scheduleDetails = detailsResp.success ? detailsResp.data.records : [];
-      const hide = message.loading('加载中...', 0);
+      const hide = message.loading('打印中，请稍等...', 6);
       const LODOP = getLodop();
       if (LODOP == undefined) {
         this.setState({ loading: false, errMsg: undefined });
@@ -106,7 +106,10 @@ export default class DriverSwipePrint extends PureComponent {
       //TODO 测试先显示打印界面 上线前改为直接打印
       //LODOP.PREVIEW();
       LODOP.PRINT();
-      hide();
+      //hide();
+      setTimeout(() => {
+        message.success("打印成功！",5)
+      }, 7000);
       this.setState({ printPage: undefined });
 
       this.setState({

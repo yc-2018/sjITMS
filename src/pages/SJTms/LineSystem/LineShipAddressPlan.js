@@ -105,6 +105,7 @@ export default class LineShipAddressPlan extends QuickFormSearchPage {
   drawToolbarPanel = () => {
     return (
       <div style={{ marginBottom: 10 }}>
+        <span style={{fontSize:14,fontWeigth:600}}>{'已选择：'+this.state.selectedRows.length}</span>
        <Popconfirm
           title="确定添加?"
           onConfirm={this.checkSave}

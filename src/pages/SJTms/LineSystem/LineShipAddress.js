@@ -54,7 +54,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
     lineValue: undefined,
     isModalVisible: false,
     noSettingColumns: true,
-    hasSettingColumns: false,
+    //hasSettingColumns: false,
     canDragTable: true,
   };
   constructor(props) {
@@ -527,7 +527,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
           onOk={this.handleOk.bind()}
           onCancel={this.handleCancel.bind()}
           width={'80%'}
-          bodyStyle={{ height: 'calc(70vh)', overflowY: 'auto' }}
+          bodyStyle={{ height: 'calc(80vh)', overflowY: 'auto' }}
           destroyOnClose={true}
           afterClose={this.ofterClosePlan}
           footer={null}

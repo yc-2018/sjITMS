@@ -270,16 +270,20 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
               保存
             </Button>
           </Popconfirm>
-          <Popconfirm
+          {/* <Popconfirm
             title="确定选中的内容都为已回单吗?"
             onConfirm={() => this.updateReceipted()}
             okText="确定"
             cancelText="取消"
           >
-            <Button hidden={!havePermission(this.state.authority + '.allReceipted')}>
+           
+          </Popconfirm> */}
+          <Button 
+          hidden={!havePermission(this.state.authority + '.allReceipted')}
+          onClick = {() => this.updateReceipted()}
+           >
               全部回单
             </Button>
-          </Popconfirm>
           <Dropdown overlay={this.buildMenu.bind()}>
             <Button hidden={!havePermission(this.state.authority + '.batchHandle')}>
               批量设置处理方式
