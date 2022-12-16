@@ -551,8 +551,15 @@ export const ScheduleColumns = [
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
-    title: '装载率',
+    title: '重量装载率',
     dataIndex: 'VEHICLEWEIGHT',
+    sorter: true,
+    width: 80,
+    render: val => (val ? <span>{val + '%'}</span> : <Empty />),
+  },
+  {
+    title: '体积装载率',
+    dataIndex: 'VEHICLEVOLUME',
     sorter: true,
     width: 80,
     render: val => (val ? <span>{val + '%'}</span> : <Empty />),
