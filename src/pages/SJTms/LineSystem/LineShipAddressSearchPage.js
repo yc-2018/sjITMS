@@ -25,6 +25,7 @@ import {
 import { loginKey, loginCompany, loginOrg } from '@/utils/LoginContext';
 import { havePermission } from '@/utils/authority';
 import { throttleSetter } from 'lodash-decorators';
+import LineSystem from './LineSystem.less';
 
 export default class LineShipAddressSearchPage extends Component {
   state = {
@@ -300,7 +301,8 @@ export default class LineShipAddressSearchPage extends Component {
           </div>
         )}
         <div>
-          <Tabs defaultActiveKey={'lineShipAddress'}>
+          <Tabs defaultActiveKey={'lineShipAddress'}  
+          className = {!systemLineFlag&&LineSystem.tabsTop}>
             <TabPane tab="线路门店" key="1">
               <LineShipAddress
                 key="lineShipAddress"

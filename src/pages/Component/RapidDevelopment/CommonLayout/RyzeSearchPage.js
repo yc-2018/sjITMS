@@ -214,6 +214,7 @@ export default class RyzeSearchPage extends Component {
             onSelectRow={this.handleSelectRows}
             onChange={this.handleStandardTableChange}
             comId={key}
+            rest = {this.state.rest}
             rowClassName={(record, index) => {
               let name = '';
               if (index % 2 === 0) {

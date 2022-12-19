@@ -32,6 +32,7 @@ import LineShipAddressPlan from './LineShipAddressPlan';
 import AlcNumModal from '@/pages/Wcs/Dps/Job/AlcNumModal';
 import { throttleSetter } from 'lodash-decorators';
 import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchForm';
+import LineSystem from './LineSystem.less'
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -56,6 +57,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
     noSettingColumns: true,
     //hasSettingColumns: false,
     canDragTable: true,
+    rest:{className:LineSystem.contentWrapglobal}
   };
   constructor(props) {
     super(props);
