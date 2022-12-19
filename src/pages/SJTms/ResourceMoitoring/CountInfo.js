@@ -4,7 +4,7 @@ import { Layout, Card, Row, Col, Button ,Icon} from 'antd'
 const { Header, Footer, Sider, Content } = Layout;
 import { Chart, Util } from '@antv/g2';
 import { getOrderCount, getVehicleCount, getJobTodayCount,getTodayCompareOrder,getCollectbin } from '@/services/sjitms/ResourceMoitoring'
-
+import { loginKey, loginCompany, loginOrg } from '@/utils/LoginContext';
 export default class CountInfo extends PureComponent {
   componentDidMount() {
     this.onFush();
@@ -314,7 +314,7 @@ export default class CountInfo extends PureComponent {
 
  
   render() {
-  
+     const bill_bl = loginOrg().uuid =='000000750000004' || loginOrg().uuid =='000008150000001'?"码头":"板位";
     const { orderCount ,jobTodayCount} = this.state;
     return <Layout style={{ backgroundColor: "#eef1f4",marginTop:-20}}>
       {/* <Header style={{height: '1%',backgroundColor: "#eef1f4"}}>
@@ -454,7 +454,7 @@ export default class CountInfo extends PureComponent {
             float: 'left',
             //height:300
           }} >
-          <div style={{height:30,backgroundColor:'#dbf0fd' ,textAlign:'left',paddingLeft:10,paddingTop:6,fontWeight: 'bold',}}>板位</div>
+          <div style={{height:30,backgroundColor:'#dbf0fd' ,textAlign:'left',paddingLeft:10,paddingTop:6,fontWeight: 'bold',}}>{bill_bl}</div>
             <div style={{height:230,padding:5}} id ='bw'></div>
           </div>
         </div>

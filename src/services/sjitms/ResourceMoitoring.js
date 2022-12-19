@@ -21,7 +21,7 @@ export async function getAuditedOrder(searchKeyValues) {
 }
 export async function getOrderCount() {
   return request(
-    `/itms-schedule/itms-schedule/statistical/getOrderCount`,
+    `/itms-schedule/itms-schedule/statistical/getOrderCount/${loginCompany().uuid}/${loginOrg().uuid}`,
     {
       method: 'GET',
       headers:{check_flag:false}
@@ -31,7 +31,7 @@ export async function getOrderCount() {
 }
 export async function getVehicleCount() {
     return request(
-      `/itms-schedule/itms-schedule/statistical/getVehicleCount`,
+      `/itms-schedule/itms-schedule/statistical/getVehicleCount/${loginCompany().uuid}/${loginOrg().uuid}`,
       {
         method: 'GET',
       }
@@ -40,7 +40,7 @@ export async function getVehicleCount() {
   }
   export async function getJobTodayCount() {
     return request(
-      `/itms-schedule/itms-schedule/statistical/getJobTodayCount`,
+      `/itms-schedule/itms-schedule/statistical/getJobTodayCount/${loginCompany().uuid}/${loginOrg().uuid}`,
       {
         method: 'GET',
       }
@@ -49,7 +49,7 @@ export async function getVehicleCount() {
   }
   export async function getTodayCompareOrder() {
     return request(
-      `/itms-schedule/itms-schedule/statistical/getTodayCompareOrder`,
+      `/itms-schedule/itms-schedule/statistical/getTodayCompareOrder/${loginCompany().uuid}/${loginOrg().uuid}`,
       {
         method: 'GET',
       }
@@ -59,7 +59,7 @@ export async function getVehicleCount() {
 
   export async function getCollectbin() {
     return request(
-      `/itms-schedule/itms-schedule/statistical/getCollectbin`,
+      `/itms-schedule/itms-schedule/statistical/getCollectbin/${loginCompany().uuid}/${loginOrg().uuid}`,
       {
         method: 'GET',
       }
