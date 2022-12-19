@@ -551,8 +551,15 @@ export const ScheduleColumns = [
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
-    title: '装载率',
+    title: '重量装载率',
     dataIndex: 'VEHICLEWEIGHT',
+    sorter: true,
+    width: 80,
+    render: val => (val ? <span>{val + '%'}</span> : <Empty />),
+  },
+  {
+    title: '体积装载率',
+    dataIndex: 'VEHICLEVOLUME',
     sorter: true,
     width: 80,
     render: val => (val ? <span>{val + '%'}</span> : <Empty />),
@@ -680,6 +687,20 @@ export const ScheduleDetailColumns = [
     sorter: true,
     width: 100,
     render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty />),
+  },
+  {
+    title: '到效日期',
+    dataIndex: 'expiryDate',
+    sorter: true,
+    width: 80,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '备注',
+    dataIndex: 'note',
+    sorter: true,
+    width: 80,
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
 ];
 export const ScheduleDetailCollectColumns = [
