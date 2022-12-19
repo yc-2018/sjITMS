@@ -688,6 +688,20 @@ export const ScheduleDetailColumns = [
     width: 100,
     render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty />),
   },
+  {
+    title: '到效日期',
+    dataIndex: 'expiryDate',
+    sorter: true,
+    width: 80,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '备注',
+    dataIndex: 'note',
+    sorter: true,
+    width: 80,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
 ];
 export const ScheduleDetailCollectColumns = [
   {
