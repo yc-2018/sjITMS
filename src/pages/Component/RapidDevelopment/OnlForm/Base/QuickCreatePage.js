@@ -976,22 +976,25 @@ export default class QuickCreatePage extends CreatePage {
    * @param {*} e 值改变事件的参数
    * @param {string} fieldShowType 类型
    */
-  convertSaveValue = (e, fieldShowType) => {
+  convertSaveValue = (val, fieldShowType) => {
+    if (val == undefined || val == null) {
+      return val;
+    }
     if (fieldShowType == 'date') {
-      return e.format('YYYY-MM-DD');
+      return val.format('YYYY-MM-DD');
     } else if (fieldShowType == 'datetime') {
-      return e.format('YYYY-MM-DD HH:mm:ss');
+      return val.format('YYYY-MM-DD HH:mm:ss');
     } else if (
       fieldShowType == 'text' ||
       fieldShowType == 'textarea' ||
       fieldShowType == 'radio' ||
       !fieldShowType
     ) {
-      return e.target.value;
+      return val.target.value;
     } else if (fieldShowType == 'auto_complete' || fieldShowType == 'sel_tree') {
-      return e.value;
+      return val.value;
     } else {
-      return e;
+      return val;
     }
   };
 }
