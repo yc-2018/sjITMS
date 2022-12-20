@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-04-16 17:45:18
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-22 10:12:25
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-12-20 15:38:24
  * @version: 1.0
  */
 /*
@@ -30,18 +30,15 @@ export default class HighWagAreaCreatePage extends QuickCreatePage {
    */
   drawFormItems = () => {
     const { getFieldDecorator } = this.props.form;
-    let { formItems, categories } = this.state;
+    let { formItems, categories, onlFormInfos } = this.state;
     let formPanel = [];
     categories = categories.filter(x => x.type == 0);
-    if (!categories || !this.state.onlFormInfos) {
+    if (!categories || !onlFormInfos) {
       return;
     }
-    let z = 0;
-    let gutt = this.state.onlFormInfos[0].onlFormHead.formTemplateList
-      ? this.state.onlFormInfos[0].onlFormHead.formTemplateList
-      : this.getGutt()
-        ? this.getGutt()
-        : [];
+    const rowCount = onlFormInfos[0].onlFormHead.formTemplate
+      ? onlFormInfos[0].onlFormHead.formTemplate
+      : 4;
     for (const categoryItem of categories) {
       let cols = [];
       for (const formItemKey in formItems) {
@@ -77,10 +74,9 @@ export default class HighWagAreaCreatePage extends QuickCreatePage {
             key={categoryItem.category}
             title={this.props.noCategory ? undefined : categoryItem.category}
             cols={cols}
-            gutterCols={gutt[z] ? gutt[z] : null}
+            rowCount={rowCount}
           />
         );
-        z++;
       }
     }
     if (formPanel.length == 0) {
