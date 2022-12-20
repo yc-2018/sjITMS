@@ -1473,7 +1473,7 @@ export default [
                 name: '排车单查询',
                 org: ['DISPATCH_CENTER'],
                 component: './SJTms/ScheduleReport/ScheduleReportForm',
-                quickuuid: 'sj_itms_schedule',
+                quickuuid: 'sj_itms_schedule_report',
                 authority: ['sjtms.bigData.schedule'],
               },
               {
