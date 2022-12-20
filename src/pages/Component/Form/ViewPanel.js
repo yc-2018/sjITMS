@@ -33,107 +33,193 @@ export default class ViewPanel extends PureComponent {
     let currentRowCols = [];
 
     //对于备注等items长度为1的，单独处理
-      for (let i = 0; i < items.length; i++) {
-        let value = !isNaN(items[i].value) && !typeof(items[i].value)=='string' ? parseFloat(items[i].value) : items[i].value;
-        let label = items[i].label;
-        let hasValue = items[i].value || items[i].value === 0;
-        if (items[i].label === commonLocale.noteLocale) {
-          rows.push(<Row gutter={[24, 12]} key={guid()}>{currentRowCols}</Row>);
-          const noteCols = [];
-          noteCols.push(<Col className={styles.leftSpan} key={guid()} span={24}>{items[i].label + '：'}{
-            ((items[i].value || items[i].value === 0) ? items[i].value : <Empty />)}</Col>);
-          rows.push(<Row gutter={[24, 12]} key={guid()}>{noteCols}</Row>);
-          currentRowCols = [];
-        } else {
-          if (items[i].rows && items[i].rows > 1) {
-          }
-          // if (currentRowCols.length < 4) {
-          const index = rows.length === 0 ? 0 : rows.length;
-          let rowCnt = gutterCols ? gutterCols[index] : 4;
-          if (currentRowCols.length < rowCnt) {
-            if (hasValue) {
-              currentRowCols.push(<Col className={items[i].fontWeight ? styles.weightLeftSpan : styles.leftSpan} key={guid()} span={24 / rowCnt}>
-                <IToolTip>
-                  {label + '：'}{value}
-                </IToolTip>
-              </Col>);
-            } else {
-              currentRowCols.push(<Col className={items[i].fontWeight ? styles.weightLeftSpan : styles.leftSpan} key={guid()} span={24 / rowCnt}>
-                {label + '：'} <Empty />
-              </Col>);
-            }
-          } else {
-            rows.push(<Row gutter={[24, 12]} key={guid()}>{currentRowCols}</Row>);
-            rowCnt = gutterCols ? gutterCols[index + 1] : 4;
-            currentRowCols = [];
-            if (hasValue) {
-              currentRowCols.push(<Col className={items[i].fontWeight ? styles.weightLeftSpan : styles.leftSpan} key={guid()} span={24 / rowCnt}>
-                <IToolTip>
-                  {label + '：'}{value}
-                </IToolTip>
-              </Col>);
-            } else {
-              currentRowCols.push(<Col className={items[i].fontWeight ? styles.weightLeftSpan : styles.leftSpan} key={guid()} span={24 / rowCnt}>
-                {label + '：'} <Empty />
-              </Col>);
-            }
-          }
+    for (let i = 0; i < items.length; i++) {
+      let value =
+        !isNaN(items[i].value) && !typeof items[i].value == 'string'
+          ? parseFloat(items[i].value)
+          : items[i].value;
+      let label = items[i].label;
+      let hasValue = items[i].value || items[i].value === 0;
+      if (items[i].label === commonLocale.noteLocale) {
+        rows.push(
+          <Row gutter={[24, 12]} key={guid()}>
+            {currentRowCols}
+          </Row>
+        );
+        const noteCols = [];
+        noteCols.push(
+          <Col className={styles.leftSpan} key={guid()} span={24}>
+            {items[i].label + '：'}
+            {items[i].value || items[i].value === 0 ? items[i].value : <Empty />}
+          </Col>
+        );
+        rows.push(
+          <Row gutter={[24, 12]} key={guid()}>
+            {noteCols}
+          </Row>
+        );
+        currentRowCols = [];
+      } else if (items[i].dbLength > 1000) {
+        rows.push(
+          <Row gutter={[24, 12]}>
+            <Col span={2}>{items[i].label + '：'}</Col>
+            <Col span={22} className={styles.leftSpan}>
+              {items[i].value || <Empty />}
+            </Col>
+          </Row>
+        );
+      } else {
+        if (items[i].rows && items[i].rows > 1) {
         }
-        if (i === items.length - 1 && currentRowCols.length > 0) {
-          rows.push(<Row gutter={[24, 12]} key={guid()}>{currentRowCols}</Row>);
+        // if (currentRowCols.length < 4) {
+        const index = rows.length === 0 ? 0 : rows.length;
+        let rowCnt = gutterCols ? gutterCols[index] : 4;
+        if (currentRowCols.length < rowCnt) {
+          if (hasValue) {
+            currentRowCols.push(
+              <Col
+                className={items[i].fontWeight ? styles.weightLeftSpan : styles.leftSpan}
+                key={guid()}
+                span={24 / rowCnt}
+              >
+                <IToolTip>
+                  {label + '：'}
+                  {value}
+                </IToolTip>
+              </Col>
+            );
+          } else {
+            currentRowCols.push(
+              <Col
+                className={items[i].fontWeight ? styles.weightLeftSpan : styles.leftSpan}
+                key={guid()}
+                span={24 / rowCnt}
+              >
+                {label + '：'} <Empty />
+              </Col>
+            );
+          }
+        } else {
+          rows.push(
+            <Row gutter={[24, 12]} key={guid()}>
+              {currentRowCols}
+            </Row>
+          );
+          rowCnt = gutterCols ? gutterCols[index + 1] : 4;
+          currentRowCols = [];
+          if (hasValue) {
+            currentRowCols.push(
+              <Col
+                className={items[i].fontWeight ? styles.weightLeftSpan : styles.leftSpan}
+                key={guid()}
+                span={24 / rowCnt}
+              >
+                <IToolTip>
+                  {label + '：'}
+                  {value}
+                </IToolTip>
+              </Col>
+            );
+          } else {
+            currentRowCols.push(
+              <Col
+                className={items[i].fontWeight ? styles.weightLeftSpan : styles.leftSpan}
+                key={guid()}
+                span={24 / rowCnt}
+              >
+                {label + '：'} <Empty />
+              </Col>
+            );
+          }
         }
       }
+      if (i === items.length - 1 && currentRowCols.length > 0) {
+        rows.push(
+          <Row gutter={[24, 12]} key={guid()}>
+            {currentRowCols}
+          </Row>
+        );
+      }
+    }
 
     return rows;
   };
 
-
-  stopPropagation = (event) => {
+  stopPropagation = event => {
     event.stopPropagation();
     this.props.onEdit();
   };
 
-  stopCollapse = (e) => {
+  stopCollapse = e => {
     e.stopPropagation();
   };
 
   render() {
-
-    const genExtra = () => (
-
+    const genExtra = () =>
       this.props.onEdit && (
         <a className={styles.edit} onClick={event => this.stopPropagation(event)}>
           <Icon type="form" />
           <span>{formatMessage({ id: 'company.detail.label.edit' })}</span>
         </a>
-      )
-    );
+      );
     //header={this.props.rightTile && <div onClick={e => this.stopCollapse(e)} style={{ float: 'right' }}>{this.props.rightTile}</div>}
     return (
       <div className={styles.viewPanelWrapper} style={this.props.style ? this.props.style : null}>
         <div className={styles.collapse}>
-          <Collapse bordered={false} defaultActiveKey={this.props.isClose ? ['0'] : ['1']}
-                    style={{ backgroundColor: 'white' }}
-                    onChange={e => this.onCollapse(e)}
-                    expandIcon={({ isActive }) =>
-                      <div className={styles.titleWrappr}>
-                        <div className={styles.navTitle}>
-                          <span>{this.props.title} </span>
-                          {isActive ?
-                            <IconFont style={{ fontSize: '16px', color: '#848C96', position: 'relative', top: '1px' }}
-                                      type="icon-arrow_fold" /> :
-                            <IconFont style={{ fontSize: '16px', color: '#848C96', position: 'relative', top: '1px' }}
-                                      type="icon-arrow_unfold" />}
-                        </div>
-                      </div>
-                    }>
-            <Panel showArrow={!this.props.noCollapse} disabled={this.props.noCollapse} header={this.props.rightTile && <div onClick={e => this.stopCollapse(e)} style={{
-              float: 'right',
-              marginTop: '-12px',
-            }}>{this.props.rightTile}</div>}
-                   key="1"
-                   extra={genExtra()}
-                   style={{ 'border': 0 }}>
+          <Collapse
+            bordered={false}
+            defaultActiveKey={this.props.isClose ? ['0'] : ['1']}
+            style={{ backgroundColor: 'white' }}
+            onChange={e => this.onCollapse(e)}
+            expandIcon={({ isActive }) => (
+              <div className={styles.titleWrappr}>
+                <div className={styles.navTitle}>
+                  <span>{this.props.title} </span>
+                  {isActive ? (
+                    <IconFont
+                      style={{
+                        fontSize: '16px',
+                        color: '#848C96',
+                        position: 'relative',
+                        top: '1px',
+                      }}
+                      type="icon-arrow_fold"
+                    />
+                  ) : (
+                    <IconFont
+                      style={{
+                        fontSize: '16px',
+                        color: '#848C96',
+                        position: 'relative',
+                        top: '1px',
+                      }}
+                      type="icon-arrow_unfold"
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+          >
+            <Panel
+              showArrow={!this.props.noCollapse}
+              disabled={this.props.noCollapse}
+              header={
+                this.props.rightTile && (
+                  <div
+                    onClick={e => this.stopCollapse(e)}
+                    style={{
+                      float: 'right',
+                      marginTop: '-12px',
+                    }}
+                  >
+                    {this.props.rightTile}
+                  </div>
+                )
+              }
+              key="1"
+              extra={genExtra()}
+              style={{ border: 0 }}
+            >
               <div className={styles.contentWrapper}>
                 {this.props.children}
                 {!this.props.children && this.drawRows()}

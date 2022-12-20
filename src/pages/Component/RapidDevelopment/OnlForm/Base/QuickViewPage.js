@@ -1,23 +1,10 @@
-import { connect } from 'dva';
-import moment from 'moment';
 import { Fragment } from 'react';
-import { Button, Tabs, message, Spin, Input } from 'antd';
-// import ViewPage from '@/pages/Component/Page/ViewPage';
+import { Button, Tabs, message } from 'antd';
 import RyzeViewPage from '../../CommonLayout/RyzeViewPage';
 import ViewPanel from '@/pages/Component/Form/ViewPanel';
-import { orgType } from '@/utils/OrgType';
-import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { OWNER_RES } from '@/pages/Basic/Owner/OwnerPermission';
-import Empty from '@/pages/Component/Form/Empty';
-import LoadingIcon from '@/components/MyComponent/LoadingIcon';
 import { commonLocale } from '@/utils/CommonLocale';
-import { addressToStr, convertCodeName, formatDate } from '@/utils/utils';
-import { basicState } from '@/utils/BasicState';
 import { havePermission } from '@/utils/authority';
-import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
-import { accMul } from '@/utils/QpcStrUtil';
-import { colWidth, itemColWidth } from '@/utils/ColWidth';
-// import ViewTablePanel from '@/pages/Component/Form/ViewTablePanel';
+import { itemColWidth } from '@/utils/ColWidth';
 import ViewTablePanel from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeView/ViewTablePanel';
 import { routerRedux } from 'dva/router';
 
@@ -472,7 +459,7 @@ export default class QuickView extends RyzeViewPage {
       let key;
       for (const singleItem of a) {
         if (singleItem.category != category) continue;
-        catelogItems.push(singleItem.component);
+        catelogItems.push({ ...singleItem.component, dbLength: singleItem.onlFormField.dbLength });
         key = singleItem.onlFormHead.tableTxt;
       }
       if (catelogItems.length <= 0) continue;
@@ -510,7 +497,7 @@ export default class QuickView extends RyzeViewPage {
             title: field.dbFieldTxt,
             dataIndex: field.dbFieldName,
             key: tableName + field.dbFieldName + index,
-            width: itemColWidth.articleEditColWidth,
+            width: field.fieldLength || 120,
             render:
               field.clickEvent == '1'
                 ? (val, record) => {
@@ -564,7 +551,6 @@ export default class QuickView extends RyzeViewPage {
         items.push(
           <ViewTablePanel
             notNote={notNote}
-            style={{ marginTop: '24px' }}
             title={item.onlFormHead.tableTxt}
             columns={catelogItems}
             noActionCol={noActionCol}
