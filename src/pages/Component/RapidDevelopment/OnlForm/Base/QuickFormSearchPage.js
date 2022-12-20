@@ -1,20 +1,14 @@
-import React, { PureComponent } from 'react';
-import { Table, Button, Input, Col, Row, message, Popconfirm, Switch, Badge } from 'antd';
-import { connect } from 'dva';
-import { Route } from 'react-router-dom';
+import React from 'react';
+import { Button, message, Popconfirm, Switch, Badge } from 'antd';
 import { havePermission } from '@/utils/authority';
-import axios from 'axios';
-// import SearchPage from '@/pages/Component/Page/SearchPage';
 import SearchPage from '../../CommonLayout/RyzeSearchPage';
 import { colWidth } from '@/utils/ColWidth';
 import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuery/SimpleQuery';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
-import SearchMoreAction from '@/pages/Component/Form/SearchMoreAction';
 import ExportJsonExcel from 'js-export-excel';
 import { routerRedux } from 'dva/router';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { guid } from '@/utils/utils';
-import { getActiveKey, getPageFilter, setPageFilter } from '@/utils/LoginContext';
 import moment from 'moment';
 import { updateEntity } from '@/services/quick/Quick';
 

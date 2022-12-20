@@ -1,28 +1,16 @@
-import { connect } from 'dva';
-import { Form, Select, Input, InputNumber, message, Col, DatePicker, Modal } from 'antd';
+import { Form, Input, InputNumber, message, DatePicker } from 'antd';
 import moment from 'moment';
-import {
-  commonLocale,
-  notNullLocale,
-  placeholderLocale,
-  placeholderChooseLocale,
-  confirmLineFieldNotNullLocale,
-} from '@/utils/CommonLocale';
-import { loginCompany, loginOrg, loginUser, getDefOwner, getActiveKey } from '@/utils/LoginContext';
+import { commonLocale } from '@/utils/CommonLocale';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import CreatePage from '@/pages/Component/RapidDevelopment/CommonLayout/CreatePage';
 import FormPanel from '@/pages/Component/RapidDevelopment/CommonLayout/Form/FormPanel';
 import CFormItem from '@/pages/Component/RapidDevelopment/CommonLayout/Form/CFormItem';
 import {
-  SimpleSelect,
   SimpleTreeSelect,
   SimpleRadio,
   SimpleAutoComplete,
-  SimpleAddress,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import ItemEditTable from '@/pages/Component/Form/ItemEditTable';
-import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
-import { convertCodeName } from '@/utils/utils';
-import { colWidth, itemColWidth } from '@/utils/ColWidth';
 import Address from '@/pages/Component/Form/Address';
 import { addCondition, getFieldShow } from '@/utils/ryzeUtils';
 import { dynamicQuery } from '@/services/quick/Quick';
@@ -548,18 +536,21 @@ export default class QuickCreatePage extends CreatePage {
    */
   drawFormItems = () => {
     const { getFieldDecorator } = this.props.form;
-    let { formItems, categories } = this.state;
+    let { formItems, categories, onlFormInfos } = this.state;
     let formPanel = [];
     categories = categories.filter(x => x.type == 0);
-    if (!categories || !this.state.onlFormInfos) {
+    if (!categories || !onlFormInfos) {
       return;
     }
-    let z = 0;
-    let gutt = this.state.onlFormInfos[0].onlFormHead.formTemplateList
-      ? this.state.onlFormInfos[0].onlFormHead.formTemplateList
-      : this.getGutt()
-        ? this.getGutt()
-        : [];
+    const rowCount = onlFormInfos[0].onlFormHead.formTemplate
+      ? onlFormInfos[0].onlFormHead.formTemplate
+      : 4;
+    // let z = 0;
+    // let gutt = onlFormInfos[0].onlFormHead.formTemplateList
+    //   ? onlFormInfos[0].onlFormHead.formTemplateList
+    //   : this.getGutt()
+    //     ? this.getGutt()
+    //     : [];
     for (const categoryItem of categories) {
       let cols = [];
       for (const formItemKey in formItems) {
@@ -588,10 +579,11 @@ export default class QuickCreatePage extends CreatePage {
             key={categoryItem.category}
             title={this.props.noCategory ? undefined : categoryItem.category}
             cols={cols}
-            gutterCols={gutt[z] ? gutt[z] : null}
+            rowCount={rowCount}
+            // gutterCols={gutt[z] ? gutt[z] : null}
           />
         );
-        z++;
+        // z++;
       }
     }
     if (formPanel.length == 0) {
@@ -935,6 +927,8 @@ export default class QuickCreatePage extends CreatePage {
   getComponent = field => {
     if (field.fieldShowType == 'date') {
       return DatePicker;
+    } else if (field.fieldShowType == 'datetime') {
+      return DatePicker;
     } else if (field.fieldShowType == 'number') {
       return InputNumber;
     } else if (field.fieldShowType == 'sel_tree') {
@@ -964,6 +958,8 @@ export default class QuickCreatePage extends CreatePage {
     }
     if (fieldShowType == 'date') {
       return moment(value, 'YYYY/MM/DD');
+    } else if (fieldShowType == 'datetime') {
+      return moment(value, 'YYYY/MM/DD HH:mm:ss');
     } else if (['text', 'textarea'].indexOf(fieldShowType) > -1 || !fieldShowType) {
       return value.toString();
     } else if (dbType == 'Integer') {
@@ -983,6 +979,8 @@ export default class QuickCreatePage extends CreatePage {
   convertSaveValue = (e, fieldShowType) => {
     if (fieldShowType == 'date') {
       return e.format('YYYY-MM-DD');
+    } else if (fieldShowType == 'datetime') {
+      return e.format('YYYY-MM-DD HH:mm:ss');
     } else if (
       fieldShowType == 'text' ||
       fieldShowType == 'textarea' ||

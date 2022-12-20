@@ -17,50 +17,21 @@ import CFormItem from '@/pages/Component/RapidDevelopment/CommonLayout/Form/CFor
  * @param {function} drawOther: 表单项尾部组件
  */
 export default class FormPanel extends PureComponent {
-
   buildFormItems = () => {
     let cols = this.props.cols ? this.props.cols : [];
     cols = cols.filter(val => val.type === CFormItem && !isEmpty(val.props));
-    
-    let formItems = [];
-    
-    // let totalLength = 0;
-    // for (let i = 0; i < cols.length; i++) {
-    //   if (!cols[i].props.label) {
-    //     continue;
-    //   }
-    //   let length = cols[i].props.label.length;
-    //   totalLength += length;
-    // }
-    const avgLength = 7;
-
-    for (let i = 0; i < cols.length; i++) {
-      const formItemLayout = {
-        labelCol: {
-          xs: { span: avgLength },
-          sm: { span: avgLength },
-          md: { span: avgLength },
-          lg: { span: avgLength },
-          xl: { span: avgLength },
-          xxl: { span: avgLength },
-        },
-        wrapperCol: {
-          xs: { span: 24 - avgLength },
-          sm: { span: 24 - avgLength },
-          md: { span: 24 - avgLength },
-          lg: { span: 24 - avgLength },
-          xl: { span: 24 - avgLength },
-          xxl: { span: 24 - avgLength }
-        },
-      };
-
-      formItems.push(
-        <Form.Item {...formItemLayout} labelAlign="left" label={cols[i].props.label}>
-          {cols[i]}
-        </Form.Item>,
+    return cols.map(col => {
+      const colSpan = col.props?.children.props?.span;
+      const formItemLayout =
+        colSpan == 24
+          ? { labelCol: { span: 2 }, wrapperCol: { span: 22 } }
+          : { labelCol: { span: 7 }, wrapperCol: { span: 17 } };
+      return (
+        <Form.Item {...formItemLayout} labelAlign="left" label={col.props.label}>
+          {col}
+        </Form.Item>
       );
-    }
-    return formItems;
+    });
   };
 
   filterRows = () => {
@@ -71,34 +42,33 @@ export default class FormPanel extends PureComponent {
 
   drawFormRows = () => {
     let cols = this.buildFormItems();
-    const gutterCols = this.props.gutterCols;
-    let rows = [];
+    const { rowCount } = this.props;
     let currentRowCols = [];
 
     for (let i = 0; i < cols.length; i++) {
-      const index = rows.length;
-      const rowCnt = gutterCols ? gutterCols[index] : 4;
-      let colSpan = cols[i].props?.children?.props?.span ? cols[i].props.children.props.span : 24 / rowCnt;
+      const colSpan = cols[i].props?.children.props?.children?.props?.span;
       currentRowCols.push(
-        <Col key={cols[i].props.label} span={colSpan}>
+        <Col key={cols[i].props.label} span={colSpan ? colSpan : 24 / rowCount}>
           {cols[i]}
-        </Col>);
-
-      if (currentRowCols.length == rowCnt || i == cols.length - 1) {
-        rows.push(<Row key={'row' + rows.length}>{currentRowCols}</Row>);
-        currentRowCols = [];
-      }
+        </Col>
+      );
     }
+    let rows = [];
+    rows.push(
+      <Row type="flex" justify="start">
+        {currentRowCols}
+      </Row>
+    );
 
     // 非表单项填充 ...
     let otherRows = this.filterRows();
     rows.push(otherRows);
 
-    return <div className={styles.tableListForm}>
-      <div className={panelStyles.formPanel}>
-        {rows}
+    return (
+      <div className={styles.tableListForm}>
+        <div className={panelStyles.formPanel}>{rows}</div>
       </div>
-    </div>;
+    );
   };
 
   render() {
