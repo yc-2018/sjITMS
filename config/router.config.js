@@ -1339,6 +1339,14 @@ export default [
             divider: true,
           },
           {
+            path: '/tmscode/service',
+            name: '客服工单',
+            // component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+            component: './SJTms/Customer/Customer',
+            quickuuid: 'sj_itms_customer_service',
+            authority: ['sjtms.customer.service'],
+          },
+          {
             path: '/tmscode/taskCenter',
             name: 'taskCenter',
             org: ['DISPATCH_CENTER'],
