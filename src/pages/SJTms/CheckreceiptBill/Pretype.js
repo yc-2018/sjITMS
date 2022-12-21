@@ -41,12 +41,14 @@ export default class Pretype extends PureComponent {
           {...this.props}
           memberModalClick={this.memberModalClick}
           updatePretypeModalClick={this.updatePretypeModalClick}
+          onRef={node => (this.pretypeSearchRef = node)}
         />
         <CreatePageModal
           modal={{
             title: '新建回单处理方式',
             width: 500,
             bodyStyle: { marginRight: '40px' },
+            afterClose:()=>this.pretypeSearchRef.onSearch()
           }}
           page={{ quickuuid: 'sj_itms_pretype', noCategory: true }}
           onRef={node => (this.newPretypeModalRef = node)}
@@ -56,6 +58,7 @@ export default class Pretype extends PureComponent {
             title: '编辑回单处理方式',
             width: 500,
             bodyStyle: { marginRight: '40px' },
+            afterClose:()=>this.pretypeSearchRef.onSearch()
           }}
           customPage={PretypeCreatePage}
           page={{ quickuuid: 'sj_itms_pretype', params: params }}

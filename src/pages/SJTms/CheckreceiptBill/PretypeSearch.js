@@ -20,7 +20,11 @@ import { log } from 'lodash-decorators/utils';
 export default class PretypeSearch extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
   state = { ...this.state, noActionCol: false, isShow: false, canDragTable: true };
-
+  componentDidMount = () => {
+    this.props.onRef && this.props.onRef(this);
+    this.queryCoulumns();
+    this.getCreateConfig();
+}
   onCreate = () => {
     this.props.memberModalClick();
   };

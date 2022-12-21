@@ -151,6 +151,7 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
         params: [
           { field: 'PRETYPE', rule: 'eq', val: ['DEALMETHOD'] },
           { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+          { field: 'dispatchCenterUuid', rule: 'eq', val: [loginOrg().uuid] },
         ],
       },
     };
