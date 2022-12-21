@@ -185,7 +185,7 @@ export default class DispatchingCreatePage extends Component {
       selectEmployees,
       vehicles,
       employees,
-      orders: [...details],
+      orders: details,
       loading: false,
     });
   };
@@ -352,7 +352,7 @@ export default class DispatchingCreatePage extends Component {
   onSave = async () => {
     const { isEdit, orders, schedule, selectVehicle, selectEmployees, note } = this.state;
     const orderType = uniqBy(orders.map(x => x.orderType)).shift();
-    const type = (orderType == 'TakeDelivery' || orderType =='AdjustWarehouse') ? 'Task' : 'Job';
+    const type = orderType == 'TakeDelivery' || orderType == 'AdjustWarehouse' ? 'Task' : 'Job';
     const driver = selectEmployees.find(x => x.memberType == 'Driver');
     const details = orders.map(item => {
       if (!item.isSplit) {
@@ -718,16 +718,18 @@ export default class DispatchingCreatePage extends Component {
   updateCartonCount = result => {
     const { orders } = this.state;
     const that = this;
-    let record = orders.find(x => x.billNumber == result.billNumber);
     confirm({
       title: '提示',
       content: `拆单后排车单体积为：${result.volume}m³，重量为：${result.weight}t ，是否确定拆单？`,
       onOk() {
+        const index = orders.findIndex(x => x.billNumber == result.billNumber);
+        let record = { ...orders[index] };
         record.volume = Number(result.remVolume);
         record.weight = Number(result.remWeight);
         record.unDispatchCarton = record.stillCartonCount - result.cartonCount;
         record.stillCartonCount = result.cartonCount;
         record.isSplit = 1;
+        orders.splice(index, 1, record);
         that.setState({ orders, editPageVisible: false });
       },
       onCancel() {
@@ -811,7 +813,7 @@ export default class DispatchingCreatePage extends Component {
                           message.error('请选择一张运输订单！');
                           return;
                         }
-                        this.editSource(records[0]);
+                        this.editSource({ ...records[0] });
                       }}
                     >
                       <Icon type="edit" />

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-27 11:24:00
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-24 10:25:39
+ * @LastEditTime: 2022-12-21 12:40:35
  * @Description: 修改排车单 运输订单明细 整件配送数量
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\EditContainerNumberPageF.js
  */
@@ -26,6 +26,7 @@ export default class EditContainerNumberPageF extends Component {
     const { totalData } = this.props;
     if (nextProps.totalData != this.props.totalData) {
       this.setState({
+        delCarton: 0,
         collectCount:
           totalData.stillCartonCount +
           totalData.stillScatteredCount +
@@ -80,8 +81,8 @@ export default class EditContainerNumberPageF extends Component {
         cartonWeight = cartonNumber.realWeight || cartonNumber.forecastWeight;
       }
     }
-    const delVolume = (Number(cartonCount) / order.stillCartonCount) * cartonVolume;
-    const delWeight = (Number(cartonCount) / order.stillCartonCount) * cartonWeight;
+    const delVolume = (Number(cartonCount) / order.cartonCount) * cartonVolume;
+    const delWeight = (Number(cartonCount) / order.cartonCount) * cartonWeight;
     const volume = Math.round((totalData.volume - delVolume) * 100) / 100;
     const weight = Math.round(totalData.weight - delWeight) / 1000;
     return {
@@ -95,7 +96,7 @@ export default class EditContainerNumberPageF extends Component {
 
   render() {
     const { modal, order, totalData, visible, onCancel } = this.props;
-    const { collectCount, collectVolume, collectWeight, delCarton } = this.state;
+    const { collectVolume, collectWeight, delCarton } = this.state;
     const { getFieldDecorator } = this.props.form;
     return (
       <Modal
