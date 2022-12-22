@@ -393,13 +393,13 @@ export default class ItemEditTable extends PureComponent {
     let height = footerPos.top - pos.top - 90;
     let dataHeight = data ? (data.length <= 10 ? data.length : 10) * 50 : 0;
     if (dataHeight > height) {
-      scroll.y = height < 100 ? 100 : height - 40;
+      scroll.y = height < 200 ? 200 : height - 40;
     }
     // x 轴滚动与自适应宽度
     if ((totalWidth > tableWidth || totalWidth + noteWidth > tableWidth) && tableWidth > 0) {
-      scroll.x = totalWidth + noteWidth;
+      scroll.x = totalWidth + noteWidth - 48;
     } else {
-      let moreWidth = tableWidth - totalWidth - noteWidth;
+      let moreWidth = tableWidth - totalWidth - noteWidth - 52;
       let newTotalWidth = 0;
       ncolumns.forEach(e => {
         if (

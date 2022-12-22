@@ -435,11 +435,6 @@ export default class ViewTablePanel extends PureComponent {
                 hasSettingColumns
               />
             </div>
-            {/* filter dropdown control */}
-            <div>
-              {/* <div style={{ height: 10 }} /> */}
-              <span>&nbsp;</span>
-            </div>
           </Panel>
         </Collapse>
       </div>
