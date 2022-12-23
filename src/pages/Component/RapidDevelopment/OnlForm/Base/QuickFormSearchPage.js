@@ -214,10 +214,10 @@ export default class QuickFormSearchPage extends SearchPage {
 
   //数据转换
   convertData = (data, preview, record) => {
-    // if (!data) return '<空>';
     if (data === '' || data == undefined || data === '[]') return '<空>';
     if (!preview) return data;
-    return record[preview];
+    const convert = record[preview] || '<空>';
+    return convert;
   };
 
   colorChange = (data, color) => {
@@ -339,13 +339,15 @@ export default class QuickFormSearchPage extends SearchPage {
       );
     },
     otherView: (val, column, record) => {
-      return (
+      return val && record[column.preview] ? (
         <a
           onClick={() => this.onOtherView(record, column)}
           style={{ color: this.colorChange(val, column.textColorJson) }}
         >
           {this.convertData(val, column.preview, record)}
         </a>
+      ) : (
+        this.convertData(val, column.preview, record)
       );
     },
     switch: (val, column, record) => {
