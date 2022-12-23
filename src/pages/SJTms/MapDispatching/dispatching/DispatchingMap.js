@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-01 09:21:37
+ * @LastEditTime: 2022-12-23 10:38:17
  * @Description: 地图排车
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -311,7 +311,34 @@ export default class DispatchMap extends Component {
           this.searchRoute(selectPoints);
         },
       },
+      {
+        text: '导航',
+        callback: () => {
+          const { orders } = this.state;
+          let selectPoints = orders.filter(x => x.isSelect);
+          selectPoints = selectPoints.map(order => {
+            return { ...order.deliveryPoint, latitude: order.latitude, longitude: order.longitude };
+          });
+          selectPoints = uniqBy(selectPoints, x => x.uuid);
+          if (selectPoints.length < 1) {
+            message.error('请选择导航起点门店和终点门店！');
+            return;
+          }
+          let url = `http://api.map.baidu.com/direction?origin=latlng:${selectPoints[0].latitude},${
+            selectPoints[0].longitude
+          }|name:${selectPoints[0].name.replace(/\([^\)]*\)/g, '')}&destination=${
+            selectPoints[selectPoints.length - 1].latitude
+          },${selectPoints[selectPoints.length - 1].longitude}|name:${selectPoints[
+            selectPoints.length - 1
+          ].name.replace(
+            /\([^\)]*\)/g,
+            ''
+          )}&mode=driving&region=东莞市&output=html&src=webapp.companyName.appName&coord_type=bd09ll`;
+          window.open(url, '_blank');
+        },
+      },
     ];
+
     const menu = new BMapGL.ContextMenu();
     menuItems.forEach((item, index) => {
       menu.addItem(
