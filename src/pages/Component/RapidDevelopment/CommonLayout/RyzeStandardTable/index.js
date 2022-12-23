@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import { Checkbox, Dropdown, Menu, message, Table, Tooltip } from 'antd';
+import { Checkbox, Dropdown, Menu, message, Table, Tooltip, Input } from 'antd';
 import styles from './index.less';
 import { formatMessage } from 'umi/locale';
 import { commonLocale } from '@/utils/CommonLocale';
@@ -166,7 +166,20 @@ function fetchOptions(columns, key) {
   const options = [];
   let checkedList = [];
 
-  let defaultColumns = getTableColumns(key);
+  // let defaultColumns = getTableColumns(key);
+  // if (defaultColumns && typeof defaultColumns === 'string') {
+  //   defaultColumns = JSON.parse(defaultColumns);
+  // }
+  let defaultCache = null;
+  if (getTableColumns(key + 'columnInfo')) {
+    defaultCache =
+      typeof getTableColumns(key + 'columnInfo') != 'object'
+        ? JSON.parse(getTableColumns(key + 'columnInfo'))
+        : getTableColumns(key + 'columnInfo');
+  }
+
+  let defaultColumns = defaultCache?.newList;
+  let cacheList = defaultCache?.cacheList;
   if (defaultColumns && typeof defaultColumns === 'string') {
     defaultColumns = JSON.parse(defaultColumns);
   }
@@ -180,6 +193,7 @@ function fetchOptions(columns, key) {
           upColor: '#CED0DA',
           downColor: '#CED0DA',
           checked: true,
+          width: cacheList[i].width,
         });
       } else {
         options.push({
@@ -188,6 +202,7 @@ function fetchOptions(columns, key) {
           upColor: '#CED0DA',
           downColor: '#CED0DA',
           checked: false,
+          width: cacheList[i].width,
         });
       }
     }
@@ -195,7 +210,7 @@ function fetchOptions(columns, key) {
     for (let i = 0; i < columns.length; i++) {
       if (
         defaultColumns.indexOf(columns[i].title) == -1 &&
-        i != 0 &&
+        // &&i != 0
         columns[i].title &&
         columns[i].title !== commonLocale.operateLocale
       ) {
@@ -206,6 +221,7 @@ function fetchOptions(columns, key) {
             upColor: '#CED0DA',
             downColor: '#CED0DA',
             checked: false,
+            width: columns[i].width,
           });
         } else {
           options.push({
@@ -214,6 +230,7 @@ function fetchOptions(columns, key) {
             upColor: '#CED0DA',
             downColor: '#CED0DA',
             checked: false,
+            width: columns[i].width,
           });
         }
       }
@@ -221,9 +238,9 @@ function fetchOptions(columns, key) {
   } else {
     for (let idx = 0; idx < columns.length; idx++) {
       const e = columns[idx];
-      if (idx === 0) {
-        continue;
-      }
+      // if (idx === 0) {
+      //   continue;
+      // }
       if (e.title && e.title !== commonLocale.operateLocale) {
         if (!columns[idx].invisible) {
           options.push({
@@ -232,6 +249,7 @@ function fetchOptions(columns, key) {
             upColor: '#CED0DA',
             downColor: '#CED0DA',
             checked: true,
+            width: e.width,
           });
         } else {
           options.push({
@@ -240,6 +258,7 @@ function fetchOptions(columns, key) {
             upColor: '#CED0DA',
             downColor: '#CED0DA',
             checked: false,
+            width: e.width,
           });
         }
       }
@@ -255,16 +274,25 @@ function fetchOptions(columns, key) {
  * 查询是否有缓存，获取列表头
  */
 function fetchValues(columns, key) {
-  let defaultColumns = getTableColumns(key);
+  // let defaultColumns = getTableColumns(key);
+  let defaultCache = null;
+  if (getTableColumns(key + 'columnInfo')) {
+    defaultCache =
+      typeof getTableColumns(key + 'columnInfo') != 'object'
+        ? JSON.parse(getTableColumns(key + 'columnInfo'))
+        : getTableColumns(key + 'columnInfo');
+  }
+
+  let defaultColumns = defaultCache?.newList;
   if (defaultColumns) {
     return defaultColumns;
   }
   const values = [];
   for (let idx = 0; idx < columns.length; idx++) {
     const e = columns[idx];
-    if (idx === 0) {
-      continue;
-    }
+    // if (idx === 0) {
+    //   continue;
+    // }
     if (e.title && e.title !== commonLocale.operateLocale && !e.invisible) {
       values.push(e.title);
     }
@@ -313,6 +341,9 @@ function getShowList(data, dataSource) {
  * @param {Object} rest: 其他的 Table 属性
  */
 class StandardTable extends Component {
+  //用于记录第一次props传入的值,修复首次进入拖动bug
+  basicColumns = {};
+
   components = {
     header: {
       cell: ResizableTitle,
@@ -427,7 +458,22 @@ class StandardTable extends Component {
       return false;
     }
     if (nextProps.columns != this.props.columns) {
+      this.basicColumns = {};
+      nextProps.columns.map(e => {
+        this.basicColumns = { ...this.basicColumns, [e.title]: e.width };
+      });
+
       let key = this.props.comId ? this.props.comId : guid();
+
+      let cacheWidth = localStorage.getItem(key + '-' + 'width')
+        ? JSON.parse(localStorage.getItem(key + '-' + 'width'))
+        : null;
+      if (cacheWidth) {
+        nextProps.columns.map(item => {
+          item.width = cacheWidth[item.title] ? cacheWidth[item.title] : item.width;
+        });
+      }
+
       let tempColumns = filterColumns(this.props.columns);
       const needTotalList = initTotalList(tempColumns);
       // const checkedValues = fetchValues(this.props.columns, key);
@@ -448,17 +494,33 @@ class StandardTable extends Component {
   }
 
   filterAndSorter = (checkedValues, nextColumns) => {
-    let { columns, noActionCol } = this.props;
+    let { columns, noActionCol, comId } = this.props;
+
+    // let cacheWidth = localStorage.getItem(comId + '-' + 'width')
+    //   ? JSON.parse(localStorage.getItem(comId + '-' + 'width'))
+    //   : null;
+    // if (cacheWidth) {
+    //   if (isEmpty(nextColumns)) {
+    //     columns.map(item => {
+    //       item.width = cacheWidth[item.title] ? cacheWidth[item.title] : item.width;
+    //     });
+    //   } else {
+    //     nextColumns.map(item => {
+    //       item.width = cacheWidth[item.title] ? cacheWidth[item.title] : item.width;
+    //     });
+    //   }
+    // }
     columns = isEmpty(nextColumns) ? columns : nextColumns;
     const newColumns = [];
+    // newColumns.push({});
     newColumns.push({ ...columns[0] });
     let arr = checkedValues;
     if (typeof checkedValues === 'string') {
       arr = JSON.parse(checkedValues);
     }
-    arr.forEach(e => {
+    arr.forEach((e, index) => {
       const cs = columns.filter(i => i.title && i.title === e);
-      if (cs && cs.length > 0) {
+      if (cs && cs.length > 0 && index > 0) {
         newColumns.push({ ...cs[0] });
       }
     });
@@ -470,6 +532,15 @@ class StandardTable extends Component {
         newColumns.push(columns[columns.length - 1]);
       }
     }
+
+    // let cacheWidth = localStorage.getItem(comId + '-' + 'width')
+    //   ? JSON.parse(localStorage.getItem(comId + '-' + 'width'))
+    //   : null;
+    // if (cacheWidth) {
+    //   newColumns.map(item => {
+    //     item.width = cacheWidth[item.title] ? cacheWidth[item.title] : item.width;
+    //   });
+    // }
 
     return newColumns;
   };
@@ -601,17 +672,6 @@ class StandardTable extends Component {
     return totalWidth;
   };
 
-  handleResize = index => (e, { size }) => {
-    this.setState(({ columns }) => {
-      const nextColumns = [...columns];
-      nextColumns[index] = {
-        ...nextColumns[index],
-        width: size.width,
-      };
-      return { columns: nextColumns };
-    });
-  };
-
   handleSettingModalVisible = visible => {
     if (visible == true) {
       this.setState({
@@ -704,10 +764,10 @@ class StandardTable extends Component {
       title: 'value',
       dataIndex: 'value',
       key: 'value',
-      width: '100px',
+      width: '60px',
       render: (text, option, index) => {
         return (
-          <span style={{ width: '100px', paddingLeft: 4, fontSize: '12px', fontWeight: 400 }}>
+          <span style={{ width: '60px', paddingLeft: 4, fontSize: '12px', fontWeight: 400 }}>
             {option.value}
           </span>
         );
@@ -741,7 +801,83 @@ class StandardTable extends Component {
         );
       },
     },
+    {
+      title: 'valueWidth',
+      dataIndex: 'valueWidth',
+      key: 'valueWidth',
+      width: '50px',
+      render: (text, record, index) => {
+        return (
+          <span style={{ width: '50px', marginLeft: '-4px' }}>
+            <Input onChange={e => this.changeWidth(e, record)} value={record.width} />
+          </span>
+        );
+      },
+    },
   ];
+
+  //改变字段宽度
+  changeWidth = (e, record) => {
+    const { optionsList, key } = this.state;
+    let changePropsCol = this.props.columns.find(e => e.title == record.label);
+    let width = parseInt(e.target.value);
+    //NaN自己与自己不相等
+    if (width != width) width = '';
+    record.width = width;
+    //通过改变props的column的width改变宽度
+    changePropsCol.width = width;
+    let title = changePropsCol.title;
+    //宽度存入缓存
+    localStorage.setItem(
+      key + '-' + 'width',
+      JSON.stringify({
+        ...JSON.parse(localStorage.getItem(key + '-' + 'width')),
+        [title]: width,
+      })
+    );
+    this.setState(
+      {
+        optionsList: optionsList,
+      },
+      () => {
+        this.handleOK();
+      }
+    );
+  };
+
+  handleResize = index => (e, { size }) => {
+    const { optionsList, key } = this.state;
+    optionsList[index].width = size.width;
+    let title = optionsList[index].label;
+    //宽度存入缓存
+    localStorage.setItem(
+      key + '-' + 'width',
+      JSON.stringify({
+        ...JSON.parse(localStorage.getItem(key + '-' + 'width')),
+        [title]: size.width,
+      })
+    );
+    let changePropsCol = this.props.columns[index];
+    changePropsCol.width = size.width;
+
+    // this.setState(({ columns }) => {
+    //   const nextColumns = [...columns];
+    //   nextColumns[index] = {
+    //     ...nextColumns[index],
+    //     width: size.width,
+    //   };
+    //   return { columns: nextColumns };
+    // });
+
+    this.setState(
+      {
+        optionsList: optionsList,
+      },
+      () => {
+        this.handleOK();
+      }
+    );
+  };
 
   onMenuHover = (option, flag) => {
     option['hover'] = flag;
@@ -752,19 +888,23 @@ class StandardTable extends Component {
   };
 
   handleOK = () => {
-    const { optionsList } = this.state;
+    const { optionsList, key } = this.state;
     const { columns } = this.props;
+
     let newList = [];
     let newColumns = [];
+    let cacheList = [];
+
     // 将勾选值按照顺序排序
     for (let i = 0; i < optionsList.length; i++) {
       if (optionsList[i].checked == true) {
         newList.push(optionsList[i].value);
+        cacheList.push({ text: optionsList[i].value, width: optionsList[i].width });
       }
     }
 
     // 设置第一列
-    newColumns.push({ ...columns[0] });
+    // newColumns.push({ ...columns[0] });
 
     // 按顺序 添加
     for (let i = 0; i < optionsList.length; i++) {
@@ -777,7 +917,7 @@ class StandardTable extends Component {
     // 按是否勾选 删除
 
     for (let i = newColumns.length - 1; i >= 0; i--) {
-      if (newList.indexOf(newColumns[i].title) == -1 && i != 0) {
+      if (newList.indexOf(newColumns[i].title) == -1) {
         newColumns.splice(i, 1);
       }
     }
@@ -789,7 +929,12 @@ class StandardTable extends Component {
       newColumns.push(columns[columns.length - 1]);
     }
 
-    cacheTableColumns(this.state.key, newList);
+    let cache = {
+      cacheList,
+      newList,
+    };
+    cacheTableColumns(this.state.key + 'columnInfo', cache);
+    // cacheTableColumns(this.state.key, newList);
     this.setState({
       columns: newColumns,
       settingModalVisible: false,
@@ -807,8 +952,12 @@ class StandardTable extends Component {
 
   handleResetSetting = () => {
     const { key } = this.state;
-    removeTableColumns(key);
-    const oriOptionsList = fetchOptions(this.props.columns, key);
+    removeTableColumns(key + 'columnInfo');
+    localStorage.removeItem(key + '-' + 'width');
+    this.props.columns.map(e => {
+      e.width = this.basicColumns[e.title] ? this.basicColumns[e.title] : e.width;
+    });
+    const oriOptionsList = fetchOptions(this.props.columns, key + 'columnInfo');
     this.setState(
       {
         optionsList: oriOptionsList,
@@ -1228,6 +1377,8 @@ class StandardTable extends Component {
     // 当固定列时，列总宽度小于表单宽度会到导致出现白色垂直空隙，留一列不设宽度以适应弹性布局
     showColumns.push({});
     footerColumns.push({});
+
+    // console.log('showColumns', showColumns);
     let settingIcon = (
       <div className={styles.setting} onClick={() => this.handleSettingModalVisible(true)}>
         <IconFont style={{ fontSize: '20px', color: '#848C96' }} type="icon-setting" />
@@ -1237,7 +1388,6 @@ class StandardTable extends Component {
       this.props.colTotal && this.props.colTotal.length == '0'
         ? { display: 'none' }
         : { display: 'block' };
-    // console.log(status, 'status');
     return (
       <div className={styles.standardTable}>
         {(oriColumnLen >= SHOW_THRESH_HOLD && !noSettingColumns) || hasSettingColumns ? (
