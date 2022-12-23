@@ -1,3 +1,11 @@
+/*
+ * @Author: guankongjin
+ * @Date: 2022-12-14 16:59:01
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2022-12-23 16:51:17
+ * @Description: file content
+ * @FilePath: \iwms-web\src\pages\Component\RapidDevelopment\CommonLayout\Form\FormPanel.js
+ */
 import React, { PureComponent } from 'react';
 import { Col, Form, Row } from 'antd';
 import { isEmpty } from '@/utils/utils';
@@ -21,7 +29,7 @@ export default class FormPanel extends PureComponent {
     let cols = this.props.cols ? this.props.cols : [];
     cols = cols.filter(val => val.type === CFormItem && !isEmpty(val.props));
     return cols.map(col => {
-      const colSpan = col.props?.children.props?.span;
+      let colSpan = col.props?.children.props?.span;
       const formItemLayout =
         colSpan == 24
           ? { labelCol: { span: 2 }, wrapperCol: { span: 22 } }
@@ -46,9 +54,10 @@ export default class FormPanel extends PureComponent {
     let currentRowCols = [];
 
     for (let i = 0; i < cols.length; i++) {
-      const colSpan = cols[i].props?.children.props?.children?.props?.span;
+      let colSpan = cols[i].props?.children.props?.children?.props?.span;
+      colSpan = colSpan ? colSpan : 24;
       currentRowCols.push(
-        <Col key={cols[i].props.label} span={colSpan ? colSpan : 24 / rowCount}>
+        <Col key={cols[i].props.label} span={colSpan / (rowCount || 4)}>
           {cols[i]}
         </Col>
       );
