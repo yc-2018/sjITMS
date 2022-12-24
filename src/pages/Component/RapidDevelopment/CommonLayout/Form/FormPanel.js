@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-12-14 16:59:01
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-23 16:51:17
+ * @LastEditTime: 2022-12-24 11:21:22
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\Component\RapidDevelopment\CommonLayout\Form\FormPanel.js
  */
@@ -55,9 +55,9 @@ export default class FormPanel extends PureComponent {
 
     for (let i = 0; i < cols.length; i++) {
       let colSpan = cols[i].props?.children.props?.children?.props?.span;
-      colSpan = colSpan ? colSpan : 24;
+      colSpan = colSpan ? colSpan : 24 / (rowCount || 4);
       currentRowCols.push(
-        <Col key={cols[i].props.label} span={colSpan / (rowCount || 4)}>
+        <Col key={cols[i].props.label} span={colSpan}>
           {cols[i]}
         </Col>
       );
