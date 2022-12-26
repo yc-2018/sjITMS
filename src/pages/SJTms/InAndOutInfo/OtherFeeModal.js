@@ -336,7 +336,7 @@ export default class OtherFeeModal extends Component {
             </TabPane>
             <TabPane tab="费用录入" key="2">
               <Row>
-                <Form>
+                <Form wrapperCol={{ span: 16 }} labelCol={{ span: 8 }}>
                   <Col span={6}>
                     <Form.Item label={'费用类型'} labelCol={{ span: 8 }}>
                       {getFieldDecorator('feeType', {
