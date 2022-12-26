@@ -857,7 +857,7 @@ class StandardTable extends Component {
         [title]: size.width,
       })
     );
-    let changePropsCol = this.props.columns[index];
+    let changePropsCol = this.props.columns.find(e => e.title == title);
     changePropsCol.width = size.width;
 
     // this.setState(({ columns }) => {
