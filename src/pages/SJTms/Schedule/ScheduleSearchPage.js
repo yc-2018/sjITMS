@@ -174,7 +174,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     const editableState = ['Saved', 'Approved', 'Shipping', 'Shiped'];
     if (e.column.fieldName == 'BILLNUMBER') {
       return {
-        title: '操作',
+        title: '操作 ',
         width: 60,
         render: (_, record) => {
           return (
@@ -229,7 +229,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     });
   };
 
-  handleMenuClick = (e) => {
+  handleMenuClick = e => {
     this.handlePrint(e.key);
   };
 
@@ -244,10 +244,28 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       showUpdateOutSerial,
     } = this.state;
     const menu = (
-      <Menu >
-        <Menu.Item key="load" onClick={this.handleMenuClick} hidden={!havePermission(this.state.authority + '.load')}>装车单预览打印</Menu.Item>
-        <Menu.Item key="loadNow"  onClick={this.handleMenuClick} hidden={!havePermission(this.state.authority + '.loadNow')}>装车单打印</Menu.Item>
-        <Menu.Item key="out" onClick={this.handleMenuClick}  hidden={!havePermission(this.state.authority + '.out')}>出车单</Menu.Item>
+      <Menu>
+        <Menu.Item
+          key="load"
+          onClick={this.handleMenuClick}
+          hidden={!havePermission(this.state.authority + '.load')}
+        >
+          装车单预览打印
+        </Menu.Item>
+        <Menu.Item
+          key="loadNow"
+          onClick={this.handleMenuClick}
+          hidden={!havePermission(this.state.authority + '.loadNow')}
+        >
+          装车单打印
+        </Menu.Item>
+        <Menu.Item
+          key="out"
+          onClick={this.handleMenuClick}
+          hidden={!havePermission(this.state.authority + '.out')}
+        >
+          出车单
+        </Menu.Item>
       </Menu>
     );
     return (
@@ -560,20 +578,23 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   };
 
   //打印
-  handlePrint = async(key) => {
+  handlePrint = async key => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
       message.warn('请选择需要打印的排车单！');
       return;
     }
-    const hide = key =='loadNow'? message.loading('打印中，请稍后...', 6):message.loading('加载中...',5);
+    const hide =
+      key == 'loadNow' ? message.loading('打印中，请稍后...', 6) : message.loading('加载中...', 5);
     const LODOP = getLodop();
     if (LODOP == undefined) return;
     LODOP.PRINT_INIT('排车单打印');
     LODOP.SET_PRINT_PAGESIZE(1, 2100, 1400, '210mm*140mm'); //1代表横的打印 2代表竖的打印 3纵向打印，宽度固定，高度按打印内容的高度自适应；
     LODOP.SET_PRINT_MODE('PRINT_DUPLEX', 1); //去掉双面打印
-    key == 'load' || key =='loadNow' ? await this.buildPrintPage() : await this.buildSchedulePrintPage();
-    if (key != 'load' && key !='loadNow') LODOP.SET_SHOW_MODE('SKIN_TYPE', 1);
+    key == 'load' || key == 'loadNow'
+      ? await this.buildPrintPage()
+      : await this.buildSchedulePrintPage();
+    if (key != 'load' && key != 'loadNow') LODOP.SET_SHOW_MODE('SKIN_TYPE', 1);
     const printPages = document.getElementById('printPage').childNodes;
     printPages.forEach(page => {
       LODOP.NewPageA();
@@ -584,15 +605,15 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       }
     });
     console.log(key);
-    console.log(key=='loadNow'?'是':"否");
-    key =='loadNow'?LODOP.PRINT():LODOP.PREVIEW();
-   // LODOP.PREVIEW();
-    if(key =='loadNow'){
+    console.log(key == 'loadNow' ? '是' : '否');
+    key == 'loadNow' ? LODOP.PRINT() : LODOP.PREVIEW();
+    // LODOP.PREVIEW();
+    if (key == 'loadNow') {
       setTimeout(() => {
-        message.success("打印成功！",5)
+        message.success('打印成功！', 5);
       }, 7000);
     }
-    
+
     this.setState({ printPage: undefined });
   };
 
@@ -818,20 +839,19 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
 const drawPrintPage = (schedule, scheduleDetails) => {
   // 茶山仓
   if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001') {
-    let scheduleDetailSum ={};
+    let scheduleDetailSum = {};
     let REALCARTONCOUNT = 0;
-    let REALSCATTEREDCOUNT  = 0;
+    let REALSCATTEREDCOUNT = 0;
     let REALCONTAINERCOUNT = 0;
     let OWECARTONCOUNT = 0;
     let CONTAINERSum = 0;
-    scheduleDetails.forEach(item =>{
-      REALCARTONCOUNT+=item.REALCARTONCOUNT;
-      REALSCATTEREDCOUNT +=item.REALSCATTEREDCOUNT;
-      REALCONTAINERCOUNT+=item.REALCONTAINERCOUNT;
-      OWECARTONCOUNT+=item.OWECARTONCOUNT;
-      CONTAINERSum +=item.REALCONTAINERCOUNT+item.OWECARTONCOUNT;
-
-    })
+    scheduleDetails.forEach(item => {
+      REALCARTONCOUNT += item.REALCARTONCOUNT;
+      REALSCATTEREDCOUNT += item.REALSCATTEREDCOUNT;
+      REALCONTAINERCOUNT += item.REALCONTAINERCOUNT;
+      OWECARTONCOUNT += item.OWECARTONCOUNT;
+      CONTAINERSum += item.REALCONTAINERCOUNT + item.OWECARTONCOUNT;
+    });
     scheduleDetailSum.REALCARTONCOUNT = REALCARTONCOUNT;
     scheduleDetailSum.REALSCATTEREDCOUNT = REALSCATTEREDCOUNT;
     scheduleDetailSum.REALCONTAINERCOUNT = REALCONTAINERCOUNT;
@@ -996,7 +1016,6 @@ const drawPrintPage = (schedule, scheduleDetails) => {
           </thead>
           <tbody>
             {scheduleDetails ? (
-             
               scheduleDetails.map((item, index) => {
                 return (
                   <tr style={{ textAlign: 'center', height: 25 }}>
@@ -1024,35 +1043,42 @@ const drawPrintPage = (schedule, scheduleDetails) => {
                     <td width={50} />
                   </tr>
                 );
-              }) 
-              
-            )   : (
+              })
+            ) : (
               <></>
             )}
-            {scheduleDetails?<tr style={{ textAlign: 'center', height: 25 }}>
-            <td width={100}>{'合计'}</td>
-            <td  colspan={2} width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
-              {scheduleDetailSum.StoreSum}
-            </td>
-            {/* <td width={120}>
+            {scheduleDetails ? (
+              <tr style={{ textAlign: 'center', height: 25 }}>
+                <td width={100}>{'合计'}</td>
+                <td
+                  colspan={2}
+                  width={80}
+                  style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}
+                >
+                  {scheduleDetailSum.StoreSum}
+                </td>
+                {/* <td width={120}>
               {scheduleDetailSum.StoreSum}
             </td> */}
-            <td width={50}>{scheduleDetailSum.REALCARTONCOUNT}</td>
-            <td width={50}>{scheduleDetailSum.REALSCATTEREDCOUNT}</td>
-            <td width={50}>{scheduleDetailSum.REALCONTAINERCOUNT}</td>
-            <td width={50}>{scheduleDetailSum.OWECARTONCOUNT}</td>
-            <td width={50}>{scheduleDetailSum.CONTAINERSum}</td>
-            <td width={50}>{}</td>
-            <td width={50}>{}</td>
-            {/* <td width={80}>{}</td>
+                <td width={50}>{scheduleDetailSum.REALCARTONCOUNT}</td>
+                <td width={50}>{scheduleDetailSum.REALSCATTEREDCOUNT}</td>
+                <td width={50}>{scheduleDetailSum.REALCONTAINERCOUNT}</td>
+                <td width={50}>{scheduleDetailSum.OWECARTONCOUNT}</td>
+                <td width={50}>{scheduleDetailSum.CONTAINERSum}</td>
+                <td width={50}>{}</td>
+                <td width={50}>{}</td>
+                {/* <td width={80}>{}</td>
             <td width={80}>{}</td>
             <td width={80}>{}</td>
             <td width={80}>{}</td> */}
-            <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
-              {}
-            </td>
-            <td width={50} />
-          </tr>:<></>}
+                <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
+                  {}
+                </td>
+                <td width={50} />
+              </tr>
+            ) : (
+              <></>
+            )}
           </tbody>
           <tfoot border={0}>
             <tr style={{ height: 20, border: 0, fontSize: '15px' }} border={0}>
