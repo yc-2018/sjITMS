@@ -764,7 +764,7 @@ class StandardTable extends Component {
       title: 'value',
       dataIndex: 'value',
       key: 'value',
-      width: '60px',
+      width: '100px',
       render: (text, option, index) => {
         return (
           <span style={{ width: '60px', paddingLeft: 4, fontSize: '12px', fontWeight: 400 }}>
