@@ -1347,6 +1347,13 @@ export default [
             authority: ['sjtms.customer.service'],
           },
           {
+            path: '/tmscode/storesMap',
+            name: '门店地图',
+            org: ['DISPATCH_CENTER'],
+            component: './SJTms/MapDispatching/stores/StoresMap',
+            authority: ['sjtms.core.taskCenter'],
+          },
+          {
             path: '/tmscode/taskCenter',
             name: 'taskCenter',
             org: ['DISPATCH_CENTER'],
