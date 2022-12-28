@@ -74,6 +74,7 @@ export default class LineSystemSearchPage extends Component {
       file: {},
       uploading: false,
       authority: props.authority,
+      treeuuid :'treeuuid'
     };
   }
   componentDidMount() {
@@ -171,17 +172,19 @@ export default class LineSystemSearchPage extends Component {
           lineTreeData.push(itemData);
         });
         if (lineuuid == undefined) {
-          lineuuid = lineTreeData
-            ? lineTreeData[0]?.children
-              ? lineTreeData[0].children[0]?.key
-              : lineTreeData[0]?.key
-            : undefined;
+          lineuuid = lineTreeData? lineTreeData[0].key:undefined;
+          // lineuuid = lineTreeData
+          //   ? lineTreeData[0]?.children
+          //     ? lineTreeData[0].children[0]?.key
+          //     : lineTreeData[0]?.key
+          //   : undefined;
         }
         this.setState({
           expandKeys: lineTreeData.map(x => x.key),
           lineTreeData,
           lineData,
           selectLineUuid: lineuuid,
+          treeuuid:Date.now()
         });
         this.onSelect([this.state.selectLineUuid]);
       }
@@ -447,17 +450,19 @@ export default class LineSystemSearchPage extends Component {
           <div />
         </div>
         <div style={{ height: '90%', overflow: 'auto' }}>
-          <Tree
+          {this.state.lineTreeData.length> 0 && <Tree
             showLine={true}
             showIcon={true}
             selectable
-            expandedKeys={expandKeys}
+           // expandedKeys={expandKeys}
             selectedKeys={[selectLineUuid]}
             onSelect={this.onSelect}
-            onExpand={this.onExpand}
+           // onExpand={this.onExpand}
+           key = {this.state.treeuuid}
+           defaultExpandAll
           >
             {renderTreeNode(lineTreeData)}
-          </Tree>
+          </Tree>}
         </div>
       </div>
     );
@@ -552,7 +557,7 @@ export default class LineSystemSearchPage extends Component {
         <Layout>
           {/* 左侧内容 */}
           <Sider width={350} className={linesStyles.leftWrapper}>
-            {this.drawSider()}
+            {this.state.lineTreeData.length> 0 && this.drawSider()}
             <CreatePageModal
               modal={{
                 title: '新建线路体系',
@@ -714,17 +719,19 @@ export default class LineSystemSearchPage extends Component {
           </Sider>
           {/* 右侧内容 */}
           <Content className={linesStyles.rightWrapper}>
-            <LineShipAddressSearchPage
-              selectedKey={selectLineUuid}
-              systemLineFlag={systemuuid ? true : false}
-              systemuuid={systemuuid}
-              lineTreeData={this.state.lineTreeData}
-              lineData={this.state.lineData}
-              systemData={this.state.systemData}
-              queryLineSystem={this.queryLineSystem}
-              sdf={this.state.sdf}
-              authority={this.props.authority}
-            />
+            {
+             selectLineUuid&&<LineShipAddressSearchPage
+             selectedKey={selectLineUuid}
+             systemLineFlag={systemuuid ? true : false}
+             systemuuid={systemuuid}
+             lineTreeData={this.state.lineTreeData}
+             lineData={this.state.lineData}
+             systemData={this.state.systemData}
+             queryLineSystem={this.queryLineSystem}
+             sdf={this.state.sdf}
+             authority={this.props.authority}
+           />
+            }
             {/* {{this.drawContent()}} */}
             {/* <LineShipAddressSearchPage></LineShipAddressSearchPage> */}
           </Content>

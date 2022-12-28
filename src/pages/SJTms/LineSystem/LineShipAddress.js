@@ -57,7 +57,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
     noSettingColumns: true,
     //hasSettingColumns: false,
     canDragTable: true,
-    rest:{className:LineSystem.contentWrapglobal}
+    rest: { className: LineSystem.contentWrapglobal }
   };
   constructor(props) {
     super(props);
