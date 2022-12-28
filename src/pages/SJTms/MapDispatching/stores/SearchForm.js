@@ -228,7 +228,24 @@ export default class SearchForm extends Component {
           autoComplete="off"
         >
           <Row justify="space-around">
-            {newSelectFields.filter((_, index) => index < 6).map(searchField => {
+            {newSelectFields.filter((_, index) => index < 3).map(searchField => {
+              return (
+                <Col span={4}>
+                  <Form.Item key={searchField.id} label={searchField.fieldTxt}>
+                    {getFieldDecorator(searchField.fieldName, {
+                      initialValue: searchField.searchDefVal || undefined,
+                      rules: [
+                        {
+                          required: searchField.searchRequire,
+                          message: notNullLocale(searchField.fieldTxt),
+                        },
+                      ],
+                    })(this.buildSearchItem(searchField))}
+                  </Form.Item>
+                </Col>
+              );
+            })}
+            {newSelectFields.filter((_, index) => index > 2 && index < 6).map(searchField => {
               return (
                 <Col span={3}>
                   <Form.Item key={searchField.id} label={searchField.fieldTxt}>
