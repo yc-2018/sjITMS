@@ -247,7 +247,7 @@ export default class SearchForm extends Component {
       if (i % 4 === 3) {
         labelSpan = fourColLabelSpan;
       }
-      labelSpan = cols[i].props.labelSpan ? cols[i].props.labelSpan : labelSpan;
+      labelSpan = cols[i].props.labelSpan ? cols[i].props.labelSpan : 7;
       const formItemLayout = {
         labelCol: { span: labelSpan },
         wrapperCol: { span: 24 - labelSpan },
