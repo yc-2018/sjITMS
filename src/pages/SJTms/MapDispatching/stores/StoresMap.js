@@ -78,7 +78,7 @@ export default class StoresMap extends Component {
     filter.superQuery.queryParams = [
       ...pageFilter,
       ...isOrgQuery,
-      { field: 'STAT', type: 'VarChar', rule: 'in', val: 'Audited||PartScheduled' },
+      // { field: 'STAT', type: 'VarChar', rule: 'in', val: 'Audited||PartScheduled' },
       { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
     ];
     queryAuditedOrderByStoreMap(filter).then(response => {
