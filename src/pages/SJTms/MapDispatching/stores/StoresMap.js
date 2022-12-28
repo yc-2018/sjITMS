@@ -7,7 +7,7 @@
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
 import React, { Component } from 'react';
-import { Divider, Modal, Button, Row, Col, Empty, Spin, message, Input } from 'antd';
+import { Divider, Modal, Button, Row, Col, Empty, Spin, message, Input, PageHeader } from 'antd';
 import { Map, Marker, CustomOverlay, DrawingManager } from 'react-bmapgl';
 import style from './DispatchingMap.less';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
@@ -39,6 +39,8 @@ export default class StoresMap extends Component {
     driverTime: 0,
     driverMileage: 0,
     isPoly: false,
+    isSearch: false,
+    otherData: [],
   };
 
   componentDidMount = () => {
@@ -86,7 +88,7 @@ export default class StoresMap extends Component {
         let otherData = response.data.otherRecords ? response.data.otherRecords : [];
         otherData = otherData.filter(x => x.longitude && x.latitude);
         this.basicOrders = data;
-        this.setState({ orders: data }, () => {
+        this.setState({ orders: data, otherData: otherData }, () => {
           setTimeout(() => {
             this.drawClusterLayer();
             this.drawMenu();
@@ -135,15 +137,15 @@ export default class StoresMap extends Component {
 
   //重置
   onReset = () => {
-    let { orders } = this.state;
+    let { orders, otherData } = this.state;
     orders.map(order => {
       (order.isSelect = false), (order.sort = null);
     });
-    this.setState({ orders, driverMileage: 0, storeInfo: '' }, () => {
+    this.setState({ orders, driverMileage: 0, storeInfo: '', isSearch: false }, () => {
       this.map?.clearOverlays();
-      this.clusterSetData(orders);
+      this.clusterSetData(orders, otherData);
     });
-    this.storeFilter('');
+    // this.storeFilter('');
   };
 
   //标注点
@@ -381,17 +383,32 @@ export default class StoresMap extends Component {
   };
 
   storeFilter = (key, e) => {
-    let serachStores = this.basicOrders.filter(
-      item => item.deliveryPoint.code.search(e) != -1 || item.deliveryPoint.name.search(e) != -1
-    );
-    this.setState({ orders: serachStores, storeInfo: e }, () => {
-      setTimeout(() => {
-        this.drawClusterLayer();
-        this.drawMenu();
-        this.clusterSetData(serachStores);
-        this.autoViewPort(serachStores);
-      }, 500);
-    });
+    // let serachStores = this.basicOrders.filter(
+    //   item => item.deliveryPoint.code.search(e) != -1 || item.deliveryPoint.name.search(e) != -1
+    // );
+    // this.setState({ orders: serachStores, storeInfo: e }, () => {
+    //   setTimeout(() => {
+    //     this.drawClusterLayer();
+    //     this.drawMenu();
+    //     this.clusterSetData(serachStores);
+    //     this.autoViewPort(serachStores);
+    //   }, 500);
+    // });
+    if (e == '') {
+      this.setState({ isSearch: false }, () => {
+        setTimeout(() => {
+          this.map.clearOverlays();
+        }, 500);
+      });
+    } else {
+      this.setState({ isSearch: true }, () => {
+        var local = new BMapGL.LocalSearch(this.map, {
+          renderOptions: { map: this.map, panel: 'r-result' },
+        });
+        local.search(e);
+      });
+    }
+    this.setState({ storeInfo: e });
   };
 
   render() {
@@ -403,22 +420,13 @@ export default class StoresMap extends Component {
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
           <div style={{ backgroundColor: '#ffffff' }}>
             <Row type="flex" justify="space-between">
-              <Col span={23}>
+              <Col span={24}>
                 <SearchForm refresh={this.refresh} />
               </Col>
               {/* <Col span={1}>
-              <Search
-                placeholder="请输入门店编号或名称"
-                allowClear
-                onChange={event => this.storeFilter('storeInfo', event.target.value)}
-                style={{ width: 150, marginLeft: -80 }}
-                value={this.state.storeInfo}
-              />
-            </Col> */}
-              <Col span={1}>
                 <Button onClick={() => this.onReset()}>清空</Button>
-              </Col>
-              {/* <Col span={1}>
+              </Col> */}
+              {/* <Col span={1}>l
                 <Button onClick={() => this.hide()}>关闭</Button>
               </Col> */}
             </Row>
@@ -429,7 +437,41 @@ export default class StoresMap extends Component {
               wrapperClassName={style.loading}
             >
               <Row type="flex" style={{ height: window.innerHeight - 200 }}>
-                <Col span={24}>
+                <Col
+                  span={6}
+                  style={{
+                    height: '100%',
+                    background: '#fff',
+                    overflow: 'auto',
+                  }}
+                >
+                  {/* <Empty
+                    style={{ marginTop: 80 }}
+                    image={emptySvg}
+                    description="暂无数据，请选择排车门店！"
+                  /> */}
+                  {/* <div style={{ textAlign: 'left', fontSize: '16px' }}>门店地址查询</div> */}
+                  <PageHeader
+                    style={{
+                      border: '1px solid rgb(235, 237, 240)',
+                      width: '90%',
+                    }}
+                    // onBack={() => null}
+                    title="门店地址查询"
+                    subTitle="请输入门店地址或坐标建筑名"
+                  />
+                  <div>
+                    <Search
+                      placeholder="请输入地址"
+                      allowClear
+                      onChange={event => this.storeFilter('storeInfo', event.target.value)}
+                      style={{ width: '90%', marginTop: '15px' }}
+                      value={this.state.storeInfo}
+                    />
+                  </div>
+                  {this.state.isSearch ? <div id="r-result" style={{ width: '90%' }} /> : null}
+                </Col>
+                <Col span={18}>
                   {orders.length > 0 ? (
                     <Map
                       center={{ lng: 113.809388, lat: 23.067107 }}
