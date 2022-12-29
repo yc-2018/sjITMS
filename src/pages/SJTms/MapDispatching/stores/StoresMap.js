@@ -214,15 +214,16 @@ export default class StoresMap extends Component {
         this.map?.removeOverlay(allOverlay[i]);
       }
     }
-    data.map(point => {
-      if (point.sort) {
+    data.map((point, index) => {
+      if (otherData?.length > 0) {
         var opts = {
           position: new BMapGL.Point(point.longitude, point.latitude), // 指定文本标注所在的地理位置
           offset: new BMapGL.Size(30, -30), // 设置文本偏移量
         };
-        var label = new BMapGL.Label(point.sort, opts);
+        var label = new BMapGL.Label(index + 1, opts);
         this.map?.addOverlay(label);
       }
+
       markers.push({
         geometry: { type: 'Point', coordinates: [point.longitude, point.latitude] },
         properties: {
