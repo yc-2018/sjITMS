@@ -1704,6 +1704,14 @@ export default [
                 quickuuid: 'sj_itms_cs_shiparea_differences',
                 authority: ['sjtms.bigData.shipareaDifferences'],
               },
+              {
+                path: '/bigData/cs/positionConfirm',
+                name: '茶山板位异常确认报表',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'collectplate_log_view',
+                authority: ['sjtms.bigData.positionConfirm'],
+              },
             ],
           },
           {

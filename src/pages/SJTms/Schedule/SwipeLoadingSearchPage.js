@@ -24,6 +24,7 @@ export default class SwipeLoadingSearchPage extends QuickFormSearchPage {
     // tableHeight: 'calc(40vh - 300px)',
     scroll: { y: 'calc(30vh)' },//calc(70vh - 100px)
     noPagination: true,
+    unShowRow:true,
     pathname: '/tmsexec/checkinLoading'
   };
 
@@ -75,5 +76,30 @@ export default class SwipeLoadingSearchPage extends QuickFormSearchPage {
     pageFilters.pageSize = 300;
     this.state.pageFilters = pageFilters;
     this.refreshTable();
+  };
+
+  refreshTable = filter => {
+    const { pageFilters } = this.state;
+    let queryFilter = { ...pageFilters };
+    if (filter) {
+      var order = '';
+      for (var key in filter.sortFields) {
+        var sort = filter.sortFields[key] ? 'descend' : 'ascend';
+        order = key + ',' + sort;
+      }
+      queryFilter = {
+        ...pageFilters,
+        order: order,
+        page: 1,
+        pageSize: 300,
+      };
+      //设置页码缓存
+      localStorage.setItem(this.state.reportCode + 'searchPageLine', filter.pageSize);
+    } else {
+      //查询页码重置为1
+      queryFilter.page = 1;
+    }
+    this.state.pageFilters = queryFilter;
+    this.getData(queryFilter);
   };
 }
