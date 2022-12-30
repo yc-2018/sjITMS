@@ -61,9 +61,15 @@ export default class ViewPanel extends PureComponent {
         currentRowCols = [];
       } else if (items[i].dbLength > 1000) {
         rows.push(
-          <Row gutter={[24, 12]}>
-            <Col span={2}>{items[i].label + '：'}</Col>
-            <Col span={22} className={styles.leftSpan}>
+          <Row gutter={[12, 12]}>
+            <Col span={2} style={{ fontWeight: 600 }}>
+              {items[i].label + '：'}
+            </Col>
+            <Col
+              span={22}
+              className={styles.leftSpan}
+              style={{ border: '1px dashed #000', marginTop: 5 }}
+            >
               {items[i].value || <Empty />}
             </Col>
           </Row>

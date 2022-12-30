@@ -338,7 +338,7 @@ export default class OtherFeeModal extends Component {
               <Row>
                 <Form wrapperCol={{ span: 16 }} labelCol={{ span: 8 }}>
                   <Col span={6}>
-                    <Form.Item label={'费用类型'} labelCol={{ span: 8 }}>
+                    <Form.Item label={'费用类型'}>
                       {getFieldDecorator('feeType', {
                         initialValue: this.state.feeType,
                         rules: [{ required: true, message: '请选项费用类型' }],
@@ -354,7 +354,7 @@ export default class OtherFeeModal extends Component {
                     </Form.Item>
                   </Col>
                   <Col span={6}>
-                    <Form.Item label={'金额'} labelCol={{ span: 12 }}>
+                    <Form.Item label={'金额'}>
                       {getFieldDecorator('amount', {
                         initialValue: this.state.amount,
                         rules: [{ required: true, message: '请填写金额' }],

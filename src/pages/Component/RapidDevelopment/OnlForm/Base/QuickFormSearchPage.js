@@ -339,15 +339,14 @@ export default class QuickFormSearchPage extends SearchPage {
       );
     },
     otherView: (val, column, record) => {
-      return val && record[column.preview] ? (
+      const value = this.convertData(val, column.preview, record);
+      return value != '<空>' ? (
         <a
           onClick={() => this.onOtherView(record, column)}
           style={{ color: this.colorChange(val, column.textColorJson) }}
-        >
-          {this.convertData(val, column.preview, record)}
-        </a>
+        />
       ) : (
-        this.convertData(val, column.preview, record)
+        <p3>{value}</p3>
       );
     },
     switch: (val, column, record) => {
