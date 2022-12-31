@@ -8,7 +8,7 @@
  */
 import React, { Component } from 'react';
 import { Divider, Modal, Button, Row, Col, Empty, Spin, message, Input, PageHeader } from 'antd';
-import { Map, Marker, CustomOverlay, DrawingManager } from 'react-bmapgl';
+import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
 import style from './DispatchingMap.less';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import emptySvg from '@/assets/common/img_empoty.svg';
@@ -19,7 +19,8 @@ import ShopIcon from '@/assets/common/myj.png';
 import Page from '@/pages/Component/RapidDevelopment/CommonLayout/Page/Page';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 
-import ShopClickIcon from '@/assets/common/myjClick.png';
+import otherIcon from '@/assets/common/otherMyj.png';
+// import ShopClickIcon from '@/assets/common/storeClick.svg';
 
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { sumBy, uniqBy } from 'lodash';
@@ -28,6 +29,7 @@ const { Search } = Input;
 
 export default class StoresMap extends Component {
   basicOrders = [];
+  markerArr = [];
   state = {
     visible: true,
     loading: true,
@@ -65,6 +67,7 @@ export default class StoresMap extends Component {
 
   //查询
   refresh = params => {
+    var allOverlay = this.map?.getOverlays();
     this.setState({ loading: true });
     let { pageFilter } = this.state;
     let filter = { pageSize: 200, superQuery: { matchType: 'and', queryParams: [] } };
@@ -90,9 +93,10 @@ export default class StoresMap extends Component {
         this.basicOrders = data;
         this.setState({ orders: data, otherData: otherData }, () => {
           setTimeout(() => {
-            this.drawClusterLayer();
-            this.drawMenu();
-            this.clusterSetData(data, otherData);
+            // this.drawClusterLayer();
+            // this.drawMenu();
+            // this.clusterSetData(data, otherData);
+            // this.drawMarker(data);
             this.autoViewPort(data);
           }, 500);
         });
@@ -150,19 +154,49 @@ export default class StoresMap extends Component {
 
   //标注点
   drawMarker = () => {
-    const { orders } = this.state;
-    return orders.map(order => {
+    const { orders, otherData } = this.state;
+    const otherStore = new BMapGL.Icon(otherIcon, new BMapGL.Size(42, 42));
+    const icon = new BMapGL.Icon(ShopIcon, new BMapGL.Size(42, 42));
+
+    let markers = [];
+    otherData.map(order => {
       var point = new BMapGL.Point(order.longitude, order.latitude);
-      return (
+      markers.push(
         <Marker
           position={point}
-          icon={order.isSelect ? ShopClickIcon : ShopIcon}
+          // icon={order.isSelect ? ShopClickIcon : ShopIcon}
+          icon={otherStore}
           shadow={true}
           onMouseover={() => this.setState({ windowInfo: { point, order } })}
           onMouseout={() => this.setState({ windowInfo: undefined })}
         />
       );
     });
+    // let datas = [...orders, ...otherData];
+    orders.map((order, index) => {
+      var point = new BMapGL.Point(order.longitude, order.latitude);
+      markers.push(
+        <Marker
+          position={point}
+          // icon={order.isSelect ? ShopClickIcon : ShopIcon}
+          icon={icon}
+          shadow={true}
+          onMouseover={() => this.setState({ windowInfo: { point, order } })}
+          onMouseout={() => this.setState({ windowInfo: undefined })}
+        />
+      );
+      if (otherData?.length > 0) {
+        markers.push(
+          <Label
+            position={new BMapGL.Point(order.longitude, order.latitude)}
+            offset={new BMapGL.Size(30, -30)}
+            text={index + 1}
+          />
+        );
+      }
+    });
+
+    return markers;
   };
 
   //标注点聚合图层初始化
@@ -384,36 +418,41 @@ export default class StoresMap extends Component {
   };
 
   storeFilter = (key, e) => {
-    // let serachStores = this.basicOrders.filter(
-    //   item => item.deliveryPoint.code.search(e) != -1 || item.deliveryPoint.name.search(e) != -1
-    // );
-    // this.setState({ orders: serachStores, storeInfo: e }, () => {
-    //   setTimeout(() => {
-    //     this.drawClusterLayer();
-    //     this.drawMenu();
-    //     this.clusterSetData(serachStores);
-    //     this.autoViewPort(serachStores);
-    //   }, 500);
-    // });
+    let that = this;
     if (e == '') {
-      this.setState({ isSearch: false }, () => {
-        setTimeout(() => {
-          this.map.clearOverlays();
-        }, 500);
-      });
+      setTimeout(() => {
+        if (that.markerArr.length > 0) {
+          for (var i = 0; i < that.markerArr.length; i++) {
+            this.map?.removeOverlay(that.markerArr[i]);
+          }
+        }
+        that.markerArr = [];
+      }, 500);
+      that.setState({ isSearch: false });
     } else {
       this.setState({ isSearch: true }, () => {
         var local = new BMapGL.LocalSearch(this.map, {
           renderOptions: { map: this.map, panel: 'r-result' },
         });
         local.search(e);
+        local.setMarkersSetCallback(function(pois) {
+          if (that.markerArr.length > 0) {
+            for (var i = 0; i < that.markerArr.length; i++) {
+              that.map?.removeOverlay(that.markerArr[i]);
+            }
+          }
+          for (var i = 0; i < pois.length; i++) {
+            // that.markerArr.push(pois[i].marker);
+            that.markerArr[i] = pois[i].marker;
+          }
+        });
       });
     }
     this.setState({ storeInfo: e });
   };
 
   render() {
-    const { visible, loading, windowInfo, orders } = this.state;
+    const { visible, loading, windowInfo, orders, otherData } = this.state;
     const selectOrder = orders.filter(x => x.isSelect);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
     return (
@@ -484,6 +523,7 @@ export default class StoresMap extends Component {
                       ref={ref => (this.map = ref?.map)}
                       style={{ height: '100%' }}
                     >
+                      {this.drawMarker()}
                       {windowInfo ? (
                         <CustomOverlay
                           position={windowInfo.point}
