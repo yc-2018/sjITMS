@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-12-19 17:48:10
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-20 11:28:40
+ * @LastEditTime: 2023-01-03 11:47:05
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerSearch.js
  */
@@ -44,6 +44,24 @@ export default class CustomerSearch extends QuickFormSearchPage {
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </>
     );
+  };
+
+  drawTopButton = () => {
+    return (
+      <span>
+        <Button
+          hidden={!havePermission(this.state.authority + '.import')}
+          type="primary"
+          onClick={this.onUpload}
+        >
+          导入
+        </Button>
+      </span>
+    );
+  };
+
+  onUpload = () => {
+    this.props.switchTab('import');
   };
 
   //发布

@@ -22,9 +22,9 @@ export default class CustomerCreate extends QuickCreatePage {
     const mainName = 'sj_itms_customer_service';
     const { fieldName, valueEvent } = columnEvent;
     if (fieldName == 'DISPOSEDEPT' && valueEvent) {
-      this.entity[mainName][0]['DISPOSEDEPTNAME'] = valueEvent.record?.NAME;
-      this.entity[mainName][0]['DISPOSECODE'] = valueEvent.record?.MANAGERCODE.split(',')[0];
-      this.entity[mainName][0]['DISPOSENAME'] = valueEvent.record?.MANAGERNAME.split(',')[0];
+      this.entity[mainName][0]['DISPOSEDEPTNAME'] = valueEvent.record.NAME;
+      this.entity[mainName][0]['DISPOSECODE'] = valueEvent.record.MANAGERCODE?.split(',')[0];
+      this.entity[mainName][0]['DISPOSENAME'] = valueEvent.record.MANAGERNAME?.split(',')[0];
     }
     if (fieldName == 'COMPLETIONTIME' && valueEvent) {
       const feedbackTime = this.entity[mainName][0]['FEEDBACKTIME'];
