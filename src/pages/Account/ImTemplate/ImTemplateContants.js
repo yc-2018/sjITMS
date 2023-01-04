@@ -100,4 +100,8 @@ export const ImportTemplateType = {
     name: 'SHIPPINGORDER',
     caption: '托运单',
   },
+  CUSTOMERSERVICESBILL: {
+    name: 'CUSTOMERSERVICESBILL',
+    caption: '客服工单',
+  },
 };
