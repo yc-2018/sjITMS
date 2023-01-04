@@ -1564,6 +1564,14 @@ export default [
                 authority: ['sjtms.bigData.takedeliveryfee'],
               },
               {
+                path: '/bigData/loading/lifting',
+                name: '调仓费用明细查询',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_cost_self_lifting_9086',
+                authority: ['sjtms.bigData.lifting'],
+              },
+              {
                 path: '/bigData/loading/dispatchareastore',
                 name: '日配送区域门店数统计',
                 org: ['DISPATCH_CENTER'],
