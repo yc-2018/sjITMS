@@ -863,7 +863,7 @@ export default class QuickCreatePage extends CreatePage {
       return;
     }
     const { fieldShowType, props, tableName, fieldName } = e;
-    if (fieldShowType == 'auto_complete') {
+    if (fieldShowType == 'auto_complete' || fieldShowType == 'sel_tree') {
       const orgFields = props.isOrgSearch.split(',');
       let loginOrgType = loginOrg().type.replace('_', '');
       let loginParmas = [];

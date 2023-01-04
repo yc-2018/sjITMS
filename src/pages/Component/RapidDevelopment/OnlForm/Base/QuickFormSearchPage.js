@@ -344,7 +344,7 @@ export default class QuickFormSearchPage extends SearchPage {
         <a
           onClick={() => this.onOtherView(record, column)}
           style={{ color: this.colorChange(val, column.textColorJson) }}
-        />
+        >{value}</a>
       ) : (
         <p3>{value}</p3>
       );
