@@ -59,7 +59,7 @@ export default class SearchForm extends Component {
           advancedFields: response.result.columns.filter(data => data.isShow),
         },
         () => {
-          this.onSearch(form.getFieldsValue());
+          // this.onSearch(form.getFieldsValue());
         }
       );
     }
@@ -112,12 +112,14 @@ export default class SearchForm extends Component {
         });
       }
     }
+
     await this.props.refresh(params);
   };
   //重置
   handleReset = () => {
     this.props.form.resetFields();
-    this.props.refresh();
+    // this.props.refresh();
+    this.props.changePage('500', 're');
   };
   handLinkFields = searchProperties => {
     const { linkFields } = searchProperties;
@@ -270,6 +272,16 @@ export default class SearchForm extends Component {
                 htmlType="submit"
               >
                 查询
+              </Button>
+            </Col>
+            <Col span={1}>
+              <Button
+                // type={'primary'}
+                style={{ marginLeft: 15 }}
+                loading={this.props.loading}
+                onClick={this.handleReset}
+              >
+                清空
               </Button>
             </Col>
           </Row>

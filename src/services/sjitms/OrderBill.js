@@ -48,6 +48,13 @@ export async function queryAuditedOrderByStoreMap(params) {
   });
 }
 
+export async function queryStoreMaps(params) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/queryStoreMaps`, {
+    method: 'POST',
+    body: params,
+  });
+}
+
 export async function queryCollectAuditedOrder(params) {
   return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/queryCollectAuditedOrder`, {
     method: 'POST',
