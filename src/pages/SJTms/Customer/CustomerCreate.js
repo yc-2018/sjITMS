@@ -1,3 +1,11 @@
+/*
+ * @Author: guankongjin
+ * @Date: 2023-01-03 11:44:10
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-01-04 14:21:17
+ * @Description: file content
+ * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerCreate.js
+ */
 import { connect } from 'dva';
 import { Form } from 'antd';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
@@ -29,7 +37,9 @@ export default class CustomerCreate extends QuickCreatePage {
     if (fieldName == 'COMPLETIONTIME' && valueEvent) {
       const feedbackTime = this.entity[mainName][0]['FEEDBACKTIME'];
       if (feedbackTime) {
-        this.entity[mainName][0]['DEADLINE'] = moment().add(Number(valueEvent.value), 'hours');
+        this.entity[mainName][0]['DEADLINE'] = moment()
+          .add(Number(valueEvent.value), 'hours')
+          .format('YYYY-MM-DD HH:mm:ss');
       }
     }
   };
