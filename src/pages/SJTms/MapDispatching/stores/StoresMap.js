@@ -1,19 +1,15 @@
-/*
- * @Author: guankongjin
- * @Date: 2022-07-21 15:59:18
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-11 11:28:48
- * @Description: 地图排车
- * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
- */
 import React, { Component } from 'react';
-import { Divider, Modal, Button, Row, Col, Empty, Spin, message, Input, PageHeader } from 'antd';
+import { Divider, Button, Row, Col, Spin, message, Input, PageHeader, Select } from 'antd';
 import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
 import style from './DispatchingMap.less';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import emptySvg from '@/assets/common/img_empoty.svg';
 import SearchForm from './SearchForm';
-import { queryAuditedOrderByStoreMap, queryDriverRoutes } from '@/services/sjitms/OrderBill';
+import {
+  queryAuditedOrderByStoreMap,
+  queryDriverRoutes,
+  queryStoreMaps,
+} from '@/services/sjitms/OrderBill';
 import { queryDict } from '@/services/quick/Quick';
 import ShopIcon from '@/assets/common/myj.png';
 import Page from '@/pages/Component/RapidDevelopment/CommonLayout/Page/Page';
@@ -24,8 +20,10 @@ import otherIcon from '@/assets/common/otherMyj.png';
 
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { sumBy, uniqBy } from 'lodash';
+// import Select from '@/components/ExcelImport/Select';
 
 const { Search } = Input;
+const { Option } = Select;
 
 export default class StoresMap extends Component {
   basicOrders = [];
@@ -43,10 +41,13 @@ export default class StoresMap extends Component {
     isPoly: false,
     isSearch: false,
     otherData: [],
+    storePages: '500',
+    isOrder: false,
   };
 
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
+    this.changePage('500');
   };
 
   //显示modal
@@ -66,11 +67,17 @@ export default class StoresMap extends Component {
   };
 
   //查询
-  refresh = params => {
-    var allOverlay = this.map?.getOverlays();
+  refresh = (params, pageSize) => {
+    if (params.length <= 0) {
+      this.changePage('500', 're');
+      return;
+    }
     this.setState({ loading: true });
-    let { pageFilter } = this.state;
-    let filter = { pageSize: 200, superQuery: { matchType: 'and', queryParams: [] } };
+    let { pageFilter, storePages } = this.state;
+    let filter = {
+      pageSize: pageSize ? pageSize : storePages,
+      superQuery: { matchType: 'and', queryParams: [] },
+    };
     if (params) {
       pageFilter = params;
     }
@@ -91,7 +98,7 @@ export default class StoresMap extends Component {
         let otherData = response.data.otherRecords ? response.data.otherRecords : [];
         otherData = otherData.filter(x => x.longitude && x.latitude);
         this.basicOrders = data;
-        this.setState({ orders: data, otherData: otherData }, () => {
+        this.setState({ orders: data, otherData: otherData, isOrder: true }, () => {
           setTimeout(() => {
             // this.drawClusterLayer();
             // this.drawMenu();
@@ -157,7 +164,6 @@ export default class StoresMap extends Component {
     const { orders, otherData } = this.state;
     const otherStore = new BMapGL.Icon(otherIcon, new BMapGL.Size(42, 42));
     const icon = new BMapGL.Icon(ShopIcon, new BMapGL.Size(42, 42));
-
     let markers = [];
     otherData.map(order => {
       var point = new BMapGL.Point(order.longitude, order.latitude);
@@ -451,17 +457,67 @@ export default class StoresMap extends Component {
     this.setState({ storeInfo: e });
   };
 
+  changePage = async (e, key) => {
+    const { pageFilter } = this.state;
+    if (pageFilter.length > 0 && !key) {
+      // message.error('请先点击清空！');
+      this.refresh(pageFilter, e);
+    } else {
+      this.setState({ loading: true });
+      let params = {
+        companyuuid: loginCompany().uuid,
+        dispatchcenteruuid: loginOrg().uuid,
+        cur: 1,
+        pageSize: e,
+      };
+      let res = await queryStoreMaps(params);
+      if (res.success) {
+        this.setState(
+          {
+            orders: res.data.records,
+            otherData: [],
+            loading: false,
+            pageFilter: [],
+            isOrder: false,
+          },
+          () => {
+            setTimeout(() => {
+              this.autoViewPort(res.data.records);
+            }, 500);
+          }
+        );
+      }
+    }
+    this.setState({ storePages: e });
+  };
+
   render() {
-    const { visible, loading, windowInfo, orders, otherData } = this.state;
+    const { visible, loading, windowInfo, orders, isOrder } = this.state;
     const selectOrder = orders.filter(x => x.isSelect);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
+    let storeCode = isOrder ? windowInfo?.order.deliveryPoint.code : windowInfo?.order.code;
+    let storeName = isOrder ? windowInfo?.order.deliveryPoint.name : windowInfo?.order.name;
     return (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
           <div style={{ backgroundColor: '#ffffff' }}>
             <Row type="flex" justify="space-between">
-              <Col span={24}>
-                <SearchForm refresh={this.refresh} />
+              <Col span={23}>
+                <SearchForm refresh={this.refresh} changePage={this.changePage} />
+              </Col>
+              <Col span={1}>
+                <Select
+                  defaultValue={500}
+                  onChange={e => this.changePage(e)}
+                  value={this.state.storePages}
+                >
+                  <Option value="200">200</Option>
+                  <Option value="500">500</Option>
+                  <Option value="1000">1000</Option>
+                  <Option value="2000">2000</Option>
+                  <Option value="5000">3000</Option>
+                  <Option value="99999">全部</Option>
+                </Select>
               </Col>
               {/* <Col span={1}>
                 <Button onClick={() => this.onReset()}>清空</Button>
@@ -529,7 +585,14 @@ export default class StoresMap extends Component {
                           position={windowInfo.point}
                           offset={new BMapGL.Size(15, -15)}
                         >
-                          <div style={{ width: 280, height: 100, padding: 5, background: '#FFF' }}>
+                          <div
+                            style={{
+                              width: 280,
+                              height: windowInfo.order.cartonCount ? 100 : 50,
+                              padding: 5,
+                              background: '#FFF',
+                            }}
+                          >
                             <div
                               style={{
                                 fontWeight: 'bold',
@@ -537,32 +600,44 @@ export default class StoresMap extends Component {
                                 whiteSpace: 'nowrap',
                               }}
                             >
-                              {`[${windowInfo.order.deliveryPoint.code}]` +
-                                windowInfo.order.deliveryPoint.name}
+                              {/* {`[${
+                                windowInfo.order.deliveryPoint
+                                  ? windowInfo.order.deliveryPoint.code
+                                  : windowInfo.order.code
+                              }]` + windowInfo.order.deliveryPoint
+                                ? windowInfo.order.deliveryPoint?.name
+                                : windowInfo.order.name} */}
+                              {`[${storeCode}]` + storeName}
                             </div>
                             <div>
                               线路：
-                              {windowInfo.order.archLine?.code}
+                              {windowInfo.order.archLine?.code
+                                ? windowInfo.order.archLine?.code
+                                : '<空> '}
                               所属区域：
                               {windowInfo.order.shipareaname}
                             </div>
-                            <Divider style={{ margin: 0, marginTop: 5 }} />
-                            <div style={{ display: 'flex', marginTop: 5 }}>
-                              <div style={{ flex: 1 }}>整件数</div>
-                              <div style={{ flex: 1 }}>散件数</div>
-                              <div style={{ flex: 1 }}>周转箱</div>
-                              <div style={{ flex: 1 }}>体积</div>
-                              <div style={{ flex: 1 }}>重量</div>
-                            </div>
-                            <div style={{ display: 'flex' }}>
-                              <div style={{ flex: 1 }}>{windowInfo.order.cartonCount}</div>
-                              <div style={{ flex: 1 }}>{windowInfo.order.scatteredCount}</div>
-                              <div style={{ flex: 1 }}>{windowInfo.order.containerCount}</div>
-                              <div style={{ flex: 1 }}>{windowInfo.order.volume}</div>
-                              <div style={{ flex: 1 }}>
-                                {(windowInfo.order.weight / 1000).toFixed(3)}
+                            {windowInfo.order.cartonCount ? (
+                              <div>
+                                <Divider style={{ margin: 0, marginTop: 5 }} />
+                                <div style={{ display: 'flex', marginTop: 5 }}>
+                                  <div style={{ flex: 1 }}>整件数</div>
+                                  <div style={{ flex: 1 }}>散件数</div>
+                                  <div style={{ flex: 1 }}>周转箱</div>
+                                  <div style={{ flex: 1 }}>体积</div>
+                                  <div style={{ flex: 1 }}>重量</div>
+                                </div>
+                                <div style={{ display: 'flex' }}>
+                                  <div style={{ flex: 1 }}>{windowInfo.order.cartonCount}</div>
+                                  <div style={{ flex: 1 }}>{windowInfo.order.scatteredCount}</div>
+                                  <div style={{ flex: 1 }}>{windowInfo.order.containerCount}</div>
+                                  <div style={{ flex: 1 }}>{windowInfo.order.volume}</div>
+                                  <div style={{ flex: 1 }}>
+                                    {(windowInfo.order.weight / 1000).toFixed(3)}
+                                  </div>
+                                </div>
                               </div>
-                            </div>
+                            ) : null}
                           </div>
                         </CustomOverlay>
                       ) : (
