@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2023-01-03 11:44:10
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-04 14:21:17
+ * @LastEditTime: 2023-01-04 14:44:31
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerCreate.js
  */
@@ -22,7 +22,7 @@ export default class CustomerCreate extends QuickCreatePage {
     const { showPageNow } = this.props;
     if (showPageNow == 'create') {
       const mainName = 'sj_itms_customer_service';
-      this.entity[mainName][0]['FEEDBACKTIME'] = moment();
+      this.entity[mainName][0]['FEEDBACKTIME'] = moment().format('YYYY-MM-DD HH:mm:ss');
       this.entity[mainName][0]['WAREHOUSE'] = loginOrg().uuid;
     }
   };
@@ -37,7 +37,7 @@ export default class CustomerCreate extends QuickCreatePage {
     if (fieldName == 'COMPLETIONTIME' && valueEvent) {
       const feedbackTime = this.entity[mainName][0]['FEEDBACKTIME'];
       if (feedbackTime) {
-        this.entity[mainName][0]['DEADLINE'] = moment()
+        this.entity[mainName][0]['DEADLINE'] = moment(feedbackTime)
           .add(Number(valueEvent.value), 'hours')
           .format('YYYY-MM-DD HH:mm:ss');
       }
