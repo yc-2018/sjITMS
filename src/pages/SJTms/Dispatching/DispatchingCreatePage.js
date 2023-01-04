@@ -1081,6 +1081,7 @@ export default class DispatchingCreatePage extends Component {
                           placeholder="请选择员工类型"
                           onChange={val => this.handleEmployeeTypeChange(employee, val)}
                           style={{ width: '100%' }}
+                          disabled={employee.HIRED_TYPE != '合同工'}
                           value={employee.memberType}
                         >
                           {this.dict.filter(x => x.dictCode == 'employeeType').map(d => (
@@ -1097,15 +1098,19 @@ export default class DispatchingCreatePage extends Component {
                         >
                           移除
                         </a>
-                        <a
-                          href="#"
-                          onClick={() => {
-                            this.addWorkType(employee);
-                          }}
-                          style={{ marginLeft: 10 }}
-                        >
-                          复制
-                        </a>
+                        {employee.HIRED_TYPE == '合同工' ? (
+                          <a
+                            href="#"
+                            onClick={() => {
+                              this.addWorkType(employee);
+                            }}
+                            style={{ marginLeft: 10 }}
+                          >
+                            复制
+                          </a>
+                        ) : (
+                          <></>
+                        )}
                       </Col>
                     </Row>
                   );
