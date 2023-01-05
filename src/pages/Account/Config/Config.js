@@ -16,6 +16,7 @@ import siderStyle from '@/pages/Component/Page/inner/SiderPage.less';
 import styles from './Config.less';
 import QueryBillDateConfig from '@/pages/Facility/Config/QueryBillDateConfig/QueryBillDateConfig';
 import PlanConfig from './PlanConfig/PlanConfig';
+import DispatchingConfig from './DispatchingConfig/DispatchingConfig';
 import DingTaskConfigPage from './DingTaskConfig/DingTaskConfigPage';
 const { SubMenu } = Menu;
 
@@ -140,6 +141,7 @@ export default class Config extends SiderPage {
               <Menu.Item key={configLocale.tmsConfig.returndistributiontypeconfig.key}>
                 {configLocale.tmsConfig.returndistributiontypeconfig.name}
               </Menu.Item>
+              <Menu.Item key={'dispatchConfig'}>{'配送调度配置'}</Menu.Item>
               <Menu.Item key={'pcdpz'}>{'排车体积重量限制'}</Menu.Item>
               <Menu.Item key={'dingTaskPush'}>{'钉钉推送配置'}</Menu.Item>
             </SubMenu>
@@ -234,6 +236,8 @@ export default class Config extends SiderPage {
       return <TimeIntervalConfig />;
     } else if (currentSelectedKey === configLocale.innerConfig.queryBillDateConfig.key) {
       return <QueryBillDateConfig />;
+    } else if (currentSelectedKey === 'dispatchConfig') {
+      return <DispatchingConfig />;
     } else if (currentSelectedKey === 'pcdpz') {
       return <PlanConfig />;
     } else if (currentSelectedKey === 'dingTaskPush') {
