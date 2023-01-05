@@ -749,6 +749,7 @@ export default class DispatchingCreatePage extends Component {
       editPageVisible,
       note,
     } = this.state;
+    const { dispatchConfig } = this.props;
     const totalData = this.groupByOrder(orders);
     //车辆可装载信息
     let vehicleCalc;
@@ -1081,7 +1082,9 @@ export default class DispatchingCreatePage extends Component {
                           placeholder="请选择员工类型"
                           onChange={val => this.handleEmployeeTypeChange(employee, val)}
                           style={{ width: '100%' }}
-                          disabled={employee.HIRED_TYPE != '合同工'}
+                          disabled={
+                            dispatchConfig?.isStuckEmpType == 0 && employee.HIRED_TYPE == '承运商'
+                          }
                           value={employee.memberType}
                         >
                           {this.dict.filter(x => x.dictCode == 'employeeType').map(d => (
@@ -1098,7 +1101,9 @@ export default class DispatchingCreatePage extends Component {
                         >
                           移除
                         </a>
-                        {employee.HIRED_TYPE == '合同工' ? (
+                        {dispatchConfig?.isStuckEmpType == 0 && employee.HIRED_TYPE == '承运商' ? (
+                          <></>
+                        ) : (
                           <a
                             href="#"
                             onClick={() => {
@@ -1108,8 +1113,6 @@ export default class DispatchingCreatePage extends Component {
                           >
                             复制
                           </a>
-                        ) : (
-                          <></>
                         )}
                       </Col>
                     </Row>

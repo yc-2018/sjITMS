@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-12 09:17:38
+ * @LastEditTime: 2023-01-05 09:50:37
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -148,7 +148,9 @@ export default class OrderPoolPage extends Component {
           showTotal: total => `共 ${total} 条`,
         };
         const data = response.data.records ? response.data.records : [];
-        const collectResponse = await queryCollectAuditedOrder(filter);
+        const collectResponse = this.props.dispatchConfig?.isShowSum
+          ? await queryCollectAuditedOrder(filter)
+          : {};
         this.setState({
           searchPagination,
           auditedData: data,
@@ -670,6 +672,10 @@ export default class OrderPoolPage extends Component {
   };
   //汇总数据
   drawCollect = (footer, orders) => {
+    const { dispatchConfig } = this.props;
+    if (!dispatchConfig?.isShowSum && footer) {
+      return;
+    }
     const totalTextStyle = footer
       ? {}
       : { fontSize: 16, fontWeight: 700, marginLeft: 2, color: '#333' };
@@ -802,7 +808,7 @@ export default class OrderPoolPage extends Component {
       waveOrder,
       countUnit,
     } = this.state;
-    const { isOrderCollect, totalOrder } = this.props;
+    const { isOrderCollect, totalOrder, dispatchConfig } = this.props;
     const collectOrder = this.collectByOrder(totalOrder);
     let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
     const formItems = searchParams.map(searchParam => (
@@ -828,6 +834,7 @@ export default class OrderPoolPage extends Component {
         </Col>
       </Row>
     ));
+    const orderPoolHeight = dispatchConfig?.isShowSum ? 235 : 210;
     return (
       <div>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
@@ -882,7 +889,7 @@ export default class OrderPoolPage extends Component {
                     childSelectedRowKeys={auditedRowKeys}
                     columns={OrderCollectColumns}
                     nestColumns={OrderDetailColumns}
-                    scrollY="calc(86vh - 235px)"
+                    scrollY={`calc(86vh - ${orderPoolHeight}px)`}
                     title={() => this.drawCollect(false, collectOrder)}
                     footer={() => this.drawCollect(true, waveOrder)}
                   />
@@ -901,7 +908,7 @@ export default class OrderPoolPage extends Component {
                     }
                     selectedRowKeys={auditedRowKeys}
                     columns={OrderColumns}
-                    scrollY="calc(86vh - 235px)"
+                    scrollY={`calc(86vh - ${orderPoolHeight}px)`}
                     title={() => this.drawCollect(false, collectOrder)}
                     footer={() => this.drawCollect(true, waveOrder)}
                   />
@@ -960,6 +967,7 @@ export default class OrderPoolPage extends Component {
                 this.props.refreshPending();
                 this.props.refreshSchedule();
               }}
+              dispatchConfig={this.props.dispatchConfig}
               onRef={node => (this.createPageModalRef = node)}
             />
             <DispatchMap

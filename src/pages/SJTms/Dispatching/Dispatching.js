@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-29 14:03:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-19 09:09:59
+ * @LastEditTime: 2023-01-05 09:29:41
  * @Description: 配送调度主页面
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\Dispatching.js
  */
@@ -16,6 +16,8 @@ import SchedulePage from './SchedulePage';
 import PendingPage from './PendingPage';
 import ScheduleDetailPage from './ScheduleDetailPage';
 import dispatchingStyles from './Dispatching.less';
+import { loginOrg } from '@/utils/LoginContext';
+import { getDispatchConfig } from '@/services/tms/DispatcherConfig';
 
 const { Content } = Layout;
 
@@ -30,10 +32,15 @@ export default class Dispatching extends Component {
 
   state = {
     selectOrders: [],
+    dispatchConfig: {},
     isOrderCollect: true,
   };
 
-  componentDidMount() {
+  async componentDidMount() {
+    const response = await getDispatchConfig(loginOrg().uuid);
+    if (response.success) {
+      this.setState({ dispatchConfig: response.data });
+    }
     const isOrderCollect = localStorage.getItem(window.location.hostname + '-orderCollect');
     this.setState({ isOrderCollect: isOrderCollect != 'false' });
   }
@@ -94,6 +101,7 @@ export default class Dispatching extends Component {
                         refreshSchedule={this.refreshScheduleTable}
                         refreshPending={this.refreshPendingTable}
                         selectPending={this.getSelectPending}
+                        dispatchConfig={this.state.dispatchConfig}
                         refreshSelectRowOrder={this.refreshSelectRowOrder}
                         totalOrder={this.state.selectOrders}
                       />
@@ -106,6 +114,7 @@ export default class Dispatching extends Component {
                         refreshOrder={this.refreshOrderTable}
                         refreshPending={this.refreshPendingTable}
                         refreshDetail={this.refreshSelectScheduleTable}
+                        dispatchConfig={this.state.dispatchConfig}
                         authority={this.props.route?.authority ? this.props.route.authority : null}
                       />
                     </div>
