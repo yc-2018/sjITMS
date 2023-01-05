@@ -43,6 +43,7 @@ export default class StoresMap extends Component {
     otherData: [],
     storePages: '500',
     isOrder: false,
+    storeParams: [],
   };
 
   componentDidMount = () => {
@@ -67,9 +68,9 @@ export default class StoresMap extends Component {
   };
 
   //查询
-  refresh = (params, pageSize) => {
+  refresh = (params, pageSize, storeParams) => {
     if (params.length <= 0) {
-      this.changePage('500', 're');
+      this.changePage('500', 're', storeParams);
       return;
     }
     this.setState({ loading: true });
@@ -91,22 +92,34 @@ export default class StoresMap extends Component {
       // { field: 'STAT', type: 'VarChar', rule: 'in', val: 'Audited||PartScheduled' },
       { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
     ];
-    queryAuditedOrderByStoreMap(filter).then(response => {
+    queryAuditedOrderByStoreMap(filter).then(async response => {
       if (response.success) {
         let data = response.data.records ? response.data.records : [];
         data = data.filter(x => x.longitude && x.latitude);
         let otherData = response.data.otherRecords ? response.data.otherRecords : [];
         otherData = otherData.filter(x => x.longitude && x.latitude);
         this.basicOrders = data;
-        this.setState({ orders: data, otherData: otherData, isOrder: true }, () => {
-          setTimeout(() => {
-            // this.drawClusterLayer();
-            // this.drawMenu();
-            // this.clusterSetData(data, otherData);
-            // this.drawMarker(data);
-            this.autoViewPort(data);
-          }, 500);
+        //查询门店
+        let storeRes = [];
+        console.log('storeParams', storeParams);
+        if (JSON.stringify(storeParams) !== '{}') {
+          storeRes = await this.getStoreMaps(pageSize ? pageSize : storePages, storeParams);
+        }
+        data.map(e => {
+          e.isOrder = true;
         });
+        this.setState(
+          { orders: [...data, ...storeRes], otherData: otherData, isOrder: true },
+          () => {
+            setTimeout(() => {
+              // this.drawClusterLayer();
+              // this.drawMenu();
+              // this.clusterSetData(data, otherData);
+              // this.drawMarker(data);
+              this.autoViewPort(data);
+            }, 500);
+          }
+        );
         // this.drawingManagerRef?.open();
         // this.drawingManagerRef?.setDrawingMode(BMAP_DRAWING_RECTANGLE);
       }
@@ -191,7 +204,7 @@ export default class StoresMap extends Component {
           onMouseout={() => this.setState({ windowInfo: undefined })}
         />
       );
-      if (otherData?.length > 0) {
+      if (otherData?.length > 0 && order.isOrder) {
         markers.push(
           <Label
             position={new BMapGL.Point(order.longitude, order.latitude)}
@@ -457,28 +470,30 @@ export default class StoresMap extends Component {
     this.setState({ storeInfo: e });
   };
 
-  changePage = async (e, key) => {
-    const { pageFilter } = this.state;
+  changePage = async (e, key, storeParamsp) => {
+    const { pageFilter, storeParams } = this.state;
+
     if (pageFilter.length > 0 && !key) {
       // message.error('请先点击清空！');
-      this.refresh(pageFilter, e);
+      this.refresh(pageFilter, e, storeParams);
     } else {
       this.setState({ loading: true });
       let params = {
+        ...storeParamsp,
         companyuuid: loginCompany().uuid,
         dispatchcenteruuid: loginOrg().uuid,
         cur: 1,
         pageSize: e,
       };
       let res = await queryStoreMaps(params);
-      if (res.success) {
+      if (res.success && res.data) {
         this.setState(
           {
             orders: res.data.records,
             otherData: [],
-            loading: false,
             pageFilter: [],
             isOrder: false,
+            loading: false,
           },
           () => {
             setTimeout(() => {
@@ -486,17 +501,56 @@ export default class StoresMap extends Component {
             }, 500);
           }
         );
+      } else {
+        this.setState(
+          {
+            orders: [],
+            otherData: [],
+            pageFilter: [],
+            isOrder: false,
+            loading: false,
+          },
+          () => {
+            setTimeout(() => {
+              this.autoViewPort([]);
+            }, 500);
+          }
+        );
       }
     }
-    this.setState({ storePages: e });
+    this.setState({
+      storePages: e,
+    });
+  };
+
+  getStoreMaps = async (pageSize, storeParams) => {
+    let params = {
+      ...storeParams,
+      companyuuid: loginCompany().uuid,
+      dispatchcenteruuid: loginOrg().uuid,
+      cur: 1,
+      pageSize: pageSize,
+    };
+    let res = await queryStoreMaps(params);
+    if (res.success && res.data) {
+      return res.data.records;
+    } else return [];
   };
 
   render() {
     const { visible, loading, windowInfo, orders, isOrder } = this.state;
-    const selectOrder = orders.filter(x => x.isSelect);
-    const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
-    let storeCode = isOrder ? windowInfo?.order.deliveryPoint.code : windowInfo?.order.code;
-    let storeName = isOrder ? windowInfo?.order.deliveryPoint.name : windowInfo?.order.name;
+    // const selectOrder = orders.filter(x => x.isSelect);
+    // const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
+    let storeCode = '[空]';
+    let storeName = '<空>';
+    if (windowInfo) {
+      storeCode = windowInfo.order.isOrder
+        ? windowInfo.order.deliveryPoint.code
+        : windowInfo.order.code;
+      storeName = windowInfo.order.isOrder
+        ? windowInfo.order.deliveryPoint.name
+        : windowInfo.order.name;
+    }
     return (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
