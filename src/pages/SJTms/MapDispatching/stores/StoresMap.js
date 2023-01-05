@@ -437,6 +437,9 @@ export default class StoresMap extends Component {
   };
 
   storeFilter = (key, e) => {
+    var local = new BMapGL.LocalSearch(this.map, {
+      renderOptions: { map: this.map, panel: 'r-result' },
+    });
     let that = this;
     if (e == '') {
       setTimeout(() => {
@@ -446,14 +449,20 @@ export default class StoresMap extends Component {
           }
         }
         that.markerArr = [];
-      }, 500);
+      }, 1000);
       that.setState({ isSearch: false });
     } else {
       this.setState({ isSearch: true }, () => {
-        var local = new BMapGL.LocalSearch(this.map, {
-          renderOptions: { map: this.map, panel: 'r-result' },
-        });
         local.search(e);
+        //增加经纬度
+        local.setSearchCompleteCallback(e => {
+          e._pois.map(point => {
+            point.address = `${point.address ? point.address : ''}${'\r\r'}[${
+              point.point.lat
+            }]${'\r\r'}[${point.point.lng}]`;
+          });
+        });
+
         local.setMarkersSetCallback(function(pois) {
           if (that.markerArr.length > 0) {
             for (var i = 0; i < that.markerArr.length; i++) {
