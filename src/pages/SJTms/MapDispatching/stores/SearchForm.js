@@ -76,6 +76,7 @@ export default class SearchForm extends Component {
   //查询
   onSearch = async searchParam => {
     let params = new Array();
+    let storeParams = {};
     const { selectFields } = this.state;
     for (let param in searchParam) {
       const field = selectFields.find(x => x.fieldName == param);
@@ -104,16 +105,24 @@ export default class SearchForm extends Component {
       }
 
       if (val && field) {
-        params.push({
-          field: field.fieldName,
-          type: field.fieldType,
-          rule: field.searchCondition || 'like',
-          val,
-        });
+        if (
+          field.fieldName == 'LINEAREA' ||
+          field.fieldName == 'SHIPAREA' ||
+          field.fieldName == 'CONTACT' ||
+          field.fieldName == 'DELIVERYPOINTCODE'
+        ) {
+          storeParams = { ...storeParams, [field.fieldName]: val };
+        } else {
+          params.push({
+            field: field.fieldName,
+            type: field.fieldType,
+            rule: field.searchCondition || 'like',
+            val,
+          });
+        }
       }
     }
-
-    await this.props.refresh(params);
+    await this.props.refresh(params, null, storeParams);
   };
   //重置
   handleReset = () => {
@@ -277,7 +286,7 @@ export default class SearchForm extends Component {
             <Col span={1}>
               <Button
                 // type={'primary'}
-                style={{ marginLeft: 15 }}
+                style={{ marginLeft: 30 }}
                 loading={this.props.loading}
                 onClick={this.handleReset}
               >
