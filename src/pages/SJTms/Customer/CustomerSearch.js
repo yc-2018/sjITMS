@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-12-19 17:48:10
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-07 09:09:43
+ * @LastEditTime: 2023-01-07 11:30:44
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerSearch.js
  */
@@ -24,6 +24,16 @@ export default class CustomerSearch extends QuickFormSearchPage {
     ...this.state,
     releaseModal: false,
     releaseRemark: '',
+  };
+
+  drawcell = row => {
+    if (row.column.fieldName == 'NORM' && row.record.NORM == '不规范') {
+      row.component = (
+        <span style={{ padding: '0 10px', background: 'red', color: '#fff' }}>
+          {row.record.NORM}
+        </span>
+      );
+    }
   };
 
   drawToolsButton = () => {
