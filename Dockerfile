@@ -11,8 +11,6 @@ ENV BALANCE_RABBIT_HOST1 = 00
 ENV BALANCE_RABBIT_HOST2 = 00
 ENV BALANCE_RABBIT_HOST3 = 00
 
-ENV PRO_ENV = true
-
 WORKDIR /usr/share/nginx/html/
 COPY dist  /usr/share/nginx/html/
 

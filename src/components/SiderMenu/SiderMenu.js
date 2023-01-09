@@ -120,7 +120,7 @@ export default class SiderMenu extends PureComponent {
         <div className={styles.logo} id="logo">
           <Link to="/bigData/zs/count" className={styles.linkStyle}>
             <img src={logo} style={{ width: collapsed ? '20px' : '' }} alt="logo" />
-            <h1> {configs.docker?.PRO_ENV ? '时捷TMS' : '时捷TMS(测试)'}</h1>
+            <h1> {API_ENV == 'test' ? '时捷TMS(测试)' : '时捷TMS'}</h1>
           </Link>
         </div>
         <BaseMenu

@@ -19,9 +19,9 @@ const configs = {
   },
   // 测试环境
   test: {
-    API_SERVER: 'http://172.17.10.133:8080',
-    'avatar.default.url': 'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',
-    RPORTER_SERVER: 'http://app5.iwms.hd123.cn:8081/iwms-report/decision/view/report',
+    API_SERVER: 'DOCKER_API_SERVER_ADDR',
+    'avatar.default.url': avatarSvg,
+    RPORTER_SERVER: 'http://DOCKER_RPORTER_SERVER_ADDR/iwms-report/decision/view/report',
     PRINT_TYPE: 0,
   },
   // Docker 模拟部署环境
@@ -30,7 +30,6 @@ const configs = {
     'avatar.default.url': avatarSvg,
     RPORTER_SERVER: 'http://DOCKER_RPORTER_SERVER_ADDR/iwms-report/decision/view/report',
     PRINT_TYPE: 0,
-    PRO_ENV: 'DOCKER_PRO_ENV',
   },
 };
 
