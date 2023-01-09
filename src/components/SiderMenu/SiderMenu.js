@@ -5,6 +5,7 @@ import classNames from 'classnames';
 import Link from 'umi/link';
 import styles from './index.less';
 import BaseMenu, { getMenuMatches } from './BaseMenu';
+import configs from '@/utils/config';
 import { urlToList } from '../_utils/pathTools';
 import defaultSettings from '../../defaultSettings';
 
@@ -117,9 +118,9 @@ export default class SiderMenu extends PureComponent {
         }}
       >
         <div className={styles.logo} id="logo">
-          <Link to="/">
+          <Link to="/bigData/zs/count" className={styles.linkStyle}>
             <img src={logo} style={{ width: collapsed ? '20px' : '' }} alt="logo" />
-            <h1>时捷TMS</h1>
+            <h1> {configs.docker?.PRO_ENV ? '时捷TMS' : '时捷TMS(测试)'}</h1>
           </Link>
         </div>
         <BaseMenu
@@ -127,7 +128,7 @@ export default class SiderMenu extends PureComponent {
           mode="vertical"
           handleOpenChange={this.handleOpenChange}
           //onOpenChange={this.handleOpenChange}
-          style={{ padding: '16px 0', width: '100%', overflowX: 'hidden' }}
+          style={{ padding: '8px 0 16px', width: '100%', overflowX: 'hidden' }}
           {...defaultProps}
         />
       </Sider>

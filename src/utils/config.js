@@ -30,6 +30,7 @@ const configs = {
     'avatar.default.url': avatarSvg,
     RPORTER_SERVER: 'http://DOCKER_RPORTER_SERVER_ADDR/iwms-report/decision/view/report',
     PRINT_TYPE: 0,
+    PRO_ENV: 'DOCKER_PRO_ENV',
   },
 };
 

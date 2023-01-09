@@ -2,29 +2,6 @@
 
 @nav-header-height: 44px;
 
-.logo {
-  height: @nav-header-height;
-  position: relative;
-  line-height: @nav-header-height;
-  padding-left: 12px;
-  transition: all 0.3s;
-  overflow: hidden;
-  img {
-    display: inline-block;
-    vertical-align: middle;
-    height: 32px;
-  }
-  h1 {
-    color: white;
-    display: inline-block;
-    vertical-align: middle;
-    font-size: 20px;
-    margin: 0 0 0 8px;
-    font-family: 'Myriad Pro', 'Helvetica Neue', Arial, Helvetica, sans-serif;
-    font-weight: 600;
-  }
-}
-
 .sider {
   min-height: 100vh;
   // box-shadow: 2px 0 6px rgba(0, 21, 41, 0.35);
@@ -58,6 +35,31 @@
 
     :global(.ant-menu-light) {
       border-right-color: transparent;
+    }
+  }
+
+  .logo {
+    height: @nav-header-height;
+    position: relative;
+    line-height: @nav-header-height;
+    padding-left: 12px;
+    transition: all 0.3s;
+    overflow: hidden;
+    .linkStyle {
+      display: flex;
+      align-items: center;
+    }
+    img {
+      vertical-align: middle;
+      height: 28px;
+    }
+    h1 {
+      color: white;
+      white-space: nowrap;
+      font-size: 20px;
+      margin: 0 0 0 8px;
+      font-family: 'Myriad Pro', 'Helvetica Neue', Arial, Helvetica, sans-serif;
+      font-weight: 600;
     }
   }
 }
