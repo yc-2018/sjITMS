@@ -145,6 +145,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
       //canDragTable:false,
       lineuuid: this.props.lineuuid,
       systemLineFlag: this.props.systemLineFlag,
+      systemData:this.props.lineTreeData
     });
   }
   getLineShipAddress = () => {
@@ -156,9 +157,10 @@ export default class LineShipAddress extends QuickFormSearchPage {
       this.state.systemLineFlag = nextProps.systemLineFlag;
       this.state.buttonDisable = false;
       this.state.canDragTable = nextProps.canDragTables;
-      if(!this.state.systemData){
-        this.state.systemData = this.props.lineTreeData
-      }
+      this.state.systemData = nextProps.lineTreeData;
+      // if(!this.state.systemData){
+      //   this.state.systemData = this.props.lineTreeData
+      // }
       await this.onSearch();
     }
   };
@@ -518,6 +520,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
       lineModalVisible,
       lineData,
       systemLineFlag,
+      systemData
     } = this.state;
     const options = lineData.map(a => {
       return <Select.Option key={a.uuid}>{a.name}</Select.Option>;
@@ -580,7 +583,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
                     showSearch
                     allowClear={true}
                     optionFilterProp="children"
-                    treeData={this.state.systemData}
+                    treeData={systemData}
                     labelInValue={true}
                     // 将value进行了一层包装，以方便日后扩展
                     value={this.state.lineValue}

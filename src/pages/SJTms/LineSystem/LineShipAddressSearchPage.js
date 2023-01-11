@@ -40,7 +40,7 @@ export default class LineShipAddressSearchPage extends Component {
       selectedKey: this.props.selectedKey,
       lineTreeData: this.lineTreeData,
       lineData: this.props.lineData,
-      systemLineFlag: this.props.systemLineFlag,
+      systemuuid: this.props.systemuuid,
     });
   }
   handleCancel = () => {};
@@ -162,10 +162,10 @@ export default class LineShipAddressSearchPage extends Component {
     }
   };
   render() {
-    const { systemData, selectedKey, lineTreeData, sdf, lineData, systemLineFlag } = this.state;
+    const { systemData, selectedKey, lineTreeData, sdf, lineData, systemuuid } = this.state;
     return (
       <>
-        {systemLineFlag && (
+        {systemuuid && (
           <div>
             <div className={linesStyles.navigatorPanelWrapper}>
               <span className={linesStyles.sidertitle}>线路体系</span>
@@ -302,14 +302,14 @@ export default class LineShipAddressSearchPage extends Component {
         )}
         <div>
           <Tabs defaultActiveKey={'lineShipAddress'}  
-          className = {!systemLineFlag&&LineSystem.tabsTop}>
+          className = {!systemuuid&&LineSystem.tabsTop}>
             <TabPane tab="线路门店" key="1">
               <LineShipAddress
                 key="lineShipAddress"
                 quickuuid="sj_itms_line_shipaddress"
                 lineuuid={selectedKey}
                 lineTreeData={lineTreeData}
-                systemLineFlag={systemLineFlag}
+                systemLineFlag={systemuuid}
                 //showadfa={() => this.queryLineSystem(this.state.selectLineUuid)}
                 canDragTables={sdf && sdf.children ? false : true}
                 linecode={
@@ -318,7 +318,7 @@ export default class LineShipAddressSearchPage extends Component {
                 systemData={systemData}
               />
             </TabPane>
-            {!systemLineFlag && (
+            {!systemuuid && (
               <TabPane tab="门店地图" key="2">
                 <LineMap key="storeMap" lineuuid={selectedKey} />
               </TabPane>

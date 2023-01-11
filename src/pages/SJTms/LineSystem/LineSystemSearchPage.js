@@ -124,36 +124,36 @@ export default class LineSystemSearchPage extends Component {
   };
 
   //查询所有线路体系
-  queryLineSystema = async lineuuid => {
-    await findLineSystemTree({ company: loginCompany().uuid, dcUuid: loginOrg().uuid }).then(
-      async response => {
-        let lineTreeData = [];
-        let lineData = [];
-        if (response) {
-          const data = response?.data;
-          await data?.forEach(element => {
-            let itemData = {};
-            this.getLineSystemTree(element, itemData, lineData);
-            lineTreeData.push(itemData);
-          });
-          if (lineuuid == undefined) {
-            lineuuid = lineTreeData
-              ? lineTreeData[0]?.children
-                ? lineTreeData[0].children[0]?.key
-                : lineTreeData[0]?.key
-              : undefined;
-          }
-          this.setState({
-            expandKeys: lineTreeData.map(x => x.key),
-            lineTreeData,
-            lineData,
-            selectLineUuid: lineuuid,
-          });
-          this.onSelect([this.state.selectLineUuid]);
-        }
-      }
-    );
-  };
+  // queryLineSystema = async lineuuid => {
+  //   await findLineSystemTree({ company: loginCompany().uuid, dcUuid: loginOrg().uuid }).then(
+  //     async response => {
+  //       let lineTreeData = [];
+  //       let lineData = [];
+  //       if (response) {
+  //         const data = response?.data;
+  //         await data?.forEach(element => {
+  //           let itemData = {};
+  //           this.getLineSystemTree(element, itemData, lineData);
+  //           lineTreeData.push(itemData);
+  //         });
+  //         if (lineuuid == undefined) {
+  //           lineuuid = lineTreeData
+  //             ? lineTreeData[0]?.children
+  //               ? lineTreeData[0].children[0]?.key
+  //               : lineTreeData[0]?.key
+  //             : undefined;
+  //         }
+  //         this.setState({
+  //           expandKeys: lineTreeData.map(x => x.key),
+  //           lineTreeData,
+  //           lineData,
+  //           selectLineUuid: lineuuid,
+  //         });
+  //         this.onSelect([this.state.selectLineUuid]);
+  //       }
+  //     }
+  //   );
+  // };
   //查询所有线路体系
   queryLineSystem = async lineuuid => {
     const parmas = {
@@ -179,14 +179,14 @@ export default class LineSystemSearchPage extends Component {
           //     : lineTreeData[0]?.key
           //   : undefined;
         }
-        this.setState({
+       const treeData = {
           expandKeys: lineTreeData.map(x => x.key),
           lineTreeData,
           lineData,
-          selectLineUuid: lineuuid,
+          //selectLineUuid: lineuuid,
           treeuuid:Date.now()
-        });
-        this.onSelect([this.state.selectLineUuid]);
+        };
+        this.onSelects([lineuuid],treeData);
       }
     });
   };
@@ -333,7 +333,7 @@ export default class LineSystemSearchPage extends Component {
   //选中树节点
   onSelect = async (selectedKeys, event) => {
     const { lineTreeData, lineData } = this.state;
-    let sdf = await this.pdChildren(lineTreeData, selectedKeys[0]);
+    let Children = await this.pdChildren(lineTreeData, selectedKeys[0]);
     if (selectedKeys.length == 1 && selectedKeys[0] == undefined) {
       this.setState({ rightContent: <></>, selectLineUuid: undefined });
       return;
@@ -345,9 +345,31 @@ export default class LineSystemSearchPage extends Component {
       selectLineUuid: selectedKeys[0],
       systemData: systemData,
       systemuuid: systemuuid,
-      sdf: sdf,
+      sdf: Children,
     });
   };
+    //选中树节点
+    onSelects = async (selectedKeys,treedata) => {
+      const { lineTreeData, lineData } = this.state;
+      let sdf = await this.pdChildren(lineTreeData, selectedKeys[0]);
+      if (selectedKeys.length == 1 && selectedKeys[0] == undefined) {
+        this.setState({ rightContent: <></>, selectLineUuid: undefined });
+        return;
+      }
+      const systemuuid = treedata.lineTreeData.find(x => x.key == selectedKeys[0]);
+      const systemData = await this.swithCom(systemuuid, selectedKeys[0]);
+      console.log("onsystemuuid",systemuuid,"sdf",sdf);
+      console.log("ssds",lineTreeData);
+      console.log("treedata",treedata);
+      console.log("selectedKeys",selectedKeys[0]);
+      this.setState({
+        ...treedata,
+        selectLineUuid: selectedKeys[0],
+        systemData: systemData,
+        systemuuid: systemuuid,
+        sdf: sdf,
+      });
+    };
   //展开/收起节点
   onExpand = (_, event) => {
     const { expandKeys } = this.state;
@@ -722,7 +744,6 @@ export default class LineSystemSearchPage extends Component {
             {
              selectLineUuid&&<LineShipAddressSearchPage
              selectedKey={selectLineUuid}
-             systemLineFlag={systemuuid ? true : false}
              systemuuid={systemuuid}
              lineTreeData={this.state.lineTreeData}
              lineData={this.state.lineData}
