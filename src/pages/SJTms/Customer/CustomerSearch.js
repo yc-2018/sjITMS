@@ -2,8 +2,8 @@
  * @Author: guankongjin
  * @Date: 2022-12-19 17:48:10
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-07 11:30:44
- * @Description: file content
+ * @LastEditTime: 2023-01-11 16:47:31
+ * @Description: 客服工单
  * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerSearch.js
  */
 import React from 'react';
@@ -12,6 +12,7 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import { Button, message, Form, Modal, Input, Popconfirm } from 'antd';
 import { release, finished, unFinished, norm } from '@/services/sjitms/Customer';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
+import DisposePage from '../CustomerDispose/DisposePage';
 
 import { havePermission } from '@/utils/authority';
 
@@ -55,7 +56,12 @@ export default class CustomerSearch extends QuickFormSearchPage {
         >
           发布
         </Button>
-        <Modal
+        <DisposePage
+          operation="Release"
+          ref={page => (this.releasePageRef = page)}
+          onSearch={this.onSearch}
+        />
+        {/* <Modal
           width="40%"
           title={'发布'}
           onOk={() => this.onRelease()}
@@ -73,7 +79,18 @@ export default class CustomerSearch extends QuickFormSearchPage {
               />
             </Form.Item>
           </Form>
-        </Modal>
+        </Modal> */}
+        <Button
+          onClick={() => this.handleResult()}
+          hidden={!havePermission(this.state.authority + '.complete')}
+        >
+          回复结果
+        </Button>
+        <DisposePage
+          operation="Result"
+          ref={page => (this.disposePageRef = page)}
+          onSearch={this.onSearch}
+        />
         <Button
           onClick={() => this.handleFinished()}
           hidden={!havePermission(this.state.authority + '.complete')}
@@ -149,7 +166,8 @@ export default class CustomerSearch extends QuickFormSearchPage {
       return;
     }
     if (selectedRows.length == 1 && selectedRows[0].STATUS == 'Rejected') {
-      this.setState({ releaseModal: true });
+      // this.setState({ releaseModal: true });
+      this.releasePageRef.show(selectedRows[0]);
       return;
     }
     if (selectedRows.length == 1) {
@@ -157,8 +175,6 @@ export default class CustomerSearch extends QuickFormSearchPage {
         if (response.success) {
           message.success('发布成功！');
           this.onSearch();
-        } else {
-          message.error(response.message);
         }
       });
     } else {
@@ -174,6 +190,15 @@ export default class CustomerSearch extends QuickFormSearchPage {
     return await release(uuid, '');
   };
 
+  handleResult = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length != 1) {
+      message.warning('请选中一条数据！');
+      return;
+    }
+    this.disposePageRef.show(selectedRows[0]);
+  };
+
   //完结
   handleFinished = () => {
     const { selectedRows } = this.state;
@@ -186,8 +211,6 @@ export default class CustomerSearch extends QuickFormSearchPage {
         if (response.success) {
           message.success('保存成功！');
           this.onSearch();
-        } else {
-          message.error(response.message);
         }
       });
     } else {
@@ -215,8 +238,6 @@ export default class CustomerSearch extends QuickFormSearchPage {
         if (response.success) {
           message.success('保存成功！');
           this.onSearch();
-        } else {
-          message.error(response.message);
         }
       });
     } else {
@@ -255,8 +276,6 @@ export default class CustomerSearch extends QuickFormSearchPage {
         if (response.success) {
           message.success('规范标识保存成功！');
           this.onSearch();
-        } else {
-          message.error(response.message);
         }
       });
     } else {
@@ -284,8 +303,6 @@ export default class CustomerSearch extends QuickFormSearchPage {
         if (response.success) {
           message.success('不规范标识保存成功！');
           this.onSearch();
-        } else {
-          message.error(response.message);
         }
       });
     } else {

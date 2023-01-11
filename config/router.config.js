@@ -1347,6 +1347,13 @@ export default [
             authority: ['sjtms.customer.service'],
           },
           {
+            path: '/tmscode/serviceDispose',
+            name: '客服工单处理',
+            component: './SJTms/CustomerDispose/Customer',
+            quickuuid: 'sj_itms_customer_servicedispose',
+            authority: ['sjtms.customer.serviceDispose'],
+          },
+          {
             path: '/tmscode/storesMap',
             name: '门店地图',
             org: ['DISPATCH_CENTER'],
