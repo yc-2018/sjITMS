@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2023-01-10 10:48:50
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-12 08:56:45
+ * @LastEditTime: 2023-01-12 15:13:00
  * @Description: 工单处理
  * @FilePath: \iwms-web\src\pages\SJTms\CustomerDispose\DisposePage.js
  */
@@ -33,8 +33,15 @@ export default class DisposePageModal extends Component {
 
   show = async bill => {
     const response = await getRecords(bill.UUID);
+    const { operation } = this.props;
     const records = response.success && response.data ? response.data : [];
-    this.setState({ visible: true, remark: '', records, validate: true, bill });
+    this.setState({
+      visible: true,
+      remark: operation == 'Result' ? bill.DISPOSERESULT : '',
+      records,
+      validate: true,
+      bill,
+    });
   };
 
   hide = () => {
