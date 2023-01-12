@@ -22,9 +22,13 @@
   }
 
   .disposeWrapper {
-    margin: 5px;
-    padding-bottom: 5px;
-    border-bottom: 1px dashed #000;
+    margin: 10px 5px;
+
+    :global {
+      .ant-divider-horizontal {
+        margin: 5px 0;
+      }
+    }
 
     .disposeTitle {
       margin-bottom: 5px;

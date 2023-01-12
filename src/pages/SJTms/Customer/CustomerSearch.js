@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-12-19 17:48:10
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-11 16:47:31
+ * @LastEditTime: 2023-01-12 08:59:21
  * @Description: 客服工单
  * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerSearch.js
  */
@@ -10,6 +10,7 @@ import React from 'react';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { Button, message, Form, Modal, Input, Popconfirm } from 'antd';
+import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { release, finished, unFinished, norm } from '@/services/sjitms/Customer';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import DisposePage from '../CustomerDispose/DisposePage';
@@ -24,11 +25,13 @@ export default class CustomerSearch extends QuickFormSearchPage {
   state = {
     ...this.state,
     releaseModal: false,
+    unNormModal: false,
     releaseRemark: '',
+    unNormType: '',
   };
 
   drawcell = row => {
-    if (row.column.fieldName == 'NORM' && row.record.NORM == '不规范') {
+    if (row.column.fieldName == 'NORM' && row.record.NORM && row.record.NORM != '规范') {
       row.component = (
         <span style={{ padding: '0 10px', background: 'red', color: '#fff' }}>
           {row.record.NORM}
@@ -118,6 +121,28 @@ export default class CustomerSearch extends QuickFormSearchPage {
         >
           不规范标识
         </Button>
+        <Modal
+          width="30vw"
+          title="不规范标识"
+          onOk={() => this.onUnNorm()}
+          visible={this.state.unNormModal}
+          onCancel={() => this.setState({ unNormModal: false })}
+          destroyOnClose={true}
+        >
+          <Form>
+            <Form.Item label="不规范类型" labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
+              <SimpleAutoComplete
+                placeholder="请选择不规范类型"
+                noRecord
+                dictCode="unNormType"
+                value={this.state.unNormType}
+                onChange={val => {
+                  this.setState({ unNormType: val });
+                }}
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </>
     );
@@ -288,34 +313,30 @@ export default class CustomerSearch extends QuickFormSearchPage {
     }
   };
   norm = async uuid => {
-    return await norm(uuid, 0);
+    return await norm(uuid, '规范');
   };
 
   //不规范标识
   handleUnNorm = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length == 0) {
-      message.warning('请至少选中一条数据！');
+    if (selectedRows.length != 1) {
+      message.warning('请选中一条数据！');
       return;
     }
-    if (selectedRows.length == 1) {
-      this.unNorm(selectedRows[0].UUID).then(response => {
-        if (response.success) {
-          message.success('不规范标识保存成功！');
-          this.onSearch();
-        }
-      });
-    } else {
-      this.batchProcessConfirmRef.show(
-        '不规范标识',
-        selectedRows.map(x => x.UUID),
-        this.unNorm,
-        this.onSearch
-      );
-    }
+    this.setState({ unNormModal: true, unNormType: '' });
   };
-  unNorm = async uuid => {
-    return await norm(uuid, 1);
+  onUnNorm = async () => {
+    const { selectedRows, unNormType } = this.state;
+    if (unNormType === '') {
+      message.warning('请选择不规范类型！');
+      return;
+    }
+    const response = await norm(selectedRows[0].UUID, unNormType);
+    if (response.success) {
+      message.success('保存成功！');
+      this.setState({ unNormModal: false });
+      this.onSearch();
+    }
   };
 
   //编辑

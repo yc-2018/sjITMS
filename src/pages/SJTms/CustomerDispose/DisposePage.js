@@ -2,12 +2,12 @@
  * @Author: guankongjin
  * @Date: 2023-01-10 10:48:50
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-11 16:44:20
+ * @LastEditTime: 2023-01-12 08:56:45
  * @Description: 工单处理
  * @FilePath: \iwms-web\src\pages\SJTms\CustomerDispose\DisposePage.js
  */
 import React, { Component } from 'react';
-import { Button, Form, Modal, Input, Row, Col, Tooltip, Collapse, message } from 'antd';
+import { Button, Form, Modal, Input, Row, Col, Tooltip, Collapse, message, Divider } from 'antd';
 import IconFont from '@/components/IconFont';
 import { getRecords, release, dispose, saveResult } from '@/services/sjitms/Customer';
 import Empty from '@/pages/Component/Form/Empty';
@@ -213,12 +213,23 @@ export default class DisposePageModal extends Component {
                 <Tooltip>{bill.DEADLINE || <Empty />} </Tooltip>
               </Form.Item>
             </Col>
+            <Col span={8}>
+              <Form.Item label="处理部门">
+                <Tooltip>{bill.DISPOSEDEPTNAME || <Empty />} </Tooltip>
+              </Form.Item>
+            </Col>
+            <Col span={8}>
+              <Form.Item label="处理人">
+                <Tooltip>{bill.DISPOSENAME || <Empty />} </Tooltip>
+              </Form.Item>
+            </Col>
             <Col span={24}>
               <Form.Item label="投诉描述" labelCol={{ span: 2 }} wrapperCol={{ span: 22 }}>
                 <Tooltip>{bill.DETAIL || <Empty />} </Tooltip>
               </Form.Item>
             </Col>
           </Row>
+          {/* 处理记录 */}
           {records.length > 0 ? (
             <Collapse
               bordered={false}
@@ -238,15 +249,17 @@ export default class DisposePageModal extends Component {
               )}
             >
               <Panel style={{ border: 0 }}>
-                {records.map(record => {
+                {records.map((record, index) => {
                   return (
                     <div className={styles.disposeWrapper}>
+                      <Divider />
                       <div className={styles.disposeTitle}>
                         {record.createInfo.operator.fullName}
                         <span style={{ fontWeight: 'bold' }}>({record.type})</span>
                         <span style={{ float: 'right' }}>{record.createInfo.time}</span>
                       </div>
                       <div>{record.detail || '<空>'}</div>
+                      {index == records.length - 1 ? <Divider /> : <></>}
                     </div>
                   );
                 })}
