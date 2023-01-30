@@ -2,14 +2,14 @@
  * @Author: guankongjin
  * @Date: 2022-07-13 10:25:32
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-30 11:53:19
+ * @LastEditTime: 2023-01-30 14:55:56
  * @Description: file content
  * @FilePath: \iwms-web\src\services\sjitms\ScheduleProcess.js
  */
 import request from '@/utils/request';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 //刷卡
-export async function swipe(empId,swipeFlag) {
+export async function swipe(empId, swipeFlag) {
   return request(
     `/itms-schedule/itms-schedule/sj/bill/schedule/process/swipe?empId=${empId}&swipeFlag=${swipeFlag}&companyUuid=${
       loginCompany().uuid
@@ -20,7 +20,7 @@ export async function swipe(empId,swipeFlag) {
   );
 }
 //司机刷卡
-export async function driverSwipe(empId, companyUuid, dispatchUuid,swipeFlag) {
+export async function driverSwipe(empId, companyUuid, dispatchUuid, swipeFlag) {
   return request(
     `/itms-schedule/itms-schedule/openapi/bill/schedule/process/swipe?empId=${empId}&swipeFlag=${swipeFlag}&companyUuid=${companyUuid}&dispatchUuid=${dispatchUuid}`,
     {
@@ -88,6 +88,16 @@ export async function back(billNumber, version, returnMileage) {
     `/itms-schedule/itms-schedule/sj/bill/schedule/process/back?billNumber=${billNumber}&version=${version}&companyUuid=${
       loginCompany().uuid
     }&dispatchCenterUuid=${loginOrg().uuid}&returnMileage=${returnMileage}`,
+    {
+      method: 'POST',
+    }
+  );
+}
+
+//出/回厂按钮记录
+export async function recordLog(billNumber, type) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/process/recordLog?billNumber=${billNumber}&type=${type}`,
     {
       method: 'POST',
     }

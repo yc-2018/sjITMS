@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-01-30 11:25:20
+ * @LastEditTime: 2023-01-30 15:07:38
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -32,7 +32,7 @@ import {
   updateOutSerialApi,
   getPris,
 } from '@/services/sjitms/ScheduleBill';
-import { depart, back } from '@/services/sjitms/ScheduleProcess';
+import { depart, back, recordLog } from '@/services/sjitms/ScheduleProcess';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 import { groupBy, sumBy, orderBy } from 'lodash';
 import scher from '@/assets/common/scher.jpg';
@@ -549,6 +549,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   handleDepart = async () => {
     const { selectedRows } = this.state;
     if (selectedRows.length === 1) {
+      await recordLog(selectedRows[0].BILLNUMBER, '发运');
       const response = await depart(selectedRows[0].BILLNUMBER, selectedRows[0].FVERSION);
       if (response.success) {
         message.success('发运成功！');
@@ -569,6 +570,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   //回厂
   onBack = async () => {
     const { returnMileage, selectedRows } = this.state;
+    await recordLog(selectedRows[0].BILLNUMBER, '回厂');
     const response = await back(
       selectedRows[0].BILLNUMBER,
       selectedRows[0].FVERSION,
