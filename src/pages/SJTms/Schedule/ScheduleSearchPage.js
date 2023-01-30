@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-12-08 17:21:08
+ * @LastEditTime: 2023-01-30 11:25:20
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -30,6 +30,7 @@ import {
   abortedAndReset,
   updatePris,
   updateOutSerialApi,
+  getPris,
 } from '@/services/sjitms/ScheduleBill';
 import { depart, back } from '@/services/sjitms/ScheduleProcess';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
@@ -68,25 +69,28 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   }
 
   initOptionsData = async () => {
-    let queryParamsJson = {
-      tableName: 'V_WMS_PIRS',
-      condition: {
-        params: [
-          // { field: 'PRETYPE', rule: 'eq', val: ['DEALMETHOD'] },
-          // { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
-        ],
-      },
-    };
-    await dynamicQuery(queryParamsJson).then(datas => {
-      this.setState({ sourceData: datas.result.records });
+    // let queryParamsJson = {
+    //   tableName: 'V_WMS_PIRS',
+    //   condition: {
+    //     params: [
+    //       // { field: 'PRETYPE', rule: 'eq', val: ['DEALMETHOD'] },
+    //       // { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+    //     ],
+    //   },
+    // };
+    // await dynamicQuery(queryParamsJson).then(datas => {
+    //   this.setState({ sourceData: datas.result.records });
+    // });
+    await getPris().then(datas => {
+      this.setState({ sourceData: datas });
     });
   };
 
   buildOptions = () => {
     const { sourceData } = this.state;
-    if (sourceData != 'false') {
-      return sourceData.map(data => {
-        return <Select.Option value={data.DOCKNO}>{data.DOCKNO}</Select.Option>;
+    if (sourceData.success == true) {
+      return sourceData.data.map(data => {
+        return <Select.Option value={data}>{data}</Select.Option>;
       });
     }
   };

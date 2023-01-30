@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-12-01 10:20:56
+ * @LastEditTime: 2023-01-30 11:26:17
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -134,6 +134,13 @@ export async function cancelAborted(billUuid, version) {
 export async function shipRollback(Uuid) {
   return request(`/itms-schedule/itms-schedule/sj/bill/schedule/shipRollback?billUuid=${Uuid}`, {
     method: 'PUT',
+  });
+}
+
+// 获取空闲码头
+export async function getPris() {
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/getPris`, {
+    method: 'GET',
   });
 }
 
