@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-01-15 16:03:07
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-12-08 10:09:50
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-01-31 09:02:47
  * @Description: 快速开发简单查询
  * @FilePath: \iwms-web\src\pages\Component\RapidDevelopment\OnlReport\SimpleQuery\SimpleQuery.js
  */
@@ -19,6 +19,7 @@ import {
   SimpleAutoCompleteEasy,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
+import { loginOrg, loginCompany } from '@/utils/LoginContext';
 const { RangePicker } = DatePicker;
 
 @Form.create()
@@ -87,9 +88,24 @@ export default class SimpleQuery extends SearchForm {
 
   //生成查询控件
   buildSearchItem = searchField => {
-    const searchProperties = searchField.searchProperties
+    let searchProperties = searchField.searchProperties
       ? JSON.parse(searchField.searchProperties)
       : '';
+    if (searchProperties.isOrgSearch && searchField.searchShowtype == 'sel_tree') {
+      const orgFields = searchProperties.isOrgSearch.split(',');
+      let loginOrgType = loginOrg().type.replace('_', '');
+      let loginParmas = [];
+      if (orgFields.indexOf('Company') != -1) {
+        loginParmas.push({ field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] });
+      }
+      if (orgFields.indexOf('Org') != -1) {
+        loginParmas.push({ field: loginOrgType + 'UUID', rule: 'like', val: [loginOrg().uuid] });
+      }
+      if (searchProperties.queryParams.condition) {
+        const params = [...searchProperties.queryParams.condition.params];
+        searchProperties.queryParams.condition.params = [...params, ...loginParmas];
+      }
+    }
     switch (searchField.searchShowtype) {
       case 'date':
         return <RangePicker showToday={true} style={{ width: '100%' }} />;
@@ -191,7 +207,9 @@ export default class SimpleQuery extends SearchForm {
       case 'pca':
         return <Address />;
       case 'sel_tree':
-        return <SimpleTreeSelect {...searchProperties} />;
+        return (
+          <SimpleTreeSelect placeholder={'请选择' + searchField.fieldTxt} {...searchProperties} />
+        );
       default:
         return <Input placeholder={'请输入' + searchField.fieldTxt} />;
     }
