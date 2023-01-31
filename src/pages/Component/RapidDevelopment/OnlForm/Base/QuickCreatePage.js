@@ -399,13 +399,14 @@ export default class QuickCreatePage extends CreatePage {
           disabled: this.isReadOnly(field.isReadOnly),
           style: { width: field.fieldLength == 0 ? '100%' : field.fieldLength },
         }; // 通用属性
+        const placeholder = this.getPlaceholder(field) + field.dbFieldTxt;
         let item = {
           categoryName: field.category ? field.category : onlFormHead.tableTxt,
           key: tableName + '_' + field.dbFieldName,
           label: field.dbFieldTxt,
           rules: rules,
           component: this.getComponent(field),
-          props: { ...commonPropertis, ...fieldExtendJson },
+          props: { ...commonPropertis, ...fieldExtendJson, placeholder },
           tableName,
           fieldName: field.dbFieldName,
           fieldShowType: field.fieldShowType,
@@ -943,6 +944,19 @@ export default class QuickCreatePage extends CreatePage {
       return Address;
     } else {
       return Input;
+    }
+  };
+
+  getPlaceholder = field => {
+    if (
+      field.fieldShowType == 'number' ||
+      field.fieldShowType == 'textarea' ||
+      field.fieldShowType == 'text' ||
+      field.fieldShowType == undefined
+    ) {
+      return '请输入';
+    } else {
+      return '请选择';
     }
   };
 
