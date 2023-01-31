@@ -7,7 +7,7 @@ import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuer
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import ExportJsonExcel from 'js-export-excel';
 import { routerRedux } from 'dva/router';
-import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { loginCompany, loginOrg, getTableColumns } from '@/utils/LoginContext';
 import { guid } from '@/utils/utils';
 import moment from 'moment';
 import { updateEntity } from '@/services/quick/Quick';
@@ -344,7 +344,9 @@ export default class QuickFormSearchPage extends SearchPage {
         <a
           onClick={() => this.onOtherView(record, column)}
           style={{ color: this.colorChange(val, column.textColorJson) }}
-        >{value}</a>
+        >
+          {value}
+        </a>
       ) : (
         <p3>{value}</p3>
       );
@@ -554,6 +556,15 @@ export default class QuickFormSearchPage extends SearchPage {
 
   //导出
   port = () => {
+    const { key } = this.state;
+    let defaultCache =
+      typeof getTableColumns(key + 'columnInfo') != 'object'
+        ? JSON.parse(getTableColumns(key + 'columnInfo'))
+        : getTableColumns(key + 'columnInfo');
+    let columnsList = [];
+    if (defaultCache) {
+      columnsList = defaultCache.newList;
+    }
     //const { dispatch } = this.props;
     this.props.dispatch({
       type: 'quick/queryAllData',
@@ -565,12 +576,19 @@ export default class QuickFormSearchPage extends SearchPage {
           let sheetfilter = []; //对应列表数据中的key值数组，就是上面resdata中的 name，address
           let sheetheader = []; //对应key值的表头，即excel表头
           columns.map(a => {
+            let excelColumn = '';
             if (a.preview != 'N') {
-              sheetfilter.push(a.preview);
+              excelColumn = a.preview;
             } else {
-              sheetfilter.push(a.key);
+              excelColumn = a.key;
             }
-            sheetheader.push(a.title);
+            if (columnsList.length <= 0) {
+              sheetfilter.push(excelColumn);
+              sheetheader.push(a.title);
+            } else if (columnsList.indexOf(a.title) != -1) {
+              sheetfilter.push(excelColumn);
+              sheetheader.push(a.title);
+            }
           });
           option.fileName = this.state.title; //导出的Excel文件名
           response.data.records.map(item => {});
