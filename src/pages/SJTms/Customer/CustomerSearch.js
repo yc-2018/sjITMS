@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-12-19 17:48:10
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-12 08:59:21
+ * @LastEditTime: 2023-01-31 10:19:11
  * @Description: 客服工单
  * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerSearch.js
  */
@@ -190,7 +190,10 @@ export default class CustomerSearch extends QuickFormSearchPage {
       message.warning('存在驳回工单，不能批量发布！');
       return;
     }
-    if (selectedRows.length == 1 && selectedRows[0].STATUS == 'Rejected') {
+    if (
+      selectedRows.length == 1 &&
+      (selectedRows[0].STATUS == 'Rejected' || selectedRows[0].STATUS == 'Disposed')
+    ) {
       // this.setState({ releaseModal: true });
       this.releasePageRef.show(selectedRows[0]);
       return;
