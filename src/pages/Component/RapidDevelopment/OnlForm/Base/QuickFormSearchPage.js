@@ -558,7 +558,7 @@ export default class QuickFormSearchPage extends SearchPage {
   port = () => {
     const { key } = this.state;
     let defaultCache =
-      typeof getTableColumns(key + 'columnInfo') != 'object'
+      getTableColumns(key + 'columnInfo') && typeof getTableColumns(key + 'columnInfo') != 'object'
         ? JSON.parse(getTableColumns(key + 'columnInfo'))
         : getTableColumns(key + 'columnInfo');
     let columnsList = [];

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-12-20 08:59:27
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-11 11:52:09
+ * @LastEditTime: 2023-02-01 11:33:11
  * @Description: 客服工单接口
  * @FilePath: \iwms-web\src\services\sjitms\Customer.js
  */
@@ -40,7 +40,7 @@ export async function batchImport(payload) {
   return request(
     `/itms-schedule/itms-schedule/sj/bill/customer/batchimport?companyUuid=${
       loginCompany().uuid
-    }&dcUuid=${loginOrg().uuid}&fileKey=${payload.fileKey}`,
+    }&dcUuid=${loginOrg().uuid}&fileKey=${payload.fileKey}&isManager=${payload.isManager}`,
     {
       method: 'POST',
     }

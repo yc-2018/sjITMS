@@ -140,6 +140,17 @@ export default class LineShipAddress extends QuickFormSearchPage {
       },
     });
   };
+  // componentDidMount(){
+  //   console.log("componentWillMount",this.props.lineTreeData,this.props);
+  //   this.queryCoulumns();
+  //   this.getCreateConfig();
+  //   this.setState({
+  //     //canDragTable:false,
+  //     lineuuid: this.props.lineuuid,
+  //     systemLineFlag: this.props.systemLineFlag,
+  //     systemData:this.props.lineTreeData
+  //   });
+  // }
   componentWillMount() {
     this.setState({
       //canDragTable:false,
@@ -157,10 +168,10 @@ export default class LineShipAddress extends QuickFormSearchPage {
       this.state.systemLineFlag = nextProps.systemLineFlag;
       this.state.buttonDisable = false;
       this.state.canDragTable = nextProps.canDragTables;
-      this.state.systemData = nextProps.lineTreeData;
-      // if(!this.state.systemData){
-      //   this.state.systemData = this.props.lineTreeData
-      // }
+      //this.state.systemData = nextProps.lineTreeData;
+      if(!this.state.systemData){
+        this.state.systemData = nextProps.lineTreeData
+      }
       await this.onSearch();
     }
   };
