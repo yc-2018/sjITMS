@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:05:33
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-05 17:42:17
+ * @LastEditTime: 2023-02-01 11:36:26
  * @version: 1.0
  */
 import React from 'react';
@@ -12,6 +12,7 @@ import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm
 import CustomerSearch from './CustomerSearch';
 import CustomerView from './CustomerView';
 import ExcelImport from '@/components/ExcelImport';
+import { havePermission } from '@/utils/authority';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -42,6 +43,7 @@ export default class Customer extends QuickForm {
           templateType="CUSTOMERSERVICESBILL"
           dispatch={this.props.dispatch}
           uploadType="Customer/batchImport"
+          uploadParams={{ isManager: !havePermission(this.state.authority + '.norm') }}
           cancelCallback={this.onCancel}
         />
       );
