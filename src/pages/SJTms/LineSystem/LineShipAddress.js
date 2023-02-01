@@ -157,10 +157,10 @@ export default class LineShipAddress extends QuickFormSearchPage {
       this.state.systemLineFlag = nextProps.systemLineFlag;
       this.state.buttonDisable = false;
       this.state.canDragTable = nextProps.canDragTables;
-      this.state.systemData = nextProps.lineTreeData;
-      // if(!this.state.systemData){
-      //   this.state.systemData = this.props.lineTreeData
-      // }
+     // this.state.systemData = nextProps.lineTreeData;
+      if(!this.state.systemData){
+        this.state.systemData = this.props.lineTreeData
+      }
       await this.onSearch();
     }
   };
