@@ -7,7 +7,7 @@
  * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineShipAddress.js
  */
 import { connect } from 'dva';
-import { Modal, Button, Input, message, Form, Row, Col, Select, TreeSelect } from 'antd';
+import { Modal, Button, Input, message, Form, Row, Col, Select, TreeSelect,Icon, } from 'antd';
 import OperateCol from '@/pages/Component/Form/OperateCol';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
@@ -33,6 +33,9 @@ import AlcNumModal from '@/pages/Wcs/Dps/Job/AlcNumModal';
 import { throttleSetter } from 'lodash-decorators';
 import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchForm';
 import LineSystem from './LineSystem.less'
+import {
+ findLineSystemTreeByStoreCode,
+} from '@/services/sjtms/LineSystemHis';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -140,10 +143,90 @@ export default class LineShipAddress extends QuickFormSearchPage {
       },
     });
   };
-  // componentDidMount(){
-  //   console.log("componentWillMount",this.props.lineTreeData,this.props);
-  //   this.queryCoulumns();
-  //   this.getCreateConfig();
+//遍历树
+getLineSystemTree = (data, itemData, lineData) => {
+  let treeNode = [];
+  let ef = [];
+  if (Array.isArray(data)) {
+    data.forEach(e => {
+      let temp = {};
+      temp.value = e.uuid;
+      temp.key = e.uuid;
+      temp.title = `[${e.code}]` + e.name;
+      temp.icon = <Icon type="swap" rotate={90} />;
+      // temp.system=true;
+      treeNode.push(temp);
+      ef.push(e);
+      if (data.type == 'lineSystem') {
+        //temp.disabled=true;
+        temp.system = true;
+        temp.selectable = false;
+      }
+      data.type = 'line' && lineData.push(e);
+    });
+    itemData.children = treeNode;
+    ef.forEach((f, index) => {
+      this.getLineSystemTree(f, treeNode[index], lineData);
+    });
+  } else {
+    itemData.value = data.uuid;
+    itemData.key = data.uuid;
+    itemData.title = `[${data.code}]` + data.name;
+    itemData.icon = <Icon type="swap" rotate={90} />;
+    if (data.type == 'lineSystem') {
+      itemData.system = true;
+      // itemData.disabled=true;
+      itemData.selectable = false;
+    }
+    data.type = 'line' && lineData.push(data);
+
+    if (data.childLines) {
+      this.getLineSystemTree(data.childLines, itemData, lineData);
+    }
+  }
+};
+  queryLineSystem = async lineuuid => {
+    const parmas = {
+      company: loginCompany().uuid,
+      dcUuid: loginOrg().uuid,
+      code: '',
+    };
+    await findLineSystemTreeByStoreCode(parmas).then(response => {
+      let lineTreeData = [];
+      let lineData = [];
+      if (response) {
+        const data = response?.data;
+        data?.forEach(element => {
+          let itemData = {};
+          this.getLineSystemTree(element, itemData, lineData);
+          lineTreeData.push(itemData);
+        });
+        if (lineuuid == undefined) {
+          lineuuid = lineTreeData? lineTreeData[0].key:undefined;
+          // lineuuid = lineTreeData
+          //   ? lineTreeData[0]?.children
+          //     ? lineTreeData[0].children[0]?.key
+          //     : lineTreeData[0]?.key
+          //   : undefined;
+        }
+        this.setState({systemData:lineTreeData})
+       
+      }
+    });
+  };
+  componentDidMount(){
+    console.log("componentWillMount",this.props.lineTreeData,this.props);
+    this.queryCoulumns();
+    this.getCreateConfig();
+    this.queryLineSystem();
+    // this.setState({
+    //   //canDragTable:false,
+    //   lineuuid: this.props.lineuuid,
+    //   systemLineFlag: this.props.systemLineFlag,
+    //   systemData:this.props.lineTreeData
+    // });
+  }
+  // componentWillMount() {
   //   this.setState({
   //     //canDragTable:false,
   //     lineuuid: this.props.lineuuid,
@@ -151,14 +234,6 @@ export default class LineShipAddress extends QuickFormSearchPage {
   //     systemData:this.props.lineTreeData
   //   });
   // }
-  componentWillMount() {
-    this.setState({
-      //canDragTable:false,
-      lineuuid: this.props.lineuuid,
-      systemLineFlag: this.props.systemLineFlag,
-      systemData:this.props.lineTreeData
-    });
-  }
   getLineShipAddress = () => {
     return this.state.data;
   };
@@ -169,9 +244,9 @@ export default class LineShipAddress extends QuickFormSearchPage {
       this.state.buttonDisable = false;
       this.state.canDragTable = nextProps.canDragTables;
       //this.state.systemData = nextProps.lineTreeData;
-      if(!this.state.systemData){
-        this.state.systemData = nextProps.lineTreeData
-      }
+      // if(!this.state.systemData){
+      //   this.state.systemData = nextProps.lineTreeData
+      // }
       await this.onSearch();
     }
   };
