@@ -1736,6 +1736,7 @@ export default [
               {
                 path: '/bigData/costReport/xufuji',
                 name: '徐福记',
+                uthority: ['sjtms.costReport.xufuji'],
                 routes: [
                   {
                     path: '/bigData/costReport/xufuji/distribution',
@@ -1743,7 +1744,7 @@ export default [
                     org: ['DISPATCH_CENTER'],
                     component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                     quickuuid: 'v_xufuji_distribution_cost',
-                    authority: ['sjtms.bigData.arrange'],
+                    authority: ['sjtms.costReport.xufuji'],
                   },
                   {
                     path: '/bigData/costReport/xufuji/material',
@@ -1751,13 +1752,14 @@ export default [
                     org: ['DISPATCH_CENTER'],
                     component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                     quickuuid: 'v_xufuji_material_cost',
-                    authority: ['sjtms.bigData.arrange'],
+                    authority: ['sjtms.costReport.xufuji'],
                   },
                 ],
               },
               {
                 path: '/bigData/costReport/baihaohang',
                 name: '柏豪行',
+                authority: ['sjtms.costReport.baihaohang'],
                 routes: [
                   {
                     path: '/bigData/costReport/baihaohang/costdtl',
@@ -1765,7 +1767,7 @@ export default [
                     org: ['DISPATCH_CENTER'],
                     component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                     quickuuid: 'cost_baihaohang_report',
-                    authority: ['sjtms.bigData.arrange'],
+                    authority: ['sjtms.costReport.baihaohang'],
                   },
                   {
                     path: '/bigData/costReport/baihaohang/delivery',
@@ -1773,13 +1775,14 @@ export default [
                     org: ['DISPATCH_CENTER'],
                     component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                     quickuuid: 'v_cost_837_delivery',
-                    authority: ['sjtms.bigData.arrange'],
+                    authority: ['sjtms.costReport.baihaohang'],
                   },
                 ],
               },
               {
                 path: '/bigData/costReport/tongyi',
                 name: '统一',
+                authority: ['sjtms.costReport.tongyi'],
                 routes: [
                   {
                     path: '/bigData/costReport/tongyi/delivery',
@@ -1787,7 +1790,7 @@ export default [
                     org: ['DISPATCH_CENTER'],
                     component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                     quickuuid: 'v_cost_800_delivery',
-                    authority: ['sjtms.bigData.arrange'],
+                    authority: ['sjtms.costReport.tongyi'],
                   },
                   {
                     path: '/bigData/costReport/tongyi/complement',
@@ -1795,13 +1798,14 @@ export default [
                     org: ['DISPATCH_CENTER'],
                     component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                     quickuuid: 'v_cost_800_complement',
-                    authority: ['sjtms.bigData.arrange'],
+                    authority: ['sjtms.costReport.tongyi'],
                   },
                 ],
               },
               {
                 path: '/bigData/costReport/hehuang',
                 name: '和黄',
+                authority: ['sjtms.costReport.hehuang'],
                 routes: [
                   {
                     path: '/bigData/costReport/hehuang/delivery',
@@ -1809,7 +1813,7 @@ export default [
                     org: ['DISPATCH_CENTER'],
                     component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                     quickuuid: 'v_cost_hehuang_delivery',
-                    authority: ['sjtms.bigData.arrange'],
+                    authority: ['sjtms.costReport.hehuang'],
                   },
                   {
                     path: '/bigData/costReport/hehuang/additional',
@@ -1817,7 +1821,7 @@ export default [
                     org: ['DISPATCH_CENTER'],
                     component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                     quickuuid: 'v_cost_hehuang_additional',
-                    authority: ['sjtms.bigData.arrange'],
+                    authority: ['sjtms.costReport.hehuang'],
                   },
                   {
                     path: '/bigData/costReport/hehuang/self',
@@ -1825,7 +1829,7 @@ export default [
                     org: ['DISPATCH_CENTER'],
                     component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                     quickuuid: 'v_cost_hh_self',
-                    authority: ['sjtms.bigData.arrange'],
+                    authority: ['sjtms.costReport.hehuang'],
                   },
                 ],
               },
@@ -1855,6 +1859,7 @@ export default [
               {
                 path: '/bigData/costReport/allowner',
                 name: '货主其他费用',
+                authority: ['sjtms.costReport.otherOwner'],
                 routes: [
                   {
                     path: '/bigData/costReport/allowner/input',
@@ -1862,7 +1867,7 @@ export default [
                     org: ['DISPATCH_CENTER'],
                     component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                     quickuuid: 'v_cost_zhongshan_input',
-                    authority: ['sjtms.bigData.arrange'],
+                    authority: ['sjtms.costReport.otherOwner'],
                   },
                   {
                     path: '/bigData/costReport/allowner/return',
@@ -1870,7 +1875,7 @@ export default [
                     org: ['DISPATCH_CENTER'],
                     component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                     quickuuid: 'v_cost_zhongshan_return',
-                    authority: ['sjtms.bigData.arrange'],
+                    authority: ['sjtms.costReport.otherOwner'],
                   },
                 ],
               },
@@ -1882,7 +1887,7 @@ export default [
             org: ['DISPATCH_CENTER'],
             component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
             quickuuid: 'sj_itms_cost_shippingorder',
-            authority: ['sjtms.bigData.arrange'],
+            authority: ['sjtms.bigData.shippingOrder'],
           },
           {
             path: '/bigData/monthwage',
@@ -1890,7 +1895,7 @@ export default [
             org: ['DISPATCH_CENTER'],
             component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
             quickuuid: 'sj_itms_member_monthwage',
-            authority: ['sjtms.bigData.arrange'],
+            authority: ['sjtms.bigData.empWage'],
           },
         ],
       },
