@@ -582,7 +582,6 @@ export default class QuickFormSearchPage extends SearchPage {
             } else {
               excelColumn = a.key;
             }
-            console.log('columnsList', columnsList);
             if (columnsList.length <= 0) {
               sheetfilter.push(excelColumn);
               sheetheader.push(a.title);
