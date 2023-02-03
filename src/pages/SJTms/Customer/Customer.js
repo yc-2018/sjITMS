@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:05:33
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-01 11:36:26
+ * @LastEditTime: 2023-02-03 15:45:00
  * @version: 1.0
  */
 import React from 'react';
@@ -43,7 +43,7 @@ export default class Customer extends QuickForm {
           templateType="CUSTOMERSERVICESBILL"
           dispatch={this.props.dispatch}
           uploadType="Customer/batchImport"
-          uploadParams={{ isManager: !havePermission(this.state.authority + '.norm') }}
+          uploadParams={{ isManager: havePermission('sjtms.customer.service.norm') }}
           cancelCallback={this.onCancel}
         />
       );
