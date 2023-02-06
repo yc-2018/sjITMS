@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:55:46
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-20 16:22:15
+ * @LastEditTime: 2023-02-02 16:38:35
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -34,7 +34,7 @@ export default class CostPlanSearch extends CostPlanIndex {
           style={{ marginRight: '10px' }}
           onClick={() => this.onView(e)}
         >
-          核算
+          复核及批准
         </Button>
       </div>
     );

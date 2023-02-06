@@ -3,7 +3,6 @@ import { Divider, Button, Row, Col, Spin, message, Input, PageHeader, Select } f
 import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
 import style from './DispatchingMap.less';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
-import emptySvg from '@/assets/common/img_empoty.svg';
 import SearchForm from './SearchForm';
 import {
   queryAuditedOrderByStoreMap,
@@ -14,12 +13,10 @@ import { queryDict } from '@/services/quick/Quick';
 import ShopIcon from '@/assets/common/myj.png';
 import Page from '@/pages/Component/RapidDevelopment/CommonLayout/Page/Page';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
+import moment from 'moment';
 
 import otherIcon from '@/assets/common/otherMyj.png';
-// import ShopClickIcon from '@/assets/common/storeClick.svg';
-
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { sumBy, uniqBy } from 'lodash';
 // import Select from '@/components/ExcelImport/Select';
 
 const { Search } = Input;
@@ -70,7 +67,11 @@ export default class StoresMap extends Component {
   //查询
   refresh = (params, pageSize, storeParams) => {
     if (params.length <= 0) {
-      this.changePage('500', 're', storeParams);
+      this.changePage(
+        this.state.storePages ? this.state.storePages : '500',
+        'onlySearchStore',
+        storeParams
+      );
       return;
     }
     this.setState({ loading: true });
@@ -101,8 +102,8 @@ export default class StoresMap extends Component {
         this.basicOrders = data;
         //查询门店
         let storeRes = [];
-        console.log('storeParams', storeParams);
-        if (JSON.stringify(storeParams) !== '{}') {
+        // console.log('storeParams', storeParams);
+        if (storeParams && JSON.stringify(storeParams) !== '{}') {
           storeRes = await this.getStoreMaps(pageSize ? pageSize : storePages, storeParams);
         }
         data.map(e => {
@@ -113,7 +114,7 @@ export default class StoresMap extends Component {
           () => {
             setTimeout(() => {
               // this.drawClusterLayer();
-              // this.drawMenu();
+              this.drawMenu();
               // this.clusterSetData(data, otherData);
               // this.drawMarker(data);
               this.autoViewPort(data);
@@ -197,7 +198,7 @@ export default class StoresMap extends Component {
       markers.push(
         <Marker
           position={point}
-          // icon={order.isSelect ? ShopClickIcon : ShopIcon}
+          // icon='simple_red'
           icon={icon}
           shadow={true}
           onMouseover={() => this.setState({ windowInfo: { point, order } })}
@@ -367,41 +368,56 @@ export default class StoresMap extends Component {
 
   //右键菜单
   drawMenu = () => {
-    // if (this.contextMenu) return;
-    // const menuItems = [
-    //   {
-    //     text: '排车',
-    //     callback: () => {
-    //       const { orders } = this.state;
-    //       const selectPoints = orders.filter(x => x.isSelect);
-    //       if (selectPoints.length === 0) {
-    //         message.error('请选择需要排车的门店！');
-    //         return;
-    //       }
-    //       this.props.dispatchingByMap(selectPoints);
-    //     },
-    //   },
-    //   {
-    //     text: '路线规划',
-    //     callback: () => {
-    //       const { orders } = this.state;
-    //       const selectPoints = orders.filter(x => x.isSelect);
-    //       if (selectPoints.length === 0) {
-    //         message.error('请选择需要排车的门店！');
-    //         return;
-    //       }
-    //       this.searchRoute(selectPoints);
-    //     },
-    //   },
-    // ];
-    // const menu = new BMapGL.ContextMenu();
-    // menuItems.forEach((item, index) => {
-    //   menu.addItem(
-    //     new BMapGL.MenuItem(item.text, item.callback, { width: 100, id: 'menu' + index })
-    //   );
-    // });
-    // this.contextMenu = menu;
-    // this.map?.addContextMenu(menu);
+    if (this.contextMenu) return;
+    const menuItems = [
+      // {
+      //   text: '排车',
+      //   callback: () => {
+      //     const { orders } = this.state;
+      //     const selectPoints = orders.filter(x => x.isSelect);
+      //     if (selectPoints.length === 0) {
+      //       message.error('请选择需要排车的门店！');
+      //       return;
+      //     }
+      //     this.props.dispatchingByMap(selectPoints);
+      //   },
+      // },
+      // {
+      //   text: '路线规划',
+      //   callback: () => {
+      //     const { orders } = this.state;
+      //     const selectPoints = orders.filter(x => x.isSelect);
+      //     if (selectPoints.length === 0) {
+      //       message.error('请选择需要排车的门店！');
+      //       return;
+      //     }
+      //     this.searchRoute(selectPoints);
+      //   },
+      {
+        text: '今日配送门店',
+        callback: () => {
+          let endDate = moment(new Date()).format('YYYY-MM-DD 23:59:59');
+          let startDate = moment(new Date()).format('YYYY-MM-DD 00:00:00');
+          let param = [
+            {
+              field: 'created',
+              type: 'DateTime',
+              rule: 'between',
+              val: `${startDate}||${endDate}`,
+            },
+          ];
+          this.refresh(param);
+        },
+      },
+    ];
+    const menu = new BMapGL.ContextMenu();
+    menuItems.forEach((item, index) => {
+      menu.addItem(
+        new BMapGL.MenuItem(item.text, item.callback, { width: 100, id: 'menu' + index })
+      );
+    });
+    this.contextMenu = menu;
+    this.map?.addContextMenu(menu);
   };
 
   //画框选取送货点
@@ -487,6 +503,11 @@ export default class StoresMap extends Component {
       this.refresh(pageFilter, e, storeParams);
     } else {
       this.setState({ loading: true });
+
+      console.log('storeParamsp', storeParamsp, key);
+      if (key !== 're' && (!storeParamsp || JSON.stringify(storeParamsp) == '{}')) {
+        storeParamsp = storeParams;
+      }
       let params = {
         ...storeParamsp,
         companyuuid: loginCompany().uuid,
@@ -496,20 +517,48 @@ export default class StoresMap extends Component {
       };
       let res = await queryStoreMaps(params);
       if (res.success && res.data) {
-        this.setState(
-          {
-            orders: res.data.records,
-            otherData: [],
-            pageFilter: [],
-            isOrder: false,
-            loading: false,
-          },
-          () => {
-            setTimeout(() => {
-              this.autoViewPort(res.data.records);
-            }, 500);
-          }
-        );
+        //查询门店时 显示其他门店
+        if (storeParamsp && 'DELIVERYPOINTCODE' in storeParamsp) {
+          let resAll = await queryStoreMaps({
+            companyuuid: loginCompany().uuid,
+            dispatchcenteruuid: loginOrg().uuid,
+            cur: 1,
+            pageSize: e,
+          });
+          this.setState(
+            {
+              orders: resAll.data.records,
+              otherData: res.data.records,
+              pageFilter: [],
+              isOrder: false,
+              loading: false,
+              storeParams: storeParamsp,
+            },
+            () => {
+              setTimeout(() => {
+                this.drawMenu();
+                this.autoViewPort(res.data.records);
+              }, 500);
+            }
+          );
+        } else {
+          this.setState(
+            {
+              orders: res.data.records,
+              otherData: [],
+              pageFilter: [],
+              isOrder: false,
+              loading: false,
+              storeParams: storeParamsp,
+            },
+            () => {
+              setTimeout(() => {
+                this.drawMenu();
+                this.autoViewPort(res.data.records);
+              }, 500);
+            }
+          );
+        }
       } else {
         this.setState(
           {
@@ -518,6 +567,7 @@ export default class StoresMap extends Component {
             pageFilter: [],
             isOrder: false,
             loading: false,
+            storeParams: storeParamsp,
           },
           () => {
             setTimeout(() => {
@@ -675,8 +725,10 @@ export default class StoresMap extends Component {
                             <div>
                               线路：
                               {windowInfo.order.archLine?.code
-                                ? windowInfo.order.archLine?.code
-                                : '<空> '}
+                                ? windowInfo.order.archLine?.code + ' '
+                                : windowInfo.order.archlinecode
+                                  ? windowInfo.order.archlinecode + ' '
+                                  : '<空> '}
                               所属区域：
                               {windowInfo.order.shipareaname}
                             </div>

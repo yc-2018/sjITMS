@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-02 17:21:28
+ * @LastEditTime: 2023-02-02 16:09:48
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -37,6 +37,8 @@ import { colWidth } from '@/utils/ColWidth';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
 import moment from 'moment';
 import { guid } from '@/utils/utils';
+import ExportJsonExcel from 'js-export-excel';
+import { getTableColumns } from '@/utils/LoginContext';
 
 const { MonthPicker } = DatePicker;
 const { Panel } = Collapse;
@@ -188,7 +190,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
         },
       };
       this.setState({
-        key: this.props.quickuuid + new Date(),
+        key: this.props.quickuuid + '|' + bill.planUuid,
         data: datas,
         searchLoading: false,
         bill,
@@ -201,6 +203,75 @@ export default class CostBillDtlView extends QuickFormSearchPage {
       });
 
       this.getLockStatus(dateString);
+    } else {
+      message.error('当前查询无数据,请计算后再操作');
+      this.setState({ data: [], searchLoading: false, bill: null });
+    }
+  };
+
+  port = async () => {
+    let values = this.props.form.getFieldsValue();
+    const { dateString, columns, key } = this.state;
+    if (dateString == '') {
+      message.error('请选择费用所属月');
+      return;
+    }
+    values.dateString = dateString;
+    for (const i in values) {
+      if (values[i] == '') {
+        delete values[i];
+      }
+    }
+    // this.setState({ searchLoading: true });
+    const uuid = this.props.params.entityUuid;
+    let params = {
+      page: 1,
+      pageSize: this.state.data.pagination.total,
+      sortFields: {},
+      searchKeyValues: { ...values },
+      likeKeyValues: {},
+    };
+    const response = await getBill(uuid, params);
+    if (response.data && response.success) {
+      const { data, bill } = response.data.records[0];
+      const c = key.substring(0, key.indexOf('|')) + 'quick.search.table';
+      let defaultCache =
+        getTableColumns(c + 'columnInfo') && typeof getTableColumns(c + 'columnInfo') != 'object'
+          ? JSON.parse(getTableColumns(c + 'columnInfo'))
+          : getTableColumns(c + 'columnInfo');
+      let columnsList = [];
+      if (defaultCache) {
+        columnsList = defaultCache.newList;
+      }
+      var option = [];
+      let sheetfilter = []; //对应列表数据中的key值数组，就是上面resdata中的 name，address
+      let sheetheader = []; //对应key值的表头，即excel表头
+      option.fileName = bill.title; //导出的Excel文件名
+      columns.map(a => {
+        let excelColumn = '';
+        if (a.preview != 'N') {
+          excelColumn = a.preview;
+        } else {
+          excelColumn = a.key;
+        }
+        if (columnsList.length <= 0) {
+          sheetfilter.push(excelColumn);
+          sheetheader.push(a.title);
+        } else if (columnsList.indexOf(a.title) != -1) {
+          sheetfilter.push(excelColumn);
+          sheetheader.push(a.title);
+        }
+      });
+      option.datas = [
+        {
+          sheetData: data,
+          sheetName: bill.title, //工作表的名字
+          sheetFilter: sheetfilter,
+          sheetHeader: sheetheader,
+        },
+      ];
+      var toExcel = new ExportJsonExcel(option);
+      toExcel.saveExcel();
     } else {
       message.error('当前查询无数据,请计算后再操作');
       this.setState({ data: [], searchLoading: false, bill: null });

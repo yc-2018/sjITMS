@@ -1358,7 +1358,7 @@ export default [
             name: '门店地图',
             org: ['DISPATCH_CENTER'],
             component: './SJTms/MapDispatching/stores/StoresMap',
-            authority: ['sjtms.core.taskCenter'],
+            authority: ['sjtms.core.storesMap'],
           },
           {
             path: '/tmscode/taskCenter',
