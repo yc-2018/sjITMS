@@ -15,23 +15,26 @@ export async function queryDictByCode(dictCodes) {
   });
 }
 
-export async function queryData(payload) {
+export async function queryData(payload,headers) {
   return request(`/itms-schedule/itms-schedule/dev/getData/${payload.quickuuid}/tms`, {
     method: 'POST',
     body: payload,
+    headers:headers
   });
 }
 
-export async function queryCreateConfig(payload) {
+export async function queryCreateConfig(payload,headers) {
   return request(`/itms-schedule/itms-schedule/dev/getOnlFormInfoByCode/${payload}`, {
     method: 'POST',
+    headers:headers
   });
 }
 
-export async function queryColumns(payload) {
+export async function queryColumns(payload,headers) {
   return request(`/itms-schedule/itms-schedule/dev/getColumns`, {
     method: 'POST',
     body: payload,
+    headers:headers
   });
 }
 
