@@ -39,20 +39,20 @@ export default {
     showPageMap: new Map(),
   },
   effects: {
-    *queryColumns({ payload, callback }, { call }) {
-      const response = yield call(queryColumns, payload);
+    *queryColumns({ payload,headers, callback }, { call }) {
+      const response = yield call(queryColumns, payload,headers);
       if (callback) callback(response);
     },
-    *queryData({ payload, callback }, { call }) {
-      const response = yield call(queryData, payload);
+    *queryData({ payload,headers,callback }, { call }) {
+      const response = yield call(queryData,payload,headers);
       if (callback) callback(response);
     },
     *queryAllData({ payload, callback }, { call, put }) {
       const response = yield call(queryAllData, payload);
       if (callback) callback(response);
     },
-    *queryCreateConfig({ payload, callback }, { call, put }) {
-      const response = yield call(queryCreateConfig, payload);
+    *queryCreateConfig({ payload,headers, callback }, { call, put }) {
+      const response = yield call(queryCreateConfig, payload,headers);
       if (callback) callback(response);
     },
     *showPage({ payload }, { call, put }) {

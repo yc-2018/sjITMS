@@ -302,6 +302,8 @@ export default class DriverSwipeLoading extends PureComponent {
               selectedRows={this.state.groupNo}
               interval={this.state.interval}
               time={this.state.time}
+              dispatchUuid={this.state.dispatchUuid}
+              companyUuid ={this.state.companyUuid}
             />
           </Card>
          
