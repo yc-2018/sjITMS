@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-02-07 14:36:32
+ * @LastEditTime: 2023-02-07 14:38:13
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -39,7 +39,6 @@ import moment from 'moment';
 import { guid } from '@/utils/utils';
 import ExportJsonExcel from 'js-export-excel';
 import { getTableColumns } from '@/utils/LoginContext';
-import { log } from 'lodash-decorators/utils';
 
 const { MonthPicker } = DatePicker;
 const { Panel } = Collapse;
