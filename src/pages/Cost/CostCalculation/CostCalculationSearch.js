@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-02-02 16:09:48
+ * @LastEditTime: 2023-02-07 14:36:32
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -39,6 +39,7 @@ import moment from 'moment';
 import { guid } from '@/utils/utils';
 import ExportJsonExcel from 'js-export-excel';
 import { getTableColumns } from '@/utils/LoginContext';
+import { log } from 'lodash-decorators/utils';
 
 const { MonthPicker } = DatePicker;
 const { Panel } = Collapse;
@@ -57,7 +58,9 @@ export default class CostBillDtlView extends QuickFormSearchPage {
     calculateLoading: false,
     dateString:
       this.props.params.dateString == undefined
-        ? moment().format('YYYY-MM')
+        ? moment()
+            .subtract(1, 'months')
+            .format('YYYY-MM')
         : this.props.params.dateString,
     plan: null,
     bill: null,
@@ -496,12 +499,15 @@ export default class CostBillDtlView extends QuickFormSearchPage {
     const { getFieldDecorator } = this.props.form;
     const { dateString } = this.state;
     let node = [];
-
     node.push(
       <Form.Item label="费用所属月">
         {getFieldDecorator('dateString', {
           initialValue: moment(
-            dateString == undefined ? moment().format('YYYY-MM') : dateString,
+            dateString == undefined
+              ? moment()
+                  .subtract(1, 'months')
+                  .format('YYYY-MM')
+              : dateString,
             'YYYY-MM'
           ),
         })(
