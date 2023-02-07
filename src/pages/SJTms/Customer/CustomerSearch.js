@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-12-19 17:48:10
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-31 10:19:11
+ * @LastEditTime: 2023-02-03 09:20:10
  * @Description: 客服工单
  * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerSearch.js
  */
@@ -186,13 +186,28 @@ export default class CustomerSearch extends QuickFormSearchPage {
       message.warning('请至少选中一条数据！');
       return;
     }
+    if (selectedRows.find(x => x.STATUS == 'Released') && selectedRows.length > 1) {
+      message.warning('存在已发布工单，不能批量发布！');
+      return;
+    }
     if (selectedRows.find(x => x.STATUS == 'Rejected') && selectedRows.length > 1) {
       message.warning('存在驳回工单，不能批量发布！');
       return;
     }
+    if (selectedRows.find(x => x.STATUS == 'Dispose') && selectedRows.length > 1) {
+      message.warning('存在处理中工单，不能批量发布！');
+      return;
+    }
+    if (selectedRows.find(x => x.STATUS == 'Disposed') && selectedRows.length > 1) {
+      message.warning('存在已处理工单，不能批量发布！');
+      return;
+    }
     if (
       selectedRows.length == 1 &&
-      (selectedRows[0].STATUS == 'Rejected' || selectedRows[0].STATUS == 'Disposed')
+      (selectedRows[0].STATUS == 'Released' ||
+        selectedRows[0].STATUS == 'Rejected' ||
+        selectedRows[0].STATUS == 'Disposed' ||
+        selectedRows[0].STATUS == 'Dispose')
     ) {
       // this.setState({ releaseModal: true });
       this.releasePageRef.show(selectedRows[0]);

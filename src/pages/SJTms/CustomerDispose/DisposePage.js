@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2023-01-10 10:48:50
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-12 15:13:00
+ * @LastEditTime: 2023-02-03 14:40:48
  * @Description: 工单处理
  * @FilePath: \iwms-web\src\pages\SJTms\CustomerDispose\DisposePage.js
  */
@@ -127,9 +127,9 @@ export default class DisposePageModal extends Component {
       default:
         return (
           <>
-            <Button type="primary" onClick={() => this.handleDispose('Rejected')} loading={saving}>
+            {/* <Button type="primary" onClick={() => this.handleDispose('Rejected')} loading={saving}>
               驳回
-            </Button>
+            </Button> */}
             <Button type="primary" onClick={() => this.handleDispose('Dispose')} loading={saving}>
               处理进度
             </Button>

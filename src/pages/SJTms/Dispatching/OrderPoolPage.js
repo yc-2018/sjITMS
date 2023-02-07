@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-05 09:50:37
+ * @LastEditTime: 2023-02-02 09:17:40
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -949,7 +949,7 @@ export default class OrderPoolPage extends Component {
                 <img src={mapIcon} style={{ width: 20, height: 20 }} />
                 地图
               </a>
-              <Switch
+              {/* <Switch
                 style={{ marginLeft: 15 }}
                 checked={this.props.isOrderCollect}
                 checkedChildren="门店汇总"
@@ -957,7 +957,7 @@ export default class OrderPoolPage extends Component {
                 onClick={isOrderCollect => {
                   this.props.refreshOrderCollect(isOrderCollect);
                 }}
-              />
+              /> */}
             </div>
             {/* 排车modal */}
             <DispatchingCreatePage

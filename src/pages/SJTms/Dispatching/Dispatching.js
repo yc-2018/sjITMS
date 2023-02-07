@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-29 14:03:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-05 09:29:41
+ * @LastEditTime: 2023-02-02 10:14:38
  * @Description: 配送调度主页面
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\Dispatching.js
  */
@@ -39,10 +39,13 @@ export default class Dispatching extends Component {
   async componentDidMount() {
     const response = await getDispatchConfig(loginOrg().uuid);
     if (response.success) {
-      this.setState({ dispatchConfig: response.data });
+      this.setState({
+        dispatchConfig: response.data,
+        isOrderCollect: response.data?.isSumOrder == 1,
+      });
     }
-    const isOrderCollect = localStorage.getItem(window.location.hostname + '-orderCollect');
-    this.setState({ isOrderCollect: isOrderCollect != 'false' });
+    // const isOrderCollect = localStorage.getItem(window.location.hostname + '-orderCollect');
+    // this.setState({ isOrderCollect: isOrderCollect != 'false' });
   }
 
   refreshOrderTable = () => {
