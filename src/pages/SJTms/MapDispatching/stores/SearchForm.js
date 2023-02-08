@@ -137,7 +137,7 @@ export default class SearchForm extends Component {
     return (searchProperties = {
       ...searchProperties,
       onChange: data => {
-        const filter = { field: outField, rule: 'eq', val: [data] };
+        const filter = { field: outField, rule: 'like', val: [data] };
         form.setFieldsValue({ SHIPAREA: undefined });
         this.setState({ linkFilter: filter });
       },
