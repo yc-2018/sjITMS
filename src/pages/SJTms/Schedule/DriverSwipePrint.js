@@ -79,7 +79,11 @@ export default class DriverSwipePrint extends PureComponent {
             { field: 'billuuid', type: 'VarChar', rule: 'eq', val: response.data.uuid },
           ],
         },
-      });
+      },
+      {
+        check_flag:false
+      }
+      );
       let scheduleDetails = detailsResp.success ? detailsResp.data.records : [];
       const hide = message.loading('打印中，请稍等...', 6);
       const LODOP = getLodop();
@@ -125,7 +129,8 @@ export default class DriverSwipePrint extends PureComponent {
     }
   };
   drawPrintPage = (schedule, scheduleDetails) => {
-    if (loginOrg().uuid == '000000750000004' || loginOrg().uuid =='000008150000001') {
+    const { dispatchUuid, companyUuid } = this.state;
+    if (dispatchUuid == '000000750000004' || dispatchUuid =='000008150000001') {
       let scheduleDetailSum ={};
       let REALCARTONCOUNT = 0;
       let REALSCATTEREDCOUNT  = 0;
@@ -213,11 +218,11 @@ export default class DriverSwipePrint extends PureComponent {
                       </div>
                       <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
                         送货员：
-                        {stevedore.length > 0 ? stevedore.join(',') : ''}
+                        {stevedore.length > 0? stevedore.join(',') : ''}
                       </div>
                       <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                         <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                          副驾驶员： {copilot.length > 0 ? copilot.join(',') : ''}
+                          副驾驶员： {copilot&&copilot.length > 0 ? copilot.join(',') : ''}
                         </div>
                       </div>
                       <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
@@ -535,7 +540,7 @@ export default class DriverSwipePrint extends PureComponent {
       return (
         <div>
           <table
-            style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0,fontWeight: bold }}
+            style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0,fontWeight: 'bold' }}
             border={1}
             cellPadding={0}
             cellSpacing={0}
@@ -602,7 +607,7 @@ export default class DriverSwipePrint extends PureComponent {
                     </div>
                     <div style={{ float: 'left', width: '25%' }}>
                       装车员：
-                      {stevedore.length > 0 ? stevedore.join(',') : ''}
+                      {stevedore&&stevedore.length > 0 ? stevedore.join(',') : ''}
                     </div>
                     <div style={{ float: 'left', width: '25%' }}>
                       打印时间：

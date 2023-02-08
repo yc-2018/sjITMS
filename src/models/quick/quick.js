@@ -47,8 +47,8 @@ export default {
       const response = yield call(queryData,payload,headers);
       if (callback) callback(response);
     },
-    *queryAllData({ payload, callback }, { call, put }) {
-      const response = yield call(queryAllData, payload);
+    *queryAllData({ payload, callback }, { call,headers, put }) {
+      const response = yield call(queryAllData, payload,headers);
       if (callback) callback(response);
     },
     *queryCreateConfig({ payload,headers, callback }, { call, put }) {
