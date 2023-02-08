@@ -38,10 +38,11 @@ export async function queryColumns(payload,headers) {
   });
 }
 
-export async function queryAllData(payload) {
+export async function queryAllData(payload,headers) {
   return request(`/itms-schedule/itms-schedule/dev/getAllData/${payload.quickuuid}`, {
     method: 'POST',
     body: payload,
+    headers:headers
   });
 }
 
