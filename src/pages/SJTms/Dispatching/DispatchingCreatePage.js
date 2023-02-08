@@ -143,6 +143,7 @@ export default class DispatchingCreatePage extends Component {
           ? schedule.details.map(item => {
               return {
                 ...item,
+                uuid: item.orderUuid,
                 billNumber: item.orderNumber,
                 stillCartonCount: item.realCartonCount || item.cartonCount,
                 stillScatteredCount: item.realScatteredCount || item.scatteredCount,
