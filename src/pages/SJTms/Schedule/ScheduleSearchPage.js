@@ -227,8 +227,10 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     await updateOutSerialApi(selectedRows[0].UUID, outSerial).then(result => {
       if (result.success) {
         message.success('修改成功！');
-        this.initOptionsData();
-        this.queryCoulumns();
+       this.setState({showUpdateOutSerial:false})
+       this.onSearch();
+      }else{
+        message.success('修改失败！');
       }
     });
   };
