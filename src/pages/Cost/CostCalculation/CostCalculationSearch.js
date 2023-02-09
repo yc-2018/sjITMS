@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-02-07 14:38:13
+ * @LastEditTime: 2023-02-08 17:47:20
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -58,7 +58,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
     dateString:
       this.props.params.dateString == undefined
         ? moment()
-            .subtract(1, 'months')
+            .subtract(6, 'months')
             .format('YYYY-MM')
         : this.props.params.dateString,
     plan: null,
@@ -166,7 +166,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
     }
     const response = await getBill(uuid, params);
     if (response.data && response.success) {
-      const { structs, data, plan, bill } = response.data.records[0];
+      const { structs, data, plan, bill, colTotal } = response.data.records[0];
       let newColumns = [];
       structs.forEach(struct => {
         newColumns.push({
@@ -194,6 +194,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
       this.setState({
         key: this.props.quickuuid + '|' + bill.planUuid,
         data: datas,
+        colTotal,
         searchLoading: false,
         bill,
         plan,

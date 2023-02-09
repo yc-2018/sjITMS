@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-27 11:24:00
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-21 12:40:35
+ * @LastEditTime: 2023-02-09 12:34:24
  * @Description: 修改排车单 运输订单明细 整件配送数量
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\EditContainerNumberPageF.js
  */
@@ -73,16 +73,18 @@ export default class EditContainerNumberPageF extends Component {
     const { order, totalData } = this.props;
     let cartonVolume = order.volume;
     let cartonWeight = order.weight;
+    let totalCartonCount = order.cartonCount;
     const response = await getContainerByBillUuid(order.uuid);
     if (response.success) {
       const cartonNumber = response.data?.find(x => x.vehicleType == 'Carton');
       if (cartonNumber) {
         cartonVolume = cartonNumber.realVolume || cartonNumber.forecastVolume;
         cartonWeight = cartonNumber.realWeight || cartonNumber.forecastWeight;
+        totalCartonCount = cartonNumber.realCount || cartonNumber.forecastCount;
       }
     }
-    const delVolume = (Number(cartonCount) / order.cartonCount) * cartonVolume;
-    const delWeight = (Number(cartonCount) / order.cartonCount) * cartonWeight;
+    const delVolume = (Number(cartonCount) / totalCartonCount) * cartonVolume;
+    const delWeight = (Number(cartonCount) / totalCartonCount) * cartonWeight;
     const volume = Math.round((totalData.volume - delVolume) * 100) / 100;
     const weight = Math.round(totalData.weight - delWeight) / 1000;
     return {
