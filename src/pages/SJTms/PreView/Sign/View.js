@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-12-09 08:51:33
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-10 10:00:01
+ * @LastEditTime: 2023-02-09 11:17:41
  * @Description: 签到大屏
  * @FilePath: \iwms-web\src\pages\SJTms\PreView\Sign\View.js
  */
@@ -44,7 +44,7 @@ export default class View extends PureComponent {
     const response = await queryData(filter);
     if (response.success) {
       let scheduleData = response.data.records ? response.data.records : [];
-      scheduleData = scheduleData.filter(x => x.REVIEWTIME && !x.hasOwnProperty('CHECKTIME'));
+      scheduleData = scheduleData.filter(x => x.REVIEWTIME);
       this.setState({ scheduleData });
     }
   };
@@ -56,6 +56,7 @@ export default class View extends PureComponent {
     for (let index = 0; index < remIndex; index++) {
       items.push(
         <tr style={{ height: 40 }} key={index}>
+          <td style={{ border: '2px solid #fff' }} />
           <td style={{ border: '2px solid #fff' }} />
           <td style={{ border: '2px solid #fff' }} />
           <td style={{ border: '2px solid #fff' }} />
@@ -83,6 +84,7 @@ export default class View extends PureComponent {
             <td>装车单号</td>
             <td>送货员</td>
             <td>班组</td>
+            <td>备注</td>
           </tr>
         </thead>
         <tbody
@@ -108,6 +110,11 @@ export default class View extends PureComponent {
                     {schedule.DELIVERYMAN?.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')}
                   </td>
                   <td style={{ border: '2px solid #fff' }}>{schedule.CONTACT}</td>
+                  <td style={{ border: '2px solid #fff' }}>
+                    {schedule.CHECKTIME
+                      ? `已签到${schedule.PIRS ? '，月台' + schedule.PIRS : ''}`
+                      : '未签到，可以装车'}
+                  </td>
                 </tr>
               );
             })
