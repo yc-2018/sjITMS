@@ -1,5 +1,6 @@
 import { loginUser, loginOrg } from './LoginContext';
 import { BloomFilter } from './bloomfilter';
+import 'hacktimer';
 
 // use localStorage to store the authority info, which might be sent from server in actual project.
 export function getAuthority(str) {
@@ -26,7 +27,7 @@ export function setAuthority(authority) {
 
 /**
  * 判断有没有权限
- * 
+ *
  * @param {String} currentResource 当前要检测的资源
  */
 export function havePermission(currentResource) {
@@ -35,8 +36,7 @@ export function havePermission(currentResource) {
   }
 
   let allResources = loginUser() ? loginUser().resources : [];
-  if (!allResources || allResources.length === 0)
-    return false;
+  if (!allResources || allResources.length === 0) return false;
 
   let bloomFilter = SingletonBloomFilter.getInstance(allResources);
   return bloomFilter.test(currentResource);
@@ -52,12 +52,15 @@ export class SingletonBloomFilter {
       this.instance = new BloomFilter(32 * 256, 16);
       let resourcesArray = [];
       if (!Array.isArray(resources)) {
-        resourcesArray = resources.replace(new RegExp(/"/g), '').slice(1, -1).split(",");
+        resourcesArray = resources
+          .replace(new RegExp(/"/g), '')
+          .slice(1, -1)
+          .split(',');
       } else {
         resourcesArray = resources;
       }
       resourcesArray.forEach(element => {
-        this.instance.add(element)
+        this.instance.add(element);
       });
     }
     return this.instance;
