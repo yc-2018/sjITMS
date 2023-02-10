@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-12-20 08:59:27
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-01 11:33:11
+ * @LastEditTime: 2023-02-10 15:18:24
  * @Description: 客服工单接口
  * @FilePath: \iwms-web\src\services\sjitms\Customer.js
  */
@@ -51,6 +51,9 @@ export async function dispose(stat, param) {
     method: 'POST',
     body: param,
   });
+}
+export async function getOrders(code) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/customer/getOrders?code=${code}`);
 }
 export async function saveResult(billUuid, param) {
   return request(`/itms-schedule/itms-schedule/sj/bill/customer/saveResult?uuid=${billUuid}`, {
