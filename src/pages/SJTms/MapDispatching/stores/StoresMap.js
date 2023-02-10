@@ -533,7 +533,7 @@ export default class StoresMap extends Component {
           this.setState(
             {
               // orders: resAll.data.records,
-              orders: res.data.otherRecords,
+              orders: res.data.otherRecords.filter(item => item.uuid != res.data.records[0].uuid),
               otherData: res.data.records,
               pageFilter: [],
               isOrder: false,
