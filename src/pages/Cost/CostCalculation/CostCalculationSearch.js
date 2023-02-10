@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-02-08 17:47:20
+ * @LastEditTime: 2023-02-09 16:07:24
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -58,7 +58,7 @@ export default class CostBillDtlView extends QuickFormSearchPage {
     dateString:
       this.props.params.dateString == undefined
         ? moment()
-            .subtract(6, 'months')
+            .subtract(1, 'months')
             .format('YYYY-MM')
         : this.props.params.dateString,
     plan: null,
