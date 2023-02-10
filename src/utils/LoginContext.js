@@ -151,7 +151,7 @@ export function cacheLoginKey(loginKey) {
     clearTimeout(loginOutTime);
   }
   loginOutTime = setTimeout(() => {
-    console.log('out', new Date());
+    // console.log('out', new Date());
     warning({
       title: '登录过期,请重新登录!',
       onOk() {
@@ -162,7 +162,7 @@ export function cacheLoginKey(loginKey) {
       },
     });
   }, 3480000); //58min  3480000ms
-  console.log('in', new Date());
+  // console.log('in', new Date());
 }
 
 export function loginKey() {
