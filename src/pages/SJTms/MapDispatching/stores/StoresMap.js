@@ -189,12 +189,14 @@ export default class StoresMap extends Component {
           shadow={true}
           onMouseover={() => this.setState({ windowInfo: { point, order } })}
           onMouseout={() => this.setState({ windowInfo: undefined })}
+          onClick={() => this.autoViewPort([order])}
         />
       );
     });
     // let datas = [...orders, ...otherData];
     orders.map((order, index) => {
       var point = new BMapGL.Point(order.longitude, order.latitude);
+
       markers.push(
         <Marker
           position={point}
@@ -203,6 +205,9 @@ export default class StoresMap extends Component {
           shadow={true}
           onMouseover={() => this.setState({ windowInfo: { point, order } })}
           onMouseout={() => this.setState({ windowInfo: undefined })}
+          onClick={() => {
+            this.autoViewPort([order]);
+          }}
         />
       );
       if (otherData?.length > 0 && order.isOrder) {
@@ -519,15 +524,16 @@ export default class StoresMap extends Component {
       if (res.success && res.data) {
         //查询门店时 显示其他门店
         if (storeParamsp && 'DELIVERYPOINTCODE' in storeParamsp) {
-          let resAll = await queryStoreMaps({
-            companyuuid: loginCompany().uuid,
-            dispatchcenteruuid: loginOrg().uuid,
-            cur: 1,
-            pageSize: e,
-          });
+          // let resAll = await queryStoreMaps({
+          //   companyuuid: loginCompany().uuid,
+          //   dispatchcenteruuid: loginOrg().uuid,
+          //   cur: 1,
+          //   pageSize: e,
+          // });
           this.setState(
             {
-              orders: resAll.data.records,
+              // orders: resAll.data.records,
+              orders: res.data.otherRecords,
               otherData: res.data.records,
               pageFilter: [],
               isOrder: false,
