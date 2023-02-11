@@ -428,11 +428,11 @@ export default class DispatchingCreatePage extends Component {
   handleSave = async () => {
     const { orders, selectVehicle, selectEmployees } = this.state;
     const orderSummary = this.groupByOrder(orders);
-    //校验订单
-    if (orderSummary.orderCount == 0) {
-      message.error('请选择运输订单！');
-      return;
-    }
+    // //校验订单
+    // if (orderSummary.orderCount == 0) {
+    //   message.error('请选择运输订单！');
+    //   return;
+    // }
     // const driver = selectEmployees.filter(x => x.memberType == 'Driver');
     // //校验车辆必选
     // if (isEmptyObj(selectVehicle)) {
