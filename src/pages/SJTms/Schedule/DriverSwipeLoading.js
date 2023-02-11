@@ -15,6 +15,7 @@ import { queryDictByCode } from '@/services/quick/Quick';
 import SwipeLoadingSearchPage from './SwipeLoadingSearchPage'
 import Page from '@/pages/Component/Page/inner/Page';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
+import DriverSwipeLoadings from './DriverSwipeLoading.less'
 import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
 export default class DriverSwipeLoading extends PureComponent {
   state = {
@@ -115,8 +116,9 @@ export default class DriverSwipeLoading extends PureComponent {
     return (
       //   <FreshPageHeaderWrapper>
      // <div style={{ height: '100vh' }} onClick={() => this.empInputRef.focus()}>
-      <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
-        <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
+      <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''} 
+     >
+      <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
           <NavigatorPanel 
           title="司机装车刷卡" 
           canFullScreen={this.props.location.pathname=='/driver/swipeLoading'?false:true} />
@@ -156,7 +158,7 @@ export default class DriverSwipeLoading extends PureComponent {
 
             <div
               style={{
-                fontSize: 55,
+                fontSize: 44,
                 fontWeight: 'normal',
                 textAlign: 'center',
                 marginRight: '15%',
@@ -199,71 +201,29 @@ export default class DriverSwipeLoading extends PureComponent {
           <Card
             title="刷卡结果"
             bordered={true}
-            //style={{ height: '25vh',  }}
+            //style={{ height: '11vh'}}
             bodyStyle={{
-              height: '15vh',
+              height: '59px',
               display: 'flex',
               justifyContent: 'center',
               alignItems: 'center',
-              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+              padding:'0px'
+             
+            }}
+            headStyle ={{
+              height:'2px',
+              display: 'flex',
             }}
           >
-            {errMsg ? (
-              <div style={{ color: '#F5222D', fontSize: '45px', margin: 'auto' }}>{errMsg}</div>
+          {errMsg ? (
+              <div style={{ color: '#F5222D', fontSize: '40px', margin: '0',  height:'10'}}>{errMsg}</div>
             ) : isShip ? (
-              <div style={{ color: '#00DD00', fontSize: '45px', margin: 'auto' }}>{message}</div>
+              <div style={{ color: '#00DD00', fontSize: '40px', margin: '0',height:'10' }}>{message}</div>
             ) : (
-              <div style={{ color: '#1354DA', fontSize: '45px', margin: 'auto' }}>{message}</div>
+              <div style={{ color: '#1354DA', fontSize: '40px', margin: '0',height:'10' }}>{message}</div>
             )}
           </Card>
-          {/* <Card
-            title="排车单信息"
-            style={{ height: 250, marginTop: 20, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
-          >
-            <Row gutter={[4, 28]}>
-              <Col span={6}>
-                <span style={{ fontSize: 15 }}>
-                  排车单号：
-                  {scheduleBill.billNumber ? scheduleBill.billNumber : <Empty />}
-                </span>
-              </Col>
-              <Col span={6}>
-                <span style={{ fontSize: 15 }}>
-                  车牌号：
-                  {scheduleBill.vehicle ? scheduleBill.vehicle.name : <Empty />}
-                </span>
-              </Col>
-          
-              <Col span={6}>
-                <span style={{ fontSize: 15 }}>
-                  体积(m³)：
-                  {scheduleBill.volume ? new Number(scheduleBill.volume).toFixed(2) : <Empty />}
-                </span>
-              </Col>
-              <Col span={6}>
-                <span style={{ fontSize: 15 }}>
-                  驾驶员：
-                  {scheduleBill.carrier ? (
-                    '[' + scheduleBill.carrier.code + ']' + scheduleBill.carrier.name
-                  ) : (
-                    <Empty />
-                  )}
-                </span>
-              </Col>
-              <Col span={6}>
-                <span style={{ fontSize: 15 }}>
-                  出车时间：
-                  {scheduleBill.dispatchTime ? scheduleBill.dispatchTime : <Empty />}
-                </span>
-              </Col>
-              <Col span={6}>
-                <span style={{ fontSize: 15 }}>
-                  回车时间：
-                  {scheduleBill.returnTime ? scheduleBill.returnTime : <Empty />}
-                </span>
-              </Col>
-            </Row>
-          </Card> */}
           <Card
             title={<>
               <span>刷卡列表</span><div style={{ float: 'right' }}>
@@ -284,7 +244,7 @@ export default class DriverSwipeLoading extends PureComponent {
                zoom:1 
                }}//height: 'calc(60vh-30px)',
             bodyStyle={{
-              height:'calc(29vh)',
+              height:window.screen.height,
               padding:0
               //paddingTop: 5,
               //height: 'calc(30vh-300px)',
@@ -292,8 +252,7 @@ export default class DriverSwipeLoading extends PureComponent {
 
             }}
             headStyle={{
-              height: '1vh',
-
+              height: '0px',
             }}
 
           >

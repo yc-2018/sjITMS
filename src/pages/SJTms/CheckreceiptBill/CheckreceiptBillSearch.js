@@ -207,16 +207,25 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
     if (e.column.fieldName == 'RECEIPTED') {
       e.component = (
         <Checkbox
+          style={{ width: 120 ,height:10}}
           checked={e.val == '1' ? true : false}
           key={e.record.UUID}
-          onChange={v => {
+          onClick={v => {
+            v.stopPropagation();
             e.record.RECEIPTED = v.target.checked ? 1 : 0;
             if (v.target.checked) {
               e.record.DEALMETHOD = '';
             }
           }}
         >
-          回单
+          <Button  onClick={v => {
+           v.preventDefault();
+           v.stopPropagation();
+            e.record.RECEIPTED = e.record.RECEIPTED==1?0:1
+            if (e.record.RECEIPTED==1) {
+              e.record.DEALMETHOD = '';
+            }
+          }}>回单</Button>
         </Checkbox>
       );
     } else if (e.column.fieldName == 'DEALMETHOD') {

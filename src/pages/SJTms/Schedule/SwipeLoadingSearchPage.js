@@ -24,10 +24,12 @@ export default class SwipeLoadingSearchPage extends QuickFormSearchPage {
     noSettingColumns: true,
     hasSettingColumns: false,
     // tableHeight: 'calc(40vh - 300px)',
-    scroll: { y: 'calc(30vh)' },//calc(70vh - 100px)
+   scroll: { y: window.screen.height },//calc(70vh - 100px)
     noPagination: true,
     unShowRow:true,
-    pathname: '/tmsexec/checkinLoading'
+    pathname: '/tmsexec/checkinLoading',
+    //scroll:window.screen.height-100
+     //scroll:'10px'
   };
 
   componentDidMount() {
