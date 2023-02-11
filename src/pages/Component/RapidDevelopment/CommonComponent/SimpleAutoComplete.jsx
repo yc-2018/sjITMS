@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Select, Spin } from 'antd';
+import { Select } from 'antd';
 import Debounce from 'lodash-decorators/debounce';
 import Bind from 'lodash-decorators/bind';
 import memoize from 'memoize-one';
 import { addCondition, getFieldShow, memoizeDynamicQuery } from '@/utils/ryzeUtils';
+import { uniqBy } from 'lodash';
 
 /**
  * 下拉列表输入框控件，可传入props同antd select
@@ -215,16 +216,17 @@ export default class SimpleAutoComplete extends Component {
    * 设置state的数据源
    */
   setSourceData = sourceData => {
-    //保留已选中数据源
+    //多选保留已选中数据源
     const { value } = this.state;
-    const { multipleSplit, valueField } = this.props;
+    const { multipleSplit, valueField, mode } = this.props;
     const oldData =
-      this.state.sourceData && value
+      this.state.sourceData && value && mode == 'multiple' && multipleSplit
         ? this.state.sourceData.filter(
             x => value?.split(multipleSplit).indexOf(x[valueField]) != -1
           )
         : [];
     sourceData = [...sourceData, ...oldData];
+    sourceData = uniqBy(sourceData, valueField);
     this.setState({ sourceData: sourceData });
     if (this.props.onSourceDataChange) {
       this.props.onSourceDataChange(
