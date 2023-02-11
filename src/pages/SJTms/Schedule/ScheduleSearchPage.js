@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-01-30 15:07:38
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-02-11 16:56:17
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -124,14 +124,20 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       </>
     );
   };
-  componentWillReceiveProps(nextProps) {
-    if (nextProps.selectedRows != this.props.selectedRows) {
-      this.queryCoulumns();
-    }
-  }
+  // componentWillReceiveProps(nextProps) {
+  //   if (nextProps.selectedRows != this.props.selectedRows) {
+  //     this.queryCoulumns();
+  //   }
+  // }
   handleOnRow = record => {
     return {
       onClick: () => {
+        let { data } = this.state;
+        data.list?.map(item => {
+          item.clicked = item.UUID == record.UUID;
+          return item;
+        });
+        this.setState({ data });
         this.props.refreshSelectedRow(record);
       },
     };
@@ -227,9 +233,9 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     await updateOutSerialApi(selectedRows[0].UUID, outSerial).then(result => {
       if (result.success) {
         message.success('修改成功！');
-       this.setState({showUpdateOutSerial:false})
-       this.onSearch();
-      }else{
+        this.setState({ showUpdateOutSerial: false });
+        this.onSearch();
+      } else {
         message.success('修改失败！');
       }
     });
