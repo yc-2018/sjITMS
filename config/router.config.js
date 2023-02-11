@@ -1344,14 +1344,14 @@ export default [
             // component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
             component: './SJTms/Customer/Customer',
             quickuuid: 'sj_itms_customer_service',
-            authority: ['sjtms.customer.service'],
+            authority: ['sjtms.core.customer.service'],
           },
           {
             path: '/tmscode/serviceDispose',
             name: '客服工单处理',
             component: './SJTms/CustomerDispose/Customer',
             quickuuid: 'sj_itms_customer_servicedispose',
-            authority: ['sjtms.customer.serviceDispose'],
+            authority: ['sjtms.core.customer.serviceDispose'],
           },
           {
             path: '/tmscode/storesMap',
