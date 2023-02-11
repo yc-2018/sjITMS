@@ -163,7 +163,11 @@ export default class SimpleAutoComplete extends Component {
    * 构建主键查询条件
    */
   getKeyCondition = () => {
-    return { params: [{ field: this.props.valueField, rule: 'eq', val: [this.state.value] }] };
+    const { mode, valueField, multipleSplit } = this.props;
+    const { value } = this.state;
+    const rule = mode == 'multiple' ? 'in' : 'eq';
+    const val = mode == 'multiple' ? value.split(multipleSplit) : [value];
+    return { params: [{ field: valueField, rule, val }] };
   };
 
   /**
@@ -188,7 +192,6 @@ export default class SimpleAutoComplete extends Component {
   autoCompleteFetchData = async searchText => {
     const { isLink, linkFilter } = this.props;
     const queryParams = this.getQueryParams();
-
     // 如果是联动控件,但是没有传递linkFilter,则不加载数据
     if (!queryParams || (isLink && !linkFilter)) {
       return;
