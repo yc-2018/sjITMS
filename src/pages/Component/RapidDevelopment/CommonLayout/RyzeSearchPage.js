@@ -214,13 +214,14 @@ export default class RyzeSearchPage extends Component {
             onSelectRow={this.handleSelectRows}
             onChange={this.handleStandardTableChange}
             comId={key}
-            rest = {this.state.rest}
+            rest={this.state.rest}
             rowClassName={(record, index) => {
-              let name = '';
-              if (index % 2 === 0) {
-                name = styles.lightRow;
+              if (record.clicked) {
+                return styles.clickedStyle;
               }
-              return name;
+              if (index % 2 === 0) {
+                return styles.lightRow;
+              }
             }}
             noActionCol={this.state.noActionCol}
             canDrag={this.state.canDragTable}
