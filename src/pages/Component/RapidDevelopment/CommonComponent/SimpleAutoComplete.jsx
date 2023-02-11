@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Select, Spin } from 'antd';
+import { Select } from 'antd';
 import Debounce from 'lodash-decorators/debounce';
 import Bind from 'lodash-decorators/bind';
 import memoize from 'memoize-one';
 import { addCondition, getFieldShow, memoizeDynamicQuery } from '@/utils/ryzeUtils';
+import { uniqBy } from 'lodash';
 
 /**
  * 下拉列表输入框控件，可传入props同antd select
@@ -162,7 +163,11 @@ export default class SimpleAutoComplete extends Component {
    * 构建主键查询条件
    */
   getKeyCondition = () => {
-    return { params: [{ field: this.props.valueField, rule: 'eq', val: [this.state.value] }] };
+    const { mode, valueField, multipleSplit } = this.props;
+    const { value } = this.state;
+    const rule = mode == 'multiple' ? 'in' : 'eq';
+    const val = mode == 'multiple' ? value.split(multipleSplit) : [value];
+    return { params: [{ field: valueField, rule, val }] };
   };
 
   /**
@@ -187,7 +192,6 @@ export default class SimpleAutoComplete extends Component {
   autoCompleteFetchData = async searchText => {
     const { isLink, linkFilter } = this.props;
     const queryParams = this.getQueryParams();
-
     // 如果是联动控件,但是没有传递linkFilter,则不加载数据
     if (!queryParams || (isLink && !linkFilter)) {
       return;
@@ -215,7 +219,17 @@ export default class SimpleAutoComplete extends Component {
    * 设置state的数据源
    */
   setSourceData = sourceData => {
-    const { textField, valueField } = this.props;
+    //多选保留已选中数据源
+    const { value } = this.state;
+    const { multipleSplit, valueField, mode } = this.props;
+    const oldData =
+      this.state.sourceData && value && mode == 'multiple' && multipleSplit
+        ? this.state.sourceData.filter(
+            x => value?.split(multipleSplit).indexOf(x[valueField]) != -1
+          )
+        : [];
+    sourceData = [...sourceData, ...oldData];
+    sourceData = uniqBy(sourceData, valueField);
     this.setState({ sourceData: sourceData });
     if (this.props.onSourceDataChange) {
       this.props.onSourceDataChange(
@@ -297,7 +311,10 @@ export default class SimpleAutoComplete extends Component {
     // 多选情况下把 value 值进行分割
     // toString是为了处理value和数据源数据格式不一致问题
     if (mode == 'multiple' && multipleSplit) {
-      value = value?.toString().split(multipleSplit).map(x => x?.toString());
+      value = value
+        ?.toString()
+        .split(multipleSplit)
+        .map(x => x?.toString());
     } else {
       value = value?.toString();
     }
