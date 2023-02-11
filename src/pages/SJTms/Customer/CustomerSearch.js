@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-12-19 17:48:10
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-03 09:20:10
+ * @LastEditTime: 2023-02-11 17:22:55
  * @Description: 客服工单
  * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerSearch.js
  */
@@ -299,7 +299,9 @@ export default class CustomerSearch extends QuickFormSearchPage {
   //删除
   handleDelete = () => {
     const { selectedRows } = this.state;
-    const service = selectedRows.filter(x => x.STATUS != 'Saved').shift();
+    const service = selectedRows
+      .filter(x => 'Saved,ReleasedDispose'.indexOf(x.STATUS) == -1)
+      .shift();
     if (service) {
       message.error('客服工单:' + service.BILLNUMBER + service.STATUS_CN + '状态，不能删除！');
       return;
