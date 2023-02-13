@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2023-01-07 16:10:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-13 14:23:31
+ * @LastEditTime: 2023-02-13 14:48:26
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\CustomerDispose\CustomerSearch.js
  */
@@ -31,13 +31,13 @@ export default class CustomerSearch extends QuickFormSearchPage {
   };
 
   componentDidMount() {
-    this.queryCoulumns();
-    this.getCreateConfig();
     if (!havePermission('sjtms.core.customer.service.view')) {
       getDepartments(loginUser().code).then(response => {
         this.setState({ departments: response.data ? response.data : [] });
       });
     }
+    this.queryCoulumns();
+    this.getCreateConfig();
   }
 
   exSearchFilter = () => {
