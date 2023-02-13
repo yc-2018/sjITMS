@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-13 15:39:50
+ * @LastEditTime: 2023-02-13 16:55:47
  * @Description: 司机刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipeLoading.js
  */
@@ -15,7 +15,6 @@ import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import { driverSwipe } from '@/services/sjitms/ScheduleProcess';
 import { queryDictByCode } from '@/services/quick/Quick';
 import SwipeLoadingSearchPage from './SwipeLoadingSearchPage';
-
 export default class DriverSwipeLoading extends PureComponent {
   state = {
     loading: false,
@@ -226,7 +225,6 @@ export default class DriverSwipeLoading extends PureComponent {
                 zoom: 1,
               }}
               bodyStyle={{ padding: 0 }}
-              headStyle={{ margin: 0 }}
             >
               <SwipeLoadingSearchPage
                 quickuuid="v_sj_itms_swipe_loading"
