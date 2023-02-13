@@ -15,7 +15,8 @@ import { queryDictByCode } from '@/services/quick/Quick';
 import SwipeLoadingSearchPage from './SwipeLoadingSearchPage'
 import Page from '@/pages/Component/Page/inner/Page';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
-import DriverSwipeLoadings from './DriverSwipeLoading.less'
+import   './DriverSwipeLoadingless.less'
+import styles from './DriverSwipeLoadingless.less'
 import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
 export default class DriverSwipeLoading extends PureComponent {
   state = {
@@ -123,11 +124,12 @@ export default class DriverSwipeLoading extends PureComponent {
           title="司机装车刷卡" 
           canFullScreen={this.props.location.pathname=='/driver/swipeLoading'?false:true} />
           <div
-            style={{
-              height: 100,
-              lineHeight: '100px',
-              borderBottom: '1px solid #e8e8e8',
-            }}
+          className={styles.divfou}
+            // style={{
+            //   height: 100,
+            //   lineHeight: '100px',
+            //   borderBottom: '1px solid #e8e8e8',
+            // }}
           >
             <div style={{ float: 'left', width: '15%', paddingLeft: 24 }}>
               <Select
