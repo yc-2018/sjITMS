@@ -1618,6 +1618,14 @@ export default [
                 quickuuid: 'v_sj_employeeattendance_report',
                 authority: ['sjtms.bigData.employeeattendance'],
               },
+              {
+                path: '/bigData/loading/customerServiceSchedule',
+                name: '排车单报表-客服',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'sj_customer_service_schedule',
+                authority: ['sjtms.bigData.customerServiceSchedule'],
+              },
             ],
           },
 

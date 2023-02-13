@@ -52,8 +52,8 @@ export async function dispose(stat, param) {
     body: param,
   });
 }
-export async function getOrders(code) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/customer/getOrders?code=${code}`);
+export async function getDepartments(code) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/customer/getDepartments?code=${code}`);
 }
 export async function saveResult(billUuid, param) {
   return request(`/itms-schedule/itms-schedule/sj/bill/customer/saveResult?uuid=${billUuid}`, {
