@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-12-09 08:51:33
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-09 11:17:41
+ * @LastEditTime: 2023-02-13 17:12:22
  * @Description: 签到大屏
  * @FilePath: \iwms-web\src\pages\SJTms\PreView\Sign\View.js
  */
@@ -78,10 +78,10 @@ export default class View extends PureComponent {
       >
         <thead style={{ fontSize: '2rem', height: 40, textAlign: 'center', fontWeight: '600' }}>
           <tr>
-            <td>车牌号</td>
-            <td>司机</td>
             <td>配货作业</td>
             <td>装车单号</td>
+            <td>车牌号</td>
+            <td>司机</td>
             <td>送货员</td>
             <td>班组</td>
             <td>备注</td>
@@ -93,26 +93,33 @@ export default class View extends PureComponent {
             fontSize: '2rem',
             textAlign: 'center',
             fontWeight: '500',
-            color: '#33CD33',
           }}
         >
           {scheduleData.length > 0 ? (
             scheduleData.map(schedule => {
+              console.log(schedule);
               return (
-                <tr style={{ height: 40 }}>
+                <tr
+                  style={{
+                    height: 40,
+                    color: schedule.CHECKTIME && schedule.PIRS == undefined ? '#E71D36' : '#33CD33',
+                  }}
+                >
+                  <td style={{ border: '2px solid #fff' }}>{schedule.WAVENUM}</td>
+                  <td style={{ border: '2px solid #fff' }}>{schedule.BILLNUMBER}</td>
                   <td style={{ border: '2px solid #fff' }}>{schedule.VEHICLEPLATENUMBER}</td>
                   <td style={{ border: '2px solid #fff' }}>
                     {schedule.CARRIERNAME?.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')}
                   </td>
-                  <td style={{ border: '2px solid #fff' }}>{schedule.WAVENUM}</td>
-                  <td style={{ border: '2px solid #fff' }}>{schedule.BILLNUMBER}</td>
                   <td style={{ border: '2px solid #fff' }}>
                     {schedule.DELIVERYMAN?.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')}
                   </td>
                   <td style={{ border: '2px solid #fff' }}>{schedule.CONTACT}</td>
                   <td style={{ border: '2px solid #fff' }}>
                     {schedule.CHECKTIME
-                      ? `已签到${schedule.PIRS ? '，月台' + schedule.PIRS : ''}`
+                      ? schedule.PIRS
+                        ? '已签到，月台' + schedule.PIRS
+                        : '签到超时'
                       : '未签到，可以装车'}
                   </td>
                 </tr>
