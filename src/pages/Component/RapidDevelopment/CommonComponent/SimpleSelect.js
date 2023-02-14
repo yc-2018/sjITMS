@@ -6,7 +6,7 @@
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
-import { Select } from 'antd';
+import { Select, Divider, Icon, Button } from 'antd';
 import { selectCoulumns, dynamicQuery } from '@/services/quick/Quick';
 
 /**
@@ -115,6 +115,19 @@ export default class SimpleSelect extends PureComponent {
     this.setState({ sourceData: sourceData });
   };
 
+  //全选/全不选
+  checkAll = e => {
+    let key = this.props.searchField.fieldName;
+    let values = [];
+    if (e == 'all') {
+      const { sourceData } = this.state;
+      sourceData.map(e => {
+        values.push(e.VALUE);
+      });
+    }
+    this.props.setFieldsValues({ [key]: values });
+  };
+
   render() {
     //查询类型为in时 变为多选
     let mu = {};
@@ -130,15 +143,43 @@ export default class SimpleSelect extends PureComponent {
     }
 
     return (
-      <Select
-        {...this.props}
-        // onChange={this.onChange}
-        onSearch={this.onSearch}
-        onFocus={this.onFocus}
-        {...mu}
+      //antd select dropdownRender bug 需要通过阻止事件默认行为，使click事件生效
+      <div
+        onMouseDown={e => {
+          e.preventDefault();
+          return false;
+        }}
       >
-        {this.buildOptions()}
-      </Select>
+        <Select
+          {...this.props}
+          // onChange={this.onChange}
+          onSearch={this.onSearch}
+          onFocus={this.onFocus}
+          {...mu}
+          dropdownRender={menu => (
+            <div>
+              {menu}
+              <Divider style={{ margin: '4px 0' }} />
+              <Button
+                type="primary"
+                onClick={() => this.checkAll('all')}
+                style={{ margin: '0 2px 2px 2px' }}
+              >
+                全选
+              </Button>
+              <Button
+                // type="primary"
+                onClick={() => this.checkAll('no')}
+                style={{ margin: '0 2px 2px 2px' }}
+              >
+                全不选
+              </Button>
+            </div>
+          )}
+        >
+          {this.buildOptions()}
+        </Select>
+      </div>
     );
   }
 }
