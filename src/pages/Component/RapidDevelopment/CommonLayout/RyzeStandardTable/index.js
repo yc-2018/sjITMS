@@ -989,25 +989,26 @@ class StandardTable extends Component {
   strip(number) {
     return parseFloat(parseFloat(number).toPrecision(12));
   }
-
+  //取消最小宽度 需要时将注释解开即可
   adjustColumns = columns => {
     const newColumns = [];
     for (let i = 0; i < columns.length; i++) {
       let newColumn = columns[i];
       // column width min
-      let minWidth = 14 * 2;
-      if (newColumn.sorter) {
-        minWidth += 25;
-      }
-      if (newColumn.title) {
-        minWidth += newColumn.title.toString().length * 12;
-      }
-      if (newColumn.width < minWidth) {
-        newColumn = {
-          ...newColumn,
-          width: minWidth,
-        };
-      }
+      // let minWidth = 14 * 2;
+      // // let minWidth = 0;
+      // if (newColumn.sorter) {
+      //   minWidth += 25;
+      // }
+      // if (newColumn.title) {
+      //   minWidth += newColumn.title.toString().length * 12;
+      // }
+      // if (newColumn.width < minWidth) {
+      //   newColumn = {
+      //     ...newColumn,
+      //     width: minWidth,
+      //   };
+      // }
       newColumns.push(newColumn);
     }
     return newColumns;

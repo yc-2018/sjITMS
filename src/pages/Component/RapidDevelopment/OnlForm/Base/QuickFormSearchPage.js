@@ -300,6 +300,8 @@ export default class QuickFormSearchPage extends SearchPage {
         width: column.fieldWidth == 0 ? colWidth.codeColWidth : column.fieldWidth,
         fieldType: column.fieldType,
         preview: preview,
+        //超过宽度不换行
+        ellipsis: true,
         render: (val, record) => this.getRender(val, column, record),
       };
       if (exColumns) {
