@@ -131,11 +131,11 @@ export default class SimpleSelect extends PureComponent {
   render() {
     //查询类型为in时 变为多选
     let mu = {};
-    if (
+    let isMu =
       this.props.searchField?.searchCondition &&
       (this.props.searchField.searchCondition == 'in' ||
-        this.props.searchField.searchCondition == 'notIn')
-    ) {
+        this.props.searchField.searchCondition == 'notIn');
+    if (isMu) {
       mu = {
         mode: 'multiple',
         optionLabelProp: 'label',
@@ -156,26 +156,30 @@ export default class SimpleSelect extends PureComponent {
           onSearch={this.onSearch}
           onFocus={this.onFocus}
           {...mu}
-          dropdownRender={menu => (
-            <div>
-              {menu}
-              <Divider style={{ margin: '4px 0' }} />
-              <Button
-                type="primary"
-                onClick={() => this.checkAll('all')}
-                style={{ margin: '0 2px 2px 2px' }}
-              >
-                全选
-              </Button>
-              <Button
-                // type="primary"
-                onClick={() => this.checkAll('no')}
-                style={{ margin: '0 2px 2px 2px' }}
-              >
-                全不选
-              </Button>
-            </div>
-          )}
+          dropdownRender={menu =>
+            isMu ? (
+              <div>
+                {menu}
+                <Divider style={{ margin: '4px 0' }} />
+                <Button
+                  type="primary"
+                  onClick={() => this.checkAll('all')}
+                  style={{ margin: '0 2px 2px 2px' }}
+                >
+                  全选
+                </Button>
+                <Button
+                  // type="primary"
+                  onClick={() => this.checkAll('no')}
+                  style={{ margin: '0 2px 2px 2px' }}
+                >
+                  全不选
+                </Button>
+              </div>
+            ) : (
+              <div>{menu}</div>
+            )
+          }
         >
           {this.buildOptions()}
         </Select>
