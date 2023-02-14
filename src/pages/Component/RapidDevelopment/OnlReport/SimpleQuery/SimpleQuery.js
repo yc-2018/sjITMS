@@ -154,6 +154,7 @@ export default class SimpleQuery extends SearchForm {
             placeholder={'请选择' + searchField.fieldTxt}
             searchField={searchField}
             {...searchProperties}
+            setFieldsValues={this.props.form.setFieldsValue}
           />
         );
       case 'radio':
@@ -168,6 +169,7 @@ export default class SimpleQuery extends SearchForm {
               reportCode={this.props.reportCode}
               searchField={searchField}
               isOrgQuery={this.props.isOrgQuery}
+              setFieldsValues={this.props.form.setFieldsValue}
             />
           );
         }

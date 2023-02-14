@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-12-09 08:51:33
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-13 17:12:22
+ * @LastEditTime: 2023-02-14 08:35:27
  * @Description: 签到大屏
  * @FilePath: \iwms-web\src\pages\SJTms\PreView\Sign\View.js
  */
@@ -41,7 +41,7 @@ export default class View extends PureComponent {
     ];
     filter.order = 'REVIEWTIME,ascend';
     filter.quickuuid = 'sj_itms_schedulepool';
-    const response = await queryData(filter);
+    const response = await queryData(filter, { check_flag: false });
     if (response.success) {
       let scheduleData = response.data.records ? response.data.records : [];
       scheduleData = scheduleData.filter(x => x.REVIEWTIME);
