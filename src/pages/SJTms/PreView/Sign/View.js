@@ -2,21 +2,39 @@
  * @Author: guankongjin
  * @Date: 2022-12-09 08:51:33
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-14 08:35:27
+ * @LastEditTime: 2023-02-15 14:57:00
  * @Description: 签到大屏
  * @FilePath: \iwms-web\src\pages\SJTms\PreView\Sign\View.js
  */
 import { PureComponent } from 'react';
-import { queryData } from '@/services/quick/Quick';
-import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { queryDataByOpen } from '@/services/quick/Open';
+import { queryDictByCode } from '@/services/quick/Quick';
+import { Select } from 'antd';
 import moment from 'moment';
 
 export default class View extends PureComponent {
   state = {
+    companyUuid: undefined,
+    dispatchUuid: undefined,
+    dispatchName: undefined,
+    dict: [],
     scheduleData: [],
   };
 
   componentDidMount() {
+    // 查询字典
+    queryDictByCode(['dispatchCenter']).then(res => this.setState({ dict: res.data }));
+    if (
+      localStorage.getItem('dispatchUuid') != undefined &&
+      localStorage.getItem('dispatchName') &&
+      localStorage.getItem('companyUuid')
+    ) {
+      this.setState({
+        dispatchUuid: localStorage.getItem('dispatchUuid'),
+        dispatchName: localStorage.getItem('dispatchName'),
+        companyUuid: localStorage.getItem('companyUuid'),
+      });
+    }
     this.searchSchedulePool();
     clearInterval();
     setInterval(() => {
@@ -25,10 +43,11 @@ export default class View extends PureComponent {
   }
 
   searchSchedulePool = async () => {
+    const { dispatchUuid, companyUuid } = this.state;
     let filter = { superQuery: { matchType: 'and', queryParams: [] } };
     filter.superQuery.queryParams = [
-      { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
-      { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
+      { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: companyUuid },
+      { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: dispatchUuid },
       {
         field: 'WAVENUM',
         type: 'VarChar',
@@ -41,7 +60,7 @@ export default class View extends PureComponent {
     ];
     filter.order = 'REVIEWTIME,ascend';
     filter.quickuuid = 'sj_itms_schedulepool';
-    const response = await queryData(filter, { check_flag: false });
+    const response = await queryDataByOpen(filter);
     if (response.success) {
       let scheduleData = response.data.records ? response.data.records : [];
       scheduleData = scheduleData.filter(x => x.REVIEWTIME);
@@ -50,7 +69,7 @@ export default class View extends PureComponent {
   };
 
   render() {
-    const { scheduleData } = this.state;
+    const { scheduleData, dispatchUuid, dispatchName, dict } = this.state;
     const remIndex = 20 - scheduleData.length;
     const items = [];
     for (let index = 0; index < remIndex; index++) {
@@ -66,7 +85,7 @@ export default class View extends PureComponent {
         </tr>
       );
     }
-    return (
+    return dispatchUuid ? (
       <table
         style={{
           height: '100vh',
@@ -131,6 +150,49 @@ export default class View extends PureComponent {
           {items}
         </tbody>
       </table>
+    ) : (
+      <div
+        style={{
+          height: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          flexDirection: 'column',
+        }}
+      >
+        <div style={{ width: 400, marginTop: 100 }}>
+          <Select
+            placeholder="请选择调度中心"
+            onChange={val => {
+              const item = dict.find(x => x.itemValue == val);
+              localStorage.setItem('dispatchUuid', val);
+              localStorage.setItem('dispatchName', item.itemText);
+              localStorage.setItem('companyUuid', item.description);
+              this.setState({
+                dispatchUuid: val,
+                dispatchName: item.itemText,
+                companyUuid: item.description,
+              });
+            }}
+            value={dispatchName}
+            allowClear={true}
+            style={{ width: '100%' }}
+          >
+            {dict.map(d => {
+              return <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>;
+            })}
+          </Select>
+        </div>
+        <div
+          style={{
+            fontSize: 55,
+            marginTop: 50,
+            fontWeight: 'normal',
+            color: 'red',
+          }}
+        >
+          请选择调度中心
+        </div>
+      </div>
     );
   }
 }

@@ -1,10 +1,10 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-16 14:51:08
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-02-15 14:56:40
  * @Description: 司机刷卡
- * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipe.js
+ * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipePrint.js
  */
 import { PureComponent } from 'react';
 import { Card, Col, Input, Row, Spin, Select, message } from 'antd';
@@ -12,11 +12,10 @@ import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import Empty from '@/pages/Component/Form/Empty';
 import { driverSwipePrint } from '@/services/sjitms/ScheduleProcess';
 import { queryDictByCode } from '@/services/quick/Quick';
-import { ScheduleSearchPage } from './ScheduleSearchPage';
 import { loginOrg, loginUser } from '@/utils/LoginContext';
 import scher from '@/assets/common/scher.jpg';
-import { convertDate, convertDateToTime } from '@/utils/utils';
-import { queryAllData } from '@/services/quick/Quick';
+import { convertDateToTime } from '@/utils/utils';
+import { queryAllDataByOpen } from '@/services/quick/Open';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 export default class DriverSwipePrint extends PureComponent {
   state = {
@@ -71,19 +70,15 @@ export default class DriverSwipePrint extends PureComponent {
     localStorage.setItem('showMessage', '1');
     if (response.success) {
       this.speech('刷卡打印成功');
-      const detailsResp = await queryAllData({
+      const detailsResp = await queryAllDataByOpen({
         quickuuid: 'sj_itms_print_schedule_order',
-        order:"ARCHLINECODE,ascend",
+        order: 'ARCHLINECODE,ascend',
         superQuery: {
           queryParams: [
             { field: 'billuuid', type: 'VarChar', rule: 'eq', val: response.data.uuid },
           ],
         },
-      },
-      {
-        check_flag:false
-      }
-      );
+      });
       let scheduleDetails = detailsResp.success ? detailsResp.data.records : [];
       const hide = message.loading('打印中，请稍等...', 6);
       const LODOP = getLodop();
@@ -101,9 +96,9 @@ export default class DriverSwipePrint extends PureComponent {
       const printPages = document.getElementById('printCell').childNodes;
       printPages.forEach(page => {
         LODOP.NewPageA();
-        if(loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001'){
+        if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001') {
           LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
-        }else{
+        } else {
           LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
         }
       });
@@ -112,7 +107,7 @@ export default class DriverSwipePrint extends PureComponent {
       LODOP.PRINT();
       //hide();
       setTimeout(() => {
-        message.success("打印成功！",5)
+        message.success('打印成功！', 5);
       }, 7000);
       this.setState({ printPage: undefined });
 
@@ -130,21 +125,20 @@ export default class DriverSwipePrint extends PureComponent {
   };
   drawPrintPage = (schedule, scheduleDetails) => {
     const { dispatchUuid, companyUuid } = this.state;
-    if (dispatchUuid == '000000750000004' || dispatchUuid =='000008150000001') {
-      let scheduleDetailSum ={};
+    if (dispatchUuid == '000000750000004' || dispatchUuid == '000008150000001') {
+      let scheduleDetailSum = {};
       let REALCARTONCOUNT = 0;
-      let REALSCATTEREDCOUNT  = 0;
+      let REALSCATTEREDCOUNT = 0;
       let REALCONTAINERCOUNT = 0;
       let OWECARTONCOUNT = 0;
       let CONTAINERSum = 0;
-      scheduleDetails.forEach(item =>{
-        REALCARTONCOUNT+=item.REALCARTONCOUNT;
-        REALSCATTEREDCOUNT +=item.REALSCATTEREDCOUNT;
-        REALCONTAINERCOUNT+=item.REALCONTAINERCOUNT;
-        OWECARTONCOUNT+=item.OWECARTONCOUNT;
-        CONTAINERSum +=item.REALCONTAINERCOUNT+item.OWECARTONCOUNT;
-  
-      })
+      scheduleDetails.forEach(item => {
+        REALCARTONCOUNT += item.REALCARTONCOUNT;
+        REALSCATTEREDCOUNT += item.REALSCATTEREDCOUNT;
+        REALCONTAINERCOUNT += item.REALCONTAINERCOUNT;
+        OWECARTONCOUNT += item.OWECARTONCOUNT;
+        CONTAINERSum += item.REALCONTAINERCOUNT + item.OWECARTONCOUNT;
+      });
       scheduleDetailSum.REALCARTONCOUNT = REALCARTONCOUNT;
       scheduleDetailSum.REALSCATTEREDCOUNT = REALSCATTEREDCOUNT;
       scheduleDetailSum.REALCONTAINERCOUNT = REALCONTAINERCOUNT;
@@ -158,255 +152,272 @@ export default class DriverSwipePrint extends PureComponent {
       const copilot = schedule.memberDetails
         .filter(e => e.memberType == 'Copilot')
         .map(e => '[' + e.member.code + ']' + e.member.name);
-        return (
-          <div>
-            <table
-              style={{
-                width: '100%',
-                borderCollapse: 'collapse',
-                fontSize: 12,
-                border: 0,
-                fontWeight: 'normal',
-              }}
-              border={1}
-              cellPadding={0}
-              cellSpacing={0}
-            >
-              <thead>
-                <tr style={{ height: 50 }}>
-                  <th colspan={2} style={{ border: 0 }}>
-                    <img style={{ height: 30, width: 120 }} src={scher} />
-                  </th>
-                  <th colspan={8} style={{ border: 0 }}>
-                    <div style={{ fontSize: 18, textAlign: 'center' }}>时捷物流配送装车/出车单</div>
-                  </th>
-                  <th colspan={4} style={{ border: 0 }}>
-                    <div style={{ fontSize: 14, textAlign: 'center' }}>
-                      <span>第</span>
-                      <font tdata="PageNO" color="blue">
-                        ##
-                      </font>
-                      <span>页/共</span>
-                      <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
-                        ##
-                      </font>
-                      <span>页</span>
-                    </div>
-                  </th>
-                </tr>
-                <tr>
-                  <th colspan={12} style={{ border: 0, height: 30 }}>
-                    <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
-                      {/* <div style={{ float: 'left', width: '25%' }}>
+      return (
+        <div>
+          <table
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: 12,
+              border: 0,
+              fontWeight: 'normal',
+            }}
+            border={1}
+            cellPadding={0}
+            cellSpacing={0}
+          >
+            <thead>
+              <tr style={{ height: 50 }}>
+                <th colspan={2} style={{ border: 0 }}>
+                  <img style={{ height: 30, width: 120 }} src={scher} />
+                </th>
+                <th colspan={8} style={{ border: 0 }}>
+                  <div style={{ fontSize: 18, textAlign: 'center' }}>时捷物流配送装车/出车单</div>
+                </th>
+                <th colspan={4} style={{ border: 0 }}>
+                  <div style={{ fontSize: 14, textAlign: 'center' }}>
+                    <span>第</span>
+                    <font tdata="PageNO" color="blue">
+                      ##
+                    </font>
+                    <span>页/共</span>
+                    <font
+                      color="blue"
+                      style={{ textDecoration: 'underline blue' }}
+                      tdata="PageCount"
+                    >
+                      ##
+                    </font>
+                    <span>页</span>
+                  </div>
+                </th>
+              </tr>
+              <tr>
+                <th colspan={12} style={{ border: 0, height: 30 }}>
+                  <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                    {/* <div style={{ float: 'left', width: '25%' }}>
                         排车序号： 
                       </div> */}
-                      <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                        排车单号： {schedule.billNumber}
-                      </div>
-                      <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                        车牌号： {'[' + schedule.vehicle.code + ']' + schedule.vehicle.name}
-                      </div>
-                      <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                        码头：
-                        {schedule.pirs}
-                      </div>
-    
+                    <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
+                      排车单号： {schedule.billNumber}
+                    </div>
+                    <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
+                      车牌号： {'[' + schedule.vehicle.code + ']' + schedule.vehicle.name}
+                    </div>
+                    <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
+                      码头：
+                      {schedule.pirs}
+                    </div>
+                  </div>
+                  <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                    <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
+                      驾驶员： {'[' + schedule.carrier.code + ']' + schedule.carrier.name}
+                    </div>
+                    <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
+                      送货员：
+                      {stevedore.length > 0 ? stevedore.join(',') : ''}
                     </div>
                     <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                       <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                        驾驶员： {'[' + schedule.carrier.code + ']' + schedule.carrier.name}
-                      </div>
-                      <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                        送货员：
-                        {stevedore.length > 0? stevedore.join(',') : ''}
-                      </div>
-                      <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
-                        <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                          副驾驶员： {copilot&&copilot.length > 0 ? copilot.join(',') : ''}
-                        </div>
-                      </div>
-                      <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                        操作员： {loginUser().name}
-                      </div>
-                      <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                        打印时间：
-                        {convertDateToTime(new Date())}
+                        副驾驶员： {copilot && copilot.length > 0 ? copilot.join(',') : ''}
                       </div>
                     </div>
-                  </th>
-                </tr>
-                {/* <tr>
+                    <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
+                      操作员： {loginUser().name}
+                    </div>
+                    <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
+                      打印时间：
+                      {convertDateToTime(new Date())}
+                    </div>
+                  </div>
+                </th>
+              </tr>
+              {/* <tr>
                   <th colspan={16} style={{ border: 0, height: 20 }}>
                     <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                       <div style={{ float: 'left', width: '25%' }}>副司机： {schedule.COPILOT}</div>
                     </div>
                   </th>
                 </tr> */}
-                <tr>
-                  <th colspan={12} style={{ border: 0, height: 20 }}>
-                    <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
-                      <div style={{ float: 'left', width: '80%' }}>
-                        {schedule.useETC
-                          ? '粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为' +
+              <tr>
+                <th colspan={12} style={{ border: 0, height: 20 }}>
+                  <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                    <div style={{ float: 'left', width: '80%' }}>
+                      {schedule.useETC
+                        ? '粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为' +
                           schedule.etcamount +
                           '元'
-                          : '粤通卡信息：'}
-                        <br />
-                        [线路]去程入口:
-                        {schedule.etcroute}
-                        <br />
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;回程出口:
-                        {schedule.etcrouteReturn}
-                        <br />
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;途径高速:
-                        {schedule.etcrouteInfo}
-                        <br />
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如有异常需超额使用粤通卡的，请致电（670607）
-                      </div>
+                        : '粤通卡信息：'}
+                      <br />
+                      [线路]去程入口:
+                      {schedule.etcroute}
+                      <br />
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;回程出口:
+                      {schedule.etcrouteReturn}
+                      <br />
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;途径高速:
+                      {schedule.etcrouteInfo}
+                      <br />
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如有异常需超额使用粤通卡的，请致电（670607）
                     </div>
-                  </th>
-                </tr>
-                <tr style={{ height: 25 }}>
-                  <th width={50} rowSpan={2}>
-                    线路
-                  </th>
-                  <th width={100} rowSpan={2}>
-                    零板位
-                  </th>
-                  <th width={170} rowSpan={2}>
-                    门店名称
-                  </th>
-                  <th width={150} colSpan={6}>
-                    送出
-                  </th>
-                  <th width={50} colSpan={1}>
-                    回收
-                  </th>
-                  <th width={120} rowSpan={2}>
-                    整箱板位
-                  </th>
-                  <th width={50} rowSpan={2}>
-                    装车排序
-                  </th>
-                </tr>
-                <tr style={{ height: 25 }}>
-                  <th>整件</th>
-                  <th>散件</th>
-                  <th>周转筐</th>
-                  <th>欠筐数</th>
-                  <th>箱总数</th>
-                  <th>腾箱数</th>
-                  {/* <th>福袋数</th>
+                  </div>
+                </th>
+              </tr>
+              <tr style={{ height: 25 }}>
+                <th width={50} rowSpan={2}>
+                  线路
+                </th>
+                <th width={100} rowSpan={2}>
+                  零板位
+                </th>
+                <th width={170} rowSpan={2}>
+                  门店名称
+                </th>
+                <th width={150} colSpan={6}>
+                  送出
+                </th>
+                <th width={50} colSpan={1}>
+                  回收
+                </th>
+                <th width={120} rowSpan={2}>
+                  整箱板位
+                </th>
+                <th width={50} rowSpan={2}>
+                  装车排序
+                </th>
+              </tr>
+              <tr style={{ height: 25 }}>
+                <th>整件</th>
+                <th>散件</th>
+                <th>周转筐</th>
+                <th>欠筐数</th>
+                <th>箱总数</th>
+                <th>腾箱数</th>
+                {/* <th>福袋数</th>
                   <th>深通卡</th>
                   <th>退货单</th>
                   <th>差异单</th> */}
-                  <th>箱数</th>
-                </tr>
-              </thead>
-              <tbody>
-                {scheduleDetails ? (
-                  scheduleDetails.map((item, index) => {
-                    return (
-                      <tr style={{ textAlign: 'center', height: 25 }}>
-                        <td width={100}>{item.ARCHLINECODE}</td>
-                        <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
-                          {item.SCATTEREDCOLLECTBIN}
-                        </td>
-                        <td width={120}>
-                          {'[' + item.DELIVERYPOINTCODE + ']' + item.DELIVERYPOINTNAME}
-                        </td>
-                        <td width={50}>{item.REALCARTONCOUNT}</td>
-                        <td width={50}>{item.REALSCATTEREDCOUNT}</td>
-                        <td width={50}>{item.REALCONTAINERCOUNT}</td>
-                        <td width={50}>{item.OWECARTONCOUNT}</td>
-                        <td width={50}>{item.REALCONTAINERCOUNT + item.OWECARTONCOUNT}</td>
-                        <td width={50}>{ }</td>
-                        <td width={50}>{ }</td>
-                        {/* <td width={80}>{}</td>
+                <th>箱数</th>
+              </tr>
+            </thead>
+            <tbody>
+              {scheduleDetails ? (
+                scheduleDetails.map((item, index) => {
+                  return (
+                    <tr style={{ textAlign: 'center', height: 25 }}>
+                      <td width={100}>{item.ARCHLINECODE}</td>
+                      <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
+                        {item.SCATTEREDCOLLECTBIN}
+                      </td>
+                      <td width={120}>
+                        {'[' + item.DELIVERYPOINTCODE + ']' + item.DELIVERYPOINTNAME}
+                      </td>
+                      <td width={50}>{item.REALCARTONCOUNT}</td>
+                      <td width={50}>{item.REALSCATTEREDCOUNT}</td>
+                      <td width={50}>{item.REALCONTAINERCOUNT}</td>
+                      <td width={50}>{item.OWECARTONCOUNT}</td>
+                      <td width={50}>{item.REALCONTAINERCOUNT + item.OWECARTONCOUNT}</td>
+                      <td width={50}>{}</td>
+                      <td width={50}>{}</td>
+                      {/* <td width={80}>{}</td>
                         <td width={80}>{}</td>
                         <td width={80}>{}</td>
                         <td width={80}>{}</td> */}
-                        <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
-                          {item.COLLECTBIN}
-                        </td>
-                        <td width={50} />
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <></>
-                )}
-                {scheduleDetails?<tr style={{ textAlign: 'center', height: 25 }}>
-            <td width={100}>{'合计'}</td>
-            <td  colspan={2} width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
-              {scheduleDetailSum.StoreSum}
-            </td>
-            {/* <td width={120}>
+                      <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
+                        {item.COLLECTBIN}
+                      </td>
+                      <td width={50} />
+                    </tr>
+                  );
+                })
+              ) : (
+                <></>
+              )}
+              {scheduleDetails ? (
+                <tr style={{ textAlign: 'center', height: 25 }}>
+                  <td width={100}>{'合计'}</td>
+                  <td
+                    colspan={2}
+                    width={80}
+                    style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}
+                  >
+                    {scheduleDetailSum.StoreSum}
+                  </td>
+                  {/* <td width={120}>
               {scheduleDetailSum.StoreSum}
             </td> */}
-            <td width={50}>{scheduleDetailSum.REALCARTONCOUNT}</td>
-            <td width={50}>{scheduleDetailSum.REALSCATTEREDCOUNT}</td>
-            <td width={50}>{scheduleDetailSum.REALCONTAINERCOUNT}</td>
-            <td width={50}>{scheduleDetailSum.OWECARTONCOUNT}</td>
-            <td width={50}>{scheduleDetailSum.CONTAINERSum}</td>
-            <td width={50}>{}</td>
-            <td width={50}>{}</td>
-            {/* <td width={80}>{}</td>
+                  <td width={50}>{scheduleDetailSum.REALCARTONCOUNT}</td>
+                  <td width={50}>{scheduleDetailSum.REALSCATTEREDCOUNT}</td>
+                  <td width={50}>{scheduleDetailSum.REALCONTAINERCOUNT}</td>
+                  <td width={50}>{scheduleDetailSum.OWECARTONCOUNT}</td>
+                  <td width={50}>{scheduleDetailSum.CONTAINERSum}</td>
+                  <td width={50}>{}</td>
+                  <td width={50}>{}</td>
+                  {/* <td width={80}>{}</td>
             <td width={80}>{}</td>
             <td width={80}>{}</td>
             <td width={80}>{}</td> */}
-            <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
-              {}
-            </td>
-            <td width={50} />
-          </tr>:<></>}
-              </tbody>
-              <tfoot border={0}>
-                <tr style={{ height: 20, border: 0, fontSize: '15px' }} border={0}>
-                  <td style={{ border: 0, paddingTop: 10 }} colSpan={8}>
-                    <div style={{ paddingLeft: 20, fontWeight: 'normal' }}>
-                      总体积(m³)：
-                      {schedule.VOLUME}
-                    </div>
+                  <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
+                    {}
                   </td>
-                  <td
-                    style={{ border: 0, textAlign: 'right', paddingTop: 10, fontWeight: 'normal' }}
-                    colSpan={8}
-                  >
-                    <div>脏筐数：_____________</div>
-                  </td>
+                  <td width={50} />
                 </tr>
-                <tr style={{ border: 0, height: 20 }}>
-                  <td style={{ border: 0, fontWeight: 'normal' }} colspan={16}>
-                    单据备注: 白色~收据，红色~驾驶员、配送员，黄色~发货
-                  </td>
-                </tr>
-                <tr style={{ border: 0, height: 20 }}>
-                  <td style={{ border: 0, fontWeight: 'normal' }} colspan={8}>
-                    驾驶/配送员签字：
-                  </td>
-                  {/* <td style={{ border: 0 }} colspan={6}>
+              ) : (
+                <></>
+              )}
+            </tbody>
+            <tfoot border={0}>
+              <tr style={{ height: 20, border: 0, fontSize: '15px' }} border={0}>
+                <td style={{ border: 0, paddingTop: 10 }} colSpan={8}>
+                  <div style={{ paddingLeft: 20, fontWeight: 'normal' }}>
+                    总体积(m³)：
+                    {schedule.VOLUME}
+                  </div>
+                </td>
+                <td
+                  style={{ border: 0, textAlign: 'right', paddingTop: 10, fontWeight: 'normal' }}
+                  colSpan={8}
+                >
+                  <div>脏筐数：_____________</div>
+                </td>
+              </tr>
+              <tr style={{ border: 0, height: 20 }}>
+                <td style={{ border: 0, fontWeight: 'normal' }} colspan={16}>
+                  单据备注: 白色~收据，红色~驾驶员、配送员，黄色~发货
+                </td>
+              </tr>
+              <tr style={{ border: 0, height: 20 }}>
+                <td style={{ border: 0, fontWeight: 'normal' }} colspan={8}>
+                  驾驶/配送员签字：
+                </td>
+                {/* <td style={{ border: 0 }} colspan={6}>
                     收退货签字：
                   </td> */}
-                  <td style={{ border: 0 }} colspan={7}>
-                    <div border={0} style={{ fontSize: 14, textAlign: 'center', fontWeight: 'normal' }}>
-                      <span>第</span>
-                      <font tdata="PageNO" color="blue">
-                        ##
-                      </font>
-                      <span>页/共</span>
-                      <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
-                        ##
-                      </font>
-                      <span>页</span>
-                    </div>
-                  </td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        );
-     
+                <td style={{ border: 0 }} colspan={7}>
+                  <div
+                    border={0}
+                    style={{ fontSize: 14, textAlign: 'center', fontWeight: 'normal' }}
+                  >
+                    <span>第</span>
+                    <font tdata="PageNO" color="blue">
+                      ##
+                    </font>
+                    <span>页/共</span>
+                    <font
+                      color="blue"
+                      style={{ textDecoration: 'underline blue' }}
+                      tdata="PageCount"
+                    >
+                      ##
+                    </font>
+                    <span>页</span>
+                  </div>
+                </td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      );
     } else if (loginOrg().uuid == '000000750000003' || loginOrg().uuid == '000008110000001') {
       return (
         <div>
@@ -536,11 +547,17 @@ export default class DriverSwipePrint extends PureComponent {
           </table>
         </div>
       );
-    }else{
+    } else {
       return (
         <div>
           <table
-            style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0,fontWeight: 'bold' }}
+            style={{
+              width: '100%',
+              borderCollapse: 'collapse',
+              fontSize: 12,
+              border: 0,
+              fontWeight: 'bold',
+            }}
             border={1}
             cellPadding={0}
             cellSpacing={0}
@@ -586,9 +603,7 @@ export default class DriverSwipePrint extends PureComponent {
               <tr>
                 <th colspan={16} style={{ border: 0, height: 20 }}>
                   <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
-                    <div style={{ float: 'left', width: '25%' }}>
-                      排车序号： 
-                    </div>
+                    <div style={{ float: 'left', width: '25%' }}>排车序号：</div>
                     <div style={{ float: 'left', width: '25%' }}>操作员： {loginUser().name}</div>
                     <div style={{ float: 'left', width: '25%' }}>
                       驾驶员： {'[' + schedule.carrier.code + ']' + schedule.carrier.name}
@@ -607,7 +622,7 @@ export default class DriverSwipePrint extends PureComponent {
                     </div>
                     <div style={{ float: 'left', width: '25%' }}>
                       装车员：
-                      {stevedore&&stevedore.length > 0 ? stevedore.join(',') : ''}
+                      {stevedore && stevedore.length > 0 ? stevedore.join(',') : ''}
                     </div>
                     <div style={{ float: 'left', width: '25%' }}>
                       打印时间：
