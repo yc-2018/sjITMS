@@ -138,10 +138,9 @@ export default class RyzeSearchPage extends Component {
   };
 
   drawToolbar = () => {
-    if (this.drawToolbarPanel) {
-      return <ToolbarPanel>{this.drawToolbarPanel()}</ToolbarPanel>;
-    } else {
-      return '';
+    const children = this.drawToolbarPanel();
+    if (children != undefined) {
+      return <ToolbarPanel>{children}</ToolbarPanel>;
     }
   };
 
