@@ -2,20 +2,14 @@ import React, { Component } from 'react';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
-import ConfirmProgress from '@/pages/Component/Progress/ConfirmProgress';
 import StandardTable from './RyzeStandardTable';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import ToolbarPanel from '@/pages/Component/Page/inner/ToolbarPanel';
-import { message, Modal } from 'antd';
-import { formatMessage } from 'umi/locale';
 import { getActiveKey, getPageFilter, setPageFilter } from '@/utils/LoginContext';
-import { routerRedux } from 'dva/router';
 import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import ToolbarPane1Content from '@/pages/Component/Page/inner/ToolbarPane1Content';
-import IconFont from '@/components/IconFont';
-import { debounce } from '@/utils/utils';
 import styles from '@/pages/Tms/TransportOrder/transportOrder.less';
 /**
  * 搜索界面基类<br>
@@ -45,12 +39,10 @@ export default class RyzeSearchPage extends Component {
         likeKeyValues: {},
       },
     };
-    console.log('111', sessionStorage.getItem(props.quickuuid + 'searchPageLine'));
     let pageFilters = { quickuuid: props.quickuuid, changePage: true };
     //查缓存中是否有搜索条件
     if (getPageFilter(getActiveKey() + props.quickuuid)) {
       pageFilters = getPageFilter(getActiveKey() + props.quickuuid);
-      //console.log('cache', pageFilters);
     }
 
     if (getPageFilter(getActiveKey())) {
@@ -218,6 +210,9 @@ export default class RyzeSearchPage extends Component {
             rowClassName={(record, index) => {
               if (record.clicked) {
                 return styles.clickedStyle;
+              }
+              if (record.errorStyle) {
+                return styles.errorStyle;
               }
               if (index % 2 === 0) {
                 return styles.lightRow;
