@@ -20,6 +20,7 @@ export default class QuickFormSearchPage extends SearchPage {
   drawTopButton = () => {}; //扩展最上层按钮
   drawToolsButton = () => {}; //扩展中间功能按钮
   drawExColumns = () => {}; //table额外的列
+  editColumns = cols => cols; //修改配置列
   changeState = () => {}; //扩展state
   renderOperateCol = () => {}; //操作列
   drapTableChange = e => {}; //拖拽事件
@@ -67,7 +68,6 @@ export default class QuickFormSearchPage extends SearchPage {
           val: item.searchDefVal,
         };
       }
-
       defaultSearch.push(exSearchFilter);
     }
 
@@ -105,7 +105,6 @@ export default class QuickFormSearchPage extends SearchPage {
       payload: this.state.reportCode,
       callback: response => {
         if (response.result) {
-          console.log('请求配置成功');
           this.setState({ formConfig: response.result });
         }
       },
@@ -134,20 +133,21 @@ export default class QuickFormSearchPage extends SearchPage {
       },
       callback: response => {
         if (response.result) {
-          this.initConfig(response.result);
+          const queryConfig = this.editColumns(response.result);
+          this.initConfig(queryConfig);
           //解决用户列展示失效问题 暂时解决方法（赋值两次）
-          this.initConfig(response.result);
+          this.initConfig(queryConfig);
           //查询必填
-          let queryRequired = response.result.columns.find(item => item.searchRequire);
+          // let queryRequired = queryConfig.columns.find(item => item.searchRequire);
 
-          let companyuuid = response.result.columns.find(
+          let companyuuid = queryConfig.columns.find(
             item => item.fieldName.toLowerCase() == 'companyuuid'
           );
           let orgName =
             loginOrg().type.toLowerCase() == 'dc'
               ? loginOrg().type.toLowerCase() + 'Uuid'
               : 'dispatchcenteruuid';
-          let org = response.result.columns.find(item => item.fieldName.toLowerCase() == orgName);
+          let org = queryConfig.columns.find(item => item.fieldName.toLowerCase() == orgName);
 
           if (companyuuid) {
             this.state.isOrgQuery = [
@@ -162,7 +162,7 @@ export default class QuickFormSearchPage extends SearchPage {
 
           if (org) {
             this.setState({
-              isOrgQuery: response.result.reportHead.organizationQuery
+              isOrgQuery: queryConfig.reportHead.organizationQuery
                 ? [
                     {
                       field:
@@ -179,7 +179,7 @@ export default class QuickFormSearchPage extends SearchPage {
             });
           }
 
-          let defaultSortColumn = response.result.columns.find(item => item.orderType > 1);
+          let defaultSortColumn = queryConfig.columns.find(item => item.orderType > 1);
           if (defaultSortColumn) {
             let defaultSort =
               defaultSortColumn.orderType == 2
@@ -288,10 +288,7 @@ export default class QuickFormSearchPage extends SearchPage {
       } else {
         preview = 'N';
       }
-      let e = {
-        column: column,
-      };
-      let exColumns = this.drawExColumns(e); //额外的列
+      let exColumns = this.drawExColumns({ column }); //额外的列
       const qiuckcolumn = {
         title: column.fieldTxt,
         dataIndex: column.fieldName,
