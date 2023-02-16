@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-18 08:35:01
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-02-16 15:03:01
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -172,10 +172,19 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
     this.setState({ showRejectedModal: true });
   };
 
-  drawcell = e => {
-    if (e.column.fieldName == 'PARKINGFEE') {
-      const component = <a onClick={() => this.props.onClose(e.record.UUID)}>{e.val}</a>;
-      e.component = component;
+  drawcell = row => {
+    if (row.column.fieldName == 'PARKINGFEE') {
+      row.component =
+        row.record.MAXPARKINGFEE < row.record.PARKINGFEE ? (
+          <span
+            style={{ padding: '0 10px', background: 'red', color: '#fff' }}
+            onClick={() => this.props.onClose(row.record.UUID)}
+          >
+            {row.val}
+          </span>
+        ) : (
+          <a onClick={() => this.props.onClose(row.record.UUID)}>{row.val}</a>
+        );
     }
   };
 }

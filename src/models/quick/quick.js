@@ -10,7 +10,12 @@ import {
   getSelectField,
   dyDelete,
 } from '@/services/quick/Quick';
-import { colWidth } from '@/utils/ColWidth';
+import {
+  queryDataByOpen,
+  queryColumnsByOpen,
+  queryAllDataByOpen,
+  queryCreateConfigByOpen,
+} from '@/services/quick/Open';
 
 export default {
   namespace: 'quick',
@@ -39,20 +44,20 @@ export default {
     showPageMap: new Map(),
   },
   effects: {
-    *queryColumns({ payload,headers, callback }, { call }) {
-      const response = yield call(queryColumns, payload,headers);
+    *queryColumns({ payload, callback }, { call }) {
+      const response = yield call(queryColumns, payload);
       if (callback) callback(response);
     },
-    *queryData({ payload,headers,callback }, { call }) {
-      const response = yield call(queryData,payload,headers);
+    *queryData({ payload, callback }, { call }) {
+      const response = yield call(queryData, payload);
       if (callback) callback(response);
     },
-    *queryAllData({ payload, callback }, { call,headers, put }) {
-      const response = yield call(queryAllData, payload,headers);
+    *queryAllData({ payload, callback }, { call, put }) {
+      const response = yield call(queryAllData, payload);
       if (callback) callback(response);
     },
-    *queryCreateConfig({ payload,headers, callback }, { call, put }) {
-      const response = yield call(queryCreateConfig, payload,headers);
+    *queryCreateConfig({ payload, callback }, { call, put }) {
+      const response = yield call(queryCreateConfig, payload);
       if (callback) callback(response);
     },
     *showPage({ payload }, { call, put }) {
@@ -94,6 +99,22 @@ export default {
     },
     *selectField({ payload, callback }, { call, put }) {
       const response = yield call(getSelectField, payload);
+      if (callback) callback(response);
+    },
+    *queryColumnsByOpen({ payload, callback }, { call }) {
+      const response = yield call(queryColumnsByOpen, payload);
+      if (callback) callback(response);
+    },
+    *queryDataByOpen({ payload, callback }, { call }) {
+      const response = yield call(queryDataByOpen, payload);
+      if (callback) callback(response);
+    },
+    *queryAllDataByOpen({ payload, callback }, { call, put }) {
+      const response = yield call(queryAllDataByOpen, payload);
+      if (callback) callback(response);
+    },
+    *queryCreateConfigByOpen({ payload, callback }, { call, put }) {
+      const response = yield call(queryCreateConfigByOpen, payload);
       if (callback) callback(response);
     },
   },

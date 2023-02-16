@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-01-15 16:03:07
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-31 09:02:47
+ * @LastEditTime: 2023-02-16 14:04:08
  * @Description: 快速开发简单查询
  * @FilePath: \iwms-web\src\pages\Component\RapidDevelopment\OnlReport\SimpleQuery\SimpleQuery.js
  */
@@ -176,6 +176,7 @@ export default class SimpleQuery extends SearchForm {
         return (
           <SimpleAutoCompleteEasy
             placeholder={'请输入' + searchField.fieldTxt}
+            allowClear
             reportCode={this.props.reportCode}
             searchField={searchField}
             isOrgQuery={this.props.isOrgQuery}

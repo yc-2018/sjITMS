@@ -989,25 +989,26 @@ class StandardTable extends Component {
   strip(number) {
     return parseFloat(parseFloat(number).toPrecision(12));
   }
-
+  //取消最小宽度 需要时将注释解开即可
   adjustColumns = columns => {
     const newColumns = [];
     for (let i = 0; i < columns.length; i++) {
       let newColumn = columns[i];
       // column width min
-      let minWidth = 14 * 2;
-      if (newColumn.sorter) {
-        minWidth += 25;
-      }
-      if (newColumn.title) {
-        minWidth += newColumn.title.toString().length * 12;
-      }
-      if (newColumn.width < minWidth) {
-        newColumn = {
-          ...newColumn,
-          width: minWidth,
-        };
-      }
+      // let minWidth = 14 * 2;
+      // // let minWidth = 0;
+      // if (newColumn.sorter) {
+      //   minWidth += 25;
+      // }
+      // if (newColumn.title) {
+      //   minWidth += newColumn.title.toString().length * 12;
+      // }
+      // if (newColumn.width < minWidth) {
+      //   newColumn = {
+      //     ...newColumn,
+      //     width: minWidth,
+      //   };
+      // }
       newColumns.push(newColumn);
     }
     return newColumns;
@@ -1200,39 +1201,37 @@ class StandardTable extends Component {
       newColumns.push({ ...e });
     });
     const tableElement = document.getElementById(this.state.key);
-    // console.log('tableElement', tableElement);
     const pos = tableElement ? tableElement.getBoundingClientRect() : {};
     //获取当前页签的footer
     const footerElement = document
       .getElementById(this.state.pathname)
       ?.getElementsByTagName('footer')[1];
     const footerPos = footerElement ? footerElement.getBoundingClientRect() : {};
-    let height = this.props.tableHeight
-      ? this.props.tableHeight
-      : footerPos.top - pos.top - (this.props.overHeight ? this.props.overHeight : 90) - 20;
-    // let dataHeight = showList ? showList.length * 30 : 0;
+    //表格高度
+    let height = footerPos.top - pos.top - (this.props.overHeight ? this.props.overHeight : 80);
+    if (this.props.colTotal && this.props.colTotal?.length > 0) {
+      height = height - 30;
+    }
+    if (this.props.tableHeight) {
+      height = this.props.tableHeight;
+    }
     //修改dataHeight计算，适应重写render后控件高度问题 2022-05-06 zhangze
     let dataHeight = showList ? showList.length * 40 : 0;
-    let scroll = {}; //'calc(100vh - ' + top + 'px)'
+    let scroll = {};
     let totalWidth = this.getTotalWidth(newColumns);
     let tableWidth = 0;
     for (const item of this.props.columns) {
       tableWidth += item.width;
     }
-    // let tableWidth = tableElement ? tableElement.offsetWidth : 0;
-    // console.log('tableWidth', tableWidth);
-    // console.log("dataHeight",dataHeight,'height',height);
     if (dataHeight > height) {
       scroll.y = height < 30 ? (this.props.minHeight ? this.props.minHeight : 30) : height;
       tableWidth = tableWidth - 120;
     }
+    scroll.x = tableWidth;
     //有minHeight走minHeight
     if (this.props.minHeight) {
       scroll.y = this.props.minHeight;
     }
-
-    // scroll.x = tableWidth;
-
     //默认第一列与最后一列操作列固定
     let firstCol = newColumns[0];
     let lastCol = newColumns[newColumns.length - 1];
@@ -1246,7 +1245,6 @@ class StandardTable extends Component {
         fixed: 'right',
       };
     }
-    scroll.x = tableWidth;
 
     // 固定列滚动
     // if (totalWidth > tableWidth) {

@@ -1,48 +1,43 @@
 import request from '@/utils/request';
-import { async } from 'q';
-import { func } from 'prop-types';
-import axios from 'axios';
 
 export async function queryDict(dictCode) {
-  return request(`/itms-schedule/itms-schedule/dict/findDictByDictType/${dictCode}`, {
+  return request(`/itms-schedule/itms-schedule/openapi/dict/findDictByDictType/${dictCode}`, {
     method: 'GET',
   });
 }
 export async function queryDictByCode(dictCodes) {
-  return request(`/itms-schedule/itms-schedule/dict/findDictByDictCode?dictCodes=${dictCodes}`, {
-    method: 'GET',
-    headers: { check_flag: false },
-  });
+  return request(
+    `/itms-schedule/itms-schedule/openapi/dict/findDictByDictCode?dictCodes=${dictCodes}`,
+    {
+      method: 'GET',
+    }
+  );
 }
 
-export async function queryData(payload,headers) {
+export async function queryData(payload) {
   return request(`/itms-schedule/itms-schedule/dev/getData/${payload.quickuuid}/tms`, {
     method: 'POST',
     body: payload,
-    headers:headers
   });
 }
 
-export async function queryCreateConfig(payload,headers) {
+export async function queryCreateConfig(payload) {
   return request(`/itms-schedule/itms-schedule/dev/getOnlFormInfoByCode/${payload}`, {
     method: 'POST',
-    headers:headers
   });
 }
 
-export async function queryColumns(payload,headers) {
+export async function queryColumns(payload) {
   return request(`/itms-schedule/itms-schedule/dev/getColumns`, {
     method: 'POST',
     body: payload,
-    headers:headers
   });
 }
 
-export async function queryAllData(payload,headers) {
+export async function queryAllData(payload) {
   return request(`/itms-schedule/itms-schedule/dev/getAllData/${payload.quickuuid}`, {
     method: 'POST',
     body: payload,
-    headers:headers
   });
 }
 

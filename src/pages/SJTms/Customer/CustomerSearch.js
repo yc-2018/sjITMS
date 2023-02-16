@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-12-19 17:48:10
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-11 17:22:55
+ * @LastEditTime: 2023-02-16 11:34:37
  * @Description: 客服工单
  * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerSearch.js
  */
@@ -13,6 +13,7 @@ import { Button, message, Form, Modal, Input, Popconfirm } from 'antd';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { release, finished, unFinished, norm } from '@/services/sjitms/Customer';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
+import { loginUser } from '@/utils/LoginContext';
 import DisposePage from '../CustomerDispose/DisposePage';
 
 import { havePermission } from '@/utils/authority';
@@ -29,7 +30,11 @@ export default class CustomerSearch extends QuickFormSearchPage {
     releaseRemark: '',
     unNormType: '',
   };
-
+  editColumns = queryConfig => {
+    let creatorCol = queryConfig.columns.find(x => x.fieldName == 'CREATORNAME');
+    creatorCol.searchDefVal = loginUser().name;
+    return queryConfig;
+  };
   drawcell = row => {
     if (row.column.fieldName == 'NORM' && row.record.NORM && row.record.NORM != '规范') {
       row.component = (

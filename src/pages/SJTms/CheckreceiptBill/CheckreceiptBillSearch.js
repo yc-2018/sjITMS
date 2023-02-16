@@ -211,7 +211,7 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
           checked={e.val == '1' ? true : false}
           key={e.record.UUID}
           onClick={v => {
-            v.stopPropagation();
+            v.preventDefault();
             e.record.RECEIPTED = v.target.checked ? 1 : 0;
             if (v.target.checked) {
               e.record.DEALMETHOD = '';
@@ -219,8 +219,7 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
           }}
         >
           <Button  onClick={v => {
-           v.preventDefault();
-           v.stopPropagation();
+            v.preventDefault();
             e.record.RECEIPTED = e.record.RECEIPTED==1?0:1
             if (e.record.RECEIPTED==1) {
               e.record.DEALMETHOD = '';

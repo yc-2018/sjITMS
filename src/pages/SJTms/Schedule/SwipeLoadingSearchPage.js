@@ -2,8 +2,8 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-13 17:42:10
- * @Description: 排车单明细列表
+ * @LastEditTime: 2023-02-15 17:17:14
+ * @Description: 装车刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\SwipeLoadingSearchPage.js
  */
 import { connect } from 'dva';
@@ -35,22 +35,14 @@ export default class SwipeLoadingSearchPage extends QuickFormSearchPage {
   queryCoulumns = () => {
     const { dispatch } = this.props;
     dispatch({
-      type: 'quick/queryColumns',
+      type: 'quick/queryColumnsByOpen',
       payload: {
         reportCode: this.state.reportCode,
         sysCode: 'tms',
       },
-      headers: {
-        check_flag: false,
-      },
       callback: response => {
         if (response.result) {
           this.initConfig(response.result);
-          //解决用户列展示失效问题 暂时解决方法（赋值两次）
-          this.initConfig(response.result);
-          //查询必填
-          let queryRequired = response.result.columns.find(item => item.searchRequire);
-
           let companyuuid = response.result.columns.find(
             item => item.fieldName.toLowerCase() == 'companyuuid'
           );
@@ -99,12 +91,8 @@ export default class SwipeLoadingSearchPage extends QuickFormSearchPage {
             this.setState({ defaultSort });
           }
 
-          //查询条件有必填时默认不查询
-          //if (queryRequired) return;
-
           //配置查询成功后再去查询数据
           this.onSearch();
-
           //扩展State
           this.changeState();
         }
@@ -192,27 +180,10 @@ export default class SwipeLoadingSearchPage extends QuickFormSearchPage {
   getData = pageFilters => {
     const { dispatch } = this.props;
     dispatch({
-      type: 'quick/queryData',
+      type: 'quick/queryDataByOpen',
       payload: pageFilters,
-      headers: { check_flag: false },
       callback: response => {
         if (response.data) this.initData(response.data);
-      },
-    });
-  };
-
-  //获取配置信息,用于写入redis
-  getCreateConfig = () => {
-    const { dispatch } = this.props;
-    dispatch({
-      type: 'quick/queryCreateConfig',
-      payload: this.state.reportCode,
-      headers: { check_flag: false },
-      callback: response => {
-        if (response.result) {
-          console.log('请求配置成功');
-          this.setState({ formConfig: response.result });
-        }
       },
     });
   };

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2023-01-07 16:10:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-13 14:48:26
+ * @LastEditTime: 2023-02-16 11:53:37
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\CustomerDispose\CustomerSearch.js
  */
@@ -20,6 +20,13 @@ import { havePermission } from '@/utils/authority';
 }))
 export default class CustomerSearch extends QuickFormSearchPage {
   state = { ...this.state, departments: [] };
+
+  editColumns = queryConfig => {
+    const { departments } = this.state;
+    let creatorCol = queryConfig.columns.find(x => x.fieldName == 'DISPOSEDEPT');
+    creatorCol.searchDefVal = departments[0];
+    return queryConfig;
+  };
   drawcell = row => {
     if (row.column.fieldName == 'BILLNUMBER') {
       row.component = (
