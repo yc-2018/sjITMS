@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-11 16:56:17
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-02-17 10:18:19
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -88,10 +88,12 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
 
   buildOptions = () => {
     const { sourceData } = this.state;
-    if (sourceData.success == true) {
+    if (sourceData.success == true && sourceData.data) {
       return sourceData.data.map(data => {
         return <Select.Option value={data}>{data}</Select.Option>;
       });
+    } else {
+      return null;
     }
   };
 
