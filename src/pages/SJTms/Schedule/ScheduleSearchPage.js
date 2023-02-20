@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-02-17 10:18:19
+ * @LastEditTime: 2023-02-20 16:39:22
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -67,6 +67,25 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     this.queryCoulumns();
     this.getCreateConfig();
   }
+
+  //查询数据
+  getData = pageFilters => {
+    const { dispatch } = this.props;
+    const deliverypointCode = pageFilters.superQuery.queryParams.find(
+      x => x.field == 'DELIVERYPOINTCODE'
+    );
+    if (deliverypointCode) {
+      deliverypointCode.val = ',' + deliverypointCode.val + ',';
+      pageFilters.superQuery.queryParams['DELIVERYPOINTCODE'] = deliverypointCode;
+    }
+    dispatch({
+      type: 'quick/queryData',
+      payload: pageFilters,
+      callback: response => {
+        if (response.data) this.initData(response.data);
+      },
+    });
+  };
 
   initOptionsData = async () => {
     // let queryParamsJson = {
