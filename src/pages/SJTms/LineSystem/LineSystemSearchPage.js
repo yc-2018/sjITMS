@@ -51,6 +51,7 @@ const { Content, Sider } = Layout;
 const { TreeNode } = Tree;
 const { TabPane } = Tabs;
 import { havePermission } from '@/utils/authority';
+import { throttleSetter } from 'lodash-decorators';
 
 @connect(({ lineSystem, loading }) => ({
   lineSystem,
@@ -172,7 +173,7 @@ export default class LineSystemSearchPage extends Component {
           lineTreeData.push(itemData);
         });
         if (lineuuid == undefined) {
-          lineuuid = lineTreeData? lineTreeData[0].key:undefined;
+          lineuuid = lineTreeData.length>0? lineTreeData[0].key:undefined;
           // lineuuid = lineTreeData
           //   ? lineTreeData[0]?.children
           //     ? lineTreeData[0].children[0]?.key
@@ -358,10 +359,6 @@ export default class LineSystemSearchPage extends Component {
       }
       const systemuuid = treedata.lineTreeData.find(x => x.key == selectedKeys[0]);
       const systemData = await this.swithCom(systemuuid, selectedKeys[0]);
-      console.log("onsystemuuid",systemuuid,"sdf",sdf);
-      console.log("ssds",lineTreeData);
-      console.log("treedata",treedata);
-      console.log("selectedKeys",selectedKeys[0]);
       this.setState({
         ...treedata,
         selectLineUuid: selectedKeys[0],
@@ -382,6 +379,12 @@ export default class LineSystemSearchPage extends Component {
   };
   //绘制左侧菜单栏
   drawSider = () => {
+     return  <div style={{ height: '100%' }}>
+       {this.drawLeftTop}
+       {this.drawLeftBotton}
+      </div>
+  };
+  drawLeftBotton(){
     const { expandKeys, selectLineUuid } = this.state;
     var lineTreeData = JSON.parse(JSON.stringify(this.state.lineTreeData));
     // const formItemLayout = {
@@ -432,45 +435,6 @@ export default class LineSystemSearchPage extends Component {
     };
     return (
       <div style={{ height: '100%' }}>
-        <div className={linesStyles.navigatorPanelWrapper}>
-          {/* className={linesStyles.action} */}
-          {/* <span className={linesStyles.sidertitle}>线路体系</span> */}
-
-          <div>
-            <Row gutter={[_, 2]} align="middle" type="flex">
-              <Col span={9}>
-                <Input
-                  placeholder="线路编号或者门店号"
-                  onBlur={e => this.setState({ lineStoreCode: e.target.value })}
-                />
-              </Col>
-              <Col span={3} push={1}>
-                <Button type="primary" size="small" onClick={() => this.handleSubmitLine()}>
-                  查询
-                </Button>
-              </Col>
-              <Col span={6} push={2}>
-                <Button
-                  type="primary"
-                  size="small"
-                  onClick={() => this.lineSystemCreatePageModalRef.show()}
-                >
-                  新建体系
-                </Button>
-              </Col>
-              <Col span={6} push={1}>
-                <Button
-                  type="primary"
-                  size="small"
-                  onClick={() => this.setState({ uploadLineVisible: true })}
-                >
-                  导入线路
-                </Button>
-              </Col>
-            </Row>
-          </div>
-          <div />
-        </div>
         <div style={{ height: '90%', overflow: 'auto' }}>
           {this.state.lineTreeData.length> 0 && <Tree
             showLine={true}
@@ -488,7 +452,46 @@ export default class LineSystemSearchPage extends Component {
         </div>
       </div>
     );
-  };
+  }
+  drawLeftTop(){
+    return <div className={linesStyles.navigatorPanelWrapper}>
+    <div>
+      <Row gutter={[_, 2]} align="middle" type="flex">
+        <Col span={9}>
+          <Input
+            placeholder="线路编号或者门店号"
+            onBlur={e => this.setState({ lineStoreCode: e.target.value })}
+          />
+        </Col>
+        <Col span={3} push={1}>
+          <Button type="primary" size="small" onClick={() => this.handleSubmitLine()}>
+            查询
+          </Button>
+        </Col>
+        <Col span={6} push={2}>
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => this.lineSystemCreatePageModalRef.show()}
+          >
+            新建体系
+          </Button>
+        </Col>
+        <Col span={6} push={1}>
+          <Button
+            type="primary"
+            size="small"
+            onClick={() => this.setState({ uploadLineVisible: true })}
+          >
+            导入线路
+          </Button>
+        </Col>
+      </Row>
+    </div>
+    <div />
+  </div>
+  }
+
   downloadTemplate = () => {
     var option = [];
     option.fileName = '线路导入模板'; //导出的Excel文件名
@@ -579,7 +582,8 @@ export default class LineSystemSearchPage extends Component {
         <Layout>
           {/* 左侧内容 */}
           <Sider width={350} className={linesStyles.leftWrapper}>
-            {this.state.lineTreeData.length> 0 && this.drawSider()}
+            {this.drawLeftTop()}
+            {this.state.lineTreeData.length> 0 && this.drawLeftBotton()}
             <CreatePageModal
               modal={{
                 title: '新建线路体系',
