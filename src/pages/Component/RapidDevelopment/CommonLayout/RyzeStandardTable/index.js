@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import { Checkbox, Dropdown, Menu, message, Table, Tooltip, Input } from 'antd';
+import { Checkbox, Dropdown, Menu, message, Table, Tooltip, Input, Icon } from 'antd';
 import styles from './index.less';
 import { formatMessage } from 'umi/locale';
 import { commonLocale } from '@/utils/CommonLocale';
@@ -282,8 +282,8 @@ function fetchValues(columns, key) {
         ? JSON.parse(getTableColumns(key + 'columnInfo'))
         : getTableColumns(key + 'columnInfo');
   }
-
   let defaultColumns = defaultCache?.newList;
+
   if (defaultColumns) {
     return defaultColumns;
   }
@@ -513,14 +513,15 @@ class StandardTable extends Component {
     columns = isEmpty(nextColumns) ? columns : nextColumns;
     const newColumns = [];
     // newColumns.push({});
-    newColumns.push({ ...columns[0] });
+    let firstColumn = columns.filter(i => i.title && i.title === checkedValues[0]);
+    newColumns.push({ ...firstColumn });
     let arr = checkedValues;
     if (typeof checkedValues === 'string') {
       arr = JSON.parse(checkedValues);
     }
     arr.forEach((e, index) => {
       const cs = columns.filter(i => i.title && i.title === e);
-      if (cs && cs.length > 0 && index > 0) {
+      if (cs && cs.length > 0 && index >= 0) {
         newColumns.push({ ...cs[0] });
       }
     });
@@ -680,6 +681,55 @@ class StandardTable extends Component {
     }
   };
 
+  onClickTwoWay = (target, index, type) => {
+    const { optionsList } = this.state;
+
+    if (type == 'top') {
+      if (index == 0) {
+        return;
+      }
+      if (target.checked == false) {
+        message.warning('未勾选的不能移动');
+        return;
+      }
+      // 删除重新放置
+      if (index != 0) {
+        let temp = optionsList[index];
+        for (let i = index; i >= 0; i--) {
+          optionsList[i] = optionsList[i - 1];
+        }
+        optionsList[0] = temp;
+      }
+
+      target['upColor'] = '#CED0DA';
+    } else {
+      if (index == optionsList.length - 1) {
+        return;
+      }
+      if (target.checked == false) {
+        message.warning('未勾选的不能移动');
+        return;
+      }
+      // 删除重新放置
+      let temp = optionsList[index];
+      for (let i = index; i < optionsList.length - 1; i++) {
+        optionsList[i] = optionsList[i + 1];
+      }
+      optionsList[optionsList.length - 1] = temp;
+
+      target['upColor'] = '#CED0DA';
+    }
+
+    this.setState(
+      {
+        optionsList: optionsList,
+      },
+      () => {
+        this.handleOK();
+      }
+    );
+  };
+
   onClickUp = (target, index) => {
     const { optionsList } = this.state;
     // 第一个不能移动
@@ -793,6 +843,28 @@ class StandardTable extends Component {
                 >
                   <IconFont style={{ fontSize: '16px', color: '#3B77E3' }} type="icon-line_up" />
                 </a>
+                &nbsp;&nbsp;&nbsp;
+                <a
+                  onClick={() => this.onClickTwoWay(record, index, 'down')}
+                  // style={{ marginRight: '22px', marginLeft: '8px' }}
+                >
+                  <Icon
+                    type="down-square"
+                    theme="twoTone"
+                    style={{ fontSize: '16px', color: '#3B77E3' }}
+                  />
+                </a>
+                &nbsp;&nbsp;&nbsp;
+                <a
+                  onClick={() => this.onClickTwoWay(record, index, 'top')}
+                  // style={{ marginRight: '22px', marginLeft: '8px' }}
+                >
+                  <Icon
+                    type="up-square"
+                    theme="twoTone"
+                    style={{ fontSize: '16px', color: '#3B77E3' }}
+                  />
+                </a>
               </span>
             ) : (
               '  '
@@ -890,7 +962,6 @@ class StandardTable extends Component {
   handleOK = () => {
     const { optionsList, key } = this.state;
     const { columns } = this.props;
-
     let newList = [];
     let newColumns = [];
     let cacheList = [];
@@ -1096,6 +1167,8 @@ class StandardTable extends Component {
     let scroll = {};
     if (dataHeight > height) {
       scroll.y = height < 30 ? 30 : height - 20;
+      //防止超出屏幕高度
+      scroll.y = scroll.y > window.innerHeight - 300 ? window.innerHeight - 300 : scroll.y;
     }
     scroll.x = false;
     // console.log('还不行============',optionsList)
@@ -1201,39 +1274,37 @@ class StandardTable extends Component {
       newColumns.push({ ...e });
     });
     const tableElement = document.getElementById(this.state.key);
-    // console.log('tableElement', tableElement);
     const pos = tableElement ? tableElement.getBoundingClientRect() : {};
     //获取当前页签的footer
     const footerElement = document
       .getElementById(this.state.pathname)
       ?.getElementsByTagName('footer')[1];
     const footerPos = footerElement ? footerElement.getBoundingClientRect() : {};
-    let height = this.props.tableHeight
-      ? this.props.tableHeight
-      : footerPos.top - pos.top - (this.props.overHeight ? this.props.overHeight : 90) - 20;
-    // let dataHeight = showList ? showList.length * 30 : 0;
+    //表格高度
+    let height = footerPos.top - pos.top - (this.props.overHeight ? this.props.overHeight : 80);
+    if (this.props.colTotal && this.props.colTotal?.length > 0) {
+      height = height - 30;
+    }
+    if (this.props.tableHeight) {
+      height = this.props.tableHeight;
+    }
     //修改dataHeight计算，适应重写render后控件高度问题 2022-05-06 zhangze
     let dataHeight = showList ? showList.length * 40 : 0;
-    let scroll = {}; //'calc(100vh - ' + top + 'px)'
+    let scroll = {};
     let totalWidth = this.getTotalWidth(newColumns);
     let tableWidth = 0;
     for (const item of this.props.columns) {
       tableWidth += item.width;
     }
-    // let tableWidth = tableElement ? tableElement.offsetWidth : 0;
-    // console.log('tableWidth', tableWidth);
-    // console.log("dataHeight",dataHeight,'height',height);
     if (dataHeight > height) {
       scroll.y = height < 30 ? (this.props.minHeight ? this.props.minHeight : 30) : height;
       tableWidth = tableWidth - 120;
     }
+    scroll.x = tableWidth;
     //有minHeight走minHeight
     if (this.props.minHeight) {
       scroll.y = this.props.minHeight;
     }
-
-    // scroll.x = tableWidth;
-
     //默认第一列与最后一列操作列固定
     let firstCol = newColumns[0];
     let lastCol = newColumns[newColumns.length - 1];
@@ -1247,7 +1318,6 @@ class StandardTable extends Component {
         fixed: 'right',
       };
     }
-    scroll.x = tableWidth;
 
     // 固定列滚动
     // if (totalWidth > tableWidth) {
