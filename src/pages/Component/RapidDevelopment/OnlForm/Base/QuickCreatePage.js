@@ -46,10 +46,11 @@ export default class QuickCreatePage extends CreatePage {
    * @param {*} value 值
    * @param {*} line 行
    */
-  setFieldsValue = (tableName, dbFieldName, value, line) => {
+  setFieldsValue = (tableName, dbFieldName, value, line, label) => {
     const fieldKey = this.getFieldKey(tableName, dbFieldName, line);
     this.entity[tableName][line == undefined ? 0 : line][dbFieldName] = value;
-    this.props.form.setFieldsValue({ [fieldKey]: value });
+    if (label) this.props.form.setFieldsValue({ [fieldKey]: label });
+    else this.props.form.setFieldsValue({ [fieldKey]: value });
   };
 
   /**
