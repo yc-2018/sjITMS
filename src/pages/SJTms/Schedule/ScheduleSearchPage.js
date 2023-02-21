@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-02-20 16:39:22
+ * @LastEditTime: 2023-02-21 09:49:52
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -88,18 +88,6 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   };
 
   initOptionsData = async () => {
-    // let queryParamsJson = {
-    //   tableName: 'V_WMS_PIRS',
-    //   condition: {
-    //     params: [
-    //       // { field: 'PRETYPE', rule: 'eq', val: ['DEALMETHOD'] },
-    //       // { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
-    //     ],
-    //   },
-    // };
-    // await dynamicQuery(queryParamsJson).then(datas => {
-    //   this.setState({ sourceData: datas.result.records });
-    // });
     await getPris().then(datas => {
       this.setState({ sourceData: datas });
     });
@@ -107,9 +95,19 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
 
   buildOptions = () => {
     const { sourceData } = this.state;
+    const color = [
+      { stat: '空闲', color: 'green' },
+      { stat: '已预约', color: 'blue' },
+      { stat: '使用中', color: 'red' },
+    ];
     if (sourceData.success == true && sourceData.data) {
       return sourceData.data.map(data => {
-        return <Select.Option value={data}>{data}</Select.Option>;
+        const textColor = color.find(x => x.stat == data.stat).color;
+        return (
+          <Select.Option value={data.dockno}>
+            <span style={{ color: textColor }}>{data.dockno + ' ' + data.stat}</span>
+          </Select.Option>
+        );
       });
     } else {
       return null;
@@ -236,7 +234,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     }
     const response = await updatePris(selectedRows[0].UUID, newPirs);
     if (response.success) {
-      message.success('修改成功！');
+      message.success(response.data);
       this.setState({ showUpdatePirsPop: false });
       this.queryCoulumns();
     }
