@@ -2,13 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-02 09:17:40
+ * @LastEditTime: 2023-02-21 15:20:42
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
 import React, { Component } from 'react';
 import {
-  Switch,
   Button,
   Row,
   Col,
@@ -30,11 +29,10 @@ import {
   VehicleColumns,
   pagination,
 } from './DispatchingColumns';
-import OrderPoolSearchForm from './OrderPoolSearchForm';
+import SearchForm from './SearchForm';
 import BatchProcessConfirm from './BatchProcessConfirm';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import DispatchMap from '@/pages/SJTms/MapDispatching/dispatching/DispatchingMap';
-import VehicleSearchForm from './VehicleSearchForm';
 import dispatchingStyles from './Dispatching.less';
 import {
   queryAuditedOrder,
@@ -845,7 +843,7 @@ export default class OrderPoolPage extends Component {
         >
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>订单池</Text>} key="Audited">
             {/* 查询表单 */}
-            <OrderPoolSearchForm
+            <SearchForm
               refresh={this.refreshTable}
               quickuuid="sj_itms_dispatching_orderpool"
               dispatchcenterSearch={true}
@@ -976,7 +974,11 @@ export default class OrderPoolPage extends Component {
             />
           </TabPane>
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>运力池</Text>} key="Vehicle">
-            <VehicleSearchForm refresh={this.refreshVehiclePool} />
+            <SearchForm
+              refresh={this.refreshTable}
+              quickuuid="v_sj_itms_vehicle_stat"
+              refreshOrderPool={this.refreshVehiclePool}
+            />
             {/* 运力池 */}
             <DispatchingTable
               comId="vehicles"

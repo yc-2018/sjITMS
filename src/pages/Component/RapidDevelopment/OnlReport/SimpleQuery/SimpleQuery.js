@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-01-15 16:03:07
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-16 14:04:08
+ * @LastEditTime: 2023-02-21 15:09:08
  * @Description: 快速开发简单查询
  * @FilePath: \iwms-web\src\pages\Component\RapidDevelopment\OnlReport\SimpleQuery\SimpleQuery.js
  */
@@ -91,7 +91,7 @@ export default class SimpleQuery extends SearchForm {
     let searchProperties = searchField.searchProperties
       ? JSON.parse(searchField.searchProperties)
       : '';
-    if (searchProperties.isOrgSearch && searchField.searchShowtype == 'sel_tree') {
+    if (searchProperties.isOrgSearch) {
       const orgFields = searchProperties.isOrgSearch.split(',');
       let loginOrgType = loginOrg().type.replace('_', '');
       let loginParmas = [];
