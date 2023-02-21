@@ -10,7 +10,7 @@ import React, { Component } from 'react';
 import { Modal, Tabs, Button, message, Typography, Dropdown, Menu, Icon } from 'antd';
 import DispatchingTable from './DispatchingTable';
 import DispatchingCreatePage from './DispatchingCreatePage';
-import OrderPoolSearchForm from './OrderPoolSearchForm';
+import SearchForm from './SearchForm';
 import BatchProcessConfirm from './BatchProcessConfirm';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
@@ -553,7 +553,7 @@ export default class SchedulePage extends Component {
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>排车单</Text>} key="Saved">
             {/* <ScheduleSearchForm refresh={this.refreshTable} users={users} /> */}
             {/* 查询表单 */}
-            <OrderPoolSearchForm
+            <SearchForm
               quickuuid="sj_itms_schedulepool"
               users={users}
               dispatchcenterSearch={true}
@@ -620,7 +620,7 @@ export default class SchedulePage extends Component {
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已批准</Text>} key="Approved">
             {/* <ScheduleSearchForm refresh={this.refreshTable} users={users} /> */}
             {/* 查询表单 */}
-            <OrderPoolSearchForm
+            <SearchForm
               quickuuid="sj_itms_schedulepool"
               users={users}
               dispatchcenterSearch={true}
@@ -674,7 +674,7 @@ export default class SchedulePage extends Component {
           <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已作废</Text>} key="Aborted">
             {/* <ScheduleSearchForm refresh={this.refreshTable} users={users} /> */}
             {/* 查询表单 */}
-            <OrderPoolSearchForm
+            <SearchForm
               quickuuid="sj_itms_schedulepool"
               users={users}
               dispatchcenterSearch={true}

@@ -18,7 +18,7 @@ export default class ScheduleDetailSearchPage extends QuickFormSearchPage {
   state = {
     ...this.state,
     isNotHd: true,
-    noNavigator: true
+    noNavigator: true,
   };
 
   componentDidMount() {
@@ -43,6 +43,7 @@ export default class ScheduleDetailSearchPage extends QuickFormSearchPage {
     let UUID = typeof data == 'undefined' ? selectedRows : data;
     const pageFilters = {
       ...this.state.pageFilters,
+      order: this.state.defaultSort,
       superQuery: {
         matchType: '',
         queryParams: [

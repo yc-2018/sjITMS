@@ -191,7 +191,7 @@ export default [
         path: '/facility',
         name: 'facility',
         icon: 'icon-menu_wuliusheshi',
-        org: ['DC', 'DISPATCH_CENTER'],
+        org: ['DC'],
         authority: ['iwms.facility'],
         routes: [
           {
@@ -277,6 +277,7 @@ export default [
           {
             path: '/facility/config',
             name: 'config',
+            org: ['DC'],
             component: './Facility/Config/Config',
             authority: ['iwms.facility.configcenter'],
           },

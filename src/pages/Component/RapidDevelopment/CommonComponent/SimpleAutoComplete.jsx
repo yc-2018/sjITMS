@@ -4,6 +4,7 @@ import Debounce from 'lodash-decorators/debounce';
 import Bind from 'lodash-decorators/bind';
 import memoize from 'memoize-one';
 import { addCondition, getFieldShow, memoizeDynamicQuery } from '@/utils/ryzeUtils';
+import { loginOrg, loginCompany } from '@/utils/LoginContext';
 import { uniqBy } from 'lodash';
 
 /**
@@ -118,7 +119,6 @@ export default class SimpleAutoComplete extends Component {
       }
       queryParamsJson = JSON.parse(JSON.stringify(queryParams));
     }
-
     if (linkFilter) {
       // 构建出联动筛选语句，过滤数据
       const linkFilterCondition = this.getLinkFilterCondition();
@@ -149,14 +149,26 @@ export default class SimpleAutoComplete extends Component {
    * @param {*} searchText 查询值
    */
   getSearchCondition = searchText => {
-    const { searchField } = this.props;
+    const { searchField, isOrgSearch } = this.props;
     // 构建出or语句，使得多个查询字段都能搜索到数据
-    return {
-      matchType: 'or',
-      params: searchField.split(',').map(field => {
-        return { field: field, rule: 'like', val: [searchText] };
-      }),
-    };
+    if (searchField.indexOf(',') == -1 && isOrgSearch) {
+      let loginOrgType = loginOrg().type.replace('_', '');
+      return {
+        matchType: 'and',
+        params: [
+          { field: searchField, rule: 'like', val: [searchText] },
+          { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+          { field: loginOrgType + 'UUID', rule: 'like', val: [loginOrg().uuid] },
+        ],
+      };
+    } else {
+      return {
+        matchType: 'or',
+        params: searchField.split(',').map(field => {
+          return { field: field, rule: 'like', val: [searchText] };
+        }),
+      };
+    }
   };
 
   /**
@@ -174,14 +186,16 @@ export default class SimpleAutoComplete extends Component {
    * 下拉搜索框加载数据
    */
   listFetchData = async () => {
-    const { isLink, linkFilter } = this.props;
+    const { isLink, linkFilter, orderBy } = this.props;
     let queryParams = this.getQueryParams();
 
     // 如果是联动控件,但是没有传递linkFilter,则不加载数据
     if (!queryParams || (isLink && !linkFilter)) {
       return;
     }
-
+    if (orderBy) {
+      queryParams.orderBy = orderBy;
+    }
     await this.loadData(queryParams);
   };
 
@@ -190,13 +204,12 @@ export default class SimpleAutoComplete extends Component {
    * @param {string} searchText 查询键
    */
   autoCompleteFetchData = async searchText => {
-    const { isLink, linkFilter } = this.props;
+    const { isLink, linkFilter, orderBy } = this.props;
     const queryParams = this.getQueryParams();
     // 如果是联动控件,但是没有传递linkFilter,则不加载数据
     if (!queryParams || (isLink && !linkFilter)) {
       return;
     }
-
     // 分页查询
     queryParams.pageNo = 1;
     queryParams.pageSize = 20;
@@ -211,6 +224,9 @@ export default class SimpleAutoComplete extends Component {
     } else {
       // 两者都不存在，则不加载数据
       return;
+    }
+    if (orderBy) {
+      queryParams.orderBy = orderBy;
     }
     await this.loadData(queryParams);
   };

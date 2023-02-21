@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-11 16:56:17
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-02-21 09:49:52
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -68,19 +68,26 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     this.getCreateConfig();
   }
 
+  //查询数据
+  getData = pageFilters => {
+    const { dispatch } = this.props;
+    const deliverypointCode = pageFilters.superQuery.queryParams.find(
+      x => x.field == 'DELIVERYPOINTCODE'
+    );
+    if (deliverypointCode) {
+      deliverypointCode.val = ',' + deliverypointCode.val + ',';
+      pageFilters.superQuery.queryParams['DELIVERYPOINTCODE'] = deliverypointCode;
+    }
+    dispatch({
+      type: 'quick/queryData',
+      payload: pageFilters,
+      callback: response => {
+        if (response.data) this.initData(response.data);
+      },
+    });
+  };
+
   initOptionsData = async () => {
-    // let queryParamsJson = {
-    //   tableName: 'V_WMS_PIRS',
-    //   condition: {
-    //     params: [
-    //       // { field: 'PRETYPE', rule: 'eq', val: ['DEALMETHOD'] },
-    //       // { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
-    //     ],
-    //   },
-    // };
-    // await dynamicQuery(queryParamsJson).then(datas => {
-    //   this.setState({ sourceData: datas.result.records });
-    // });
     await getPris().then(datas => {
       this.setState({ sourceData: datas });
     });
@@ -88,10 +95,22 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
 
   buildOptions = () => {
     const { sourceData } = this.state;
-    if (sourceData.success == true) {
+    const color = [
+      { stat: '空闲', color: 'green' },
+      { stat: '已预约', color: 'blue' },
+      { stat: '使用中', color: 'red' },
+    ];
+    if (sourceData.success == true && sourceData.data) {
       return sourceData.data.map(data => {
-        return <Select.Option value={data}>{data}</Select.Option>;
+        const textColor = color.find(x => x.stat == data.stat).color;
+        return (
+          <Select.Option value={data.dockno}>
+            <span style={{ color: textColor }}>{data.dockno + ' ' + data.stat}</span>
+          </Select.Option>
+        );
       });
+    } else {
+      return null;
     }
   };
 
@@ -215,7 +234,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     }
     const response = await updatePris(selectedRows[0].UUID, newPirs);
     if (response.success) {
-      message.success('修改成功！');
+      message.success(response.data);
       this.setState({ showUpdatePirsPop: false });
       this.queryCoulumns();
     }
@@ -692,7 +711,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         },
       });
       let scheduleDetails = response.success ? response.data.records : [];
-      scheduleDetails = orderBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
+     // scheduleDetails = orderBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
       const printPage = drawPrintPage(selectedRows[index], scheduleDetails);
       printPages.push(printPage);
     }
@@ -1032,12 +1051,12 @@ const drawPrintPage = (schedule, scheduleDetails) => {
             {scheduleDetails ? (
               scheduleDetails.map((item, index) => {
                 return (
-                  <tr style={{ textAlign: 'center', height: 25 }}>
+                  <tr style={{ textAlign: 'center', height: 33 }}>
                     <td width={100}>{item.ARCHLINECODE}</td>
                     <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                       {item.SCATTEREDCOLLECTBIN}
                     </td>
-                    <td width={120}>
+                    <td width={130}>
                       {'[' + item.DELIVERYPOINTCODE + ']' + item.DELIVERYPOINTNAME}
                     </td>
                     <td width={50}>{item.REALCARTONCOUNT}</td>
