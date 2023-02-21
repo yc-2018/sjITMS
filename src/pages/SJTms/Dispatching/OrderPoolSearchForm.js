@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-30 10:42:26
+ * @LastEditTime: 2023-02-21 14:47:43
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
  */
@@ -186,6 +186,21 @@ export default class OrderPoolSearchForm extends Component {
         ...searchProperties,
         ...creatorParam,
       };
+    }
+    if (searchProperties.isOrgSearch) {
+      const orgFields = searchProperties.isOrgSearch.split(',');
+      let loginOrgType = loginOrg().type.replace('_', '');
+      let loginParmas = [];
+      if (orgFields.indexOf('Company') != -1) {
+        loginParmas.push({ field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] });
+      }
+      if (orgFields.indexOf('Org') != -1) {
+        loginParmas.push({ field: loginOrgType + 'UUID', rule: 'like', val: [loginOrg().uuid] });
+      }
+      if (searchProperties.queryParams.condition) {
+        const params = [...searchProperties.queryParams.condition.params];
+        searchProperties.queryParams.condition.params = [...params, ...loginParmas];
+      }
     }
 
     switch (searchField.searchShowtype) {
