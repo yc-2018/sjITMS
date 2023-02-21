@@ -711,7 +711,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         },
       });
       let scheduleDetails = response.success ? response.data.records : [];
-      scheduleDetails = orderBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
+     // scheduleDetails = orderBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
       const printPage = drawPrintPage(selectedRows[index], scheduleDetails);
       printPages.push(printPage);
     }
@@ -1051,12 +1051,12 @@ const drawPrintPage = (schedule, scheduleDetails) => {
             {scheduleDetails ? (
               scheduleDetails.map((item, index) => {
                 return (
-                  <tr style={{ textAlign: 'center', height: 25 }}>
+                  <tr style={{ textAlign: 'center', height: 33 }}>
                     <td width={100}>{item.ARCHLINECODE}</td>
                     <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                       {item.SCATTEREDCOLLECTBIN}
                     </td>
-                    <td width={120}>
+                    <td width={130}>
                       {'[' + item.DELIVERYPOINTCODE + ']' + item.DELIVERYPOINTNAME}
                     </td>
                     <td width={50}>{item.REALCARTONCOUNT}</td>

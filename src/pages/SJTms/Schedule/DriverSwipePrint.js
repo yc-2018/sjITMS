@@ -125,6 +125,7 @@ export default class DriverSwipePrint extends PureComponent {
   };
   drawPrintPage = (schedule, scheduleDetails) => {
     const { dispatchUuid, companyUuid } = this.state;
+    //茶山调度
     if (dispatchUuid == '000000750000004' || dispatchUuid == '000008150000001') {
       let scheduleDetailSum = {};
       let REALCARTONCOUNT = 0;
@@ -304,12 +305,12 @@ export default class DriverSwipePrint extends PureComponent {
               {scheduleDetails ? (
                 scheduleDetails.map((item, index) => {
                   return (
-                    <tr style={{ textAlign: 'center', height: 25 }}>
+                    <tr style={{ textAlign: 'center', height: 33}}>
                       <td width={100}>{item.ARCHLINECODE}</td>
                       <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                         {item.SCATTEREDCOLLECTBIN}
                       </td>
-                      <td width={120}>
+                      <td width={130}>
                         {'[' + item.DELIVERYPOINTCODE + ']' + item.DELIVERYPOINTNAME}
                       </td>
                       <td width={50}>{item.REALCARTONCOUNT}</td>
@@ -371,7 +372,7 @@ export default class DriverSwipePrint extends PureComponent {
                 <td style={{ border: 0, paddingTop: 10 }} colSpan={8}>
                   <div style={{ paddingLeft: 20, fontWeight: 'normal' }}>
                     总体积(m³)：
-                    {schedule.VOLUME}
+                    {schedule.volume}
                   </div>
                 </td>
                 <td
