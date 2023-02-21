@@ -15,7 +15,6 @@ import { queryDictByCode } from '@/services/quick/Quick';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
 import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
-import { loginCompany, loginOrg } from '@/utils/LoginContext';
 export default class Swiper extends PureComponent {
   state = {
     loading: false,
@@ -28,7 +27,7 @@ export default class Swiper extends PureComponent {
     companyUuid: undefined,
     dispatchUuid: undefined,
     dispatchName: undefined,
-    swipeFlag:"inAndOut"//刷卡标识用于区分出回车，开始结束装车 刷卡
+    swipeFlag: 'inAndOut', //刷卡标识用于区分出回车，开始结束装车 刷卡
   };
   componentDidMount() {
     this.empInputRef.focus();
@@ -58,14 +57,14 @@ export default class Swiper extends PureComponent {
 
   //刷卡
   onSubmit = async event => {
-    const { dispatchUuid, companyUuid,swipeFlag } = this.state;
+    const { dispatchUuid, companyUuid, swipeFlag } = this.state;
     if (dispatchUuid == undefined || companyUuid == undefined) {
       message.error('企业中心或调度中心值缺失！');
       return;
     }
     localStorage.setItem('showMessage', '0');
     this.setState({ loading: true, errMsg: undefined });
-    const response = await driverSwipe(event.target.value, companyUuid, dispatchUuid,swipeFlag);
+    const response = await driverSwipe(event.target.value, companyUuid, dispatchUuid, swipeFlag);
     localStorage.setItem('showMessage', '1');
     if (response.success) {
       this.speech('刷卡成功');
@@ -93,60 +92,64 @@ export default class Swiper extends PureComponent {
       dispatchName,
     } = this.state;
     return (
-      // <FreshPageHeaderWrapper>
-      <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
-        <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
-        <div style={{ height: '100vh' }} onClick={() => this.empInputRef.focus()}>
-        <NavigatorPanel title="司机出入厂刷卡" 
-        canFullScreen={this.props.location.pathname =='/driver/swipeInAndOut'?false:true} />
-          <div
-            style={{
-              height: 100,
-              lineHeight: '100px',
-              borderBottom: '1px solid #e8e8e8',
-            }}
-          >
-            <div style={{ float: 'left', width: '15%', paddingLeft: 24 }}>
-              <Select
-                placeholder="请选择调度中心"
-                onChange={val => {
-                  const item = dict.find(x => x.itemValue == val);
-                  localStorage.setItem('dispatchUuid', val);
-                  localStorage.setItem('dispatchName', item.itemText);
-                  localStorage.setItem('companyUuid', item.description);
-                  this.setState({
-                    dispatchUuid: val,
-                    dispatchName: item.itemText,
-                    companyUuid: item.description,
-                  });
+      <FreshPageHeaderWrapper>
+        <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
+          <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
+            <div style={{ height: '100vh' }} onClick={() => this.empInputRef.focus()}>
+              <NavigatorPanel
+                title="司机出入厂刷卡"
+                canFullScreen={
+                  this.props.location.pathname == '/driver/swipeInAndOut' ? false : true
+                }
+              />
+              <div
+                style={{
+                  height: 100,
+                  lineHeight: '100px',
+                  borderBottom: '1px solid #e8e8e8',
                 }}
-                value={dispatchName}
-                allowClear={true}
-                style={{ width: '100%' }}
               >
-                {dict.map(d => {
-                  return <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>;
-                })}
-              </Select>
-            </div>
-            {/* <div style={{ float: 'left', width: '8%', marginLeft: '1%' }}>
+                <div style={{ float: 'left', width: '15%', paddingLeft: 24 }}>
+                  <Select
+                    placeholder="请选择调度中心"
+                    onChange={val => {
+                      const item = dict.find(x => x.itemValue == val);
+                      localStorage.setItem('dispatchUuid', val);
+                      localStorage.setItem('dispatchName', item.itemText);
+                      localStorage.setItem('companyUuid', item.description);
+                      this.setState({
+                        dispatchUuid: val,
+                        dispatchName: item.itemText,
+                        companyUuid: item.description,
+                      });
+                    }}
+                    value={dispatchName}
+                    allowClear={true}
+                    style={{ width: '100%' }}
+                  >
+                    {dict.map(d => {
+                      return <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>;
+                    })}
+                  </Select>
+                </div>
+                {/* <div style={{ float: 'left', width: '8%', marginLeft: '1%' }}>
               <Checkbox>锁定</Checkbox>
             </div> */}
 
-            <div
-              style={{
-                fontSize: 55,
-                fontWeight: 'normal',
-                textAlign: 'center',
-                marginRight: '15%',
-                color: dispatchName == undefined ? 'red' : 'black',
-              }}
-            >
-              {dispatchName == undefined ? '请选择调度中心' : dispatchName + '出入厂刷卡'}
-            </div>
-          </div>
+                <div
+                  style={{
+                    fontSize: 55,
+                    fontWeight: 'normal',
+                    textAlign: 'center',
+                    marginRight: '15%',
+                    color: dispatchName == undefined ? 'red' : 'black',
+                  }}
+                >
+                  {dispatchName == undefined ? '请选择调度中心' : dispatchName + '出入厂刷卡'}
+                </div>
+              </div>
 
-          {/* <div
+              {/* <div
             style={{
               height: 50,
               lineHeight: '50px',
@@ -159,98 +162,102 @@ export default class Swiper extends PureComponent {
           >
             司机刷卡
           </div> */}
-          <div style={{ fontSize: 16, textAlign: 'center' }}>
-            工号：
-            <Input
-              style={{
-                width: 250,
-                height: 40,
-                fontSize: 16,
-                margin: 15,
-              }}
-              value={empId}
-              ref={input => (this.empInputRef = input)}
-              onChange={event => this.setState({ empId: event.target.value })}
-              onPressEnter={this.onSubmit}
-              placeholder={'输入员工代码'}
-            />
-          </div>
-          <Card
-            title="刷卡结果"
-            bordered={true}
-            //style={{ height: '18vh', boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
-            bodyStyle={{
-              height: '25vh',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            {errMsg ? (
-              <div style={{ color: '#F5222D', fontSize: '45px', margin: 'auto' }}>{errMsg}</div>
-            ) : isShip ? (
-              <div style={{ color: '#00DD00', fontSize: '45px', margin: 'auto' }}>{message}</div>
-            ) : (
-              <div style={{ color: '#1354DA', fontSize: '45px', margin: 'auto' }}>{message}</div>
-            )}
-          </Card>
-          <Card
-            title="排车单信息"
-            style={{ height: 250, marginTop: 20, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
-          >
-            <Row gutter={[4, 28]}>
-              <Col span={6}>
-                <span style={{ fontSize: 15 }}>
-                  排车单号：
-                  {scheduleBill.billNumber ? scheduleBill.billNumber : <Empty />}
-                </span>
-              </Col>
-              <Col span={6}>
-                <span style={{ fontSize: 15 }}>
-                  车牌号：
-                  {scheduleBill.vehicle ? scheduleBill.vehicle.name : <Empty />}
-                </span>
-              </Col>
-              {/* <Col span={6}>
+              <div style={{ fontSize: 16, textAlign: 'center' }}>
+                工号：
+                <Input
+                  style={{
+                    width: 250,
+                    height: 40,
+                    fontSize: 16,
+                    margin: 15,
+                  }}
+                  value={empId}
+                  ref={input => (this.empInputRef = input)}
+                  onChange={event => this.setState({ empId: event.target.value })}
+                  onPressEnter={this.onSubmit}
+                  placeholder={'输入员工代码'}
+                />
+              </div>
+              <Card
+                title="刷卡结果"
+                bordered={true}
+                //style={{ height: '18vh', boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
+                bodyStyle={{
+                  height: '20vh',
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+              >
+                {errMsg ? (
+                  <div style={{ color: '#F5222D', fontSize: '45px', margin: 'auto' }}>{errMsg}</div>
+                ) : isShip ? (
+                  <div style={{ color: '#00DD00', fontSize: '45px', margin: 'auto' }}>
+                    {message}
+                  </div>
+                ) : (
+                  <div style={{ color: '#1354DA', fontSize: '45px', margin: 'auto' }}>
+                    {message}
+                  </div>
+                )}
+              </Card>
+              <Card
+                title="排车单信息"
+                style={{ height: 250, marginTop: 20, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
+              >
+                <Row gutter={[4, 28]}>
+                  <Col span={6}>
+                    <span style={{ fontSize: 15 }}>
+                      排车单号：
+                      {scheduleBill.billNumber ? scheduleBill.billNumber : <Empty />}
+                    </span>
+                  </Col>
+                  <Col span={6}>
+                    <span style={{ fontSize: 15 }}>
+                      车牌号：
+                      {scheduleBill.vehicle ? scheduleBill.vehicle.name : <Empty />}
+                    </span>
+                  </Col>
+                  {/* <Col span={6}>
                 <span style={{ fontSize: 15 }}>
                   重量(t)：
                   {scheduleBill.weight ?  (new Number(scheduleBill.weight)/1000).toFixed(3) : <Empty />}
                 </span>
               </Col> */}
-              <Col span={6}>
-                <span style={{ fontSize: 15 }}>
-                  体积(m³)：
-                  {scheduleBill.volume ? new Number(scheduleBill.volume).toFixed(2) : <Empty />}
-                </span>
-              </Col>
-              <Col span={6}>
-                <span style={{ fontSize: 15 }}>
-                  驾驶员：
-                  {scheduleBill.carrier ? (
-                    '[' + scheduleBill.carrier.code + ']' + scheduleBill.carrier.name
-                  ) : (
-                    <Empty />
-                  )}
-                </span>
-              </Col>
-              <Col span={6}>
-                <span style={{ fontSize: 15 }}>
-                  出车时间：
-                  {scheduleBill.dispatchTime ? scheduleBill.dispatchTime : <Empty />}
-                </span>
-              </Col>
-              <Col span={6}>
-                <span style={{ fontSize: 15 }}>
-                  回车时间：
-                  {scheduleBill.returnTime ? scheduleBill.returnTime : <Empty />}
-                </span>
-              </Col>
-            </Row>
-          </Card>
-          </div>
-        </Spin>
+                  <Col span={6}>
+                    <span style={{ fontSize: 15 }}>
+                      体积(m³)：
+                      {scheduleBill.volume ? new Number(scheduleBill.volume).toFixed(2) : <Empty />}
+                    </span>
+                  </Col>
+                  <Col span={6}>
+                    <span style={{ fontSize: 15 }}>
+                      驾驶员：
+                      {scheduleBill.carrier ? (
+                        '[' + scheduleBill.carrier.code + ']' + scheduleBill.carrier.name
+                      ) : (
+                        <Empty />
+                      )}
+                    </span>
+                  </Col>
+                  <Col span={6}>
+                    <span style={{ fontSize: 15 }}>
+                      出车时间：
+                      {scheduleBill.dispatchTime ? scheduleBill.dispatchTime : <Empty />}
+                    </span>
+                  </Col>
+                  <Col span={6}>
+                    <span style={{ fontSize: 15 }}>
+                      回车时间：
+                      {scheduleBill.returnTime ? scheduleBill.returnTime : <Empty />}
+                    </span>
+                  </Col>
+                </Row>
+              </Card>
+            </div>
+          </Spin>
         </Page>
-       //</FreshPageHeaderWrapper>
+      </FreshPageHeaderWrapper>
     );
   }
 }

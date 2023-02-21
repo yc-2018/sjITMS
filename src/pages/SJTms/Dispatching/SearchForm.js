@@ -2,9 +2,9 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-21 14:47:43
+ * @LastEditTime: 2023-02-21 15:31:57
  * @Description: 订单池查询面板
- * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolSearchForm.js
+ * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SearchForm.js
  */
 import React, { Component } from 'react';
 import { Form, Input, Button, Row, Col, DatePicker, Skeleton } from 'antd';
@@ -28,7 +28,7 @@ const isOrgQuery = [
   { field: 'dispatchcenteruuid', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
 ];
 @Form.create()
-export default class OrderPoolSearchForm extends Component {
+export default class SearchForm extends Component {
   state = {
     loading: false,
     pageFilter: {},
@@ -249,6 +249,7 @@ export default class OrderPoolSearchForm extends Component {
           <SimpleAutoComplete
             placeholder={'请选择' + searchField.fieldTxt}
             searchField={searchField}
+            allowClear
             noRecord
             {...searchProperties}
           />
@@ -266,7 +267,7 @@ export default class OrderPoolSearchForm extends Component {
       case 'sel_tree':
         return <SimpleTreeSelect {...searchProperties} />;
       default:
-        return <Input placeholder={'请输入' + searchField.fieldTxt} />;
+        return <Input allowClear placeholder={'请输入' + searchField.fieldTxt} />;
     }
   };
 
