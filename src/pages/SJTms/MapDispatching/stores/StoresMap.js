@@ -9,7 +9,7 @@ import {
   queryDriverRoutes,
   queryStoreMaps,
 } from '@/services/sjitms/OrderBill';
-import { queryDict } from '@/services/quick/Quick';
+import { queryDict, updateEntity } from '@/services/quick/Quick';
 import ShopIcon from '@/assets/common/myj.png';
 import Page from '@/pages/Component/RapidDevelopment/CommonLayout/Page/Page';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
@@ -25,6 +25,8 @@ const { Option } = Select;
 export default class StoresMap extends Component {
   basicOrders = [];
   markerArr = [];
+  contextMenu = [];
+  canDragBefore = true;
   state = {
     visible: true,
     loading: true,
@@ -41,6 +43,7 @@ export default class StoresMap extends Component {
     storePages: '500',
     isOrder: false,
     storeParams: [],
+    canDrag: false,
   };
 
   componentDidMount = () => {
@@ -114,7 +117,7 @@ export default class StoresMap extends Component {
           () => {
             setTimeout(() => {
               // this.drawClusterLayer();
-              this.drawMenu();
+              // this.drawMenu();
               // this.clusterSetData(data, otherData);
               // this.drawMarker(data);
               this.autoViewPort(data);
@@ -175,10 +178,11 @@ export default class StoresMap extends Component {
 
   //标注点
   drawMarker = () => {
-    const { orders, otherData } = this.state;
+    const { orders, otherData, canDrag } = this.state;
     const otherStore = new BMapGL.Icon(otherIcon, new BMapGL.Size(42, 42));
     const icon = new BMapGL.Icon(ShopIcon, new BMapGL.Size(42, 42));
     let markers = [];
+    // let that = this;
     otherData.map(order => {
       var point = new BMapGL.Point(order.longitude, order.latitude);
       markers.push(
@@ -190,13 +194,14 @@ export default class StoresMap extends Component {
           onMouseover={() => this.setState({ windowInfo: { point, order } })}
           onMouseout={() => this.setState({ windowInfo: undefined })}
           onClick={() => this.autoViewPort([order])}
+          enableDragging={canDrag}
+          onDragend={e => this.changePoint(e, order)}
         />
       );
     });
     // let datas = [...orders, ...otherData];
     orders.map((order, index) => {
       var point = new BMapGL.Point(order.longitude, order.latitude);
-
       markers.push(
         <Marker
           position={point}
@@ -208,6 +213,8 @@ export default class StoresMap extends Component {
           onClick={() => {
             this.autoViewPort([order]);
           }}
+          enableDragging={canDrag}
+          onDragend={e => this.changePoint(e, order)}
         />
       );
       if (otherData?.length > 0 && order.isOrder) {
@@ -221,7 +228,46 @@ export default class StoresMap extends Component {
       }
     });
 
+    //防止重复渲染
+    if (canDrag != this.canDragBefore) {
+      setTimeout(() => {
+        this.drawMenu();
+        this.canDragBefore = this.state.canDrag;
+      }, 500);
+    }
+
     return markers;
+  };
+  //拖拽改变门店经纬度
+  changePoint = async (e, order) => {
+    let sets = {
+      LATITUDE: e.latLng.lat,
+      LONGITUDE: e.latLng.lng,
+    };
+    let param = {
+      tableName: 'sj_itms_ship_address',
+      sets,
+      condition: {
+        params: [
+          {
+            field: 'UUID',
+            rule: 'eq',
+            val: [order.uuid],
+          },
+        ],
+      },
+      updateAll: false,
+    };
+    let result = await updateEntity(param);
+    if (result.success) {
+      message.success(`门店 [${order.name}] 修改经纬度成功`);
+      order.longitude = e.latLng.lng;
+      order.latitude = e.latLng.lat;
+    } else {
+      message.error(`门店 [${order.name}] 修改经纬度失败,请刷新页面重试`);
+      e.latLng.lng = order.longitude;
+      e.latLng.lat = order.latitude;
+    }
   };
 
   //标注点聚合图层初始化
@@ -373,31 +419,22 @@ export default class StoresMap extends Component {
 
   //右键菜单
   drawMenu = () => {
-    if (this.contextMenu) return;
+    let canDragMenu = this.state.canDrag
+      ? {
+          text: '关闭拖拽门店',
+          callback: () => {
+            this.canDragBefore = this.state.canDrag;
+            this.setState({ canDrag: !this.state.canDrag });
+          },
+        }
+      : {
+          text: '开启拖拽门店',
+          callback: () => {
+            this.canDragBefore = this.state.canDrag;
+            this.setState({ canDrag: !this.state.canDrag });
+          },
+        };
     const menuItems = [
-      // {
-      //   text: '排车',
-      //   callback: () => {
-      //     const { orders } = this.state;
-      //     const selectPoints = orders.filter(x => x.isSelect);
-      //     if (selectPoints.length === 0) {
-      //       message.error('请选择需要排车的门店！');
-      //       return;
-      //     }
-      //     this.props.dispatchingByMap(selectPoints);
-      //   },
-      // },
-      // {
-      //   text: '路线规划',
-      //   callback: () => {
-      //     const { orders } = this.state;
-      //     const selectPoints = orders.filter(x => x.isSelect);
-      //     if (selectPoints.length === 0) {
-      //       message.error('请选择需要排车的门店！');
-      //       return;
-      //     }
-      //     this.searchRoute(selectPoints);
-      //   },
       {
         text: '今日配送门店',
         callback: () => {
@@ -415,14 +452,25 @@ export default class StoresMap extends Component {
         },
       },
     ];
+    menuItems.push(canDragMenu);
     const menu = new BMapGL.ContextMenu();
     menuItems.forEach((item, index) => {
       menu.addItem(
         new BMapGL.MenuItem(item.text, item.callback, { width: 100, id: 'menu' + index })
       );
     });
-    this.contextMenu = menu;
+
+    this.contextMenu.push(menu);
     this.map?.addContextMenu(menu);
+    if (this.contextMenu.length > 1) {
+      console.log('this.contextMenu', this.contextMenu);
+      this.contextMenu.map((e, index) => {
+        if (e != menu) {
+          this.map?.removeContextMenu(e);
+          this.contextMenu.splice(index, 1);
+        }
+      });
+    }
   };
 
   //画框选取送货点
@@ -508,8 +556,6 @@ export default class StoresMap extends Component {
       this.refresh(pageFilter, e, storeParams);
     } else {
       this.setState({ loading: true });
-
-      console.log('storeParamsp', storeParamsp, key);
       if (key !== 're' && (!storeParamsp || JSON.stringify(storeParamsp) == '{}')) {
         storeParamsp = storeParams;
       }
@@ -542,7 +588,7 @@ export default class StoresMap extends Component {
             },
             () => {
               setTimeout(() => {
-                this.drawMenu();
+                // this.drawMenu();
                 this.autoViewPort(res.data.records);
               }, 500);
             }
@@ -559,7 +605,7 @@ export default class StoresMap extends Component {
             },
             () => {
               setTimeout(() => {
-                this.drawMenu();
+                // this.drawMenu();
                 this.autoViewPort(res.data.records);
               }, 500);
             }
