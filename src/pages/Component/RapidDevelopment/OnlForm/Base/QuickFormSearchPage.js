@@ -574,21 +574,32 @@ export default class QuickFormSearchPage extends SearchPage {
           var option = [];
           let sheetfilter = []; //对应列表数据中的key值数组，就是上面resdata中的 name，address
           let sheetheader = []; //对应key值的表头，即excel表头
-          columns.map(a => {
-            let excelColumn = '';
-            if (a.preview != 'N') {
-              excelColumn = a.preview;
-            } else {
-              excelColumn = a.key;
-            }
-            if (columnsList.length <= 0) {
+
+          let excelColumns = [];
+          if (columnsList.length > 0) {
+            columnsList.map(e => {
+              let column = columns.find(i => i.title == e);
+              if (column.preview != 'N') {
+                excelColumns.push(column.preview);
+              } else {
+                excelColumns.push(column.key);
+              }
+            });
+            sheetheader = columnsList;
+            sheetfilter = excelColumns;
+          } else {
+            columns.map(a => {
+              let excelColumn = '';
+              if (a.preview != 'N') {
+                excelColumn = a.preview;
+              } else {
+                excelColumn = a.key;
+              }
               sheetfilter.push(excelColumn);
               sheetheader.push(a.title);
-            } else if (columnsList.indexOf(a.title) != -1) {
-              sheetfilter.push(excelColumn);
-              sheetheader.push(a.title);
-            }
-          });
+            });
+          }
+
           option.fileName = this.state.title; //导出的Excel文件名
           response.data.records.map(item => {});
           option.datas = [
