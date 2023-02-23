@@ -351,6 +351,7 @@ export default class DispatchingCreatePage extends Component {
   };
   //保存
   onSave = async () => {
+    this.setState({ loading: true });
     const { isEdit, orders, schedule, selectVehicle, selectEmployees, note } = this.state;
     const orderType = uniqBy(orders.map(x => x.orderType)).shift();
     const type = orderType == 'TakeDelivery' || orderType == 'AdjustWarehouse' ? 'Task' : 'Job';
@@ -423,6 +424,7 @@ export default class DispatchingCreatePage extends Component {
         carEmpSearch: {},
       });
     }
+    this.setState({ loading: false });
   };
   //保存数据校验
   handleSave = async () => {
