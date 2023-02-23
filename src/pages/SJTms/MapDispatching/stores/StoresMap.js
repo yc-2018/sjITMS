@@ -1,5 +1,17 @@
 import React, { Component } from 'react';
-import { Divider, Button, Row, Col, Spin, message, Input, PageHeader, Select } from 'antd';
+import {
+  Divider,
+  Button,
+  Row,
+  Col,
+  Spin,
+  message,
+  Input,
+  PageHeader,
+  Select,
+  Upload,
+  Icon,
+} from 'antd';
 import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
 import style from './DispatchingMap.less';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
@@ -14,6 +26,7 @@ import ShopIcon from '@/assets/common/myj.png';
 import Page from '@/pages/Component/RapidDevelopment/CommonLayout/Page/Page';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import moment from 'moment';
+import * as XLSX from 'xlsx';
 
 import otherIcon from '@/assets/common/otherMyj.png';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
@@ -44,6 +57,7 @@ export default class StoresMap extends Component {
     isOrder: false,
     storeParams: [],
     canDrag: false,
+    file: '',
   };
 
   componentDidMount = () => {
@@ -204,6 +218,7 @@ export default class StoresMap extends Component {
       var point = new BMapGL.Point(order.longitude, order.latitude);
       markers.push(
         <Marker
+          isTop={true}
           position={point}
           // icon='simple_red'
           icon={icon}
@@ -227,7 +242,6 @@ export default class StoresMap extends Component {
         );
       }
     });
-
     //防止重复渲染
     if (canDrag != this.canDragBefore) {
       setTimeout(() => {
@@ -463,7 +477,6 @@ export default class StoresMap extends Component {
     this.contextMenu.push(menu);
     this.map?.addContextMenu(menu);
     if (this.contextMenu.length > 1) {
-      console.log('this.contextMenu', this.contextMenu);
       this.contextMenu.map((e, index) => {
         if (e != menu) {
           this.map?.removeContextMenu(e);
@@ -579,8 +592,10 @@ export default class StoresMap extends Component {
           this.setState(
             {
               // orders: resAll.data.records,
-              orders: res.data.otherRecords.filter(item => item.uuid != res.data.records[0].uuid),
-              otherData: res.data.records,
+              orders: res.data.records,
+              otherData: res.data.otherRecords.filter(
+                item => item.uuid != res.data.records[0].uuid
+              ),
               pageFilter: [],
               isOrder: false,
               loading: false,
@@ -648,8 +663,102 @@ export default class StoresMap extends Component {
     } else return [];
   };
 
+  tansfomer = arraylist => {
+    let attributeList = arraylist[0];
+    let tempdata = [];
+    let slicedList = arraylist.slice(1);
+    slicedList.map(item => {
+      let tempobject = {};
+      item.forEach((item, index) => {
+        tempobject[attributeList[index]] = item;
+      });
+      tempdata.push(tempobject);
+    });
+    return tempdata;
+  };
+
   render() {
+    let that = this;
     const { visible, loading, windowInfo, orders, isOrder } = this.state;
+    const uploadProps = {
+      name: 'file',
+      // action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
+      headers: {
+        authorization: 'authorization-text',
+      },
+      showUploadList: false,
+      accept: '.xls,.xlsx',
+      beforeUpload: (file, fileList) => {
+        if (
+          fileList.length < 0 ||
+          (fileList[0].name.substring(fileList[0].name.lastIndexOf('.') + 1).toLowerCase() !=
+            'xlsx' &&
+            fileList[0].name.substring(fileList[0].name.lastIndexOf('.') + 1).toLowerCase() !=
+              'xls')
+        ) {
+          message.error('请检查文件是否为excel文件！');
+          return;
+        }
+        var rABS = true;
+        const f = fileList[0];
+        var reader = new FileReader();
+        reader.onload = async function(e) {
+          var data = e.target.result;
+          if (!rABS) data = new Uint8Array(data);
+          var workbook = XLSX.read(data, {
+            type: rABS ? 'binary' : 'array',
+          });
+          // 假设我们的数据在第一个标签
+          var first_worksheet = workbook.Sheets[workbook.SheetNames[0]];
+          // XLSX自带了一个工具把导入的数据转成json
+          var jsonArr = XLSX.utils.sheet_to_json(first_worksheet, { header: 1 });
+          let column = jsonArr[0][0];
+          let storeNames = that
+            .tansfomer(jsonArr)
+            .map(e => {
+              return e[column];
+            })
+            .join(',');
+          let param = {
+            companyuuid: loginCompany().uuid,
+            dispatchcenteruuid: loginOrg().uuid,
+            cur: 1,
+            pageSize: '9999',
+            DELIVERYPOINTCODE: storeNames,
+          };
+          let res = await queryStoreMaps(param);
+          if (res.success) {
+            let recordsUuids = res.data.records.map(e => {
+              return e.uuid;
+            });
+            that.setState(
+              {
+                // orders: resAll.data.records,
+                orders: res.data.records,
+                otherData: res.data.otherRecords.filter(
+                  // item => item.uuid != res.data.records[0].uuid
+                  item => recordsUuids.indexOf(item.uuid) == -1
+                ),
+                pageFilter: [],
+                isOrder: false,
+                loading: false,
+                // storeParams: storeParamsp,
+              },
+              () => {
+                setTimeout(() => {
+                  // this.drawMenu();
+                  that.autoViewPort(res.data.records);
+                  message.success('门店导入查询成功，红色为导入门店，绿色为与导入门店同区域门店！');
+                }, 500);
+              }
+            );
+          }
+        };
+        if (rABS) reader.readAsBinaryString(f);
+        else reader.readAsArrayBuffer(f);
+        return false;
+      },
+    };
     // const selectOrder = orders.filter(x => x.isSelect);
     // const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
     let storeCode = '[空]';
@@ -667,8 +776,14 @@ export default class StoresMap extends Component {
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
           <div style={{ backgroundColor: '#ffffff' }}>
             <Row type="flex" justify="space-between">
-              <Col span={23}>
+              <Col span={22}>
                 <SearchForm refresh={this.refresh} changePage={this.changePage} />
+              </Col>
+              <Col span={1}>
+                <Upload {...uploadProps}>
+                  <Button shape="round" icon="upload" type="danger" />
+                  {/* <Icon type="upload" /> */}
+                </Upload>
               </Col>
               <Col span={1}>
                 <Select
