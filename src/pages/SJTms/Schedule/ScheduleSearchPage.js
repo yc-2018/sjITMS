@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-02-21 09:49:52
+ * @LastEditTime: 2023-02-24 15:46:07
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -487,8 +487,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
               /> */}
               <InputNumber
                 allowClear
-                step={0.1}
-                min={0.1}
+                step={1}
+                min={1}
                 max={100}
                 defaultValue={1}
                 // value={e.val}
@@ -711,7 +711,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         },
       });
       let scheduleDetails = response.success ? response.data.records : [];
-     // scheduleDetails = orderBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
+      // scheduleDetails = orderBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
       const printPage = drawPrintPage(selectedRows[index], scheduleDetails);
       printPages.push(printPage);
     }
