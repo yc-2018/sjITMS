@@ -395,10 +395,31 @@ export default class DispatchMap extends Component {
     });
   };
 
+  getTotals = selectOrder => {
+    let totals = {
+      cartonCount: 0, //整件数
+      scatteredCount: 0, //散件数
+      containerCount: 0, //周转箱
+      volume: 0, //体积
+      weight: 0, //重量,
+      totalCount: 0, //总件数
+    };
+    selectOrder.map(e => {
+      totals.cartonCount += e.cartonCount;
+      totals.scatteredCount += e.scatteredCount;
+      totals.containerCount += e.containerCount;
+      totals.volume += e.volume;
+      totals.weight += e.weight;
+    });
+    totals.totalCount = totals.cartonCount + totals.scatteredCount + totals.containerCount * 2;
+    return totals;
+  };
+
   render() {
     const { visible, loading, windowInfo, orders } = this.state;
     const selectOrder = orders.filter(x => x.isSelect);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
+    let totals = this.getTotals(selectOrder);
     return (
       <Modal
         style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
@@ -407,11 +428,12 @@ export default class DispatchMap extends Component {
         bodyStyle={{ margin: -24, height: '99vh' }}
         visible={visible}
         title={
-          <Row type="flex" justify="space-between">
-            <Col span={21}>
-              <SearchForm refresh={this.refresh} />
-            </Col>
-            {/* <Col span={1}>
+          <div>
+            <Row type="flex" justify="space-between">
+              <Col span={21}>
+                <SearchForm refresh={this.refresh} />
+              </Col>
+              {/* <Col span={1}>
               <Search
                 placeholder="请输入门店编号或名称"
                 allowClear
@@ -420,13 +442,43 @@ export default class DispatchMap extends Component {
                 value={this.state.storeInfo}
               />
             </Col> */}
-            <Col span={1}>
-              <Button onClick={() => this.onReset()}>清空</Button>
-            </Col>
-            <Col span={1}>
-              <Button onClick={() => this.hide()}>关闭</Button>
-            </Col>
-          </Row>
+              <Col span={1}>
+                <Button onClick={() => this.onReset()}>清空</Button>
+              </Col>
+              <Col span={1}>
+                <Button onClick={() => this.hide()}>关闭</Button>
+              </Col>
+            </Row>
+            <Divider style={{ margin: 0, marginTop: 5 }} />
+            <Row>
+              <div style={{ display: 'flex', marginTop: 5 }}>
+                <div style={{ flex: 1, fontWeight: 'bold' }}>
+                  总件数:
+                  {totals.totalCount}
+                </div>
+                <div style={{ flex: 1, fontWeight: 'bold' }}>
+                  整件数:
+                  {totals.cartonCount}
+                </div>
+                <div style={{ flex: 1, fontWeight: 'bold' }}>
+                  散件数:
+                  {totals.scatteredCount}
+                </div>
+                <div style={{ flex: 1, fontWeight: 'bold' }}>
+                  周转箱:
+                  {totals.containerCount}
+                </div>
+                <div style={{ flex: 1, fontWeight: 'bold' }}>
+                  体积:
+                  {totals.volume}
+                </div>
+                <div style={{ flex: 1, fontWeight: 'bold' }}>
+                  重量:
+                  {totals.weight}
+                </div>
+              </div>
+            </Row>
+          </div>
         }
         closable={false}
         destroyOnClose={true}

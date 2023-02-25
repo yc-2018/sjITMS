@@ -687,15 +687,15 @@ export default class OrderPoolPage extends Component {
               Number(orders.realContainerCount) * 2}
           </Text>
         </Col>
-        <Col span={4}>
+        <Col span={footer ? 4 : 3}>
           <Text> 整件:</Text>
           <Text style={totalTextStyle}>{orders.realCartonCount}</Text>
         </Col>
-        <Col span={4}>
+        <Col span={footer ? 4 : 3}>
           <Text> 散件:</Text>
           <Text style={totalTextStyle}>{orders.realScatteredCount}</Text>
         </Col>
-        <Col span={4}>
+        <Col span={footer ? 4 : 3}>
           <Text> 周转筐:</Text>
           <Text style={totalTextStyle}>{orders.realContainerCount}</Text>
         </Col>
@@ -707,6 +707,12 @@ export default class OrderPoolPage extends Component {
           <Text> 重量:</Text>
           <Text style={totalTextStyle}>{orders.weight}</Text>
         </Col>
+        {footer ? null : (
+          <Col span={3}>
+            <Text>门店:</Text>
+            <Text style={totalTextStyle}>{orders.totalStores}</Text>
+          </Col>
+        )}
       </Row>
     );
   };
@@ -720,13 +726,18 @@ export default class OrderPoolPage extends Component {
         realContainerCount: 0,
         volume: 0,
         weight: 0,
+        totalStores: 0,
       };
     }
+    let totalStores = [];
     data = data.map(x => {
       if (x.orderNumber) {
         x.stillCartonCount = x.cartonCount;
         x.stillScatteredCount = x.scatteredCount;
         x.stillContainerCount = x.containerCount;
+      }
+      if (totalStores.indexOf(x.deliveryPoint.code) == -1) {
+        totalStores.push(x.deliveryPoint.code);
       }
       return x;
     });
@@ -736,6 +747,7 @@ export default class OrderPoolPage extends Component {
       realContainerCount: Math.round(sumBy(data.map(x => x.stillContainerCount)) * 100) / 100,
       weight: Math.round(sumBy(data.map(x => Number(x.weight)))) / 1000,
       volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
+      totalStores: totalStores.length,
     };
   };
   //运力池汇总
