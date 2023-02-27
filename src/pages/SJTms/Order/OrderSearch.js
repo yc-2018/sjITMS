@@ -12,6 +12,7 @@ import { havePermission } from '@/utils/authority';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { batchAudit, audit, cancel } from '@/services/sjitms/OrderBill';
+import moment from 'moment';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -28,6 +29,17 @@ export default class OrderSearch extends QuickFormSearchPage {
 
   onUpload = () => {
     this.props.switchTab('import');
+  };
+
+  exSearchFilter = () => {
+    return [
+      {
+        field: 'WAVENUM',
+        type: 'VARCHAR',
+        rule: 'eq',
+        val: moment(new Date()).format('YYMMDD') + '0001',
+      },
+    ];
   };
 
   drawToolsButton = () => {

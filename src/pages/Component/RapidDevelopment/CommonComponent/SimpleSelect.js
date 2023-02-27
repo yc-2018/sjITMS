@@ -8,6 +8,7 @@
 import React, { PureComponent } from 'react';
 import { Select, Divider, Icon, Button } from 'antd';
 import { selectCoulumns, dynamicQuery } from '@/services/quick/Quick';
+import moment from 'moment';
 
 /**
  * 简易查询下拉选择控件
@@ -27,10 +28,16 @@ export default class SimpleSelect extends PureComponent {
     this.initData();
   }
 
+  componentWillReceiveProps(props) {
+    if (props.isOrgQuery !== this.props.isOrgQuery) {
+      this.initSearch(props.isOrgQuery);
+    }
+  }
   initData = async () => {
     let queryParamsJson;
     if (this.props.showSearch) {
-      this.setState({ sourceData: [] });
+      this.initSearch();
+      // this.setState({ sourceData: [] });
     } else {
       const { dictCode } = this.props;
       if (dictCode) {
@@ -47,6 +54,59 @@ export default class SimpleSelect extends PureComponent {
           this.setSourceData(response.result.records);
         }
       }
+    }
+  };
+
+  initSearch = async e => {
+    let params = [];
+    let isOrgQuery = e ? e : this.props.isOrgQuery;
+    let jsonParam = this.props.searchField?.searchProperties
+      ? JSON.parse(this.props.searchField?.searchProperties)
+      : undefined;
+    if (jsonParam) {
+      let dateParam = jsonParam.dateParam;
+      let textParam = jsonParam.textParam;
+      //time
+      if (dateParam) {
+        const searchField = this.props.searchField;
+        params.push({
+          field: searchField.fieldName,
+          type: searchField.fieldType,
+          rule: 'like',
+          val: '',
+        });
+        for (let key in dateParam) {
+          let endDate = moment(new Date()).format('YYYY-MM-DD');
+          let startDate = moment(new Date())
+            .add(-dateParam[key], 'days')
+            .format('YYYY-MM-DD');
+          params.push({
+            field: key,
+            type: 'Date',
+            rule: 'between',
+            val: `${startDate}||${endDate}`,
+          });
+        }
+      }
+      if (isOrgQuery) {
+        params = [...params, ...isOrgQuery];
+      } else {
+        params = [...params];
+      }
+      const payload = {
+        superQuery: { queryParams: params },
+        quickuuid: this.props.reportCode,
+        pageSize: 9999,
+      };
+      const result = await selectCoulumns(payload);
+      let sourceData = [];
+      if (result.data != null) {
+        result.data.forEach(sourceDatas => {
+          sourceData.push({ NAME: sourceDatas, VALUE: sourceDatas });
+        });
+      }
+
+      this.setState({ sourceData: sourceData });
     }
   };
 

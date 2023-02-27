@@ -35,7 +35,10 @@ export default class SearchForm extends Component {
     selectFields: [],
     advancedFields: [],
     linkFilter: undefined,
-    isOrgQuery: [{ field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid }],
+    isOrgQuery: [
+      { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+      { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
+    ],
   };
 
   async componentDidMount() {
@@ -101,6 +104,7 @@ export default class SearchForm extends Component {
       //多选下拉框时修改入参,非下拉框暂时不支持in 改为like
       if (field.searchCondition == 'in' || field.searchCondition == 'notIn') {
         if (field.searchShowtype == 'list' || field.searchShowtype == 'sel_search') {
+          console.log('param', param, val);
           val = val.join('||');
         } else if (field.searchShowtype == 'auto_complete') {
           val = val.replace(',', '||');
@@ -286,7 +290,7 @@ export default class SearchForm extends Component {
         item.searchDefVal = `${startDate}||${endDate}`;
       }
       if (item.fieldName == 'WAVENUM') {
-        item.searchDefVal = moment(new Date()).format('YYMMDD') + '0001';
+        item.searchDefVal = [moment(new Date()).format('YYMMDD') + '0001'];
       }
       if (item.fieldName == 'CREATORID') {
         item.searchDefVal = loginUser().uuid;
