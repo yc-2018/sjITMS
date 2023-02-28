@@ -31,16 +31,16 @@ export default class OrderSearch extends QuickFormSearchPage {
     this.props.switchTab('import');
   };
 
-  exSearchFilter = () => {
-    return [
-      {
-        field: 'WAVENUM',
-        type: 'VARCHAR',
-        rule: 'eq',
-        val: moment(new Date()).format('YYMMDD') + '0001',
-      },
-    ];
-  };
+  // exSearchFilter = () => {
+  //   return [
+  //     {
+  //       field: 'WAVENUM',
+  //       type: 'VARCHAR',
+  //       rule: 'eq',
+  //       val: moment(new Date()).format('YYMMDD') + '0001',
+  //     },
+  //   ];
+  // };
 
   drawToolsButton = () => {
     const { showAuditPop, showCancelPop, selectedRows } = this.state;
