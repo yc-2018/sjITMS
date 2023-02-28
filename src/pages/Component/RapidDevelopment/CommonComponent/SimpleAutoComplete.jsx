@@ -215,7 +215,7 @@ export default class SimpleAutoComplete extends Component {
    * @param {string} searchText 查询键
    */
   autoCompleteFetchData = async searchText => {
-    const { isLink, linkFilter, orderBy } = this.props;
+    const { isLink, linkFilter, orderBy, initData } = this.props;
     const queryParams = this.getQueryParams();
     // 如果是联动控件,但是没有传递linkFilter,则不加载数据
 
