@@ -21,7 +21,7 @@ export const OrderColumns = [
     dataIndex: 'archLine',
     sorter: true,
     sorterCode: true,
-    width: 60,
+    width: 100,
     render: val => {
       return val ? <span>{val.code}</span> : <Empty />;
     },
@@ -50,13 +50,6 @@ export const OrderColumns = [
     sorter: true,
     width: 100,
     render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty />),
-  },
-  {
-    title: '到货类型',
-    dataIndex: 'arrivalType',
-    width: 80,
-    sorter: true,
-    render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
     title: '来源单号',
@@ -101,8 +94,36 @@ export const OrderColumns = [
     render: val => (val ? <span>{(val / 1000).toFixed(3)}</span> : <Empty />),
   },
   {
+    title: '到货类型',
+    dataIndex: 'arrivalType',
+    width: 80,
+    sorter: true,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
     title: '到效日期',
     dataIndex: 'expiryDate',
+    width: 80,
+    sorter: true,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '配送区域',
+    dataIndex: 'shipAreaName',
+    width: 80,
+    sorter: true,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '班组',
+    dataIndex: 'contact',
+    width: 80,
+    sorter: true,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '班次',
+    dataIndex: 'shiftType',
     width: 80,
     sorter: true,
     render: val => (val ? <span>{val}</span> : <Empty />),
