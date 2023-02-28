@@ -142,7 +142,7 @@ export default class Config extends SiderPage {
                 {configLocale.tmsConfig.returndistributiontypeconfig.name}
               </Menu.Item>
               <Menu.Item key={'dispatchConfig'}>{'配送调度配置'}</Menu.Item>
-              <Menu.Item key={'pcdpz'}>{'排车体积重量限制'}</Menu.Item>
+              <Menu.Item key={'pcdpz'}>{'排车单限制'}</Menu.Item>
               <Menu.Item key={'dingTaskPush'}>{'钉钉推送配置'}</Menu.Item>
             </SubMenu>
           ) : null}
