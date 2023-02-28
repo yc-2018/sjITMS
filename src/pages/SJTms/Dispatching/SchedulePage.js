@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-05 09:29:52
+ * @LastEditTime: 2023-02-28 08:54:27
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -365,7 +365,7 @@ export default class SchedulePage extends Component {
       item.clicked = selected && !item.clicked;
       return item;
     });
-    this.setState({ scheduleData: newScheduleData }, () => {
+    this.setState({ savedRowKeys: [record.uuid], scheduleData: newScheduleData }, () => {
       this.props.refreshDetail(selectSchedule);
     });
   };
