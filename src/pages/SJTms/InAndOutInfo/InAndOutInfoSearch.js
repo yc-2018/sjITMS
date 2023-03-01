@@ -154,9 +154,9 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     this.setState({ data: newData });
   };
 
-  convertCodeName = () => { };
+  convertCodeName = () => {};
   //该方法用于写最上层的按钮 多个按钮用<span>包裹
-  drawTopButton = () => { };
+  drawTopButton = () => {};
 
   onPreview = async file => {
     let src = file.url;
@@ -214,7 +214,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
             this.setState({ showAuditPop: false });
             this.onTollFeeAudits(selectedRows[0]).then(response => {
               if (response.success) {
-                message.success('审核成功！');
+                message.success('提交成功！');
                 this.onSearch();
               }
             });
@@ -266,7 +266,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
     }
     selectedRows.length == 1
       ? this.setState({ showAuditPop: true })
-      : this.batchProcessConfirmRef.show('审核', selectedRows, this.onTollFeeAudits, this.onSearch);
+      : this.batchProcessConfirmRef.show('提交', selectedRows, this.onTollFeeAudits, this.onSearch);
   };
   cancelRecordMiles = async () => {
     const { selectedRows } = this.state;
@@ -274,20 +274,18 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
       message.warn('请选择一条记录');
       return;
     }
-    this.props.dispatch(
-      {
-        type: 'dispatchReturnStore/cancelRecordMiles',
-        payload: selectedRows.map(e => e.UUID)[0],
-        callback: response => {
-          this.setState({ selectedRows: [] });
-          if (response && response.success) {
-            this.refreshTable();
-            message.success(commonLocale.saveSuccessLocale);
-          }
-        },
-      }
-    )
-  }
+    this.props.dispatch({
+      type: 'dispatchReturnStore/cancelRecordMiles',
+      payload: selectedRows.map(e => e.UUID)[0],
+      callback: response => {
+        this.setState({ selectedRows: [] });
+        if (response && response.success) {
+          this.refreshTable();
+          message.success(commonLocale.saveSuccessLocale);
+        }
+      },
+    });
+  };
   onTollFeeAudits = async rows => {
     return await submitFee(rows.BILLNUMBER);
   };

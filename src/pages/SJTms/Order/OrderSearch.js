@@ -12,6 +12,7 @@ import { havePermission } from '@/utils/authority';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { batchAudit, audit, cancel } from '@/services/sjitms/OrderBill';
+import moment from 'moment';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -28,6 +29,60 @@ export default class OrderSearch extends QuickFormSearchPage {
 
   onUpload = () => {
     this.props.switchTab('import');
+  };
+
+  defaultSearch = () => {
+    //默认查询
+    let ex = this.state.queryConfigColumns.filter(item => {
+      return item.searchDefVal != null && item.searchDefVal != '';
+    });
+    let defaultSearch = [];
+    let exSearchFilter;
+    for (const item of ex) {
+      if (item.fieldType == 'Date') {
+        let days = parseInt(item.searchDefVal);
+        if (days != days) days = 0;
+        let endDate = moment(new Date()).format('YYYY-MM-DD');
+        let startDate = moment(new Date())
+          .add(-item.searchDefVal, 'days')
+          .format('YYYY-MM-DD');
+        exSearchFilter = {
+          field: item.fieldName,
+          type: item.fieldType,
+          rule: item.searchCondition,
+          val: `${startDate}||${endDate}`,
+        };
+      } else if (item.fieldType == 'DateTime') {
+        let days = parseInt(item.searchDefVal);
+        if (days != days) days = 0;
+        let endDate = moment(new Date()).format('YYYY-MM-DD 23:59:59');
+        let startDate = moment(new Date())
+          .add(-item.searchDefVal, 'days')
+          .format('YYYY-MM-DD 00:00:00');
+        exSearchFilter = {
+          field: item.fieldName,
+          type: item.fieldType,
+          rule: item.searchCondition,
+          val: `${startDate}||${endDate}`,
+        };
+      } else {
+        exSearchFilter = {
+          field: item.fieldName,
+          type: item.fieldType,
+          rule: item.searchCondition,
+          val: item.searchDefVal,
+        };
+      }
+      defaultSearch.push(exSearchFilter);
+    }
+    //暂时通过这种方式赋予默认值
+    defaultSearch.push({
+      field: 'WAVENUM',
+      type: 'VARCHAR',
+      rule: 'eq',
+      val: moment(new Date()).format('YYMMDD') + '0001',
+    });
+    return defaultSearch;
   };
 
   drawToolsButton = () => {

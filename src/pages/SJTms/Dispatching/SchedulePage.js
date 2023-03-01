@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-05 09:29:52
+ * @LastEditTime: 2023-02-28 14:11:55
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -354,7 +354,7 @@ export default class SchedulePage extends Component {
   };
   //表格行点击
   onClickRow = record => {
-    const { scheduleData } = this.state;
+    const { scheduleData, activeKey } = this.state;
     let selectSchedule = undefined;
     let newScheduleData = scheduleData.map(item => {
       const selected = item.uuid == record.uuid;
@@ -365,9 +365,11 @@ export default class SchedulePage extends Component {
       item.clicked = selected && !item.clicked;
       return item;
     });
-    this.setState({ scheduleData: newScheduleData }, () => {
-      this.props.refreshDetail(selectSchedule);
-    });
+    let rowKeys = { savedRowKeys: [record.uuid] };
+    if (activeKey == 'Approved') rowKeys = { approvedRowKeys: [record.uuid] };
+    if (activeKey == 'Aborted') rowKeys = { abortedRowKeys: [record.uuid] };
+    this.setState({ ...rowKeys, scheduleData: newScheduleData });
+    this.props.refreshDetail(selectSchedule);
   };
 
   //打印

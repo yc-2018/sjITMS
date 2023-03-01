@@ -9,6 +9,7 @@ import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { havePermission } from '@/utils/authority';
 import { Button } from 'antd';
+import { getTableColumns } from '@/utils/LoginContext';
 import ExportJsonExcel from 'js-export-excel';
 
 @connect(({ quick, loading }) => ({
@@ -64,19 +65,43 @@ export default class ScheduleReportSearchPage extends QuickFormSearchPage {
 
   //导出
   port = () => {
-    const { selectedRows } = this.state;
+    const { selectedRows, key } = this.state;
+    let defaultCache =
+      getTableColumns(key + 'columnInfo') && typeof getTableColumns(key + 'columnInfo') != 'object'
+        ? JSON.parse(getTableColumns(key + 'columnInfo'))
+        : getTableColumns(key + 'columnInfo');
+    let columnsList = [];
+    if (defaultCache) {
+      columnsList = defaultCache.newList;
+    }
     var option = [];
     let sheetfilter = []; //对应列表数据中的key值数组，就是上面resdata中的 name，address
     let sheetheader = []; //对应key值的表头，即excel表头
     let columns = this.state.columns;
-    columns.map(a => {
-      if (a.preview != 'N') {
-        sheetfilter.push(a.preview);
-      } else {
-        sheetfilter.push(a.key);
-      }
-      sheetheader.push(a.title);
-    });
+    let excelColumns = [];
+    if (columnsList.length > 0) {
+      columnsList.map(e => {
+        let column = columns.find(i => i.title == e);
+        if (column.preview != 'N') {
+          excelColumns.push(column.preview);
+        } else {
+          excelColumns.push(column.key);
+        }
+      });
+      sheetheader = columnsList;
+      sheetfilter = excelColumns;
+    } else {
+      columns.map(a => {
+        let excelColumn = '';
+        if (a.preview != 'N') {
+          excelColumn = a.preview;
+        } else {
+          excelColumn = a.key;
+        }
+        sheetfilter.push(excelColumn);
+        sheetheader.push(a.title);
+      });
+    }
     option.fileName = this.state.title; //导出的Excel文件名
 
     if (selectedRows.length > 0) {

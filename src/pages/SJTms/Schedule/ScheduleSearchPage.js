@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-02-21 09:49:52
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-03-01 14:15:32
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -61,6 +61,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     newPirs: '',
     sourceData: [],
     authority: this.props.authority ? this.props.authority[0] : null,
+    dc: ['000000750000004', '000008150000001', '000000750000005'],
   };
 
   componentDidMount() {
@@ -74,9 +75,14 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     const deliverypointCode = pageFilters.superQuery.queryParams.find(
       x => x.field == 'DELIVERYPOINTCODE'
     );
+    pageFilters.lastSql = '';
     if (deliverypointCode) {
-      deliverypointCode.val = ',' + deliverypointCode.val + ',';
-      pageFilters.superQuery.queryParams['DELIVERYPOINTCODE'] = deliverypointCode;
+      pageFilters.lastSql = ` and uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
+        deliverypointCode.val
+      }')`;
+      pageFilters.superQuery.queryParams = pageFilters.superQuery.queryParams.filter(
+        x => x.field != 'DELIVERYPOINTCODE'
+      );
     }
     dispatch({
       type: 'quick/queryData',
@@ -487,8 +493,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
               /> */}
               <InputNumber
                 allowClear
-                step={0.1}
-                min={0.1}
+                step={1}
+                min={1}
                 max={100}
                 defaultValue={1}
                 // value={e.val}
@@ -612,7 +618,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
 
   //打印
   handlePrint = async key => {
-    const { selectedRows } = this.state;
+    const { selectedRows, dc } = this.state;
     if (selectedRows.length == 0) {
       message.warn('请选择需要打印的排车单！');
       return;
@@ -631,7 +637,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     const printPages = document.getElementById('printPage').childNodes;
     printPages.forEach(page => {
       LODOP.NewPageA();
-      if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001') {
+      if (dc.find(x => x == loginOrg().uuid) != undefined) {
+        // if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001') {
         LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
       } else {
         LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
@@ -698,7 +705,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
 
   //装车单
   buildPrintPage = async () => {
-    const { selectedRows } = this.state;
+    const { selectedRows, dc } = this.state;
     const printPages = [];
     for (let index = 0; selectedRows.length > index; index++) {
       const response = await queryAllData({
@@ -711,8 +718,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         },
       });
       let scheduleDetails = response.success ? response.data.records : [];
-     // scheduleDetails = orderBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
-      const printPage = drawPrintPage(selectedRows[index], scheduleDetails);
+      // scheduleDetails = orderBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
+      const printPage = drawPrintPage(selectedRows[index], scheduleDetails, dc);
       printPages.push(printPage);
     }
     this.setState({ printPage: printPages });
@@ -869,9 +876,10 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
 };
 
 //装车单
-const drawPrintPage = (schedule, scheduleDetails) => {
+const drawPrintPage = (schedule, scheduleDetails, dc) => {
   // 茶山仓
-  if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001') {
+  if (dc.find(x => x == loginOrg().uuid) != undefined) {
+    // if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001') {
     let scheduleDetailSum = {};
     let REALCARTONCOUNT = 0;
     let REALSCATTEREDCOUNT = 0;

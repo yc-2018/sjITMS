@@ -8,6 +8,8 @@ import { dispatcherConfigLocale } from './DispatcherConfigLocale';
 import DispatcherConfigCreateModal from './DispatcherConfigCreateModal';
 import ConfigSearchPage from '@/pages/Component/Page/inner/ConfigSearchPage';
 import DispatcherConfigSearchForm from './DispatcherConfigSearchForm';
+import Select from '@/components/ExcelImport/Select';
+import { SimpleSelect } from '@/pages/Component/RapidDevelopment/CommonComponent';
 
 @connect(({ dispatcherconfig, dispatcherconfigModal, loading }) => ({
   dispatcherconfig,
@@ -70,6 +72,48 @@ export default class PlanConfig extends ConfigSearchPage {
         />
       ),
     },
+    {
+      title: dispatcherConfigLocale.etcIssueStat,
+      dataIndex: 'etcissuestat',
+      render: (val, record) => {
+        let vaule = val?.split(',');
+        return (
+          <SimpleSelect
+            style={{ width: 250 }}
+            searchField={{ searchCondition: 'in' }}
+            value={vaule}
+            onChange={value => this.onSelectChange(record, 'etcissuestat', value)}
+            dictCode={'scheduleStat'}
+          />
+        );
+      },
+    },
+    {
+      title: dispatcherConfigLocale.etcRecycleStat,
+      dataIndex: 'etcrecyclestat',
+      render: (val, record) => {
+        let vaule = val?.split(',');
+        return (
+          <SimpleSelect
+            style={{ width: 250 }}
+            searchField={{ searchCondition: 'in' }}
+            value={vaule}
+            onChange={value => this.onSelectChange(record, 'etcrecyclestat', value)}
+            dictCode={'scheduleStat'}
+          />
+        );
+      },
+    },
+    {
+      title: dispatcherConfigLocale.moverCarEtc,
+      dataIndex: 'movercaretc',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'movercaretc', event)}
+        />
+      ),
+    },
   ];
 
   onChange = (record, field, event) => {
@@ -85,6 +129,17 @@ export default class PlanConfig extends ConfigSearchPage {
   };
   onInputChange = (record, field, val) => {
     record[field] = Number(val);
+    this.props
+      .dispatch({
+        type: 'dispatcherconfig/update',
+        payload: record,
+      })
+      .then(() => {
+        this.refreshTable();
+      });
+  };
+  onSelectChange = (record, field, val) => {
+    record[field] = val.toString();
     this.props
       .dispatch({
         type: 'dispatcherconfig/update',

@@ -134,11 +134,14 @@ export default class SimpleAutoComplete extends Component {
    * 构建联动筛选的条件
    */
   getLinkFilterCondition = () => {
-    const { linkFilter } = this.props;
+    const { linkFilter, initData } = this.props;
     // 不允许有空查询
+    console.log('linkFilter', linkFilter);
     for (const filter of linkFilter) {
       if (filter.val[0] == undefined) {
-        return;
+        if (initData) filter.val[0] = '';
+        //初始化数据 允许空查询
+        else return;
       }
     }
     return { params: JSON.parse(JSON.stringify(linkFilter)) };
@@ -186,13 +189,32 @@ export default class SimpleAutoComplete extends Component {
    * 下拉搜索框加载数据
    */
   listFetchData = async () => {
-    const { isLink, linkFilter, orderBy } = this.props;
+    const { isLink, linkFilter, orderBy, initData, isOrgSearch } = this.props;
+    console.log('this.props', this.props);
     let queryParams = this.getQueryParams();
 
     // 如果是联动控件,但是没有传递linkFilter,则不加载数据
-    if (!queryParams || (isLink && !linkFilter)) {
-      return;
+    if (!initData) {
+      if (!queryParams || (isLink && !linkFilter)) {
+        return;
+      }
     }
+
+    //增加组织查询
+    if (isOrgSearch) {
+      let loginOrgType = loginOrg().type.replace('_', '');
+      let searchCondition = {
+        params: [
+          { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+          { field: loginOrgType + 'UUID', rule: 'like', val: [loginOrg().uuid] },
+        ],
+      };
+      addCondition(queryParams, searchCondition);
+    }
+    //20230228 去除没有传递linkFilter,则不加载数据
+    // if (!queryParams) {
+    //   return;
+    // }
     if (orderBy) {
       queryParams.orderBy = orderBy;
     }
@@ -204,12 +226,18 @@ export default class SimpleAutoComplete extends Component {
    * @param {string} searchText 查询键
    */
   autoCompleteFetchData = async searchText => {
-    const { isLink, linkFilter, orderBy } = this.props;
+    const { isLink, linkFilter, orderBy, initData } = this.props;
     const queryParams = this.getQueryParams();
     // 如果是联动控件,但是没有传递linkFilter,则不加载数据
-    if (!queryParams || (isLink && !linkFilter)) {
-      return;
+
+    if (!initData) {
+      if (!queryParams || (isLink && !linkFilter)) {
+        return;
+      }
     }
+    // if (!queryParams) {
+    //   return;
+    // }
     // 分页查询
     queryParams.pageNo = 1;
     queryParams.pageSize = 20;
