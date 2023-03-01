@@ -221,6 +221,7 @@ export default class SearchForm extends Component {
             placeholder={'请选择' + searchField.fieldTxt}
             searchField={searchField}
             {...searchProperties}
+            setFieldsValues={this.props.form.setFieldsValue}
           />
         );
       case 'radio':
@@ -235,6 +236,7 @@ export default class SearchForm extends Component {
               reportCode={this.props.quickuuid}
               searchField={searchField}
               isOrgQuery={this.state.isOrgQuery}
+              setFieldsValues={this.props.form.setFieldsValue}
             />
           );
         }
