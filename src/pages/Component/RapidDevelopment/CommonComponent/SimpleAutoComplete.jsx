@@ -189,7 +189,7 @@ export default class SimpleAutoComplete extends Component {
    * 下拉搜索框加载数据
    */
   listFetchData = async () => {
-    const { isLink, linkFilter, orderBy, initData } = this.props;
+    const { isLink, linkFilter, orderBy, initData, isOrgSearch } = this.props;
     console.log('this.props', this.props);
     let queryParams = this.getQueryParams();
 
@@ -200,6 +200,17 @@ export default class SimpleAutoComplete extends Component {
       }
     }
 
+    //增加组织查询
+    if (isOrgSearch) {
+      let loginOrgType = loginOrg().type.replace('_', '');
+      let searchCondition = {
+        params: [
+          { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+          { field: loginOrgType + 'UUID', rule: 'like', val: [loginOrg().uuid] },
+        ],
+      };
+      addCondition(queryParams, searchCondition);
+    }
     //20230228 去除没有传递linkFilter,则不加载数据
     // if (!queryParams) {
     //   return;
