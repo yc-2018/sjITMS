@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-02-25 09:35:44
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-03-01 14:13:47
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -76,8 +76,12 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       x => x.field == 'DELIVERYPOINTCODE'
     );
     if (deliverypointCode) {
-      deliverypointCode.val = ',' + deliverypointCode.val + ',';
-      pageFilters.superQuery.queryParams['DELIVERYPOINTCODE'] = deliverypointCode;
+      pageFilters.lastSql = ` and uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
+        deliverypointCode.val
+      }')`;
+      pageFilters.superQuery.queryParams = pageFilters.superQuery.queryParams.filter(
+        x => x.field != 'DELIVERYPOINTCODE'
+      );
     }
     dispatch({
       type: 'quick/queryData',
