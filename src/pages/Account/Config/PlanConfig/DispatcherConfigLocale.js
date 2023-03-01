@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-10-24 15:42:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-02-28 09:01:33
+ * @LastEditTime: 2023-03-01 09:41:49
  * @version: 1.0
  */
 export const dispatcherConfigLocale = {
@@ -15,4 +15,5 @@ export const dispatcherConfigLocale = {
   shipTime: '刷卡间隔',
   etcIssueStat: '粤通卡允许发放状态',
   moverCarEtc: '移车是否自动发卡/回卡',
+  etcRecycleStat: '粤通卡允许收卡状态',
 };

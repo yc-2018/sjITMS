@@ -79,10 +79,26 @@ export default class PlanConfig extends ConfigSearchPage {
         let vaule = val?.split(',');
         return (
           <SimpleSelect
-            style={{ width: 300 }}
+            style={{ width: 250 }}
             searchField={{ searchCondition: 'in' }}
             value={vaule}
             onChange={value => this.onSelectChange(record, 'etcissuestat', value)}
+            dictCode={'scheduleStat'}
+          />
+        );
+      },
+    },
+    {
+      title: dispatcherConfigLocale.etcRecycleStat,
+      dataIndex: 'etcrecyclestat',
+      render: (val, record) => {
+        let vaule = val?.split(',');
+        return (
+          <SimpleSelect
+            style={{ width: 250 }}
+            searchField={{ searchCondition: 'in' }}
+            value={vaule}
+            onChange={value => this.onSelectChange(record, 'etcrecyclestat', value)}
             dictCode={'scheduleStat'}
           />
         );
