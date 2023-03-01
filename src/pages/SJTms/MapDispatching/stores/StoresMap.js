@@ -193,8 +193,8 @@ export default class StoresMap extends Component {
   //标注点
   drawMarker = () => {
     const { orders, otherData, canDrag } = this.state;
-    const otherStore = new BMapGL.Icon(otherIcon, new BMapGL.Size(42, 42));
-    const icon = new BMapGL.Icon(ShopIcon, new BMapGL.Size(42, 42));
+    const otherStore = new BMapGL.Icon(otherIcon, new BMapGL.Size(30, 30)); //42
+    const icon = new BMapGL.Icon(ShopIcon, new BMapGL.Size(30, 30));
     let markers = [];
     // let that = this;
     otherData.map(order => {

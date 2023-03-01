@@ -506,9 +506,15 @@ export default class DispatchMap extends Component {
                       /> */}
                           {`[${order.deliveryPoint.code}]` + order.deliveryPoint.name}
                         </div>
-                        <div>
-                          线路：
-                          {order.archLine?.code}
+                        <div style={{ display: 'flex' }}>
+                          <div style={{ flex: 1 }}>
+                            线路：
+                            {order.archLine?.code}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            备注：
+                            {order?.lineNote}
+                          </div>
                         </div>
                         <Divider style={{ margin: 0, marginTop: 5 }} />
                         <div style={{ display: 'flex', marginTop: 5 }}>
@@ -604,9 +610,15 @@ export default class DispatchMap extends Component {
                           {`[${windowInfo.order.deliveryPoint.code}]` +
                             windowInfo.order.deliveryPoint.name}
                         </div>
-                        <div>
-                          线路：
-                          {windowInfo.order.archLine?.code}
+                        <div style={{ display: 'flex' }}>
+                          <div style={{ flex: 1 }}>
+                            线路：
+                            {windowInfo.order.archLine?.code}
+                          </div>
+                          <div style={{ flex: 1 }}>
+                            备注：
+                            {windowInfo.order?.lineNote}
+                          </div>
                         </div>
                         <Divider style={{ margin: 0, marginTop: 5 }} />
                         <div style={{ display: 'flex', marginTop: 5 }}>
