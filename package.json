@@ -13,7 +13,7 @@
     "start:docker": "cross-env APP_TYPE=site API_ENV=docker umi dev",
     "build": "cross-env API_ENV=local umi build",
     "build:dev": "cross-env API_ENV=dev umi build",
-    "build:test": "cross-env API_ENV=test umi build",
+    "build:test": "cross-env NODE_OPTIONS=--max_old_space_size=4096 API_ENV=test umi build",
     "build:docker": "cross-env API_ENV=docker umi build",
     "build:xrf_test_oss": "cross-env API_ENV=xrf_test_oss umi build",
     "build:xrf_oss": "cross-env API_ENV=xrf_oss umi build",
