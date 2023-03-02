@@ -8,7 +8,7 @@
  */
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { Layout, Row, Col } from 'antd';
+import { Layout, Row, Col, Modal } from 'antd';
 import Page from '@/pages/Component/RapidDevelopment/CommonLayout/Page/Page';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import OrderPoolPage from './OrderPoolPage';
@@ -16,8 +16,9 @@ import SchedulePage from './SchedulePage';
 import PendingPage from './PendingPage';
 import ScheduleDetailPage from './ScheduleDetailPage';
 import dispatchingStyles from './Dispatching.less';
-import { loginOrg } from '@/utils/LoginContext';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { getDispatchConfig } from '@/services/tms/DispatcherConfig';
+import { checkBaseData } from '@/services/sjitms/ScheduleBill';
 
 const { Content } = Layout;
 
@@ -44,6 +45,15 @@ export default class Dispatching extends Component {
         isOrderCollect: response.data?.isSumOrder == 1,
       });
     }
+   const checkBase =  await checkBaseData(loginCompany().uuid,loginOrg().uuid);
+   if(checkBase && checkBase.success){
+    if(checkBase.data&&checkBase.data?.length>0){
+      Modal.confirm({
+        title:<span>门店代码:<p style={{color:'blue'}}>{checkBase.data.join(",")}</p>存在组队、到货类型、配送区域、高速线路区域补贴区域、信息为空</span>
+      })
+    }
+       
+   }
     // const isOrderCollect = localStorage.getItem(window.location.hostname + '-orderCollect');
     // this.setState({ isOrderCollect: isOrderCollect != 'false' });
   }
