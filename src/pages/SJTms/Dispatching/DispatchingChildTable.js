@@ -338,6 +338,13 @@ export default class DispatchingChildTable extends Component {
           bodyStyle={{ height: this.props.scrollY }}
           scroll={{ y: this.props.scrollY, x: '100%' }}
           footer={this.props.footer}
+          onRow={record => {
+            return {
+              onDoubleClick: event => {
+                this.props.onDoubleClick ? this.props.onDoubleClick(record) : '';
+              },
+            };
+          }}
         />
       </div>
     );

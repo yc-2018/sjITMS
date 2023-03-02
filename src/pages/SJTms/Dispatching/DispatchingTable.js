@@ -70,9 +70,9 @@ export default class DispatchingTable extends Component {
     rowKeys = uniqBy(rowKeys);
     this.props.changeSelectRows(rowKeys);
     this.setState({ lastIndex: index });
-    // if (this.props.onClickRow) {
-    //   this.props.onClickRow(record);
-    // }
+    if (this.props.onClickRow) {
+      this.props.onClickRow(record, index, event);
+    }
   };
 
   onChange = selectedRowKeys => {
@@ -205,13 +205,21 @@ export default class DispatchingTable extends Component {
             }
           }}
           columns={columns}
-          onRowClick={this.props.onClickRow || this.onClickRow}
+          // onRowClick={this.props.onClickRow || this.onClickRow}
+          onRowClick={this.onClickRow}
           onChange={this.handleStandardTableChange}
           rowKey={record => record.uuid}
           rowSelection={rowSelection}
           bodyStyle={{ height: this.props.scrollY }}
           scroll={{ y: this.props.scrollY, x: '100%' }}
           className={this.props.className || dispatchingTableStyles.dispatchingTable}
+          onRow={record => {
+            return {
+              onDoubleClick: event => {
+                this.props.onDoubleClick ? this.props.onDoubleClick(record) : '';
+              },
+            };
+          }}
         />
       </div>
     );

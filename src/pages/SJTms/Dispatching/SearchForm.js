@@ -104,7 +104,6 @@ export default class SearchForm extends Component {
       //多选下拉框时修改入参,非下拉框暂时不支持in 改为like
       if (field.searchCondition == 'in' || field.searchCondition == 'notIn') {
         if (field.searchShowtype == 'list' || field.searchShowtype == 'sel_search') {
-          console.log('param', param, val);
           val = val.join('||');
         } else if (field.searchShowtype == 'auto_complete') {
           val = val.replace(',', '||');

@@ -345,21 +345,15 @@ export default class OrderPoolPage extends Component {
     this.createPageModalRef.show(false, orders);
   };
 
-  //地图排车
-  dispatchingByMap = orders => {
-    // if (orders.length <= 0) {
-    //   message.warning('请选择门店！');
-    //   return;
-    // }
-    //订单类型校验
+  veriftOrder = orders => {
     const orderType = uniqBy(orders.map(x => x.orderType));
     if (orderType.includes('Returnable') && orderType.some(x => x != 'Returnable')) {
       message.error('门店退货类型运输订单不能与其它类型订单混排，请检查！');
-      return;
+      return false;
     }
     if (orderType.includes('TakeDelivery') && orderType.some(x => x != 'TakeDelivery')) {
       message.error('提货类型运输订单不能与其它类型订单混排，请检查！');
-      return;
+      return false;
     }
     //不可共配校验
     let owners = [...orders].map(x => {
@@ -389,6 +383,18 @@ export default class OrderPoolPage extends Component {
           noJointlyOwner.owners +
           ']不可共配，请检查货主配置!'
       );
+      return false;
+    }
+    return true;
+  };
+  //地图排车
+  dispatchingByMap = orders => {
+    // if (orders.length <= 0) {
+    //   message.warning('请选择门店！');
+    //   return;
+    // }
+    //订单类型校验
+    if (!this.veriftOrder(orders)) {
       return;
     }
     // this.setState({ mapModal: false });
@@ -802,6 +808,14 @@ export default class OrderPoolPage extends Component {
     }
   };
 
+  // onDoubleClick = record => {
+  //   let orders = [record];
+  //   if (!this.veriftOrder(orders)) {
+  //     return;
+  //   }
+  //   this.createPageModalRef.show(false, orders);
+  // };
+
   render() {
     const {
       loading,
@@ -902,6 +916,7 @@ export default class OrderPoolPage extends Component {
                     scrollY={`calc(86vh - ${orderPoolHeight}px)`}
                     title={() => this.drawCollect(false, collectOrder)}
                     footer={() => this.drawCollect(true, waveOrder)}
+                    // onDoubleClick={this.onDoubleClick}
                   />
                 ) : (
                   <DispatchingTable
