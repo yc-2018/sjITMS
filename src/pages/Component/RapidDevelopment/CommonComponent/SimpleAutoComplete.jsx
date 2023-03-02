@@ -136,7 +136,6 @@ export default class SimpleAutoComplete extends Component {
   getLinkFilterCondition = () => {
     const { linkFilter, initData } = this.props;
     // 不允许有空查询
-    console.log('linkFilter', linkFilter);
     for (const filter of linkFilter) {
       if (filter.val[0] == undefined) {
         if (initData) filter.val[0] = '';

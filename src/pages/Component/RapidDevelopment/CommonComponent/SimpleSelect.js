@@ -216,6 +216,9 @@ export default class SimpleSelect extends PureComponent {
           onSearch={this.onSearch}
           onFocus={this.onFocus}
           {...mu}
+          maxTagCount={1}
+          // maxTagCount={1}
+          maxTagTextLength={this.props.searchField?.fieldWidth}
           dropdownRender={menu =>
             isMu ? (
               <div>
