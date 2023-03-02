@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-01 14:15:32
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-03-02 17:52:20
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -61,7 +61,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     newPirs: '',
     sourceData: [],
     authority: this.props.authority ? this.props.authority[0] : null,
-    dc: ['000000750000004', '000008150000001', '000000750000005'],
+    dc: ['000000750000004', '000008150000001', '000000750000005', '000008150000002'],
   };
 
   componentDidMount() {
