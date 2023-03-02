@@ -226,6 +226,7 @@ export default class RyzeSearchPage extends Component {
                 : true
             }
             drapTableChange={this.drapTableChange}
+            handleRowClick={this.handleRowClick}
           />
         ) : null}
         {this.drawOtherCom && this.drawOtherCom()}

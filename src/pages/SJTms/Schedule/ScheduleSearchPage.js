@@ -154,18 +154,31 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   //     this.queryCoulumns();
   //   }
   // }
-  handleOnRow = record => {
-    return {
-      onClick: () => {
-        let { data } = this.state;
-        data.list?.map(item => {
-          item.clicked = item.UUID == record.UUID;
-          return item;
-        });
-        this.setState({ data });
-        this.props.refreshSelectedRow(record);
-      },
-    };
+  // handleOnRow = record => {
+  //   return {
+  //     onClick: () => {
+  //       let { data } = this.state;
+  //       data.list?.map(item => {
+  //         item.clicked = item.UUID == record.UUID;
+  //         return item;
+  //       });
+  //       this.setState({ data });
+  //       this.props.refreshSelectedRow(record);
+  //     },
+  //   };
+  // };
+
+  handleRowClick = record => {
+    let { data } = this.state;
+    data.list?.map(item => {
+      item.clicked = item.UUID == record.UUID;
+      return item;
+    });
+    // let item = data.list?.find(e => e.UUID == record.UUID);
+    // item.clicked = !item.clicked;
+    this.setState({ data });
+
+    this.props.refreshSelectedRow(record);
   };
 
   onUpdatePirs = () => {

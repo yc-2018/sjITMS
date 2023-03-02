@@ -1055,6 +1055,9 @@ class StandardTable extends Component {
       selectedAllRows.push(record);
     }
     this.handleRowSelectChange(selectedRowKeys, selectedAllRows);
+    if (this.props.handleRowClick) {
+      this.props.handleRowClick(record);
+    }
   };
 
   strip(number) {
