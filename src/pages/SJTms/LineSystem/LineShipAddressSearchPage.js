@@ -57,7 +57,8 @@ export default class LineShipAddressSearchPage extends Component {
    */
   onApproval = async (systemUuid, systemData) => {
     const status = systemData && systemData.STATUS == 'Approved' ? 'Revising' : 'Approved';
-      if(loginOrg().uuid=='000000750000005' ||loginOrg().uuid=='000000750000005' ){
+    console.log(status);
+      if((loginOrg().uuid=='000000750000005' ||loginOrg().uuid=='000008150000002')&& status=='Approved'){
         await YDSiparea({systemUUID:systemUuid}).then(result =>{
           console.log(result);
           if(result.success && result.data?.length>0){
@@ -70,7 +71,7 @@ export default class LineShipAddressSearchPage extends Component {
           }
         
         })
-       
+       return;
       }else{
         await this.updateApprovedState(systemUuid, status, systemData);
       }
