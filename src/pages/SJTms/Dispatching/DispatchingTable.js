@@ -203,6 +203,9 @@ export default class DispatchingTable extends Component {
             if (record.clicked) {
               return 'clickedStyle';
             }
+            if (record.orderType=='DeliveryAgain' && this.props.comId =='pendingOrder') {
+              return 'warningStyle';
+            }
           }}
           columns={columns}
           // onRowClick={this.props.onClickRow || this.onClickRow}

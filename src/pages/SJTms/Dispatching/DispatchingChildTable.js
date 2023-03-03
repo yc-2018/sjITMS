@@ -287,6 +287,9 @@ export default class DispatchingChildTable extends Component {
               if (record.warning) {
                 return 'warningStyle';
               }
+              if(record.record.orderType=='DeliveryAgain'&& this.props.comId =='pendingOrder'){
+                return 'warningStyle';
+              }
             }}
             size="small"
             rowKey={record => (record.uuid ? record.uuid : 'nestKey')}
