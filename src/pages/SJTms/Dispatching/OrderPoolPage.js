@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-21 15:20:42
+ * @LastEditTime: 2023-03-03 17:45:47
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -40,7 +40,13 @@ import {
   savePending,
   getContainerByBillUuid,
 } from '@/services/sjitms/OrderBill';
-import { save, batchSave ,addOrders,checkArea,checkAreaSchedule} from '@/services/sjitms/ScheduleBill';
+import {
+  save,
+  batchSave,
+  addOrders,
+  checkArea,
+  checkAreaSchedule,
+} from '@/services/sjitms/ScheduleBill';
 import { queryData } from '@/services/quick/Quick';
 import { groupBy, sumBy, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
@@ -291,75 +297,74 @@ export default class OrderPoolPage extends Component {
     });
   };
 
-//排车
-dispatching = async () => {
-  const { auditedRowKeys, auditedData } = this.state;
-  const selectPending = this.props.selectPending();
-  if (auditedRowKeys.length + selectPending.length == 0) {
-    message.warning('请选择运输订单！');
-    return;
-  }
-  let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
-  orders = [...orders, ...selectPending];
-  //校验区域组合
- const result =  await checkArea(orders);
- if(result&&result.data){
-  Modal.confirm({
-    title: '所选门店配送区域不一样，确定排车吗？',
-    onOk: () => {
-      this.dispatchingCom(orders);
-    },
-  });
-  return;
- }else{
-  this.dispatchingCom(orders);
- }
-
-};
-
-dispatchingCom(orders){
-  //订单类型校验
-  const orderType = uniqBy(orders.map(x => x.orderType));
-  if (orderType.includes('Returnable') && orderType.some(x => x != 'Returnable')) {
-    message.error('门店退货类型运输订单不能与其它类型订单混排，请检查！');
-    return;
-  }
-  if (orderType.includes('TakeDelivery') && orderType.some(x => x != 'TakeDelivery')) {
-    message.error('提货类型运输订单不能与其它类型订单混排，请检查！');
-    return;
-  }
-  //不可共配校验
-  let owners = orders.map(x => {
-    return { ...x.owner, noJointlyOwnerCodes: x.noJointlyOwnerCode };
-  });
-  owners = uniqBy(owners, 'uuid');
-  const checkOwners = owners.filter(x => x.noJointlyOwnerCodes);
-  let noJointlyOwner = undefined;
-  checkOwners.forEach(owner => {
-    //不可共配货主
-    const noJointlyOwnerCodes = owner.noJointlyOwnerCodes.split(',');
-    const noJointlyOwners = owners.filter(
-      x => noJointlyOwnerCodes.indexOf(x.code) != -1 && x.code != owner.code
-    );
-    if (noJointlyOwners.length > 0) {
-      noJointlyOwner = {
-        ownerName: owner.name,
-        owners: noJointlyOwners.map(x => x.name).join(','),
-      };
+  //排车
+  dispatching = async () => {
+    const { auditedRowKeys, auditedData } = this.state;
+    const selectPending = this.props.selectPending();
+    if (auditedRowKeys.length + selectPending.length == 0) {
+      message.warning('请选择运输订单！');
+      return;
     }
-  });
-  if (noJointlyOwner != undefined) {
-    message.error(
-      '货主：' +
-        noJointlyOwner.ownerName +
-        '与[' +
-        noJointlyOwner.owners +
-        ']不可共配，请检查货主配置!'
-    );
-    return;
+    let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
+    orders = [...orders, ...selectPending];
+    //校验区域组合
+    const result = await checkArea(orders);
+    if (result && result.data) {
+      Modal.confirm({
+        title: '所选门店配送区域不一样，确定排车吗？',
+        onOk: () => {
+          this.dispatchingCom(orders);
+        },
+      });
+      return;
+    } else {
+      this.dispatchingCom(orders);
+    }
+  };
+
+  dispatchingCom(orders) {
+    //订单类型校验
+    const orderType = uniqBy(orders.map(x => x.orderType));
+    if (orderType.includes('Returnable') && orderType.some(x => x != 'Returnable')) {
+      message.error('门店退货类型运输订单不能与其它类型订单混排，请检查！');
+      return;
+    }
+    if (orderType.includes('TakeDelivery') && orderType.some(x => x != 'TakeDelivery')) {
+      message.error('提货类型运输订单不能与其它类型订单混排，请检查！');
+      return;
+    }
+    //不可共配校验
+    let owners = orders.map(x => {
+      return { ...x.owner, noJointlyOwnerCodes: x.noJointlyOwnerCode };
+    });
+    owners = uniqBy(owners, 'uuid');
+    const checkOwners = owners.filter(x => x.noJointlyOwnerCodes);
+    let noJointlyOwner = undefined;
+    checkOwners.forEach(owner => {
+      //不可共配货主
+      const noJointlyOwnerCodes = owner.noJointlyOwnerCodes.split(',');
+      const noJointlyOwners = owners.filter(
+        x => noJointlyOwnerCodes.indexOf(x.code) != -1 && x.code != owner.code
+      );
+      if (noJointlyOwners.length > 0) {
+        noJointlyOwner = {
+          ownerName: owner.name,
+          owners: noJointlyOwners.map(x => x.name).join(','),
+        };
+      }
+    });
+    if (noJointlyOwner != undefined) {
+      message.error(
+        '货主：' +
+          noJointlyOwner.ownerName +
+          '与[' +
+          noJointlyOwner.owners +
+          ']不可共配，请检查货主配置!'
+      );
+      return;
+    }
+    this.createPageModalRef.show(false, orders);
   }
-  this.createPageModalRef.show(false, orders);
-}
 
   veriftOrder = orders => {
     const orderType = uniqBy(orders.map(x => x.orderType));
@@ -497,7 +502,7 @@ dispatchingCom(orders){
   };
 
   //添加到排车单
-  handleAddOrder =async () => {
+  handleAddOrder = async () => {
     const { auditedRowKeys } = this.state;
     const scheduleRowKeys = this.props.scheduleRowKeys();
     if (scheduleRowKeys == undefined || scheduleRowKeys.length != 1) {
@@ -508,22 +513,22 @@ dispatchingCom(orders){
       message.warning('请选择待定运输订单！');
       return;
     }
-   const result =  await checkAreaSchedule(auditedRowKeys,scheduleRowKeys[0]);
-   if(result&&result.data){
-    Modal.confirm({
-      title: '所选门店配送区域不一样，确定排车吗？',
-      onOk: () => {
-        addOrders({ billUuid: scheduleRowKeys[0], orderUuids: auditedRowKeys }).then(response => {
-          if (response.success) {
-            message.success('保存成功！');
-            this.refreshTable();
-            this.props.refreshSchedule();
-          }
-        });
-      },
-    });
-    return ;
-   }
+    const result = await checkAreaSchedule(auditedRowKeys, scheduleRowKeys[0]);
+    if (result && result.data) {
+      Modal.confirm({
+        title: '所选门店配送区域不一样，确定排车吗？',
+        onOk: () => {
+          addOrders({ billUuid: scheduleRowKeys[0], orderUuids: auditedRowKeys }).then(response => {
+            if (response.success) {
+              message.success('保存成功！');
+              this.refreshTable();
+              this.props.refreshSchedule();
+            }
+          });
+        },
+      });
+      return;
+    }
     addOrders({ billUuid: scheduleRowKeys[0], orderUuids: auditedRowKeys }).then(response => {
       if (response.success) {
         message.success('保存成功！');
@@ -715,25 +720,35 @@ dispatchingCom(orders){
     const totalTextStyle = footer
       ? {}
       : { fontSize: 16, fontWeight: 700, marginLeft: 2, color: '#333' };
+    const count =
+      Number(orders.realCartonCount) +
+      Number(orders.realScatteredCount) +
+      Number(orders.realContainerCount) * 2;
     return (
       <Row type="flex" style={{ fontSize: 14 }}>
         <Col span={4}>
           <Text> 总件数:</Text>
-          <Text style={totalTextStyle}>
-            {Number(orders.realCartonCount) +
-              Number(orders.realScatteredCount) +
-              Number(orders.realContainerCount) * 2}
-          </Text>
+          <Text style={totalTextStyle}>{count}</Text>
         </Col>
-        <Col span={footer ? 4 : 3}>
+        {footer && dispatchConfig.calvehicle && dispatchConfig.calvehicle > 0 ? (
+          <Col span={3}>
+            <Text> 预排:</Text>
+            <Text style={totalTextStyle}>
+              {Math.round((count / dispatchConfig.calvehicle) * 10) / 10}
+            </Text>
+          </Col>
+        ) : (
+          <></>
+        )}
+        <Col span={3}>
           <Text> 整件:</Text>
           <Text style={totalTextStyle}>{orders.realCartonCount}</Text>
         </Col>
-        <Col span={footer ? 4 : 3}>
+        <Col span={3}>
           <Text> 散件:</Text>
           <Text style={totalTextStyle}>{orders.realScatteredCount}</Text>
         </Col>
-        <Col span={footer ? 4 : 3}>
+        <Col span={3}>
           <Text> 周转筐:</Text>
           <Text style={totalTextStyle}>{orders.realContainerCount}</Text>
         </Col>
