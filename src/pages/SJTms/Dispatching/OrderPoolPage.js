@@ -40,9 +40,8 @@ import {
   savePending,
   getContainerByBillUuid,
 } from '@/services/sjitms/OrderBill';
-import { save, batchSave } from '@/services/sjitms/ScheduleBill';
+import { save, batchSave ,addOrders,checkArea,checkAreaSchedule} from '@/services/sjitms/ScheduleBill';
 import { queryData } from '@/services/quick/Quick';
-import { addOrders } from '@/services/sjitms/ScheduleBill';
 import { groupBy, sumBy, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
@@ -292,58 +291,75 @@ export default class OrderPoolPage extends Component {
     });
   };
 
-  //排车
-  dispatching = () => {
-    const { auditedRowKeys, auditedData } = this.state;
-    const selectPending = this.props.selectPending();
-    if (auditedRowKeys.length + selectPending.length == 0) {
-      message.warning('请选择运输订单！');
-      return;
+//排车
+dispatching = async () => {
+  const { auditedRowKeys, auditedData } = this.state;
+  const selectPending = this.props.selectPending();
+  if (auditedRowKeys.length + selectPending.length == 0) {
+    message.warning('请选择运输订单！');
+    return;
+  }
+  let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
+  orders = [...orders, ...selectPending];
+  //校验区域组合
+ const result =  await checkArea(orders);
+ if(result&&result.data){
+  Modal.confirm({
+    title: '所选门店配送区域不一样，确定排车吗？',
+    onOk: () => {
+      this.dispatchingCom(orders);
+    },
+  });
+  return;
+ }else{
+  this.dispatchingCom(orders);
+ }
+
+};
+
+dispatchingCom(orders){
+  //订单类型校验
+  const orderType = uniqBy(orders.map(x => x.orderType));
+  if (orderType.includes('Returnable') && orderType.some(x => x != 'Returnable')) {
+    message.error('门店退货类型运输订单不能与其它类型订单混排，请检查！');
+    return;
+  }
+  if (orderType.includes('TakeDelivery') && orderType.some(x => x != 'TakeDelivery')) {
+    message.error('提货类型运输订单不能与其它类型订单混排，请检查！');
+    return;
+  }
+  //不可共配校验
+  let owners = orders.map(x => {
+    return { ...x.owner, noJointlyOwnerCodes: x.noJointlyOwnerCode };
+  });
+  owners = uniqBy(owners, 'uuid');
+  const checkOwners = owners.filter(x => x.noJointlyOwnerCodes);
+  let noJointlyOwner = undefined;
+  checkOwners.forEach(owner => {
+    //不可共配货主
+    const noJointlyOwnerCodes = owner.noJointlyOwnerCodes.split(',');
+    const noJointlyOwners = owners.filter(
+      x => noJointlyOwnerCodes.indexOf(x.code) != -1 && x.code != owner.code
+    );
+    if (noJointlyOwners.length > 0) {
+      noJointlyOwner = {
+        ownerName: owner.name,
+        owners: noJointlyOwners.map(x => x.name).join(','),
+      };
     }
-    let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
-    orders = [...orders, ...selectPending];
-    //订单类型校验
-    const orderType = uniqBy(orders.map(x => x.orderType));
-    if (orderType.includes('Returnable') && orderType.some(x => x != 'Returnable')) {
-      message.error('门店退货类型运输订单不能与其它类型订单混排，请检查！');
-      return;
-    }
-    if (orderType.includes('TakeDelivery') && orderType.some(x => x != 'TakeDelivery')) {
-      message.error('提货类型运输订单不能与其它类型订单混排，请检查！');
-      return;
-    }
-    //不可共配校验
-    let owners = orders.map(x => {
-      return { ...x.owner, noJointlyOwnerCodes: x.noJointlyOwnerCode };
-    });
-    owners = uniqBy(owners, 'uuid');
-    const checkOwners = owners.filter(x => x.noJointlyOwnerCodes);
-    let noJointlyOwner = undefined;
-    checkOwners.forEach(owner => {
-      //不可共配货主
-      const noJointlyOwnerCodes = owner.noJointlyOwnerCodes.split(',');
-      const noJointlyOwners = owners.filter(
-        x => noJointlyOwnerCodes.indexOf(x.code) != -1 && x.code != owner.code
-      );
-      if (noJointlyOwners.length > 0) {
-        noJointlyOwner = {
-          ownerName: owner.name,
-          owners: noJointlyOwners.map(x => x.name).join(','),
-        };
-      }
-    });
-    if (noJointlyOwner != undefined) {
-      message.error(
-        '货主：' +
-          noJointlyOwner.ownerName +
-          '与[' +
-          noJointlyOwner.owners +
-          ']不可共配，请检查货主配置!'
-      );
-      return;
-    }
-    this.createPageModalRef.show(false, orders);
-  };
+  });
+  if (noJointlyOwner != undefined) {
+    message.error(
+      '货主：' +
+        noJointlyOwner.ownerName +
+        '与[' +
+        noJointlyOwner.owners +
+        ']不可共配，请检查货主配置!'
+    );
+    return;
+  }
+  this.createPageModalRef.show(false, orders);
+}
 
   veriftOrder = orders => {
     const orderType = uniqBy(orders.map(x => x.orderType));
@@ -481,7 +497,7 @@ export default class OrderPoolPage extends Component {
   };
 
   //添加到排车单
-  handleAddOrder = () => {
+  handleAddOrder =async () => {
     const { auditedRowKeys } = this.state;
     const scheduleRowKeys = this.props.scheduleRowKeys();
     if (scheduleRowKeys == undefined || scheduleRowKeys.length != 1) {
@@ -492,6 +508,22 @@ export default class OrderPoolPage extends Component {
       message.warning('请选择待定运输订单！');
       return;
     }
+   const result =  await checkAreaSchedule(auditedRowKeys,scheduleRowKeys[0]);
+   if(result&&result.data){
+    Modal.confirm({
+      title: '所选门店配送区域不一样，确定排车吗？',
+      onOk: () => {
+        addOrders({ billUuid: scheduleRowKeys[0], orderUuids: auditedRowKeys }).then(response => {
+          if (response.success) {
+            message.success('保存成功！');
+            this.refreshTable();
+            this.props.refreshSchedule();
+          }
+        });
+      },
+    });
+    return ;
+   }
     addOrders({ billUuid: scheduleRowKeys[0], orderUuids: auditedRowKeys }).then(response => {
       if (response.success) {
         message.success('保存成功！');
