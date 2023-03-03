@@ -89,6 +89,36 @@ export default class DispatchingConfig extends ConfigSearchPage {
         />
       ),
     },
+    {
+      title: DispatchingConfigLocale.checkArea,
+      dataIndex: 'checkArea',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'checkArea', event)}
+        />
+      ),
+    },
+    {
+      title: DispatchingConfigLocale.checkBaseData,
+      dataIndex: 'checkBaseData',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'checkBaseData', event)}
+        />
+      ),
+    },
+    {
+      title: DispatchingConfigLocale.calvehicle,
+      dataIndex: 'calvehicle',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'calvehicle', event)}
+        />
+      ),
+    },
   ];
 
   onChange = (record, field, event) => {

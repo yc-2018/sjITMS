@@ -14,4 +14,8 @@ export const DispatchingConfigLocale = {
   isCommendEmp: '推荐人员',
   isStuckEmpType: '更换排车人员类型',
   isShowSum: '订单池合计',
+  checkArea:"配送调度校验区域",
+  checkArea:"配送调度校验区域",
+  checkBaseData:"配送调度校验基础资料",
+  calvehicle:"预排车辆计算基数"
 };
