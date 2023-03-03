@@ -215,6 +215,10 @@ export default class DispatchingCreatePage extends Component {
 
   //选车
   handleVehicle = async vehicle => {
+    if (vehicle.JOBSTATE != 'Used') {
+      message.error(vehicle.PLATENUMBER + '不是正常状态，不能选择！');
+      return;
+    }
     this.setState({
       selectVehicle: vehicle,
     });
