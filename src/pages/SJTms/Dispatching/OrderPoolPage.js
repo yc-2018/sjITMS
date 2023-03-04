@@ -2,24 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-03 17:45:47
+ * @LastEditTime: 2023-03-04 09:22:12
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
 import React, { Component } from 'react';
-import {
-  Button,
-  Row,
-  Col,
-  Tabs,
-  message,
-  Typography,
-  Icon,
-  Dropdown,
-  Menu,
-  Modal,
-  InputNumber,
-} from 'antd';
+import { Button, Row, Col, Tabs, message, Icon, Dropdown, Menu, Modal, InputNumber } from 'antd';
 import DispatchingTable from './DispatchingTable';
 import DispatchingChildTable from './DispatchingChildTable';
 import {
@@ -52,7 +40,6 @@ import { groupBy, sumBy, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
 
-const { Text } = Typography;
 const { TabPane } = Tabs;
 export default class OrderPoolPage extends Component {
   state = {
@@ -720,53 +707,57 @@ export default class OrderPoolPage extends Component {
     const totalTextStyle = footer
       ? {}
       : { fontSize: 16, fontWeight: 700, marginLeft: 2, color: '#333' };
+    const columnStyle = {
+      fontSize: 14,
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      textOverflow: 'ellipsis',
+    };
     const count =
       Number(orders.realCartonCount) +
       Number(orders.realScatteredCount) +
       Number(orders.realContainerCount) * 2;
     return (
-      <Row type="flex" style={{ fontSize: 14 }}>
-        <Col span={4}>
-          <Text> 总件数:</Text>
-          <Text style={totalTextStyle}>{count}</Text>
-        </Col>
+      <div style={{ display: 'flex' }}>
+        <div style={{ ...columnStyle, flex: 1.2 }}>
+          总件数:
+          <span style={totalTextStyle}>{count}</span>
+        </div>
         {footer && dispatchConfig.calvehicle && dispatchConfig.calvehicle > 0 ? (
-          <Col span={3}>
-            <Text> 预排:</Text>
-            <Text style={totalTextStyle}>
+          <div style={{ ...columnStyle, flex: 1 }}>
+            预排:
+            <span style={totalTextStyle}>
               {Math.round((count / dispatchConfig.calvehicle) * 10) / 10}
-            </Text>
-          </Col>
-        ) : (
-          <></>
-        )}
-        <Col span={3}>
-          <Text> 整件:</Text>
-          <Text style={totalTextStyle}>{orders.realCartonCount}</Text>
-        </Col>
-        <Col span={3}>
-          <Text> 散件:</Text>
-          <Text style={totalTextStyle}>{orders.realScatteredCount}</Text>
-        </Col>
-        <Col span={3}>
-          <Text> 周转筐:</Text>
-          <Text style={totalTextStyle}>{orders.realContainerCount}</Text>
-        </Col>
-        <Col span={4}>
-          <Text> 体积:</Text>
-          <Text style={totalTextStyle}>{orders.volume}</Text>
-        </Col>
-        <Col span={4}>
-          <Text> 重量:</Text>
-          <Text style={totalTextStyle}>{orders.weight}</Text>
-        </Col>
+            </span>
+          </div>
+        ) : null}
+        <div style={{ ...columnStyle, flex: 1 }}>
+          整件:
+          <span style={totalTextStyle}>{orders.realCartonCount}</span>
+        </div>
+        <div style={{ ...columnStyle, flex: 1 }}>
+          散件:
+          <span style={totalTextStyle}>{orders.realScatteredCount}</span>
+        </div>
+        <div style={{ ...columnStyle, flex: 1.2 }}>
+          周转筐:
+          <span style={totalTextStyle}>{orders.realContainerCount}</span>
+        </div>
+        <div style={{ ...columnStyle, flex: 1.2 }}>
+          体积:
+          <span style={totalTextStyle}>{orders.volume}</span>
+        </div>
+        <div style={{ ...columnStyle, flex: 1.2 }}>
+          重量:
+          <span style={totalTextStyle}>{orders.weight}</span>
+        </div>
         {footer ? null : (
-          <Col span={3}>
-            <Text>门店:</Text>
-            <Text style={totalTextStyle}>{orders.totalStores}</Text>
-          </Col>
+          <div style={{ ...columnStyle, flex: 1 }}>
+            门店:
+            <span style={totalTextStyle}>{orders.totalStores}</span>
+          </div>
         )}
-      </Row>
+      </div>
     );
   };
   //计算汇总
@@ -810,21 +801,20 @@ export default class OrderPoolPage extends Component {
     return (
       <Row type="flex" justify="space-around" style={{ fontSize: 14 }}>
         <Col span={5}>
-          <Text> 车辆数:</Text>
-          <Text style={totalTextStyle}>{vehicles.length}</Text>
+          车辆数: <span style={totalTextStyle}>{vehicles.length}</span>
         </Col>
         <Col span={5}>
-          <Text> 总限重:</Text>
-          <Text style={totalTextStyle}>
+          总限重:
+          <span style={totalTextStyle}>
             {Math.round(sumBy(vehicles.map(x => x.BEARWEIGHT)) * 100) / 100}
-          </Text>
+          </span>
         </Col>
         <Col span={5}>
-          <Text> 总容积:</Text>
-          <Text style={totalTextStyle}>
+          总容积:
+          <span style={totalTextStyle}>
             {Math.round(sumBy(vehicles.map(x => (x.BEARVOLUME * x.BEARVOLUMERATE) / 100)) * 100) /
               100}
-          </Text>
+          </span>
         </Col>
       </Row>
     );
@@ -914,7 +904,7 @@ export default class OrderPoolPage extends Component {
           onChange={this.handleTabChange}
           tabBarExtraContent={this.buildOperations(activeKey)}
         >
-          <TabPane tab={<Text className={dispatchingStyles.cardTitle}>订单池</Text>} key="Audited">
+          <TabPane tab={<span className={dispatchingStyles.cardTitle}>订单池</span>} key="Audited">
             {/* 查询表单 */}
             <SearchForm
               refresh={this.refreshTable}
@@ -1047,7 +1037,7 @@ export default class OrderPoolPage extends Component {
               onRef={node => (this.dispatchMapRef = node)}
             />
           </TabPane>
-          <TabPane tab={<Text className={dispatchingStyles.cardTitle}>运力池</Text>} key="Vehicle">
+          <TabPane tab={<span className={dispatchingStyles.cardTitle}>运力池</span>} key="Vehicle">
             <SearchForm
               refresh={this.refreshTable}
               quickuuid="v_sj_itms_vehicle_stat"
