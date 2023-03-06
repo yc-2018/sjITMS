@@ -15,6 +15,7 @@ import {
   Tooltip,
   Dropdown,
   Menu,
+  Empty,
 } from 'antd';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import { isEmptyObj, guid } from '@/utils/utils';
@@ -60,6 +61,7 @@ export default class DispatchingCreatePage extends Component {
       // empType: '',
       // empInfo: '',
     },
+    carKey: 'init',
   };
 
   componentDidMount = () => {
@@ -210,6 +212,7 @@ export default class DispatchingCreatePage extends Component {
       selectVehicle: [],
       carEmpNums: 20,
       carEmpSearch: {},
+      carKey: 'init',
     });
   };
 
@@ -262,7 +265,7 @@ export default class DispatchingCreatePage extends Component {
     } else {
       this.setState({ carEmpSearch: { ...this.state.carEmpSearch, vehicleCode: value } });
     }
-    this.setState({ vehicles: serachVeh });
+    this.setState({ vehicles: serachVeh, carKey: 'init' });
   };
   //选人
   handleEmployee = emp => {
@@ -524,10 +527,19 @@ export default class DispatchingCreatePage extends Component {
     const { employees, selectEmployees } = this.state;
     let sliceEmployees =
       this.state.carEmpNums == 'all' ? employees : employees.slice(0, this.state.carEmpNums);
+
+    //样式一致
+    const empTabList = [
+      {
+        key: 'init',
+        tab: '默认匹配',
+      },
+    ];
     return (
       <Card
         title="员工"
-        bodyStyle={{ padding: 0, paddingTop: 8, height: '28vh', overflowY: 'auto' }}
+        tabList={empTabList}
+        bodyStyle={{ padding: 0, paddingTop: 8, height: '26vh', overflowY: 'auto' }}
         extra={
           <div>
             {/* <Select
@@ -621,49 +633,122 @@ export default class DispatchingCreatePage extends Component {
       </Card>
     );
   };
+
+  changeCarKey = async key => {
+    const { orders, vehicles } = this.state;
+    if (key == 'recommend') {
+      //熟练度
+      let vehiclesByRecom = await this.getRecommendByOrders(orders, vehicles);
+      vehiclesByRecom = vehiclesByRecom.filter(item => {
+        return item.pro && item.pro != 0;
+      });
+      this.setState({ vehicles: vehiclesByRecom });
+    } else if (key == 'init') {
+      this.setState({ vehicles: this.basicVehicle });
+    } else {
+      //区域匹配
+      let orderShipAre = uniqBy(orders.map(x => x.shipAreaName));
+      let vehicleAre = this.basicVehicle.filter(e => {
+        let x = e.SHIPAREANAME?.split(',');
+        return (
+          e.SHIPAREANAME != undefined &&
+          orderShipAre.filter(item => x?.indexOf(item) != -1).length > 0
+        );
+      });
+      this.setState({ vehicles: vehicleAre });
+    }
+    this.setState({ carKey: key });
+  };
+
   buildSelectVehicleCard = () => {
-    const { vehicles, selectVehicle } = this.state;
+    const { vehicles, selectVehicle, carKey } = this.state;
     let sliceVehicles =
       this.state.carEmpNums == 'all' ? vehicles : vehicles.slice(0, this.state.carEmpNums);
-    return (
-      <Card
-        // loading={this.state.carLoading}
-        title="车辆"
-        bodyStyle={{ padding: 0, paddingTop: 8, height: '28vh', overflowY: 'auto' }}
-        extra={
-          <div>
-            <Select
-              onChange={e => this.setState({ carEmpNums: e })}
-              value={this.state.carEmpNums}
-              style={{ width: 55, marginRight: '8px' }}
-            >
-              <Select.Option value={20}>20</Select.Option>
-              <Select.Option value={50}>50</Select.Option>
-              <Select.Option value={100}>100</Select.Option>
-              <Select.Option value={'all'}>全部</Select.Option>
-            </Select>
-            <Select
-              placeholder="车辆归属"
-              onChange={value => this.vehicleFilter('vehicleOwner', value)}
-              allowClear={true}
-              style={{ width: 100 }}
-              value={this.state.carEmpSearch.vehicleOwner}
-            >
-              {this.dict.filter(x => x.dictCode == 'vehicleOwner').map(d => (
-                <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
-              ))}
-            </Select>
 
-            <Search
-              placeholder="请输入车牌号/编号"
-              onChange={event => this.vehicleFilter('searchKey', event.target.value)}
-              style={{ width: 150, marginLeft: 5 }}
-              value={this.state.carEmpSearch.vehicleCode}
-            />
-          </div>
-        }
-      >
-        {sliceVehicles?.map(vehicle => {
+    const carTabList = [
+      {
+        key: 'init',
+        tab: '默认匹配',
+      },
+      {
+        key: 'recommend',
+        tab: '熟练度匹配',
+      },
+      {
+        key: 'area',
+        tab: '区域匹配',
+      },
+    ];
+
+    let carCard = undefined;
+
+    switch (carKey) {
+      case 'recommend':
+        carCard =
+          sliceVehicles.length > 0 ? (
+            sliceVehicles?.map(vehicle => {
+              return (
+                <Tooltip
+                  placement="top"
+                  title={
+                    vehicle.BILLNUMBERS
+                      ? vehicle.PLATENUMBER + '在' + vehicle.BILLNUMBERS + '排车单中有未完成的任务'
+                      : ''
+                  }
+                >
+                  <Badge count={vehicle.BILLCOUNTS} style={{ backgroundColor: 'orange' }}>
+                    <a
+                      href="#"
+                      className={`${disStyle.panel} ${
+                        vehicle.UUID == selectVehicle.UUID ? disStyle.panelSelect : ''
+                      }`}
+                      onClick={() => this.handleVehicle(vehicle)}
+                    >
+                      <Row justify="space-between" style={{ height: '100%' }}>
+                        <Col span={8} className={disStyle.employeeCardContent}>
+                          <Icon type="car" style={{ fontSize: 28 }} />
+                        </Col>
+                        <Col span={16} className={disStyle.employeeCardContent}>
+                          <div className={disStyle.employeeName}>
+                            <div>{vehicle.PLATENUMBER}</div>
+                            {vehicle.DRIVERNAME ? (
+                              <div>
+                                {vehicle.DRIVERNAME.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')}
+                              </div>
+                            ) : (
+                              <></>
+                            )}
+                          </div>
+                        </Col>
+                        {vehicle.pro > 0 ? (
+                          <Badge
+                            style={{
+                              backgroundColor:
+                                vehicle.pro >= 40
+                                  ? '#52c41a'
+                                  : vehicle.pro >= 20
+                                    ? 'orange'
+                                    : 'red',
+                              marginTop: '-40px',
+                            }}
+                            count={vehicle.pro.toFixed(0) + '%'}
+                            title={'熟练度' + vehicle.pro.toFixed(0) + '%'}
+                          />
+                        ) : (
+                          <></>
+                        )}
+                      </Row>
+                    </a>
+                  </Badge>
+                </Tooltip>
+              );
+            })
+          ) : (
+            <Empty description="无熟练度推荐" />
+          );
+        break;
+      default:
+        carCard = sliceVehicles?.map(vehicle => {
           return (
             <Tooltip
               placement="top"
@@ -712,7 +797,53 @@ export default class DispatchingCreatePage extends Component {
               </Badge>
             </Tooltip>
           );
-        })}
+        });
+    }
+
+    return (
+      <Card
+        // loading={this.state.carLoading}
+        title="车辆"
+        tabList={carTabList}
+        onTabChange={key => {
+          this.changeCarKey(key);
+        }}
+        activeTabKey={carKey}
+        bodyStyle={{ padding: 0, paddingTop: 8, height: '26vh', overflowY: 'auto' }}
+        extra={
+          <div>
+            <Select
+              onChange={e => this.setState({ carEmpNums: e })}
+              value={this.state.carEmpNums}
+              style={{ width: 55, marginRight: '8px' }}
+            >
+              <Select.Option value={20}>20</Select.Option>
+              <Select.Option value={50}>50</Select.Option>
+              <Select.Option value={100}>100</Select.Option>
+              <Select.Option value={'all'}>全部</Select.Option>
+            </Select>
+            <Select
+              placeholder="车辆归属"
+              onChange={value => this.vehicleFilter('vehicleOwner', value)}
+              allowClear={true}
+              style={{ width: 100 }}
+              value={this.state.carEmpSearch.vehicleOwner}
+            >
+              {this.dict.filter(x => x.dictCode == 'vehicleOwner').map(d => (
+                <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
+              ))}
+            </Select>
+
+            <Search
+              placeholder="请输入车牌号/编号"
+              onChange={event => this.vehicleFilter('searchKey', event.target.value)}
+              style={{ width: 150, marginLeft: 5 }}
+              value={this.state.carEmpSearch.vehicleCode}
+            />
+          </div>
+        }
+      >
+        {carCard}
       </Card>
     );
   };
