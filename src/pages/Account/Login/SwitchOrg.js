@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { routerRedux, Link } from 'dva/router';
 import { Modal, Radio, Form } from 'antd';
-import { loginOrg, loginUser,loginCompany } from '@/utils/LoginContext';
-import { formatMessage, FormattedMessage } from 'umi/locale';
+import { loginOrg, loginUser } from '@/utils/LoginContext';
+import { formatMessage } from 'umi/locale';
 import { getOrgCaption } from '@/utils/OrgType';
+import { orderBy } from 'lodash';
 const RadioGroup = Radio.Group;
 
 @connect(state => ({
@@ -14,20 +14,18 @@ const RadioGroup = Radio.Group;
 export default class SwitchOrg extends Component {
   state = {
     ...this.props,
-    value: loginOrg()?loginOrg().uuid:null
-  }
+    value: loginOrg() ? loginOrg().uuid : null,
+  };
 
   componentWillReceiveProps(nextProps) {
-    this.setState(
-      { switchOrgModalVisible: nextProps.switchOrgModalVisible }
-    );
+    this.setState({ switchOrgModalVisible: nextProps.switchOrgModalVisible });
   }
 
-  onChange = (e) => {
+  onChange = e => {
     this.setState({
       value: e.target.value,
     });
-  }
+  };
 
   handleSubmit = () => {
     const { value } = this.state;
@@ -36,19 +34,19 @@ export default class SwitchOrg extends Component {
     // this.props.dispatch(routerRedux.push({
     //   pathname: window.location.origin,
     // }));
-  }
+  };
 
   handleCancle = () => {
     this.props.hideOrgModal();
     this.setState({
-      value: loginOrg()?loginOrg().uuid:null
-    })
-  }
+      value: loginOrg() ? loginOrg().uuid : null,
+    });
+  };
 
   render() {
     const { switchOrgModalVisible } = this.state;
-    const { orgInfos,confirmLoading } = this.props;
-    const currentOrgUuid = loginOrg()?loginOrg().uuid:null
+    const { orgInfos, confirmLoading } = this.props;
+    const currentOrgUuid = loginOrg() ? loginOrg().uuid : null;
     const radioStyle = {
       display: 'block',
       height: '30px',
@@ -56,18 +54,14 @@ export default class SwitchOrg extends Component {
     };
     const children = [];
     if (orgInfos) {
-      for (const orgInfo of orgInfos) {
-        if (orgInfo.enable === true&&orgInfo.orgState==='ONLINE') {
+      for (const orgInfo of orderBy(orgInfos, x => x.orgUuid)) {
+        if (orgInfo.enable === true && orgInfo.orgState === 'ONLINE') {
           children.push(
-            <Radio 
-              key={orgInfo.orgUuid} 
-              style={radioStyle} 
-              value={orgInfo.orgUuid}>
+            <Radio key={orgInfo.orgUuid} style={radioStyle} value={orgInfo.orgUuid}>
               {`${getOrgCaption(orgInfo.orgType)}: [${orgInfo.orgCode}]${orgInfo.orgName}`}
             </Radio>
           );
         }
-        
       }
     }
     return (
