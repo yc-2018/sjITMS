@@ -2,11 +2,13 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-29 16:32:56
+ * @LastEditTime: 2023-03-06 17:36:57
  * @Description: 排车单明细列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleDetailSearchPage.js
  */
 import { connect } from 'dva';
+import { Button } from 'antd';
+import { havePermission } from '@/utils/authority';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 
 @connect(({ quick, loading }) => ({
@@ -34,7 +36,17 @@ export default class ScheduleDetailSearchPage extends QuickFormSearchPage {
 
   drawActionButton = () => {};
 
-  drawToolbarPanel = () => {};
+  drawToolbarPanel = () => {
+    return (
+      <Button
+        onClick={this.port}
+        hidden={!havePermission(this.props.authority + '.port')}
+        type="primary"
+      >
+        导出
+      </Button>
+    );
+  };
 
   drawSearchPanel = () => {};
 
