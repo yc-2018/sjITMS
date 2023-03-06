@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-04 10:12:17
+ * @LastEditTime: 2023-03-04 10:15:06
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -726,9 +726,7 @@ export default class OrderPoolPage extends Component {
         {footer && dispatchConfig.calvehicle && dispatchConfig.calvehicle > 0 ? (
           <div style={{ ...columnStyle, flex: 1 }}>
             预排:
-            <span style={totalTextStyle}>
-              {Math.ceil((count / dispatchConfig.calvehicle) )}
-            </span>
+            <span style={totalTextStyle}>{Math.ceil(count / dispatchConfig.calvehicle)}</span>
           </div>
         ) : null}
         <div style={{ ...columnStyle, flex: 1 }}>
