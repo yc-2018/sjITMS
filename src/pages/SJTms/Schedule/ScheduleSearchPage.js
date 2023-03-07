@@ -62,6 +62,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     sourceData: [],
     authority: this.props.authority ? this.props.authority[0] : null,
     dc: ['000000750000004', '000008150000001', '000000750000005', '000008150000002'],
+    isRadio: true,
   };
 
   componentDidMount() {
@@ -154,32 +155,35 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   //     this.queryCoulumns();
   //   }
   // }
-  handleOnRow = record => {
-    return {
-      onClick: () => {
-        let { data } = this.state;
-        data.list?.map(item => {
-          item.clicked = item.UUID == record.UUID;
-          return item;
-        });
-        this.setState({ data });
-        this.props.refreshSelectedRow(record);
-      },
-    };
-  };
 
-  // handleRowClick = record => {
-  //   let { data } = this.state;
-  //   data.list?.map(item => {
-  //     item.clicked = item.UUID == record.UUID;
-  //     return item;
-  //   });
-  //   // let item = data.list?.find(e => e.UUID == record.UUID);
-  //   // item.clicked = !item.clicked;
-  //   this.setState({ data });
-
-  //   this.props.refreshSelectedRow(record);
+  // handleOnRow = record => {
+  //   return {
+  //     onClick: () => {
+  //       let { data, selectedRows, selectedRowKeys } = this.state;
+  //       data.list?.map(item => {
+  //         item.clicked = item.UUID == record.UUID;
+  //         return item;
+  //       });
+  //       selectedRows = [];
+  //       selectedRows.push(record);
+  //       // selectedRowKeys.push(record.UUID);
+  //       record.disabled = true;
+  //       this.setState({ data, selectedRows, selectedRowKeys });
+  //       this.props.refreshSelectedRow(record);
+  //     },
+  //   };
   // };
+
+  handleRowClick = record => {
+    let { data } = this.state;
+    data.list?.map(item => {
+      item.clicked = item.UUID == record.UUID;
+      return item;
+    });
+    this.setState({ data });
+
+    this.props.refreshSelectedRow(record);
+  };
 
   onUpdatePirs = () => {
     const { selectedRows } = this.state;
