@@ -938,6 +938,24 @@ export default class OrderPoolPage extends Component {
                   >
                     拆单
                   </Menu.Item>
+                  <Menu.Item
+                    onClick={() => {
+                      const { auditedRowKeys, auditedData } = this.state;
+                      const selectPending = this.props.selectPending();
+                      if (auditedRowKeys.length + selectPending.length == 0) {
+                        message.warning('请选择运输订单！');
+                        return;
+                      }
+                      let orders = auditedData
+                        ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1)
+                        : [];
+                      orders = [...orders, ...selectPending];
+                      this.dispatchMapRef.show(orders);
+                    }}
+                  >
+                    <img src={mapIcon} style={{ width: 20, height: 20 }} />
+                    地图排车
+                  </Menu.Item>
                 </Menu>
               }
               trigger={['contextMenu']}
