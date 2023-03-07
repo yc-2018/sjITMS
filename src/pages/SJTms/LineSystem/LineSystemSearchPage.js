@@ -395,7 +395,7 @@ export default class LineSystemSearchPage extends Component {
     // };
     const renderTreeNode = data => {
       let nodeArr = data.map(item => {
-       const reion = !item.system && item.region==1 && (loginOrg().uuid=='000000750000005' || loginOrg().uuid =='000000750000005' );
+       const reion = !item.system && item.region==1 && (loginOrg().uuid=='000000750000005' || loginOrg().uuid =='000008150000002' );
         item.title = (
           <div  style={reion?{color:'red'}:{}}>
             <span>{item.title}</span>
