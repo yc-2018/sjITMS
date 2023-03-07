@@ -8,7 +8,7 @@
  */
 import React, { Component } from 'react';
 import { Divider, Modal, Button, Row, Col, Empty, Spin, message, Input } from 'antd';
-import { Map, Marker, CustomOverlay, DrawingManager } from 'react-bmapgl';
+import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
 import style from './DispatchingMap.less';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import emptySvg from '@/assets/common/img_empoty.svg';
@@ -17,7 +17,7 @@ import { queryAuditedOrder, queryDriverRoutes } from '@/services/sjitms/OrderBil
 import { queryDict } from '@/services/quick/Quick';
 
 import ShopIcon from '@/assets/common/myj.png';
-import ShopClickIcon from '@/assets/common/myjClick.png';
+import ShopClickIcon from '@/assets/common/otherMyj.png';
 
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { sumBy, uniqBy } from 'lodash';
@@ -26,6 +26,7 @@ const { Search } = Input;
 
 export default class DispatchMap extends Component {
   basicOrders = [];
+  isSelectOrders = [];
   state = {
     visible: false,
     loading: true,
@@ -37,6 +38,7 @@ export default class DispatchMap extends Component {
     driverTime: 0,
     driverMileage: 0,
     isPoly: false,
+    orderMarkers: [],
   };
 
   componentDidMount = () => {
@@ -44,13 +46,23 @@ export default class DispatchMap extends Component {
   };
 
   //显示modal
-  show = () => {
+  show = orders => {
     this.setState({ visible: true });
     queryDict('warehouse').then(res => {
       this.setState({
         startPoint: res.data.find(x => x.itemValue == loginOrg().uuid)?.description,
       });
     });
+    if (orders) {
+      for (const order of orders.filter(x => !x.isSelect)) {
+        let num = orders.filter(e => {
+          return e.isSelect;
+        }).length;
+        order.isSelect = true;
+        order.sort = num + 1;
+      }
+      this.isSelectOrders = orders;
+    }
   };
   //隐藏modal
   hide = () => {
@@ -63,7 +75,7 @@ export default class DispatchMap extends Component {
   refresh = params => {
     this.setState({ loading: true });
     let { pageFilter } = this.state;
-    let filter = { pageSize: 200, superQuery: { matchType: 'and', queryParams: [] } };
+    let filter = { pageSize: 500, superQuery: { matchType: 'and', queryParams: [] } };
     if (params) {
       pageFilter = params;
     }
@@ -81,12 +93,57 @@ export default class DispatchMap extends Component {
       if (response.success) {
         let data = response.data.records ? response.data.records : [];
         data = data.filter(x => x.longitude && x.latitude);
+        let isSelectOrdersArea =
+          this.isSelectOrders && this.isSelectOrders.length > 0
+            ? uniqBy(
+                this.isSelectOrders.map(e => {
+                  return e.shipAreaName;
+                })
+              )
+            : [];
+
+        data.map(e => {
+          if (this.isSelectOrders && this.isSelectOrders.length > 0) {
+            let x = this.isSelectOrders.find(item => item.uuid == e.uuid);
+            if (x || isSelectOrdersArea.indexOf(e.shipAreaName) != -1) {
+              e.isSelect = true;
+              e.sort = x?.sort ? x.sort : undefined;
+            }
+          }
+        });
+
+        //去重
+        var obj = {};
+        let orderMarkers = data.reduce((cur, next) => {
+          obj[next.deliveryPoint.code]
+            ? ''
+            : (obj[next.deliveryPoint.code] = true && cur.push(next));
+          return cur;
+        }, []); //设置cur默认类型为数组，并且初始值为空的数组
+
+        // if (this.isSelectOrders && this.isSelectOrders.length > 0) {
+        //   this.isSelectOrders.map(e => {
+        //     let x = data.find(item => item.uuid == e.uuid);
+        //     if (x) {
+        //       x.isSelect = true;
+        //       x.sort = e.sort;
+        //     }
+        //   });
+
+        //   orderMarkers.map(e => {
+        //     if (isSelectOrdersArea.indexOf(e.shipAreaName) != -1) {
+        //       e.isSelect = true;
+        //       // e.sort = orderMarkers.filter(x => x.isSelect).length + this.isSelectOrders.length;
+        //     }
+        //   });
+        // }
+
         this.basicOrders = data;
-        this.setState({ orders: data }, () => {
+        this.setState({ orders: data, orderMarkers }, () => {
           setTimeout(() => {
-            this.drawClusterLayer();
+            // this.drawClusterLayer();
             this.drawMenu();
-            this.clusterSetData(data);
+            // this.clusterSetData(data);
             this.autoViewPort(data);
           }, 500);
         });
@@ -106,16 +163,17 @@ export default class DispatchMap extends Component {
   };
 
   //选门店
-  onChangeSelect = (checked, record) => {
+  onChangeSelect = (checked, order) => {
     let { orders } = this.state;
-    let order = orders.find(x => x.uuid == record.uuid);
+    // let order = orders.find(x => x.uuid == record.uuid);
+    // console.log('order', order);
     let num = orders.filter(e => {
       return e.isSelect;
     }).length;
     if (!checked) {
       //取消时-1
       orders.map(e => {
-        if (e.sort > record.sort) {
+        if (e.sort > order.sort) {
           e.sort -= 1;
         }
       });
@@ -123,9 +181,12 @@ export default class DispatchMap extends Component {
     if (order) {
       order.isSelect = checked;
       order.sort = checked ? num + 1 : null;
-      this.setState({ orders }, () => {
-        this.clusterSetData(orders);
-      });
+      this.setState(
+        { orders }
+        // , () => {
+        // this.clusterSetData(orders);
+        // }
+      );
     }
   };
 
@@ -136,27 +197,49 @@ export default class DispatchMap extends Component {
       (order.isSelect = false), (order.sort = null);
     });
     this.setState({ orders, driverMileage: 0, storeInfo: '' }, () => {
-      this.map?.clearOverlays();
-      this.clusterSetData(orders);
+      // this.map?.clearOverlays();
+      // this.clusterSetData(orders);
     });
     this.storeFilter('');
   };
 
   //标注点
   drawMarker = () => {
-    const { orders } = this.state;
-    return orders.map(order => {
+    const { orders, orderMarkers } = this.state;
+    let that = this;
+    const otherStore = new BMapGL.Icon(ShopClickIcon, new BMapGL.Size(30, 30)); //42
+    const icon = new BMapGL.Icon(ShopIcon, new BMapGL.Size(30, 30));
+    let markers = [];
+    orderMarkers.map((order, index) => {
       var point = new BMapGL.Point(order.longitude, order.latitude);
-      return (
+      markers.push(
         <Marker
+          isTop={order.isSelect}
           position={point}
-          icon={order.isSelect ? ShopClickIcon : ShopIcon}
+          icon={order.isSelect ? otherStore : icon}
+          // icon={[icon, otherStore][order.isSelect ? 1 : 0]}
           shadow={true}
           onMouseover={() => this.setState({ windowInfo: { point, order } })}
           onMouseout={() => this.setState({ windowInfo: undefined })}
+          onClick={event => {
+            that.onChangeSelect(!order.isSelect, order);
+          }}
         />
       );
+      if (order.isSelect) {
+        if (order.sort) {
+          markers.push(
+            <Label
+              position={new BMapGL.Point(order.longitude, order.latitude)}
+              offset={new BMapGL.Size(30, -30)}
+              text={order.sort}
+            />
+          );
+        }
+      }
     });
+
+    return markers;
   };
 
   //数字
@@ -234,7 +317,7 @@ export default class DispatchMap extends Component {
 
   //路线规划
   searchRoute = async selectPoints => {
-    this.clusterSetData([]);
+    // this.clusterSetData([]);
     const map = this.map;
     const { startPoint } = this.state;
     const pointArr = selectPoints.map(order => {
@@ -370,7 +453,7 @@ export default class DispatchMap extends Component {
     }
     this.map.removeOverlay(event.overlay);
     this.setState({ orders }, () => {
-      this.clusterSetData(orders);
+      // this.clusterSetData(orders);
     });
     this.props.dispatchingByMap(orders.filter(x => x.isSelect));
   };
@@ -387,9 +470,9 @@ export default class DispatchMap extends Component {
     );
     this.setState({ orders: serachStores, storeInfo: e }, () => {
       setTimeout(() => {
-        this.drawClusterLayer();
+        // this.drawClusterLayer();
         this.drawMenu();
-        this.clusterSetData(serachStores);
+        // this.clusterSetData(serachStores);
         this.autoViewPort(serachStores);
       }, 500);
     });
@@ -417,7 +500,7 @@ export default class DispatchMap extends Component {
 
   render() {
     const { visible, loading, windowInfo, orders } = this.state;
-    const selectOrder = orders.filter(x => x.isSelect);
+    const selectOrder = orders.filter(x => x.isSelect).sort(x => x.sort);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
     let totals = this.getTotals(selectOrder);
     return (
@@ -580,6 +663,7 @@ export default class DispatchMap extends Component {
                   ref={ref => (this.map = ref?.map)}
                   style={{ height: '100%' }}
                 >
+                  {this.drawMarker()}
                   {/* 鼠标绘制工具 */}
                   <DrawingManager
                     enableLimit

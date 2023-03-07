@@ -6,7 +6,7 @@ export const OrderColumns = [
     title: '单号',
     dataIndex: 'billNumber',
     sorter: true,
-    width: 130,
+    width: 120,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
@@ -38,7 +38,7 @@ export const OrderColumns = [
     dataIndex: 'deliveryPoint',
     sorter: true,
     sorterCode: true,
-    width: 150,
+    width: 250,
     render: val => {
       return val ? <span>{convertCodeName(val)}</span> : <Empty />;
     },
@@ -423,7 +423,7 @@ export const CreatePageOrderColumns = [
     title: '收货方',
     dataIndex: 'deliveryPoint',
     sorter: true,
-    width: 180,
+    width: 250,
     render: val => {
       return val ? <span>{convertCodeName(val)}</span> : <Empty />;
     },
@@ -431,7 +431,7 @@ export const CreatePageOrderColumns = [
   {
     title: '收货方地址',
     sorter: true,
-    width: 180,
+    width: 150,
     render: record => {
       return record.deliveryPoint ? <span>{record.deliveryPoint.address}</span> : <Empty />;
     },
@@ -633,7 +633,7 @@ export const ScheduleDetailColumns = [
     title: '订单号',
     dataIndex: 'orderNumber',
     sorter: true,
-    width: 150,
+    width: 120,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
@@ -657,7 +657,7 @@ export const ScheduleDetailColumns = [
     title: '送货点',
     dataIndex: 'deliveryPoint',
     sorter: true,
-    width: 150,
+    width: 250,
     render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty />),
   },
   {

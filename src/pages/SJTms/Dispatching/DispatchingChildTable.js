@@ -287,6 +287,9 @@ export default class DispatchingChildTable extends Component {
               if (record.warning) {
                 return 'warningStyle';
               }
+              if(record.record.orderType=='DeliveryAgain'&& this.props.comId =='pendingOrder'){
+                return 'warningStyle';
+              }
             }}
             size="small"
             rowKey={record => (record.uuid ? record.uuid : 'nestKey')}
@@ -338,6 +341,13 @@ export default class DispatchingChildTable extends Component {
           bodyStyle={{ height: this.props.scrollY }}
           scroll={{ y: this.props.scrollY, x: '100%' }}
           footer={this.props.footer}
+          onRow={record => {
+            return {
+              onDoubleClick: event => {
+                this.props.onDoubleClick ? this.props.onDoubleClick(record) : '';
+              },
+            };
+          }}
         />
       </div>
     );

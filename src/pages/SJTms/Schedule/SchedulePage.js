@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:01:35
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-25 17:27:10
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-03-06 17:44:50
  * @Description: 排车单
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\SchedulePage.js
  */
@@ -69,6 +69,7 @@ export default class SchedulePage extends PureComponent {
                   <TabPane tab="排车单明细" key="detail">
                     <ScheduleDetailSearchPage
                       quickuuid="sj_itms_schedule_order"
+                      authority={this.props.route?.authority ? this.props.route.authority : null}
                       selectedRows={selectedRows.UUID}
                     />
                   </TabPane>

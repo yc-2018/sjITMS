@@ -173,3 +173,15 @@ export function getMatchLine(payload) {
     },
   });
 }
+export function updateNote(payload) {
+  return request(`/itms-schedule/itms-schedule/lineShipAddress/updateNote/${payload.uuid}/${payload.note}`, {
+    method: 'get'
+   
+  });
+}
+export function YDSiparea(payload) {
+  return request(`/itms-schedule/itms-schedule/LineSystem/YDSiparea/${payload.systemUUID}`, {
+    method: 'post'
+   
+  });
+}

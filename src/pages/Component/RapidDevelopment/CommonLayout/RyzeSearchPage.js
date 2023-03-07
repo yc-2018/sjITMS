@@ -186,6 +186,7 @@ export default class RyzeSearchPage extends Component {
         {this.drawToolbarTwo()}
         {!this.state.noTable ? (
           <StandardTable
+            rowSelection={this.state.rowSelection}
             quickuuid={this.props.quickuuid}
             minHeight={this.state.minHeight}
             colTotal={this.state.colTotal ? this.state.colTotal : []}
@@ -226,6 +227,8 @@ export default class RyzeSearchPage extends Component {
                 : true
             }
             drapTableChange={this.drapTableChange}
+            handleRowClick={this.handleRowClick}
+            isRadio={this.state.isRadio}
           />
         ) : null}
         {this.drawOtherCom && this.drawOtherCom()}

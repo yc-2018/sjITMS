@@ -136,7 +136,6 @@ export default class SimpleAutoComplete extends Component {
   getLinkFilterCondition = () => {
     const { linkFilter, initData } = this.props;
     // 不允许有空查询
-    console.log('linkFilter', linkFilter);
     for (const filter of linkFilter) {
       if (filter.val[0] == undefined) {
         if (initData) filter.val[0] = '';
@@ -190,7 +189,6 @@ export default class SimpleAutoComplete extends Component {
    */
   listFetchData = async () => {
     const { isLink, linkFilter, orderBy, initData, isOrgSearch } = this.props;
-    console.log('this.props', this.props);
     let queryParams = this.getQueryParams();
 
     // 如果是联动控件,但是没有传递linkFilter,则不加载数据

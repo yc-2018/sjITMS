@@ -513,8 +513,8 @@ class StandardTable extends Component {
     columns = isEmpty(nextColumns) ? columns : nextColumns;
     const newColumns = [];
     // newColumns.push({});
-    let firstColumn = columns.filter(i => i.title && i.title === checkedValues[0]);
-    newColumns.push({ ...firstColumn });
+    // let firstColumn = columns.filter(i => i.title && i.title === checkedValues[0]);
+    // newColumns.push({ ...firstColumn });
     let arr = checkedValues;
     if (typeof checkedValues === 'string') {
       arr = JSON.parse(checkedValues);
@@ -1055,6 +1055,28 @@ class StandardTable extends Component {
       selectedAllRows.push(record);
     }
     this.handleRowSelectChange(selectedRowKeys, selectedAllRows);
+    if (this.props.handleRowClick) {
+      this.props.handleRowClick(record);
+    }
+  };
+
+  //单选
+  onClickRowRadio = (record, key, e) => {
+    let selectedRowKeys = [];
+    let selectedAllRows = [];
+    let rowKey = key && typeof key === 'function' ? key(record) : key;
+    let idx = selectedRowKeys.indexOf(rowKey);
+    if (idx > -1) {
+      selectedRowKeys.splice(idx, 1);
+      selectedAllRows.splice(idx, 1);
+    } else {
+      selectedRowKeys.push(rowKey);
+      selectedAllRows.push(record);
+    }
+    this.handleRowSelectChange(selectedRowKeys, selectedAllRows);
+    if (this.props.handleRowClick) {
+      this.props.handleRowClick(record);
+    }
   };
 
   strip(number) {
@@ -1251,6 +1273,7 @@ class StandardTable extends Component {
     if (this.props.dataSource) {
       showList = this.props.dataSource;
     }
+    // let selectedRowKeys = this.props.selectedRowKeys?this.props.selectedRowKeys:selectedRowKeys
 
     let paginationProps = false;
     if (!this.props.noPagination) {
@@ -1307,11 +1330,11 @@ class StandardTable extends Component {
     }
     //默认第一列与最后一列操作列固定
     let firstCol = newColumns[0];
-    let lastCol = newColumns[newColumns.length - 1];
     newColumns[0] = {
       ...firstCol,
       fixed: 'left',
     };
+    let lastCol = newColumns[newColumns.length - 1];
     if (this.isFixedEdge(lastCol)) {
       newColumns[newColumns.length - 1] = {
         ...lastCol,
@@ -1448,7 +1471,6 @@ class StandardTable extends Component {
     // 当固定列时，列总宽度小于表单宽度会到导致出现白色垂直空隙，留一列不设宽度以适应弹性布局
     showColumns.push({});
     footerColumns.push({});
-
     // console.log('showColumns', showColumns);
     let settingIcon = (
       <div className={styles.setting} onClick={() => this.handleSettingModalVisible(true)}>
@@ -1527,7 +1549,10 @@ class StandardTable extends Component {
                           this.props.canDrag && this.props.moveRow
                             ? this.props.moveRow
                             : this.moveRow,
-                        onClick: e => this.onClickRow(record, rowKey || 'key', e),
+                        onClick: e =>
+                          this.props.isRadio
+                            ? this.onClickRowRadio(record, rowKey || 'key', e)
+                            : this.onClickRow(record, rowKey || 'key', e),
                         ...this.props.onRow,
                       };
                     }

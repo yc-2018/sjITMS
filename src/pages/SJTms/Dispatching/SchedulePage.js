@@ -362,7 +362,7 @@ export default class SchedulePage extends Component {
         selectSchedule = item;
         // selectSchedule.isSelect = true;
       }
-      item.clicked = selected && !item.clicked;
+      // item.clicked = selected && !item.clicked;
       return item;
     });
     let rowKeys = { savedRowKeys: [record.uuid] };
@@ -486,6 +486,11 @@ export default class SchedulePage extends Component {
     }
   };
 
+  //双击进入排车界面
+  onDoubleClick = record => {
+    this.createPageModalRef.show(true, record);
+  };
+
   render() {
     const {
       loading,
@@ -583,6 +588,7 @@ export default class SchedulePage extends Component {
                   pagination={searchPagination || false}
                   loading={loading}
                   onClickRow={this.onClickRow}
+                  onDoubleClick={this.onDoubleClick}
                   selectedRowKeys={savedRowKeys}
                   refreshDataSource={(_, pagination, sorter) => {
                     this.refreshSchedulePool(undefined, pagination, sorter);

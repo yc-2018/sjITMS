@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-20 10:41:30
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-25 16:24:01
+ * @LastEditTime: 2023-03-02 17:30:03
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -24,14 +24,20 @@ export default class RemoveCarCreatePage extends QuickCreatePage {
       ...this.state,
       CCCWEIGHT: '',
       CCCVOLUME: '',
+      saveControl: false,
     };
   }
 
   exHandleChange = async e => {
-    const { tableName, fieldName, line, fieldShowType, props, valueEvent } = e;
+    const { fieldName, valueEvent } = e;
     const { form } = this.props;
 
     if (fieldName == 'REMOVECAR' && valueEvent) {
+      if (valueEvent.record.JOB_STATE != 'Used') {
+        message.error(valueEvent.record.PLATENUMBER + '不是正常状态，不能选择！');
+        this.setState({ saveControl: true });
+        return;
+      }
       const param = {
         tableName: 'sj_itms_vehicle_employee',
         condition: {
@@ -47,6 +53,7 @@ export default class RemoveCarCreatePage extends QuickCreatePage {
       this.setState({
         CCCWEIGHT: valueEvent.record.BEARWEIGHT,
         CCCVOLUME: valueEvent.record.BEARVOLUME,
+        saveControl: false,
       });
 
       this.entity['SJ_ITMS_VEHICLE_EMPLOYEE'] = [];
@@ -81,7 +88,12 @@ export default class RemoveCarCreatePage extends QuickCreatePage {
 
   onSave = async () => {
     const { entity } = this;
-    const { CCCWEIGHT, CCCVOLUME } = this.state;
+    const { CCCWEIGHT, CCCVOLUME, saveControl } = this.state;
+    if (saveControl) {
+      message.error('该车辆不是正常状态，不能选择！');
+      return;
+    }
+
     const schedule = entity['V_SJ_ITMS_SCHEDULE'][0];
     const { WEIGHT } = schedule;
     if (CCCWEIGHT && CCCVOLUME) {

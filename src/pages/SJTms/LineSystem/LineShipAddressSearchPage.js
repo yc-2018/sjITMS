@@ -21,6 +21,7 @@ import {
   isEnable,
   updateState,
   findLineSystemTreeByStoreCode,
+  YDSiparea
 } from '@/services/sjtms/LineSystemHis';
 import { loginKey, loginCompany, loginOrg } from '@/utils/LoginContext';
 import { havePermission } from '@/utils/authority';
@@ -56,7 +57,27 @@ export default class LineShipAddressSearchPage extends Component {
    */
   onApproval = async (systemUuid, systemData) => {
     const status = systemData && systemData.STATUS == 'Approved' ? 'Revising' : 'Approved';
-    await this.updateApprovedState(systemUuid, status, systemData);
+    console.log(status);
+      if((loginOrg().uuid=='000000750000005' ||loginOrg().uuid=='000008150000002')&& status=='Approved'){
+        await YDSiparea({systemUUID:systemUuid}).then(result =>{
+          console.log(result);
+          if(result.success && result.data?.length>0){
+            Modal.confirm({
+              title: result.data[0]+',存在不同的区域组合，确定批准吗?',
+              onOk: () => {
+                this.updateApprovedState(systemUuid, status, systemData);
+              },
+            });
+          }
+        
+        })
+       return;
+      }else{
+        await this.updateApprovedState(systemUuid, status, systemData);
+      }
+        
+    
+   
   };
   //取消批准并备份
   notApprovalAndBackup = async (systemUuid, systemData) => {

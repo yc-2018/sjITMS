@@ -22,6 +22,7 @@ import {
   checkStoreExist,
   switchLineAddress,
   getMatchLine,
+  updateNote
 } from '@/services/sjtms/LineSystemHis';
 import { updateStoreAddressList } from '@/services/sjtms/LineSystemHis';
 import { dynamicqueryById, dynamicDelete, dynamicQuery } from '@/services/quick/Quick';
@@ -36,6 +37,7 @@ import LineSystem from './LineSystem.less'
 import {
  findLineSystemTreeByStoreCode,
 } from '@/services/sjtms/LineSystemHis';
+import { flushSync } from 'react-dom';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -606,7 +608,8 @@ getLineSystemTree = (data, itemData, lineData) => {
       lineModalVisible,
       lineData,
       systemLineFlag,
-      systemData
+      systemData,
+      updateNoteVisible
     } = this.state;
     const options = lineData.map(a => {
       return <Select.Option key={a.uuid}>{a.name}</Select.Option>;
@@ -680,6 +683,27 @@ getLineSystemTree = (data, itemData, lineData) => {
             </Row>
           </Form>
         </Modal>
+        <Modal
+          title={modalTitle}
+          width={800}
+          visible={updateNoteVisible}
+          onOk={this.updateNote}
+          confirmLoading={false}
+          onCancel={() => this.setState({ updateNoteVisible: false })}
+          destroyOnClose={true}
+        >
+        <Row>
+        <Col>
+          <Form ref="updateNote">
+            <Row>
+              <Col>
+               <Input defaultValue={this.state.note} onChange ={(e)=>this.setState({note:e.target.value})}></Input>
+              </Col>
+            </Row>
+          </Form>
+          </Col>
+          </Row>
+        </Modal>
         {this.state.canDragTable && (
           <Button
             type="primary"
@@ -726,6 +750,16 @@ getLineSystemTree = (data, itemData, lineData) => {
   handleChange = e => {
     this.setState({ lineValue: e });
   };
+  updateNote = async ()=>{
+    const { selectedRows, note,pageFilters} = this.state;
+    await updateNote({uuid:selectedRows[0].UUID,note:note}).then(result=>{
+      if (result.success) {
+        message.success('修改成功');
+        this.getData(pageFilters);
+        this.setState({updateNoteVisible:false})
+      }
+    })
+  }
   handleAddToNewLine = async () => {
     const { selectedRows, lineValue, pageFilters, lineuuid, addToNewLine } = this.state;
     //true 添加到新线路
@@ -859,6 +893,17 @@ getLineSystemTree = (data, itemData, lineData) => {
               }}
             >
               移入到新线路
+            </Button>
+            <Button
+              onClick={() => {
+                if (this.state.selectedRows.length == 0) {
+                  message.info('请选择记录');
+                  return;
+                }
+                this.setState({ updateNoteVisible: true,note:this.state.selectedRows[0].NOTE});
+              }}
+            >
+              编辑备注
             </Button>
           </>
         )}

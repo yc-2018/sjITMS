@@ -193,3 +193,30 @@ export async function getVehicleByScheduleUuid(payload) {
     }
   );
 }
+
+export async function checkArea(payload) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/checkArea`,
+    {
+      method: 'POST',
+      body:payload
+    }
+  );
+}
+  export async function checkBaseData(commuuid ,dcuuid) {
+    return request(
+      `/itms-schedule/itms-schedule/sj/bill/schedule/checkBaseData/${commuuid}/${dcuuid}`,
+      {
+        method: 'POST',
+      }
+    );
+  }
+  export async function checkAreaSchedule(payload,scheduleuuid) {
+    return request(
+      `/itms-schedule/itms-schedule/sj/bill/schedule/checkAreaSchedule?scheduleUuid=${scheduleuuid}`,
+      {
+        method: 'POST',
+        body:payload
+      }
+    );
+  }
