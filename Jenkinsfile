@@ -21,7 +21,7 @@ node {
 	// 如果是回滚的情况下就不重新编译了
 	if(!rollback) {
 		stage('拉取代码') {
-			git credentialsId: "${git_auth}", url: "${git_url}"
+			git branch: "${branch}",credentialsId: "${git_auth}", url: "${git_url}"
 		}
 
 		stage('编译构建') {
