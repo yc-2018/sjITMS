@@ -113,9 +113,10 @@ export default class DispatchingConfig extends ConfigSearchPage {
       title: DispatchingConfigLocale.calvehicle,
       dataIndex: 'calvehicle',
       render: (val, record) => (
-        <Checkbox
-          checked={val === 1}
-          onChange={event => this.onChange(record, 'calvehicle', event)}
+        <Input
+          style={{ width: 80 }}
+          defaultValue={val}
+          onBlur={event => this.onInputChange(record, 'calvehicle', event.target.value)}
         />
       ),
     },

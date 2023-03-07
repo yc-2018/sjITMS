@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-04 10:15:06
+ * @LastEditTime: 2023-03-07 11:25:04
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -489,8 +489,8 @@ export default class OrderPoolPage extends Component {
   };
 
   //添加到排车单
-  handleAddOrder = async () => {
-    const { auditedRowKeys } = this.state;
+  handleAddOrder = async (checkWeight, checkArea) => {
+    const { auditedRowKeys, auditedData } = this.state;
     const scheduleRowKeys = this.props.scheduleRowKeys();
     if (scheduleRowKeys == undefined || scheduleRowKeys.length != 1) {
       message.warning('请选择一张排车单！');
@@ -500,21 +500,33 @@ export default class OrderPoolPage extends Component {
       message.warning('请选择待定运输订单！');
       return;
     }
-    const result = await checkAreaSchedule(auditedRowKeys, scheduleRowKeys[0]);
-    if (result && result.data) {
+    const orders = auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1);
+    const schedule = this.props.getSchedule(scheduleRowKeys[0]);
+    const exceedWeight =
+      sumBy(orders, x => x.weight) + schedule.WEIGHT * 1000 - schedule.BEARWEIGHT * 1000;
+    if (exceedWeight > 0 && checkWeight == undefined) {
       Modal.confirm({
-        title: '所选门店配送区域不一样，确定排车吗？',
+        title: '提示',
+        content: '排车重量超' + (exceedWeight / 1000).toFixed(3) + 't,确定继续吗?',
+        okText: '确认',
+        cancelText: '取消',
         onOk: () => {
-          addOrders({ billUuid: scheduleRowKeys[0], orderUuids: auditedRowKeys }).then(response => {
-            if (response.success) {
-              message.success('保存成功！');
-              this.refreshTable();
-              this.props.refreshSchedule();
-            }
-          });
+          this.handleAddOrder(true, checkArea);
         },
       });
       return;
+    }
+    if (this.props.dispatchConfig.checkArea == 1 && checkArea == undefined) {
+      const response = await checkAreaSchedule(auditedRowKeys, scheduleRowKeys[0]);
+      if (response && response.data) {
+        Modal.confirm({
+          title: '所选门店配送区域不一样，确定排车吗？',
+          onOk: () => {
+            this.handleAddOrder(checkWeight, true);
+          },
+        });
+        return;
+      }
     }
     addOrders({ billUuid: scheduleRowKeys[0], orderUuids: auditedRowKeys }).then(response => {
       if (response.success) {
@@ -719,12 +731,12 @@ export default class OrderPoolPage extends Component {
       Number(orders.realContainerCount) * 2;
     return (
       <div style={{ display: 'flex' }}>
-        <div style={{ ...columnStyle, flex: 1.2 }}>
+        <div style={{ ...columnStyle, flex: 1.3 }}>
           总件数:
           <span style={totalTextStyle}>{count}</span>
         </div>
         {footer && dispatchConfig.calvehicle && dispatchConfig.calvehicle > 0 ? (
-          <div style={{ ...columnStyle, flex: 1 }}>
+          <div style={{ ...columnStyle, flex: 0.8 }}>
             预排:
             <span style={totalTextStyle}>{Math.ceil(count / dispatchConfig.calvehicle)}</span>
           </div>

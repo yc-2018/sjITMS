@@ -67,6 +67,7 @@ export default class PlanConfig extends ConfigSearchPage {
       dataIndex: 'shipTime',
       render: (val, record) => (
         <Input
+          style={{ width: 80 }}
           defaultValue={val}
           onBlur={event => this.onInputChange(record, 'shipTime', event.target.value)}
         />
@@ -79,7 +80,7 @@ export default class PlanConfig extends ConfigSearchPage {
         let vaule = val?.split(',');
         return (
           <SimpleSelect
-            style={{ width: 250 }}
+            style={{ width: 150 }}
             searchField={{ searchCondition: 'in' }}
             value={vaule}
             onChange={value => this.onSelectChange(record, 'etcissuestat', value)}
@@ -95,7 +96,7 @@ export default class PlanConfig extends ConfigSearchPage {
         let vaule = val?.split(',');
         return (
           <SimpleSelect
-            style={{ width: 250 }}
+            style={{ width: 150 }}
             searchField={{ searchCondition: 'in' }}
             value={vaule}
             onChange={value => this.onSelectChange(record, 'etcrecyclestat', value)}
