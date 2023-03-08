@@ -69,6 +69,7 @@ export default class DispatchMap extends Component {
     this.setState({ visible: false });
     this.clusterLayer = undefined;
     this.contextMenu = undefined;
+    this.isSelectOrders = [];
   };
 
   //查询
