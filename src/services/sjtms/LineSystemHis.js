@@ -185,3 +185,9 @@ export function YDSiparea(payload) {
    
   });
 }
+
+export function exportLineSystem(payload) {
+  return request(`/itms-schedule/itms-schedule/LineSystem/export/${payload.systemUUID}`, {
+    method: 'post'
+  });
+}

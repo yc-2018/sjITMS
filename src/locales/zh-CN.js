@@ -470,7 +470,7 @@ export default {
   'menu.sjtms.basic.vehicleType': '车型',
   'menu.sjtms.basic.store': '门店',
   'menu.sjtms.basic.vendor': '供应商',
-  'menu.sjtms.basic.employee': '员工',
+  'menu.sjtms.basic.employee': '人员',
   'menu.sjtms.basic.owner': '货主',
   'menu.sjtms.basic.line': '线路体系',
   'menu.sjtms.basic.lifecycle': '排车单生命周期控制',
