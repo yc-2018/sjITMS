@@ -61,7 +61,7 @@ export default class LineShipAddressSearchPage extends Component {
           console.log(result);
           if(result.success && result.data?.length>0){
             Modal.confirm({
-              title: result.data[0]+',存在不同的区域组合，确定批准吗?',
+              title: result.data+',存在不同的区域组合，确定批准吗?',
               onOk: () => {
                 this.updateApprovedState(systemUuid, status, systemData);
               },

@@ -1205,14 +1205,6 @@ export default [
             authority: ['sjtms.basic.store'],
           },
           {
-            path: '/tmsbasic/addressArea',
-            name: 'addressArea',
-            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
-            component: './SJTms/AddressArea/AddressAreaForm',
-            quickuuid: 'sj_itms_ship_address_area',
-            authority: ['sjtms.basic.store'],
-          },
-          {
             path: '/tmsbasic/vendor',
             name: 'vendor',
             org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
