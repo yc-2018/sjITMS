@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-07 11:25:04
+ * @LastEditTime: 2023-03-09 16:01:24
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -154,6 +154,7 @@ export default class OrderPoolPage extends Component {
       this.props.refreshSelectRowOrder([], ['Audited', 'PartScheduled']);
       this.setState({ activeKey: 'Audited', loading: false, pageFilter });
     });
+    this.props.refreshPending();
   };
 
   refreshVehiclePool = (params, pages, sorter) => {
