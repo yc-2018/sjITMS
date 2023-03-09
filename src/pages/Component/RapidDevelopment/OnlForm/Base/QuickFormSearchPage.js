@@ -25,6 +25,7 @@ export default class QuickFormSearchPage extends SearchPage {
   renderOperateCol = () => {}; //操作列
   drapTableChange = e => {}; //拖拽事件
   exSearchFilter = () => {}; //扩展查询
+  drawRightClickMenus = () => {}; //右键菜单
 
   defaultSearch = () => {
     //默认查询

@@ -229,6 +229,7 @@ export default class RyzeSearchPage extends Component {
             drapTableChange={this.drapTableChange}
             handleRowClick={this.handleRowClick}
             isRadio={this.state.isRadio}
+            RightClickMenu={this.drawRightClickMenus()}
           />
         ) : null}
         {this.drawOtherCom && this.drawOtherCom()}

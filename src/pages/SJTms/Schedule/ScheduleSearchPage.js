@@ -32,13 +32,14 @@ import {
   updateOutSerialApi,
   getPris,
 } from '@/services/sjitms/ScheduleBill';
-import { depart, back, recordLog } from '@/services/sjitms/ScheduleProcess';
+import { depart, back, recordLog, callG7Interface } from '@/services/sjitms/ScheduleProcess';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 import { groupBy, sumBy, orderBy } from 'lodash';
 import scher from '@/assets/common/scher.jpg';
 import { dynamicQuery } from '@/services/quick/Quick';
 import { havePermission } from '@/utils/authority';
 import imTemplate from '@/models/account/imTemplate';
+import { LOGIN_PAGE_KEY } from '@/utils/constants';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -69,6 +70,53 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     this.queryCoulumns();
     this.getCreateConfig();
   }
+
+  goG7 = async apiName => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length <= 0 && apiName != 'truck.webapi.newMonitor') {
+      message.error('请先选择排车单！');
+      return;
+    }
+    let params = {};
+    switch (apiName) {
+      case 'truck.webapi.newFollow':
+        params = {
+          carnum: `粤${selectedRows[0].VEHICLEPLATENUMBER}`,
+        };
+        break;
+      case 'truck.webapi.newReview':
+        params = {
+          carnum: `粤${selectedRows[0].VEHICLEPLATENUMBER}`,
+          begintime: selectedRows[0].DISPATCHTIME,
+          endtime: selectedRows[0].RETURNTIME,
+        };
+        break;
+      case 'truck.webapi.newMonitor':
+        params = {};
+        break;
+    }
+    let result = await callG7Interface(apiName, params);
+
+    if (result.success) {
+      window.open(encodeURI(result.data.web_url));
+    }
+  };
+
+  drawRightClickMenus = () => {
+    return (
+      <Menu>
+        <Menu.Item key="1" onClick={() => this.goG7('truck.webapi.newFollow')}>
+          车辆地图轨迹(G7)
+        </Menu.Item>
+        <Menu.Item key="2" onClick={() => this.goG7('truck.webapi.newReview')}>
+          车辆地图轨迹回放(G7)
+        </Menu.Item>
+        <Menu.Item key="3" onClick={() => this.goG7('truck.webapi.newMonitor')}>
+          车辆实时位置(G7)
+        </Menu.Item>
+      </Menu>
+    );
+  };
 
   //查询数据
   getData = pageFilters => {
