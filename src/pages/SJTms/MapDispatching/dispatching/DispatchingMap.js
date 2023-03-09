@@ -76,7 +76,7 @@ export default class DispatchMap extends Component {
   refresh = params => {
     this.setState({ loading: true });
     let { pageFilter } = this.state;
-    let filter = { pageSize: 500, superQuery: { matchType: 'and', queryParams: [] } };
+    let filter = { pageSize: 4000, superQuery: { matchType: 'and', queryParams: [] } };
     if (params) {
       pageFilter = params;
     }
