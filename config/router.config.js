@@ -1564,6 +1564,14 @@ export default [
                 authority: ['sjtms.bigData.owndtlreport'],
               },
               {
+                path: '/bigData/loading/ownsubsidy',
+                name: '自有车配送运费_按员工',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_to_hrm_cs_ownsubsidy',
+                authority: ['sjtms.bigData.owndtlreport'],
+              },
+              {
                 path: '/bigData/loading/takedeliveryfee',
                 name: '自提运费明细查询',
                 org: ['DISPATCH_CENTER'],
