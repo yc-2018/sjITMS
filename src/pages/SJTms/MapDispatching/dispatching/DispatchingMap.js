@@ -18,6 +18,7 @@ import { queryDict } from '@/services/quick/Quick';
 
 import ShopIcon from '@/assets/common/myj.png';
 import ShopClickIcon from '@/assets/common/otherMyj.png';
+import ShopClickIcon2 from '@/assets/common/otherMyj2.png';
 
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { sumBy, uniqBy } from 'lodash';
@@ -209,6 +210,8 @@ export default class DispatchMap extends Component {
     const { orders, orderMarkers } = this.state;
     let that = this;
     const otherStore = new BMapGL.Icon(ShopClickIcon, new BMapGL.Size(30, 30)); //42
+    const otherStore2 = new BMapGL.Icon(ShopClickIcon2, new BMapGL.Size(30, 30)); //42
+
     const icon = new BMapGL.Icon(ShopIcon, new BMapGL.Size(30, 30));
     let markers = [];
     orderMarkers.map((order, index) => {
@@ -217,7 +220,7 @@ export default class DispatchMap extends Component {
         <Marker
           isTop={order.isSelect}
           position={point}
-          icon={order.isSelect ? otherStore : icon}
+          icon={order.isSelect ? (order.sort ? otherStore2 : otherStore) : icon}
           // icon={[icon, otherStore][order.isSelect ? 1 : 0]}
           shadow={true}
           onMouseover={() => this.setState({ windowInfo: { point, order } })}
