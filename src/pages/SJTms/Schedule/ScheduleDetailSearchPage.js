@@ -35,7 +35,7 @@ export default class ScheduleDetailSearchPage extends QuickFormSearchPage {
         title: '序号',
         dataIndex: 'line',
         key: 'line',
-        sorter: true,
+        sorter: false,
         width: 60,
         render: (val, record, index) => {
           return (
