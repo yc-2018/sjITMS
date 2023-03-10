@@ -110,6 +110,16 @@ export default class DispatchingConfig extends ConfigSearchPage {
       ),
     },
     {
+      title: DispatchingConfigLocale.isAbortedPool,
+      dataIndex: 'isAbortedPool',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'isAbortedPool', event)}
+        />
+      ),
+    },
+    {
       title: DispatchingConfigLocale.calvehicle,
       dataIndex: 'calvehicle',
       render: (val, record) => (
