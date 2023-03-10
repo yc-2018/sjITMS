@@ -1481,86 +1481,93 @@ class StandardTable extends Component {
       this.props.colTotal && this.props.colTotal.length == '0'
         ? { display: 'none' }
         : { display: 'block' };
+    let menu = this.props.RightClickMenu;
     return (
-      <div className={styles.standardTable}>
-        {(oriColumnLen >= SHOW_THRESH_HOLD && !noSettingColumns) || hasSettingColumns ? (
-          <div style={style}>{this.renderSettingDrowDown(settingIcon)}</div>
-        ) : null}
-        <div
-          id={this.state.settingKey}
-          style={{ borderBottom: '1px solid transparent !important' }}
-        />
-        <DndProvider backend={HTML5Backend}>
-          <Table
-            footer={() => {
-              return (
-                <Table
-                  id={'happy'}
-                  columns={footerColumns}
-                  scroll={{ x: scroll.x, y: false }}
-                  rowKey={() => Math.random()}
-                  pagination={false}
-                  showHeader={false} // table 的 columns 头部隐藏
-                  dataSource={this.props.colTotal}
-                  size={this.props.size ? this.props.size : 'middle'}
-                  components={this.components}
-                  style={status}
-                />
-              );
-            }}
-            className={this.props.tableClassName}
-            id={this.state.key}
-            rowKey={rowKey || 'key'}
-            rowSelection={
-              this.props.unShowRow
-                ? undefined
-                : this.props.rowSelection
-                  ? this.props.rowSelection
-                  : rowSelection
-            }
-            dataSource={showList}
-            size={this.props.size ? this.props.size : 'middle'}
-            pagination={paginationProps}
-            onChange={this.handleTableChange}
-            rowClassName={
-              this.props.rowClassName
-                ? this.props.rowClassName
-                : (record, index) => this.rowClassName(record, index)
-            }
-            components={this.components}
-            loading={this.props.loading}
-            columns={showColumns}
-            bordered={bordered}
-            scroll={this.props.newScroll ? this.props.newScroll : scroll}
-            onRow={
-              this.props.onRow
-                ? this.props.onRow
-                : this.props.unShowRow
-                  ? (record, index) => {
-                      return {
-                        index,
-                        moveRow: this.props.moveRow ? this.props.moveRow : this.moveRow,
-                      };
-                    }
-                  : (record, index) => {
-                      return {
-                        index,
-                        moveRow:
-                          this.props.canDrag && this.props.moveRow
-                            ? this.props.moveRow
-                            : this.moveRow,
-                        onClick: e =>
-                          this.props.isRadio
-                            ? this.onClickRowRadio(record, rowKey || 'key', e)
-                            : this.onClickRow(record, rowKey || 'key', e),
-                        ...this.props.onRow,
-                      };
-                    }
-            }
-            {...rest}
+      <Dropdown
+        overlay={menu}
+        trigger={['contextMenu']}
+        disabled={this.props.RightClickMenu ? false : true}
+      >
+        <div className={styles.standardTable}>
+          {(oriColumnLen >= SHOW_THRESH_HOLD && !noSettingColumns) || hasSettingColumns ? (
+            <div style={style}>{this.renderSettingDrowDown(settingIcon)}</div>
+          ) : null}
+          <div
+            id={this.state.settingKey}
+            style={{ borderBottom: '1px solid transparent !important' }}
           />
-        </DndProvider>
-      </div>
+          <DndProvider backend={HTML5Backend}>
+            <Table
+              footer={() => {
+                return (
+                  <Table
+                    id={'happy'}
+                    columns={footerColumns}
+                    scroll={{ x: scroll.x, y: false }}
+                    rowKey={() => Math.random()}
+                    pagination={false}
+                    showHeader={false} // table 的 columns 头部隐藏
+                    dataSource={this.props.colTotal}
+                    size={this.props.size ? this.props.size : 'middle'}
+                    components={this.components}
+                    style={status}
+                  />
+                );
+              }}
+              className={this.props.tableClassName}
+              id={this.state.key}
+              rowKey={rowKey || 'key'}
+              rowSelection={
+                this.props.unShowRow
+                  ? undefined
+                  : this.props.rowSelection
+                    ? this.props.rowSelection
+                    : rowSelection
+              }
+              dataSource={showList}
+              size={this.props.size ? this.props.size : 'middle'}
+              pagination={paginationProps}
+              onChange={this.handleTableChange}
+              rowClassName={
+                this.props.rowClassName
+                  ? this.props.rowClassName
+                  : (record, index) => this.rowClassName(record, index)
+              }
+              components={this.components}
+              loading={this.props.loading}
+              columns={showColumns}
+              bordered={bordered}
+              scroll={this.props.newScroll ? this.props.newScroll : scroll}
+              onRow={
+                this.props.onRow
+                  ? this.props.onRow
+                  : this.props.unShowRow
+                    ? (record, index) => {
+                        return {
+                          index,
+                          moveRow: this.props.moveRow ? this.props.moveRow : this.moveRow,
+                        };
+                      }
+                    : (record, index) => {
+                        return {
+                          index,
+                          moveRow:
+                            this.props.canDrag && this.props.moveRow
+                              ? this.props.moveRow
+                              : this.moveRow,
+                          onClick: e =>
+                            this.props.isRadio
+                              ? this.onClickRowRadio(record, rowKey || 'key', e)
+                              : this.onClickRow(record, rowKey || 'key', e),
+                          ...this.props.onRow,
+                        };
+                      }
+              }
+              {...rest}
+            />
+          </DndProvider>
+        </div>
+      </Dropdown>
     );
   }
 }

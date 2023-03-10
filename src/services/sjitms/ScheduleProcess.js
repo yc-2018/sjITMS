@@ -103,3 +103,11 @@ export async function recordLog(billNumber, type) {
     }
   );
 }
+
+//g7接口
+export async function callG7Interface(apiName, params) {
+  return request(`/itms-schedule/itms-schedule/g7/callG7Interface/${apiName}`, {
+    method: 'POST',
+    body: params,
+  });
+}

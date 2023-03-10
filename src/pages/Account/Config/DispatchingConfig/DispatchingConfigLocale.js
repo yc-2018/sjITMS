@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-10-24 15:42:51
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-07 11:50:24
+ * @LastEditTime: 2023-03-10 17:45:56
  * @version: 1.0
  */
 export const DispatchingConfigLocale = {
@@ -17,4 +17,5 @@ export const DispatchingConfigLocale = {
   checkArea: '校验区域',
   checkBaseData: '校验基础资料',
   calvehicle: '预排车辆基数',
+  isAbortedPool: '作废池',
 };

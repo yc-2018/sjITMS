@@ -13,15 +13,13 @@ import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCre
 import LineShipAddress from './LineShipAddress';
 const { TabPane } = Tabs;
 import LineMap from './LineMap';
+import ExportJsonExcel from 'js-export-excel';
 import {
-  findLineSystemTree,
-  deleteLines,
-  deleteLineSystemTree,
   backupLineSystem,
   isEnable,
   updateState,
-  findLineSystemTreeByStoreCode,
-  YDSiparea
+  YDSiparea,
+  exportLineSystem
 } from '@/services/sjtms/LineSystemHis';
 import { loginKey, loginCompany, loginOrg } from '@/utils/LoginContext';
 import { havePermission } from '@/utils/authority';
@@ -63,7 +61,7 @@ export default class LineShipAddressSearchPage extends Component {
           console.log(result);
           if(result.success && result.data?.length>0){
             Modal.confirm({
-              title: result.data[0]+',存在不同的区域组合，确定批准吗?',
+              title: result.data+',存在不同的区域组合，确定批准吗?',
               onOk: () => {
                 this.updateApprovedState(systemUuid, status, systemData);
               },
@@ -261,6 +259,37 @@ export default class LineShipAddressSearchPage extends Component {
                   }}
                 >
                   配置对调线路
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={async ()  => {
+                   const result = await exportLineSystem({systemUUID:selectedKey});
+                   if(result && result.success){
+                      const sheetHeader = ['门店号', '班组', '门店名称', '调整后线路','备注'];
+                      var option = [];
+                      const sheetFilter = [
+                        'storeCode',
+                        'contact',
+                        'storeName',
+                        'lineCode',
+                        'remarks'
+                      ];
+                      option.fileName = result.data.tableName;
+                      option.datas = [
+                        {
+                          sheetData: result.data.lineAddressExcels ? result.data.lineAddressExcels : [],
+                          sheetName: result.data.sheet1, //工作表的名字
+                          sheetFilter: sheetFilter,
+                          sheetHeader: sheetHeader,
+                        },
+                      ];
+                      const toExcel = new ExportJsonExcel(option);
+                      toExcel.saveExcel();
+                    
+                   }
+                  }}
+                >
+                  导出
                 </Button>
               </div>
             </div>
