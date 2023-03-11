@@ -1556,6 +1556,14 @@ export default [
                 authority: ['sjtms.bigData.joinStoreDtlReport'],
               },
               {
+                path: '/bigData/loading/joinCarSubsidy',
+                name: '加盟车费用查询（汇总）',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_cs_joinCarSubsidy',
+                authority: ['sjtms.bigData.joinStoreDtlReport'],
+              },
+              {
                 path: '/bigData/loading/owndtlreport',
                 name: '自有车配送明细_按车',
                 org: ['DISPATCH_CENTER'],
