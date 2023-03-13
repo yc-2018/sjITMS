@@ -41,6 +41,8 @@ export default class BasicSourceDataSearchPage extends SearchPage {
     };
   }
 
+  drawRightClickMenus = () => {}; //右键菜单
+
   componentDidMount() {
     this.queryColumns();
   }

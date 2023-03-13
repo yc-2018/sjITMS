@@ -45,9 +45,9 @@ export default class ScheduleReportSearchPage extends QuickFormSearchPage {
     const deliverypointCode = pageFilters.superQuery.queryParams.find(
       x => x.field == 'DELIVERYPOINTCODE'
     );
-    pageFilters.lastSql = '';
+    pageFilters.applySql = '';
     if (deliverypointCode) {
-      pageFilters.lastSql = ` and uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
+      pageFilters.applySql = ` uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
         deliverypointCode.val
       }')`;
       pageFilters.superQuery.queryParams = pageFilters.superQuery.queryParams.filter(
