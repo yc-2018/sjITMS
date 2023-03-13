@@ -438,7 +438,7 @@ export default class DispatchMap extends Component {
 
   //画框选取送货点
   drawSelete = event => {
-    let { orders } = this.state;
+    let { orders, orderMarkers } = this.state;
     let overlays = [];
     overlays.push(event.overlay);
     let pStart = event.overlay.getPath()[3]; //矩形左上角坐标
@@ -447,7 +447,7 @@ export default class DispatchMap extends Component {
     var pt2 = new BMapGL.Point(pEnd.lng, pEnd.lat); //1象限
     var bds = new BMapGL.Bounds(pt1, pt2); //范围
 
-    for (const order of orders.filter(x => !x.isSelect)) {
+    for (const order of orderMarkers.filter(x => !x.isSelect)) {
       var pt = new BMapGL.Point(order.longitude, order.latitude);
       let num = orders.filter(e => {
         return e.isSelect;
@@ -459,7 +459,7 @@ export default class DispatchMap extends Component {
     this.setState({ orders }, () => {
       // this.clusterSetData(orders);
     });
-    this.props.dispatchingByMap(orders.filter(x => x.isSelect));
+    // this.props.dispatchingByMap(orders.filter(x => x.isSelect));
   };
   //判断一个点是否在某个矩形中
   isPointInRect = (point, bounds) => {
@@ -481,8 +481,52 @@ export default class DispatchMap extends Component {
       }, 500);
     });
   };
+  //计算小数
+  accAdd = (arg1, arg2) => {
+    if (isNaN(arg1)) {
+      arg1 = 0;
+    }
+    if (isNaN(arg2)) {
+      arg2 = 0;
+    }
+    arg1 = Number(arg1);
+    arg2 = Number(arg2);
+    var r1, r2, m, c;
+    try {
+      r1 = arg1.toString().split('.')[1].length;
+    } catch (e) {
+      r1 = 0;
+    }
+    try {
+      r2 = arg2.toString().split('.')[1].length;
+    } catch (e) {
+      r2 = 0;
+    }
+    c = Math.abs(r1 - r2);
+    m = Math.pow(10, Math.max(r1, r2));
+    if (c > 0) {
+      var cm = Math.pow(10, c);
+      if (r1 > r2) {
+        arg1 = Number(arg1.toString().replace('.', ''));
+        arg2 = Number(arg2.toString().replace('.', '')) * cm;
+      } else {
+        arg1 = Number(arg1.toString().replace('.', '')) * cm;
+        arg2 = Number(arg2.toString().replace('.', ''));
+      }
+    } else {
+      arg1 = Number(arg1.toString().replace('.', ''));
+      arg2 = Number(arg2.toString().replace('.', ''));
+    }
+    return (arg1 + arg2) / m;
+  };
 
   getTotals = selectOrder => {
+    let selectOrderStoreCodes = selectOrder.map(e => e.deliveryPoint.code);
+    const { orders } = this.state;
+    let allSelectOrders = orders.filter(
+      e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
+    );
+
     let totals = {
       cartonCount: 0, //整件数
       scatteredCount: 0, //散件数
@@ -491,14 +535,35 @@ export default class DispatchMap extends Component {
       weight: 0, //重量,
       totalCount: 0, //总件数
     };
-    selectOrder.map(e => {
+    allSelectOrders.map(e => {
       totals.cartonCount += e.cartonCount;
       totals.scatteredCount += e.scatteredCount;
       totals.containerCount += e.containerCount;
-      totals.volume += e.volume;
-      totals.weight += e.weight;
+      totals.volume = this.accAdd(totals.volume, e.volume);
+      totals.weight = this.accAdd(totals.weight, e.weight);
     });
     totals.totalCount = totals.cartonCount + totals.scatteredCount + totals.containerCount * 2;
+    return totals;
+  };
+
+  //一家门店多份运输订单数量合并
+  getOrderTotal = storeCode => {
+    let totals = {
+      cartonCount: 0, //整件数
+      scatteredCount: 0, //散件数
+      containerCount: 0, //周转箱
+      volume: 0, //体积
+      weight: 0, //重量,
+    };
+    const { orders } = this.state;
+    let isOrder = orders.filter(e => e.deliveryPoint.code == storeCode);
+    isOrder.map(e => {
+      totals.cartonCount += e.cartonCount;
+      totals.scatteredCount += e.scatteredCount;
+      totals.containerCount += e.containerCount;
+      totals.volume = this.accAdd(totals.volume, e.volume);
+      totals.weight = this.accAdd(totals.weight, e.weight);
+    });
     return totals;
   };
 
@@ -507,6 +572,11 @@ export default class DispatchMap extends Component {
     const selectOrder = orders.filter(x => x.isSelect).sort(x => x.sort);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
     let totals = this.getTotals(selectOrder);
+
+    let windowsInfoTotals = {};
+    if (windowInfo) {
+      windowsInfoTotals = this.getOrderTotal(windowInfo.order.deliveryPoint.code);
+    }
     return (
       <Modal
         style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
@@ -561,7 +631,8 @@ export default class DispatchMap extends Component {
                 </div>
                 <div style={{ flex: 1, fontWeight: 'bold' }}>
                   重量:
-                  {totals.weight}
+                  {/* {totals.weight} */}
+                  {(totals.weight / 1000).toFixed(3)}
                 </div>
               </div>
             </Row>
@@ -581,6 +652,7 @@ export default class DispatchMap extends Component {
               {selectOrder.length > 0 ? (
                 <div style={{ position: 'relative', height: '100%' }}>
                   {selectOrder.map(order => {
+                    let totals = this.getOrderTotal(order.deliveryPoint.code);
                     return (
                       <div
                         className={style.storeCard}
@@ -611,12 +683,19 @@ export default class DispatchMap extends Component {
                           <div style={{ flex: 1 }}>体积</div>
                           <div style={{ flex: 1 }}>重量</div>
                         </div>
-                        <div style={{ display: 'flex' }}>
+                        {/* <div style={{ display: 'flex' }}>
                           <div style={{ flex: 1 }}>{order.cartonCount}</div>
                           <div style={{ flex: 1 }}>{order.scatteredCount}</div>
                           <div style={{ flex: 1 }}>{order.containerCount}</div>
                           <div style={{ flex: 1 }}>{order.volume}</div>
                           <div style={{ flex: 1 }}>{(order.weight / 1000).toFixed(3)}</div>
+                        </div> */}
+                        <div style={{ display: 'flex' }}>
+                          <div style={{ flex: 1 }}>{totals.cartonCount}</div>
+                          <div style={{ flex: 1 }}>{totals.scatteredCount}</div>
+                          <div style={{ flex: 1 }}>{totals.containerCount}</div>
+                          <div style={{ flex: 1 }}>{totals.volume}</div>
+                          <div style={{ flex: 1 }}>{(totals.weight / 1000).toFixed(3)}</div>
                         </div>
                       </div>
                     );
@@ -717,12 +796,19 @@ export default class DispatchMap extends Component {
                           <div style={{ flex: 1 }}>重量</div>
                         </div>
                         <div style={{ display: 'flex' }}>
-                          <div style={{ flex: 1 }}>{windowInfo.order.cartonCount}</div>
+                          {/* <div style={{ flex: 1 }}>{windowInfo.order.cartonCount}</div>
                           <div style={{ flex: 1 }}>{windowInfo.order.scatteredCount}</div>
                           <div style={{ flex: 1 }}>{windowInfo.order.containerCount}</div>
                           <div style={{ flex: 1 }}>{windowInfo.order.volume}</div>
                           <div style={{ flex: 1 }}>
                             {(windowInfo.order.weight / 1000).toFixed(3)}
+                          </div> */}
+                          <div style={{ flex: 1 }}>{windowsInfoTotals.cartonCount}</div>
+                          <div style={{ flex: 1 }}>{windowsInfoTotals.scatteredCount}</div>
+                          <div style={{ flex: 1 }}>{windowsInfoTotals.containerCount}</div>
+                          <div style={{ flex: 1 }}>{windowsInfoTotals.volume}</div>
+                          <div style={{ flex: 1 }}>
+                            {(windowsInfoTotals.weight / 1000).toFixed(3)}
                           </div>
                         </div>
                       </div>
