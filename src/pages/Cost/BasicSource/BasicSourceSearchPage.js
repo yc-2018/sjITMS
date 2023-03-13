@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-29 17:59:29
+ * @LastEditTime: 2023-03-13 17:38:17
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -25,7 +25,7 @@ export default class BasicSourceSearchPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      treeData: [],
+      treeData: '',
       sourceData: [],
       selectedKeys: '',
       rightContent: '',
@@ -45,35 +45,40 @@ export default class BasicSourceSearchPage extends Component {
   };
 
   drawSider = () => {
-    const { selectedKeys } = this.state;
-    var treeData = JSON.parse(JSON.stringify(this.state.treeData));
+    const { selectedKeys, treeData } = this.state;
+    var treeDatas = '';
+    if (treeData != '' && treeData != undefined) {
+      treeDatas = JSON.parse(JSON.stringify(treeData));
+    }
 
     const renderTreeNode = data => {
-      let nodeArr = data.map(item => {
-        item.title = (
-          <div>
-            <span>{item.title}</span>
-            {item.parentUuid == undefined || item.key != selectedKeys ? (
-              <span />
-            ) : (
-              <span>
-                <a style={{ float: 'right' }} onClick={() => this.updateDtlModalRef.show()}>
-                  编辑
-                </a>
-              </span>
-            )}
-          </div>
-        );
-        if (item.children) {
-          return (
-            <TreeNode title={item.title} key={item.key} dataRef={item}>
-              {renderTreeNode(item.children)}
-            </TreeNode>
+      if (data != '' && data != undefined) {
+        let nodeArr = data.map(item => {
+          item.title = (
+            <div>
+              <span>{item.title}</span>
+              {item.parentUuid == undefined || item.key != selectedKeys ? (
+                <span />
+              ) : (
+                <span>
+                  <a style={{ float: 'right' }} onClick={() => this.updateDtlModalRef.show()}>
+                    编辑
+                  </a>
+                </span>
+              )}
+            </div>
           );
-        }
-        return <TreeNode title={item.title} key={item.key} dataRef={item} />;
-      });
-      return nodeArr;
+          if (item.children) {
+            return (
+              <TreeNode title={item.title} key={item.key} dataRef={item}>
+                {renderTreeNode(item.children)}
+              </TreeNode>
+            );
+          }
+          return <TreeNode title={item.title} key={item.key} dataRef={item} />;
+        });
+        return nodeArr;
+      }
     };
 
     return (
@@ -96,7 +101,7 @@ export default class BasicSourceSearchPage extends Component {
           selectedKeys={[selectedKeys]}
           onSelect={this.onSelect}
         >
-          {renderTreeNode(treeData)}
+          {renderTreeNode(treeDatas)}
         </Tree>
       </div>
     );
@@ -134,7 +139,6 @@ export default class BasicSourceSearchPage extends Component {
   onSelect = (selectedKeys, event) => {
     const { treeData, tabsKey } = this.state;
     const system = treeData.find(x => x.uuid == selectedKeys[0]);
-    console.log('event', event);
     if (selectedKeys.length == 1) {
       this.setState({
         rightContent: system ? (
