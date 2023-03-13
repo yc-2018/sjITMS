@@ -95,24 +95,6 @@ export default class DispatchMap extends Component {
       if (response.success) {
         let data = response.data.records ? response.data.records : [];
         data = data.filter(x => x.longitude && x.latitude);
-        let isSelectOrdersArea =
-          this.isSelectOrders && this.isSelectOrders.length > 0
-            ? uniqBy(
-                this.isSelectOrders.map(e => {
-                  return e.shipAreaName;
-                })
-              )
-            : [];
-
-        data.map(e => {
-          if (this.isSelectOrders && this.isSelectOrders.length > 0) {
-            let x = this.isSelectOrders.find(item => item.uuid == e.uuid);
-            if (x || isSelectOrdersArea.indexOf(e.shipAreaName) != -1) {
-              e.isSelect = true;
-              e.sort = x?.sort ? x.sort : undefined;
-            }
-          }
-        });
 
         //去重
         var obj = {};
@@ -123,22 +105,26 @@ export default class DispatchMap extends Component {
           return cur;
         }, []); //设置cur默认类型为数组，并且初始值为空的数组
 
-        // if (this.isSelectOrders && this.isSelectOrders.length > 0) {
-        //   this.isSelectOrders.map(e => {
-        //     let x = data.find(item => item.uuid == e.uuid);
-        //     if (x) {
-        //       x.isSelect = true;
-        //       x.sort = e.sort;
-        //     }
-        //   });
+        let isSelectOrdersArea =
+          this.isSelectOrders && this.isSelectOrders.length > 0
+            ? uniqBy(
+                this.isSelectOrders.map(e => {
+                  return e.shipAreaName;
+                })
+              )
+            : [];
 
-        //   orderMarkers.map(e => {
-        //     if (isSelectOrdersArea.indexOf(e.shipAreaName) != -1) {
-        //       e.isSelect = true;
-        //       // e.sort = orderMarkers.filter(x => x.isSelect).length + this.isSelectOrders.length;
-        //     }
-        //   });
-        // }
+        orderMarkers.map(e => {
+          if (this.isSelectOrders && this.isSelectOrders.length > 0) {
+            let x = this.isSelectOrders.find(
+              item => item.deliveryPoint.code == e.deliveryPoint.code
+            );
+            if (isSelectOrdersArea.indexOf(e.shipAreaName) != -1) {
+              e.isSelect = true;
+              e.sort = x?.sort ? x.sort : undefined;
+            }
+          }
+        });
 
         this.basicOrders = data;
         this.setState({ orders: data, orderMarkers }, () => {
