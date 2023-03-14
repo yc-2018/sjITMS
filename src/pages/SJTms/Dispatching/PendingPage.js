@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-14 15:51:46
+ * @LastEditTime: 2023-03-15 07:51:11
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -98,11 +98,11 @@ export default class PendingPage extends Component {
   //删除待定
   handleRemovePending = async () => {
     const { pendingRowKeys } = this.state;
-    this.setState({ btnLoading: true });
     if (pendingRowKeys.length == 0) {
       message.warning('请选择运输订单！');
       return;
     }
+    this.setState({ btnLoading: true });
     const response = await removePending(pendingRowKeys);
     if (response.success) {
       message.success('保存成功！');
@@ -115,7 +115,6 @@ export default class PendingPage extends Component {
   //添加到排车单
   handleAddOrder = async () => {
     const { pendingRowKeys } = this.state;
-    this.setState({ btnLoading: true });
     const scheduleRowKeys = this.props.scheduleRowKeys();
     if (scheduleRowKeys.length != 1 || scheduleRowKeys == undefined) {
       message.warning('请选择一张排车单！');
@@ -125,6 +124,7 @@ export default class PendingPage extends Component {
       message.warning('请选择待定运输订单！');
       return;
     }
+    this.setState({ btnLoading: true });
     const response = await addOrders({
       billUuid: scheduleRowKeys[0],
       orderUuids: pendingRowKeys,

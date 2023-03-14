@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-14 15:47:01
+ * @LastEditTime: 2023-03-15 07:51:49
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -478,11 +478,11 @@ export default class OrderPoolPage extends Component {
   //添加到待定池
   handleAddPending = async () => {
     const { auditedRowKeys } = this.state;
-    this.setState({ btnLoading: true });
     if (auditedRowKeys.length == 0) {
       message.warning('请选择运输订单！');
       return;
     }
+    this.setState({ btnLoading: true });
     const response = await savePending(auditedRowKeys);
     if (response.success) {
       message.success('保存成功！');
@@ -495,7 +495,6 @@ export default class OrderPoolPage extends Component {
   //添加到排车单
   handleAddOrder = async (checkWeight, checkArea) => {
     const { auditedRowKeys, auditedData } = this.state;
-    this.setState({ btnLoading: true });
     const scheduleRowKeys = this.props.scheduleRowKeys();
     if (scheduleRowKeys == undefined || scheduleRowKeys.length != 1) {
       message.warning('请选择一张排车单！');
@@ -505,6 +504,7 @@ export default class OrderPoolPage extends Component {
       message.warning('请选择待定运输订单！');
       return;
     }
+    this.setState({ btnLoading: true });
     const orders = auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1);
     const schedule = this.props.getSchedule(scheduleRowKeys[0]);
     const exceedWeight =
