@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-10 17:41:34
+ * @LastEditTime: 2023-03-14 17:22:56
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -283,19 +283,20 @@ export default class SchedulePage extends Component {
   };
 
   //批准
-  handleApprove = () => {
+  handleApprove = async () => {
     const { savedRowKeys } = this.state;
     if (savedRowKeys.length == 0) {
       message.warning('请选择排车单！');
       return;
     }
     if (savedRowKeys.length == 1) {
-      this.approveSchedule(savedRowKeys[0]).then(response => {
-        if (response.success) {
-          message.success('批准成功！');
-          this.refreshSchedulePool();
-        }
-      });
+      this.setState({ loading: true });
+      const response = await this.approveSchedule(savedRowKeys[0]);
+      if (response.success) {
+        message.success('批准成功！');
+        this.refreshSchedulePool();
+      }
+      this.setState({ loading: false });
     } else {
       this.batchProcessConfirmRef.show(
         '批准',
@@ -420,6 +421,7 @@ export default class SchedulePage extends Component {
   };
 
   buildOperations = activeKey => {
+    const { loading } = this.state;
     switch (activeKey) {
       case 'Approved':
         return (
@@ -470,6 +472,7 @@ export default class SchedulePage extends Component {
               type={'primary'}
               style={{ marginLeft: 10 }}
               onClick={this.handleApprove}
+              loading={loading}
               hidden={!havePermission(this.state.authority + '.approve')}
             >
               批准

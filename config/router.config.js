@@ -1643,6 +1643,22 @@ export default [
                 quickuuid: 'sj_customer_service_schedule',
                 authority: ['sjtms.bigData.customerServiceSchedule'],
               },
+              {
+                path: '/bigData/loading/shipareaSummary',
+                name: '配送区域汇总报表	',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'sj_itms_cs_shiparea_summary',
+                authority: ['sjtms.bigData.shipareaSummary'],
+              },
+              {
+                path: '/bigData/loading/shipareaDifferences',
+                name: '配送区域明细报表',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'sj_itms_cs_shiparea_differences',
+                authority: ['sjtms.bigData.shipareaDifferences'],
+              },
             ],
           },
 
@@ -1728,22 +1744,7 @@ export default [
                 quickuuid: 'sj_itms_wms_order_dtl_check',
                 authority: ['sjtms.bigData.cswmsOrderDtlCheck'],
               },
-              {
-                path: '/bigData/cs/shipareaSummary',
-                name: '茶山配送区域汇总报表	',
-                org: ['DISPATCH_CENTER'],
-                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
-                quickuuid: 'sj_itms_cs_shiparea_summary',
-                authority: ['sjtms.bigData.shipareaSummary'],
-              },
-              {
-                path: '/bigData/cs/shipareaDifferences',
-                name: '茶山配送区域明细报表',
-                org: ['DISPATCH_CENTER'],
-                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
-                quickuuid: 'sj_itms_cs_shiparea_differences',
-                authority: ['sjtms.bigData.shipareaDifferences'],
-              },
+              
               {
                 path: '/bigData/cs/positionConfirm',
                 name: '茶山板位异常确认报表',

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-01 09:06:04
+ * @LastEditTime: 2023-03-14 17:19:16
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -106,6 +106,7 @@ export default class ScheduleDetailPage extends Component {
   //删除明细
   handleRemoveDetail = () => {
     const { selectedRowKeys, schedule, scheduleDetail } = this.state;
+    this.setState({ loading: true });
     if (selectedRowKeys.length == 0 || selectedRowKeys == undefined) {
       message.warning('请选择订单明细！');
       return;
@@ -165,7 +166,11 @@ export default class ScheduleDetailPage extends Component {
           </Col>
           <Col span={12} style={{ textAlign: 'right' }}>
             {schedule.STAT == 'Saved' ? (
-              <Button style={{ marginRight: 30 }} onClick={() => this.handleRemoveDetail()}>
+              <Button
+                style={{ marginRight: 30 }}
+                onClick={() => this.handleRemoveDetail()}
+                loading={loading}
+              >
                 移除
               </Button>
             ) : (

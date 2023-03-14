@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-06 14:45:34
+ * @LastEditTime: 2023-03-14 15:51:46
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -26,6 +26,7 @@ const { Text } = Typography;
 export default class PendingPage extends Component {
   state = {
     loading: false,
+    btnLoading: false,
     pendingData: [],
     pendingCollectData: [],
     pendingParentRowKeys: [],
@@ -95,24 +96,26 @@ export default class PendingPage extends Component {
   };
 
   //删除待定
-  handleRemovePending = () => {
+  handleRemovePending = async () => {
     const { pendingRowKeys } = this.state;
+    this.setState({ btnLoading: true });
     if (pendingRowKeys.length == 0) {
       message.warning('请选择运输订单！');
       return;
     }
-    removePending(pendingRowKeys).then(response => {
-      if (response.success) {
-        message.success('保存成功！');
-        this.refreshTable();
-        this.props.refreshOrder();
-      }
-    });
+    const response = await removePending(pendingRowKeys);
+    if (response.success) {
+      message.success('保存成功！');
+      this.refreshTable();
+      this.props.refreshOrder();
+    }
+    this.setState({ btnLoading: false });
   };
 
   //添加到排车单
-  handleAddOrder = () => {
+  handleAddOrder = async () => {
     const { pendingRowKeys } = this.state;
+    this.setState({ btnLoading: true });
     const scheduleRowKeys = this.props.scheduleRowKeys();
     if (scheduleRowKeys.length != 1 || scheduleRowKeys == undefined) {
       message.warning('请选择一张排车单！');
@@ -122,16 +125,16 @@ export default class PendingPage extends Component {
       message.warning('请选择待定运输订单！');
       return;
     }
-    addOrders({
+    const response = await addOrders({
       billUuid: scheduleRowKeys[0],
       orderUuids: pendingRowKeys,
-    }).then(response => {
-      if (response.success) {
-        message.success('保存成功！');
-        this.refreshTable();
-        this.props.refreshSchedule();
-      }
     });
+    if (response.success) {
+      message.success('保存成功！');
+      this.refreshTable();
+      this.props.refreshSchedule();
+    }
+    this.setState({ btnLoading: false });
   };
 
   //表格行选择
@@ -169,6 +172,7 @@ export default class PendingPage extends Component {
   render() {
     const {
       loading,
+      btnLoading,
       pendingData,
       pendingCollectData,
       pendingParentRowKeys,
@@ -213,8 +217,14 @@ export default class PendingPage extends Component {
             >
               刷新
             </Button>
-            <Button onClick={() => this.handleAddOrder()}>添加到排车单</Button>
-            <Button style={{ marginLeft: 10 }} onClick={() => this.handleRemovePending()}>
+            <Button onClick={() => this.handleAddOrder()} loading={btnLoading}>
+              添加到排车单
+            </Button>
+            <Button
+              style={{ marginLeft: 10 }}
+              onClick={() => this.handleRemovePending()}
+              loading={btnLoading}
+            >
               移除待定
             </Button>
           </Col>
