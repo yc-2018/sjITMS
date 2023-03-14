@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-09 16:01:24
+ * @LastEditTime: 2023-03-14 11:42:57
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -442,13 +442,17 @@ export default class OrderPoolPage extends Component {
           name: vehicle.DRIVERNAME,
         }
       : {};
-    const delivery = vehicle.DELIVERYUUID
-      ? {
+    let memberDetails = [{ member: carrier, memberType: 'Driver' }];
+    if (vehicle.DELIVERYUUID) {
+      memberDetails.push({
+        member: {
           uuid: vehicle.DELIVERYUUID,
           code: vehicle.DELIVERYCODE,
           name: vehicle.DELIVERYNAME,
-        }
-      : {};
+        },
+        memberType: 'DeliveryMan',
+      });
+    }
     const paramBody = {
       type: 'Job',
       vehicle: {
@@ -463,10 +467,7 @@ export default class OrderPoolPage extends Component {
       },
       carrier: { ...carrier },
       details: [],
-      memberDetails: [
-        { member: carrier, memberType: 'Driver' },
-        { member: delivery, memberType: 'DeliveryMan' },
-      ],
+      memberDetails,
       companyUuid: loginCompany().uuid,
       dispatchCenterUuid: loginOrg().uuid,
     };
