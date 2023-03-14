@@ -1755,6 +1755,29 @@ export default [
             ],
           },
           {
+            path: '/bigData/hz',
+            name: '惠州',
+            routes: [
+              {
+                path: '/bigData/hz/sj_tms_cswms_hend_check',
+                name: '惠州订单数据汇总核对报表',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'sj_tms_cswms_hend_check',
+                authority: ['sjtms.bigData.hzwmsHendCheck'],
+              },
+              {
+                path: '/bigData/hz/sj_itms_wms_order_dtl_check',
+                name: '惠州订单数据明细核对报表',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'sj_itms_wms_order_dtl_check',
+                authority: ['sjtms.bigData.hzwmsOrderDtlCheck'],
+              },
+             
+            ],
+          },
+          {
             path: '/bigData/costReport',
             name: '费用报表',
             routes: [
