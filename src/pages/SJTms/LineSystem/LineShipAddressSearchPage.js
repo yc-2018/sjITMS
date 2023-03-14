@@ -69,6 +69,7 @@ export default class LineShipAddressSearchPage extends Component {
           }
         
         })
+        await this.updateApprovedState(systemUuid, status, systemData);
        return;
       }else{
         await this.updateApprovedState(systemUuid, status, systemData);
