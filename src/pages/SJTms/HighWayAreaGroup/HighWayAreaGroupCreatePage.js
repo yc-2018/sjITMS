@@ -99,8 +99,17 @@ export default class HighWagAreaCreatePage extends QuickCreatePage {
     let formPanel = [];
     for (const categoryItem of categories) {
       let cols = [];
-      let currentTableName;
 
+      let totalsCols = [];
+      totalsCols.push({
+        title: 'line',
+        dataIndex: 'line',
+        key: 'line',
+        // sorter: true,
+        width: 40 + 10,
+      });
+
+      let currentTableName;
       for (const tableItemKey in tableItems) {
         const tableItem = tableItems[tableItemKey];
         const { categoryName, key, tableName, fieldName, label, onlFormField } = tableItem;
@@ -108,6 +117,7 @@ export default class HighWagAreaCreatePage extends QuickCreatePage {
           continue;
         }
         currentTableName = tableName;
+
         let mustInput = onlFormField.dbIsNull ? '' : '*';
         let tailItem = {
           title: (
@@ -142,16 +152,32 @@ export default class HighWagAreaCreatePage extends QuickCreatePage {
           },
         };
         cols.push(tailItem);
+        totalsCols.push({
+          title: label,
+          dataIndex: onlFormField.dbFieldName,
+          key: onlFormField.dbFieldName,
+          // sorter: true,
+          width: onlFormField.fieldLength,
+        });
+        if (
+          onlFormField.isTotal &&
+          this.isTotalCol[currentTableName].indexOf(onlFormField.dbFieldName) == -1
+        ) {
+          this.isTotalCol[currentTableName].push(onlFormField.dbFieldName);
+        }
       }
       if (cols.length > 0) {
         const data = this.entity[currentTableName].filter(x => x.TYPE != 'return');
         const datas = data != undefined ? data : [];
+        let totalDatas = [this.getTotal(currentTableName, datas)];
         formPanel.push(
           <ItemEditTable
             key={categoryItem.category}
+            totalDatas={totalDatas}
             title={this.props.noCategory ? undefined : categoryItem.category}
             columns={cols}
             data={datas}
+            totalsCols={totalsCols}
             newMember={() => {
               this.entity[currentTableName].push({
                 line: this.entity[currentTableName].length + 1,
@@ -176,6 +202,10 @@ export default class HighWagAreaCreatePage extends QuickCreatePage {
     for (const onlFormInfo of onlFormInfos) {
       const { onlFormHead, onlFormFields } = onlFormInfo;
       let tableName = onlFormHead.tableName;
+
+      //初始化total
+      this.isTotalCol[tableName] = [];
+
       let param;
       // 主表用主键关联，附表用外键关联
       if (onlFormHead.tableType != 2) {

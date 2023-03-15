@@ -10,7 +10,8 @@ import {
   SimpleRadio,
   SimpleAutoComplete,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
-import ItemEditTable from '@/pages/Component/Form/ItemEditTable';
+// import ItemEditTable from '@/pages/Component/Form/ItemEditTable';
+import ItemEditTable from '@/pages/Component/RapidDevelopment/CommonLayout/Form/ItemEditTable';
 import Address from '@/pages/Component/Form/Address';
 import { addCondition, getFieldShow } from '@/utils/ryzeUtils';
 import { dynamicQuery } from '@/services/quick/Quick';
@@ -29,12 +30,64 @@ import { dynamicQuery } from '@/services/quick/Quick';
 export default class QuickCreatePage extends CreatePage {
   entity = {};
   tableKey = 0;
+  isTotalCol = {};
 
   formLoaded = () => {};
   beforeSave = data => {};
   afterSave = data => {};
   exHandleChange = e => {};
   drawcell = e => {};
+
+  //计算小数
+  accAdd = (arg1, arg2) => {
+    if (isNaN(arg1)) {
+      arg1 = 0;
+    }
+    if (isNaN(arg2)) {
+      arg2 = 0;
+    }
+    arg1 = Number(arg1);
+    arg2 = Number(arg2);
+    var r1, r2, m, c;
+    try {
+      r1 = arg1.toString().split('.')[1].length;
+    } catch (e) {
+      r1 = 0;
+    }
+    try {
+      r2 = arg2.toString().split('.')[1].length;
+    } catch (e) {
+      r2 = 0;
+    }
+    c = Math.abs(r1 - r2);
+    m = Math.pow(10, Math.max(r1, r2));
+    if (c > 0) {
+      var cm = Math.pow(10, c);
+      if (r1 > r2) {
+        arg1 = Number(arg1.toString().replace('.', ''));
+        arg2 = Number(arg2.toString().replace('.', '')) * cm;
+      } else {
+        arg1 = Number(arg1.toString().replace('.', '')) * cm;
+        arg2 = Number(arg2.toString().replace('.', ''));
+      }
+    } else {
+      arg1 = Number(arg1.toString().replace('.', ''));
+      arg2 = Number(arg2.toString().replace('.', ''));
+    }
+    return (arg1 + arg2) / m;
+  };
+
+  //计算总数
+  getTotal = (tableName, datas) => {
+    let totals = {};
+    if (this.isTotalCol[tableName].length <= 0 || datas.length <= 0) return totals;
+    this.isTotalCol[tableName].map(x => {
+      datas.map(e => {
+        totals[x] = this.accAdd(totals[x], e[x]);
+      });
+    });
+    return totals;
+  };
 
   getFieldKey = (tableName, dbFieldName, key) =>
     tableName + '_' + dbFieldName + (key == undefined ? '' : '_' + key);
@@ -167,6 +220,8 @@ export default class QuickCreatePage extends CreatePage {
     for (const onlFormInfo of onlFormInfos) {
       const { onlFormHead, onlFormFields } = onlFormInfo;
       let tableName = onlFormHead.tableName;
+      //初始化total
+      this.isTotalCol[tableName] = [];
       let param;
       // 主表用主键关联，附表用外键关联
       if (onlFormHead.tableType != 2) {
@@ -298,7 +353,7 @@ export default class QuickCreatePage extends CreatePage {
       }
       const tableName = onlFormHead.tableName;
       this.entity[tableName][0] = {};
-      console.log(onlFormHead);
+      // console.log(onlFormHead);
       const result = onlFormFields.filter(x => x.fieldDefaultValue !== undefined);
       result.forEach(data => {
         this.entity[tableName][0][data.dbFieldName] = data.fieldDefaultValue;
@@ -608,6 +663,14 @@ export default class QuickCreatePage extends CreatePage {
     let formPanel = [];
     for (const categoryItem of categories) {
       let cols = [];
+      let totalsCols = [];
+      totalsCols.push({
+        title: 'line',
+        dataIndex: 'line',
+        key: 'line',
+        // sorter: true,
+        width: 40 + 10,
+      });
       let currentTableName;
       for (const tableItemKey in tableItems) {
         const tableItem = tableItems[tableItemKey];
@@ -649,10 +712,30 @@ export default class QuickCreatePage extends CreatePage {
           },
         };
         cols.push(tailItem);
+        totalsCols.push({
+          title: label,
+          dataIndex: onlFormField.dbFieldName,
+          key: onlFormField.dbFieldName,
+          // sorter: true,
+          width: onlFormField.fieldLength,
+          // render: (val, record) => {
+          //   if (val === '' || val == undefined || val === '[]') return '/';
+          //   else return val;
+          // },
+        });
+        if (
+          onlFormField.isTotal &&
+          this.isTotalCol[currentTableName].indexOf(onlFormField.dbFieldName) == -1
+        ) {
+          this.isTotalCol[currentTableName].push(onlFormField.dbFieldName);
+        }
       }
       if (cols.length > 0) {
+        let totalDatas = [this.getTotal(currentTableName, this.entity[currentTableName])];
         formPanel.push(
           <ItemEditTable
+            totalsCols={totalsCols}
+            totalDatas={totalDatas}
             key={categoryItem.category}
             title={this.props.noCategory ? undefined : categoryItem.category}
             columns={cols}
