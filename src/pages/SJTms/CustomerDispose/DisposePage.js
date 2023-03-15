@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2023-01-10 10:48:50
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-03 14:40:48
+ * @LastEditTime: 2023-03-15 16:43:18
  * @Description: 工单处理
  * @FilePath: \iwms-web\src\pages\SJTms\CustomerDispose\DisposePage.js
  */
@@ -37,7 +37,7 @@ export default class DisposePageModal extends Component {
     const records = response.success && response.data ? response.data : [];
     this.setState({
       visible: true,
-      remark: operation == 'Result' ? bill.DISPOSERESULT : '',
+      remark: operation == 'Result' ? bill.STAFFRESULT : '',
       records,
       validate: true,
       bill,
