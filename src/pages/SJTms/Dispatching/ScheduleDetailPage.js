@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-14 17:19:16
+ * @LastEditTime: 2023-03-15 07:51:28
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -106,11 +106,11 @@ export default class ScheduleDetailPage extends Component {
   //删除明细
   handleRemoveDetail = () => {
     const { selectedRowKeys, schedule, scheduleDetail } = this.state;
-    this.setState({ loading: true });
     if (selectedRowKeys.length == 0 || selectedRowKeys == undefined) {
       message.warning('请选择订单明细！');
       return;
     }
+    this.setState({ loading: true });
     const orderUuids = scheduleDetail
       .filter(x => selectedRowKeys.indexOf(x.uuid) != -1)
       .map(x => x.orderUuid);
