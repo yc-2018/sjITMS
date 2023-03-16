@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2023-01-03 11:44:10
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-12 14:36:30
+ * @LastEditTime: 2023-03-16 15:54:02
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerCreate.js
  */
@@ -66,6 +66,14 @@ export default class CustomerCreate extends QuickCreatePage {
       if (feedbackTime) {
         this.entity[mainName][0]['DEADLINE'] = moment(feedbackTime)
           .add(Number(valueEvent.value), 'hours')
+          .format('YYYY-MM-DD HH:mm:ss');
+      }
+    }
+    if (fieldName == 'FEEDBACKTIME' && valueEvent) {
+      const completionTime = this.entity[mainName][0]['COMPLETIONTIME'];
+      if (completionTime) {
+        this.entity[mainName][0]['DEADLINE'] = moment(valueEvent)
+          .add(Number(completionTime), 'hours')
           .format('YYYY-MM-DD HH:mm:ss');
       }
     }
