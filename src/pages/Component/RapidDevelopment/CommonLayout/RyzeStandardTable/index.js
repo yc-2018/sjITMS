@@ -14,6 +14,7 @@ import update from 'immutability-helper';
 import { func } from 'prop-types';
 import ToolbarPanel from '@/pages/Component/Page/inner/ToolbarPanel';
 import { T } from 'antd/lib/upload/utils';
+import { uniqBy } from 'lodash';
 
 const SHOW_THRESH_HOLD = 5;
 
@@ -367,6 +368,8 @@ class StandardTable extends Component {
     let optionsList = fetchOptions(columns, key);
     let list = getShowList(this.props.data, this.props.dataSource);
     this.state = {
+      isUserSelect: true,
+      lastIndex: undefined,
       selectedRowKeys: [],
       needTotalList,
       selectedAllRows: [],
@@ -431,7 +434,30 @@ class StandardTable extends Component {
         warp.addEventListener('scroll', this.handleScroll, true);
       }
     }, 1000);
+
+    //增加shift键监听 按住shift多选时禁止文字选中
+    //1、某个键按下事件：onkeydown
+    //2、某个键被按下或者按住：onkeypress
+    //3、某个按下的键被松开：onkeyup
+    window.addEventListener('keydown', this.keyDown);
+    window.addEventListener('keyup', this.keyUp);
   }
+
+  keyDown = (event, ...args) => {
+    let that = this;
+    var e = event || window.event || args.callee.caller.arguments[0];
+    if (e && e.keyCode == 16) {
+      that.setState({ isUserSelect: false });
+    }
+  };
+
+  keyUp = (event, ...args) => {
+    let that = this;
+    var e = event || window.event || args.callee.caller.arguments[0];
+    if (e && e.keyCode == 16) {
+      that.setState({ isUserSelect: true });
+    }
+  };
 
   //监听滚动事件
   handleScroll = () => {
@@ -451,6 +477,8 @@ class StandardTable extends Component {
   // 组件将要卸载，取消监听window滚动事件
   componentWillUnmount() {
     window.removeEventListener('scroll', this.handleScroll);
+    window.removeEventListener('keyup', this.keyUp);
+    window.removeEventListener('keydown', this.keyDown);
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -513,8 +541,8 @@ class StandardTable extends Component {
     columns = isEmpty(nextColumns) ? columns : nextColumns;
     const newColumns = [];
     // newColumns.push({});
-    let firstColumn = columns.filter(i => i.title && i.title === checkedValues[0]);
-    newColumns.push({ ...firstColumn });
+    // let firstColumn = columns.filter(i => i.title && i.title === checkedValues[0]);
+    // newColumns.push({ ...firstColumn });
     let arr = checkedValues;
     if (typeof checkedValues === 'string') {
       arr = JSON.parse(checkedValues);
@@ -1039,11 +1067,25 @@ class StandardTable extends Component {
     );
   };
 
-  onClickRow = (record, key, e) => {
-    let { selectedRowKeys, selectedAllRows } = this.state;
+  onClickRow = (record, key, e, index) => {
+    let { selectedRowKeys, selectedAllRows, lastIndex } = this.state;
     if (!selectedRowKeys) {
       selectedRowKeys = [];
       selectedAllRows = [];
+    }
+    if (e.shiftKey && lastIndex >= 0) {
+      let { list } = this.props.data;
+      let allRecords =
+        index > lastIndex
+          ? list.filter((_, i) => {
+              return i > lastIndex && i < index;
+            })
+          : list.filter((_, i) => {
+              return i > index && i < lastIndex;
+            });
+      let allRowKeys = allRecords.map(e => key(e));
+      selectedRowKeys = selectedRowKeys.concat(allRowKeys);
+      selectedAllRows = selectedAllRows.concat(allRecords);
     }
     let rowKey = key && typeof key === 'function' ? key(record) : key;
     let idx = selectedRowKeys.indexOf(rowKey);
@@ -1054,7 +1096,48 @@ class StandardTable extends Component {
       selectedRowKeys.push(rowKey);
       selectedAllRows.push(record);
     }
+    selectedRowKeys = uniqBy(selectedRowKeys);
+    selectedAllRows = uniqBy(selectedAllRows);
     this.handleRowSelectChange(selectedRowKeys, selectedAllRows);
+    if (this.props.handleRowClick) {
+      this.props.handleRowClick(record);
+    }
+    this.setState({ lastIndex: index });
+  };
+
+  //单选
+  onClickRowRadio = (record, key, e, index) => {
+    let selectedRowKeys = [];
+    let selectedAllRows = [];
+    // let { lastIndex } = this.state;
+    // if (e.shiftKey && lastIndex >= 0) {
+    //   let { list } = this.props.data;
+    //   let allRecords =
+    //     index > lastIndex
+    //       ? list.filter((_, i) => {
+    //           return i > lastIndex && i < index;
+    //         })
+    //       : list.filter((_, i) => {
+    //           return i > index && i < lastIndex;
+    //         });
+    //   let allRowKeys = allRecords.map(e => key(e));
+    //   selectedRowKeys = selectedRowKeys.concat(allRowKeys);
+    //   selectedAllRows = selectedAllRows.concat(allRecords);
+    // }
+    let rowKey = key && typeof key === 'function' ? key(record) : key;
+    let idx = selectedRowKeys.indexOf(rowKey);
+    if (idx > -1) {
+      selectedRowKeys.splice(idx, 1);
+      selectedAllRows.splice(idx, 1);
+    } else {
+      selectedRowKeys.push(rowKey);
+      selectedAllRows.push(record);
+    }
+    this.handleRowSelectChange(selectedRowKeys, selectedAllRows);
+    if (this.props.handleRowClick) {
+      this.props.handleRowClick(record);
+    }
+    // this.setState({ lastIndex: index });
   };
 
   strip(number) {
@@ -1251,6 +1334,7 @@ class StandardTable extends Component {
     if (this.props.dataSource) {
       showList = this.props.dataSource;
     }
+    // let selectedRowKeys = this.props.selectedRowKeys?this.props.selectedRowKeys:selectedRowKeys
 
     let paginationProps = false;
     if (!this.props.noPagination) {
@@ -1307,11 +1391,11 @@ class StandardTable extends Component {
     }
     //默认第一列与最后一列操作列固定
     let firstCol = newColumns[0];
-    let lastCol = newColumns[newColumns.length - 1];
     newColumns[0] = {
       ...firstCol,
       fixed: 'left',
     };
+    let lastCol = newColumns[newColumns.length - 1];
     if (this.isFixedEdge(lastCol)) {
       newColumns[newColumns.length - 1] = {
         ...lastCol,
@@ -1448,7 +1532,6 @@ class StandardTable extends Component {
     // 当固定列时，列总宽度小于表单宽度会到导致出现白色垂直空隙，留一列不设宽度以适应弹性布局
     showColumns.push({});
     footerColumns.push({});
-
     // console.log('showColumns', showColumns);
     let settingIcon = (
       <div className={styles.setting} onClick={() => this.handleSettingModalVisible(true)}>
@@ -1459,83 +1542,94 @@ class StandardTable extends Component {
       this.props.colTotal && this.props.colTotal.length == '0'
         ? { display: 'none' }
         : { display: 'block' };
+    let menu = this.props.RightClickMenu;
+    let userSelect = this.state.isUserSelect ? {} : { userSelect: 'none' };
     return (
-      <div className={styles.standardTable}>
-        {(oriColumnLen >= SHOW_THRESH_HOLD && !noSettingColumns) || hasSettingColumns ? (
-          <div style={style}>{this.renderSettingDrowDown(settingIcon)}</div>
-        ) : null}
-        <div
-          id={this.state.settingKey}
-          style={{ borderBottom: '1px solid transparent !important' }}
-        />
-        <DndProvider backend={HTML5Backend}>
-          <Table
-            footer={() => {
-              return (
-                <Table
-                  id={'happy'}
-                  columns={footerColumns}
-                  scroll={{ x: scroll.x, y: false }}
-                  rowKey={() => Math.random()}
-                  pagination={false}
-                  showHeader={false} // table 的 columns 头部隐藏
-                  dataSource={this.props.colTotal}
-                  size={this.props.size ? this.props.size : 'middle'}
-                  components={this.components}
-                  style={status}
-                />
-              );
-            }}
-            className={this.props.tableClassName}
-            id={this.state.key}
-            rowKey={rowKey || 'key'}
-            rowSelection={
-              this.props.unShowRow
-                ? undefined
-                : this.props.rowSelection
-                  ? this.props.rowSelection
-                  : rowSelection
-            }
-            dataSource={showList}
-            size={this.props.size ? this.props.size : 'middle'}
-            pagination={paginationProps}
-            onChange={this.handleTableChange}
-            rowClassName={
-              this.props.rowClassName
-                ? this.props.rowClassName
-                : (record, index) => this.rowClassName(record, index)
-            }
-            components={this.components}
-            loading={this.props.loading}
-            columns={showColumns}
-            bordered={bordered}
-            scroll={this.props.newScroll ? this.props.newScroll : scroll}
-            onRow={
-              this.props.onRow
-                ? this.props.onRow
-                : this.props.unShowRow
-                  ? (record, index) => {
-                      return {
-                        index,
-                        moveRow: this.props.moveRow ? this.props.moveRow : this.moveRow,
-                      };
-                    }
-                  : (record, index) => {
-                      return {
-                        index,
-                        moveRow:
-                          this.props.canDrag && this.props.moveRow
-                            ? this.props.moveRow
-                            : this.moveRow,
-                        onClick: e => this.onClickRow(record, rowKey || 'key', e),
-                        ...this.props.onRow,
-                      };
-                    }
-            }
-            {...rest}
+      <Dropdown
+        overlay={menu}
+        trigger={['contextMenu']}
+        disabled={this.props.RightClickMenu ? false : true}
+      >
+        <div className={styles.standardTable} style={userSelect}>
+          {(oriColumnLen >= SHOW_THRESH_HOLD && !noSettingColumns) || hasSettingColumns ? (
+            <div style={style}>{this.renderSettingDrowDown(settingIcon)}</div>
+          ) : null}
+          <div
+            id={this.state.settingKey}
+            style={{ borderBottom: '1px solid transparent !important' }}
           />
-        </DndProvider>
-      </div>
+          <DndProvider backend={HTML5Backend}>
+            <Table
+              footer={() => {
+                return (
+                  <Table
+                    id={'happy'}
+                    columns={footerColumns}
+                    scroll={{ x: scroll.x, y: false }}
+                    rowKey={() => Math.random()}
+                    pagination={false}
+                    showHeader={false} // table 的 columns 头部隐藏
+                    dataSource={this.props.colTotal}
+                    size={this.props.size ? this.props.size : 'middle'}
+                    components={this.components}
+                    style={status}
+                  />
+                );
+              }}
+              className={this.props.tableClassName}
+              id={this.state.key}
+              rowKey={rowKey || 'key'}
+              rowSelection={
+                this.props.unShowRow
+                  ? undefined
+                  : this.props.rowSelection
+                    ? this.props.rowSelection
+                    : rowSelection
+              }
+              dataSource={showList}
+              size={this.props.size ? this.props.size : 'middle'}
+              pagination={paginationProps}
+              onChange={this.handleTableChange}
+              rowClassName={
+                this.props.rowClassName
+                  ? this.props.rowClassName
+                  : (record, index) => this.rowClassName(record, index)
+              }
+              components={this.components}
+              loading={this.props.loading}
+              columns={showColumns}
+              bordered={bordered}
+              scroll={this.props.newScroll ? this.props.newScroll : scroll}
+              onRow={
+                this.props.onRow
+                  ? this.props.onRow
+                  : this.props.unShowRow
+                    ? (record, index) => {
+                        return {
+                          index,
+                          moveRow: this.props.moveRow ? this.props.moveRow : this.moveRow,
+                        };
+                      }
+                    : (record, index) => {
+                        return {
+                          index,
+                          moveRow:
+                            this.props.canDrag && this.props.moveRow
+                              ? this.props.moveRow
+                              : this.moveRow,
+                          onClick: e =>
+                            this.props.isRadio
+                              ? this.onClickRowRadio(record, rowKey || 'key', e, index)
+                              : this.onClickRow(record, rowKey || 'key', e, index),
+                          ...this.props.onRow,
+                        };
+                      }
+              }
+              {...rest}
+            />
+          </DndProvider>
+        </div>
+      </Dropdown>
     );
   }
 }

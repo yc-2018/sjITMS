@@ -13,14 +13,13 @@ import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCre
 import LineShipAddress from './LineShipAddress';
 const { TabPane } = Tabs;
 import LineMap from './LineMap';
+import ExportJsonExcel from 'js-export-excel';
 import {
-  findLineSystemTree,
-  deleteLines,
-  deleteLineSystemTree,
   backupLineSystem,
   isEnable,
   updateState,
-  findLineSystemTreeByStoreCode,
+  YDSiparea,
+  exportLineSystem
 } from '@/services/sjtms/LineSystemHis';
 import { loginKey, loginCompany, loginOrg } from '@/utils/LoginContext';
 import { havePermission } from '@/utils/authority';
@@ -56,7 +55,28 @@ export default class LineShipAddressSearchPage extends Component {
    */
   onApproval = async (systemUuid, systemData) => {
     const status = systemData && systemData.STATUS == 'Approved' ? 'Revising' : 'Approved';
-    await this.updateApprovedState(systemUuid, status, systemData);
+    console.log(status);
+      if((loginOrg().uuid=='000000750000005' ||loginOrg().uuid=='000008150000002')&& status=='Approved'){
+        await YDSiparea({systemUUID:systemUuid}).then(result =>{
+          console.log(result);
+          if(result.success && result.data?.length>0){
+            Modal.confirm({
+              title: result.data+',存在不同的区域组合，确定批准吗?',
+              onOk: () => {
+                this.updateApprovedState(systemUuid, status, systemData);
+              },
+            });
+          }else{
+             this.updateApprovedState(systemUuid, status, systemData);
+          }
+        })
+       return;
+      }else{
+        await this.updateApprovedState(systemUuid, status, systemData);
+      }
+        
+    
+   
   };
   //取消批准并备份
   notApprovalAndBackup = async (systemUuid, systemData) => {
@@ -240,6 +260,37 @@ export default class LineShipAddressSearchPage extends Component {
                   }}
                 >
                   配置对调线路
+                </Button>
+                <Button
+                  type="primary"
+                  onClick={async ()  => {
+                   const result = await exportLineSystem({systemUUID:selectedKey});
+                   if(result && result.success){
+                      const sheetHeader = ['门店号', '班组', '门店名称', '调整后线路','备注'];
+                      var option = [];
+                      const sheetFilter = [
+                        'storeCode',
+                        'contact',
+                        'storeName',
+                        'lineCode',
+                        'remarks'
+                      ];
+                      option.fileName = result.data.tableName;
+                      option.datas = [
+                        {
+                          sheetData: result.data.lineAddressExcels ? result.data.lineAddressExcels : [],
+                          sheetName: result.data.sheet1, //工作表的名字
+                          sheetFilter: sheetFilter,
+                          sheetHeader: sheetHeader,
+                        },
+                      ];
+                      const toExcel = new ExportJsonExcel(option);
+                      toExcel.saveExcel();
+                    
+                   }
+                  }}
+                >
+                  导出
                 </Button>
               </div>
             </div>

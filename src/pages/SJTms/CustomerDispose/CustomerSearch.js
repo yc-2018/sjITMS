@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2023-01-07 16:10:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-16 11:53:37
+ * @LastEditTime: 2023-03-10 14:56:05
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\CustomerDispose\CustomerSearch.js
  */
@@ -49,7 +49,7 @@ export default class CustomerSearch extends QuickFormSearchPage {
 
   exSearchFilter = () => {
     const { departments } = this.state;
-    let param = [];
+    let param = [{ field: 'STATUS', type: 'VarChar', rule: 'ne', val: 'Saved' }];
     if (!havePermission('sjtms.core.customer.service.view')) {
       param.push({
         nestCondition: {

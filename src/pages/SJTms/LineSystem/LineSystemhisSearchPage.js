@@ -112,13 +112,14 @@ export default class LineSystemhisSearchPage extends Component {
   export = selectedKeys => {
     systemHisExport(selectedKeys).then(response => {
       if (response) {
-        const sheetHeader = ['门店号', '班组', '门店名称', '调整后线路'];
+        const sheetHeader = ['门店号', '班组', '门店名称', '调整后线路','备注'];
         var option = [];
         const sheetFilter = [
           'storeCode',
           'note',
           'storeName',
-          'lineCode'
+          'lineCode',
+          'remarks'
         ];
         option.fileName = response.data.tableName;
         option.datas = [

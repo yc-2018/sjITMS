@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-01 14:15:32
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-03-02 17:52:20
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -32,13 +32,14 @@ import {
   updateOutSerialApi,
   getPris,
 } from '@/services/sjitms/ScheduleBill';
-import { depart, back, recordLog } from '@/services/sjitms/ScheduleProcess';
+import { depart, back, recordLog, callG7Interface } from '@/services/sjitms/ScheduleProcess';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 import { groupBy, sumBy, orderBy } from 'lodash';
 import scher from '@/assets/common/scher.jpg';
 import { dynamicQuery } from '@/services/quick/Quick';
 import { havePermission } from '@/utils/authority';
 import imTemplate from '@/models/account/imTemplate';
+import { LOGIN_PAGE_KEY } from '@/utils/constants';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -61,7 +62,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     newPirs: '',
     sourceData: [],
     authority: this.props.authority ? this.props.authority[0] : null,
-    dc: ['000000750000004', '000008150000001', '000000750000005'],
+    dc: ['000000750000004', '000008150000001', '000000750000005', '000008150000002'],
+    isRadio: true,
   };
 
   componentDidMount() {
@@ -69,15 +71,62 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     this.getCreateConfig();
   }
 
+  goG7 = async apiName => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length <= 0 && apiName != 'truck.webapi.newMonitor') {
+      message.error('请先选择排车单！');
+      return;
+    }
+    let params = {};
+    switch (apiName) {
+      case 'truck.webapi.newFollow':
+        params = {
+          carnum: `粤${selectedRows[0].VEHICLEPLATENUMBER}`,
+        };
+        break;
+      case 'truck.webapi.newReview':
+        params = {
+          carnum: `粤${selectedRows[0].VEHICLEPLATENUMBER}`,
+          begintime: selectedRows[0].DISPATCHTIME,
+          endtime: selectedRows[0].RETURNTIME,
+        };
+        break;
+      case 'truck.webapi.newMonitor':
+        params = {};
+        break;
+    }
+    let result = await callG7Interface(apiName, params);
+
+    if (result.success) {
+      window.open(encodeURI(result.data.web_url));
+    }
+  };
+
+  drawRightClickMenus = () => {
+    return (
+      <Menu>
+        <Menu.Item key="1" onClick={() => this.goG7('truck.webapi.newFollow')}>
+          车辆地图轨迹(G7)
+        </Menu.Item>
+        <Menu.Item key="2" onClick={() => this.goG7('truck.webapi.newReview')}>
+          车辆地图轨迹回放(G7)
+        </Menu.Item>
+        <Menu.Item key="3" onClick={() => this.goG7('truck.webapi.newMonitor')}>
+          车辆实时位置(G7)
+        </Menu.Item>
+      </Menu>
+    );
+  };
+
   //查询数据
   getData = pageFilters => {
     const { dispatch } = this.props;
     const deliverypointCode = pageFilters.superQuery.queryParams.find(
       x => x.field == 'DELIVERYPOINTCODE'
     );
-    pageFilters.lastSql = '';
+    pageFilters.applySql = '';
     if (deliverypointCode) {
-      pageFilters.lastSql = ` and uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
+      pageFilters.applySql = ` uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
         deliverypointCode.val
       }')`;
       pageFilters.superQuery.queryParams = pageFilters.superQuery.queryParams.filter(
@@ -154,18 +203,34 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   //     this.queryCoulumns();
   //   }
   // }
-  handleOnRow = record => {
-    return {
-      onClick: () => {
-        let { data } = this.state;
-        data.list?.map(item => {
-          item.clicked = item.UUID == record.UUID;
-          return item;
-        });
-        this.setState({ data });
-        this.props.refreshSelectedRow(record);
-      },
-    };
+
+  // handleOnRow = record => {
+  //   return {
+  //     onClick: () => {
+  //       let { data, selectedRows, selectedRowKeys } = this.state;
+  //       data.list?.map(item => {
+  //         item.clicked = item.UUID == record.UUID;
+  //         return item;
+  //       });
+  //       selectedRows = [];
+  //       selectedRows.push(record);
+  //       // selectedRowKeys.push(record.UUID);
+  //       record.disabled = true;
+  //       this.setState({ data, selectedRows, selectedRowKeys });
+  //       this.props.refreshSelectedRow(record);
+  //     },
+  //   };
+  // };
+
+  handleRowClick = record => {
+    let { data } = this.state;
+    data.list?.map(item => {
+      item.clicked = item.UUID == record.UUID;
+      return item;
+    });
+    this.setState({ data });
+
+    this.props.refreshSelectedRow(record);
   };
 
   onUpdatePirs = () => {

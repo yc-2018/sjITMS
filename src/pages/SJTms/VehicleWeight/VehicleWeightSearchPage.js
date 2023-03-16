@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-15 14:40:40
+ * @LastEditTime: 2023-03-11 09:36:54
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -29,7 +29,19 @@ export default class VehicleWeightSearchPage extends QuickFormSearchPage {
   };
 
   port = async () => {
-    const { pageFilters } = this.state;
+    const { pageFilters, selectedRows } = this.state;
+    let uuid = '';
+    if (selectedRows.length > 0) {
+      selectedRows.map((row, index) => {
+        if (index == 0) {
+          uuid = "'" + row.UUID + "'";
+        } else {
+          uuid = uuid + ",'" + row.UUID + "'";
+        }
+      });
+    }
+    pageFilters.lastSql = `and uuid in (${uuid})`;
+    // console.log('pageFilters', pageFilters);
     await portVehicleApply(pageFilters);
   };
 

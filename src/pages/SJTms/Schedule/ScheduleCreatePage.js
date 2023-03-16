@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-25 10:17:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-02-10 09:22:07
+ * @LastEditTime: 2023-03-15 16:05:11
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -25,6 +25,7 @@ export default class ScheduleCreatePage extends QuickCreatePage {
       ...this.state,
       CCCWEIGHT: '',
       CCCVOLUME: '',
+      saveControl: false,
     };
   }
 
@@ -32,11 +33,17 @@ export default class ScheduleCreatePage extends QuickCreatePage {
     const { fieldName, valueEvent } = e;
     const { form } = this.props;
     if (fieldName == 'VEHICLEUUID' && valueEvent) {
+      if (valueEvent.record.JOB_STATE != 'Used') {
+        message.error(valueEvent.record.PLATENUMBER + '不是正常状态，不能选择！');
+        this.setState({ saveControl: true });
+        return;
+      }
       this.props.form.setFieldsValue({ ['CCCWEIGHT']: valueEvent.record.BEARWEIGHT });
       this.props.form.setFieldsValue({ ['CCCVOLUME']: valueEvent.record.BEARVOLUME });
       this.setState({
         CCCWEIGHT: valueEvent.record.BEARWEIGHT,
         CCCVOLUME: valueEvent.record.BEARVOLUME,
+        saveControl: false,
       });
       const param = {
         tableName: 'sj_itms_vehicle_employee',
@@ -62,7 +69,7 @@ export default class ScheduleCreatePage extends QuickCreatePage {
               MEMBERCODE: data.EMPCODE,
               MEMBERNAME: data.EMPNAME,
               MEMBERTYPE: data.WORKTYPE,
-              MEMBERUUID: data.UUID,
+              MEMBERUUID: data.EMPUUID,
               line: index + 1,
               key: this.tableKey++,
             });
@@ -71,7 +78,7 @@ export default class ScheduleCreatePage extends QuickCreatePage {
           if (cc != undefined) {
             this.entity['sj_itms_schedule'][0] = {
               ...this.entity['sj_itms_schedule'][0],
-              CARRIERUUID: cc.UUID,
+              CARRIERUUID: cc.EMPUUID,
               CARRIERCODE: cc.EMPCODE,
               CARRIERNAME: cc.EMPNAME,
             };
@@ -148,7 +155,11 @@ export default class ScheduleCreatePage extends QuickCreatePage {
 
   onSave = async data => {
     const { entity } = this;
-    const { onlFormInfos } = this.state;
+    const { onlFormInfos, saveControl } = this.state;
+    if (saveControl) {
+      message.error('该车辆不是正常状态，不能选择！');
+      return;
+    }
 
     //保存前对address字段做处理 不进行保存
     for (let onlFormInfo of onlFormInfos) {

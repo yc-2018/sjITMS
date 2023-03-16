@@ -2,24 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-21 15:20:42
+ * @LastEditTime: 2023-03-15 07:51:49
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
 import React, { Component } from 'react';
-import {
-  Button,
-  Row,
-  Col,
-  Tabs,
-  message,
-  Typography,
-  Icon,
-  Dropdown,
-  Menu,
-  Modal,
-  InputNumber,
-} from 'antd';
+import { Button, Row, Col, Tabs, message, Icon, Dropdown, Menu, Modal, InputNumber } from 'antd';
 import DispatchingTable from './DispatchingTable';
 import DispatchingChildTable from './DispatchingChildTable';
 import {
@@ -40,18 +28,23 @@ import {
   savePending,
   getContainerByBillUuid,
 } from '@/services/sjitms/OrderBill';
-import { save, batchSave } from '@/services/sjitms/ScheduleBill';
+import {
+  save,
+  batchSave,
+  addOrders,
+  checkArea,
+  checkAreaSchedule,
+} from '@/services/sjitms/ScheduleBill';
 import { queryData } from '@/services/quick/Quick';
-import { addOrders } from '@/services/sjitms/ScheduleBill';
 import { groupBy, sumBy, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
 
-const { Text } = Typography;
 const { TabPane } = Tabs;
 export default class OrderPoolPage extends Component {
   state = {
     loading: false,
+    btnLoading: false,
     auditedData: [],
     searchPagination: false,
     pageFilter: [],
@@ -162,6 +155,7 @@ export default class OrderPoolPage extends Component {
       this.props.refreshSelectRowOrder([], ['Audited', 'PartScheduled']);
       this.setState({ activeKey: 'Audited', loading: false, pageFilter });
     });
+    this.props.refreshPending();
   };
 
   refreshVehiclePool = (params, pages, sorter) => {
@@ -293,7 +287,7 @@ export default class OrderPoolPage extends Component {
   };
 
   //排车
-  dispatching = () => {
+  dispatching = async () => {
     const { auditedRowKeys, auditedData } = this.state;
     const selectPending = this.props.selectPending();
     if (auditedRowKeys.length + selectPending.length == 0) {
@@ -302,6 +296,22 @@ export default class OrderPoolPage extends Component {
     }
     let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
     orders = [...orders, ...selectPending];
+    //校验区域组合
+    const result = await checkArea(orders);
+    if (result && result.data) {
+      Modal.confirm({
+        title: '所选门店配送区域不一样，确定排车吗？',
+        onOk: () => {
+          this.dispatchingCom(orders);
+        },
+      });
+      return;
+    } else {
+      this.dispatchingCom(orders);
+    }
+  };
+
+  dispatchingCom(orders) {
     //订单类型校验
     const orderType = uniqBy(orders.map(x => x.orderType));
     if (orderType.includes('Returnable') && orderType.some(x => x != 'Returnable')) {
@@ -343,23 +353,17 @@ export default class OrderPoolPage extends Component {
       return;
     }
     this.createPageModalRef.show(false, orders);
-  };
+  }
 
-  //地图排车
-  dispatchingByMap = orders => {
-    // if (orders.length <= 0) {
-    //   message.warning('请选择门店！');
-    //   return;
-    // }
-    //订单类型校验
+  veriftOrder = orders => {
     const orderType = uniqBy(orders.map(x => x.orderType));
     if (orderType.includes('Returnable') && orderType.some(x => x != 'Returnable')) {
       message.error('门店退货类型运输订单不能与其它类型订单混排，请检查！');
-      return;
+      return false;
     }
     if (orderType.includes('TakeDelivery') && orderType.some(x => x != 'TakeDelivery')) {
       message.error('提货类型运输订单不能与其它类型订单混排，请检查！');
-      return;
+      return false;
     }
     //不可共配校验
     let owners = [...orders].map(x => {
@@ -389,6 +393,18 @@ export default class OrderPoolPage extends Component {
           noJointlyOwner.owners +
           ']不可共配，请检查货主配置!'
       );
+      return false;
+    }
+    return true;
+  };
+  //地图排车
+  dispatchingByMap = orders => {
+    // if (orders.length <= 0) {
+    //   message.warning('请选择门店！');
+    //   return;
+    // }
+    //订单类型校验
+    if (!this.veriftOrder(orders)) {
       return;
     }
     // this.setState({ mapModal: false });
@@ -427,13 +443,17 @@ export default class OrderPoolPage extends Component {
           name: vehicle.DRIVERNAME,
         }
       : {};
-    const delivery = vehicle.DELIVERYUUID
-      ? {
+    let memberDetails = [{ member: carrier, memberType: 'Driver' }];
+    if (vehicle.DELIVERYUUID) {
+      memberDetails.push({
+        member: {
           uuid: vehicle.DELIVERYUUID,
           code: vehicle.DELIVERYCODE,
           name: vehicle.DELIVERYNAME,
-        }
-      : {};
+        },
+        memberType: 'DeliveryMan',
+      });
+    }
     const paramBody = {
       type: 'Job',
       vehicle: {
@@ -448,10 +468,7 @@ export default class OrderPoolPage extends Component {
       },
       carrier: { ...carrier },
       details: [],
-      memberDetails: [
-        { member: carrier, memberType: 'Driver' },
-        { member: delivery, memberType: 'DeliveryMan' },
-      ],
+      memberDetails,
       companyUuid: loginCompany().uuid,
       dispatchCenterUuid: loginOrg().uuid,
     };
@@ -459,24 +476,25 @@ export default class OrderPoolPage extends Component {
   };
 
   //添加到待定池
-  handleAddPending = () => {
+  handleAddPending = async () => {
     const { auditedRowKeys } = this.state;
     if (auditedRowKeys.length == 0) {
       message.warning('请选择运输订单！');
       return;
     }
-    savePending(auditedRowKeys).then(response => {
-      if (response.success) {
-        message.success('保存成功！');
-        this.refreshTable();
-        this.props.refreshPending();
-      }
-    });
+    this.setState({ btnLoading: true });
+    const response = await savePending(auditedRowKeys);
+    if (response.success) {
+      message.success('保存成功！');
+      this.refreshTable();
+      this.props.refreshPending();
+    }
+    this.setState({ btnLoading: false });
   };
 
   //添加到排车单
-  handleAddOrder = () => {
-    const { auditedRowKeys } = this.state;
+  handleAddOrder = async (checkWeight, checkArea) => {
+    const { auditedRowKeys, auditedData } = this.state;
     const scheduleRowKeys = this.props.scheduleRowKeys();
     if (scheduleRowKeys == undefined || scheduleRowKeys.length != 1) {
       message.warning('请选择一张排车单！');
@@ -486,13 +504,48 @@ export default class OrderPoolPage extends Component {
       message.warning('请选择待定运输订单！');
       return;
     }
-    addOrders({ billUuid: scheduleRowKeys[0], orderUuids: auditedRowKeys }).then(response => {
-      if (response.success) {
-        message.success('保存成功！');
-        this.refreshTable();
-        this.props.refreshSchedule();
+    this.setState({ btnLoading: true });
+    const orders = auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1);
+    const schedule = this.props.getSchedule(scheduleRowKeys[0]);
+    const exceedWeight =
+      sumBy(orders, x => x.weight) + schedule.WEIGHT * 1000 - schedule.BEARWEIGHT * 1000;
+    if (exceedWeight > 0 && checkWeight == undefined) {
+      Modal.confirm({
+        title: '提示',
+        content: '排车重量超' + (exceedWeight / 1000).toFixed(3) + 't,确定继续吗?',
+        okText: '确认',
+        cancelText: '取消',
+        onOk: () => {
+          this.handleAddOrder(true, checkArea);
+        },
+        onCancel: () => {
+          this.setState({ btnLoading: false });
+        },
+      });
+      return;
+    }
+    if (this.props.dispatchConfig.checkArea == 1 && checkArea == undefined) {
+      const response = await checkAreaSchedule(auditedRowKeys, scheduleRowKeys[0]);
+      if (response && response.data) {
+        Modal.confirm({
+          title: '所选门店配送区域不一样，确定排车吗？',
+          onOk: () => {
+            this.handleAddOrder(checkWeight, true);
+          },
+          onCancel: () => {
+            this.setState({ btnLoading: false });
+          },
+        });
+        return;
       }
-    });
+    }
+    const response = await addOrders({ billUuid: scheduleRowKeys[0], orderUuids: auditedRowKeys });
+    if (response.success) {
+      message.success('保存成功！');
+      this.refreshTable();
+      this.props.refreshSchedule();
+    }
+    this.setState({ btnLoading: false });
   };
   //添加
   add = () => {
@@ -677,43 +730,55 @@ export default class OrderPoolPage extends Component {
     const totalTextStyle = footer
       ? {}
       : { fontSize: 16, fontWeight: 700, marginLeft: 2, color: '#333' };
+    const columnStyle = {
+      fontSize: 14,
+      overflow: 'hidden',
+      whiteSpace: 'nowrap',
+      textOverflow: 'ellipsis',
+    };
+    const count =
+      Number(orders.realCartonCount) +
+      Number(orders.realScatteredCount) +
+      Number(orders.realContainerCount) * 2;
     return (
-      <Row type="flex" style={{ fontSize: 14 }}>
-        <Col span={4}>
-          <Text> 总件数:</Text>
-          <Text style={totalTextStyle}>
-            {Number(orders.realCartonCount) +
-              Number(orders.realScatteredCount) +
-              Number(orders.realContainerCount) * 2}
-          </Text>
-        </Col>
-        <Col span={footer ? 4 : 3}>
-          <Text> 整件:</Text>
-          <Text style={totalTextStyle}>{orders.realCartonCount}</Text>
-        </Col>
-        <Col span={footer ? 4 : 3}>
-          <Text> 散件:</Text>
-          <Text style={totalTextStyle}>{orders.realScatteredCount}</Text>
-        </Col>
-        <Col span={footer ? 4 : 3}>
-          <Text> 周转筐:</Text>
-          <Text style={totalTextStyle}>{orders.realContainerCount}</Text>
-        </Col>
-        <Col span={4}>
-          <Text> 体积:</Text>
-          <Text style={totalTextStyle}>{orders.volume}</Text>
-        </Col>
-        <Col span={4}>
-          <Text> 重量:</Text>
-          <Text style={totalTextStyle}>{orders.weight}</Text>
-        </Col>
+      <div style={{ display: 'flex' }}>
+        <div style={{ ...columnStyle, flex: 1.3 }}>
+          总件数:
+          <span style={totalTextStyle}>{count}</span>
+        </div>
+        {footer && dispatchConfig.calvehicle && dispatchConfig.calvehicle > 0 ? (
+          <div style={{ ...columnStyle, flex: 0.8 }}>
+            预排:
+            <span style={totalTextStyle}>{Math.ceil(count / dispatchConfig.calvehicle)}</span>
+          </div>
+        ) : null}
+        <div style={{ ...columnStyle, flex: 1 }}>
+          整件:
+          <span style={totalTextStyle}>{orders.realCartonCount}</span>
+        </div>
+        <div style={{ ...columnStyle, flex: 1 }}>
+          散件:
+          <span style={totalTextStyle}>{orders.realScatteredCount}</span>
+        </div>
+        <div style={{ ...columnStyle, flex: 1.2 }}>
+          周转筐:
+          <span style={totalTextStyle}>{orders.realContainerCount}</span>
+        </div>
+        <div style={{ ...columnStyle, flex: 1.2 }}>
+          体积:
+          <span style={totalTextStyle}>{orders.volume}</span>
+        </div>
+        <div style={{ ...columnStyle, flex: 1.2 }}>
+          重量:
+          <span style={totalTextStyle}>{orders.weight}</span>
+        </div>
         {footer ? null : (
-          <Col span={3}>
-            <Text>门店:</Text>
-            <Text style={totalTextStyle}>{orders.totalStores}</Text>
-          </Col>
+          <div style={{ ...columnStyle, flex: 1 }}>
+            门店:
+            <span style={totalTextStyle}>{orders.totalStores}</span>
+          </div>
         )}
-      </Row>
+      </div>
     );
   };
   //计算汇总
@@ -757,27 +822,27 @@ export default class OrderPoolPage extends Component {
     return (
       <Row type="flex" justify="space-around" style={{ fontSize: 14 }}>
         <Col span={5}>
-          <Text> 车辆数:</Text>
-          <Text style={totalTextStyle}>{vehicles.length}</Text>
+          车辆数: <span style={totalTextStyle}>{vehicles.length}</span>
         </Col>
         <Col span={5}>
-          <Text> 总限重:</Text>
-          <Text style={totalTextStyle}>
+          总限重:
+          <span style={totalTextStyle}>
             {Math.round(sumBy(vehicles.map(x => x.BEARWEIGHT)) * 100) / 100}
-          </Text>
+          </span>
         </Col>
         <Col span={5}>
-          <Text> 总容积:</Text>
-          <Text style={totalTextStyle}>
+          总容积:
+          <span style={totalTextStyle}>
             {Math.round(sumBy(vehicles.map(x => (x.BEARVOLUME * x.BEARVOLUMERATE) / 100)) * 100) /
               100}
-          </Text>
+          </span>
         </Col>
       </Row>
     );
   };
 
   buildOperations = activeKey => {
+    const { btnLoading } = this.state;
     switch (activeKey) {
       case 'Vehicle':
         return (
@@ -791,16 +856,28 @@ export default class OrderPoolPage extends Component {
             <Button type={'primary'} onClick={this.dispatching}>
               排车
             </Button>
-            <Button style={{ marginLeft: 10 }} onClick={() => this.handleAddOrder()}>
+            <Button
+              style={{ marginLeft: 10 }}
+              onClick={() => this.handleAddOrder()}
+              loading={btnLoading}
+            >
               添加到排车单
             </Button>
-            <Button style={{ marginLeft: 10 }} onClick={this.handleAddPending}>
+            <Button style={{ marginLeft: 10 }} onClick={this.handleAddPending} loading={btnLoading}>
               添加到待定池
             </Button>
           </>
         );
     }
   };
+
+  // onDoubleClick = record => {
+  //   let orders = [record];
+  //   if (!this.veriftOrder(orders)) {
+  //     return;
+  //   }
+  //   this.createPageModalRef.show(false, orders);
+  // };
 
   render() {
     const {
@@ -853,7 +930,7 @@ export default class OrderPoolPage extends Component {
           onChange={this.handleTabChange}
           tabBarExtraContent={this.buildOperations(activeKey)}
         >
-          <TabPane tab={<Text className={dispatchingStyles.cardTitle}>订单池</Text>} key="Audited">
+          <TabPane tab={<span className={dispatchingStyles.cardTitle}>订单池</span>} key="Audited">
             {/* 查询表单 */}
             <SearchForm
               refresh={this.refreshTable}
@@ -876,6 +953,24 @@ export default class OrderPoolPage extends Component {
                     }}
                   >
                     拆单
+                  </Menu.Item>
+                  <Menu.Item
+                    onClick={() => {
+                      const { auditedRowKeys, auditedData } = this.state;
+                      const selectPending = this.props.selectPending();
+                      if (auditedRowKeys.length + selectPending.length == 0) {
+                        message.warning('请选择运输订单！');
+                        return;
+                      }
+                      let orders = auditedData
+                        ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1)
+                        : [];
+                      orders = [...orders, ...selectPending];
+                      this.dispatchMapRef.show(orders);
+                    }}
+                  >
+                    <img src={mapIcon} style={{ width: 20, height: 20 }} />
+                    地图排车
                   </Menu.Item>
                 </Menu>
               }
@@ -902,6 +997,7 @@ export default class OrderPoolPage extends Component {
                     scrollY={`calc(86vh - ${orderPoolHeight}px)`}
                     title={() => this.drawCollect(false, collectOrder)}
                     footer={() => this.drawCollect(true, waveOrder)}
+                    // onDoubleClick={this.onDoubleClick}
                   />
                 ) : (
                   <DispatchingTable
@@ -985,7 +1081,7 @@ export default class OrderPoolPage extends Component {
               onRef={node => (this.dispatchMapRef = node)}
             />
           </TabPane>
-          <TabPane tab={<Text className={dispatchingStyles.cardTitle}>运力池</Text>} key="Vehicle">
+          <TabPane tab={<span className={dispatchingStyles.cardTitle}>运力池</span>} key="Vehicle">
             <SearchForm
               refresh={this.refreshTable}
               quickuuid="v_sj_itms_vehicle_stat"
