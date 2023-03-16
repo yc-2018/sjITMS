@@ -80,7 +80,7 @@ export default class QuickCreatePage extends CreatePage {
   //计算总数
   getTotal = (tableName, datas) => {
     let totals = {};
-    if (this.isTotalCol[tableName].length <= 0 || datas.length <= 0) return totals;
+    if (this.isTotalCol[tableName]?.length <= 0 || datas.length <= 0) return totals;
     this.isTotalCol[tableName].map(x => {
       datas.map(e => {
         totals[x] = this.accAdd(totals[x], e[x]);
