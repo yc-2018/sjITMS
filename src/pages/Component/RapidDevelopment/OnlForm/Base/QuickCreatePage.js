@@ -81,7 +81,7 @@ export default class QuickCreatePage extends CreatePage {
   getTotal = (tableName, datas) => {
     let totals = {};
     if (this.isTotalCol[tableName]?.length <= 0 || datas.length <= 0) return totals;
-    this.isTotalCol[tableName].map(x => {
+    this.isTotalCol[tableName]?.map(x => {
       datas.map(e => {
         totals[x] = this.accAdd(totals[x], e[x]);
       });
@@ -725,9 +725,9 @@ export default class QuickCreatePage extends CreatePage {
         });
         if (
           onlFormField.isTotal &&
-          this.isTotalCol[currentTableName].indexOf(onlFormField.dbFieldName) == -1
+          this.isTotalCol[currentTableName]?.indexOf(onlFormField.dbFieldName) == -1
         ) {
-          this.isTotalCol[currentTableName].push(onlFormField.dbFieldName);
+          this.isTotalCol[currentTableName]?.push(onlFormField.dbFieldName);
         }
       }
       if (cols.length > 0) {
