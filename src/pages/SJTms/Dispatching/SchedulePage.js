@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-14 17:22:56
+ * @LastEditTime: 2023-03-17 07:51:05
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -42,6 +42,7 @@ const { TabPane } = Tabs;
 export default class SchedulePage extends Component {
   state = {
     loading: false,
+    btnLoading: false,
     columns: [...ScheduleColumns],
     savedRowKeys: [],
     approvedRowKeys: [],
@@ -290,13 +291,13 @@ export default class SchedulePage extends Component {
       return;
     }
     if (savedRowKeys.length == 1) {
-      this.setState({ loading: true });
+      this.setState({ btnLoading: true });
       const response = await this.approveSchedule(savedRowKeys[0]);
       if (response.success) {
         message.success('批准成功！');
         this.refreshSchedulePool();
       }
-      this.setState({ loading: false });
+      this.setState({ btnLoading: false });
     } else {
       this.batchProcessConfirmRef.show(
         '批准',
@@ -421,7 +422,7 @@ export default class SchedulePage extends Component {
   };
 
   buildOperations = activeKey => {
-    const { loading } = this.state;
+    const { btnLoading } = this.state;
     switch (activeKey) {
       case 'Approved':
         return (
@@ -472,7 +473,7 @@ export default class SchedulePage extends Component {
               type={'primary'}
               style={{ marginLeft: 10 }}
               onClick={this.handleApprove}
-              loading={loading}
+              loading={btnLoading}
               hidden={!havePermission(this.state.authority + '.approve')}
             >
               批准
