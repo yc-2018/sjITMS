@@ -161,9 +161,9 @@ export default class HighWagAreaCreatePage extends QuickCreatePage {
         });
         if (
           onlFormField.isTotal &&
-          this.isTotalCol[currentTableName].indexOf(onlFormField.dbFieldName) == -1
+          this.isTotalCol[currentTableName]?.indexOf(onlFormField.dbFieldName) == -1
         ) {
-          this.isTotalCol[currentTableName].push(onlFormField.dbFieldName);
+          this.isTotalCol[currentTableName]?.push(onlFormField.dbFieldName);
         }
       }
       if (cols.length > 0) {
