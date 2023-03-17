@@ -34,32 +34,32 @@ export default class VehicleCreatePage extends QuickCreatePage {
       }
     }
 
-    const { SJ_ITMS_VEHICLE_VEHICLETYPEUUID } = this.state.runTimeProps;
-    const saveDispatchCenter = entity.SJ_ITMS_VEHICLE[0].DISPATCHCENTERUUID;
-    const saveVehicleTypeUuid = entity.SJ_ITMS_VEHICLE[0].VEHICLETYPEUUID;
+    // const { SJ_ITMS_VEHICLE_VEHICLETYPEUUID } = this.state.runTimeProps;
+    // const saveDispatchCenter = entity.SJ_ITMS_VEHICLE[0].DISPATCHCENTERUUID;
+    // const saveVehicleTypeUuid = entity.SJ_ITMS_VEHICLE[0].VEHICLETYPEUUID;
 
-    const DISPATCHCENTERUUID = SJ_ITMS_VEHICLE_VEHICLETYPEUUID.sourceData.find(
-      x => x.UUID == saveVehicleTypeUuid
-    ).DISPATCHCENTERUUID;
+    // const DISPATCHCENTERUUID = SJ_ITMS_VEHICLE_VEHICLETYPEUUID.sourceData.find(
+    //   x => x.UUID == saveVehicleTypeUuid
+    // ).DISPATCHCENTERUUID;
 
-    console.log('DISPATCHCENTERUUID', DISPATCHCENTERUUID);
-    console.log('saveDispatchCenter', saveDispatchCenter);
+    // console.log('DISPATCHCENTERUUID', DISPATCHCENTERUUID);
+    // console.log('saveDispatchCenter', saveDispatchCenter);
 
-    if (DISPATCHCENTERUUID !== saveDispatchCenter) {
-      Modal.confirm({
-        title: '调度中心配置与车型的调度中心不匹配，是否保存?',
-        content: '',
-        okText: '是',
-        okType: 'primary',
-        cancelText: '否',
-        onOk: this.handleOk.bind(),
-        onCancel() {
-          return false;
-        },
-      });
-    } else {
+    // if (DISPATCHCENTERUUID !== saveDispatchCenter) {
+    //   Modal.confirm({
+    //     title: '调度中心配置与车型的调度中心不匹配，是否保存?',
+    //     content: '',
+    //     okText: '是',
+    //     okType: 'primary',
+    //     cancelText: '否',
+    //     onOk: this.handleOk.bind(),
+    //     onCancel() {
+    //       return false;
+    //     },
+    //   });
+    // } else {
       this.handleOk();
-    }
+   // }
   };
 
   handleOk = async () => {
