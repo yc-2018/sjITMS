@@ -161,7 +161,7 @@ export default class DispatchingTable extends Component {
   };
 
   render() {
-    this.refreshColumns(this.props.columns);
+    // this.refreshColumns(this.props.columns);
 
     const { selectedRowKeys } = this.props;
     const rowSelection = selectedRowKeys
