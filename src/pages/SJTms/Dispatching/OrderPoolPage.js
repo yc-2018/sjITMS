@@ -296,18 +296,23 @@ export default class OrderPoolPage extends Component {
     let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
     orders = [...orders, ...selectPending];
     //校验区域组合
-    const result = await checkArea(orders);
-    if (result && result.data) {
-      Modal.confirm({
-        title: '所选门店配送区域不一样，确定排车吗？',
-        onOk: () => {
-          this.dispatchingCom(orders);
-        },
-      });
-      return;
-    } else {
+    if(orders[0].dispatchCenterUuid=='000008150000001' || orders[0].dispatchCenterUuid =='000000750000004'){
       this.dispatchingCom(orders);
-    }
+    }else{
+      const result = await checkArea(orders);
+      if (result && result.data) {
+        Modal.confirm({
+          title: '所选门店配送区域不一样，确定排车吗？',
+          onOk: () => {
+            this.dispatchingCom(orders);
+          },
+        });
+        return;
+      } else {
+        this.dispatchingCom(orders);
+      }
+    
+      } 
   };
 
   dispatchingCom(orders) {
