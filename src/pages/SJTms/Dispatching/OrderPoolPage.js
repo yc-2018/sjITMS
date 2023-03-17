@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-14 11:42:57
+ * @LastEditTime: 2023-03-15 07:51:49
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -44,6 +44,7 @@ const { TabPane } = Tabs;
 export default class OrderPoolPage extends Component {
   state = {
     loading: false,
+    btnLoading: false,
     auditedData: [],
     searchPagination: false,
     pageFilter: [],
@@ -480,19 +481,20 @@ export default class OrderPoolPage extends Component {
   };
 
   //添加到待定池
-  handleAddPending = () => {
+  handleAddPending = async () => {
     const { auditedRowKeys } = this.state;
     if (auditedRowKeys.length == 0) {
       message.warning('请选择运输订单！');
       return;
     }
-    savePending(auditedRowKeys).then(response => {
-      if (response.success) {
-        message.success('保存成功！');
-        this.refreshTable();
-        this.props.refreshPending();
-      }
-    });
+    this.setState({ btnLoading: true });
+    const response = await savePending(auditedRowKeys);
+    if (response.success) {
+      message.success('保存成功！');
+      this.refreshTable();
+      this.props.refreshPending();
+    }
+    this.setState({ btnLoading: false });
   };
 
   //添加到排车单
@@ -507,6 +509,7 @@ export default class OrderPoolPage extends Component {
       message.warning('请选择待定运输订单！');
       return;
     }
+    this.setState({ btnLoading: true });
     const orders = auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1);
     const schedule = this.props.getSchedule(scheduleRowKeys[0]);
     const exceedWeight =
@@ -520,6 +523,9 @@ export default class OrderPoolPage extends Component {
         onOk: () => {
           this.handleAddOrder(true, checkArea);
         },
+        onCancel: () => {
+          this.setState({ btnLoading: false });
+        },
       });
       return;
     }
@@ -531,17 +537,20 @@ export default class OrderPoolPage extends Component {
           onOk: () => {
             this.handleAddOrder(checkWeight, true);
           },
+          onCancel: () => {
+            this.setState({ btnLoading: false });
+          },
         });
         return;
       }
     }
-    addOrders({ billUuid: scheduleRowKeys[0], orderUuids: auditedRowKeys }).then(response => {
-      if (response.success) {
-        message.success('保存成功！');
-        this.refreshTable();
-        this.props.refreshSchedule();
-      }
-    });
+    const response = await addOrders({ billUuid: scheduleRowKeys[0], orderUuids: auditedRowKeys });
+    if (response.success) {
+      message.success('保存成功！');
+      this.refreshTable();
+      this.props.refreshSchedule();
+    }
+    this.setState({ btnLoading: false });
   };
   //添加
   add = () => {
@@ -838,6 +847,7 @@ export default class OrderPoolPage extends Component {
   };
 
   buildOperations = activeKey => {
+    const { btnLoading } = this.state;
     switch (activeKey) {
       case 'Vehicle':
         return (
@@ -851,10 +861,14 @@ export default class OrderPoolPage extends Component {
             <Button type={'primary'} onClick={this.dispatching}>
               排车
             </Button>
-            <Button style={{ marginLeft: 10 }} onClick={() => this.handleAddOrder()}>
+            <Button
+              style={{ marginLeft: 10 }}
+              onClick={() => this.handleAddOrder()}
+              loading={btnLoading}
+            >
               添加到排车单
             </Button>
-            <Button style={{ marginLeft: 10 }} onClick={this.handleAddPending}>
+            <Button style={{ marginLeft: 10 }} onClick={this.handleAddPending} loading={btnLoading}>
               添加到待定池
             </Button>
           </>

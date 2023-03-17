@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-25 10:17:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-03 08:56:20
+ * @LastEditTime: 2023-03-15 16:05:11
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -69,7 +69,7 @@ export default class ScheduleCreatePage extends QuickCreatePage {
               MEMBERCODE: data.EMPCODE,
               MEMBERNAME: data.EMPNAME,
               MEMBERTYPE: data.WORKTYPE,
-              MEMBERUUID: data.UUID,
+              MEMBERUUID: data.EMPUUID,
               line: index + 1,
               key: this.tableKey++,
             });
@@ -78,7 +78,7 @@ export default class ScheduleCreatePage extends QuickCreatePage {
           if (cc != undefined) {
             this.entity['sj_itms_schedule'][0] = {
               ...this.entity['sj_itms_schedule'][0],
-              CARRIERUUID: cc.UUID,
+              CARRIERUUID: cc.EMPUUID,
               CARRIERCODE: cc.EMPCODE,
               CARRIERNAME: cc.EMPNAME,
             };

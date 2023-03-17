@@ -5,7 +5,8 @@ import { itemColWidth } from '@/utils/ColWidth';
 import { commonLocale, placeholderLocale } from '@/utils/CommonLocale';
 import IconFont from '@/components/IconFont';
 import EFormPanel from '@/pages/Component/Form/EFormPanel';
-import style from '@/pages/Component/Form/ItemEditTable.less';
+import style from './ItemEditTable.less';
+
 /**
  * 单据明细编辑表格，自带新增一行、删除一行、批量删除功能
  * 如果新增一行时有需要初始化的值可通过传入属性newMember来自定义新增方法，也可在列渲染的时候当该列为空时给默认值
@@ -112,37 +113,38 @@ export default class ItemEditTable extends PureComponent {
       message.warn('请先选择要删除行！');
       return;
     }
-    // this.props.batchRemove ? this.props.batchRemove(selectedRowKeys) :
-    Modal.confirm({
-      title: '是否要删除选择行？',
-      okText: '确定',
-      cancelText: '取消',
-      onOk: () => {
-        if (this.props.batchRemove) {
-          this.props.batchRemove(selectedRowKeys);
-          this.setState({
-            selectedRows: [],
-            selectedRowKeys: [],
-          });
-        } else {
-          for (let i = data.length - 1; i >= 0; i--) {
-            if (selectedRowKeys.indexOf(data[i].line) >= 0) {
-              data.splice(i, 1);
+    this.props.batchRemove
+      ? this.props.batchRemove(selectedRowKeys)
+      : Modal.confirm({
+          title: '是否要删除选择行？',
+          okText: '确定',
+          cancelText: '取消',
+          onOk: () => {
+            if (this.props.batchRemove) {
+              this.props.batchRemove(selectedRowKeys);
+              this.setState({
+                selectedRows: [],
+                selectedRowKeys: [],
+              });
+            } else {
+              for (let i = data.length - 1; i >= 0; i--) {
+                if (selectedRowKeys.indexOf(data[i].line) >= 0) {
+                  data.splice(i, 1);
+                }
+              }
+              for (let i = 0; i < data.length; i++) {
+                data[i].line = i + 1;
+              }
+              this.props.handleRemove && this.props.handleRemove(data);
+              this.setState({
+                data: data,
+                index: index + 1,
+                selectedRows: [],
+                selectedRowKeys: [],
+              });
             }
-          }
-          for (let i = 0; i < data.length; i++) {
-            data[i].line = i + 1;
-          }
-          this.props.handleRemove && this.props.handleRemove(data);
-          this.setState({
-            data: data,
-            index: index + 1,
-            selectedRows: [],
-            selectedRowKeys: [],
-          });
-        }
-      },
-    });
+          },
+        });
   };
 
   newMember = () => {
@@ -232,7 +234,7 @@ export default class ItemEditTable extends PureComponent {
         dataIndex: 'line',
         key: 'line',
         width: itemColWidth.lineColWidth,
-        render: (text, record, index) => <span>{record.line - 1}</span>,
+        render: (text, record, index) => <span>{record.line}</span>,
       });
     }
     !this.props.notNote
@@ -392,13 +394,13 @@ export default class ItemEditTable extends PureComponent {
     let height = footerPos.top - pos.top - 90;
     let dataHeight = data ? (data.length <= 10 ? data.length : 10) * 50 : 0;
     if (dataHeight > height) {
-      scroll.y = height < 30 ? 30 : height - 40;
+      scroll.y = height < 200 ? 200 : height - 40;
     }
     // x 轴滚动与自适应宽度
     if ((totalWidth > tableWidth || totalWidth + noteWidth > tableWidth) && tableWidth > 0) {
-      scroll.x = totalWidth + noteWidth;
+      scroll.x = totalWidth + noteWidth - 48;
     } else {
-      let moreWidth = tableWidth - totalWidth - noteWidth;
+      let moreWidth = tableWidth - totalWidth - noteWidth - 52;
       let newTotalWidth = 0;
       ncolumns.forEach(e => {
         if (
@@ -429,7 +431,12 @@ export default class ItemEditTable extends PureComponent {
         }
 
         newTotalWidth = newTotalWidth + ncolumns[idx].width;
-        totalsCols[idx].width = ncolumns[idx].width;
+
+        //math
+        totalsCols[idx].width =
+          ncolumns[idx].width != ncolumns[idx].width
+            ? (tableWidth - 70) / (totalsCols.length - 1)
+            : ncolumns[idx].width + 6;
       }
     }
     let pagination = {
@@ -475,7 +482,8 @@ export default class ItemEditTable extends PureComponent {
       this.props.totalDatas && this.props.totalDatas.length == '0'
         ? { display: 'none' }
         : { display: 'block' };
-    console.log('ncolumns', ncolumns, totalsCols);
+    // console.log('ncolumns', ncolumns, totalsCols);
+
     return (
       <div id="editTable" className={style.itemEditTable}>
         {showToolbar && (
@@ -516,7 +524,7 @@ export default class ItemEditTable extends PureComponent {
           footer={() => {
             return (
               <Table
-                id={'noHappy2'}
+                id={'noHappy'}
                 columns={totalsCols}
                 // scroll={{ x: scroll.x, y: false }}
                 scroll={
@@ -530,7 +538,7 @@ export default class ItemEditTable extends PureComponent {
                 dataSource={this.props.totalDatas ? this.props.totalDatas : []}
                 size={this.props.size ? this.props.size : 'middle'}
                 // components={this.components}
-                style={{ ...status, overflow: 'hidden !important' }}
+                style={status}
               />
             );
           }}

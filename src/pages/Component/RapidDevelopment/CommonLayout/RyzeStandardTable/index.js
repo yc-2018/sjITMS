@@ -14,6 +14,7 @@ import update from 'immutability-helper';
 import { func } from 'prop-types';
 import ToolbarPanel from '@/pages/Component/Page/inner/ToolbarPanel';
 import { T } from 'antd/lib/upload/utils';
+import { uniqBy } from 'lodash';
 
 const SHOW_THRESH_HOLD = 5;
 
@@ -367,6 +368,8 @@ class StandardTable extends Component {
     let optionsList = fetchOptions(columns, key);
     let list = getShowList(this.props.data, this.props.dataSource);
     this.state = {
+      isUserSelect: true,
+      lastIndex: undefined,
       selectedRowKeys: [],
       needTotalList,
       selectedAllRows: [],
@@ -431,7 +434,30 @@ class StandardTable extends Component {
         warp.addEventListener('scroll', this.handleScroll, true);
       }
     }, 1000);
+
+    //增加shift键监听 按住shift多选时禁止文字选中
+    //1、某个键按下事件：onkeydown
+    //2、某个键被按下或者按住：onkeypress
+    //3、某个按下的键被松开：onkeyup
+    window.addEventListener('keydown', this.keyDown);
+    window.addEventListener('keyup', this.keyUp);
   }
+
+  keyDown = (event, ...args) => {
+    let that = this;
+    var e = event || window.event || args.callee.caller.arguments[0];
+    if (e && e.keyCode == 16) {
+      that.setState({ isUserSelect: false });
+    }
+  };
+
+  keyUp = (event, ...args) => {
+    let that = this;
+    var e = event || window.event || args.callee.caller.arguments[0];
+    if (e && e.keyCode == 16) {
+      that.setState({ isUserSelect: true });
+    }
+  };
 
   //监听滚动事件
   handleScroll = () => {
@@ -451,6 +477,8 @@ class StandardTable extends Component {
   // 组件将要卸载，取消监听window滚动事件
   componentWillUnmount() {
     window.removeEventListener('scroll', this.handleScroll);
+    window.removeEventListener('keyup', this.keyUp);
+    window.removeEventListener('keydown', this.keyDown);
   }
 
   shouldComponentUpdate(nextProps, nextState) {
@@ -1039,12 +1067,26 @@ class StandardTable extends Component {
     );
   };
 
-  onClickRow = (record, key, e) => {
-    let { selectedRowKeys, selectedAllRows } = this.state;
+  onClickRow = (record, key, e, index) => {
+    let { selectedRowKeys, selectedAllRows, lastIndex } = this.state;
     if (!selectedRowKeys) {
       selectedRowKeys = [];
       selectedAllRows = [];
     }
+    if (e.shiftKey && lastIndex >= 0) {
+      let { list } = this.props.data;
+      let allRecords =
+        index > lastIndex
+          ? list.filter((_, i) => {
+              return i > lastIndex && i < index;
+            })
+          : list.filter((_, i) => {
+              return i > index && i < lastIndex;
+            });
+      let allRowKeys = allRecords.map(e => key(e));
+      selectedRowKeys = selectedRowKeys.concat(allRowKeys);
+      selectedAllRows = selectedAllRows.concat(allRecords);
+    }
     let rowKey = key && typeof key === 'function' ? key(record) : key;
     let idx = selectedRowKeys.indexOf(rowKey);
     if (idx > -1) {
@@ -1054,16 +1096,34 @@ class StandardTable extends Component {
       selectedRowKeys.push(rowKey);
       selectedAllRows.push(record);
     }
+    selectedRowKeys = uniqBy(selectedRowKeys);
+    selectedAllRows = uniqBy(selectedAllRows);
     this.handleRowSelectChange(selectedRowKeys, selectedAllRows);
     if (this.props.handleRowClick) {
       this.props.handleRowClick(record);
     }
+    this.setState({ lastIndex: index });
   };
 
   //单选
-  onClickRowRadio = (record, key, e) => {
+  onClickRowRadio = (record, key, e, index) => {
     let selectedRowKeys = [];
     let selectedAllRows = [];
+    // let { lastIndex } = this.state;
+    // if (e.shiftKey && lastIndex >= 0) {
+    //   let { list } = this.props.data;
+    //   let allRecords =
+    //     index > lastIndex
+    //       ? list.filter((_, i) => {
+    //           return i > lastIndex && i < index;
+    //         })
+    //       : list.filter((_, i) => {
+    //           return i > index && i < lastIndex;
+    //         });
+    //   let allRowKeys = allRecords.map(e => key(e));
+    //   selectedRowKeys = selectedRowKeys.concat(allRowKeys);
+    //   selectedAllRows = selectedAllRows.concat(allRecords);
+    // }
     let rowKey = key && typeof key === 'function' ? key(record) : key;
     let idx = selectedRowKeys.indexOf(rowKey);
     if (idx > -1) {
@@ -1077,6 +1137,7 @@ class StandardTable extends Component {
     if (this.props.handleRowClick) {
       this.props.handleRowClick(record);
     }
+    // this.setState({ lastIndex: index });
   };
 
   strip(number) {
@@ -1482,13 +1543,14 @@ class StandardTable extends Component {
         ? { display: 'none' }
         : { display: 'block' };
     let menu = this.props.RightClickMenu;
+    let userSelect = this.state.isUserSelect ? {} : { userSelect: 'none' };
     return (
       <Dropdown
         overlay={menu}
         trigger={['contextMenu']}
         disabled={this.props.RightClickMenu ? false : true}
       >
-        <div className={styles.standardTable}>
+        <div className={styles.standardTable} style={userSelect}>
           {(oriColumnLen >= SHOW_THRESH_HOLD && !noSettingColumns) || hasSettingColumns ? (
             <div style={style}>{this.renderSettingDrowDown(settingIcon)}</div>
           ) : null}
@@ -1557,8 +1619,8 @@ class StandardTable extends Component {
                               : this.moveRow,
                           onClick: e =>
                             this.props.isRadio
-                              ? this.onClickRowRadio(record, rowKey || 'key', e)
-                              : this.onClickRow(record, rowKey || 'key', e),
+                              ? this.onClickRowRadio(record, rowKey || 'key', e, index)
+                              : this.onClickRow(record, rowKey || 'key', e, index),
                           ...this.props.onRow,
                         };
                       }

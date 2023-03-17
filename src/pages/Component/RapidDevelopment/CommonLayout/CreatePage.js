@@ -22,7 +22,6 @@ import IconFont from '@/components/IconFont';
  * 事件：子类如果要捕捉Form表单change事件，可在子类定义onFormChange方法，当Form表单发生变化，将调研子类该方法
  */
 export default class CreatePage extends Component {
-
   shouldComponentUpdate() {
     if (this.props.pathname && this.props.pathname !== window.location.pathname) {
       return false;
@@ -46,8 +45,7 @@ export default class CreatePage extends Component {
       let tableCols = [];
       // 有表格明细
       if (this.drawTable) {
-        if (this.drawTable && document.getElementsByClassName('ant-table-row')[0] != null)
-          return;
+        if (this.drawTable && document.getElementsByClassName('ant-table-row')[0] != null) return;
       }
 
       if (document.activeElement.tagName === 'INPUT') {
@@ -63,23 +61,31 @@ export default class CreatePage extends Component {
 
       let id = '';
       for (let i = 0; i < cols.length; i++) {
-        if (cols[i] == null)
-          continue;
+        if (cols[i] == null) continue;
         id = cols[i].key;
 
         if (document.activeElement.tagName == 'BODY' || document.activeElement.id == id) {
-          if (document.getElementById(id) != null && document.getElementById(id).tagName == 'INPUT') {
+          if (
+            document.getElementById(id) != null &&
+            document.getElementById(id).tagName == 'INPUT'
+          ) {
             if (this.state.noAutoFocus != true) {
               document.getElementById(id).focus();
             }
             break;
-          } else if (document.getElementById(id) != null && document.getElementById(id).tagName == 'DIV') {
+          } else if (
+            document.getElementById(id) != null &&
+            document.getElementById(id).tagName == 'DIV'
+          ) {
             if (document.getElementById(id).classList.contains('ant-select-selection')) {
               document.querySelector('.ant-select-selection').focus();
               break;
             } else {
               if (document.getElementById(id).firstChild != null) {
-                if (document.querySelector('.ant-select-selection') === document.getElementById(id).firstChild) {
+                if (
+                  document.querySelector('.ant-select-selection') ===
+                  document.getElementById(id).firstChild
+                ) {
                   document.querySelector('.ant-select-selection').focus();
                   break;
                 }
@@ -91,16 +97,16 @@ export default class CreatePage extends Component {
     }
   }
 
-  handleEnter = (event) => {
+  handleEnter = event => {
     if (event.keyCode === 13) {
       const form = event.target.form;
       const index = Array.prototype.indexOf.call(form, event.target);
       form.elements[index + 1].focus();
       event.preventDefault();
     }
-  }
+  };
 
-  onChange = (e) => {
+  onChange = e => {
     this.setState({
       hasChanged: true,
     });
@@ -109,7 +115,7 @@ export default class CreatePage extends Component {
     }
   };
 
-  renderTitle = (action) => {
+  renderTitle = action => {
     let s = '';
     if (action === CONFIRM_LEAVE_ACTION['NEW']) {
       s = formatMessage({ id: 'common.leaveconfirm.action.new' });
@@ -117,51 +123,52 @@ export default class CreatePage extends Component {
       s = formatMessage({ id: 'common.leaveconfirm.action.edit' });
     }
     if (getLocale() === 'en-US') {
-      return "Are you sure to leave the " + s + " page?";
+      return 'Are you sure to leave the ' + s + ' page?';
     } else if (getLocale() === 'zh-CN') {
-      return "确认离开当前页面吗？";
-    }
-  }
-
-  renderLeaveConfirmTips = (action) => {
-    let s = '';
-    if (action === CONFIRM_LEAVE_ACTION['NEW']) {
-      s = formatMessage({ id: 'common.leaveconfirm.action.new' });
-    } else if (action === CONFIRM_LEAVE_ACTION['EDIT']) {
-      s = formatMessage({ id: 'common.leaveconfirm.action.edit' });
-    }
-    if (getLocale() === 'en-US') {
-      return "The contents will not be saved. Are you sure to leave the " + s + " page?";
-    } else if (getLocale() === 'zh-CN') {
-      return "所填写的内容将不会被保存，确认离开当前页面吗？";
-    }
-  }
-
-  handleCancel = () => {
-    if (this.state.hasChanged) {
-      const action = this.state.currentView ? CONFIRM_LEAVE_ACTION[this.state.currentView] : CONFIRM_LEAVE_ACTION['NEW']
-      Modal.confirm({
-        title: this.renderTitle(action),
-        content: this.renderLeaveConfirmTips(action),
-        icon: <IconFont type='icon-status_warn' />,
-        onOk: this.handleLeaveConfirmOk,
-        okText: '确定',
-        cancelText: '取消'
-      })
-    } else {
-      if (this.onCancel)
-        this.onCancel();
+      return '确认离开当前页面吗？';
     }
   };
 
-  handleSave = (e) => {
+  renderLeaveConfirmTips = action => {
+    let s = '';
+    if (action === CONFIRM_LEAVE_ACTION['NEW']) {
+      s = formatMessage({ id: 'common.leaveconfirm.action.new' });
+    } else if (action === CONFIRM_LEAVE_ACTION['EDIT']) {
+      s = formatMessage({ id: 'common.leaveconfirm.action.edit' });
+    }
+    if (getLocale() === 'en-US') {
+      return 'The contents will not be saved. Are you sure to leave the ' + s + ' page?';
+    } else if (getLocale() === 'zh-CN') {
+      return '所填写的内容将不会被保存，确认离开当前页面吗？';
+    }
+  };
+
+  handleCancel = () => {
+    if (this.state.hasChanged) {
+      const action = this.state.currentView
+        ? CONFIRM_LEAVE_ACTION[this.state.currentView]
+        : CONFIRM_LEAVE_ACTION['NEW'];
+      Modal.confirm({
+        title: this.renderTitle(action),
+        content: this.renderLeaveConfirmTips(action),
+        icon: <IconFont type="icon-status_warn" />,
+        onOk: this.handleLeaveConfirmOk,
+        okText: '确定',
+        cancelText: '取消',
+      });
+    } else {
+      if (this.onCancel) this.onCancel();
+    }
+  };
+
+  handleSave = e => {
     e.preventDefault();
 
     const { form } = this.props;
     form.validateFields((errors, fieldsValue) => {
       if (errors) {
         return;
-      };
+      }
       const data = {
         ...fieldsValue,
       };
@@ -171,8 +178,7 @@ export default class CreatePage extends Component {
 
   handleLeaveConfirmOk = () => {
     this.props.form.resetFields();
-    if (this.onCancel)
-      this.onCancel();
+    if (this.onCancel) this.onCancel();
   };
 
   handleLeaveConfirmCancel = () => {
@@ -187,7 +193,12 @@ export default class CreatePage extends Component {
         <Button key="cancel" onClick={this.handleCancel}>
           {formatMessage({ id: 'company.create.button.cancel' })}
         </Button>
-        <Button key="save" type="primary" loading={this.state.saving} onClick={this.handleSave.bind(this)}>
+        <Button
+          key="save"
+          type="primary"
+          loading={this.state.saving}
+          onClick={this.handleSave.bind(this)}
+        >
           {formatMessage({ id: 'company.create.button.confirm' })}
         </Button>
       </Fragment>
@@ -197,49 +208,51 @@ export default class CreatePage extends Component {
   FormConfirmLeave = () => {
     const confirmLeaveProps = {
       confirmLeaveVisible: this.state.confirmLeaveVisible,
-      action: this.state.currentView ? CONFIRM_LEAVE_ACTION[this.state.currentView] : CONFIRM_LEAVE_ACTION['NEW'],
+      action: this.state.currentView
+        ? CONFIRM_LEAVE_ACTION[this.state.currentView]
+        : CONFIRM_LEAVE_ACTION['NEW'],
       handleLeaveConfirmOk: this.handleLeaveConfirmOk,
       handleLeaveConfirmCancel: this.handleLeaveConfirmCancel,
     };
     return <ConfirmLeave {...confirmLeaveProps} />;
-  }
+  };
 
-  PanelWrapper = (props) => {
+  PanelWrapper = props => {
     const FormConfirmLeave = this.FormConfirmLeave;
 
     return (
       <PageHeaderWrapper>
         <Spin indicator={LoadingIcon('default')} delay={5} spinning={this.state.loading}>
           <Page>
-            <NavigatorPanel title={this.state.title}
+            <NavigatorPanel
+              title={this.state.title}
               style={{ marginLeft: -12 }}
-              action={this.drawCreateButtons()} />
-            <div style={{ height: 'calc(100vh - 165px)', overflowY: 'auto' }}>
+              action={this.drawCreateButtons()}
+            />
+            <div style={{ height: 'calc(100vh - 165px)', overflowY: 'auto', overflowX: 'hidden' }}>
               {props.children}
             </div>
           </Page>
         </Spin>
         <FormConfirmLeave />
       </PageHeaderWrapper>
-    )
-  }
+    );
+  };
 
-  NoBorderWrapper = (props) => {
+  NoBorderWrapper = props => {
     const FormConfirmLeave = this.FormConfirmLeave;
 
     return (
       <div>
         <Spin indicator={LoadingIcon('default')} delay={5} spinning={this.state.loading}>
           <div>
-            <div style={{ height: this.props.height, overflowY: 'auto' }}>
-              {props.children}
-            </div>
+            <div style={{ height: this.props.height, overflowY: 'auto' }}>{props.children}</div>
           </div>
         </Spin>
         <FormConfirmLeave />
       </div>
-    )
-  }
+    );
+  };
 
   drawForm = () => {
     return (

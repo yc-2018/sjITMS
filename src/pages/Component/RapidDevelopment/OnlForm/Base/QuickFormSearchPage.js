@@ -693,16 +693,34 @@ export default class QuickFormSearchPage extends SearchPage {
       }; //增加组织 公司id查询条件
       this.getData(this.state.pageFilters);
     } else {
-      const { dispatch } = this.props;
-      const { columns } = this.state;
-      const pageFilters = {
-        pageSize,
-        ...this.state.pageFilters,
-        superQuery: {
-          matchType: filter.matchType,
-          queryParams: [...filter.queryParams, ...this.state.isOrgQuery, ...exSearchFilter],
-        },
-      };
+      let pageFilters = {};
+      //or的情况，org为and 其余为or
+      if (filter.matchType == 'or' && this.state.isOrgQuery.length > 0) {
+        let queryParamWithOr = {
+          nestCondition: {
+            matchType: 'or',
+            queryParams: [...filter.queryParams],
+          },
+        };
+        pageFilters = {
+          pageSize,
+          ...this.state.pageFilters,
+          superQuery: {
+            matchType: 'and',
+            queryParams: [queryParamWithOr, ...this.state.isOrgQuery, ...exSearchFilter],
+          },
+        };
+      } else {
+        pageFilters = {
+          pageSize,
+          ...this.state.pageFilters,
+          superQuery: {
+            matchType: filter.matchType,
+            queryParams: [...filter.queryParams, ...this.state.isOrgQuery, ...exSearchFilter],
+          },
+        };
+      }
+
       this.state.pageFilters = pageFilters;
       this.refreshTable();
     }
