@@ -364,6 +364,7 @@ export default class SimpleAutoComplete extends Component {
     // 将父组件传过来的属性传递下去，以适应Form、getFieldDecorator等处理
     return (
       <Select
+        maxTagCount={1}
         allowClear={true}
         {...this.props}
         optionLabelProp="textfield" // 指定回填到选择框的 Option 属性

@@ -49,7 +49,8 @@ export default class DispatchingTable extends Component {
     if (this.props.clickRow == undefined) return;
     const { selectedRowKeys, dataSource } = this.props;
     let { lastIndex } = this.state;
-    let rowKeys = [...selectedRowKeys];
+    // let rowKeys = [...selectedRowKeys];
+    let rowKeys = [];
     let allRowKeys = [...dataSource].map(x => x.uuid);
     const indicatrix = rowKeys.indexOf(record.uuid);
     const selected = indicatrix == -1;
@@ -69,7 +70,11 @@ export default class DispatchingTable extends Component {
     }
     rowKeys = uniqBy(rowKeys);
     this.props.changeSelectRows(rowKeys);
-    this.setState({ lastIndex: index });
+
+    if (!event.shiftKey) {
+      this.setState({ lastIndex: index });
+    }
+
     if (this.props.onClickRow) {
       this.props.onClickRow(record, index, event);
     }
@@ -203,7 +208,7 @@ export default class DispatchingTable extends Component {
             if (record.clicked) {
               return 'clickedStyle';
             }
-            if (record.orderType=='DeliveryAgain' && this.props.comId =='pendingOrder') {
+            if (record.orderType == 'DeliveryAgain' && this.props.comId == 'pendingOrder') {
               return 'warningStyle';
             }
           }}
