@@ -96,11 +96,11 @@ export default class OtherFeeModal extends Component {
     const pageFilter = value ? value : this.state.pageFilter;
     await query(pageFilter).then(response => {
       const payload = {
-        list: response.data.records ? response.data.records : [],
+        list: response.data?.records ? response.data?.records : [],
         pagination: {
-          total: response.data.paging.recordCount,
-          pageSize: response.data.paging.pageSize,
-          current: response.data.page + 1,
+          total: response.data?.paging.recordCount,
+          pageSize: response.data?.paging.pageSize,
+          current: response.data?.page + 1,
           showTotal: total => `共 ${total} 条`,
         },
       };
@@ -217,7 +217,7 @@ export default class OtherFeeModal extends Component {
   };
 
   handleSave = async confirm => {
-    const { amount, feeType, feeName, feeUuid, scheduleBillTmsUuid } = this.state;
+    const { amount, feeType, feeName, feeUuid, scheduleBillTmsUuid,billcount } = this.state;
     const params = {
       uuid: feeUuid,
       amount: amount,
@@ -227,6 +227,7 @@ export default class OtherFeeModal extends Component {
       companyuuid: loginCompany().uuid,
       dispatchcenteruuid: loginOrg().uuid,
       confirm: confirm,
+      billcount:billcount
     };
     this.save(params);
   };
@@ -236,11 +237,10 @@ export default class OtherFeeModal extends Component {
     if (response && response.data > 0) {
       message.success('保存成功');
       this.callback(1);
-    } else if (response && response.data.indexOf('确认保存') > 0) {
+    } else if (response && response.data?.indexOf('确认保存') > 0) {
       this.setState({ confirmModal: true, confirmMessage: response.data });
-    } else {
-      message.error('保存失败');
-    }
+    } 
+    
   };
 
   modify = () => {
@@ -252,6 +252,7 @@ export default class OtherFeeModal extends Component {
         feeType: selectedRows[0].feetype,
         feeName: selectedRows[0].feename,
         amount: selectedRows[0].amount,
+        billcount:selectedRows[0].billcount,
         isView: false,
         feeUuid: selectedRows[0].uuid,
       });
@@ -293,8 +294,15 @@ export default class OtherFeeModal extends Component {
       width: colWidth.billNumberColWidth + 50,
       render: val => (val ? val : 0),
     },
+    {
+      title: '票据数量',
+      dataIndex: 'billcount',
+      width: colWidth.billNumberColWidth + 50,
+      render: val => (val ? val : 0),
+    },
   ];
   render() {
+    console.log("asda",this.state);
     const { getFieldDecorator } = this.props.form;
     const { selectedRows, visible, data, isView, confirmModal, confirmMessage } = this.state;
 
@@ -364,6 +372,22 @@ export default class OtherFeeModal extends Component {
                           style={{ width: 120, float: 'left' }}
                           onBlur={e => {
                             this.setState({ amount: e.target.value });
+                          }}
+                        />
+                      )}
+                    </Form.Item>
+                  </Col>
+                  <Col span={6}>
+                    <Form.Item label={'票据数量'}>
+                      {getFieldDecorator('billcount', {
+                        initialValue: this.state.billcount,
+                        rules: [{ required: true, message: '请填写票据数量' }],
+                      })(
+                        <Input
+                          name="billcount"
+                          style={{ width: 120, float: 'left' }}
+                          onBlur={e => {
+                            this.setState({ billcount: e.target.value });
                           }}
                         />
                       )}
