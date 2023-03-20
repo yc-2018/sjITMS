@@ -90,7 +90,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           max={10000}
           disabled={e.record.INOUTCHECKED == 1}
           defaultValue={
-            record.INOUTCHECKED == 0 ? record.LAST_RETURN_MILEAGE : record.DISPATCHMILEAGE
+            record.INOUTCHECKED == 0 &&( record.DISPATCHMILEAGE == 0 || record.DISPATCHMILEAGE ==null) ? record.LAST_RETURN_MILEAGE : record.DISPATCHMILEAGE
           }
         />
       );
@@ -237,6 +237,8 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
         if (response && response.success) {
           this.refreshTable();
           message.success(commonLocale.saveSuccessLocale);
+        }else{
+          message.error(response.message);
         }
       },
     });
@@ -252,6 +254,8 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
         if (response && response.success) {
           this.refreshTable();
           message.success(commonLocale.saveSuccessLocale);
+        }else{
+          message.error(response.message);
         }
       },
     });
