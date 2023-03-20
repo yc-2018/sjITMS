@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-20 11:36:01
+ * @LastEditTime: 2023-03-20 11:43:18
  * @version: 1.0
  */
 import React from 'react';
@@ -117,6 +117,7 @@ export default class OrderSearch extends QuickFormSearchPage {
     if (response && response.success) {
       message.success('转仓成功');
       this.setState({ showRemovePop: false });
+      this.onSearch();
     } else {
       message.error('转仓失败');
     }
