@@ -669,7 +669,7 @@ export default class DispatchMap extends Component {
           tip="加载中..."
           wrapperClassName={style.loading}
         >
-          <Row type="flex" style={{ height: '92%' }}>
+          <Row type="flex" style={{ height: window.innerHeight - 120 }}>
             <Col span={6} style={{ height: '100%', background: '#fff', overflow: 'auto' }}>
               {selectOrder.length > 0 ? (
                 <div style={{ position: 'relative', height: '100%' }}>
@@ -853,7 +853,7 @@ export default class DispatchMap extends Component {
             </Col>
           </Row>
           <Divider style={{ margin: 0, marginTop: 5 }} />
-          <Row>
+          <Row width="100%">
             <div style={{ display: 'flex', marginTop: 5, fontSize: '14px' }}>
               <div style={{ flex: 1, fontWeight: 'bold' }}>
                 总件数:
