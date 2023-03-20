@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-20 10:11:54
+ * @LastEditTime: 2023-03-20 11:36:01
  * @version: 1.0
  */
 import React from 'react';
@@ -102,7 +102,7 @@ export default class OrderSearch extends QuickFormSearchPage {
       <Menu>
         <Menu.Item
           key="1"
-          //hidden={!havePermission(this.state.authority + '.remove')}
+          hidden={!havePermission(this.state.authority + '.remove')}
           onClick={() => this.handleRemove()}
         >
           转仓
@@ -113,8 +113,13 @@ export default class OrderSearch extends QuickFormSearchPage {
 
   remove = async () => {
     const { selectedRows, dispatchCenter } = this.state;
-    await removeOrder(selectedRows[0].UUID, dispatchCenter);
-    this.setState({ showRemovePop: false });
+    const response = await removeOrder(selectedRows[0].UUID, dispatchCenter);
+    if (response && response.success) {
+      message.success('转仓成功');
+      this.setState({ showRemovePop: false });
+    } else {
+      message.error('转仓失败');
+    }
   };
 
   drawToolsButton = () => {
