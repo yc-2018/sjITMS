@@ -1621,6 +1621,9 @@ class StandardTable extends Component {
                             this.props.isRadio
                               ? this.onClickRowRadio(record, rowKey || 'key', e, index)
                               : this.onClickRow(record, rowKey || 'key', e, index),
+                          onDoubleClick: event => {
+                            this.props.onView ? this.props.onView(record) : '';
+                          },
                           ...this.props.onRow,
                         };
                       }
