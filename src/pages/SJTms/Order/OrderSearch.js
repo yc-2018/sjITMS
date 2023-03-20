@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-20 11:43:18
+ * @LastEditTime: 2023-03-20 11:56:46
  * @version: 1.0
  */
 import React from 'react';
@@ -111,16 +111,26 @@ export default class OrderSearch extends QuickFormSearchPage {
     );
   };
 
-  remove = async () => {
+  handleOk = async () => {
     const { selectedRows, dispatchCenter } = this.state;
-    const response = await removeOrder(selectedRows[0].UUID, dispatchCenter);
-    if (response && response.success) {
-      message.success('转仓成功');
-      this.setState({ showRemovePop: false });
-      this.onSearch();
+    if (selectedRows.length == 1) {
+      const response = await removeOrder(selectedRows[0].UUID, dispatchCenter);
+      if (response && response.success) {
+        message.success('转仓成功');
+        this.setState({ showRemovePop: false });
+        this.onSearch();
+      } else {
+        message.error('转仓失败');
+      }
     } else {
-      message.error('转仓失败');
+      this.batchProcessConfirmRef.show('转仓', selectedRows, this.remove, this.onSearch);
+      this.setState({ showRemovePop: false });
     }
+  };
+
+  remove = async record => {
+    const { dispatchCenter } = this.state;
+    return await removeOrder(record.UUID, dispatchCenter);
   };
 
   drawToolsButton = () => {
@@ -182,7 +192,7 @@ export default class OrderSearch extends QuickFormSearchPage {
           title="转仓"
           visible={showRemovePop}
           onOk={() => {
-            this.remove();
+            this.handleOk();
           }}
           onCancel={() => {
             this.setState({ showRemovePop: false });
