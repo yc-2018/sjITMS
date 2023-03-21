@@ -272,7 +272,19 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       let color = this.colorChange(e.record.STAT, e.column.textColorJson);
       let textColor = color ? this.hexToRgb(color) : 'black';
       e.component = (
-        <div style={{ backgroundColor: color, textAlign: 'center', color: textColor }}>{e.val}</div>
+        <div
+          style={{
+            height: '24px',
+            // verticalAlign: 'middle',
+            lineHeight: '24px',
+            backgroundColor: color,
+            textAlign: 'center',
+            color: textColor,
+            borderRadius: '10px',
+          }}
+        >
+          {e.val}
+        </div>
         // <div style={{ border: '1px solid ' + color, textAlign: 'center' }}>{e.val}</div>
       );
     }
