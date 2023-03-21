@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2023-01-10 10:48:50
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-15 16:43:18
+ * @LastEditTime: 2023-03-20 23:15:16
  * @Description: 工单处理
  * @FilePath: \iwms-web\src\pages\SJTms\CustomerDispose\DisposePage.js
  */
@@ -10,6 +10,7 @@ import React, { Component } from 'react';
 import { Button, Form, Modal, Input, Row, Col, Tooltip, Collapse, message, Divider } from 'antd';
 import IconFont from '@/components/IconFont';
 import { getRecords, release, dispose, saveResult } from '@/services/sjitms/Customer';
+import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import Empty from '@/pages/Component/Form/Empty';
 import styles from './DisposePage.less';
 const Panel = Collapse.Panel;
@@ -45,7 +46,7 @@ export default class DisposePageModal extends Component {
   };
 
   hide = () => {
-    this.setState({ visible: false });
+    this.setState({ visible: false, bill: {} });
   };
 
   //回复处理进度
@@ -72,13 +73,20 @@ export default class DisposePageModal extends Component {
 
   //客服回复结果
   handleReply = async () => {
-    const { bill, remark } = this.state;
+    let { bill, remark } = this.state;
     if (remark === '') {
       this.setState({ validate: false });
       return;
     }
+    const param = {
+      responsibilityDept: bill.RESPONSIBILITYDEPT,
+      responsibilityGroup: bill.RESPONSIBILITYGROUP,
+      responsibilityCode: bill.RESPONSIBILITYCODE,
+      responsibilityName: bill.RESPONSIBILITYNAME,
+      staffResult: remark,
+    };
     this.setState({ saving: true });
-    const response = await saveResult(bill.UUID, remark);
+    const response = await saveResult(bill.UUID, param);
     if (response.success) {
       message.success('保存成功！');
       this.setState({ visible: false });
@@ -107,6 +115,15 @@ export default class DisposePageModal extends Component {
   onRemarkChange = event => {
     const remark = event.target.value;
     this.setState({ remark, validate: remark !== '' });
+  };
+  onResponsibilityChange = (val, filedName) => {
+    let { bill } = this.state;
+    bill[filedName] = val;
+    if (filedName == 'RESPONSIBILITYCODE') {
+      bill.RESPONSIBILITYCODE = val.value;
+      bill.RESPONSIBILITYNAME = val.record.NAME;
+    }
+    this.setState({ bill });
   };
 
   drawButton = operation => {
@@ -290,6 +307,58 @@ export default class DisposePageModal extends Component {
               style={{ width: '100%' }}
             />
           </Form.Item>
+          {operation == 'Result' ? (
+            <Row justify="space-around">
+              <Col span={7}>
+                <Form.Item label="责任部门">
+                  <SimpleAutoComplete
+                    placeholder={'请选择责任部门'}
+                    value={bill.RESPONSIBILITYDEPT}
+                    dictCode="serviceDept"
+                    onChange={val => this.onResponsibilityChange(val, 'RESPONSIBILITYDEPT')}
+                    allowClear
+                    noRecord
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={7}>
+                <Form.Item label="责任组别">
+                  <SimpleAutoComplete
+                    placeholder={'请选择责任组别'}
+                    value={bill.RESPONSIBILITYGROUP}
+                    allowClear
+                    dictCode="serviceGroup"
+                    onChange={val => this.onResponsibilityChange(val, 'RESPONSIBILITYGROUP')}
+                    noRecord
+                  />
+                </Form.Item>
+              </Col>
+              <Col span={7}>
+                <Form.Item label="责任人">
+                  <SimpleAutoComplete
+                    placeholder={'请选择责任人'}
+                    value={bill.RESPONSIBILITYCODE}
+                    allowClear
+                    textField="[%CODE%]%NAME%"
+                    valueField={'CODE'}
+                    queryParams={{
+                      tableName: 'SJ_ITMS_EMPLOYEE',
+                      selects: ['UUID', 'CODE', 'NAME'],
+                      condition: {
+                        params: [{ field: 'STATE', rule: 'eq', val: [1] }],
+                      },
+                    }}
+                    searchField="CODE,NAME"
+                    autoComplete={true}
+                    multiSave="RESPONSIBILITYNAME:NAME"
+                    onChange={val => this.onResponsibilityChange(val, 'RESPONSIBILITYCODE')}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          ) : (
+            <></>
+          )}
         </Form>
       </Modal>
     );
