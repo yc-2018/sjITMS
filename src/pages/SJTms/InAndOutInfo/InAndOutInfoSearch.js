@@ -68,9 +68,10 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
       e.fixed = true;
       e.component = component;
     }
-    if (fieldName == 'FVERSION') {
+    if (fieldName == 'OTHERAMOUNT') {
+      
       const component = (
-        <a onClick={() => this.showOrderFee(record.BILLNUMBER, record.UUID)}>查看编辑</a>
+        <a onClick={() => this.showOrderFee(record.BILLNUMBER, record.UUID)}>{record.OTHERAMOUNT}</a>
       );
       e.fixed = true;
       e.component = component;

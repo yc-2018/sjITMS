@@ -51,6 +51,12 @@ export async function saveOrUpdateFee(payload) {
     body: payload,
   });
 }
+export async function deleteFee(payload) {
+  return request(`/itms-schedule/itms-schedule/schedulefee/deleteFee`, {
+    method: 'POST',
+    body: payload,
+  });
+}
 
 export async function updateFee(payload) {
   return request(`/itms-schedule/itms-schedule/schedulefee/update`, {

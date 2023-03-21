@@ -20,7 +20,7 @@ import { loginOrg, loginCompany } from '@/utils/LoginContext';
 import { convertCodeName } from '@/utils/utils';
 import Empty from '@/pages/Component/Form/Empty';
 import { accAdd } from '@/utils/QpcStrUtil';
-import { modify, query, getFeeType, saveOrUpdateFee } from '@/services/sjtms/OtherFeeService';
+import { modify, query, getFeeType, saveOrUpdateFee,deleteFee } from '@/services/sjtms/OtherFeeService';
 import { dispatchReturnLocale } from './DispatchReturnLocale';
 import { alterBinType } from '@/services/facility/Bin';
 import {
@@ -262,7 +262,22 @@ export default class OtherFeeModal extends Component {
       message.info('请选取一条记录');
     }
   };
-
+  delete = async()=>{
+    Modal.confirm({
+      title:"确定删除吗?",
+      onOk:async ()=>{
+        const { selectedRows } = this.state;
+        const response = await deleteFee(selectedRows);
+        if(response && response.success){
+          message.success("删除成功")
+          this.refresh();
+        }else{
+          message.error(response.message)
+        }
+      }
+    })
+   
+  }
   columns = [
     {
       title: '排车单号',
@@ -320,9 +335,12 @@ export default class OtherFeeModal extends Component {
         >
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             {isView ? (
-              <Button type="primary" onClick={() => this.modify()}>
+              <><Button type="primary" onClick={() => this.modify()}>
                 编辑
               </Button>
+              <Button  type="danger" style={{marginLeft:3}} onClick={() => this.delete()}>
+                删除
+            </Button></>
             ) : (
               <Button type="primary" onClick={() => this.handleSave(false)}>
                 保存
