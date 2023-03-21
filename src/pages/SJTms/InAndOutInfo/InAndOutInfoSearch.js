@@ -183,7 +183,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           okText="确定"
           cancelText="取消"
         >
-          <Button type="primary">保存审核</Button>
+          <Button type="primary">公里数审核</Button>
         </Popconfirm>
         <Popconfirm
           title="确定保存?"
@@ -191,7 +191,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           okText="确定"
           cancelText="取消"
         >
-          <Button>保存</Button>
+          <Button>公里数保存</Button>
         </Popconfirm>
         <Popconfirm
           title="确定取消?"
