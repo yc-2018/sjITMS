@@ -201,6 +201,7 @@ export default class StoresMap extends Component {
       var point = new BMapGL.Point(order.longitude, order.latitude);
       markers.push(
         <Marker
+          isTop={true}
           position={point}
           // icon={order.isSelect ? ShopClickIcon : ShopIcon}
           icon={otherStore}
@@ -218,7 +219,6 @@ export default class StoresMap extends Component {
       var point = new BMapGL.Point(order.longitude, order.latitude);
       markers.push(
         <Marker
-          isTop={true}
           position={point}
           // icon='simple_red'
           icon={icon}
@@ -539,9 +539,18 @@ export default class StoresMap extends Component {
         //增加经纬度
         local.setSearchCompleteCallback(e => {
           e._pois.map(point => {
-            point.address = `${point.address ? point.address : ''}${'\r\r'}[${
-              point.point.lat
-            }]${'\r\r'}[${point.point.lng}]`;
+            console.log('point', point);
+            // point.address = `${point.address ? point.address : ''}${'\r\n'}[经度:${
+            //   point.point.lng
+            // }]${'\r\r'}[纬度:${point.point.lat}]`;
+            point.address = point.address
+              ? point.address +
+                '<br/>纬度:[' +
+                point.point.lng +
+                ']<br/>经度:[' +
+                point.point.lat +
+                ']'
+              : '' + ']<br/>纬度:[' + point.point.lng + ']<br/>经度:[' + point.point.lat + ']';
           });
         });
 
@@ -592,10 +601,8 @@ export default class StoresMap extends Component {
           this.setState(
             {
               // orders: resAll.data.records,
-              orders: res.data.records,
-              otherData: res.data.otherRecords.filter(
-                item => item.uuid != res.data.records[0].uuid
-              ),
+              otherData: res.data.records,
+              orders: res.data.otherRecords.filter(item => item.uuid != res.data.records[0].uuid),
               pageFilter: [],
               isOrder: false,
               loading: false,
@@ -728,17 +735,19 @@ export default class StoresMap extends Component {
           };
           let res = await queryStoreMaps(param);
           if (res.success) {
-            let recordsUuids = res.data.records.map(e => {
+            let recordsUuids = res.data?.records.map(e => {
               return e.uuid;
             });
             that.setState(
               {
                 // orders: resAll.data.records,
-                orders: res.data.records,
-                otherData: res.data.otherRecords.filter(
-                  // item => item.uuid != res.data.records[0].uuid
-                  item => recordsUuids.indexOf(item.uuid) == -1
-                ),
+                otherData: res.data ? res.data?.records : [],
+                orders: res.data
+                  ? res.data?.otherRecords.filter(
+                      // item => item.uuid != res.data.records[0].uuid
+                      item => recordsUuids.indexOf(item.uuid) == -1
+                    )
+                  : [],
                 pageFilter: [],
                 isOrder: false,
                 loading: false,
@@ -747,8 +756,14 @@ export default class StoresMap extends Component {
               () => {
                 setTimeout(() => {
                   // this.drawMenu();
-                  that.autoViewPort(res.data.records);
-                  message.success('门店导入查询成功，红色为导入门店，绿色为与导入门店同区域门店！');
+                  that.autoViewPort(res.data ? res.data?.records : []);
+                  if (res.data) {
+                    message.success(
+                      '门店导入查询成功，绿色为导入门店，红色为与导入门店同区域门店！'
+                    );
+                  } else {
+                    message.error('门店导入查询失败，无门店数据或excel文件有错误');
+                  }
                 }, 500);
               }
             );
