@@ -276,6 +276,15 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         // <div style={{ border: '1px solid ' + color, textAlign: 'center' }}>{e.val}</div>
       );
     }
+
+    if (e.column.fieldName == 'SHIPSTAT') {
+      let color = this.colorChange(e.record.SHIPSTAT, e.column.textColorJson);
+      let textColor = color ? this.hexToRgb(color) : 'black';
+      e.component = (
+        <div style={{ backgroundColor: color, textAlign: 'center', color: textColor }}>{e.val}</div>
+        // <div style={{ border: '1px solid ' + color, textAlign: 'center' }}>{e.val}</div>
+      );
+    }
   };
 
   //添加操作列
