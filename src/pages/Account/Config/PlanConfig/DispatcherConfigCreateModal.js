@@ -109,6 +109,16 @@ export default class DispatcherConfigCreateModal extends PureComponent {
               initialValue: 0,
             })(<Input />)}
           </FormItem>
+          <FormItem label={'刷卡打印是否装车开始'}>
+            {getFieldDecorator('printShip', {
+              initialValue: 0,
+            })(
+              <Select>
+                <Select.Option value={0}>{'否'}</Select.Option>
+                <Select.Option value={1}>{'是'}</Select.Option>
+              </Select>
+            )}
+          </FormItem>
         </Form>
       </Modal>
     );

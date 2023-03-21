@@ -115,6 +115,16 @@ export default class PlanConfig extends ConfigSearchPage {
         />
       ),
     },
+    {
+      title: dispatcherConfigLocale.printShip,
+      dataIndex: 'printShip',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'printShip', event)}
+        />
+      ),
+    },
   ];
 
   onChange = (record, field, event) => {
