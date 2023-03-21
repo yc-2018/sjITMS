@@ -2,12 +2,24 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-15 07:51:49
+ * @LastEditTime: 2023-03-20 20:52:23
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
 import React, { Component } from 'react';
-import { Button, Row, Col, Tabs, message, Icon, Dropdown, Menu, Modal, InputNumber } from 'antd';
+import {
+  Button,
+  Row,
+  Col,
+  Tabs,
+  message,
+  Icon,
+  Dropdown,
+  Menu,
+  Modal,
+  InputNumber,
+  Tooltip,
+} from 'antd';
 import DispatchingTable from './DispatchingTable';
 import DispatchingChildTable from './DispatchingChildTable';
 import {
@@ -297,17 +309,24 @@ export default class OrderPoolPage extends Component {
     let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
     orders = [...orders, ...selectPending];
     //校验区域组合
-    const result = await checkArea(orders);
-    if (result && result.data) {
-      Modal.confirm({
-        title: '所选门店配送区域不一样，确定排车吗？',
-        onOk: () => {
-          this.dispatchingCom(orders);
-        },
-      });
-      return;
-    } else {
+    if (
+      orders[0].dispatchCenterUuid == '000008150000001' ||
+      orders[0].dispatchCenterUuid == '000000750000004'
+    ) {
       this.dispatchingCom(orders);
+    } else {
+      const result = await checkArea(orders);
+      if (result && result.data) {
+        Modal.confirm({
+          title: '所选门店配送区域不一样，确定排车吗？',
+          onOk: () => {
+            this.dispatchingCom(orders);
+          },
+        });
+        return;
+      } else {
+        this.dispatchingCom(orders);
+      }
     }
   };
 
@@ -740,6 +759,7 @@ export default class OrderPoolPage extends Component {
       Number(orders.realCartonCount) +
       Number(orders.realScatteredCount) +
       Number(orders.realContainerCount) * 2;
+    const vehicleCount = Math.ceil(count / dispatchConfig.calvehicle);
     return (
       <div style={{ display: 'flex' }}>
         <div style={{ ...columnStyle, flex: 1.3 }}>
@@ -747,10 +767,23 @@ export default class OrderPoolPage extends Component {
           <span style={totalTextStyle}>{count}</span>
         </div>
         {footer && dispatchConfig.calvehicle && dispatchConfig.calvehicle > 0 ? (
-          <div style={{ ...columnStyle, flex: 0.8 }}>
-            预排:
-            <span style={totalTextStyle}>{Math.ceil(count / dispatchConfig.calvehicle)}</span>
-          </div>
+          <Tooltip
+            title={
+              <div>
+                <p>
+                  单车体积: {Math.round((orders.volume / vehicleCount) * 1000) / 1000}
+                  m³
+                </p>
+                <p>单车重量: {Math.round((orders.weight / vehicleCount) * 1000) / 1000}t</p>
+                <p>单车总件数: {dispatchConfig.calvehicle}</p>
+              </div>
+            }
+          >
+            <div style={{ ...columnStyle, flex: 0.8 }}>
+              预排:
+              <span style={totalTextStyle}>{vehicleCount}</span>
+            </div>
+          </Tooltip>
         ) : null}
         <div style={{ ...columnStyle, flex: 1 }}>
           整件:

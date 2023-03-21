@@ -8,7 +8,7 @@
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import OperateCol from '@/pages/Component/Form/OperateCol';
-import { Checkbox, Select, Input, Button, Popconfirm, message, Dropdown, Menu, Empty } from 'antd';
+import { Checkbox, Select, Input, Button, Popconfirm, message, Dropdown, Menu, Empty, Modal } from 'antd';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { dynamicQuery, saveFormData } from '@/services/quick/Quick';
 import { confirm, cancelReceipted } from '@/services/sjitms/Checkreceipt';
@@ -96,6 +96,10 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
         row.DEALMETHOD = '';
       });
       this.setState({ selectedRows });
+      Modal.confirm({
+        title:"确定全部回单吗？",
+        onOk:()=>this.onCheckreceiptSave()
+      })
     } else {
       message.error('请至少选中一条数据！');
     }
@@ -197,6 +201,10 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
         row.DEALMETHOD = key;
       });
       this.setState({ selectedRows });
+      Modal.confirm({
+        title:`确定`+key+`吗`,
+        onOk:()=>this.onCheckreceiptSave()
+      })
     } else {
       message.error('请至少选中一条数据！');
     }
@@ -266,7 +274,7 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
         c = receipted.val;
       }
     }
-    if (c === '0') {
+    if (c === '0' || c=='2') {
       return (
         <span>
           <Popconfirm

@@ -174,17 +174,37 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
 
   drawcell = row => {
     if (row.column.fieldName == 'PARKINGFEE') {
+      const params = {
+        field: 'UUID',
+        type: 'VarChar',
+        rule: 'eq',
+        val: row.record.UUID,
+      };
       row.component =
         row.record.MAXPARKINGFEE < row.record.PARKINGFEE ? (
           <span
             style={{ padding: '0 10px', background: 'red', color: '#fff' }}
-            onClick={() => this.props.onClose(row.record.UUID)}
+            onClick={() => this.props.onClose(params)}
           >
             {row.val}
           </span>
         ) : (
-          <a onClick={() => this.props.onClose(row.record.UUID)}>{row.val}</a>
+          <a onClick={() => this.props.onClose(params)}>{row.val}</a>
         );
+    }
+    if (row.column.fieldName == 'BILLNUMBER') {
+      const params = {
+        field: 'SCHEDULENUM',
+        type: 'VarChar',
+        rule: 'eq',
+        val: row.record.BILLNUMBER,
+      };
+      row.component =<a
+      onClick={() => this.props.onLogClose(params)}
+      >
+      {row.val}
+    </a>
+     
     }
   };
 }

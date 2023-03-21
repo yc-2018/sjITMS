@@ -69,7 +69,7 @@ export default class SimpleQuery extends SearchForm {
       if (field.searchCondition == 'in' || field.searchCondition == 'notIn') {
         if (field.searchShowtype == 'list' || field.searchShowtype == 'sel_search') {
           val = val.join('||');
-        } else {
+        } else if (field.searchShowtype != 'auto_complete') {
           field.searchCondition = 'like';
         }
       }

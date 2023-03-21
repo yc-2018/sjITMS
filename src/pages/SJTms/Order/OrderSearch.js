@@ -2,16 +2,17 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-27 16:31:04
+ * @LastEditTime: 2023-03-20 11:56:46
  * @version: 1.0
  */
 import React from 'react';
-import { Button, Popconfirm, message } from 'antd';
+import { Button, Popconfirm, message, Menu, Modal, Form } from 'antd';
 import { connect } from 'dva';
 import { havePermission } from '@/utils/authority';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
-import { batchAudit, audit, cancel } from '@/services/sjitms/OrderBill';
+import { batchAudit, audit, cancel, removeOrder } from '@/services/sjitms/OrderBill';
+import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
 
 @connect(({ quick, loading }) => ({
@@ -25,6 +26,8 @@ export default class OrderSearch extends QuickFormSearchPage {
     showAuditPop: false,
     showCancelPop: false,
     uploadModal: false,
+    showRemovePop: false,
+    dispatchCenter: '',
   };
 
   onUpload = () => {
@@ -85,10 +88,55 @@ export default class OrderSearch extends QuickFormSearchPage {
     return defaultSearch;
   };
 
-  drawToolsButton = () => {
-    const { showAuditPop, showCancelPop, selectedRows } = this.state;
+  handleRemove = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length <= 0) {
+      message.error('请先选择排车单！');
+      return;
+    }
+    this.setState({ showRemovePop: true });
+  };
+
+  drawRightClickMenus = () => {
     return (
-      <span>
+      <Menu>
+        <Menu.Item
+          key="1"
+          hidden={!havePermission(this.state.authority + '.remove')}
+          onClick={() => this.handleRemove()}
+        >
+          转仓
+        </Menu.Item>
+      </Menu>
+    );
+  };
+
+  handleOk = async () => {
+    const { selectedRows, dispatchCenter } = this.state;
+    if (selectedRows.length == 1) {
+      const response = await removeOrder(selectedRows[0].UUID, dispatchCenter);
+      if (response && response.success) {
+        message.success('转仓成功');
+        this.setState({ showRemovePop: false });
+        this.onSearch();
+      } else {
+        message.error('转仓失败');
+      }
+    } else {
+      this.batchProcessConfirmRef.show('转仓', selectedRows, this.remove, this.onSearch);
+      this.setState({ showRemovePop: false });
+    }
+  };
+
+  remove = async record => {
+    const { dispatchCenter } = this.state;
+    return await removeOrder(record.UUID, dispatchCenter);
+  };
+
+  drawToolsButton = () => {
+    const { showAuditPop, showCancelPop, selectedRows, dispatchCenter, showRemovePop } = this.state;
+    return (
+      <>
         <Popconfirm
           title="你确定要审核所选中的内容吗?"
           visible={showAuditPop}
@@ -140,7 +188,32 @@ export default class OrderSearch extends QuickFormSearchPage {
           <Button onClick={() => this.onBatchCancel()}>取消</Button>
         </Popconfirm>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
-      </span>
+        <Modal
+          title="转仓"
+          visible={showRemovePop}
+          onOk={() => {
+            this.handleOk();
+          }}
+          onCancel={() => {
+            this.setState({ showRemovePop: false });
+          }}
+        >
+          <Form>
+            <Form.Item label="转仓:" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              <SimpleAutoComplete
+                showSearch
+                placeholder="请选择调度中心"
+                dictCode="dispatchCenter"
+                value={dispatchCenter}
+                onChange={e => this.setState({ dispatchCenter: e })}
+                noRecord
+                style={{ width: 150 }}
+                allowClear={true}
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
+      </>
     );
   };
 
@@ -213,5 +286,16 @@ export default class OrderSearch extends QuickFormSearchPage {
     selectedRows.length == 1
       ? this.setState({ showCancelPop: true })
       : this.batchProcessConfirmRef.show('取消', selectedRows, this.onCancel, this.onSearch);
+  };
+
+  drawcell = e => {
+    if (e.column.fieldName == 'STAT') {
+      let color = this.colorChange(e.record.STAT, e.column.textColorJson);
+      let textColor = color ? this.hexToRgb(color) : 'black';
+      e.component = (
+        <div style={{ backgroundColor: color, textAlign: 'center', color: textColor }}>{e.val}</div>
+        // <div style={{ border: '1px solid ' + color, textAlign: 'center' }}>{e.val}</div>
+      );
+    }
   };
 }

@@ -267,6 +267,24 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       const component = <span style={{ color: sizeColor }}>{e.record.SHIPAREANAME}</span>;
       e.component = component;
     }
+
+    if (e.column.fieldName == 'STAT') {
+      let color = this.colorChange(e.record.STAT, e.column.textColorJson);
+      let textColor = color ? this.hexToRgb(color) : 'black';
+      e.component = (
+        <div style={{ backgroundColor: color, textAlign: 'center', color: textColor }}>{e.val}</div>
+        // <div style={{ border: '1px solid ' + color, textAlign: 'center' }}>{e.val}</div>
+      );
+    }
+
+    if (e.column.fieldName == 'SHIPSTAT') {
+      let color = this.colorChange(e.record.SHIPSTAT, e.column.textColorJson);
+      let textColor = color ? this.hexToRgb(color) : 'black';
+      e.component = (
+        <div style={{ backgroundColor: color, textAlign: 'center', color: textColor }}>{e.val}</div>
+        // <div style={{ border: '1px solid ' + color, textAlign: 'center' }}>{e.val}</div>
+      );
+    }
   };
 
   //添加操作列

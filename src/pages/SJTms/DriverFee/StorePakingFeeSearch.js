@@ -39,12 +39,7 @@ export default class StorePakingFeeSearch extends QuickFormSearchPage {
       superQuery: {
         matchType: '',
         queryParams: [
-          {
-            field: 'UUID',
-            type: 'VarChar',
-            rule: 'eq',
-            val: record,
-          },
+         {...record}
         ],
       },
     };

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-01 08:43:48
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-24 09:12:22
+ * @LastEditTime: 2023-03-20 08:54:14
  * @Description: 嵌套子表格组件
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingChildTable.js
  */
@@ -287,7 +287,10 @@ export default class DispatchingChildTable extends Component {
               if (record.warning) {
                 return 'warningStyle';
               }
-              if(record.record.orderType=='DeliveryAgain'&& this.props.comId =='pendingOrder'){
+              if (
+                record.record?.orderType == 'DeliveryAgain' &&
+                this.props.comId == 'pendingOrder'
+              ) {
                 return 'warningStyle';
               }
             }}

@@ -186,6 +186,7 @@ export default class RyzeSearchPage extends Component {
         {this.drawToolbarTwo()}
         {!this.state.noTable ? (
           <StandardTable
+            onView={this.onView}
             rowSelection={this.state.rowSelection}
             quickuuid={this.props.quickuuid}
             minHeight={this.state.minHeight}

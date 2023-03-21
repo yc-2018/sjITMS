@@ -7,7 +7,7 @@
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
 import React, { Component } from 'react';
-import { Button, Row, Col, Typography, message, Icon } from 'antd';
+import { Button, Row, Col, Typography, message, Icon, Modal, } from 'antd';
 import {
   OrderColumns,
   OrderCollectColumns,
@@ -15,7 +15,7 @@ import {
   pagination,
 } from './DispatchingColumns';
 import { getOrderInPending, removePending } from '@/services/sjitms/OrderBill';
-import { addOrders } from '@/services/sjitms/ScheduleBill';
+import { addOrders, checkAreaSchedule, } from '@/services/sjitms/ScheduleBill';
 import DispatchingTable from './DispatchingTable';
 import DispatchingChildTable from './DispatchingChildTable';
 import dispatchingStyles from './Dispatching.less';
@@ -125,9 +125,25 @@ export default class PendingPage extends Component {
       return;
     }
     this.setState({ btnLoading: true });
+    const checkResponse = await checkAreaSchedule(pendingRowKeys, scheduleRowKeys[0]);
+    if (checkResponse && checkResponse.data) {
+      Modal.confirm({
+        title: '所选门店配送区域不一样，确定排车吗？',
+        onOk: async () => {
+          this.doAddOrders(scheduleRowKeys[0],pendingRowKeys);
+        },
+        onCancel: () => {
+          this.setState({ btnLoading: false });
+        },
+      });
+      return;
+    }
+    this.doAddOrders(scheduleRowKeys[0],pendingRowKeys);
+  };
+  doAddOrders = async (billUuid,orderUuids) => {
     const response = await addOrders({
-      billUuid: scheduleRowKeys[0],
-      orderUuids: pendingRowKeys,
+      billUuid: billUuid,
+      orderUuids: orderUuids,
     });
     if (response.success) {
       message.success('保存成功！');
@@ -135,8 +151,7 @@ export default class PendingPage extends Component {
       this.props.refreshSchedule();
     }
     this.setState({ btnLoading: false });
-  };
-
+  }
   //表格行选择
   tableChangeRows = selectedRowKeys => {
     const { pendingData } = this.state;

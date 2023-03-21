@@ -29,6 +29,14 @@ export default class DispatchMap extends Component {
   basicOrders = [];
   isSelectOrders = [];
   state = {
+    allTotals: {
+      cartonCount: 0, //整件数
+      scatteredCount: 0, //散件数
+      containerCount: 0, //周转箱
+      volume: 0, //体积
+      weight: 0, //重量,
+      totalCount: 0, //总件数
+    },
     visible: false,
     loading: true,
     windowInfo: undefined,
@@ -95,6 +103,8 @@ export default class DispatchMap extends Component {
       if (response.success) {
         let data = response.data.records ? response.data.records : [];
         data = data.filter(x => x.longitude && x.latitude);
+        //计算所有
+        let allTotals = this.getAllTotals(data);
 
         //去重
         var obj = {};
@@ -127,7 +137,7 @@ export default class DispatchMap extends Component {
         });
 
         this.basicOrders = data;
-        this.setState({ orders: data, orderMarkers }, () => {
+        this.setState({ orders: data, orderMarkers, allTotals }, () => {
           setTimeout(() => {
             // this.drawClusterLayer();
             this.drawMenu();
@@ -363,13 +373,19 @@ export default class DispatchMap extends Component {
       {
         text: '排车',
         callback: () => {
-          const { orders } = this.state;
-          const selectPoints = orders.filter(x => x.isSelect);
-          if (selectPoints.length === 0) {
+          const { orders, orderMarkers } = this.state;
+          let selectOrderStoreCodes = orderMarkers
+            .filter(x => x.isSelect)
+            .map(e => e.deliveryPoint.code);
+          let allSelectOrders = orders.filter(
+            e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
+          );
+          // const selectPoints = orders.filter(x => x.isSelect);
+          if (allSelectOrders.length === 0) {
             message.error('请选择需要排车的门店！');
             return;
           }
-          this.props.dispatchingByMap(selectPoints);
+          this.props.dispatchingByMap(allSelectOrders);
         },
       },
       {
@@ -506,6 +522,26 @@ export default class DispatchMap extends Component {
     return (arg1 + arg2) / m;
   };
 
+  getAllTotals = orders => {
+    let totals = {
+      cartonCount: 0, //整件数
+      scatteredCount: 0, //散件数
+      containerCount: 0, //周转箱
+      volume: 0, //体积
+      weight: 0, //重量,
+      totalCount: 0, //总件数
+    };
+    orders.map(e => {
+      totals.cartonCount += e.cartonCount;
+      totals.scatteredCount += e.scatteredCount;
+      totals.containerCount += e.containerCount;
+      totals.volume = this.accAdd(totals.volume, e.volume);
+      totals.weight = this.accAdd(totals.weight, e.weight);
+    });
+    totals.totalCount = totals.cartonCount + totals.scatteredCount + totals.containerCount * 2;
+    return totals;
+  };
+
   getTotals = selectOrder => {
     let selectOrderStoreCodes = selectOrder.map(e => e.deliveryPoint.code);
     const { orders } = this.state;
@@ -554,7 +590,7 @@ export default class DispatchMap extends Component {
   };
 
   render() {
-    const { visible, loading, windowInfo, orders } = this.state;
+    const { visible, loading, windowInfo, orders, allTotals } = this.state;
     const selectOrder = orders.filter(x => x.isSelect).sort(x => x.sort);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
     let totals = this.getTotals(selectOrder);
@@ -633,7 +669,7 @@ export default class DispatchMap extends Component {
           tip="加载中..."
           wrapperClassName={style.loading}
         >
-          <Row type="flex" style={{ height: '100%' }}>
+          <Row type="flex" style={{ height: window.innerHeight - 120 }}>
             <Col span={6} style={{ height: '100%', background: '#fff', overflow: 'auto' }}>
               {selectOrder.length > 0 ? (
                 <div style={{ position: 'relative', height: '100%' }}>
@@ -815,6 +851,36 @@ export default class DispatchMap extends Component {
                 />
               )}
             </Col>
+          </Row>
+          <Divider style={{ margin: 0, marginTop: 5 }} />
+          <Row width="100%">
+            <div style={{ display: 'flex', marginTop: 5, fontSize: '14px' }}>
+              <div style={{ flex: 1, fontWeight: 'bold' }}>
+                总件数:
+                {allTotals.totalCount}
+              </div>
+              <div style={{ flex: 1, fontWeight: 'bold' }}>
+                总整件数:
+                {allTotals.cartonCount}
+              </div>
+              <div style={{ flex: 1, fontWeight: 'bold' }}>
+                总散件数:
+                {allTotals.scatteredCount}
+              </div>
+              <div style={{ flex: 1, fontWeight: 'bold' }}>
+                总周转箱:
+                {allTotals.containerCount}
+              </div>
+              <div style={{ flex: 1, fontWeight: 'bold' }}>
+                总体积:
+                {allTotals.volume}
+              </div>
+              <div style={{ flex: 1, fontWeight: 'bold' }}>
+                总重量:
+                {/* {totals.weight} */}
+                {(allTotals.weight / 1000).toFixed(3)}
+              </div>
+            </div>
           </Row>
         </Spin>
       </Modal>
