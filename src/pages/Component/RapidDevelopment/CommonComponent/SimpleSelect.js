@@ -76,7 +76,9 @@ export default class SimpleSelect extends PureComponent {
           val: '',
         });
         for (let key in dateParam) {
-          let endDate = moment(new Date()).format('YYYY-MM-DD');
+          let endDate = moment(new Date())
+            .add(1, 'days')
+            .format('YYYY-MM-DD');
           let startDate = moment(new Date())
             .add(-dateParam[key], 'days')
             .format('YYYY-MM-DD');
