@@ -539,7 +539,6 @@ export default class StoresMap extends Component {
         //增加经纬度
         local.setSearchCompleteCallback(e => {
           e._pois.map(point => {
-            console.log('point', point);
             // point.address = `${point.address ? point.address : ''}${'\r\n'}[经度:${
             //   point.point.lng
             // }]${'\r\r'}[纬度:${point.point.lat}]`;
