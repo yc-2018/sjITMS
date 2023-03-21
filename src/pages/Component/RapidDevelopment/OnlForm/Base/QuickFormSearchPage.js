@@ -890,6 +890,9 @@ export default class QuickFormSearchPage extends SearchPage {
     return (
       <div>
         <SimpleQuery
+          toggleCallback={() => {
+            this.setState({});
+          }}
           selectFields={this.state.searchFields}
           filterValue={filterValue}
           refresh={this.onSearch}
