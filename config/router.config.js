@@ -1775,6 +1775,14 @@ export default [
                 quickuuid: 'sj_itms_wms_order_dtl_check',
                 authority: ['sjtms.bigData.hzwmsOrderDtlCheck'],
               },
+              {
+                path: '/bigData/hz/v_itms_cargovolume_day_yd',
+                name: '惠州每日出货量报表',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_itms_cargovolume_day_yd',
+                authority: ['sjtms.bigData.hzwmsOrderCargovolume'],
+              },
              
             ],
           },
