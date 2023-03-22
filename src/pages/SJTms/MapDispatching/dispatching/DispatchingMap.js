@@ -771,6 +771,7 @@ export default class DispatchMap extends Component {
                   {this.drawMarker()}
                   {/* 鼠标绘制工具 */}
                   <DrawingManager
+                    isOpen={true}
                     enableLimit
                     enableCalculate
                     // enableDrawingTool={false}
@@ -779,6 +780,7 @@ export default class DispatchMap extends Component {
                     drawingToolOptions={{
                       drawingModes: ['rectangle'],
                     }}
+                    drawingMode={'rectangle'}
                     rectangleOptions={{
                       strokeColor: '#d9534f', //边线颜色。
                       fillColor: '#f4cdcc', //填充颜色。当参数为空时，圆形将没有填充效果。
