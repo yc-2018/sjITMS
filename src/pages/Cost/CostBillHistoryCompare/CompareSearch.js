@@ -15,6 +15,7 @@ import { getCompareBill } from '@/services/cost/CostCalculation';
 import moment from 'moment';
 import { colWidth } from '@/utils/ColWidth';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
 @connect(({ quick, loading }) => ({
   quick,
