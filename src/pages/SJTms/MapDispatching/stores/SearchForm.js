@@ -109,7 +109,8 @@ export default class SearchForm extends Component {
           field.fieldName == 'LINEAREA' ||
           field.fieldName == 'SHIPAREA' ||
           field.fieldName == 'CONTACT' ||
-          field.fieldName == 'DELIVERYPOINTCODE'
+          field.fieldName == 'DELIVERYPOINTCODE' ||
+          field.fieldName == 'COLLECTAREA'
         ) {
           storeParams = { ...storeParams, [field.fieldName]: val };
         } else {
