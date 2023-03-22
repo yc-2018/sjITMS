@@ -2,26 +2,20 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-21 16:38:43
+ * @LastEditTime: 2023-03-22 09:03:11
  * @version: 1.0
  */
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { loginOrg } from '@/utils/LoginContext';
-import { clearPageFilter, getActiveKey, getPageFilter } from '@/utils/LoginContext';
-
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
 export default class ScheduleReportSearchPage extends QuickFormSearchPage {
-  componentDidMount() {
-    this.queryCoulumns();
-    this.getCreateConfig();
-  }
-
   defaultSearch = () => {
-    this.setState({pageFilters:""})
+    const { pageFilters } = this.state;
+    pageFilters.superQuery = '';
     //默认查询
     let ex = this.state.queryConfigColumns.filter(item => {
       return item.searchDefVal != null && item.searchDefVal != '';
