@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-29 15:33:45
+ * @LastEditTime: 2023-03-22 08:20:16
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
@@ -49,8 +49,8 @@ export default class DispatchingTable extends Component {
     if (this.props.clickRow == undefined) return;
     const { selectedRowKeys, dataSource } = this.props;
     let { lastIndex } = this.state;
-    // let rowKeys = [...selectedRowKeys];
-    let rowKeys = [];
+    let rowKeys = [...selectedRowKeys];
+    // let rowKeys = [];
     let allRowKeys = [...dataSource].map(x => x.uuid);
     const indicatrix = rowKeys.indexOf(record.uuid);
     const selected = indicatrix == -1;
@@ -71,9 +71,9 @@ export default class DispatchingTable extends Component {
     rowKeys = uniqBy(rowKeys);
     this.props.changeSelectRows(rowKeys);
 
-    if (!event.shiftKey) {
+    // if (!event.shiftKey) {
       this.setState({ lastIndex: index });
-    }
+    // }
 
     if (this.props.onClickRow) {
       this.props.onClickRow(record, index, event);
