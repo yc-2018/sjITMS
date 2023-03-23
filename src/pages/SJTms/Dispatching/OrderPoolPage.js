@@ -73,7 +73,25 @@ export default class OrderPoolPage extends Component {
     searchParams: [],
     queryKey: 1,
     countUnit: 0,
+    comId: 'orderPool',
   };
+
+  componentDidMount() {
+    window.addEventListener('keydown', this.keyDown);
+  }
+
+  keyDown = (event, ...args) => {
+    let that = this;
+    var e = event || window.event || args.callee.caller.arguments[0];
+    if (e && e.keyCode == 67 && e.altKey) {
+      //67 = c C
+      that.dispatching();
+    }
+  };
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.keyDown);
+  }
 
   componentWillReceiveProps(nextProps) {
     if (nextProps.isOrderCollect != this.props.isOrderCollect) {
@@ -103,6 +121,14 @@ export default class OrderPoolPage extends Component {
 
   refreshOrderPool = (params, pages, sorter) => {
     this.setState({ loading: true });
+    let orderType = params.find(e => e.field == 'ORDERTYPE');
+    if (orderType && orderType.val.split('||').indexOf('TakeDelivery') != -1) {
+      console.log('orderType', orderType);
+      this.setState({ comId: 'orderTakeDelivery' });
+    } else {
+      this.setState({ comId: 'orderPool' });
+    }
+
     let body = document.querySelector('.ant-table-body');
     if (body) {
       body.scrollTop = 0;
@@ -1013,7 +1039,7 @@ export default class OrderPoolPage extends Component {
                 {/* 待排订单列表 */}
                 {isOrderCollect ? (
                   <DispatchingChildTable
-                    comId="orderPool"
+                    comId={this.state.comId}
                     clickRow
                     childSettingCol
                     pagination={searchPagination || false}
@@ -1034,7 +1060,8 @@ export default class OrderPoolPage extends Component {
                   />
                 ) : (
                   <DispatchingTable
-                    comId="orderPool"
+                    // comId="orderPool"
+                    comId={this.state.comId}
                     clickRow
                     pagination={searchPagination || false}
                     loading={loading}

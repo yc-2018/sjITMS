@@ -35,6 +35,72 @@ export default class DispatchingCreatePage extends Component {
   basicEmployee = [];
   basicVehicle = [];
   dict = [];
+  itemConfig = {
+    '000000750000004': [
+      {
+        key: 'init',
+        tab: '默认匹配',
+      },
+      {
+        key: 'recommend',
+        tab: '熟练度匹配',
+      },
+      {
+        key: 'area',
+        tab: '区域匹配',
+      },
+    ], //cstest
+    '000000750000005': [
+      {
+        key: 'recommend',
+        tab: '熟练度匹配',
+      },
+      {
+        key: 'area',
+        tab: '区域匹配',
+      },
+      {
+        key: 'init',
+        tab: '默认匹配',
+      },
+    ], //ydtest
+    '000008150000002': [
+      {
+        key: 'recommend',
+        tab: '熟练度匹配',
+      },
+      {
+        key: 'area',
+        tab: '区域匹配',
+      },
+      {
+        key: 'init',
+        tab: '默认匹配',
+      },
+    ], //ydzs
+    '000008150000001': [
+      {
+        key: 'init',
+        tab: '默认匹配',
+      },
+      {
+        key: 'recommend',
+        tab: '熟练度匹配',
+      },
+      {
+        key: 'area',
+        tab: '区域匹配',
+      },
+    ], //cszs
+  };
+
+  carSearchSortConfig = {
+    '000000750000004': [1, 2, 3], //cstest
+    '000000750000005': [3, 2, 1], //ydtest
+    '000008150000002': [3, 2, 1], //ydzs
+    '000008150000001': [1, 2, 3], //cszs
+  };
+
   state = {
     loading: false,
     saving: false,
@@ -61,11 +127,22 @@ export default class DispatchingCreatePage extends Component {
       // empType: '',
       // empInfo: '',
     },
-    carKey: 'init',
+    carKey: this.itemConfig[loginOrg().uuid][0].key
+      ? this.itemConfig[loginOrg().uuid][0].key
+      : 'init',
   };
 
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
+  };
+
+  keyDown = (event, ...args) => {
+    let that = this;
+    var e = event || window.event || args.callee.caller.arguments[0];
+    if (e && e.keyCode == 87 && e.altKey) {
+      //87 = w W
+      that.onSave();
+    }
   };
 
   getRecommendByOrders = async (record, vehicles) => {
@@ -154,6 +231,8 @@ export default class DispatchingCreatePage extends Component {
             })
           : [];
       }
+      //edit init
+      this.setState({ carKey: 'init' });
     }
     // vehicles = await this.getRecommendByOrders(details, vehicles);
     if (schedule) {
@@ -181,16 +260,24 @@ export default class DispatchingCreatePage extends Component {
     }
     this.basicEmployee = employees;
     this.basicVehicle = vehicles;
-    this.setState({
-      schedule,
-      note: schedule ? schedule.note : '',
-      selectVehicle: selectVehicle == undefined ? {} : selectVehicle,
-      selectEmployees,
-      vehicles,
-      employees,
-      orders: details,
-      loading: false,
-    });
+    this.setState(
+      {
+        schedule,
+        note: schedule ? schedule.note : '',
+        selectVehicle: selectVehicle == undefined ? {} : selectVehicle,
+        selectEmployees,
+        vehicles,
+        employees,
+        orders: details,
+        loading: false,
+      },
+      () => {
+        //itemConfig
+        this.changeCarKey(this.state.carKey);
+        //默认光标
+        this.carSearchInput?.focus();
+      }
+    );
   };
 
   //显示
@@ -198,10 +285,12 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ visible: true, isEdit, loading: true, rowKeys: [] }, () => {
       this.initData(isEdit, record);
     });
+    window.addEventListener('keydown', this.keyDown);
   };
   //取消隐藏
   hide = () => {
     this.setState({ visible: false });
+    window.removeEventListener('keydown', this.keyDown);
   };
   //临时保存
   exit = () => {
@@ -212,8 +301,11 @@ export default class DispatchingCreatePage extends Component {
       selectVehicle: [],
       carEmpNums: 20,
       carEmpSearch: {},
-      carKey: 'init',
+      carKey: this.itemConfig[loginOrg().uuid][0].key
+        ? this.itemConfig[loginOrg().uuid][0].key
+        : 'init',
     });
+    window.removeEventListener('keydown', this.keyDown);
   };
 
   //选车
@@ -266,6 +358,9 @@ export default class DispatchingCreatePage extends Component {
       this.setState({ carEmpSearch: { ...this.state.carEmpSearch, vehicleCode: value } });
     }
     this.setState({ vehicles: serachVeh, carKey: 'init' });
+    if (!this.state.isEdit && serachVeh && serachVeh.length > 0) {
+      this.handleVehicle(serachVeh[0]);
+    }
   };
   //选人
   handleEmployee = emp => {
@@ -432,6 +527,7 @@ export default class DispatchingCreatePage extends Component {
       });
     }
     this.setState({ loading: false });
+    window.removeEventListener('keydown', this.keyDown);
   };
   //保存数据校验
   handleSave = async () => {
@@ -635,14 +731,17 @@ export default class DispatchingCreatePage extends Component {
   };
 
   changeCarKey = async key => {
-    const { orders, vehicles } = this.state;
+    const { orders, isEdit } = this.state;
     if (key == 'recommend') {
       //熟练度
-      let vehiclesByRecom = await this.getRecommendByOrders(orders, vehicles);
+      let vehiclesByRecom = await this.getRecommendByOrders(orders, this.basicVehicle);
       vehiclesByRecom = vehiclesByRecom.filter(item => {
         return item.pro && item.pro != 0;
       });
       this.setState({ vehicles: vehiclesByRecom });
+      if (!isEdit && vehiclesByRecom.length > 0) {
+        this.handleVehicle(vehiclesByRecom[0]);
+      }
     } else if (key == 'init') {
       this.setState({ vehicles: this.basicVehicle });
     } else {
@@ -665,20 +764,22 @@ export default class DispatchingCreatePage extends Component {
     let sliceVehicles =
       this.state.carEmpNums == 'all' ? vehicles : vehicles.slice(0, this.state.carEmpNums);
 
-    const carTabList = [
-      {
-        key: 'init',
-        tab: '默认匹配',
-      },
-      {
-        key: 'recommend',
-        tab: '熟练度匹配',
-      },
-      {
-        key: 'area',
-        tab: '区域匹配',
-      },
-    ];
+    const carTabList = this.itemConfig[loginOrg().uuid]
+      ? this.itemConfig[loginOrg().uuid]
+      : [
+          {
+            key: 'init',
+            tab: '默认匹配',
+          },
+          {
+            key: 'recommend',
+            tab: '熟练度匹配',
+          },
+          {
+            key: 'area',
+            tab: '区域匹配',
+          },
+        ];
 
     let carCard = undefined;
 
@@ -800,6 +901,47 @@ export default class DispatchingCreatePage extends Component {
         });
     }
 
+    //sort
+    let carSearchSort = {
+      '1': (
+        <Select
+          onChange={e => this.setState({ carEmpNums: e })}
+          value={this.state.carEmpNums}
+          style={{ width: 55, marginRight: 2.5, marginLeft: 2.5 }}
+        >
+          <Select.Option value={20}>20</Select.Option>
+          <Select.Option value={50}>50</Select.Option>
+          <Select.Option value={100}>100</Select.Option>
+          <Select.Option value={'all'}>全部</Select.Option>
+        </Select>
+      ),
+      '2': (
+        <Select
+          placeholder="车辆归属"
+          onChange={value => this.vehicleFilter('vehicleOwner', value)}
+          allowClear={true}
+          style={{ width: 100, marginRight: 2.5, marginLeft: 2.5 }}
+          value={this.state.carEmpSearch.vehicleOwner}
+        >
+          {this.dict.filter(x => x.dictCode == 'vehicleOwner').map(d => (
+            <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
+          ))}
+        </Select>
+      ),
+      '3': (
+        <Search
+          placeholder="请输入车牌号/编号"
+          onChange={event => this.vehicleFilter('searchKey', event.target.value)}
+          style={{ width: 150, marginLeft: 2.5, marginRight: 2.5 }}
+          value={this.state.carEmpSearch.vehicleCode}
+          ref={e => (this.carSearchInput = e)}
+        />
+      ),
+    };
+
+    let orgSort = this.carSearchSortConfig[loginOrg().uuid]
+      ? this.carSearchSortConfig[loginOrg().uuid]
+      : [1, 2, 3];
     return (
       <Card
         // loading={this.state.carLoading}
@@ -812,34 +954,9 @@ export default class DispatchingCreatePage extends Component {
         bodyStyle={{ padding: 0, paddingTop: 8, height: '26vh', overflowY: 'auto' }}
         extra={
           <div>
-            <Select
-              onChange={e => this.setState({ carEmpNums: e })}
-              value={this.state.carEmpNums}
-              style={{ width: 55, marginRight: '8px' }}
-            >
-              <Select.Option value={20}>20</Select.Option>
-              <Select.Option value={50}>50</Select.Option>
-              <Select.Option value={100}>100</Select.Option>
-              <Select.Option value={'all'}>全部</Select.Option>
-            </Select>
-            <Select
-              placeholder="车辆归属"
-              onChange={value => this.vehicleFilter('vehicleOwner', value)}
-              allowClear={true}
-              style={{ width: 100 }}
-              value={this.state.carEmpSearch.vehicleOwner}
-            >
-              {this.dict.filter(x => x.dictCode == 'vehicleOwner').map(d => (
-                <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
-              ))}
-            </Select>
-
-            <Search
-              placeholder="请输入车牌号/编号"
-              onChange={event => this.vehicleFilter('searchKey', event.target.value)}
-              style={{ width: 150, marginLeft: 5 }}
-              value={this.state.carEmpSearch.vehicleCode}
-            />
+            {orgSort.map(e => {
+              return carSearchSort[e];
+            })}
           </div>
         }
       >
@@ -887,6 +1004,7 @@ export default class DispatchingCreatePage extends Component {
       editPageVisible,
       note,
     } = this.state;
+
     const { dispatchConfig } = this.props;
     const totalData = this.groupByOrder(orders);
     //车辆可装载信息
