@@ -13,6 +13,8 @@ import difference from 'lodash/difference';
 import uniqBy from 'lodash/uniqBy';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
+import { cost } from '@/services/billManage/billList';
+import styles from './LineSystem.less';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -35,7 +37,7 @@ export default class TableTransfer extends Component {
       },
     },
   };
-
+  nochar = React.createRef() ;
   componentDidMount() {
     this.queryCoulumns();
   }
@@ -121,6 +123,7 @@ export default class TableTransfer extends Component {
     return (
       <Transfer
         {...this.props}
+        ref={ref => (this.nochar = ref)}
        //showSearch={true}
         onSearch={(direction, value) => {
           if (direction === 'left') this.filterData(value);
@@ -221,11 +224,18 @@ export default class TableTransfer extends Component {
               size="small"
               rowKey="UUID"
               onRow={({ UUID, disabled: itemDisabled }) => ({
-                onClick: () => {
+                onDoubleClick: ()=>{
+                  console.log("aasda");
                   if (itemDisabled) return;
                   onItemSelect(UUID, !listSelectedKeys.includes(UUID));
-                },
+                  this.props.onChange([...this.props.targetKeys,UUID]);
+                }
               })}
+              rowClassName = {(record, index) => {
+                return styles.talbeAdd;
+              }
+                
+              }
               onChange={handleTableChange}
               pagination={direction === 'left' ? pagination : true}
             />
