@@ -121,9 +121,8 @@ export default class OrderPoolPage extends Component {
 
   refreshOrderPool = (params, pages, sorter) => {
     this.setState({ loading: true });
-    let orderType = params.find(e => e.field == 'ORDERTYPE');
+    let orderType = params?.find(e => e.field == 'ORDERTYPE');
     if (orderType && orderType.val.split('||').indexOf('TakeDelivery') != -1) {
-      console.log('orderType', orderType);
       this.setState({ comId: 'orderTakeDelivery' });
     } else {
       this.setState({ comId: 'orderPool' });
