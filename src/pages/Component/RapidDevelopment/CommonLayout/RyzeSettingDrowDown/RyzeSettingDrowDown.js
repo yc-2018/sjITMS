@@ -285,7 +285,6 @@ export default class RyzeSettingDrowDown extends Component {
   };
 
   handleOK = () => {
-    console.log('this.state', this.state.key);
     const { optionsList } = this.state;
     const { columns } = this.props;
     let oldColumns = [];
