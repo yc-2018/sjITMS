@@ -392,6 +392,10 @@ const OrderType = {
     name: 'AdjustWarehouse',
     caption: '调仓',
   },
+  DeliveryThird: {
+    name: 'DeliveryThird',
+    caption: '门店配送（三方）',
+  },
 };
 
 export const CreatePageOrderColumns = [
