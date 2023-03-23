@@ -138,10 +138,13 @@ export default class DispatchingCreatePage extends Component {
 
   keyDown = (event, ...args) => {
     let that = this;
+    const { loading } = this.state;
     var e = event || window.event || args.callee.caller.arguments[0];
     if (e && e.keyCode == 87 && e.altKey) {
       //87 = w W
-      that.onSave();
+      if (!loading) {
+        that.onSave();
+      }
     }
   };
 
