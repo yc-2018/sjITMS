@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-20 20:52:23
+ * @LastEditTime: 2023-03-24 09:42:13
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -26,7 +26,6 @@ import {
   OrderColumns,
   OrderCollectColumns,
   OrderDetailColumns,
-  VehicleColumns,
   pagination,
 } from './DispatchingColumns';
 import SearchForm from './SearchForm';
@@ -40,17 +39,11 @@ import {
   savePending,
   getContainerByBillUuid,
 } from '@/services/sjitms/OrderBill';
-import {
-  save,
-  batchSave,
-  addOrders,
-  checkArea,
-  checkAreaSchedule,
-} from '@/services/sjitms/ScheduleBill';
-import { queryData } from '@/services/quick/Quick';
+import { batchSave, addOrders, checkArea, checkAreaSchedule } from '@/services/sjitms/ScheduleBill';
 import { groupBy, sumBy, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
+import VehiclePoolPage from './VehiclePoolPage';
 
 const { TabPane } = Tabs;
 export default class OrderPoolPage extends Component {
@@ -60,13 +53,9 @@ export default class OrderPoolPage extends Component {
     auditedData: [],
     searchPagination: false,
     pageFilter: [],
-    vehiclePagination: false,
-    vehicleFilter: [],
     auditedCollectData: [],
-    vehicleData: [],
     auditedParentRowKeys: [],
     auditedRowKeys: [],
-    vehicleRowKeys: [],
     activeKey: 'Audited',
     waveOrder: {},
     modalVisible: false,
@@ -74,6 +63,7 @@ export default class OrderPoolPage extends Component {
     queryKey: 1,
     countUnit: 0,
     comId: 'orderPool',
+    searchKey: 'orderPoolSearch',
   };
 
   componentDidMount() {
@@ -105,6 +95,11 @@ export default class OrderPoolPage extends Component {
     { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
     { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
   ];
+  initialiPage = () => {
+    this.setState({
+      searchKey: 'orderPoolSearch' + Math.ceil(Math.random() * 1000),
+    });
+  };
 
   //刷新
   refreshTable = () => {
@@ -190,65 +185,9 @@ export default class OrderPoolPage extends Component {
         });
       }
       this.props.refreshSelectRowOrder([], ['Audited', 'PartScheduled']);
-      this.setState({ activeKey: 'Audited', loading: false, pageFilter });
+      this.setState({ loading: false, pageFilter });
     });
     this.props.refreshPending();
-  };
-
-  refreshVehiclePool = (params, pages, sorter) => {
-    this.setState({ loading: true });
-    let { vehicleFilter, vehiclePagination } = this.state;
-    let filter = { superQuery: { matchType: 'and', queryParams: [] } };
-    if (params) {
-      if (params.superQuery) {
-        filter = params;
-        vehicleFilter = params.superQuery.queryParams;
-      } else {
-        vehicleFilter = params;
-      }
-    }
-    if (sorter && sorter.column)
-      filter.order =
-        (sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey) +
-        ',' +
-        sorter.order;
-    if (pages) {
-      filter.page = pages.current;
-      filter.pageSize = pages.pageSize;
-      //设置页码缓存
-      localStorage.setItem('VehiclePoolPageSize', filter.pageSize);
-    } else {
-      //增加查询页数从缓存中读取
-      let pageSize = localStorage.getItem('VehiclePoolPageSize')
-        ? parseInt(localStorage.getItem('VehiclePoolPageSize'))
-        : 100;
-      filter.page = vehiclePagination.current;
-      filter.pageSize = vehiclePagination.pageSize || pageSize;
-    }
-    filter.superQuery.queryParams = [...vehicleFilter, ...this.isOrgQuery];
-    filter.quickuuid = 'v_sj_itms_vehicle_stat';
-    queryData(filter).then(response => {
-      if (response.success) {
-        vehiclePagination = {
-          ...pagination,
-          total: response.data.paging.recordCount,
-          pageSize: response.data.paging.pageSize,
-          current: response.data.page,
-          showTotal: total => `共 ${total} 条`,
-        };
-        let vehicleData = response.data.records ? response.data.records : [];
-        vehicleData = vehicleData.map(vehicle => {
-          return { ...vehicle, uuid: vehicle.UUID };
-        });
-        this.setState({
-          vehiclePagination,
-          vehicleData,
-          auditedRowKeys: [],
-          vehicleRowKeys: [],
-        });
-      }
-      this.setState({ activeKey: 'Vehicle', loading: false, vehicleFilter });
-    });
   };
 
   //按送货点汇总运输订单
@@ -284,14 +223,7 @@ export default class OrderPoolPage extends Component {
 
   //标签页切换事件
   handleTabChange = activeKey => {
-    switch (activeKey) {
-      case 'Vehicle':
-        this.refreshVehiclePool();
-        break;
-      default:
-        this.setState({ activeKey });
-        break;
-    }
+    this.setState({ activeKey });
   };
 
   //表格行选择
@@ -334,10 +266,7 @@ export default class OrderPoolPage extends Component {
     let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
     orders = [...orders, ...selectPending];
     //校验区域组合
-    if (
-      orders[0].dispatchCenterUuid == '000008150000001' ||
-      orders[0].dispatchCenterUuid == '000000750000004'
-    ) {
+    if (this.props.dispatchConfig.checkArea != 1) {
       this.dispatchingCom(orders);
     } else {
       const result = await checkArea(orders);
@@ -453,70 +382,6 @@ export default class OrderPoolPage extends Component {
     }
     // this.setState({ mapModal: false });
     this.createPageModalRef.show(false, orders);
-  };
-
-  handleCreateSchedule = () => {
-    const { vehicleRowKeys } = this.state;
-    if (vehicleRowKeys.length == 0) {
-      message.warning('请选择车辆！');
-      return;
-    }
-    if (vehicleRowKeys.length == 1) {
-      this.createSchedule(vehicleRowKeys[0]).then(response => {
-        if (response.success) {
-          message.success('保存成功！');
-          this.props.refreshSchedule();
-          this.setState({ vehicleRowKeys: [] });
-        }
-      });
-    } else {
-      this.batchProcessConfirmRef.show('创建排车单', vehicleRowKeys, this.createSchedule, () => {
-        this.props.refreshSchedule();
-        this.setState({ vehicleRowKeys: [] });
-      });
-    }
-  };
-  //创建排车单
-  createSchedule = async uuid => {
-    const { vehicleData } = this.state;
-    const vehicle = vehicleData.find(x => x.uuid == uuid);
-    const carrier = vehicle.DRIVERUUID
-      ? {
-          uuid: vehicle.DRIVERUUID,
-          code: vehicle.DRIVERCODE,
-          name: vehicle.DRIVERNAME,
-        }
-      : {};
-    let memberDetails = [{ member: carrier, memberType: 'Driver' }];
-    if (vehicle.DELIVERYUUID) {
-      memberDetails.push({
-        member: {
-          uuid: vehicle.DELIVERYUUID,
-          code: vehicle.DELIVERYCODE,
-          name: vehicle.DELIVERYNAME,
-        },
-        memberType: 'DeliveryMan',
-      });
-    }
-    const paramBody = {
-      type: 'Job',
-      vehicle: {
-        uuid: vehicle.UUID,
-        code: vehicle.CODE,
-        name: vehicle.PLATENUMBER,
-      },
-      vehicleType: {
-        uuid: vehicle.VEHICLETYPEUUID,
-        code: vehicle.VEHICLETYPECODE,
-        name: vehicle.VEHICLETYPENAME,
-      },
-      carrier: { ...carrier },
-      details: [],
-      memberDetails,
-      companyUuid: loginCompany().uuid,
-      dispatchCenterUuid: loginOrg().uuid,
-    };
-    return await save(paramBody);
   };
 
   //添加到待定池
@@ -873,38 +738,13 @@ export default class OrderPoolPage extends Component {
       totalStores: totalStores.length,
     };
   };
-  //运力池汇总
-  drawVehicleCollect = (vehicles, rowKeys) => {
-    const totalTextStyle = { fontSize: 16, fontWeight: 700, marginLeft: 2, color: '#333' };
-    vehicles = vehicles.filter(x => rowKeys.indexOf(x.uuid) != -1);
-    return (
-      <Row type="flex" justify="space-around" style={{ fontSize: 14 }}>
-        <Col span={5}>
-          车辆数: <span style={totalTextStyle}>{vehicles.length}</span>
-        </Col>
-        <Col span={5}>
-          总限重:
-          <span style={totalTextStyle}>
-            {Math.round(sumBy(vehicles.map(x => x.BEARWEIGHT)) * 100) / 100}
-          </span>
-        </Col>
-        <Col span={5}>
-          总容积:
-          <span style={totalTextStyle}>
-            {Math.round(sumBy(vehicles.map(x => (x.BEARVOLUME * x.BEARVOLUMERATE) / 100)) * 100) /
-              100}
-          </span>
-        </Col>
-      </Row>
-    );
-  };
 
   buildOperations = activeKey => {
     const { btnLoading } = this.state;
     switch (activeKey) {
       case 'Vehicle':
         return (
-          <Button type={'primary'} onClick={this.handleCreateSchedule}>
+          <Button type={'primary'} onClick={() => this.vehiclePoolPage.handleCreateSchedule()}>
             生成排车单
           </Button>
         );
@@ -929,14 +769,6 @@ export default class OrderPoolPage extends Component {
     }
   };
 
-  // onDoubleClick = record => {
-  //   let orders = [record];
-  //   if (!this.veriftOrder(orders)) {
-  //     return;
-  //   }
-  //   this.createPageModalRef.show(false, orders);
-  // };
-
   render() {
     const {
       loading,
@@ -944,14 +776,12 @@ export default class OrderPoolPage extends Component {
       auditedRowKeys,
       auditedData,
       searchPagination,
-      vehiclePagination,
       auditedCollectData,
-      vehicleRowKeys,
-      vehicleData,
       activeKey,
       searchParams,
       waveOrder,
       countUnit,
+      searchKey,
     } = this.state;
     const { isOrderCollect, totalOrder, dispatchConfig } = this.props;
     const collectOrder = this.collectByOrder(totalOrder);
@@ -992,6 +822,7 @@ export default class OrderPoolPage extends Component {
             {/* 查询表单 */}
             <SearchForm
               refresh={this.refreshTable}
+              key={searchKey + '1'}
               quickuuid="sj_itms_dispatching_orderpool"
               dispatchcenterSearch={true}
               refreshOrderPool={this.refreshOrderPool}
@@ -1059,7 +890,6 @@ export default class OrderPoolPage extends Component {
                   />
                 ) : (
                   <DispatchingTable
-                    // comId="orderPool"
                     comId={this.state.comId}
                     clickRow
                     pagination={searchPagination || false}
@@ -1141,52 +971,11 @@ export default class OrderPoolPage extends Component {
             />
           </TabPane>
           <TabPane tab={<span className={dispatchingStyles.cardTitle}>运力池</span>} key="Vehicle">
-            <SearchForm
-              refresh={this.refreshTable}
-              quickuuid="v_sj_itms_vehicle_stat"
-              refreshOrderPool={this.refreshVehiclePool}
+            <VehiclePoolPage
+              ref={ref => (this.vehiclePoolPage = ref)}
+              refreshSchedule={this.props.refreshSchedule}
+              searchKey={searchKey + '2'}
             />
-            {/* 运力池 */}
-            <DispatchingTable
-              comId="vehicles"
-              clickRow
-              pagination={vehiclePagination || false}
-              loading={loading}
-              dataSource={vehicleData}
-              refreshDataSource={(_, pagination, sorter) => {
-                this.refreshVehiclePool(undefined, pagination, sorter);
-              }}
-              changeSelectRows={rowKeys => this.tableChangeRows('Vehicle', rowKeys)}
-              selectedRowKeys={vehicleRowKeys}
-              columns={VehicleColumns}
-              scrollY="calc(86vh - 215px)"
-              title={() => this.drawVehicleCollect(vehicleData, vehicleRowKeys)}
-            />
-            {/* {vehicleData.length == 0 ? (
-              <></>
-            ) : (
-              <div className={dispatchingStyles.orderPoolFooter}>
-                <div className={dispatchingStyles.orderTotalPane}>
-                  <Icon type="info-circle" theme="filled" style={{ color: '#3B77E3' }} />
-                  <span style={{ marginLeft: 5 }}>
-                    已选择
-                    <span style={{ color: '#3B77E3', margin: '0 2px' }}>
-                      {vehicleRowKeys.length}
-                    </span>
-                    项
-                  </span>
-                  <a
-                    href="##"
-                    style={{ marginLeft: 10 }}
-                    onClick={() => {
-                      this.tableChangeRows('Vehicle', []);
-                    }}
-                  >
-                    取消全部
-                  </a>
-                </div>
-              </div>
-            )} */}
           </TabPane>
         </Tabs>
         <Modal

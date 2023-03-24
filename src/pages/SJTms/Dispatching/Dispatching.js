@@ -2,13 +2,13 @@
  * @Author: guankongjin
  * @Date: 2022-03-29 14:03:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-07 10:33:00
+ * @LastEditTime: 2023-03-24 09:47:22
  * @Description: 配送调度主页面
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\Dispatching.js
  */
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { Layout, Row, Col, Modal } from 'antd';
+import { Layout, Row, Col, Modal, Button } from 'antd';
 import Page from '@/pages/Component/RapidDevelopment/CommonLayout/Page/Page';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import OrderPoolPage from './OrderPoolPage';
@@ -102,6 +102,11 @@ export default class Dispatching extends Component {
     this.setState({ isOrderCollect, selectOrders: [] });
   };
 
+  handOnfush = () => {
+    this.orderPoolPageRef.initialiPage();
+    this.schedulePageRef.initialiPage();
+  };
+
   render() {
     if (this.props.dispatching.showPage === 'query') {
       return (
@@ -111,6 +116,18 @@ export default class Dispatching extends Component {
             pathname={this.props.location ? this.props.location.pathname : ''}
           >
             <Content className={dispatchingStyles.dispatchingContent}>
+              <div
+                style={{
+                  position: 'absolute',
+                  top: -8,
+                  right: -5,
+                  zIndex: 100,
+                  width: 24,
+                  height: 24,
+                }}
+              >
+                <Button onClick={() => this.handOnfush()} icon="redo" />
+              </div>
               <Layout className={dispatchingStyles.dispatchingLayout}>
                 <Row gutter={[5, 5]}>
                   <Col span={12}>
