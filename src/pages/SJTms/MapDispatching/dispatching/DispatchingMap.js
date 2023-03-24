@@ -25,6 +25,13 @@ import { sumBy, uniqBy } from 'lodash';
 
 const { Search } = Input;
 
+//百度地图api变量
+// BMAP_DRAWING_MARKER    = "marker",     // 鼠标画点模式
+// BMAP_DRAWING_CLOSE  = "close",   // 鼠标画线模式
+// BMAP_DRAWING_POLYLINE  = "polyline",   // 鼠标画线模式
+// BMAP_DRAWING_CIRCLE    = "circle",     // 鼠标画圆模式
+// BMAP_DRAWING_RECTANGLE = "rectangle",  // 鼠标画矩形模式
+// BMAP_DRAWING_POLYGON   = "polygon";    // 鼠标画多边形模式
 export default class DispatchMap extends Component {
   basicOrders = [];
   isSelectOrders = [];
@@ -52,7 +59,26 @@ export default class DispatchMap extends Component {
 
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
+    window.addEventListener('keydown', this.keyDown);
   };
+
+  keyDown = (event, ...args) => {
+    let that = this;
+    var e = event || window.event || args.callee.caller.arguments[0];
+    if (e && e.keyCode == 87 && e.altKey) {
+      console.log('this.drawingManagerRef', this.drawingManagerRef);
+      if (!this.drawingManagerRef?._isOpen) {
+        this.drawingManagerRef?.open();
+        this.drawingManagerRef?.setDrawingMode('rectangle');
+      } else {
+        this.drawingManagerRef?.close();
+      }
+    }
+  };
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.keyDown);
+  }
 
   //显示modal
   show = orders => {
