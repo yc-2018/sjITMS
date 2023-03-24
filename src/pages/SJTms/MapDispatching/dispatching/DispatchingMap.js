@@ -59,14 +59,12 @@ export default class DispatchMap extends Component {
 
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
-    window.addEventListener('keydown', this.keyDown);
   };
 
   keyDown = (event, ...args) => {
     let that = this;
     var e = event || window.event || args.callee.caller.arguments[0];
-    if (e && e.keyCode == 87 && e.altKey) {
-      console.log('this.drawingManagerRef', this.drawingManagerRef);
+    if (e && e.keyCode == 82 && e.altKey) {
       if (!this.drawingManagerRef?._isOpen) {
         this.drawingManagerRef?.open();
         this.drawingManagerRef?.setDrawingMode('rectangle');
@@ -82,6 +80,8 @@ export default class DispatchMap extends Component {
 
   //显示modal
   show = orders => {
+    window.addEventListener('keydown', this.keyDown);
+
     this.setState({ visible: true });
     queryDict('warehouse').then(res => {
       this.setState({
@@ -105,6 +105,7 @@ export default class DispatchMap extends Component {
     this.clusterLayer = undefined;
     this.contextMenu = undefined;
     this.isSelectOrders = [];
+    window.removeEventListener('keydown', this.keyDown);
   };
 
   //查询
