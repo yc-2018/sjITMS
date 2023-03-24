@@ -1549,7 +1549,7 @@ export default [
               },
               {
                 path: '/bigData/loading/joinStoreDtlReport',
-                name: '承运车费用查询（明细）',
+                name: '加盟车费用查询（明细）',
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_sj_itms_joinStoreDtl_report',
@@ -1557,7 +1557,7 @@ export default [
               },
               {
                 path: '/bigData/loading/joinCarSubsidy',
-                name: '承运车费用查询（汇总）',
+                name: '加盟车费用查询（汇总）',
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_cs_joinCarSubsidy',
