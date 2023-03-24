@@ -73,7 +73,7 @@ export default class OrderPoolPage extends Component {
   keyDown = (event, ...args) => {
     let that = this;
     var e = event || window.event || args.callee.caller.arguments[0];
-    if (e && e.keyCode == 67 && e.altKey) {
+    if (e && e.keyCode == 81 && e.altKey) {
       //67 = c C
       that.dispatching();
     }
@@ -752,7 +752,7 @@ export default class OrderPoolPage extends Component {
         return (
           <>
             <Button type={'primary'} onClick={this.dispatching}>
-              排车
+              排车(ALT+Q)
             </Button>
             <Button
               style={{ marginLeft: 10 }}

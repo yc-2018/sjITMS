@@ -146,6 +146,12 @@ export default class DispatchingCreatePage extends Component {
         that.onSave();
       }
     }
+    if (e && e.keyCode == 67 && e.altKey) {
+      //67 = c C
+      if (!loading) {
+        that.exit();
+      }
+    }
   };
 
   getRecommendByOrders = async (record, vehicles) => {
@@ -1040,10 +1046,10 @@ export default class DispatchingCreatePage extends Component {
         bodyStyle={{ margin: -24, height: 'calc(100vh - 48px)' }}
         footer={
           <div>
-            <Button onClick={this.exit}>取消</Button>
+            <Button onClick={this.exit}>取消(ALT+C)</Button>
             <Button onClick={this.hide}>临时保存</Button>
             <Button type="primary" onClick={() => this.handleSave()} loading={loading}>
-              生成排车单
+              生成排车单(ALT+W)
             </Button>
           </div>
         }
