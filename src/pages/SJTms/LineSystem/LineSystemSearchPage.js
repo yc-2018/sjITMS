@@ -52,7 +52,7 @@ const { TreeNode } = Tree;
 const { TabPane } = Tabs;
 import { havePermission } from '@/utils/authority';
 import { throttleSetter } from 'lodash-decorators';
-
+import { getDispatchConfig } from '@/services/tms/DispatcherConfig';
 @connect(({ lineSystem, loading }) => ({
   lineSystem,
   loading: loading.models.lineSystem,
@@ -78,8 +78,14 @@ export default class LineSystemSearchPage extends Component {
       treeuuid :'treeuuid'
     };
   }
-  componentDidMount() {
+  async componentDidMount() {
     this.queryLineSystem();
+    const response = await getDispatchConfig(loginOrg().uuid);
+    if (response.success) {
+      this.setState({
+        dispatchConfig: response.data,
+      });
+    }
   }
   //遍历树
   getLineSystemTree = (data, itemData, lineData) => {
@@ -395,7 +401,7 @@ export default class LineSystemSearchPage extends Component {
     // };
     const renderTreeNode = data => {
       let nodeArr = data.map(item => {
-       const reion = !item.system && item.region==1 && (loginOrg().uuid=='000000750000005' || loginOrg().uuid =='000008150000002' );
+       const reion = !item.system && item.region==1 && this.state.dispatchConfig.checkLineArea==1 ;
         item.title = (
           <div  style={reion?{color:'red'}:{}}>
             <span>{item.title}</span>

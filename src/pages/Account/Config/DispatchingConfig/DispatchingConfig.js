@@ -130,6 +130,16 @@ export default class DispatchingConfig extends ConfigSearchPage {
         />
       ),
     },
+    {
+      title: DispatchingConfigLocale.checkLineArea,
+      dataIndex: 'checkLineArea',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'checkLineArea', event)}
+        />
+      ),
+    },
   ];
 
   onChange = (record, field, event) => {
