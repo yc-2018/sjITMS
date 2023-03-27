@@ -179,15 +179,22 @@ export function updateNote(payload) {
    
   });
 }
+export function updateIsNewStore(payload) {
+  return request(`/itms-schedule/itms-schedule/lineShipAddress/updateIsNewStore/${payload.flag}`, {
+    method: 'POST',
+    body:payload.uuids
+   
+  });
+}updateIsNewStore
 export function YDSiparea(payload) {
   return request(`/itms-schedule/itms-schedule/LineSystem/YDSiparea/${payload.systemUUID}`, {
-    method: 'post'
+    method: 'POST'
    
   });
 }
 
 export function exportLineSystem(payload) {
   return request(`/itms-schedule/itms-schedule/LineSystem/export/${payload.systemUUID}`, {
-    method: 'post'
+    method: 'POST'
   });
 }
