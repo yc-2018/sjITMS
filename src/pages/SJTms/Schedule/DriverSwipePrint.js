@@ -96,7 +96,10 @@ export default class DriverSwipePrint extends PureComponent {
       const printPages = document.getElementById('printCell').childNodes;
       printPages.forEach(page => {
         LODOP.NewPageA();
-        if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001') {
+        if (loginOrg().uuid == '000000750000004' 
+        || loginOrg().uuid == '000008150000001'
+        ||loginOrg().uuid =='000000750000005' 
+        ||loginOrg().uuid =='000008150000002') {
           LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
         } else {
           LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
