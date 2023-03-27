@@ -7,7 +7,7 @@
  * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineShipAddress.js
  */
 import { connect } from 'dva';
-import { Modal, Button, Input, message, Form, Row, Col, Select, TreeSelect,Icon, } from 'antd';
+import { Modal, Button, Input, message, Form, Row, Col, Select, TreeSelect, Icon, Menu, Dropdown } from 'antd';
 import OperateCol from '@/pages/Component/Form/OperateCol';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
@@ -22,7 +22,8 @@ import {
   checkStoreExist,
   switchLineAddress,
   getMatchLine,
-  updateNote
+  updateNote,
+  updateIsNewStore
 } from '@/services/sjtms/LineSystemHis';
 import { updateStoreAddressList } from '@/services/sjtms/LineSystemHis';
 import { dynamicqueryById, dynamicDelete, dynamicQuery } from '@/services/quick/Quick';
@@ -35,7 +36,7 @@ import { throttleSetter } from 'lodash-decorators';
 import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchForm';
 import LineSystem from './LineSystem.less'
 import {
- findLineSystemTreeByStoreCode,
+  findLineSystemTreeByStoreCode,
 } from '@/services/sjtms/LineSystemHis';
 import { flushSync } from 'react-dom';
 @connect(({ quick, loading }) => ({
@@ -109,17 +110,17 @@ export default class LineShipAddress extends QuickFormSearchPage {
             this.setState({
               isOrgQuery: response.result.reportHead.organizationQuery
                 ? [
-                    {
-                      field:
-                        loginOrg().type.toLowerCase() == 'dc'
-                          ? loginOrg().type.toLowerCase() + 'Uuid'
-                          : 'dispatchCenterUuid',
-                      type: 'VarChar',
-                      rule: 'like',
-                      val: loginOrg().uuid,
-                    },
-                    ...this.state.isOrgQuery,
-                  ]
+                  {
+                    field:
+                      loginOrg().type.toLowerCase() == 'dc'
+                        ? loginOrg().type.toLowerCase() + 'Uuid'
+                        : 'dispatchCenterUuid',
+                    type: 'VarChar',
+                    rule: 'like',
+                    val: loginOrg().uuid,
+                  },
+                  ...this.state.isOrgQuery,
+                ]
                 : [...this.state.isOrgQuery],
             });
           }
@@ -145,48 +146,48 @@ export default class LineShipAddress extends QuickFormSearchPage {
       },
     });
   };
-//遍历树
-getLineSystemTree = (data, itemData, lineData) => {
-  let treeNode = [];
-  let ef = [];
-  if (Array.isArray(data)) {
-    data.forEach(e => {
-      let temp = {};
-      temp.value = e.uuid;
-      temp.key = e.uuid;
-      temp.title = `[${e.code}]` + e.name;
-      temp.icon = <Icon type="swap" rotate={90} />;
-      // temp.system=true;
-      treeNode.push(temp);
-      ef.push(e);
+  //遍历树
+  getLineSystemTree = (data, itemData, lineData) => {
+    let treeNode = [];
+    let ef = [];
+    if (Array.isArray(data)) {
+      data.forEach(e => {
+        let temp = {};
+        temp.value = e.uuid;
+        temp.key = e.uuid;
+        temp.title = `[${e.code}]` + e.name;
+        temp.icon = <Icon type="swap" rotate={90} />;
+        // temp.system=true;
+        treeNode.push(temp);
+        ef.push(e);
+        if (data.type == 'lineSystem') {
+          //temp.disabled=true;
+          temp.system = true;
+          temp.selectable = false;
+        }
+        data.type = 'line' && lineData.push(e);
+      });
+      itemData.children = treeNode;
+      ef.forEach((f, index) => {
+        this.getLineSystemTree(f, treeNode[index], lineData);
+      });
+    } else {
+      itemData.value = data.uuid;
+      itemData.key = data.uuid;
+      itemData.title = `[${data.code}]` + data.name;
+      itemData.icon = <Icon type="swap" rotate={90} />;
       if (data.type == 'lineSystem') {
-        //temp.disabled=true;
-        temp.system = true;
-        temp.selectable = false;
+        itemData.system = true;
+        // itemData.disabled=true;
+        itemData.selectable = false;
       }
-      data.type = 'line' && lineData.push(e);
-    });
-    itemData.children = treeNode;
-    ef.forEach((f, index) => {
-      this.getLineSystemTree(f, treeNode[index], lineData);
-    });
-  } else {
-    itemData.value = data.uuid;
-    itemData.key = data.uuid;
-    itemData.title = `[${data.code}]` + data.name;
-    itemData.icon = <Icon type="swap" rotate={90} />;
-    if (data.type == 'lineSystem') {
-      itemData.system = true;
-      // itemData.disabled=true;
-      itemData.selectable = false;
-    }
-    data.type = 'line' && lineData.push(data);
+      data.type = 'line' && lineData.push(data);
 
-    if (data.childLines) {
-      this.getLineSystemTree(data.childLines, itemData, lineData);
+      if (data.childLines) {
+        this.getLineSystemTree(data.childLines, itemData, lineData);
+      }
     }
-  }
-};
+  };
   queryLineSystem = async lineuuid => {
     const parmas = {
       company: loginCompany().uuid,
@@ -204,20 +205,20 @@ getLineSystemTree = (data, itemData, lineData) => {
           lineTreeData.push(itemData);
         });
         if (lineuuid == undefined) {
-          lineuuid = lineTreeData? lineTreeData[0].key:undefined;
+          lineuuid = lineTreeData ? lineTreeData[0].key : undefined;
           // lineuuid = lineTreeData
           //   ? lineTreeData[0]?.children
           //     ? lineTreeData[0].children[0]?.key
           //     : lineTreeData[0]?.key
           //   : undefined;
         }
-        this.setState({systemData:lineTreeData})
-       
+        this.setState({ systemData: lineTreeData })
+
       }
     });
   };
-  componentDidMount(){
-    console.log("componentWillMount",this.props.lineTreeData,this.props);
+  componentDidMount() {
+    console.log("componentWillMount", this.props.lineTreeData, this.props);
     this.queryCoulumns();
     this.getCreateConfig();
     this.queryLineSystem();
@@ -311,6 +312,9 @@ getLineSystemTree = (data, itemData, lineData) => {
         component = <span>{event.val}</span>;
       }
       event.component = component;
+    }
+    if(event.column.fieldName =='ADDRESSNAME' && event.record['ISNEWSTORE'] == 1){
+      event.component = <span style={{color:'red'}}>{event.val}</span>
     }
   };
 
@@ -590,7 +594,7 @@ getLineSystemTree = (data, itemData, lineData) => {
   onTranferFetch = dataSource => {
     this.setState({ transferDataSource: dataSource });
   };
-  handleOk = () => {};
+  handleOk = () => { };
   handleCancel = () => {
     this.setState({ isModalVisible: false });
   };
@@ -633,7 +637,7 @@ getLineSystemTree = (data, itemData, lineData) => {
             quickuuid="sj_itms_line_shipAddress_plan"
             // location={{ pathname: '1' }}
             lineuuid={this.props.lineuuid}
-            //pageFilters={{queryParams :[{field:"systemuuid", type:"VarChar", rule:"eq", val:"000000750000004"}]}}
+          //pageFilters={{queryParams :[{field:"systemuuid", type:"VarChar", rule:"eq", val:"000000750000004"}]}}
           />
         </Modal>
         <Modal
@@ -668,7 +672,7 @@ getLineSystemTree = (data, itemData, lineData) => {
               <Col>
                 <Form.Item label="线路">
                   <TreeSelect
-                    treeNodeFilterProp="title"  
+                    treeNodeFilterProp="title"
                     showSearch
                     allowClear={true}
                     optionFilterProp="children"
@@ -692,16 +696,16 @@ getLineSystemTree = (data, itemData, lineData) => {
           onCancel={() => this.setState({ updateNoteVisible: false })}
           destroyOnClose={true}
         >
-        <Row>
-        <Col>
-          <Form ref="updateNote">
-            <Row>
-              <Col>
-               <Input defaultValue={this.state.note} onChange ={(e)=>this.setState({note:e.target.value})}></Input>
-              </Col>
-            </Row>
-          </Form>
-          </Col>
+          <Row>
+            <Col>
+              <Form ref="updateNote">
+                <Row>
+                  <Col>
+                    <Input defaultValue={this.state.note} onChange={(e) => this.setState({ note: e.target.value })}></Input>
+                  </Col>
+                </Row>
+              </Form>
+            </Col>
           </Row>
         </Modal>
         {this.state.canDragTable && (
@@ -750,13 +754,30 @@ getLineSystemTree = (data, itemData, lineData) => {
   handleChange = e => {
     this.setState({ lineValue: e });
   };
-  updateNote = async ()=>{
-    const { selectedRows, note,pageFilters} = this.state;
-    await updateNote({uuid:selectedRows[0].UUID,note:note}).then(result=>{
+  updateNote = async () => {
+    const { selectedRows, note, pageFilters } = this.state;
+    await updateNote({ uuid: selectedRows[0].UUID, note: note }).then(result => {
       if (result.success) {
         message.success('修改成功');
         this.getData(pageFilters);
-        this.setState({updateNoteVisible:false})
+        this.setState({ updateNoteVisible: false })
+      }
+    })
+  }
+  updateIsNewStore = async (e) => {
+   
+    console.log("e", e);
+    const { selectedRows, pageFilters } = this.state;
+    if(selectedRows.length ==0){ 
+      message.error("请至少选择一条记录")
+      return;
+    }
+    const  uuids = selectedRows.map(e=>e.UUID);
+    console.log(uuids);
+    await updateIsNewStore({ uuids: uuids, flag: e.key }).then(result => {
+      if (result.success) {
+        message.success('修改成功');
+        this.getData(pageFilters);
       }
     })
   }
@@ -853,6 +874,11 @@ getLineSystemTree = (data, itemData, lineData) => {
 
   drawToolbarPanel = () => {
     const { buttonDisable } = this.state;
+    const menu = <Menu onClick={ this.updateIsNewStore}>
+      <Menu.Item key="1">标记</Menu.Item>
+      <Menu.Item key="0">取消标记</Menu.Item>
+
+    </Menu>
     return (
       <>
         {buttonDisable ? <Button onClick={this.tableSortSave}>排序并保存</Button> : <></>}
@@ -894,19 +920,26 @@ getLineSystemTree = (data, itemData, lineData) => {
             >
               移入到新线路
             </Button>
-            <Button
+            
+
+          </>
+        )}
+        <Button
               onClick={() => {
                 if (this.state.selectedRows.length == 0) {
                   message.info('请选择记录');
                   return;
                 }
-                this.setState({ updateNoteVisible: true,note:this.state.selectedRows[0].NOTE});
+                this.setState({ updateNoteVisible: true, note: this.state.selectedRows[0].NOTE });
               }}
             >
               编辑备注
             </Button>
-          </>
-        )}
+            <Dropdown overlay={menu}>
+              <Button>
+                标记新门店 <Icon type="down" />
+              </Button>
+            </Dropdown>
       </>
     );
   };

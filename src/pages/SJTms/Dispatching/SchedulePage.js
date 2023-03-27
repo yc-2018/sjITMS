@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-17 07:51:05
+ * @LastEditTime: 2023-03-23 17:45:52
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -57,6 +57,7 @@ export default class SchedulePage extends Component {
     users: [],
     authority: this.props.authority ? this.props.authority[0] : null,
     maxAdjustWeight: '',
+    searchKey: 'schedulePoolSearch',
   };
 
   componentDidMount() {
@@ -70,9 +71,14 @@ export default class SchedulePage extends Component {
     { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
     { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
   ];
+  initialiPage = () => {
+    this.setState({
+      searchKey: 'schedulePoolSearch' + Math.ceil(Math.random() * 1000),
+    });
+  };
   //刷新
-  refreshTable = (searchKeyValues, key) => {
-    this.refreshSchedulePool(searchKeyValues, undefined, undefined, key);
+  refreshTable = searchKeyValues => {
+    this.refreshSchedulePool(searchKeyValues, undefined, undefined);
     this.props.refreshDetail(undefined);
   };
   refreshScheduleAndpending = () => {
@@ -81,16 +87,16 @@ export default class SchedulePage extends Component {
   };
 
   //获取排车单
-  refreshSchedulePool = (params, pages, sorter, key) => {
-    let { searchFilter, searchPagination } = this.state;
-    const activeKey = key ? key : this.state.activeKey;
+  refreshSchedulePool = (params, pages, sorter) => {
+    const { searchFilter, searchPagination, activeKey } = this.state;
+    let newSearchFilter = { ...searchFilter };
     let filter = { superQuery: { matchType: 'and', queryParams: [] } };
     if (params) {
       if (params.superQuery) {
         filter = params;
-        searchFilter[activeKey] = params.superQuery.queryParams;
+        newSearchFilter[activeKey] = params.superQuery.queryParams;
       } else {
-        searchFilter[activeKey] = params;
+        newSearchFilter[activeKey] = params;
       }
     }
     if (sorter && sorter.column) {
@@ -113,14 +119,14 @@ export default class SchedulePage extends Component {
       filter.pageSize = searchPagination.pageSize || pageSize;
     }
     filter.superQuery.queryParams = [
-      ...searchFilter[activeKey],
+      ...newSearchFilter[activeKey],
       ...this.isOrgQuery,
       { field: 'STAT', type: 'VarChar', rule: 'eq', val: activeKey },
     ];
     filter.quickuuid = 'sj_itms_schedulepool';
-    this.searchSchedulePool(filter, searchFilter, searchPagination, activeKey);
+    this.searchSchedulePool(filter, newSearchFilter, searchPagination);
   };
-  searchSchedulePool = async (filter, searchFilter, searchPagination, activeKey) => {
+  searchSchedulePool = async (filter, searchFilter, searchPagination) => {
     this.setState({ loading: true });
     const response = await queryData(filter);
     if (response.success) {
@@ -143,14 +149,17 @@ export default class SchedulePage extends Component {
         savedRowKeys: [],
         approvedRowKeys: [],
         abortedRowKeys: [],
+        loading: false,
+        searchFilter,
       });
+    } else {
+      this.setState({ loading: false, searchFilter });
     }
-    this.setState({ activeKey, loading: false, searchFilter });
   };
 
   //标签页切换
   handleTabChange = activeKey => {
-    this.refreshTable(undefined, activeKey);
+    this.setState({ activeKey });
   };
 
   //新建排车单
@@ -508,6 +517,7 @@ export default class SchedulePage extends Component {
       approvedRowKeys,
       abortedRowKeys,
       maxAdjustWeight,
+      searchKey,
     } = this.state;
 
     columns[0].render = (val, record) => {
@@ -567,6 +577,7 @@ export default class SchedulePage extends Component {
             <SearchForm
               quickuuid="sj_itms_schedulepool"
               users={users}
+              key={searchKey + '1'}
               dispatchcenterSearch={true}
               refreshOrderPool={this.refreshTable}
             />
@@ -635,6 +646,7 @@ export default class SchedulePage extends Component {
             <SearchForm
               quickuuid="sj_itms_schedulepool"
               users={users}
+              key={searchKey + '2'}
               dispatchcenterSearch={true}
               refreshOrderPool={this.refreshTable}
             />
@@ -693,6 +705,7 @@ export default class SchedulePage extends Component {
               <SearchForm
                 quickuuid="sj_itms_schedulepool"
                 users={users}
+                key={searchKey + '3'}
                 dispatchcenterSearch={true}
                 refreshOrderPool={this.refreshTable}
               />

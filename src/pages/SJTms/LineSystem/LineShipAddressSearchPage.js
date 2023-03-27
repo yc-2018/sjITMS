@@ -25,6 +25,7 @@ import { loginKey, loginCompany, loginOrg } from '@/utils/LoginContext';
 import { havePermission } from '@/utils/authority';
 import { throttleSetter } from 'lodash-decorators';
 import LineSystem from './LineSystem.less';
+import { getDispatchConfig } from '@/services/tms/DispatcherConfig';
 
 export default class LineShipAddressSearchPage extends Component {
   state = {
@@ -33,7 +34,13 @@ export default class LineShipAddressSearchPage extends Component {
     approvedLoading: false,
     authority: this.props.authority,
   };
-  componentDidMount() {
+  async componentDidMount() {
+    const response = await getDispatchConfig(loginOrg().uuid);
+    if (response.success) {
+      this.setState({
+        dispatchConfig: response.data,
+      });
+    }
     this.setState({
       systemData: this.props.systemData,
       selectedKey: this.props.selectedKey,
@@ -56,7 +63,7 @@ export default class LineShipAddressSearchPage extends Component {
   onApproval = async (systemUuid, systemData) => {
     const status = systemData && systemData.STATUS == 'Approved' ? 'Revising' : 'Approved';
     console.log(status);
-      if((loginOrg().uuid=='000000750000005' ||loginOrg().uuid=='000008150000002')&& status=='Approved'){
+      if(this.state.dispatchConfig.checkLineArea==1 && status=='Approved'){
         await YDSiparea({systemUUID:systemUuid}).then(result =>{
           console.log(result);
           if(result.success && result.data?.length>0){

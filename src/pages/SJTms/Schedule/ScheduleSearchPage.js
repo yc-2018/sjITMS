@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-02 17:52:20
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-03-23 11:54:32
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -36,10 +36,8 @@ import { depart, back, recordLog, callG7Interface } from '@/services/sjitms/Sche
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 import { groupBy, sumBy, orderBy } from 'lodash';
 import scher from '@/assets/common/scher.jpg';
-import { dynamicQuery } from '@/services/quick/Quick';
 import { havePermission } from '@/utils/authority';
-import imTemplate from '@/models/account/imTemplate';
-import { LOGIN_PAGE_KEY } from '@/utils/constants';
+import moment from 'moment';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -70,6 +68,59 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     this.queryCoulumns();
     this.getCreateConfig();
   }
+
+  defaultSearch = () => {
+    //默认查询
+    let ex = this.state.queryConfigColumns.filter(item => {
+      return item.searchDefVal != null && item.searchDefVal != '';
+    });
+    let defaultSearch = [];
+    let exSearchFilter;
+    for (const item of ex) {
+      if (item.fieldType == 'Date') {
+        let days = parseInt(item.searchDefVal);
+        if (days != days) days = 0;
+        let endDate = moment(new Date()).format('YYYY-MM-DD');
+        let startDate = moment(new Date())
+          .add(-item.searchDefVal, 'days')
+          .format('YYYY-MM-DD');
+        exSearchFilter = {
+          field: item.fieldName,
+          type: item.fieldType,
+          rule: item.searchCondition,
+          val: `${startDate}||${endDate}`,
+        };
+      } else if (item.fieldType == 'DateTime') {
+        let days = parseInt(item.searchDefVal);
+        if (days != days) days = 0;
+        let endDate = moment(new Date()).format('YYYY-MM-DD 23:59:59');
+        let startDate = moment(new Date())
+          .add(-item.searchDefVal, 'days')
+          .format('YYYY-MM-DD 00:00:00');
+        exSearchFilter = {
+          field: item.fieldName,
+          type: item.fieldType,
+          rule: item.searchCondition,
+          val: `${startDate}||${endDate}`,
+        };
+      } else {
+        exSearchFilter = {
+          field: item.fieldName,
+          type: item.fieldType,
+          rule: item.searchCondition,
+          val: item.searchDefVal,
+        };
+      }
+      defaultSearch.push(exSearchFilter);
+    }
+    defaultSearch.push({
+      field: 'WAVENUM',
+      type: 'VARCHAR',
+      rule: 'eq',
+      val: moment(new Date()).format('YYMMDD') + '0001',
+    });
+    return defaultSearch;
+  };
 
   goG7 = async apiName => {
     const { selectedRows } = this.state;

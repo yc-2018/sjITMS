@@ -14,6 +14,7 @@ import { dynamicQuery, saveFormData } from '@/services/quick/Quick';
 import { confirm, cancelReceipted } from '@/services/sjitms/Checkreceipt';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import { havePermission } from '@/utils/authority';
+import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuery/SimpleQuery';
 
 const { Option } = Select;
 @connect(({ quick, loading }) => ({
@@ -34,7 +35,16 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
   onType = () => {
     this.props.switchTab('view');
   };
-
+  editColumns =(data)=>{
+    if(loginOrg().uuid=='000000750000005' || loginOrg().uuid=='000008150000002'){
+      data.columns.forEach(e=>{
+        if(e.fieldName=='SCHEDULENUMBER'){
+            e.searchDefVal ='30YD'
+        }
+    })
+    }
+    return data;
+  }
   onCheckreceiptSave = async () => {
     const { selectedRows } = this.state;
     if (selectedRows.length !== 0) {

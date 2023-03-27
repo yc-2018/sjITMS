@@ -1,6 +1,6 @@
 import React from 'react';
 import { connect } from 'dva';
-import { Menu, Tabs, Button, message, Empty, Input, Tooltip } from 'antd';
+import { Menu, Tabs, Button, message, Empty, Input, Tooltip, Icon } from 'antd';
 import emptySvg from '@/assets/common/img_empoty.svg';
 import PageLoading from '@/components/PageLoading';
 import { loginCompany, loginOrg, loginUser } from '@/utils/LoginContext';
@@ -20,17 +20,18 @@ import { commonLocale } from '@/utils/CommonLocale';
 import { roleLocale } from './RoleLocale';
 import { orgType } from '@/utils/OrgType';
 import siderStyle from '@/pages/Component/Page/inner/SiderPage.less';
+const { SubMenu } = Menu;
 
 const TabPane = Tabs.TabPane;
 const taskTypeMap = { delete: 'delete' };
 
 @connect(({ role, loading, user }) => ({
-  role, user,
+  role,
+  user,
   loading: loading.models.role,
 }))
 export default class Role extends SiderPage {
   constructor(props) {
-
     super(props);
     this.state = {
       // title: roleLocale.title,
@@ -48,7 +49,7 @@ export default class Role extends SiderPage {
         pageSize: 20,
         sortFields: {},
         searchKeyValues: {},
-        changePage: false
+        changePage: false,
       },
       loadingUser: false,
       editRole: {},
@@ -84,7 +85,6 @@ export default class Role extends SiderPage {
   componentDidMount() {
     this.refreshView();
     this.fetchResources();
-
   }
 
   /**
@@ -94,8 +94,8 @@ export default class Role extends SiderPage {
     const { dispatch } = this.props;
     const { pageFilter } = this.state;
     this.setState({
-      noData: false
-    })
+      noData: false,
+    });
 
     dispatch({
       type: 'role/getByOrgUuid',
@@ -108,19 +108,19 @@ export default class Role extends SiderPage {
             this.setState({
               roles: data,
               selectedRole: firstEntity,
-            })
+            });
 
             this.fetchUserByRoleUuid(firstEntity.uuid);
             this.fetchRoleResourceKeysByUuid(firstEntity.uuid);
           }
         } else {
           this.setState({
-            noData: true
-          })
+            noData: true,
+          });
         }
-      }
+      },
     });
-  }
+  };
 
   /**
    * 获取资源树列表
@@ -132,7 +132,6 @@ export default class Role extends SiderPage {
       payload: loginUser().uuid,
       callback: response => {
         if (response && response.success) {
-
           let res;
           if (response.data) {
             res = response.data;
@@ -146,7 +145,9 @@ export default class Role extends SiderPage {
             vendorResourceTree: res[orgType.vendor.name] ? res[orgType.vendor.name] : [],
             storeResourceTree: res[orgType.store.name] ? res[orgType.store.name] : [],
             carrierResourceTree: res[orgType.carrier.name] ? res[orgType.carrier.name] : [],
-            dispatchCenterResourceTree: res[orgType.dispatchCenter.name] ? res[orgType.dispatchCenter.name] : [],
+            dispatchCenterResourceTree: res[orgType.dispatchCenter.name]
+              ? res[orgType.dispatchCenter.name]
+              : [],
           });
         }
       },
@@ -157,7 +158,7 @@ export default class Role extends SiderPage {
    * 设置侧边栏selectedKey，清空以前设置过的
    * @param {string, Array} selectedKeys
    */
-  setMenuSelectedKeys = (selectedKeys) => {
+  setMenuSelectedKeys = selectedKeys => {
     const { menuSelectedKeys } = this.state;
 
     menuSelectedKeys.splice(0, menuSelectedKeys.length);
@@ -165,20 +166,20 @@ export default class Role extends SiderPage {
 
     this.setState({
       menuSelectedKeys: menuSelectedKeys,
-    })
-  }
+    });
+  };
 
-  fetchUserByRoleUuid = (roleUuid) => {
+  fetchUserByRoleUuid = roleUuid => {
     const { dispatch } = this.props;
     const { userData, pageFilter } = this.state;
 
     this.setState({
       loadingUser: true,
-    })
+    });
 
     if (!pageFilter || !pageFilter.changePage) {
       this.setState({
-        selectedRows: []
+        selectedRows: [],
       });
     }
 
@@ -199,7 +200,7 @@ export default class Role extends SiderPage {
           };
 
           userData.list = list;
-          userData.pagination = pagination
+          userData.pagination = pagination;
 
           this.setState({
             userData: { ...userData },
@@ -208,10 +209,10 @@ export default class Role extends SiderPage {
 
         this.setState({
           loadingUser: false,
-        })
-      }
+        });
+      },
     });
-  }
+  };
 
   handleRoleUserTableChange = (pagination, filtersArg, sorter) => {
     const { dispatch } = this.props;
@@ -219,7 +220,7 @@ export default class Role extends SiderPage {
 
     this.setState({
       loadingUser: true,
-    })
+    });
 
     if (pageFilter.page !== pagination.current - 1) {
       pageFilter.changePage = true;
@@ -247,7 +248,7 @@ export default class Role extends SiderPage {
     });
 
     this.fetchUserByRoleUuid(selectedRole.uuid);
-  }
+  };
 
   /**
    * 处理选择
@@ -261,7 +262,7 @@ export default class Role extends SiderPage {
   /**
    * 获取角色的资源
    */
-  fetchRoleResourceKeysByUuid = (roleUuid) => {
+  fetchRoleResourceKeysByUuid = roleUuid => {
     const { dispatch } = this.props;
     dispatch({
       type: 'role/getResources',
@@ -281,21 +282,23 @@ export default class Role extends SiderPage {
             vendorCheckedResourceKeys: res[orgType.vendor.name] ? res[orgType.vendor.name] : [],
             storeCheckedResourceKeys: res[orgType.store.name] ? res[orgType.store.name] : [],
             carrierCheckedResourceKeys: res[orgType.carrier.name] ? res[orgType.carrier.name] : [],
-            dispatchCenterCheckedResourceKeys: res[orgType.dispatchCenter.name] ? res[orgType.dispatchCenter.name] : [],
+            dispatchCenterCheckedResourceKeys: res[orgType.dispatchCenter.name]
+              ? res[orgType.dispatchCenter.name]
+              : [],
           });
         }
       },
     });
-  }
+  };
 
   /**
    * 删除处理 - 弹窗显示控制
    */
-  handleDleteModalVisible = (flag) => {
+  handleDleteModalVisible = flag => {
     this.setState({
       deleteConfrimModalVisible: !!flag,
-    })
-  }
+    });
+  };
 
   /**
    * 批量删除角色用户关系
@@ -307,7 +310,7 @@ export default class Role extends SiderPage {
         this.handleRemoveUser(item, false, true);
       });
     }
-  }
+  };
 
   /**
    * 删除角色用户关系
@@ -323,7 +326,7 @@ export default class Role extends SiderPage {
       type: 'role/removeUser',
       payload: {
         uuid: selectedRole.uuid,
-        userUuid: record.uuid
+        userUuid: record.uuid,
       },
       callback: response => {
         if (response && response.success) {
@@ -345,7 +348,7 @@ export default class Role extends SiderPage {
         }
       },
     });
-  }
+  };
 
   /**
    * 编辑处理
@@ -361,7 +364,7 @@ export default class Role extends SiderPage {
     this.setState({
       createModalVisible: !!flag,
       editRole: {
-        ...role
+        ...role,
       },
     });
   };
@@ -405,7 +408,7 @@ export default class Role extends SiderPage {
   /**
    * 侧边栏点击处理
    */
-  handleClickMenuItem = (e) => {
+  handleClickMenuItem = e => {
     const { dispatch } = this.props;
 
     dispatch({
@@ -418,7 +421,7 @@ export default class Role extends SiderPage {
 
             this.setState({
               selectedRole: response.data,
-            })
+            });
             this.fetchUserByRoleUuid(response.data.uuid);
             this.fetchRoleResourceKeysByUuid(response.data.uuid);
           } else {
@@ -427,13 +430,13 @@ export default class Role extends SiderPage {
         } else {
           message.error(response.message);
         }
-      }
-    })
-  }
+      },
+    });
+  };
   /**
    * 角色添加用户 - 保存
    */
-  handleSaveUser = (list) => {
+  handleSaveUser = list => {
     const { dispatch } = this.props;
     const { selectedRole } = this.state;
 
@@ -451,23 +454,23 @@ export default class Role extends SiderPage {
         } else {
           message.error(response.message);
         }
-      }
-    })
-  }
+      },
+    });
+  };
   //  // -----进度条相关计算  开始-----
 
   /**
    * 收集批量处理产生的失败任务
    */
-  collectFaildedTask = (record) => {
+  collectFaildedTask = record => {
     const { failedTasks } = this.state;
     if (failedTasks.indexOf(record) == -1) {
       failedTasks.push(record);
       this.setState({
         failedTasks: failedTasks,
-      })
+      });
     }
-  }
+  };
 
   /**
    * 确认执行任务之前回调
@@ -475,8 +478,8 @@ export default class Role extends SiderPage {
   taskConfirmCallback = () => {
     this.setState({
       batchProcessConfirmModalVisible: false,
-    })
-  }
+    });
+  };
 
   /**
    * 重试取消
@@ -494,7 +497,7 @@ export default class Role extends SiderPage {
       batchProcessConfirmModalVisible: false,
       selectedRows: [],
     });
-  }
+  };
 
   /**
    * 批量处理弹出框显示处理
@@ -524,11 +527,11 @@ export default class Role extends SiderPage {
   /**
    * 批量执行具体函数包装
    */
-  taskExecutionFuncWrapper = (taskType) => {
+  taskExecutionFuncWrapper = taskType => {
     if (taskType === taskTypeMap['delete']) {
       return this.handleBatchRemoveUser;
     }
-  }
+  };
 
   /**
    * 任务执行出错时回调，用于重试
@@ -540,7 +543,7 @@ export default class Role extends SiderPage {
     this.setState({
       isCloseFailedResultModal: false,
       batchProcessConfirmModalVisible: false,
-    })
+    });
 
     if (failedTasks.length == 1) {
       // 直接执行
@@ -555,7 +558,7 @@ export default class Role extends SiderPage {
       // 将执行失败的任务加入到selectedRows
       this.setState({
         selectedRows: failedTasks,
-      })
+      });
       // 继续进行批处理
       this.handleBatchProcessConfirmModalVisible(true, taskInfo.type);
     }
@@ -566,7 +569,7 @@ export default class Role extends SiderPage {
    */
   taskSuccessedCallback = () => {
     this.terminateProgress();
-  }
+  };
 
   /**
    * 任务取消执行
@@ -574,8 +577,8 @@ export default class Role extends SiderPage {
   taskCancelCallback = () => {
     this.setState({
       batchProcessConfirmModalVisible: false,
-    })
-  }
+    });
+  };
 
   // -----进度条相关计算  结束-----
   /**
@@ -599,7 +602,7 @@ export default class Role extends SiderPage {
           // this.setState({
           //   checkedResourceKeys: data
           // })
-          this.fetchRoleResourceKeysByUuid(selectedRole.uuid)
+          this.fetchRoleResourceKeysByUuid(selectedRole.uuid);
         }
       },
     });
@@ -629,43 +632,43 @@ export default class Role extends SiderPage {
             this.setState({
               roles: data,
               selectedRole: tempSelectedRole,
-            })
+            });
 
             this.fetchUserByRoleUuid(selectedRole.uuid);
           }
         }
-      }
+      },
     });
-  }
+  };
 
   /**
    * 删除处理 - 取消
    */
   handleDeleteCancel = () => {
     this.handleDleteModalVisible(false);
-  }
+  };
 
   /**
    * 删除处理 - 确认
    */
   handleDeleteConfirm = () => {
     this.handleRoleRemove(this.state.selectedRole);
-  }
+  };
   /**
    * 角色添加用户 - 弹窗控制
    */
-  handleAddUserModalVisible = (flag) => {
+  handleAddUserModalVisible = flag => {
     this.setState({
       addUserModalVisible: !!flag,
-    })
-  }
+    });
+  };
 
   /**
    * 角色添加用户 - 取消
    */
   handleAddUserCancel = () => {
     this.handleAddUserModalVisible(false);
-  }
+  };
 
   /**
    * 启用或者禁用处理
@@ -681,7 +684,7 @@ export default class Role extends SiderPage {
   /**
    * 角色删除处理
    */
-  handleRoleRemove = (record) => {
+  handleRoleRemove = record => {
     const { dispatch } = this.props;
     if (this.state.userData.list == undefined) {
       dispatch({
@@ -699,7 +702,7 @@ export default class Role extends SiderPage {
       this.handleDleteModalVisible(false);
       message.error(roleLocale.deleteRoleFailed);
     }
-  }
+  };
   /**
    * 启用处理
    */
@@ -718,7 +721,7 @@ export default class Role extends SiderPage {
         }
       },
     });
-  }
+  };
 
   /**
    * 禁用处理
@@ -738,34 +741,78 @@ export default class Role extends SiderPage {
         }
       },
     });
-  }
+  };
 
   /**
    * 渲染左侧菜单内容
    */
   renderSilderMenu = () => {
     const { roles } = this.state;
-
     let menuItems = [];
+    let rolesParent = roles.filter(e => e.pcode == undefined);
 
-    roles.map((item) => {
-      if (!item.sysDefault)
-        menuItems.push(
-          <Menu.Item key={`${item.uuid}`}><Tooltip title={item.note}>{`[${item.code}] ${item.name}`}</Tooltip></Menu.Item>
-        )
+    // roles.map(item => {
+    //   if (!item.sysDefault)
+    //     menuItems.push(
+    //       <Menu.Item key={`${item.uuid}`}>
+    //         <Tooltip title={item.note}>{`[${item.code}] ${item.name}`}</Tooltip>
+    //       </Menu.Item>
+    //     );
+    // });
+
+    // return menuItems;
+    return this.getSilderMenus(rolesParent, roles);
+  };
+
+  getSilderMenus = (parentItems, roles) => {
+    let all = parentItems.map(p => {
+      //find children
+      let childrens = roles.filter(e => e.pcode == p.code);
+      if (childrens && childrens.length > 0) {
+        return (
+          <SubMenu
+            key={p.uuid}
+            style={this.state.selectedRole.uuid == p.uuid ? { color: '#3B77E3' } : {}}
+            title={
+              <span>
+                <Icon type="appstore" />
+                <span>{`[${p.code}] ${p.name}`}</span>
+              </span>
+            }
+            onTitleClick={this.handleClickMenuItem}
+          >
+            {this.getSilderMenus(childrens, roles)}
+          </SubMenu>
+        );
+      } else {
+        return (
+          <Menu.Item key={`${p.uuid}`}>
+            <Tooltip title={p.note}>{`[${p.code}] ${p.name}`}</Tooltip>
+          </Menu.Item>
+        );
+      }
     });
 
-    return menuItems;
-  }
+    return all;
+  };
+
   /**重写部分 开始 */
 
   /**
    * 绘制其他组件
    */
   drawOtherCom = () => {
-    const { createModalVisible, editRole,
-      addUserModalVisible, selectedRole, deleteConfrimModalVisible, userData,
-      batchProcessConfirmModalVisible, taskInfo, action, isCloseFailedResultModal
+    const {
+      createModalVisible,
+      editRole,
+      addUserModalVisible,
+      selectedRole,
+      deleteConfrimModalVisible,
+      userData,
+      batchProcessConfirmModalVisible,
+      taskInfo,
+      action,
+      isCloseFailedResultModal,
     } = this.state;
     const createParentMethods = {
       handleSave: this.handleSave,
@@ -777,7 +824,7 @@ export default class Role extends SiderPage {
       deleteConfrimModalVisible: deleteConfrimModalVisible,
       handleDeleteConfirm: this.handleDeleteConfirm,
       handleDeleteCancel: this.handleDeleteCancel,
-    }
+    };
     const addUserModalProps = {
       entity: selectedRole,
       confirmLoading: this.props.loading,
@@ -786,14 +833,14 @@ export default class Role extends SiderPage {
       handleAddUserCancel: this.handleAddUserCancel,
       handleSaveUser: this.handleSaveUser,
       defaultSelectedUser: userData.list,
-    }
+    };
     const progressProps = {
       taskInfo: taskInfo,
       entity: roleLocale.progressTitle,
       action: roleLocale.progressTitle,
       batchProcessConfirmModalVisible: batchProcessConfirmModalVisible,
       isCloseFailedResultModal: isCloseFailedResultModal,
-    }
+    };
 
     const progressMethods = {
       taskConfirmCallback: this.taskConfirmCallback,
@@ -802,7 +849,7 @@ export default class Role extends SiderPage {
       taskSuccessedCallback: this.taskSuccessedCallback,
       retryCancelCallback: this.retryCancelCallback,
       taskExecutionFunc: this.taskExecutionFuncWrapper(taskInfo.type),
-    }
+    };
     return (
       <div>
         <RoleCreateForm
@@ -815,8 +862,8 @@ export default class Role extends SiderPage {
         {addUserModalVisible && <RoleAddUserModal {...addUserModalProps} />}
         <ConfirmProgress {...progressProps} {...progressMethods} ref="batchHandle" />
       </div>
-    )
-  }
+    );
+  };
 
   /**
    * 绘制空数据界面
@@ -825,25 +872,24 @@ export default class Role extends SiderPage {
     if (this.props.loading) {
       return <PageLoading />;
     } else {
-      return <Empty
-        image={emptySvg}
-        style={{ position: 'absolute', top: '30%', left: '45%' }}
-        description={
-          <span>
-            {roleLocale.noData}
-          </span>
-        }
-      >
-        <Button
-          type="primary"
-          icon="plus"
-          disabled={!havePermission(RESOURCE_IWMS_ACCOUNT_ROLE_CREATE)}
-          onClick={() => this.handleCreateModalVisible(true)}>
-          {roleLocale.createRole}
-        </Button>
-      </Empty>
+      return (
+        <Empty
+          image={emptySvg}
+          style={{ position: 'absolute', top: '30%', left: '45%' }}
+          description={<span>{roleLocale.noData}</span>}
+        >
+          <Button
+            type="primary"
+            icon="plus"
+            disabled={!havePermission(RESOURCE_IWMS_ACCOUNT_ROLE_CREATE)}
+            onClick={() => this.handleCreateModalVisible(true)}
+          >
+            {roleLocale.createRole}
+          </Button>
+        </Empty>
+      );
     }
-  }
+  };
 
   /**
    * 绘制左侧导航栏
@@ -855,9 +901,14 @@ export default class Role extends SiderPage {
           <span className={siderStyle.title}>{roleLocale.title}</span>
         </div>
         <div className={styles.createBtnWrapper}>
-          <Button className={styles.createBtn} type="primary" ghost icon="plus"
-                  disabled={!havePermission(ROLE_RES.CREATE)}
-                  onClick={() => this.handleCreateModalVisible(true)}>
+          <Button
+            className={styles.createBtn}
+            type="primary"
+            ghost
+            icon="plus"
+            disabled={!havePermission(ROLE_RES.CREATE)}
+            onClick={() => this.handleCreateModalVisible(true)}
+          >
             {commonLocale.createLocale + roleLocale.title}
           </Button>
         </div>
@@ -875,7 +926,7 @@ export default class Role extends SiderPage {
         </div>
       </div>
     );
-  }
+  };
 
   /**
    * 绘制右侧内容栏
@@ -899,8 +950,8 @@ export default class Role extends SiderPage {
       handleBatchProcessConfirmModalVisible: this.handleBatchProcessConfirmModalVisible,
       loading: this.state.loadingUser,
       data: this.state.userData,
-      selectedRows: this.state.selectedRows
-    }
+      selectedRows: this.state.selectedRows,
+    };
     // const rolePermissionInfoProps = {
     //   data: this.state.resourceTree,
     //   checkedKeys: this.state.checkedResourceKeys,
@@ -908,11 +959,16 @@ export default class Role extends SiderPage {
     //   loading: this.props.loading,
     // }
     return (
-      <div style={{height:'100%'}}>
+      <div style={{ height: '100%' }}>
         <RoleToolbarPanel {...roleToolbarPanelProps} />
         <div className={styles.rightContentWrapper}>
-          <Tabs className={styles.tabsWrapper} defaultActiveKey="1" id={'tabsWrapper'} ref="tabParent">
-            <TabPane tab={roleLocale.tabUserInfoTitle} key="1" >
+          <Tabs
+            className={styles.tabsWrapper}
+            defaultActiveKey="1"
+            id={'tabsWrapper'}
+            ref="tabParent"
+          >
+            <TabPane tab={roleLocale.tabUserInfoTitle} key="1">
               <RoleUserInfo {...roleUserInfoProps} />
             </TabPane>
             {this.drawTabPanes()}
@@ -920,67 +976,112 @@ export default class Role extends SiderPage {
         </div>
       </div>
     );
-  }
+  };
 
   drawTabPanes = () => {
-    const { dcResourceTree, resourceTree, storeResourceTree, vendorResourceTree, carrierResourceTree,dispatchCenterResourceTree} = this.state;
+    const {
+      dcResourceTree,
+      resourceTree,
+      storeResourceTree,
+      vendorResourceTree,
+      carrierResourceTree,
+      dispatchCenterResourceTree,
+    } = this.state;
     const tabPanes = [];
     let i = 2;
-    let height = "calc(100vh - 240px)";
+    let height = 'calc(100vh - 240px)';
     if (resourceTree && resourceTree.length > 0) {
       tabPanes.push(
         <TabPane tab={roleLocale.tabPermissionInfoTitle} key={i}>
-          <RolePermissionInfo data={resourceTree} checkedKeys={this.state.checkedResourceKeys} height={height}
-                              handleAuthorize={this.handleAuthorize} loading={this.props.loading} orgType={orgType.company.name}
+          <RolePermissionInfo
+            data={resourceTree}
+            checkedKeys={this.state.checkedResourceKeys}
+            height={height}
+            handleAuthorize={this.handleAuthorize}
+            loading={this.props.loading}
+            orgType={orgType.company.name}
           />
         </TabPane>
-      )
+      );
       i = i + 1;
     }
     if (dcResourceTree && dcResourceTree.length > 0) {
       tabPanes.push(
         <TabPane tab={roleLocale.dcTabPermissionInfoTitle} key={i}>
-          <RolePermissionInfo data={dcResourceTree} checkedKeys={this.state.dcCheckedResourceKeys} height={height}
-                              handleAuthorize={this.handleAuthorize} loading={this.props.loading} orgType={orgType.dc.name} /> />
+          <RolePermissionInfo
+            data={dcResourceTree}
+            checkedKeys={this.state.dcCheckedResourceKeys}
+            height={height}
+            handleAuthorize={this.handleAuthorize}
+            loading={this.props.loading}
+            orgType={orgType.dc.name}
+          />
         </TabPane>
-      )
+      );
       i = i + 1;
     }
     if (dispatchCenterResourceTree && dispatchCenterResourceTree.length > 0) {
       tabPanes.push(
         <TabPane tab={roleLocale.dispatchCenterTabPermissionInfoTitle} key={i}>
-          <RolePermissionInfo data={dispatchCenterResourceTree} checkedKeys={this.state.dispatchCenterCheckedResourceKeys} height={height}
-                              handleAuthorize={this.handleAuthorize} loading={this.props.loading} orgType={orgType.dispatchCenter.name} />
+          <RolePermissionInfo
+            data={dispatchCenterResourceTree}
+            checkedKeys={this.state.dispatchCenterCheckedResourceKeys}
+            height={height}
+            handleAuthorize={this.handleAuthorize}
+            loading={this.props.loading}
+            orgType={orgType.dispatchCenter.name}
+          />
         </TabPane>
-      )
-        i = i + 1;
-          }
+      );
+      i = i + 1;
+    }
     if (storeResourceTree && storeResourceTree.length > 0) {
       tabPanes.push(
         <TabPane tab={roleLocale.storeTabPermissionInfoTitle} key={i}>
-          <RolePermissionInfo data={storeResourceTree} checkedKeys={this.state.storeCheckedResourceKeys} height={height} handleAuthorize={this.handleAuthorize} loading={this.props.loading} orgType={orgType.vendor.name} />
+          <RolePermissionInfo
+            data={storeResourceTree}
+            checkedKeys={this.state.storeCheckedResourceKeys}
+            height={height}
+            handleAuthorize={this.handleAuthorize}
+            loading={this.props.loading}
+            orgType={orgType.vendor.name}
+          />
         </TabPane>
-      )
+      );
       i = i + 1;
     }
     if (vendorResourceTree && vendorResourceTree.length > 0) {
       tabPanes.push(
         <TabPane tab={roleLocale.vendorTabPermissionInfoTitle} key={i}>
-          <RolePermissionInfo data={vendorResourceTree} checkedKeys={this.state.vendorCheckedResourceKeys} height={height} handleAuthorize={this.handleAuthorize} loading={this.props.loading} orgType={orgType.carrier.name} />
+          <RolePermissionInfo
+            data={vendorResourceTree}
+            checkedKeys={this.state.vendorCheckedResourceKeys}
+            height={height}
+            handleAuthorize={this.handleAuthorize}
+            loading={this.props.loading}
+            orgType={orgType.carrier.name}
+          />
         </TabPane>
-      )
+      );
       i = i + 1;
     }
     if (carrierResourceTree && carrierResourceTree.length > 0) {
       tabPanes.push(
         <TabPane tab={roleLocale.carrirTabPermissionInfoTitle} key={i}>
-          <RolePermissionInfo data={carrierResourceTree} checkedKeys={this.state.carrierCheckedResourceKeys} height={height} handleAuthorize={this.handleAuthorize} loading={this.props.loading} orgType={orgType.carrier.name} />
+          <RolePermissionInfo
+            data={carrierResourceTree}
+            checkedKeys={this.state.carrierCheckedResourceKeys}
+            height={height}
+            handleAuthorize={this.handleAuthorize}
+            loading={this.props.loading}
+            orgType={orgType.carrier.name}
+          />
         </TabPane>
-      )
+      );
       i = i + 1;
     }
     return tabPanes;
-  }
+  };
 
   /**重写部分 结束 */
 }

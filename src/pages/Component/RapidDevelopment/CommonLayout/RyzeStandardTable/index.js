@@ -820,7 +820,90 @@ class StandardTable extends Component {
     );
   };
 
+  changeSortInput = (value, index, target) => {
+    const { optionsList } = this.state;
+    value = parseInt(value);
+    const reg = /^-?[0-9]*(\.[0-9]*)?$/;
+    if (!((!isNaN(value) && reg.test(value)) || value === '' || value === '-')) {
+      message.warning('请填写正确数字！');
+      target.index = undefined;
+      return;
+    }
+
+    if (value == index) return;
+    if (value > optionsList.length) {
+      this.onClickTwoWay(target, index, 'down');
+      target.index = undefined;
+      return;
+    } else if (value == 0) {
+      this.onClickTwoWay(target, index, 'top');
+      target.index = undefined;
+      return;
+    }
+
+    if (target.checked == false) {
+      message.warning('未勾选的不能移动');
+      return;
+    }
+    if (value < index) {
+      // 删除重新放置
+      let temp = optionsList[index];
+      // for (let i = value + 1; i <= index; i++) {
+      //   optionsList[i] = optionsList[i - 1];
+      // }
+
+      for (let i = index; i > value; i--) {
+        optionsList[i] = optionsList[i - 1];
+      }
+      optionsList[value] = temp;
+      target['upColor'] = '#CED0DA';
+    } else {
+      let temp = optionsList[index];
+      for (let i = index; i < value; i++) {
+        optionsList[i] = optionsList[i + 1];
+      }
+      optionsList[value] = temp;
+      target['upColor'] = '#CED0DA';
+    }
+
+    target.index = undefined;
+    this.setState(
+      {
+        optionsList: optionsList,
+      },
+      () => {
+        this.handleOK();
+      }
+    );
+  };
+
   settingColumns = [
+    {
+      title: 'sortValue',
+      dataIndex: 'sortValue',
+      key: 'sortValue',
+      width: '40px',
+      render: (text, record, index) => {
+        return (
+          <span style={{ width: '50px', marginLeft: '3px' }}>
+            <Input
+              id={'sortInput' + index}
+              onClick={() => {
+                document.getElementById('sortInput' + index).select();
+              }}
+              style={{ textAlign: 'center' }}
+              onChange={e => {
+                record.index = e.target.value;
+                this.setState({});
+              }}
+              onPressEnter={e => this.changeSortInput(e.target.value, index, record)}
+              onBlur={e => this.changeSortInput(e.target.value, index, record)}
+              value={record.index != undefined ? record.index : index}
+            />
+          </span>
+        );
+      },
+    },
     {
       title: 'checked',
       dataIndex: 'checked',

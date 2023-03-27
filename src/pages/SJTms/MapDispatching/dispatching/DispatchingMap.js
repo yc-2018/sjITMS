@@ -25,6 +25,13 @@ import { sumBy, uniqBy } from 'lodash';
 
 const { Search } = Input;
 
+//百度地图api变量
+// BMAP_DRAWING_MARKER    = "marker",     // 鼠标画点模式
+// BMAP_DRAWING_CLOSE  = "close",   // 鼠标画线模式
+// BMAP_DRAWING_POLYLINE  = "polyline",   // 鼠标画线模式
+// BMAP_DRAWING_CIRCLE    = "circle",     // 鼠标画圆模式
+// BMAP_DRAWING_RECTANGLE = "rectangle",  // 鼠标画矩形模式
+// BMAP_DRAWING_POLYGON   = "polygon";    // 鼠标画多边形模式
 export default class DispatchMap extends Component {
   basicOrders = [];
   isSelectOrders = [];
@@ -54,6 +61,23 @@ export default class DispatchMap extends Component {
     this.props.onRef && this.props.onRef(this);
   };
 
+  keyDown = (event, ...args) => {
+    let that = this;
+    var e = event || window.event || args.callee.caller.arguments[0];
+    if (e && e.keyCode == 82 && e.altKey) {
+      if (!this.drawingManagerRef.drawingmanager?._isOpen) {
+        this.drawingManagerRef.drawingmanager?.open();
+        this.drawingManagerRef.drawingmanager?.setDrawingMode('rectangle');
+      } else {
+        this.drawingManagerRef.drawingmanager?.close();
+      }
+    }
+  };
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.keyDown);
+  }
+
   //显示modal
   show = orders => {
     this.setState({ visible: true });
@@ -79,6 +103,7 @@ export default class DispatchMap extends Component {
     this.clusterLayer = undefined;
     this.contextMenu = undefined;
     this.isSelectOrders = [];
+    window.removeEventListener('keydown', this.keyDown);
   };
 
   //查询
@@ -143,6 +168,8 @@ export default class DispatchMap extends Component {
             this.drawMenu();
             // this.clusterSetData(data);
             this.autoViewPort(data);
+
+            window.addEventListener('keydown', this.keyDown);
           }, 500);
         });
         // this.drawingManagerRef?.open();
@@ -771,6 +798,7 @@ export default class DispatchMap extends Component {
                   {this.drawMarker()}
                   {/* 鼠标绘制工具 */}
                   <DrawingManager
+                    isOpen={true}
                     enableLimit
                     enableCalculate
                     // enableDrawingTool={false}
@@ -779,6 +807,7 @@ export default class DispatchMap extends Component {
                     drawingToolOptions={{
                       drawingModes: ['rectangle'],
                     }}
+                    drawingMode={'rectangle'}
                     rectangleOptions={{
                       strokeColor: '#d9534f', //边线颜色。
                       fillColor: '#f4cdcc', //填充颜色。当参数为空时，圆形将没有填充效果。
@@ -787,7 +816,8 @@ export default class DispatchMap extends Component {
                       fillOpacity: 0.3, //填充的透明度，取值范围0 - 1。
                       strokeStyle: 'dashed', //边线的样式，solid或dashed。
                     }}
-                    ref={ref => (this.drawingManagerRef = ref?.drawingmanager)}
+                    // ref={ref => (this.drawingManagerRef = ref?.drawingmanager)}
+                    ref={ref => (this.drawingManagerRef = ref)}
                   />
 
                   {windowInfo ? (

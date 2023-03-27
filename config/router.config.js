@@ -1744,7 +1744,7 @@ export default [
                 quickuuid: 'sj_itms_wms_order_dtl_check',
                 authority: ['sjtms.bigData.cswmsOrderDtlCheck'],
               },
-              
+
               {
                 path: '/bigData/cs/positionConfirm',
                 name: '茶山板位异常确认报表',
@@ -1779,11 +1779,10 @@ export default [
                 path: '/bigData/hz/v_itms_cargovolume_day_yd',
                 name: '惠州每日出货量报表',
                 org: ['DISPATCH_CENTER'],
-                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                component: './SJTms/DayCargoQuantity/DayCargoQuantityForm',
                 quickuuid: 'v_itms_cargovolume_day_yd',
                 authority: ['sjtms.bigData.hzwmsOrderCargovolume'],
               },
-             
             ],
           },
           {

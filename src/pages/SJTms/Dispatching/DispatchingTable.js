@@ -50,30 +50,34 @@ export default class DispatchingTable extends Component {
     const { selectedRowKeys, dataSource } = this.props;
     let { lastIndex } = this.state;
     let rowKeys = [...selectedRowKeys];
-    // let rowKeys = [];
+    let rowKeysShift = [];
     let allRowKeys = [...dataSource].map(x => x.uuid);
     const indicatrix = rowKeys.indexOf(record.uuid);
     const selected = indicatrix == -1;
     if (event.ctrlKey) {
       selected ? rowKeys.push(record.uuid) : rowKeys.splice(indicatrix, 1);
+      rowKeys = uniqBy(rowKeys);
+      this.props.changeSelectRows(rowKeys);
     } else if (event.shiftKey && lastIndex >= 0) {
       allRowKeys =
         index > lastIndex
           ? allRowKeys.filter((_, i) => i >= lastIndex && i <= index)
           : allRowKeys.filter((_, i) => i >= index && i <= lastIndex);
-      rowKeys = rowKeys.concat(allRowKeys);
+      rowKeysShift = rowKeysShift.concat(allRowKeys);
       // rowKeys = selected
       //   ? rowKeys.concat(allRowKeys)
       //   : rowKeys.filter(x => allRowKeys.indexOf(x) == -1);
+      rowKeysShift = uniqBy(rowKeysShift);
+      this.props.changeSelectRows(rowKeysShift);
     } else {
       rowKeys = [record.uuid];
+      rowKeys = uniqBy(rowKeys);
+      this.props.changeSelectRows(rowKeys);
     }
-    rowKeys = uniqBy(rowKeys);
-    this.props.changeSelectRows(rowKeys);
 
-    // if (!event.shiftKey) {
+    if (!event.shiftKey) {
       this.setState({ lastIndex: index });
-    // }
+    }
 
     if (this.props.onClickRow) {
       this.props.onClickRow(record, index, event);
