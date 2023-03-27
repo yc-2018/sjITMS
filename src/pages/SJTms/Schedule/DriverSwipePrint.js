@@ -125,9 +125,7 @@ export default class DriverSwipePrint extends PureComponent {
   };
   drawPrintPage = (schedule, scheduleDetails) => {
     const { dispatchUuid, companyUuid } = this.state;
-    //茶山调度
-    if (dispatchUuid == '000000750000004' || dispatchUuid == '000008150000001') {
-      let scheduleDetailSum = {};
+    let scheduleDetailSum = {};
       let REALCARTONCOUNT = 0;
       let REALSCATTEREDCOUNT = 0;
       let REALCONTAINERCOUNT = 0;
@@ -146,13 +144,14 @@ export default class DriverSwipePrint extends PureComponent {
       scheduleDetailSum.OWECARTONCOUNT = OWECARTONCOUNT;
       scheduleDetailSum.CONTAINERSum = CONTAINERSum;
       scheduleDetailSum.StoreSum = scheduleDetails.length;
-      // const deliveryMan = schedule.memberDetails.filter (e=>e.memberType=='DeliveryMan').map(e=>'['+e.member.code+']'+e.member.name);
       const stevedore = schedule.memberDetails
-        .filter(e => e.memberType == 'DeliveryMan')
-        .map(e => '[' + e.member.code + ']' + e.member.name);
-      const copilot = schedule.memberDetails
-        .filter(e => e.memberType == 'Copilot')
-        .map(e => '[' + e.member.code + ']' + e.member.name);
+      .filter(e => e.memberType == 'DeliveryMan')
+      .map(e => '[' + e.member.code + ']' + e.member.name);
+    const copilot = schedule.memberDetails
+      .filter(e => e.memberType == 'Copilot')
+      .map(e => '[' + e.member.code + ']' + e.member.name);
+    //茶山调度
+    if (dispatchUuid == '000000750000004' || dispatchUuid == '000008150000001') {
       return (
         <div>
           <table
