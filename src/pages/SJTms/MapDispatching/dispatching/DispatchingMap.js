@@ -65,11 +65,11 @@ export default class DispatchMap extends Component {
     let that = this;
     var e = event || window.event || args.callee.caller.arguments[0];
     if (e && e.keyCode == 82 && e.altKey) {
-      if (!this.drawingManagerRef?._isOpen) {
-        this.drawingManagerRef?.open();
-        this.drawingManagerRef?.setDrawingMode('rectangle');
+      if (!this.drawingManagerRef.drawingmanager?._isOpen) {
+        this.drawingManagerRef.drawingmanager?.open();
+        this.drawingManagerRef.drawingmanager?.setDrawingMode('rectangle');
       } else {
-        this.drawingManagerRef?.close();
+        this.drawingManagerRef.drawingmanager?.close();
       }
     }
   };
@@ -80,8 +80,6 @@ export default class DispatchMap extends Component {
 
   //显示modal
   show = orders => {
-    window.addEventListener('keydown', this.keyDown);
-
     this.setState({ visible: true });
     queryDict('warehouse').then(res => {
       this.setState({
@@ -170,6 +168,8 @@ export default class DispatchMap extends Component {
             this.drawMenu();
             // this.clusterSetData(data);
             this.autoViewPort(data);
+
+            window.addEventListener('keydown', this.keyDown);
           }, 500);
         });
         // this.drawingManagerRef?.open();
@@ -816,7 +816,8 @@ export default class DispatchMap extends Component {
                       fillOpacity: 0.3, //填充的透明度，取值范围0 - 1。
                       strokeStyle: 'dashed', //边线的样式，solid或dashed。
                     }}
-                    ref={ref => (this.drawingManagerRef = ref?.drawingmanager)}
+                    // ref={ref => (this.drawingManagerRef = ref?.drawingmanager)}
+                    ref={ref => (this.drawingManagerRef = ref)}
                   />
 
                   {windowInfo ? (
