@@ -54,6 +54,7 @@ export default class AdvancedQuery extends Component {
             alias: data.ALIAS,
             matchType: data.MATCHTYPE,
             queryParams: JSON.parse(data.QUERYPARAMS),
+            linkQuery: data.LINKQUERY,
           });
         });
       }
@@ -84,7 +85,7 @@ export default class AdvancedQuery extends Component {
   handleMenuClick = ({ key }) => {
     const { treeDatas } = this.state;
     const passParams = treeDatas.find(x => x.alias === key);
-    const { matchType, queryParams } = passParams;
+    const { matchType, queryParams, linkQuery } = passParams;
     const queryParam = [];
     queryParams.forEach(data => {
       queryParam.push({
@@ -94,7 +95,7 @@ export default class AdvancedQuery extends Component {
         val: data.defaultValue,
       });
     });
-    const data = { matchType, queryParams: queryParam };
+    const data = { matchType, queryParams: queryParam, linkQuery };
     this.props.refresh(data);
   };
 
@@ -128,7 +129,7 @@ export default class AdvancedQuery extends Component {
   saveQueryConditions = () => {
     const messages = this.formRef.handleSubmit();
     const { treeDatas, saveName } = this.state;
-    const { matchType, queryParams } = messages;
+    const { matchType, queryParams, linkQuery } = messages;
     const queryParam = [];
     if (queryParams.length === 0) {
       message.error('查询条件为空，不能保存');
@@ -150,7 +151,7 @@ export default class AdvancedQuery extends Component {
         okText: '是',
         cancelText: '否',
         onOk: () => {
-          this.onSaveData(queryParam, matchType).then(result => {
+          this.onSaveData(queryParam, matchType, linkQuery).then(result => {
             if (result.result) {
               let arr = treeDatas;
               arr[dataIndex] = {
@@ -165,7 +166,7 @@ export default class AdvancedQuery extends Component {
         onCancel() {},
       });
     } else {
-      this.onSaveData(queryParam, matchType).then(result => {
+      this.onSaveData(queryParam, matchType, linkQuery).then(result => {
         if (result.result) {
           const newTreeDatas = treeDatas.concat({
             alias: saveName,
@@ -179,7 +180,7 @@ export default class AdvancedQuery extends Component {
     this.hideSaveModal();
   };
 
-  onSaveData = async (queryParam, matchType) => {
+  onSaveData = async (queryParam, matchType, linkQuery) => {
     const { saveName } = this.state;
     const payload = [
       {
@@ -191,6 +192,7 @@ export default class AdvancedQuery extends Component {
             matchType: matchType,
             queryParams: JSON.stringify(queryParam),
             creatorid: loginUser().code,
+            linkQuery,
           },
         ],
       },
@@ -240,9 +242,17 @@ export default class AdvancedQuery extends Component {
   onSelectTree = value => {
     this.formRef.onReset();
     const { treeDatas } = this.state;
-    const data = [];
-    const passParams = treeDatas.find(x => x.alias === value).queryParams;
-    this.child.getSearchParams(passParams);
+    const passParams = treeDatas.find(x => x.alias === value);
+    const { queryParams } = passParams;
+    let newPassParams = [];
+    queryParams.forEach(param => {
+      let newParam = { ...param };
+      if (newParam.searchCondition == 'in' && !Array.isArray(newParam.defaultValue)) {
+        newParam.defaultValue = newParam.defaultValue.split('||');
+      }
+      newPassParams.push(newParam);
+    });
+    this.child.getSearchParams(newPassParams, passParams.linkQuery);
     this.setState({ saveName: value });
   };
 
@@ -334,7 +344,7 @@ export default class AdvancedQuery extends Component {
           ]}
         >
           <Row>
-            <Col span={16}>
+            <Col span={18}>
               <ColsAdvanced
                 formRefs={this.formRef}
                 searchFields={searchFields}
