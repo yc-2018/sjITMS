@@ -53,6 +53,7 @@ const { TabPane } = Tabs;
 import { havePermission } from '@/utils/authority';
 import { throttleSetter } from 'lodash-decorators';
 import { getDispatchConfig } from '@/services/tms/DispatcherConfig';
+import imTemplate from '@/models/account/imTemplate';
 @connect(({ lineSystem, loading }) => ({
   lineSystem,
   loading: loading.models.lineSystem,
@@ -99,6 +100,7 @@ export default class LineSystemSearchPage extends Component {
         temp.title = `[${e.code}]` + e.name;
         temp.icon = <Icon type="swap" rotate={90} />;
         temp.region = data.region;  
+        temp.isnewstoreline = data.isnewstoreline;
         // temp.system=true;
         treeNode.push(temp);
         ef.push(e);
@@ -119,6 +121,7 @@ export default class LineSystemSearchPage extends Component {
       itemData.title = `[${data.code}]` + data.name;
       itemData.icon = <Icon type="swap" rotate={90} />;
       itemData.region = data.region;
+      itemData.isnewstoreline = data.isnewstoreline;
       if (data.type == 'lineSystem') {
         itemData.system = true;
         // itemData.disabled=true;
@@ -402,9 +405,10 @@ export default class LineSystemSearchPage extends Component {
     const renderTreeNode = data => {
       let nodeArr = data.map(item => {
        const reion = !item.system && item.region==1 && this.state.dispatchConfig.checkLineArea==1 ;
+       const isnewstoreline = !item.system && item.isnewstoreline==1;
         item.title = (
           <div  style={reion?{color:'red'}:{}}>
-            <span>{item.title}</span>
+            <span>{item.title }{isnewstoreline?<span style={isnewstoreline?{color: '#2dcb38'}:{}}>(新)</span>:null}</span>
             {item.key != selectLineUuid ? (
               <></>
             ) : item.system ? (
