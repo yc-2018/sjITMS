@@ -46,6 +46,7 @@ export default class DispatchingTable extends Component {
 
   //表格行点击选中
   onClickRow = (record, index, event) => {
+    //整体选择逻辑 参考EXCEL中的选择逻辑
     if (this.props.clickRow == undefined) return;
     const { selectedRowKeys, dataSource } = this.props;
     let { lastIndex } = this.state;
@@ -58,18 +59,25 @@ export default class DispatchingTable extends Component {
       selected ? rowKeys.push(record.uuid) : rowKeys.splice(indicatrix, 1);
       rowKeys = uniqBy(rowKeys);
       this.props.changeSelectRows(rowKeys);
+      //ctrl后保留之前选中
+      dataSource.filter(e => rowKeys.indexOf(e.uuid) != -1).map(x => (x.isCtrl = true));
     } else if (event.shiftKey && lastIndex >= 0) {
+      //shift选择时 保留ctrl选择的record
+      let ctrlRowKeys = dataSource.filter(e => e.isCtrl).map(x => x.uuid);
       allRowKeys =
         index > lastIndex
           ? allRowKeys.filter((_, i) => i >= lastIndex && i <= index)
           : allRowKeys.filter((_, i) => i >= index && i <= lastIndex);
-      rowKeysShift = rowKeysShift.concat(allRowKeys);
-      // rowKeys = selected
-      //   ? rowKeys.concat(allRowKeys)
-      //   : rowKeys.filter(x => allRowKeys.indexOf(x) == -1);
+
+      //拼接ctrlKeys与allRowKeys
+      rowKeysShift = rowKeysShift.concat(allRowKeys).concat(ctrlRowKeys);
       rowKeysShift = uniqBy(rowKeysShift);
+
       this.props.changeSelectRows(rowKeysShift);
     } else {
+      //单点时 去除除该条外的所有ctrl记录
+      dataSource.filter(e => e.isCtrl).map(x => (x.isCtrl = false));
+      record.isCtrl = true;
       rowKeys = [record.uuid];
       rowKeys = uniqBy(rowKeys);
       this.props.changeSelectRows(rowKeys);
