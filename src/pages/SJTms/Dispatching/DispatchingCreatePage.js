@@ -127,9 +127,10 @@ export default class DispatchingCreatePage extends Component {
       // empType: '',
       // empInfo: '',
     },
-    carKey: this.itemConfig[loginOrg().uuid][0].key
-      ? this.itemConfig[loginOrg().uuid][0].key
-      : 'init',
+    carKey:
+      this.itemConfig[loginOrg().uuid] && this.itemConfig[loginOrg().uuid][0]?.key
+        ? this.itemConfig[loginOrg().uuid][0].key
+        : 'init',
   };
 
   componentDidMount = () => {
@@ -310,9 +311,10 @@ export default class DispatchingCreatePage extends Component {
       selectVehicle: [],
       carEmpNums: 20,
       carEmpSearch: {},
-      carKey: this.itemConfig[loginOrg().uuid][0].key
-        ? this.itemConfig[loginOrg().uuid][0].key
-        : 'init',
+      carKey:
+        this.itemConfig[loginOrg().uuid] && this.itemConfig[loginOrg().uuid][0]?.key
+          ? this.itemConfig[loginOrg().uuid][0].key
+          : 'init',
     });
     window.removeEventListener('keydown', this.keyDown);
   };
@@ -630,8 +632,11 @@ export default class DispatchingCreatePage extends Component {
 
   buildSelectEmployeeCard = () => {
     const { employees, selectEmployees } = this.state;
-    let sliceEmployees =
-      this.state.carEmpNums == 'all' ? employees : employees.slice(0, this.state.carEmpNums);
+    let sliceEmployees = employees
+      ? this.state.carEmpNums == 'all'
+        ? employees
+        : employees?.slice(0, this.state.carEmpNums)
+      : {};
 
     //样式一致
     const empTabList = [
@@ -744,13 +749,15 @@ export default class DispatchingCreatePage extends Component {
     if (key == 'recommend') {
       //熟练度
       let vehiclesByRecom = await this.getRecommendByOrders(orders, this.basicVehicle);
-      vehiclesByRecom = vehiclesByRecom.filter(item => {
-        return item.pro && item.pro != 0;
-      });
-      this.setState({ vehicles: vehiclesByRecom });
-      if (!isEdit && vehiclesByRecom.length > 0) {
-        this.handleVehicle(vehiclesByRecom[0]);
-      }
+      if (vehiclesByRecom) {
+        vehiclesByRecom = vehiclesByRecom.filter(item => {
+          return item.pro && item.pro != 0;
+        });
+        this.setState({ vehicles: vehiclesByRecom });
+        if (!isEdit && vehiclesByRecom.length > 0) {
+          this.handleVehicle(vehiclesByRecom[0]);
+        }
+      } else this.setState({ vehicles: [] });
     } else if (key == 'init') {
       this.setState({ vehicles: this.basicVehicle });
     } else {
