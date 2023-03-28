@@ -1,5 +1,5 @@
-import React, { Component, Fragment } from 'react';
-import { Form, Row, Col, Icon, Select, Button, Input, DatePicker } from 'antd';
+import React, { Component } from 'react';
+import { Form, Row, Col, Icon, Select, Button, Input, DatePicker, Checkbox } from 'antd';
 import Address from '@/pages/Component/Form/Address';
 import {
   SimpleTreeSelect,
@@ -33,11 +33,11 @@ const mathRule = [
 export default class ColsAdvanced extends Component {
   constructor(props) {
     super(props);
-    this.state = { queryKey: 0, searchParams: [] };
+    this.state = { queryKey: 0, searchParams: [], linkQuery: 0 };
   }
 
-  getSearchParams = params => {
-    this.setState({ queryKey: params.length + 1, searchParams: params });
+  getSearchParams = (params, linkQuery) => {
+    this.setState({ queryKey: params.length + 1, searchParams: params, linkQuery });
   };
 
   componentDidMount() {
@@ -74,6 +74,7 @@ export default class ColsAdvanced extends Component {
           defaultValue: undefined,
         },
       ],
+      linkQuery: 0,
     });
     this.props.form.resetFields();
   };
@@ -81,17 +82,18 @@ export default class ColsAdvanced extends Component {
   //提交表单查询
   handleSubmit = () => {
     const IQueryParam = {};
-    const { matchType, field, rule, val } = this.props.form.getFieldsValue();
+    const { matchType, linkQuery, field, rule, val } = this.props.form.getFieldsValue();
     const { searchFields } = this.props;
     IQueryParam.matchType = matchType;
+    IQueryParam.linkQuery = linkQuery ? 1 : 0;
     IQueryParam.queryParams = [];
     if (field != undefined) {
       field.map((item, index) => {
         if (item != undefined && rule[index] != undefined) {
           const searchField = searchFields.find(x => x.fieldName === item);
           const data = {};
-          data.type = searchField?.fieldType;
           data.field = item;
+          data.type = searchField?.fieldType;
           data.rule = rule[index];
           //增加rule为like判断
           if (
@@ -181,6 +183,12 @@ export default class ColsAdvanced extends Component {
             allowClear
             placeholder={'请选择' + searchField.fieldTxt}
             searchField={searchField}
+            setFieldsValues={param => {
+              let { val, field } = this.props.form.getFieldsValue();
+              const index = field.findIndex(x => x == searchField.fieldName);
+              val[index] = param[searchField.fieldName];
+              this.props.form.setFieldsValue({ val });
+            }}
             {...searchProperties}
           />
         );
@@ -195,6 +203,12 @@ export default class ColsAdvanced extends Component {
             reportCode={this.props.reportCode}
             searchField={searchField}
             isOrgQuery={this.props.isOrgQuery}
+            setFieldsValues={param => {
+              let { val, field } = this.props.form.getFieldsValue();
+              const index = field.findIndex(x => x == searchField.fieldName);
+              val[index] = param[searchField.fieldName];
+              this.props.form.setFieldsValue({ val });
+            }}
           />
         );
       case 'auto_complete':
@@ -224,8 +238,8 @@ export default class ColsAdvanced extends Component {
 
   render() {
     const { getFieldDecorator } = this.props.form;
-    const { searchParams } = this.state;
-    const { filterValue, searchFields } = this.props;
+    const { searchParams, linkQuery } = this.state;
+    const { searchFields } = this.props;
     const formItems = searchParams.map(searchParam => (
       <Row gutter={16} key={searchParam.key}>
         <Col span={9}>
@@ -294,7 +308,7 @@ export default class ColsAdvanced extends Component {
     return (
       <Form onSubmit={this.handleSubmit}>
         <Row>
-          <Col span={16}>
+          <Col span={15}>
             <Form.Item {...formItemLayout} key={'matchType'} label={'过滤条件匹配'}>
               {getFieldDecorator('matchType', { initialValue: 'and' })(
                 <Select>
@@ -304,13 +318,17 @@ export default class ColsAdvanced extends Component {
               )}
             </Form.Item>
           </Col>
-          <Col span={4} offset={2}>
-            <Form.Item key={'add'}>
-              {getFieldDecorator('add', {})(
-                <Button type="dashed" onClick={this.add}>
-                  <Icon type="plus" /> 添加
-                </Button>
-              )}
+          <Col span={2} offset={1}>
+            <Button type="dashed" onClick={this.add}>
+              <Icon type="plus" /> 添加
+            </Button>
+          </Col>
+          <Col span={4} offset={1}>
+            <Form.Item key={'linkQuery'}>
+              {getFieldDecorator('linkQuery', {
+                valuePropName: 'checked',
+                initialValue: linkQuery == 1,
+              })(<Checkbox>联动查询</Checkbox>)}
             </Form.Item>
           </Col>
         </Row>

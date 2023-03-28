@@ -874,11 +874,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
 
   drawToolbarPanel = () => {
     const { buttonDisable } = this.state;
-    const menu = <Menu onClick={ this.updateIsNewStore}>
-      <Menu.Item key="1">标记</Menu.Item>
-      <Menu.Item key="0">取消标记</Menu.Item>
-
-    </Menu>
+   
     return (
       <>
         {buttonDisable ? <Button onClick={this.tableSortSave}>排序并保存</Button> : <></>}
@@ -935,11 +931,6 @@ export default class LineShipAddress extends QuickFormSearchPage {
             >
               编辑备注
             </Button>
-            <Dropdown overlay={menu}>
-              <Button>
-                标记新门店 <Icon type="down" />
-              </Button>
-            </Dropdown>
       </>
     );
   };

@@ -27,6 +27,7 @@ import { CreatePageOrderColumns } from './DispatchingColumns';
 import disStyle from './Dispatching.less';
 import { sumBy, uniq, uniqBy, orderBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { itemConfig, carSearchSortConfig } from './DispatchingConfig';
 
 const { Search } = Input;
 const { confirm } = Modal;
@@ -35,71 +36,6 @@ export default class DispatchingCreatePage extends Component {
   basicEmployee = [];
   basicVehicle = [];
   dict = [];
-  itemConfig = {
-    '000000750000004': [
-      {
-        key: 'init',
-        tab: '默认匹配',
-      },
-      {
-        key: 'recommend',
-        tab: '熟练度匹配',
-      },
-      {
-        key: 'area',
-        tab: '区域匹配',
-      },
-    ], //cstest
-    '000000750000005': [
-      {
-        key: 'recommend',
-        tab: '熟练度匹配',
-      },
-      {
-        key: 'area',
-        tab: '区域匹配',
-      },
-      {
-        key: 'init',
-        tab: '默认匹配',
-      },
-    ], //ydtest
-    '000008150000002': [
-      {
-        key: 'recommend',
-        tab: '熟练度匹配',
-      },
-      {
-        key: 'area',
-        tab: '区域匹配',
-      },
-      {
-        key: 'init',
-        tab: '默认匹配',
-      },
-    ], //ydzs
-    '000008150000001': [
-      {
-        key: 'init',
-        tab: '默认匹配',
-      },
-      {
-        key: 'recommend',
-        tab: '熟练度匹配',
-      },
-      {
-        key: 'area',
-        tab: '区域匹配',
-      },
-    ], //cszs
-  };
-
-  carSearchSortConfig = {
-    '000000750000004': [1, 2, 3], //cstest
-    '000000750000005': [3, 2, 1], //ydtest
-    '000008150000002': [3, 2, 1], //ydzs
-    '000008150000001': [1, 2, 3], //cszs
-  };
 
   state = {
     loading: false,
@@ -127,9 +63,10 @@ export default class DispatchingCreatePage extends Component {
       // empType: '',
       // empInfo: '',
     },
-    carKey: this.itemConfig[loginOrg().uuid][0].key
-      ? this.itemConfig[loginOrg().uuid][0].key
-      : 'init',
+    carKey:
+      itemConfig[loginOrg().uuid] && itemConfig[loginOrg().uuid][0]?.key
+        ? itemConfig[loginOrg().uuid][0].key
+        : 'init',
   };
 
   componentDidMount = () => {
@@ -310,9 +247,10 @@ export default class DispatchingCreatePage extends Component {
       selectVehicle: [],
       carEmpNums: 20,
       carEmpSearch: {},
-      carKey: this.itemConfig[loginOrg().uuid][0].key
-        ? this.itemConfig[loginOrg().uuid][0].key
-        : 'init',
+      carKey:
+        itemConfig[loginOrg().uuid] && itemConfig[loginOrg().uuid][0]?.key
+          ? itemConfig[loginOrg().uuid][0].key
+          : 'init',
     });
     window.removeEventListener('keydown', this.keyDown);
   };
@@ -630,8 +568,11 @@ export default class DispatchingCreatePage extends Component {
 
   buildSelectEmployeeCard = () => {
     const { employees, selectEmployees } = this.state;
-    let sliceEmployees =
-      this.state.carEmpNums == 'all' ? employees : employees.slice(0, this.state.carEmpNums);
+    let sliceEmployees = employees
+      ? this.state.carEmpNums == 'all'
+        ? employees
+        : employees?.slice(0, this.state.carEmpNums)
+      : {};
 
     //样式一致
     const empTabList = [
@@ -744,13 +685,15 @@ export default class DispatchingCreatePage extends Component {
     if (key == 'recommend') {
       //熟练度
       let vehiclesByRecom = await this.getRecommendByOrders(orders, this.basicVehicle);
-      vehiclesByRecom = vehiclesByRecom.filter(item => {
-        return item.pro && item.pro != 0;
-      });
-      this.setState({ vehicles: vehiclesByRecom });
-      if (!isEdit && vehiclesByRecom.length > 0) {
-        this.handleVehicle(vehiclesByRecom[0]);
-      }
+      if (vehiclesByRecom) {
+        vehiclesByRecom = vehiclesByRecom.filter(item => {
+          return item.pro && item.pro != 0;
+        });
+        this.setState({ vehicles: vehiclesByRecom });
+        if (!isEdit && vehiclesByRecom.length > 0) {
+          this.handleVehicle(vehiclesByRecom[0]);
+        }
+      } else this.setState({ vehicles: [] });
     } else if (key == 'init') {
       this.setState({ vehicles: this.basicVehicle });
     } else {
@@ -773,8 +716,8 @@ export default class DispatchingCreatePage extends Component {
     let sliceVehicles =
       this.state.carEmpNums == 'all' ? vehicles : vehicles.slice(0, this.state.carEmpNums);
 
-    const carTabList = this.itemConfig[loginOrg().uuid]
-      ? this.itemConfig[loginOrg().uuid]
+    const carTabList = itemConfig[loginOrg().uuid]
+      ? itemConfig[loginOrg().uuid]
       : [
           {
             key: 'init',
@@ -948,8 +891,8 @@ export default class DispatchingCreatePage extends Component {
       ),
     };
 
-    let orgSort = this.carSearchSortConfig[loginOrg().uuid]
-      ? this.carSearchSortConfig[loginOrg().uuid]
+    let orgSort = carSearchSortConfig[loginOrg().uuid]
+      ? carSearchSortConfig[loginOrg().uuid]
       : [1, 2, 3];
     return (
       <Card
