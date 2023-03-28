@@ -757,7 +757,7 @@ export default class QuickFormSearchPage extends SearchPage {
     const linkQuery = filter.linkQuery;
     const { isOrgQuery, simpleParams } = this.state;
     const params = linkQuery == 1 && simpleParams ? simpleParams : [];
-    let superPageFilters = {
+    let pageFilters = {
       pageSize,
       page: 1,
       quickuuid,
@@ -767,14 +767,13 @@ export default class QuickFormSearchPage extends SearchPage {
       },
     };
     this.setState({ superParams: filter.queryParams, linkQuery });
-    this.getData(superPageFilters);
+    this.getData(pageFilters);
   };
 
   /**
    * 刷新/重置
    */
   refreshTable = filter => {
-    const { dispatch } = this.props;
     const { pageFilters } = this.state;
     let queryFilter = { ...pageFilters };
     if (filter) {
