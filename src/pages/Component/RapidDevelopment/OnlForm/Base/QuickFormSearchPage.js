@@ -658,7 +658,7 @@ export default class QuickFormSearchPage extends SearchPage {
     let pageSize = localStorage.getItem(this.props.quickuuid + 'searchPageLine')
       ? parseInt(localStorage.getItem(this.props.quickuuid + 'searchPageLine'))
       : 20;
-    let queryParams = [...isOrgQuery];
+    let queryParams = [];
     if (pageFilters.superQuery && exSearchFilter.length == 0) {
       queryParams = pageFilters.superQuery.queryParams?.filter(item => {
         return (
@@ -670,12 +670,11 @@ export default class QuickFormSearchPage extends SearchPage {
     } else {
       queryParams = [...exSearchFilter, ...defaultSearch];
     }
-    queryParams.concat(isOrgQuery);
     pageFilters = {
       pageSize,
       order: defaultSort,
       quickuuid: quickuuid,
-      superQuery: { matchType: 'and', queryParams },
+      superQuery: { matchType: 'and', queryParams: [...isOrgQuery, ...queryParams] },
     };
     this.setState({ pageFilters });
     this.getData(pageFilters);
