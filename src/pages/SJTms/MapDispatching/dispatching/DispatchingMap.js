@@ -798,7 +798,7 @@ export default class DispatchMap extends Component {
                   {this.drawMarker()}
                   {/* 鼠标绘制工具 */}
                   <DrawingManager
-                    isOpen={true}
+                    // isOpen={true}
                     enableLimit
                     enableCalculate
                     // enableDrawingTool={false}
