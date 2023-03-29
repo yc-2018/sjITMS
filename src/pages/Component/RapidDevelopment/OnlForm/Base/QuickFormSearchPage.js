@@ -193,12 +193,8 @@ export default class QuickFormSearchPage extends SearchPage {
 
           //查询条件有必填时默认不查询
           //if (queryRequired) return;
-
-          let isFirstSearch = queryConfig.reportHead.firstSearch != 0;
-
           //配置查询成功后再去查询数据
-          this.initSearch(isFirstSearch);
-
+          if (queryConfig.reportHead.firstSearch != 0) this.onSearch();
           //扩展State
           this.changeState();
         }
@@ -647,43 +643,6 @@ export default class QuickFormSearchPage extends SearchPage {
     }
   };
 
-  initSearch = isFirstSearch => {
-    let { pageFilters, isOrgQuery, defaultSort } = this.state;
-    const { quickuuid } = this.props;
-    let exSearchFilter = this.exSearchFilter();
-    if (!exSearchFilter) exSearchFilter = [];
-
-    let defaultSearch = this.defaultSearch();
-    if (!defaultSearch) defaultSearch = [];
-
-    //增加查询页数从缓存中读取
-    let pageSize = localStorage.getItem(this.props.quickuuid + 'searchPageLine')
-      ? parseInt(localStorage.getItem(this.props.quickuuid + 'searchPageLine'))
-      : 20;
-    let queryParams = [];
-    if (pageFilters.superQuery && exSearchFilter.length == 0) {
-      queryParams = pageFilters.superQuery.queryParams?.filter(item => {
-        return (
-          item.field != 'dispatchCenterUuid' &&
-          item.field != 'dcUuid' &&
-          item.field != 'companyuuid'
-        );
-      });
-    } else {
-      queryParams = [...exSearchFilter, ...defaultSearch];
-    }
-    pageFilters = {
-      pageSize,
-      order: defaultSort,
-      quickuuid: quickuuid,
-      superQuery: { matchType: 'and', queryParams: [...isOrgQuery, ...queryParams] },
-    };
-    this.setState({ pageFilters });
-    if (isFirstSearch) {
-      this.getData(pageFilters);
-    }
-  };
-
   //点击重置时，重置搜索条件
   onReset = (pageSize, exSearchFilter) => {
     let { pageFilters, isOrgQuery, defaultSort } = this.state;
@@ -707,32 +666,44 @@ export default class QuickFormSearchPage extends SearchPage {
   onSearch = filter => {
     let exSearchFilter = this.exSearchFilter();
     if (!exSearchFilter) exSearchFilter = [];
-
+    let defaultSearch = this.defaultSearch();
+    if (!defaultSearch) defaultSearch = [];
     const { quickuuid } = this.props;
-
     //增加查询页数从缓存中读取
     let pageSize = localStorage.getItem(this.props.quickuuid + 'searchPageLine')
       ? parseInt(localStorage.getItem(this.props.quickuuid + 'searchPageLine'))
       : 20;
 
     if (filter == 'reset') {
-      let defaultSearch = this.defaultSearch();
-      if (!defaultSearch) defaultSearch = [];
       this.onReset(pageSize, [...exSearchFilter, ...defaultSearch]);
       return;
     }
-    const { isOrgQuery, superParams, linkQuery } = this.state;
+    const { pageFilters, isOrgQuery, superParams, linkQuery } = this.state;
+    let queryParams = [...exSearchFilter];
+    if (!pageFilters.superQuery) {
+      queryParams = [...queryParams, ...defaultSearch];
+    }
+    let searchParams = [];
+    if (filter?.queryParams) {
+      searchParams = filter?.queryParams || [];
+      queryParams = [...queryParams, ...searchParams];
+    }
+    queryParams = queryParams.filter(item => {
+      return (
+        item.field != 'dispatchCenterUuid' && item.field != 'dcUuid' && item.field != 'companyuuid'
+      );
+    });
     const params = linkQuery == 1 && superParams ? superParams : [];
-    const pageFilters = {
+    const newPageFilters = {
       pageSize,
       page: 1,
       quickuuid,
       superQuery: {
-        queryParams: [...isOrgQuery, ...exSearchFilter, ...params, ...filter.queryParams],
+        queryParams: [...isOrgQuery, ...queryParams, ...params],
       },
     };
-    this.setState({ pageFilters, simpleParams: filter.queryParams });
-    this.getData(pageFilters);
+    this.setState({ pageFilters: newPageFilters, simpleParams: searchParams });
+    this.getData(newPageFilters);
   };
 
   onSuperSearch = filter => {
