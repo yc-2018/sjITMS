@@ -194,8 +194,10 @@ export default class QuickFormSearchPage extends SearchPage {
           //查询条件有必填时默认不查询
           //if (queryRequired) return;
 
+          let isFirstSearch = queryConfig.reportHead.firstSearch != 0;
+
           //配置查询成功后再去查询数据
-          this.initSearch();
+          this.initSearch(isFirstSearch);
 
           //扩展State
           this.changeState();
@@ -645,7 +647,7 @@ export default class QuickFormSearchPage extends SearchPage {
     }
   };
 
-  initSearch = () => {
+  initSearch = isFirstSearch => {
     let { pageFilters, isOrgQuery, defaultSort } = this.state;
     const { quickuuid } = this.props;
     let exSearchFilter = this.exSearchFilter();
@@ -677,7 +679,9 @@ export default class QuickFormSearchPage extends SearchPage {
       superQuery: { matchType: 'and', queryParams: [...isOrgQuery, ...queryParams] },
     };
     this.setState({ pageFilters });
-    this.getData(pageFilters);
+    if (isFirstSearch) {
+      this.getData(pageFilters);
+    }
   };
 
   //点击重置时，重置搜索条件
