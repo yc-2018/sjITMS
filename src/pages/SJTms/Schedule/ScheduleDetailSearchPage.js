@@ -51,6 +51,7 @@ export default class ScheduleDetailSearchPage extends QuickFormSearchPage {
   };
 
   componentWillReceiveProps(nextProps) {
+    console.log('nextProps', nextProps, 'props', this.props);
     if (nextProps.selectedRows != this.props.selectedRows) {
       this.onSearch(nextProps.selectedRows);
     }
@@ -75,6 +76,30 @@ export default class ScheduleDetailSearchPage extends QuickFormSearchPage {
   onSearch = data => {
     const { selectedRows } = this.props;
     let UUID = typeof data == 'undefined' ? selectedRows : data;
+    const pageFilters = {
+      ...this.state.pageFilters,
+      order: this.state.defaultSort,
+      superQuery: {
+        matchType: '',
+        queryParams: [
+          {
+            field: 'billuuid',
+            type: 'VarChar',
+            rule: 'eq',
+            val: UUID,
+          },
+        ],
+      },
+    };
+    this.state.pageFilters = pageFilters;
+    this.refreshTable();
+  };
+
+  initSearch = () => {
+    const { selectedRows } = this.props;
+    // let UUID = typeof data == 'undefined' ? selectedRows : data;
+    let UUID = selectedRows;
+
     const pageFilters = {
       ...this.state.pageFilters,
       order: this.state.defaultSort,
