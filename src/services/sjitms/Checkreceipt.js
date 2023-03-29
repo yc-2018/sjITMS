@@ -20,3 +20,9 @@ export async function cancelReceipted(payload) {
     body: payload,
   });
 }
+export async function dispose(payload) {
+  return request(`/itms-schedule/itms-schedule/sj/receipt/dispose`, {
+    method: 'POST',
+    body: payload,
+  });
+}

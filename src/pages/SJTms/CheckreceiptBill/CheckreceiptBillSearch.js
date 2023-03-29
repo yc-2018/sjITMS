@@ -11,11 +11,11 @@ import OperateCol from '@/pages/Component/Form/OperateCol';
 import { Checkbox, Select, Input, Button, Popconfirm, message, Dropdown, Menu, Empty, Modal } from 'antd';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { dynamicQuery, saveFormData } from '@/services/quick/Quick';
-import { confirm, cancelReceipted } from '@/services/sjitms/Checkreceipt';
+import { confirm, cancelReceipted,dispose } from '@/services/sjitms/Checkreceipt';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import { havePermission } from '@/utils/authority';
 import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuery/SimpleQuery';
-
+ import styless from '@/pages/Tms/TransportOrder/transportOrder.less';
 const { Option } = Select;
 @connect(({ quick, loading }) => ({
   quick,
@@ -24,14 +24,27 @@ const { Option } = Select;
 //继承QuickFormSearchPage Search页面扩展
 export default class CheckreceiptBillSearch extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
-  state = { ...this.state, noActionCol: false, isShow: false, sourceData: [] };
+  state = {
+     ...this.state, noActionCol: false, isShow: false, sourceData: [],
+     notDispatchCenterUuids:['000008150000002','000008150000001','000000750000004','000000750000005']
+     };
 
   componentDidMount() {
+    const pageFilter = this.state.pageFilter;
+    pageFilter.pageSize = 50;
+    this.setState({pageFilter:pageFilter})
     this.queryCoulumns();
     this.getCreateConfig();
     this.initOptionsData();
   }
-
+  setrowClassName = (record,index)=>{
+    if(record.DEALMETHOD =='补盖章'){
+      return styless.gaizStyle
+    }
+    if( record.DISPOSEFLAG=='WaitDispose'){
+      return styless.delsStyle
+    }
+  }
   onType = () => {
     this.props.switchTab('view');
   };
@@ -99,21 +112,48 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
   };
 
   updateReceipted = () => {
-    const { selectedRows } = this.state;
+    const { selectedRows,notDispatchCenterUuids } = this.state;
     if (selectedRows.length !== 0) {
       selectedRows.forEach(row => {
         row.RECEIPTED = 1;
         row.DEALMETHOD = '';
       });
       this.setState({ selectedRows });
-      Modal.confirm({
-        title:"确定全部回单吗？",
-        onOk:()=>this.onCheckreceiptSave()
-      })
+      if(notDispatchCenterUuids.includes(loginOrg().uuid)){
+        this.onCheckreceiptSave()
+      }else{
+        Modal.confirm({
+          title:"确定全部回单吗？",
+          onOk:()=>this.onCheckreceiptSave()
+        })
+      }
     } else {
       message.error('请至少选中一条数据！');
     }
   };
+
+  dispose = async ()=>{
+    const { selectedRows } = this.state;
+    const list = [];
+    if (selectedRows.length !== 0) {  
+      selectedRows.forEach(row => {
+        let data = {
+          receipted: row.RECEIPTED == '0' ? false : true,
+          uuid: row.UUID,
+          dealMethod: row.DEALMETHOD,
+          note: row.NOTE,
+        };
+        list.push(data);
+      });
+      await dispose(list).then(e=>{
+        if(e && e.success){
+          message.success('保存成功！');
+        }
+      })
+    } else {
+      message.error('请至少选中一条数据！');
+    }
+  }
 
   /**
    * 绘制右上角按钮
@@ -211,10 +251,15 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
         row.DEALMETHOD = key;
       });
       this.setState({ selectedRows });
-      Modal.confirm({
-        title:`确定`+key+`吗`,
-        onOk:()=>this.onCheckreceiptSave()
-      })
+      if(this.state.notDispatchCenterUuids.includes(loginOrg().uuid)){
+        this.onCheckreceiptSave()
+      }else{
+        Modal.confirm({
+          title:`确定`+key+`吗`,
+          onOk:()=>this.onCheckreceiptSave()
+        })
+      }
+      
     } else {
       message.error('请至少选中一条数据！');
     }
@@ -316,8 +361,16 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
               批量设置处理方式
             </Button>
           </Dropdown>
+         {c==2 &&<Button 
+          hidden={!havePermission(this.state.authority + '.batchHandle')}
+          onClick = {() => this.dispose()}
+           >
+              跟进处理
+          </Button>}
         </span>
       );
+    }else if (c==2){
+      
     } else {
       return (
         <Popconfirm
