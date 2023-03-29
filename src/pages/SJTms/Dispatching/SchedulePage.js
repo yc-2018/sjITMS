@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-29 12:02:42
+ * @LastEditTime: 2023-03-29 14:23:08
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -321,6 +321,7 @@ export default class SchedulePage extends Component {
     notification.warning({
       message: '排车单高速区域异常',
       description: data,
+      duration:null,
       onClick: () => {
         // console.log('Notification Clicked!');
       },
