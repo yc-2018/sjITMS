@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-29 14:03:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-24 09:47:22
+ * @LastEditTime: 2023-03-30 10:01:46
  * @Description: 配送调度主页面
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\Dispatching.js
  */
@@ -119,14 +119,19 @@ export default class Dispatching extends Component {
               <div
                 style={{
                   position: 'absolute',
-                  top: -8,
-                  right: -5,
+                  top: '1.35rem',
+                  right: 360,
                   zIndex: 100,
                   width: 24,
                   height: 24,
                 }}
               >
-                <Button onClick={() => this.handOnfush()} icon="redo" />
+                <Button
+                  onClick={() => this.handOnfush()}
+                  style={{ background: '#516173', color: '#FFFFFF' }}
+                >
+                  重置
+                </Button>
               </div>
               <Layout className={dispatchingStyles.dispatchingLayout}>
                 <Row gutter={[5, 5]}>
