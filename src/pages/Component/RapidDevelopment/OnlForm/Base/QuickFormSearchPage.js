@@ -656,7 +656,7 @@ export default class QuickFormSearchPage extends SearchPage {
         queryParams: [...isOrgQuery, ...exSearchFilter],
       },
     };
-    this.setState({ pageFilters });
+    this.setState({ pageFilters, superParams: [] });
     this.getData(pageFilters);
   };
 
