@@ -687,6 +687,8 @@ export default class QuickFormSearchPage extends SearchPage {
     }
     if (!pageFilters.superQuery) {
       simpleParams = simpleParams.concat(defaultSearch);
+    } else {
+      simpleParams = simpleParams.concat(pageFilters.superQuery.queryParams);
     }
     let queryParams = [...simpleParams];
     queryParams = queryParams.filter(item => {
