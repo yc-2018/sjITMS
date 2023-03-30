@@ -1326,7 +1326,7 @@ class StandardTable extends Component {
     //获取当前页签的footer
     const footerElement = document
       .getElementById(this.state.pathname)
-      .getElementsByTagName('footer')[1];
+      ?.getElementsByTagName('footer')[1];
     const footerPos = footerElement ? footerElement.getBoundingClientRect() : {};
     let height = this.props.tableHeight ? this.props.tableHeight : footerPos.top - pos.top - 40;
     let dataHeight = optionsList ? optionsList.length * 30 + 40 : 0;
