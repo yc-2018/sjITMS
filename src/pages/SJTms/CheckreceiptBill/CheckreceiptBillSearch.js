@@ -8,7 +8,7 @@
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import OperateCol from '@/pages/Component/Form/OperateCol';
-import { Checkbox, Select, Input, Button, Popconfirm, message, Dropdown, Menu, Empty, Modal } from 'antd';
+import { Checkbox, Select, Input, Button, Popconfirm, message, Dropdown, Menu, Empty, Modal} from 'antd';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { dynamicQuery, saveFormData } from '@/services/quick/Quick';
 import { confirm, cancelReceipted,dispose } from '@/services/sjitms/Checkreceipt';
@@ -26,7 +26,8 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
   state = {
      ...this.state, noActionCol: false, isShow: false, sourceData: [],
-     notDispatchCenterUuids:['000008150000002','000008150000001','000000750000004','000000750000005']
+     notDispatchCenterUuids:['000008150000002','000008150000001','000000750000004','000000750000005'],
+     updateReceiptedLoading:false
      };
 
   componentDidMount() {
@@ -41,11 +42,14 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
     // if(record.DEALMETHOD =='补盖章'){
     //   return styless.gaizStyle
     // }
-    if( record.DISPOSEFLAG=='WaitDispose'){
-      return styless.delsStyle
-    }else{
-      return styless.gaizStyle
+    if(record.RECEIPTED==2){
+      if( record.DISPOSEFLAG=='WaitDispose'){
+        return styless.delsStyle
+      }else if(record.DISPOSEFLAG =='Disposed'){
+        return styless.gaizStyle
+      }
     }
+   
 }
   onType = () => {
     this.props.switchTab('view');
@@ -79,11 +83,13 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
         list.push(data);
       });
       if (msg) {
+        this.setState({updateReceiptedLoading:true})
         const result = await confirm(list);
         if (result.success) {
           message.success('保存成功');
           this.refreshTable();
         }
+        this.setState({updateReceiptedLoading:false})
       }
     } else {
       message.error('请至少选中一条数据！');
@@ -353,12 +359,14 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
           >
            
           </Popconfirm> */}
-          <Button 
-          hidden={!havePermission(this.state.authority + '.allReceipted')}
-          onClick = {() => this.updateReceipted()}
-           >
-              全部回单
-            </Button>
+            
+            <Button 
+            hidden={!havePermission(this.state.authority + '.allReceipted')}
+            onClick = {() => this.updateReceipted() }
+            loading = {this.state.updateReceiptedLoading}
+            >
+                全部回单
+              </Button>
           <Dropdown overlay={this.buildMenu.bind()}>
             <Button hidden={!havePermission(this.state.authority + '.batchHandle')}>
               批量设置处理方式
