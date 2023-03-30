@@ -1629,7 +1629,7 @@ export default [
               },
               {
                 path: '/bigData/loading/employeeattendance',
-                name: '员工出勤天数',
+                name: '人员出勤天数',
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_sj_employeeattendance_report',
@@ -1947,7 +1947,7 @@ export default [
           },
           {
             path: '/bigData/monthwage',
-            name: '员工工资',
+            name: '人员工资',
             org: ['DISPATCH_CENTER'],
             component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
             quickuuid: 'sj_itms_member_monthwage',
