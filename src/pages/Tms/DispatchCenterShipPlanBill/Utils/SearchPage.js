@@ -3,7 +3,7 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
 import NavigatorPanel from './NavigatorPanel';
 import ConfirmProgress from '@/pages/Component/Progress/ConfirmProgress';
-import StandardTable from '../StandardTable';
+// import StandardTable from '../StandardTable';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import { message } from 'antd';
 import { formatMessage } from 'umi/locale';
@@ -27,20 +27,26 @@ export default class SearchPage extends Component {
     let queryFilter = {
       selectedRows: [],
       // selectedRowsNest:[],
-      selectedRowsNest:{},
+      selectedRowsNest: {},
       selectedRowKeysForNest: [],
       pageFilter: {
         page: 0,
         pageSize: 50,
         sortFields: {},
         searchKeyValues: {},
-        likeKeyValues: {}
+        likeKeyValues: {},
       },
-      rowId:''
+      rowId: '',
     };
     // 获取三个页面的searchKeyValues
-    if (sessionStorage.getItem(this.props.searchPageType?this.props.searchPageType:getActiveKey())) {
-      queryFilter = JSON.parse(sessionStorage.getItem(this.props.searchPageType?this.props.searchPageType:getActiveKey()));
+    if (
+      sessionStorage.getItem(this.props.searchPageType ? this.props.searchPageType : getActiveKey())
+    ) {
+      queryFilter = JSON.parse(
+        sessionStorage.getItem(
+          this.props.searchPageType ? this.props.searchPageType : getActiveKey()
+        )
+      );
     }
     this.state = {
       ...queryFilter,
@@ -66,39 +72,50 @@ export default class SearchPage extends Component {
     this.changeSelectedRows && this.changeSelectedRows(rows);
     let selectedRowsNest = {};
     let keys = [];
-    for(let j=0;j<rows.length;j++){
+    for (let j = 0; j < rows.length; j++) {
       const childrens = rows[j].items;
       if (childrens) {
         selectedRowsNest[rows[j].uuid] = childrens;
       }
     }
-    for(let propyKey in selectedRowsNest){
-      for(let i=0;i<selectedRowsNest[propyKey].length;i++){
-        keys.push(selectedRowsNest[propyKey][i] && selectedRowsNest[propyKey][i].uuid ? selectedRowsNest[propyKey][i].uuid : '');
+    for (let propyKey in selectedRowsNest) {
+      for (let i = 0; i < selectedRowsNest[propyKey].length; i++) {
+        keys.push(
+          selectedRowsNest[propyKey][i] && selectedRowsNest[propyKey][i].uuid
+            ? selectedRowsNest[propyKey][i].uuid
+            : ''
+        );
       }
     }
-    this.setState({
-      selectedRowsNest:{...selectedRowsNest},
-      selectedRowKeysForNest: [...keys]
-    },()=>{
-      this.changeSelectedRowsNest && this.changeSelectedRowsNest(selectedRowsNest, keys);
-    });
+    this.setState(
+      {
+        selectedRowsNest: { ...selectedRowsNest },
+        selectedRowKeysForNest: [...keys],
+      },
+      () => {
+        this.changeSelectedRowsNest && this.changeSelectedRowsNest(selectedRowsNest, keys);
+      }
+    );
   };
-  handleRowSelectChangeForNest= (rows,mainRecord) => {
+  handleRowSelectChangeForNest = (rows, mainRecord) => {
     const { selectedRowsNest, selectedRowKeysForNest, selectedRows } = this.state;
     let keys = [];
-    if(rows.length > 0){
+    if (rows.length > 0) {
       selectedRowsNest[mainRecord.uuid] = rows;
-    }else{
-      delete selectedRowsNest[mainRecord.uuid]
+    } else {
+      delete selectedRowsNest[mainRecord.uuid];
     }
-    for(let propyKey in selectedRowsNest){
-      for(let i=0;i<selectedRowsNest[propyKey].length;i++){
-        keys.push(selectedRowsNest[propyKey][i] && selectedRowsNest[propyKey][i].uuid ? selectedRowsNest[propyKey][i].uuid : '');
+    for (let propyKey in selectedRowsNest) {
+      for (let i = 0; i < selectedRowsNest[propyKey].length; i++) {
+        keys.push(
+          selectedRowsNest[propyKey][i] && selectedRowsNest[propyKey][i].uuid
+            ? selectedRowsNest[propyKey][i].uuid
+            : ''
+        );
       }
     }
     let idx = -1;
-    for (let i = 0;i<selectedRows.length;i++) {
+    for (let i = 0; i < selectedRows.length; i++) {
       if (selectedRows[i].uuid === mainRecord.uuid) {
         idx = i;
       }
@@ -108,14 +125,17 @@ export default class SearchPage extends Component {
     } else if (rows.length < mainRecord.items.length && idx > -1) {
       selectedRows.splice(idx, 1);
     }
-    this.setState({
-      selectedRowsNest:{...selectedRowsNest},
-      selectedRowKeysForNest: [...keys],
-      selectedRows: [...selectedRows]
-    },()=>{
-      this.changeSelectedRows && this.changeSelectedRows(selectedRows);
-      this.changeSelectedRowsNest && this.changeSelectedRowsNest(selectedRowsNest, keys);
-    });
+    this.setState(
+      {
+        selectedRowsNest: { ...selectedRowsNest },
+        selectedRowKeysForNest: [...keys],
+        selectedRows: [...selectedRows],
+      },
+      () => {
+        this.changeSelectedRows && this.changeSelectedRows(selectedRows);
+        this.changeSelectedRowsNest && this.changeSelectedRowsNest(selectedRowsNest, keys);
+      }
+    );
   };
   // handleRowSelectChangeForNestForOrder= (rows,mainRecord) => {
   //   const { selectedRowsNest } = this.state;
@@ -133,13 +153,13 @@ export default class SearchPage extends Component {
   //   });
   //
   // };
-  clearNestSelect = ()=>{
+  clearNestSelect = () => {
     this.state.selectedRowsNest = {};
     this.setState({
-      selectedRowsNest:{},
+      selectedRowsNest: {},
     });
     this.changeSelectedRowsNest && this.changeSelectedRowsNest({});
-  }
+  };
   /**
    * 表格内容改变时，调用此方法，排序触发
    */
@@ -170,8 +190,7 @@ export default class SearchPage extends Component {
       pageFilter.sortFields = {};
       pageFilter.sortFields[sortField] = sortType;
     }
-    if (this.refreshTable)
-      this.refreshTable(pageFilter);
+    if (this.refreshTable) this.refreshTable(pageFilter);
   };
   //  -------- 批处理相关 START -------
   /**
@@ -181,12 +200,12 @@ export default class SearchPage extends Component {
     this.setState({
       batchProcessConfirmModalVisible: false,
     });
-    localStorage.setItem("showMessage", "0");
-  }
+    localStorage.setItem('showMessage', '0');
+  };
   /**
    * progress流程结束
    */
-  terminateProgress = (cancel) => {
+  terminateProgress = cancel => {
     if (cancel) {
       return;
     }
@@ -197,40 +216,43 @@ export default class SearchPage extends Component {
       failedTasks: [],
     });
     this.changeSelectedRows && this.changeSelectedRows([]);
-  }
+  };
   /**
    * 重试取消
    */
   retryCancelCallback = () => {
-    localStorage.setItem("showMessage", "1");
+    localStorage.setItem('showMessage', '1');
     this.terminateProgress(true);
-    if(this.state.batchAction =='批准'){
+    if (this.state.batchAction == '批准') {
       this.refreshTableForProgress();
     }
   };
   /**
    * 任务执行出错时回调，用于重试
    */
-  taskFailedCallback = (noModal) => {
+  taskFailedCallback = noModal => {
     const { taskInfo, selectedRows, failedTasks } = this.state;
     // 关掉错误提示
     this.setState({
       isCloseFailedResultModal: false,
       batchProcessConfirmModalVisible: false,
-    })
+    });
     if (failedTasks.length >= 1) {
       // 将执行失败的任务加入到selectedRows
-      this.setState({
-        selectedRows: failedTasks,
-        failedTasks: [],
-      },()=>{
-        // 继续进行批处理
-        if(!noModal){
-          this.handleBatchProcessConfirmModalVisible(true, taskInfo.type, failedTasks);
-        }else{
-          this.handleNotBatchProcessConfirmModalVisible(true, taskInfo.type, failedTasks);
+      this.setState(
+        {
+          selectedRows: failedTasks,
+          failedTasks: [],
+        },
+        () => {
+          // 继续进行批处理
+          if (!noModal) {
+            this.handleBatchProcessConfirmModalVisible(true, taskInfo.type, failedTasks);
+          } else {
+            this.handleNotBatchProcessConfirmModalVisible(true, taskInfo.type, failedTasks);
+          }
         }
-      });
+      );
       this.changeSelectedRows && this.changeSelectedRows(failedTasks);
     }
   };
@@ -239,7 +261,7 @@ export default class SearchPage extends Component {
    */
   handleBatchProcessConfirmModalVisible = (flag, taskType, failedTasks) => {
     const { selectedRows } = this.state;
-    if (selectedRows.length === 0 && ((failedTasks ? failedTasks.length : 0) === 0)) {
+    if (selectedRows.length === 0 && (failedTasks ? failedTasks.length : 0) === 0) {
       if (!this.state.noMessage) {
         message.warn(formatMessage({ id: 'common.progress.select.tips' }));
       }
@@ -260,8 +282,8 @@ export default class SearchPage extends Component {
   /**
    * 批量处理弹出框显示处理（入口）--无确认提示框
    */
-  handleNotBatchProcessConfirmModalVisible = (flag, taskType, failedTasks)=>{
-    const { selectedRows,taskInfo } = this.state;
+  handleNotBatchProcessConfirmModalVisible = (flag, taskType, failedTasks) => {
+    const { selectedRows, taskInfo } = this.state;
     if (flag) {
       taskInfo.total = failedTasks ? failedTasks.length : selectedRows.length;
       taskInfo.type = taskType;
@@ -270,14 +292,14 @@ export default class SearchPage extends Component {
       });
     }
     this.refs.batchHandle.handleBatchProcessConfirmOk();
-  }
+  };
   /**
    * 任务全部执行成功时回调
    */
   taskSuccessedCallback = () => {
     this.terminateProgress();
-    localStorage.setItem("showMessage", "1");
-  }
+    localStorage.setItem('showMessage', '1');
+  };
   /**
    * 任务取消执行
    */
@@ -285,22 +307,22 @@ export default class SearchPage extends Component {
     this.setState({
       batchProcessConfirmModalVisible: false,
     });
-    localStorage.setItem("showMessage", "1");
+    localStorage.setItem('showMessage', '1');
     this.terminateProgress(true);
-    this.subTaskCancelCallback && this.subTaskCancelCallback()
-  }
+    this.subTaskCancelCallback && this.subTaskCancelCallback();
+  };
   /**
    * 收集批量处理产生的失败任务
    */
-  collectFaildedTask = (record) => {
+  collectFaildedTask = record => {
     const { failedTasks } = this.state;
     if (failedTasks.indexOf(record) == -1) {
       failedTasks.push(record);
       this.setState({
         failedTasks: failedTasks,
-      })
+      });
     }
-  }
+  };
   /**
    * 成功或者失败回调
    */
@@ -311,24 +333,20 @@ export default class SearchPage extends Component {
       this.refs.batchHandle.calculateTaskFailed();
       this.collectFaildedTask(record);
     }
-  }
+  };
   /**
    * 渲染批处理
    */
   drawProgress = () => {
-    const {
-      taskInfo,
-      batchProcessConfirmModalVisible,
-      isCloseFailedResultModal
-    } = this.state;
+    const { taskInfo, batchProcessConfirmModalVisible, isCloseFailedResultModal } = this.state;
     const progressProps = {
       taskInfo: taskInfo,
       entity: this.state.title,
       action: this.state.batchAction,
       batchProcessConfirmModalVisible: batchProcessConfirmModalVisible,
       isCloseFailedResultModal: isCloseFailedResultModal,
-      content: this.state.content
-    }
+      content: this.state.content,
+    };
     const progressMethods = {
       taskConfirmCallback: this.taskConfirmCallback,
       taskCancelCallback: this.taskCancelCallback,
@@ -336,56 +354,67 @@ export default class SearchPage extends Component {
       taskSuccessedCallback: this.taskSuccessedCallback,
       retryCancelCallback: this.retryCancelCallback,
       taskExecutionFunc: this.onBatchProcess,
-    }
-    return (
-      <ConfirmProgress {...progressProps} {...progressMethods} ref="batchHandle" />
-    );
-  }
+    };
+    return <ConfirmProgress {...progressProps} {...progressMethods} ref="batchHandle" />;
+  };
   //  -------- 批处理相关 END -------
-  onClickedRow = (record)=>{
+  onClickedRow = record => {
     this.setState({
-      rowId: record.uuid?record.uuid:record.billUuid,
+      rowId: record.uuid ? record.uuid : record.billUuid,
     });
-    if(this.state.hasOnRow){
+    if (this.state.hasOnRow) {
       this.onClickRow && this.onClickRow(record);
     }
-  }
+  };
   // ----------- 公共模块跳转方法 -----------
   render() {
-    const { selectedRows,selectedRowsNest, data, scroll,key,selectedRowKeysForNest } = this.state;
+    const {
+      selectedRows,
+      selectedRowsNest,
+      data,
+      scroll,
+      key,
+      selectedRowKeysForNest,
+    } = this.state;
     const { loading } = this.props;
     let tableFilter = {
       selectedRows: this.state.selectedRows,
-      pageFilter: this.state.pageFilter
+      pageFilter: this.state.pageFilter,
     };
     //存储三个页面的searchKeyValues
-    sessionStorage.setItem(this.props.searchPageType?this.props.searchPageType:getActiveKey(), JSON.stringify(tableFilter));
+    sessionStorage.setItem(
+      this.props.searchPageType ? this.props.searchPageType : getActiveKey(),
+      JSON.stringify(tableFilter)
+    );
     const tableLoading = {
       spinning: this.state.suspendLoading ? false : loading,
-      indicator: LoadingIcon('default')
-    }
+      indicator: LoadingIcon('default'),
+    };
     //   console.log('============================')
     // console.log(selectedRows)
     // console.log(selectedRowsNest)
     // console.log(selectedRowKeysForNest)
     return (
-      <div style={{width:this.state.width?this.state.width:'92%',paddingTop:'2%'}}>
-        <div style={{minHeight:this.state.minHeight?this.state.minHeight:'500px'}}>
-          <NavigatorPanel title={this.state.title} action={this.drawActionButton ? this.drawActionButton() : ''}/>
-          {this.drawSearchPanel?this.drawSearchPanel():null}
-          {this.drawBussiness?this.drawBussiness():null}
-          {this.drawOther?this.drawOther():null}
+      <div style={{ width: this.state.width ? this.state.width : '92%', paddingTop: '2%' }}>
+        <div style={{ minHeight: this.state.minHeight ? this.state.minHeight : '500px' }}>
+          <NavigatorPanel
+            title={this.state.title}
+            action={this.drawActionButton ? this.drawActionButton() : ''}
+          />
+          {this.drawSearchPanel ? this.drawSearchPanel() : null}
+          {this.drawBussiness ? this.drawBussiness() : null}
+          {this.drawOther ? this.drawOther() : null}
           <StandardTable
-            nestColumns={this.nestColumns?this.nestColumns:null}
-            expand={this.state.expand?this.state.expand:false}
-            nestRowSelect={this.state.nestRowSelect?this.state.nestRowSelect:false}
+            nestColumns={this.nestColumns ? this.nestColumns : null}
+            expand={this.state.expand ? this.state.expand : false}
+            nestRowSelect={this.state.nestRowSelect ? this.state.nestRowSelect : false}
             clearNestSelect={this.clearNestSelect}
             hasOnRow
             comId={key}
             noPagination
             unShowRow={this.state.unShowRow ? this.state.unShowRow : false}
-            rowKey={(record,index) => record.uuid}
-            fixed={this.state.noFixed?false:true}
+            rowKey={(record, index) => record.uuid}
+            fixed={this.state.noFixed ? false : true}
             rowSelectionWidth={10}
             selectedRows={selectedRows}
             selectedRowsNest={selectedRowsNest}
@@ -393,7 +422,7 @@ export default class SearchPage extends Component {
             loading={loading}
             data={data}
             columns={this.columns}
-            newScroll={this.state.scrollValue?this.state.scrollValue:null}
+            newScroll={this.state.scrollValue ? this.state.scrollValue : null}
             size="small"
             defaultPageSize={20}
             onSelectRow={this.handleSelectRows}
@@ -402,20 +431,24 @@ export default class SearchPage extends Component {
             onChange={this.handleStandardTableChange}
             onClickRow={this.onClickedRow}
             canDrag={this.state.canDragTable}
-            rowClassName ={(record, index) => {
+            rowClassName={(record, index) => {
               let name = '';
-              if(((this.state.showViewPage!=undefined&&this.state.showViewPage==true)||this.state.showViewPage==undefined)
-                &&(record.uuid||record.billUuid)&&this.state.rowId
-                &&(record.uuid === this.state.rowId||record.billUuid === this.state.rowId)){
-                name= styles.clickedStyle;
-              }else if(record.orderStat&&record.orderStat==OrderStat.Reschedule.name){
+              if (
+                ((this.state.showViewPage != undefined && this.state.showViewPage == true) ||
+                  this.state.showViewPage == undefined) &&
+                (record.uuid || record.billUuid) &&
+                this.state.rowId &&
+                (record.uuid === this.state.rowId || record.billUuid === this.state.rowId)
+              ) {
+                name = styles.clickedStyle;
+              } else if (record.orderStat && record.orderStat == OrderStat.Reschedule.name) {
                 name = styles.reschedulStyle;
-              }else if(record.orderStat&&record.orderStat==OrderStat.Resend.name){
+              } else if (record.orderStat && record.orderStat == OrderStat.Resend.name) {
                 name = styles.resendStyle;
-              }else if(index % 2 === 0 ){
+              } else if (index % 2 === 0) {
                 name = styles.lightRow;
               }
-              return name
+              return name;
             }}
           />
           {this.drawProgress()}

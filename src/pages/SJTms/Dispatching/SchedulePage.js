@@ -1,13 +1,13 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-23 17:45:52
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-03-29 14:23:08
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
 import React, { Component } from 'react';
-import { Modal, Tabs, Button, message, Typography, Dropdown, Menu, Icon } from 'antd';
+import { Modal, Tabs, Button, message, Typography, Dropdown, Menu, Icon, notification } from 'antd';
 import DispatchingTable from './DispatchingTable';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import SearchForm from './SearchForm';
@@ -316,13 +316,29 @@ export default class SchedulePage extends Component {
       );
     }
   };
+
+  openNotification = data => {
+    notification.warning({
+      message: '排车单高速区域异常',
+      description: data,
+      duration:null,
+      onClick: () => {
+        // console.log('Notification Clicked!');
+      },
+    });
+  };
+
   approveSchedule = async uuid => {
     const { scheduleData } = this.state;
     const schedule = scheduleData.find(x => x.uuid == uuid);
     if (schedule.STAT != 'Saved') {
       return null;
     }
-    return await approve(schedule.uuid, schedule.VERSION);
+    const response = await approve(schedule.uuid, schedule.VERSION);
+    if (response.success && response.data) {
+      this.openNotification(response.data);
+    }
+    return response;
   };
 
   //删除

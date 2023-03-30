@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-20 11:56:46
+ * @LastEditTime: 2023-03-28 15:48:34
  * @version: 1.0
  */
 import React from 'react';
@@ -97,19 +97,19 @@ export default class OrderSearch extends QuickFormSearchPage {
     this.setState({ showRemovePop: true });
   };
 
-  drawRightClickMenus = () => {
-    return (
-      <Menu>
-        <Menu.Item
-          key="1"
-          hidden={!havePermission(this.state.authority + '.remove')}
-          onClick={() => this.handleRemove()}
-        >
-          转仓
-        </Menu.Item>
-      </Menu>
-    );
-  };
+  // drawRightClickMenus = () => {
+  //   return (
+  //     <Menu>
+  //       <Menu.Item
+  //         key="1"
+  //         hidden={!havePermission(this.state.authority + '.remove')}
+  //         onClick={() => this.handleRemove()}
+  //       >
+  //         转仓
+  //       </Menu.Item>
+  //     </Menu>
+  //   );
+  // };
 
   handleOk = async () => {
     const { selectedRows, dispatchCenter } = this.state;
@@ -187,6 +187,12 @@ export default class OrderSearch extends QuickFormSearchPage {
         >
           <Button onClick={() => this.onBatchCancel()}>取消</Button>
         </Popconfirm>
+        <Button
+          hidden={!havePermission(this.state.authority + '.remove')}
+          onClick={() => this.handleRemove()}
+        >
+          转仓
+        </Button>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
         <Modal
           title="转仓"

@@ -7,8 +7,8 @@
  */
 import { connect } from 'dva';
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
-import AddressAreaCreatePage from 'AddressArea/AddressAreaCreatePage'
-import AddressAreaSearchPage from './AddressAreaSearchPage'
+import AddressAreaCreatePage from './AddressAreaCreatePage';
+import AddressAreaSearchPage from './AddressAreaSearchPage';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -21,10 +21,9 @@ export default class StoreForm extends QuickForm {
     } else if (e.showPageNow === 'update') {
       const component = <AddressAreaCreatePage {...e.props} />;
       e.component = component;
-    }else if(e.showPageNow === 'query'){
+    } else if (e.showPageNow === 'query') {
       const component = <AddressAreaSearchPage {...e.props} />;
       e.component = component;
     }
   };
-  
 }

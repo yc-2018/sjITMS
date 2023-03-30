@@ -24,6 +24,8 @@ import styles from '@/pages/Tms/TransportOrder/transportOrder.less';
  */
 export default class RyzeSearchPage extends Component {
   drapTableChange = () => {}; //拖拽事件
+  setrowClassName = ()=>{}//表格样式
+
   constructor(props) {
     super(props);
 
@@ -214,6 +216,9 @@ export default class RyzeSearchPage extends Component {
               }
               if (record.errorStyle) {
                 return styles.errorStyle;
+              }
+             if(this.setrowClassName(record, index)){
+              return this.setrowClassName(record, index)
               }
               if (index % 2 === 0) {
                 return styles.lightRow;

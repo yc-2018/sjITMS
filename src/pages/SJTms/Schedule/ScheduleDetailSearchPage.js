@@ -74,7 +74,7 @@ export default class ScheduleDetailSearchPage extends QuickFormSearchPage {
 
   onSearch = data => {
     const { selectedRows } = this.props;
-    let UUID = typeof data == 'undefined' ? selectedRows : data;
+    let UUID = typeof data == 'undefined' || data == 'first' ? selectedRows : data;
     const pageFilters = {
       ...this.state.pageFilters,
       order: this.state.defaultSort,

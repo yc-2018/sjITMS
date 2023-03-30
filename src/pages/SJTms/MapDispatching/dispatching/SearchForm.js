@@ -18,6 +18,7 @@ import {
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { queryColumns } from '@/services/quick/Quick';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import moment from 'moment';
 
 const { RangePicker } = DatePicker;
 const isOrgQuery = [
@@ -64,6 +65,7 @@ export default class SearchForm extends Component {
       );
     }
   }
+
   onSubmit = event => {
     const { form } = this.props;
     event.preventDefault();
@@ -217,8 +219,12 @@ export default class SearchForm extends Component {
           .format('YYYY-MM-DD');
         item.searchDefVal = `${startDate}||${endDate}`;
       }
+      if (item.fieldName == 'WAVENUM') {
+        item.searchDefVal = [moment(new Date()).format('YYMMDD') + '0001'];
+      }
       return item;
     });
+    console.log('newSelectFields', newSelectFields);
     return (
       <Skeleton active loading={loading} title={false} paragraph={{ rows: 1 }}>
         <Form
@@ -228,9 +234,26 @@ export default class SearchForm extends Component {
           autoComplete="off"
         >
           <Row justify="space-around">
-            {newSelectFields.filter((_, index) => index < 5).map(searchField => {
+            {newSelectFields.filter((_, index) => index < 4).map(searchField => {
               return (
                 <Col span={4}>
+                  <Form.Item key={searchField.id} label={searchField.fieldTxt}>
+                    {getFieldDecorator(searchField.fieldName, {
+                      initialValue: searchField.searchDefVal || undefined,
+                      rules: [
+                        {
+                          required: searchField.searchRequire,
+                          message: notNullLocale(searchField.fieldTxt),
+                        },
+                      ],
+                    })(this.buildSearchItem(searchField))}
+                  </Form.Item>
+                </Col>
+              );
+            })}
+            {newSelectFields.filter((_, index) => index >= 4 && index < 6).map(searchField => {
+              return (
+                <Col span={3}>
                   <Form.Item key={searchField.id} label={searchField.fieldTxt}>
                     {getFieldDecorator(searchField.fieldName, {
                       initialValue: searchField.searchDefVal || undefined,
