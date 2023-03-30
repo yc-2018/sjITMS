@@ -194,7 +194,9 @@ export default class QuickFormSearchPage extends SearchPage {
           //查询条件有必填时默认不查询
           //if (queryRequired) return;
           //配置查询成功后再去查询数据
-          if (queryConfig.reportHead.firstSearch != 0) this.onSearch();
+          //首次进入是否查询
+          let isNotFirstSearch = queryConfig.reportHead.firstSearch == 0;
+          this.onSearch('first', isNotFirstSearch);
           //扩展State
           this.changeState();
         }
@@ -663,7 +665,7 @@ export default class QuickFormSearchPage extends SearchPage {
   /**
    * 查询
    */
-  onSearch = filter => {
+  onSearch = (filter, isNotFirstSearch) => {
     let exSearchFilter = this.exSearchFilter();
     if (!exSearchFilter) exSearchFilter = [];
     let defaultSearch = this.defaultSearch();
@@ -702,7 +704,7 @@ export default class QuickFormSearchPage extends SearchPage {
       },
     };
     this.setState({ pageFilters: newPageFilters, simpleParams });
-    this.getData(newPageFilters);
+    if (!(filter == 'first' && isNotFirstSearch)) this.getData(newPageFilters);
   };
 
   onSuperSearch = filter => {
