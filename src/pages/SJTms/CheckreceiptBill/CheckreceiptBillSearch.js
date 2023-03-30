@@ -148,6 +148,7 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
       await dispose(list).then(e=>{
         if(e && e.success){
           message.success('保存成功！');
+          this.refreshTable();
         }
       })
     } else {

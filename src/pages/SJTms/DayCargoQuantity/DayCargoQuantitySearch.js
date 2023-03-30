@@ -17,7 +17,7 @@ export default class DayCargoQuantitySearch extends QuickFormSearchPage {
     editColumns =(data)=>{
           data.columns.forEach(e=>{
             if(e.fieldName=='WAVENUM'){
-                e.searchDefVal =  moment(new Date()).format('YYMMDD') + '0001'
+                e.searchDefVal =  moment(new Date()).format('YYMMDD')
             }
         })
         
