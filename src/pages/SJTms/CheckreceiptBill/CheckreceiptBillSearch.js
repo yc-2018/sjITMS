@@ -38,13 +38,15 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
     this.initOptionsData();
   }
   setrowClassName = (record,index)=>{
-    if(record.DEALMETHOD =='补盖章'){
-      return styless.gaizStyle
-    }
+    // if(record.DEALMETHOD =='补盖章'){
+    //   return styless.gaizStyle
+    // }
     if( record.DISPOSEFLAG=='WaitDispose'){
       return styless.delsStyle
+    }else{
+      return styless.gaizStyle
     }
-  }
+}
   onType = () => {
     this.props.switchTab('view');
   };
