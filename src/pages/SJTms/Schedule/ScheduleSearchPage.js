@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-23 11:54:32
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-03-30 10:22:49
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -31,6 +31,7 @@ import {
   updatePris,
   updateOutSerialApi,
   getPris,
+  refreshETC,
 } from '@/services/sjitms/ScheduleBill';
 import { depart, back, recordLog, callG7Interface } from '@/services/sjitms/ScheduleProcess';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
@@ -51,6 +52,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     returnMileage: 0,
     showRollBackPop: false,
     showAbortPop: false,
+    showRefreshPop: false,
     minHeight: '50vh',
     isNotHd: true,
     showAbortAndReset: false,
@@ -428,6 +430,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       showAbortAndReset,
       showUpdatePirsPop,
       showUpdateOutSerial,
+      showRefreshPop,
     } = this.state;
     const menu = (
       <Menu>
@@ -557,6 +560,34 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         >
           移车
         </Button>
+
+        <Popconfirm
+          title="确定刷新选中排车单的ETC资料吗?"
+          visible={showRefreshPop}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showRefreshPop: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showRefreshPop: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showRefreshPop: false });
+            this.onRefresh(selectedRows[0]).then(response => {
+              if (response.success) {
+                message.success('刷新成功！');
+                this.queryCoulumns();
+              }
+            });
+          }}
+        >
+          <Button
+            onClick={() => this.onBatchRefresh()}
+            // hidden={!havePermission(this.state.authority + '.rollBack')}
+          >
+            ETC资料刷新
+          </Button>
+        </Popconfirm>
+
         <Dropdown overlay={menu}>
           <Button
             // onClick={() => this.handlePrint()}
@@ -676,6 +707,23 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         );
   };
 
+  //刷新ETC资料
+  onBatchRefresh = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.warn('请选中一条数据！');
+      return;
+    }
+    selectedRows.length == 1
+      ? this.setState({ showRefreshPop: true })
+      : this.batchProcessConfirmRef.show(
+          'ETC资料刷新',
+          selectedRows,
+          this.onRefresh,
+          this.queryCoulumns
+        );
+  };
+
   //批量作废
   onBatchAbort = () => {
     const { selectedRows } = this.state;
@@ -716,6 +764,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   //回滚
   onRollBack = async record => {
     return await shipRollback(record.UUID);
+  };
+
+  //ETC资料刷新
+  onRefresh = async record => {
+    return await refreshETC(record.UUID);
   };
 
   //作废
