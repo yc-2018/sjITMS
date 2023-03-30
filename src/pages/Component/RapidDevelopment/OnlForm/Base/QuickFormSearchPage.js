@@ -679,15 +679,14 @@ export default class QuickFormSearchPage extends SearchPage {
       return;
     }
     const { pageFilters, isOrgQuery, superParams, linkQuery } = this.state;
-    let queryParams = [...exSearchFilter];
-    if (!pageFilters.superQuery) {
-      queryParams = [...queryParams, ...defaultSearch];
-    }
-    let searchParams = [];
+    let simpleParams = [...exSearchFilter];
     if (filter?.queryParams) {
-      searchParams = filter?.queryParams || [];
-      queryParams = [...queryParams, ...searchParams];
+      simpleParams = simpleParams.concat(filter.queryParams);
     }
+    if (!pageFilters.superQuery) {
+      simpleParams = simpleParams.concat(defaultSearch);
+    }
+    let queryParams = [...simpleParams];
     queryParams = queryParams.filter(item => {
       return (
         item.field != 'dispatchCenterUuid' && item.field != 'dcUuid' && item.field != 'companyuuid'
@@ -702,18 +701,15 @@ export default class QuickFormSearchPage extends SearchPage {
         queryParams: [...isOrgQuery, ...queryParams, ...params],
       },
     };
-    this.setState({ pageFilters: newPageFilters, simpleParams: searchParams });
+    this.setState({ pageFilters: newPageFilters, simpleParams });
     this.getData(newPageFilters);
   };
 
   onSuperSearch = filter => {
-    let exSearchFilter = this.exSearchFilter();
-    if (!exSearchFilter) exSearchFilter = [];
     const { quickuuid } = this.props;
-    console.log(filter);
     //增加查询页数从缓存中读取
-    let pageSize = localStorage.getItem(this.props.quickuuid + 'searchPageLine')
-      ? parseInt(localStorage.getItem(this.props.quickuuid + 'searchPageLine'))
+    let pageSize = localStorage.getItem(quickuuid + 'searchPageLine')
+      ? parseInt(localStorage.getItem(quickuuid + 'searchPageLine'))
       : 20;
     let queryParams = [];
     //or的情况，org为and 其余为or
@@ -737,7 +733,7 @@ export default class QuickFormSearchPage extends SearchPage {
       quickuuid,
       superQuery: {
         matchType: 'and',
-        queryParams: [...isOrgQuery, ...exSearchFilter, ...params, ...queryParams],
+        queryParams: [...isOrgQuery, ...params, ...queryParams],
       },
     };
     this.setState({ superParams: filter.queryParams, linkQuery });
