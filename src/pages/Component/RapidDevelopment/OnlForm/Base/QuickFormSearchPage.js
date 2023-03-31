@@ -682,12 +682,14 @@ export default class QuickFormSearchPage extends SearchPage {
     }
     const { pageFilters, isOrgQuery, superParams, linkQuery } = this.state;
     let simpleParams = [...exSearchFilter];
-    if (!pageFilters.superQuery) {
-      simpleParams = simpleParams.concat(defaultSearch);
+    if (filter?.queryParams) {
+      simpleParams = simpleParams.concat(filter.queryParams);
     } else {
-      simpleParams = simpleParams.concat(
-        filter?.queryParams ? filter.queryParams : pageFilters.superQuery.queryParams
-      );
+      if (!pageFilters.superQuery) {
+        simpleParams = simpleParams.concat(defaultSearch);
+      } else {
+        simpleParams = simpleParams.concat(pageFilters.superQuery.queryParams);
+      }
     }
     let queryParams = [...simpleParams];
     queryParams = queryParams.filter(item => {
@@ -701,6 +703,7 @@ export default class QuickFormSearchPage extends SearchPage {
       page: 1,
       quickuuid,
       superQuery: {
+        matchType: 'and',
         queryParams: [...isOrgQuery, ...queryParams, ...params],
       },
     };
