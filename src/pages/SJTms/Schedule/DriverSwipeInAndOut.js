@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-31 14:45:29
+ * @LastEditTime: 2023-03-31 15:03:10
  * @Description: 司机刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipe.js
  */
@@ -79,7 +79,10 @@ export default class Swiper extends PureComponent {
       });
       if (
         (Date.parse(new Date()) - Date.parse(response.data.dispatchTime)) / 3600000 < 3 &&
-        (loginOrg().uuid == '000000750000005' || loginOrg().uuid == '000008150000001')
+        (loginOrg().uuid == '000000750000005' ||
+          loginOrg().uuid == '000008150000001' ||
+          loginOrg().uuid == '000000750000006' ||
+          loginOrg().uuid == '000008150000003')
       ) {
         this.setState({ isModalOpen: true });
       } else {
