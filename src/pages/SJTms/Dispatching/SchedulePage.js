@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-29 14:23:08
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-04-04 16:48:25
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -81,13 +81,18 @@ export default class SchedulePage extends Component {
     this.refreshSchedulePool(searchKeyValues, undefined, undefined);
     this.props.refreshDetail(undefined);
   };
+  refreshScheduleTable = async schedule => {
+    await this.refreshSchedulePool();
+    this.setState({ savedRowKeys: [schedule.uuid] });
+    this.props.refreshDetail(schedule);
+  };
   refreshScheduleAndpending = () => {
     this.refreshTable();
     this.props.refreshPending();
   };
 
   //获取排车单
-  refreshSchedulePool = (params, pages, sorter) => {
+  refreshSchedulePool = async (params, pages, sorter) => {
     const { searchFilter, searchPagination, activeKey } = this.state;
     let newSearchFilter = { ...searchFilter };
     let filter = { superQuery: { matchType: 'and', queryParams: [] } };
@@ -124,7 +129,7 @@ export default class SchedulePage extends Component {
       { field: 'STAT', type: 'VarChar', rule: 'eq', val: activeKey },
     ];
     filter.quickuuid = 'sj_itms_schedulepool';
-    this.searchSchedulePool(filter, newSearchFilter, searchPagination);
+    await this.searchSchedulePool(filter, newSearchFilter, searchPagination);
   };
   searchSchedulePool = async (filter, searchFilter, searchPagination) => {
     this.setState({ loading: true });
@@ -321,7 +326,7 @@ export default class SchedulePage extends Component {
     notification.warning({
       message: '排车单高速区域异常',
       description: data,
-      duration:null,
+      duration: null,
       onClick: () => {
         // console.log('Notification Clicked!');
       },
