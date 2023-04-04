@@ -80,7 +80,7 @@ export default class DispatchingCreatePage extends Component {
     if (e && e.keyCode == 87 && e.altKey) {
       //87 = w W
       if (!loading) {
-        that.onSave();
+        that.handleSave();
       }
     }
     if (e && e.keyCode == 67 && e.altKey) {
@@ -403,7 +403,7 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ loading: true });
     const { isEdit, orders, schedule, selectVehicle, selectEmployees, note } = this.state;
     const orderType = uniqBy(orders.map(x => x.orderType)).shift();
-    const orderTypeArr = ['TakeDelivery','AdjustWarehouse','DeliveryThird']
+    const orderTypeArr = ['TakeDelivery', 'AdjustWarehouse', 'DeliveryThird'];
     const type = orderTypeArr.includes(orderType) ? 'Task' : 'Job';
     const driver = selectEmployees.find(x => x.memberType == 'Driver');
     const details = orders.map(item => {
