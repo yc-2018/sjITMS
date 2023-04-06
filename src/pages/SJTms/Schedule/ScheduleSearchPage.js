@@ -62,7 +62,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     newPirs: '',
     sourceData: [],
     authority: this.props.authority ? this.props.authority[0] : null,
-    dc: ['000000750000004', '000008150000001', '000000750000005', '000008150000002'],
+    dc: ['000000750000004', '000008150000001', '000000750000005', '000008150000002','000008150000003','000000750000006'],
     isRadio: true,
   };
 
