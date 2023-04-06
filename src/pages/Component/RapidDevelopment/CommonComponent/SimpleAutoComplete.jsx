@@ -339,7 +339,7 @@ export default class SimpleAutoComplete extends Component {
     let { value } = this.state;
     let onSearch;
     const options = this.getOptions().map(d => (
-      <Select.Option key={d.value} textfield={d.textField}>
+      <Select.Option key={d.value} textfield={d.textField} title={d.textField}>
         {d.label}
       </Select.Option>
     ));

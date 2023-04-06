@@ -1659,6 +1659,22 @@ export default [
                 quickuuid: 'sj_itms_cs_shiparea_differences',
                 authority: ['sjtms.bigData.shipareaDifferences'],
               },
+              {
+                path: '/bigData/loading/realcost',
+                name: '粤通卡金额差异汇总',
+                org: ['DISPATCH_CENTER'],
+                component: './SJTms/ETCDifAmount/DifAmountForm',
+                quickuuid: 'v_itms_realcost_etc',
+                authority: ['sjtms.bigData.shipareaDifferences'],
+              },
+              {
+                path: '/bigData/loading/realcostDtl',
+                name: '粤通卡金额差异明细',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_itms_realcost_etc_dtl	',
+                authority: ['sjtms.bigData.shipareaDifferences'],
+              },
             ],
           },
 

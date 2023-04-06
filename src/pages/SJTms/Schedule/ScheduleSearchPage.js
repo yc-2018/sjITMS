@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-30 10:22:49
+ * @LastEditTime: 2023-03-30 17:53:26
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -62,7 +62,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     newPirs: '',
     sourceData: [],
     authority: this.props.authority ? this.props.authority[0] : null,
-    dc: ['000000750000004', '000008150000001', '000000750000005', '000008150000002'],
+    dc: ['000000750000004', '000008150000001', '000000750000005', '000008150000002','000008150000003','000000750000006'],
     isRadio: true,
   };
 
@@ -582,7 +582,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         >
           <Button
             onClick={() => this.onBatchRefresh()}
-            // hidden={!havePermission(this.state.authority + '.rollBack')}
+            hidden={!havePermission(this.state.authority + '.refresh')}
           >
             ETC资料刷新
           </Button>

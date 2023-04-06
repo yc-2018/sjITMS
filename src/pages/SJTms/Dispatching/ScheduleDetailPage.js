@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-15 07:51:28
+ * @LastEditTime: 2023-04-04 16:36:19
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -117,9 +117,7 @@ export default class ScheduleDetailPage extends Component {
     removeOrders({ billUuid: schedule.uuid, orderUuids }).then(response => {
       if (response.success) {
         message.success('保存成功！');
-        this.refreshTable();
-        this.props.refreshPending();
-        this.props.refreshSchedule();
+        this.props.refreshSchedule(schedule);
       }
     });
   };

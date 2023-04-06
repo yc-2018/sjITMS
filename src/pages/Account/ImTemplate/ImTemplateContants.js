@@ -104,4 +104,8 @@ export const ImportTemplateType = {
     name: 'CUSTOMERSERVICESBILL',
     caption: '客服工单',
   },
+  ETCCOST: {
+    name: 'ETCCOST',
+    caption: '粤通卡费用金额',
+  },
 };

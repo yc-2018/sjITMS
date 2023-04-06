@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-24 09:42:13
+ * @LastEditTime: 2023-04-06 15:36:53
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -116,13 +116,14 @@ export default class OrderPoolPage extends Component {
 
   refreshOrderPool = (params, pages, sorter) => {
     this.setState({ loading: true });
-    let orderType = params?.find(e => e.field == 'ORDERTYPE');
-    if (orderType && orderType.val.split('||').indexOf('TakeDelivery') != -1) {
-      this.setState({ comId: 'orderTakeDelivery' });
-    } else {
-      this.setState({ comId: 'orderPool' });
+    if (params && !params.superQuery) {
+      let orderType = params?.find(e => e.field == 'ORDERTYPE');
+      if (orderType && orderType.val.split('||').indexOf('TakeDelivery') != -1) {
+        this.setState({ comId: 'orderTakeDelivery' });
+      } else {
+        this.setState({ comId: 'orderPool' });
+      }
     }
-
     let body = document.querySelector('.ant-table-body');
     if (body) {
       body.scrollTop = 0;

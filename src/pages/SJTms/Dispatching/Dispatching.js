@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-29 14:03:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-30 10:01:46
+ * @LastEditTime: 2023-04-04 16:36:07
  * @Description: 配送调度主页面
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\Dispatching.js
  */
@@ -121,7 +121,7 @@ export default class Dispatching extends Component {
                   position: 'absolute',
                   top: '1.35rem',
                   right: 360,
-                  zIndex: 100,
+                  zIndex: 1,
                   width: 24,
                   height: 24,
                 }}
@@ -181,7 +181,9 @@ export default class Dispatching extends Component {
                       <ScheduleDetailPage
                         ref={ref => (this.scheduleDetailPageRef = ref)}
                         isOrderCollect={this.state.isOrderCollect}
-                        refreshSchedule={this.refreshScheduleTable}
+                        refreshSchedule={schedule =>
+                          this.schedulePageRef.refreshScheduleTable(schedule)
+                        }
                         refreshPending={this.refreshPendingTable}
                         refreshSelectRowOrder={this.refreshSelectRowOrder}
                       />

@@ -662,9 +662,7 @@ export default class QuickFormSearchPage extends SearchPage {
     this.getData(pageFilters);
   };
 
-  /**
-   * 查询
-   */
+  //查询
   onSearch = (filter, isNotFirstSearch) => {
     let exSearchFilter = this.exSearchFilter();
     if (!exSearchFilter) exSearchFilter = [];
@@ -672,10 +670,9 @@ export default class QuickFormSearchPage extends SearchPage {
     if (!defaultSearch) defaultSearch = [];
     const { quickuuid } = this.props;
     //增加查询页数从缓存中读取
-    let pageSize = localStorage.getItem(this.props.quickuuid + 'searchPageLine')
-      ? parseInt(localStorage.getItem(this.props.quickuuid + 'searchPageLine'))
-      : 20;
+    let pageSize = Number(localStorage.getItem(quickuuid + 'searchPageLine')) || 20;
 
+    //点击重置
     if (filter == 'reset') {
       this.onReset(pageSize, [...exSearchFilter, ...defaultSearch]);
       return;
@@ -683,11 +680,14 @@ export default class QuickFormSearchPage extends SearchPage {
     const { pageFilters, isOrgQuery, superParams, linkQuery } = this.state;
     let simpleParams = [...exSearchFilter];
     if (filter?.queryParams) {
+      //点击查询
       simpleParams = simpleParams.concat(filter.queryParams);
     } else {
       if (!pageFilters.superQuery) {
+        //首次加载
         simpleParams = simpleParams.concat(defaultSearch);
       } else {
+        //查看返回时添加查询过的条件
         simpleParams = simpleParams.concat(pageFilters.superQuery.queryParams);
       }
     }
@@ -711,6 +711,7 @@ export default class QuickFormSearchPage extends SearchPage {
     if (!(filter == 'first' && isNotFirstSearch)) this.getData(newPageFilters);
   };
 
+  //高级查询
   onSuperSearch = filter => {
     const { quickuuid } = this.props;
     //增加查询页数从缓存中读取

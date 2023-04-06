@@ -2,19 +2,24 @@
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-01 11:47:33
+ * @LastEditTime: 2023-03-31 15:03:10
  * @Description: 司机刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipe.js
  */
 import { PureComponent } from 'react';
-import { Card, Col, Input, Row, Spin, Select, message } from 'antd';
+import { Card, Col, Input, Row, Spin, Select, message, Modal } from 'antd';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import Empty from '@/pages/Component/Form/Empty';
-import { driverSwipe } from '@/services/sjitms/ScheduleProcess';
+import {
+  driverSwipe,
+  getSwipeSchedule,
+  swipeByScheduleUuid,
+} from '@/services/sjitms/ScheduleProcess';
 import { queryDictByCode } from '@/services/quick/Quick';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
 import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
+import { loginOrg } from '@/utils/LoginContext';
 export default class Swiper extends PureComponent {
   state = {
     loading: false,
@@ -27,6 +32,7 @@ export default class Swiper extends PureComponent {
     companyUuid: undefined,
     dispatchUuid: undefined,
     dispatchName: undefined,
+    isModalOpen: false,
     swipeFlag: 'inAndOut', //刷卡标识用于区分出回车，开始结束装车 刷卡
   };
   componentDidMount() {
@@ -64,22 +70,49 @@ export default class Swiper extends PureComponent {
     }
     localStorage.setItem('showMessage', '0');
     this.setState({ loading: true, errMsg: undefined });
-    const response = await driverSwipe(event.target.value, companyUuid, dispatchUuid, swipeFlag);
-    localStorage.setItem('showMessage', '1');
+    const response = await getSwipeSchedule(event.target.value, swipeFlag);
+    if (response.success) {
+      this.setState({
+        empId: '',
+        loading: false,
+        scheduleBill: response.data,
+      });
+      if (
+        (Date.parse(new Date()) - Date.parse(response.data.dispatchTime)) / 3600000 < 3 &&
+        (loginOrg().uuid == '000000750000005' ||
+          loginOrg().uuid == '000008150000001' ||
+          loginOrg().uuid == '000000750000006' ||
+          loginOrg().uuid == '000008150000003')
+      ) {
+        this.setState({ isModalOpen: true });
+      } else {
+        this.swipeByUuid();
+      }
+    } else {
+      this.speech('获取可刷卡排车单失败');
+      this.setState({ empId: '', loading: false, scheduleBill: {}, errMsg: response.message });
+    }
+  };
+
+  swipeByUuid = async () => {
+    const { scheduleBill } = this.state;
+    this.setState({ loading: true, errMsg: undefined });
+    const response = await swipeByScheduleUuid(scheduleBill.uuid);
     if (response.success) {
       this.speech('刷卡成功');
       this.setState({
         empId: '',
         loading: false,
-        scheduleBill: response.data.scheduleBill,
+        isModalOpen: false,
         message: response.data.message,
         isShip: response.data.message.indexOf('装车') != -1,
       });
     } else {
       this.speech('刷卡失败');
-      this.setState({ empId: '', loading: false, scheduleBill: {}, errMsg: response.message });
+      this.setState({ empId: '', loading: false, isModalOpen: false, errMsg: response.message });
     }
   };
+
   render() {
     const {
       loading,
@@ -90,11 +123,28 @@ export default class Swiper extends PureComponent {
       message,
       isShip,
       dispatchName,
+      isModalOpen,
     } = this.state;
     return (
       <FreshPageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
           <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
+            <Modal
+              title="回厂提醒"
+              visible={isModalOpen}
+              onOk={() => {
+                this.swipeByUuid();
+              }}
+              onCancel={() => {
+                this.setState({ isModalOpen: false });
+              }}
+            >
+              <p style={{ fontSize: '2.5vh' }}>
+                该排车单
+                {scheduleBill.billNumber}
+                发运时间未超过3小时，是否继续刷卡
+              </p>
+            </Modal>
             <div style={{ height: '100vh' }} onClick={() => this.empInputRef.focus()}>
               <NavigatorPanel
                 title="司机出入厂刷卡"
@@ -135,7 +185,6 @@ export default class Swiper extends PureComponent {
                 {/* <div style={{ float: 'left', width: '8%', marginLeft: '1%' }}>
               <Checkbox>锁定</Checkbox>
             </div> */}
-
                 <div
                   style={{
                     fontSize: 55,
