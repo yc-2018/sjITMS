@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-09-27 09:50:55
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-21 15:25:55
+ * @LastEditTime: 2023-04-06 09:56:15
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -78,4 +78,15 @@ export async function rejected(uuid) {
   return request(`/itms-schedule/itms-schedule/sj/etc/rejected?uuid=${uuid}`, {
     method: 'POST',
   });
+}
+
+export async function uploading(payload) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/etc/import?companyUuid=${loginCompany().uuid}&dcUuid=${
+      loginOrg().uuid
+    }&fileKey=${payload.fileKey}`,
+    {
+      method: 'POST',
+    }
+  );
 }
