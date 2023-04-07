@@ -925,10 +925,18 @@ export default class DispatchingCreatePage extends Component {
   //更新state订单整件排车件数
   updateCartonCount = result => {
     const { orders } = this.state;
+    const totalData = this.groupByOrder(orders);
     const that = this;
+    const stillSum =
+      Number(totalData.stillCartonCount) -
+      result.delCartonCount +
+      Number(totalData.stillScatteredCount) +
+      Number(totalData.stillContainerCount) * 2;
     confirm({
       title: '提示',
-      content: `拆单后排车单体积为：${result.volume}m³，重量为：${result.weight}t ，是否确定拆单？`,
+      content: `拆单后排车单总件数为：${stillSum},体积为：${result.volume}m³，重量为：${
+        result.weight
+      }t ，是否确定拆单？`,
       onOk() {
         const index = orders.findIndex(x => x.billNumber == result.billNumber);
         let record = { ...orders[index] };
