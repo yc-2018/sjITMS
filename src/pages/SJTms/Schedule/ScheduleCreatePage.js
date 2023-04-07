@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-25 10:17:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-15 16:05:11
+ * @LastEditTime: 2023-04-07 16:42:38
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -12,6 +12,7 @@ import { loginCompany } from '@/utils/LoginContext';
 import { dynamicqueryById } from '@/services/quick/Quick';
 import { commonLocale } from '@/utils/CommonLocale';
 import { calculateMemberWage } from '@/services/cost/CostCalculation';
+import { aborted } from '@/services/sjitms/VehicleWeight';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -189,6 +190,13 @@ export default class ScheduleCreatePage extends QuickCreatePage {
       if (editableState.includes(entity.sj_itms_schedule[0].STAT)) {
         const operation = await calculateMemberWage(entity.sj_itms_schedule[0].BILLNUMBER);
       }
+    }
+  };
+
+  afterSave = async data => {
+    const { entity } = this;
+    if (data) {
+      const response = await aborted(entity['sj_itms_schedule'][0].UUID, 'updateVehicle');
     }
   };
 }

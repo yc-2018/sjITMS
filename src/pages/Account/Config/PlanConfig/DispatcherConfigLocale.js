@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-10-24 15:42:51
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-21 11:12:46
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-04-07 08:56:09
  * @version: 1.0
  */
 export const dispatcherConfigLocale = {
@@ -17,4 +17,5 @@ export const dispatcherConfigLocale = {
   moverCarEtc: '移车是否自动发卡/回卡',
   etcRecycleStat: '粤通卡允许收卡状态',
   printShip: '刷卡打印是否装车开始',
+  vehicleWeight: '车辆调吨限制',
 };

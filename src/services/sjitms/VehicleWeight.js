@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-11-15 14:39:13
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-15 14:44:01
+ * @LastEditTime: 2023-04-07 16:20:25
  * @version: 1.0
  */
 
@@ -66,4 +66,13 @@ export async function portVehicleApply(payload) {
     document.body.appendChild(link);
     link.click();
   });
+}
+
+export async function aborted(uuid, type) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/vehicleApply/aborted?uuid=${uuid}&type=${type}`,
+    {
+      method: 'POST',
+    }
+  );
 }
