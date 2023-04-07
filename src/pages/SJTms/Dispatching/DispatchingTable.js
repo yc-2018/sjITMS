@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-22 08:20:16
+ * @LastEditTime: 2023-04-07 11:42:22
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
@@ -219,6 +219,9 @@ export default class DispatchingTable extends Component {
             }
             if (record.clicked) {
               return 'clickedStyle';
+            }
+            if (record.error) {
+              return 'errorStyle';
             }
             if (record.orderType == 'DeliveryAgain' && this.props.comId == 'pendingOrder') {
               return 'warningStyle';

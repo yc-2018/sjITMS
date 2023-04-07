@@ -2,12 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-15 07:51:11
+ * @LastEditTime: 2023-04-07 11:38:59
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
 import React, { Component } from 'react';
-import { Button, Row, Col, Typography, message, Icon, Modal, } from 'antd';
+import { Button, Row, Col, Typography, message, Icon, Modal } from 'antd';
 import {
   OrderColumns,
   OrderCollectColumns,
@@ -15,7 +15,7 @@ import {
   pagination,
 } from './DispatchingColumns';
 import { getOrderInPending, removePending } from '@/services/sjitms/OrderBill';
-import { addOrders, checkAreaSchedule, } from '@/services/sjitms/ScheduleBill';
+import { addOrders, checkAreaSchedule } from '@/services/sjitms/ScheduleBill';
 import DispatchingTable from './DispatchingTable';
 import DispatchingChildTable from './DispatchingChildTable';
 import dispatchingStyles from './Dispatching.less';
@@ -53,6 +53,12 @@ export default class PendingPage extends Component {
     this.setState({ loading: true });
     getOrderInPending().then(response => {
       if (response.success) {
+        let data = response.data || [];
+        data = data?.map(order => {
+          const cartonCount = order.realCartonCount || order.cartonCount;
+          order.warning = order.stillCartonCount < cartonCount;
+          return order;
+        });
         this.setState({
           loading: false,
           pendingData: response.data,
@@ -130,7 +136,7 @@ export default class PendingPage extends Component {
       Modal.confirm({
         title: '所选门店配送区域不一样，确定排车吗？',
         onOk: async () => {
-          this.doAddOrders(scheduleRowKeys[0],pendingRowKeys);
+          this.doAddOrders(scheduleRowKeys[0], pendingRowKeys);
         },
         onCancel: () => {
           this.setState({ btnLoading: false });
@@ -138,9 +144,9 @@ export default class PendingPage extends Component {
       });
       return;
     }
-    this.doAddOrders(scheduleRowKeys[0],pendingRowKeys);
+    this.doAddOrders(scheduleRowKeys[0], pendingRowKeys);
   };
-  doAddOrders = async (billUuid,orderUuids) => {
+  doAddOrders = async (billUuid, orderUuids) => {
     const response = await addOrders({
       billUuid: billUuid,
       orderUuids: orderUuids,
@@ -151,7 +157,7 @@ export default class PendingPage extends Component {
       this.props.refreshSchedule();
     }
     this.setState({ btnLoading: false });
-  }
+  };
   //表格行选择
   tableChangeRows = selectedRowKeys => {
     const { pendingData } = this.state;
