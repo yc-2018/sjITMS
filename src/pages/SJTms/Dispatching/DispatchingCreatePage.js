@@ -513,7 +513,7 @@ export default class DispatchingCreatePage extends Component {
       message.error('排车随车人员存在相同人员重复职位，请检查后重试！');
       return;
     }
-    const exceedWeight = orderSummary.weight - selectVehicle.BEARWEIGHT;
+    const exceedWeight = orderSummary.weight - selectVehicle.BEARWEIGHT * 1000;
     const exceedVolume =
       orderSummary.volume - selectVehicle.BEARVOLUME * (selectVehicle.BEARVOLUMERATE / 100);
     // const response = await getByDispatchcenterUuid(loginOrg().uuid);
