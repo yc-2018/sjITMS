@@ -45,9 +45,11 @@ export async function getPath(payload) {
     console.log(res);
     let fileName = payload.type;
     if (payload.isDataBase) {
-      // fileName = payload.type + '.xlsx';
+      fileName = payload.type + '.xlsx';
       let str = res.headers['content-disposition']?.split(';')[1]?.substring(9);
-      fileName = payload.fileName ? +'.xlsx' : payload.fileName ? +'.xlsx' : decodeURI(str);
+      if (str) {
+        fileName = decodeURI(str);
+      }
     }
     if ('msSaveOrOpenBlob' in navigator) {
       //ie使用的下载方式
