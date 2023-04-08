@@ -162,7 +162,10 @@ class ImTemplateCreatePage extends PureComponent {
     const that = this;
     const props = {
       name: 'file',
-      action: configs[API_ENV].API_SERVER + '/iwms-account/account/oss/upload?isDataBase=true',
+      action:
+        configs[API_ENV].API_SERVER +
+        '/iwms-account/account/oss/upload?isDataBase=true&fileName=' +
+        entity.type,
       accept: '.xl*',
       headers: {
         iwmsJwt: loginKey(),
