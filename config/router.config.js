@@ -1580,12 +1580,28 @@ export default [
                 authority: ['sjtms.bigData.owndtlreport'],
               },
               {
+                path: '/bigData/loading/takedeliveryfeesummary',
+                name: '自提运费汇总查询',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_take_fee_summary',
+                authority: ['sjtms.bigData.takedeliveryfee'],
+              },
+              {
                 path: '/bigData/loading/takedeliveryfee',
                 name: '自提运费明细查询',
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_cs_takedelivery_fee',
                 authority: ['sjtms.bigData.takedeliveryfee'],
+              },
+              {
+                path: '/bigData/loading/liftingsummary',
+                name: '调仓费用汇总查询',
+                org: ['DISPATCH_CENTER'],
+                component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
+                quickuuid: 'v_self_lifting_summary',
+                authority: ['sjtms.bigData.lifting'],
               },
               {
                 path: '/bigData/loading/lifting',

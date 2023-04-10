@@ -163,7 +163,7 @@ export default class VehiclePoolPage extends Component {
         <Col span={5}>
           总限重:
           <span style={totalTextStyle}>
-            {Math.round(sumBy(vehicles.map(x => x.BEARWEIGHT)) * 100) / 100}
+            {Math.round(sumBy(vehicles.map(x => Number(x.BEARWEIGHT))) * 1000) / 1000}
           </span>
         </Col>
         <Col span={5}>

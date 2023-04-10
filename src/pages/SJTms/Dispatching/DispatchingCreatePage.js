@@ -513,7 +513,7 @@ export default class DispatchingCreatePage extends Component {
       message.error('排车随车人员存在相同人员重复职位，请检查后重试！');
       return;
     }
-    const exceedWeight = orderSummary.weight - selectVehicle.BEARWEIGHT;
+    const exceedWeight = orderSummary.weight - selectVehicle.BEARWEIGHT * 1000;
     const exceedVolume =
       orderSummary.volume - selectVehicle.BEARVOLUME * (selectVehicle.BEARVOLUMERATE / 100);
     // const response = await getByDispatchcenterUuid(loginOrg().uuid);
@@ -925,10 +925,18 @@ export default class DispatchingCreatePage extends Component {
   //更新state订单整件排车件数
   updateCartonCount = result => {
     const { orders } = this.state;
+    const totalData = this.groupByOrder(orders);
     const that = this;
+    const stillSum =
+      Number(totalData.stillCartonCount) -
+      result.delCartonCount +
+      Number(totalData.stillScatteredCount) +
+      Number(totalData.stillContainerCount) * 2;
     confirm({
       title: '提示',
-      content: `拆单后排车单体积为：${result.volume}m³，重量为：${result.weight}t ，是否确定拆单？`,
+      content: `拆单后排车单总件数为：${stillSum}，体积为：${result.volume}m³，重量为：${
+        result.weight
+      }t ，是否确定拆单？`,
       onOk() {
         const index = orders.findIndex(x => x.billNumber == result.billNumber);
         let record = { ...orders[index] };
@@ -968,7 +976,7 @@ export default class DispatchingCreatePage extends Component {
       const bearVolumeRate = selectVehicle.BEARVOLUMERATE || 0;
       vehicleCalc = {
         weight: Math.round(bearWeight * 100) / 100, //车辆载重
-        remainWeight: Math.round((bearWeight - totalData.weight) * 100) / 100, //剩余载重
+        remainWeight: Math.round(bearWeight * 1000 - totalData.weight) / 1000, //剩余载重
         volume: Math.round(bearVolume * 100) / 100, //车辆容积
         usableVolume: Math.round(bearVolume * (bearVolumeRate / 100) * 100) / 100, //车辆容积*容积率=可装容积
         remainVolume:
@@ -1202,7 +1210,7 @@ export default class DispatchingCreatePage extends Component {
                                     : { color: 'red' }
                                 }
                               >
-                                {(vehicleCalc.remainWeight / 1000).toFixed(2)}t
+                                {Math.round(vehicleCalc.remainWeight * 100) / 100}t
                               </span>
                             </div>
                           </div>
@@ -1236,7 +1244,7 @@ export default class DispatchingCreatePage extends Component {
                             <div>载重</div>
                             <div>
                               <span className={disStyle.orderTotalNumber}>
-                                {(vehicleCalc.weight / 1000).toFixed(2)}t
+                                {Math.round(vehicleCalc.weight * 100) / 100}t
                               </span>
                             </div>
                           </div>

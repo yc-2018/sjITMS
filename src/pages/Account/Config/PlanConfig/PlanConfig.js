@@ -125,6 +125,22 @@ export default class PlanConfig extends ConfigSearchPage {
         />
       ),
     },
+    {
+      title: dispatcherConfigLocale.vehicleWeight,
+      dataIndex: 'vehicleWeight',
+      render: (val, record) => {
+        let vaule = val?.split(',');
+        return (
+          <SimpleSelect
+            style={{ width: 150 }}
+            searchField={{ searchCondition: 'in' }}
+            value={vaule}
+            onChange={value => this.onSelectChange(record, 'vehicleWeight', value)}
+            dictCode={'vehicleWeightConfige'}
+          />
+        );
+      },
+    },
   ];
 
   onChange = (record, field, event) => {

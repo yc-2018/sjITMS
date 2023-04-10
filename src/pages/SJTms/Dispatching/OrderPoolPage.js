@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-06 15:36:53
+ * @LastEditTime: 2023-04-07 11:34:36
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -171,10 +171,15 @@ export default class OrderPoolPage extends Component {
           current: response.data.page,
           showTotal: total => `共 ${total} 条`,
         };
-        const data = response.data.records ? response.data.records : [];
+        let data = response.data.records ? response.data.records : [];
         const collectResponse = this.props.dispatchConfig?.isShowSum
           ? await queryCollectAuditedOrder(filter)
           : {};
+        data = data?.map(order => {
+          const cartonCount = order.realCartonCount || order.cartonCount;
+          order.warning = order.stillCartonCount < cartonCount;
+          return order;
+        });
         this.setState({
           searchPagination,
           auditedData: data,
