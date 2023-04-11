@@ -2,12 +2,14 @@
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-13 16:55:47
+ * @LastEditTime: 2023-04-11 16:09:00
  * @Description: 司机刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipeLoading.js
  */
 import { PureComponent } from 'react';
 import { Card, Input, Spin, Select, message, InputNumber } from 'antd';
+import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
+import Page from '@/pages/Component/Page/inner/Page';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import { driverSwipe } from '@/services/sjitms/ScheduleProcess';
@@ -104,136 +106,138 @@ export default class DriverSwipeLoading extends PureComponent {
   render() {
     const { loading, dict, empId, errMsg, message, isShip, dispatchName } = this.state;
     return (
-      <div style={{ height: '100vh' }} onClick={() => this.empInputRef.focus()}>
-        <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
-          <NavigatorPanel title="司机装车刷卡" canFullScreen={true} />
-          {/* 调度中心选择 */}
-          <div>
-            <div style={{ float: 'left', width: '15%', paddingLeft: 24, marginTop: 20 }}>
-              <Select
-                placeholder="请选择调度中心"
-                onChange={val => {
-                  const item = dict.find(x => x.itemValue == val);
-                  localStorage.setItem('dispatchUuid', val);
-                  localStorage.setItem('dispatchName', item.itemText);
-                  localStorage.setItem('companyUuid', item.description);
-                  this.setState({
-                    dispatchUuid: val,
-                    dispatchName: item.itemText,
-                    companyUuid: item.description,
-                  });
+      <FreshPageHeaderWrapper>
+        <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
+          <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
+            <NavigatorPanel title="司机装车刷卡" canFullScreen={true} />
+            {/* 调度中心选择 */}
+            <div>
+              <div style={{ float: 'left', width: '15%', paddingLeft: 24, marginTop: 20 }}>
+                <Select
+                  placeholder="请选择调度中心"
+                  onChange={val => {
+                    const item = dict.find(x => x.itemValue == val);
+                    localStorage.setItem('dispatchUuid', val);
+                    localStorage.setItem('dispatchName', item.itemText);
+                    localStorage.setItem('companyUuid', item.description);
+                    this.setState({
+                      dispatchUuid: val,
+                      dispatchName: item.itemText,
+                      companyUuid: item.description,
+                    });
+                  }}
+                  value={dispatchName}
+                  allowClear={true}
+                  style={{ width: '100%' }}
+                >
+                  {dict.map(d => {
+                    return <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>;
+                  })}
+                </Select>
+              </div>
+              <div
+                style={{
+                  fontSize: 44,
+                  fontWeight: 'normal',
+                  textAlign: 'center',
+                  marginRight: '15%',
+                  color: dispatchName == undefined ? 'red' : 'black',
                 }}
-                value={dispatchName}
-                allowClear={true}
-                style={{ width: '100%' }}
               >
-                {dict.map(d => {
-                  return <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>;
-                })}
-              </Select>
+                {dispatchName == undefined ? '请选择调度中心' : dispatchName + '装车刷卡'}
+              </div>
             </div>
-            <div
-              style={{
-                fontSize: 44,
-                fontWeight: 'normal',
-                textAlign: 'center',
-                marginRight: '15%',
-                color: dispatchName == undefined ? 'red' : 'black',
+            {/* 输入框 */}
+            <div style={{ fontSize: 16, textAlign: 'center' }}>
+              工号：
+              <Input
+                style={{
+                  width: 250,
+                  height: 40,
+                  fontSize: 16,
+                  margin: 15,
+                }}
+                value={empId}
+                ref={input => (this.empInputRef = input)}
+                onChange={event => this.setState({ empId: event.target.value })}
+                onPressEnter={this.onSubmit}
+                placeholder={'输入员工代码'}
+              />
+            </div>
+            {/* 刷卡结果 */}
+            <Card
+              title="刷卡结果"
+              bordered={true}
+              //style={{ height: '11vh'}}
+              bodyStyle={{
+                height: '59px',
+                display: 'flex',
+                justifyContent: 'center',
+                alignItems: 'center',
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                padding: '0px',
+              }}
+              headStyle={{
+                height: '2px',
+                display: 'flex',
               }}
             >
-              {dispatchName == undefined ? '请选择调度中心' : dispatchName + '装车刷卡'}
-            </div>
-          </div>
-          {/* 输入框 */}
-          <div style={{ fontSize: 16, textAlign: 'center' }}>
-            工号：
-            <Input
-              style={{
-                width: 250,
-                height: 40,
-                fontSize: 16,
-                margin: 15,
-              }}
-              value={empId}
-              ref={input => (this.empInputRef = input)}
-              onChange={event => this.setState({ empId: event.target.value })}
-              onPressEnter={this.onSubmit}
-              placeholder={'输入员工代码'}
-            />
-          </div>
-          {/* 刷卡结果 */}
-          <Card
-            title="刷卡结果"
-            bordered={true}
-            //style={{ height: '11vh'}}
-            bodyStyle={{
-              height: '59px',
-              display: 'flex',
-              justifyContent: 'center',
-              alignItems: 'center',
-              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
-              padding: '0px',
-            }}
-            headStyle={{
-              height: '2px',
-              display: 'flex',
-            }}
-          >
-            {errMsg ? (
-              <div style={{ color: '#F5222D', fontSize: '40px', margin: '0', height: '10' }}>
-                {errMsg}
-              </div>
-            ) : isShip ? (
-              <div style={{ color: '#00DD00', fontSize: '40px', margin: '0', height: '10' }}>
-                {message}
-              </div>
-            ) : (
-              <div style={{ color: '#1354DA', fontSize: '40px', margin: '0', height: '10' }}>
-                {message}
-              </div>
-            )}
-          </Card>
-          {/* 刷卡列表 */}
-          <Card
-            title={
-              <>
-                <span>刷卡列表</span>
-                <div style={{ float: 'right' }}>
-                  刷新间隔(秒)：
-                  <InputNumber
-                    onChange={this.onChangeHandle}
-                    min={0}
-                    style={{ width: 50 }}
-                    value={this.state.interval}
-                  />
-                  <Input
-                    style={{ width: 100, marginRight: 10, marginLeft: 20 }}
-                    onChange={e => {
-                      this.setState({ groupNo: e.target.value, time: new Date() });
-                    }}
-                    placeholder="作业号"
-                  />
+              {errMsg ? (
+                <div style={{ color: '#F5222D', fontSize: '40px', margin: '0', height: '10' }}>
+                  {errMsg}
                 </div>
-              </>
-            }
-            style={{
-              marginTop: 5,
-              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
-              zoom: 1,
-            }}
-            bodyStyle={{ padding: 0 }}
-          >
-            <SwipeLoadingSearchPage
-              quickuuid="v_sj_itms_swipe_loading"
-              selectedRows={this.state.groupNo}
-              interval={this.state.interval}
-              time={this.state.time}
-              dispatchUuid={this.state.dispatchUuid}
-              companyUuid={this.state.companyUuid}
-            />
-          </Card>
-        </Spin>
-      </div>
+              ) : isShip ? (
+                <div style={{ color: '#00DD00', fontSize: '40px', margin: '0', height: '10' }}>
+                  {message}
+                </div>
+              ) : (
+                <div style={{ color: '#1354DA', fontSize: '40px', margin: '0', height: '10' }}>
+                  {message}
+                </div>
+              )}
+            </Card>
+            {/* 刷卡列表 */}
+            <Card
+              title={
+                <>
+                  <span>刷卡列表</span>
+                  <div style={{ float: 'right' }}>
+                    刷新间隔(秒)：
+                    <InputNumber
+                      onChange={this.onChangeHandle}
+                      min={0}
+                      style={{ width: 50 }}
+                      value={this.state.interval}
+                    />
+                    <Input
+                      style={{ width: 100, marginRight: 10, marginLeft: 20 }}
+                      onChange={e => {
+                        this.setState({ groupNo: e.target.value, time: new Date() });
+                      }}
+                      placeholder="作业号"
+                    />
+                  </div>
+                </>
+              }
+              style={{
+                marginTop: 5,
+                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)',
+                zoom: 1,
+              }}
+              bodyStyle={{ padding: 0 }}
+            >
+              <SwipeLoadingSearchPage
+                quickuuid="v_sj_itms_swipe_loading"
+                selectedRows={this.state.groupNo}
+                interval={this.state.interval}
+                time={this.state.time}
+                dispatchUuid={this.state.dispatchUuid}
+                companyUuid={this.state.companyUuid}
+              />
+            </Card>
+          </Spin>
+        </Page>
+      </FreshPageHeaderWrapper>
     );
   }
 }
