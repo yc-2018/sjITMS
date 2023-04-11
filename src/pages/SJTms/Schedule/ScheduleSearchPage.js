@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-30 17:53:26
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-04-11 11:18:47
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -32,6 +32,7 @@ import {
   updateOutSerialApi,
   getPris,
   refreshETC,
+  getTengBoxRecord,
 } from '@/services/sjitms/ScheduleBill';
 import { depart, back, recordLog, callG7Interface } from '@/services/sjitms/ScheduleProcess';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
@@ -62,7 +63,14 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     newPirs: '',
     sourceData: [],
     authority: this.props.authority ? this.props.authority[0] : null,
-    dc: ['000000750000004', '000008150000001', '000000750000005', '000008150000002','000008150000003','000000750000006'],
+    dc: [
+      '000000750000004',
+      '000008150000001',
+      '000000750000005',
+      '000008150000002',
+      '000008150000003',
+      '000000750000006',
+    ],
     isRadio: true,
   };
 
@@ -521,18 +529,10 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
           onCancel={() => {
             this.setState({ showAbortAndReset: false });
           }}
-          onConfirm={() => {
-            this.setState({ showAbortAndReset: false });
-            this.abortedAndReset(selectedRows[0]).then(response => {
-              if (response.success) {
-                message.success('作废成功！已生成新的排车单据！');
-                this.queryCoulumns();
-              }
-            });
-          }}
+          onConfirm={() => this.onBatchAbortAndReset()}
         >
           <Button
-            onClick={() => this.onBatchAbortAndReset()}
+            onClick={() => this.handleBatchAbortAndReset()}
             hidden={!havePermission(this.state.authority + '.abortAndReset')}
           >
             作废并重排
@@ -737,20 +737,29 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   };
 
   //作废并重排
-  onBatchAbortAndReset = () => {
+  onBatchAbortAndReset = async () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length == 0) {
+    this.setState({ showAbortAndReset: false });
+    let response = await getTengBoxRecord(selectedRows[0].BILLNUMBER);
+    if (response.success && response.data) {
+      Modal.confirm({
+        title: '该排车单已审核腾筐，是否将腾筐继承给新单？',
+        okText: '是',
+        cancelText: '否',
+        onOk: () => this.abortedAndReset(selectedRows[0], true),
+        onCancel: () => this.abortedAndReset(selectedRows[0], false),
+      });
+      return;
+    }
+    this.abortedAndReset(selectedRows[0], false);
+  };
+  handleBatchAbortAndReset = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length != 1) {
       message.warn('请选中一条数据！');
       return;
     }
-    selectedRows.length == 1
-      ? this.setState({ showAbortAndReset: true })
-      : this.batchProcessConfirmRef.show(
-          '作废',
-          selectedRows,
-          this.abortedAndReset,
-          this.queryCoulumns
-        );
+    this.setState({ showAbortAndReset: true });
   };
 
   //移车
@@ -776,8 +785,12 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     return await aborted(record.UUID);
   };
 
-  abortedAndReset = async record => {
-    return await abortedAndReset(record.UUID);
+  abortedAndReset = async (record, moveTengBox) => {
+    const response = await abortedAndReset(record.UUID, moveTengBox);
+    if (response.success) {
+      message.success('作废成功！已生成新的排车单据！');
+      this.queryCoulumns();
+    }
   };
 
   //发运
@@ -815,7 +828,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       message.success('回厂成功！');
       this.queryCoulumns();
     }
-    this.setState({ returnMileageModal: false, returnMileage: 0 });
+    this.setState({ returnMileage: false, returnMileage: 0 });
   };
 
   //打印

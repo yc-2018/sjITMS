@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-30 10:22:41
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-04-11 09:34:32
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -114,10 +114,21 @@ export async function aborted(Uuid) {
 }
 
 //作废并重排
-export async function abortedAndReset(Uuid) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/abortedAndReset?billUuid=${Uuid}`, {
-    method: 'PUT',
-  });
+export async function abortedAndReset(Uuid, moveTengBox) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/abortedAndReset?billUuid=${Uuid}&moveTengBox=${moveTengBox}`,
+    {
+      method: 'PUT',
+    }
+  );
+}
+export async function getTengBoxRecord(billNumber) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/getTengBoxRecord?billNumber=${billNumber}`,
+    {
+      method: 'GET',
+    }
+  );
 }
 
 //取消作废
