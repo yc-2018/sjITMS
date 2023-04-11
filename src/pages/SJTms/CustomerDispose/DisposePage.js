@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2023-01-10 10:48:50
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-07 11:13:01
+ * @LastEditTime: 2023-04-11 12:29:55
  * @Description: 工单处理
  * @FilePath: \iwms-web\src\pages\SJTms\CustomerDispose\DisposePage.js
  */
@@ -65,7 +65,7 @@ export default class DisposePageModal extends Component {
   handleReply = async () => {
     let { bill } = this.state;
     const validate = await this.formRef.validateFields();
-    const responsibilityCode = validate.responsibilityCode.value || validate.responsibilityCode;
+    const responsibilityCode = validate.responsibilityCode?.value || validate.responsibilityCode;
     const param = { ...validate, staffResult: validate.remark, responsibilityCode };
     this.setState({ saving: true });
     const response = await saveResult(bill.UUID, param);
