@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-22 17:02:29
+ * @LastEditTime: 2023-04-11 15:38:06
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -11,13 +11,22 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
 import { DndProvider } from 'react-dnd';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
-import { message, Popconfirm, Button } from 'antd';
+import { Button, Modal, Form, Input, DatePicker, message, Spin } from 'antd';
+import { bak } from '@/services/sjitms/AreaSubsidy';
+import moment from 'moment';
 
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
+@Form.create()
 export default class AreaSubsidySearchPage extends QuickFormSearchPage {
+  state = {
+    ...this.state,
+    showBak: false,
+    loading: false,
+  };
+
   componentDidMount() {
     this.queryCoulumns();
     this.getCreateConfig();
@@ -42,8 +51,27 @@ export default class AreaSubsidySearchPage extends QuickFormSearchPage {
     this.createPageModalRef.show();
   };
 
+  handleOk = () => {
+    this.setState({ showBak: false, loading: true });
+    const { form } = this.props;
+    form.validateFields(async (err, fieldsValue) => {
+      const response = await bak(
+        moment(fieldsValue.validityPeriod.toString()).format('YYYY-MM-DD 23:59:59'),
+        fieldsValue.note
+      );
+      if (response && response.success) {
+        message.success('备份成功');
+      } else {
+        message.error('备份失败');
+      }
+      this.setState({ loading: false });
+    });
+  };
+
   //该方法用于写中间的功能按钮 多个按钮用<span>包裹
   drawToolsButton = () => {
+    const { showBak } = this.state;
+    const { getFieldDecorator } = this.props.form;
     return (
       <span>
         <Button
@@ -53,6 +81,37 @@ export default class AreaSubsidySearchPage extends QuickFormSearchPage {
         >
           新增方案
         </Button>
+        <Button
+          onClick={() => {
+            this.setState({ showBak: true });
+          }}
+        >
+          备份
+        </Button>
+        <Modal
+          title="备份"
+          visible={showBak}
+          onOk={() => {
+            this.handleOk();
+          }}
+          onCancel={() => {
+            this.setState({ showBak: false });
+          }}
+        >
+          <Form>
+            <Form.Item label="备注" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              {getFieldDecorator('note', { rules: [{ required: true }] })(<Input />)}
+            </Form.Item>
+            <Form.Item
+              label="到效期"
+              // name="validityPeriod"
+              labelCol={{ span: 6 }}
+              wrapperCol={{ span: 15 }}
+            >
+              {getFieldDecorator('validityPeriod')(<DatePicker />)}
+            </Form.Item>
+          </Form>
+        </Modal>
       </span>
     );
   };
@@ -65,23 +124,26 @@ export default class AreaSubsidySearchPage extends QuickFormSearchPage {
   };
 
   render() {
+    const { loading } = this.state;
     let ret = (
-      <div style={{ marginTop: '24px' }}>
-        <PageHeaderWrapper>
-          <Page withCollect={true} pathname={this.props.pathname}>
-            {this.drawPage()}
-          </Page>
-        </PageHeaderWrapper>
-        <CreatePageModal
-          modal={{
-            afterClose: () => {
-              this.queryCoulumns();
-            },
-          }}
-          page={this.state.param}
-          onRef={node => (this.createPageModalRef = node)}
-        />
-      </div>
+      <Spin spinning={loading}>
+        <div style={{ marginTop: '24px' }}>
+          <PageHeaderWrapper>
+            <Page withCollect={true} pathname={this.props.pathname}>
+              {this.drawPage()}
+            </Page>
+          </PageHeaderWrapper>
+          <CreatePageModal
+            modal={{
+              afterClose: () => {
+                this.queryCoulumns();
+              },
+            }}
+            page={this.state.param}
+            onRef={node => (this.createPageModalRef = node)}
+          />
+        </div>
+      </Spin>
     );
     if (this.state.isDrag) {
       return <DndProvider backend={HTML5Backend}>{ret}</DndProvider>;
