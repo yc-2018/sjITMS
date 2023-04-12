@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2023-01-03 11:44:10
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-06 17:43:00
+ * @LastEditTime: 2023-04-12 16:36:06
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerCreate.js
  */
@@ -39,16 +39,16 @@ export default class CustomerCreate extends QuickCreatePage {
       });
       this.setState({ formItems });
     }
-    if (fieldName == 'RESPONSIBILITYDEPT' && valueEvent) {
-      const { formItems } = this.state;
-      let rules = formItems['sj_itms_customer_service_RESULTTAG'].rules;
-      rules.forEach(rule => {
-        if (rule.hasOwnProperty('required')) {
-          rule.required = valueEvent.value != undefined;
-        }
-      });
-      this.setState({ formItems });
-    }
+    // if (fieldName == 'RESPONSIBILITYDEPT' && valueEvent) {
+    //   const { formItems } = this.state;
+    //   let rules = formItems['sj_itms_customer_service_RESULTTAG'].rules;
+    //   rules.forEach(rule => {
+    //     if (rule.hasOwnProperty('required')) {
+    //       rule.required = valueEvent.value != undefined;
+    //     }
+    //   });
+    //   this.setState({ formItems });
+    // }
     // if (fieldName == 'SPECIFICTYPE' && valueEvent) {
     //   const { formItems } = this.state;
     //   let rules = formItems['sj_itms_customer_service_RESULTTAG'].rules;
