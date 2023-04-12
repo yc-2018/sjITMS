@@ -1270,6 +1270,14 @@ export default [
             component: './SJTms/AreaSubsidy/AreaSubsidyForm',
             quickuuid: 'sj_itms_areasubsidy',
             authority: ['sjtms.basic.areasubsidy'],
+          },
+          {
+            path: '/tmsbasic/areasubsidyBak',
+            name: '门店补贴区域备份',
+            org: ['COMPANY', 'DC', 'DISPATCH_CENTER'],
+            component: './SJTms/BakAreaSubsidy/AreaSubsidyBakForm',
+            quickuuid: 'sj_itms_areasubsidy_bak',
+            authority: ['sjtms.basic.areasubsidyBak'],
             divider: true,
           },
           {
