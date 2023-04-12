@@ -32,6 +32,15 @@
       cursor: pointer;
       transition: all 0.3s;
     }
+
+    .ant-layout {
+      display: flex;
+      flex: auto;
+      flex-direction: column;
+      /* fix firefox can't set height smaller than content on flex item */
+      min-height: 0;
+      background: #ffff !important;
+    }
   }
 }
 
@@ -50,11 +59,12 @@
     }
   }
 }
+
 .rightWrapper {
   background: #ffffff;
   padding: 0px 0px 26px 24px;
   margin-left: 1px;
-  height: 100%;
+  // height: 100%;
   overflow-y: auto;
   :global {
     .ant-tree li .ant-tree-node-content-wrapper {
