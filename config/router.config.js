@@ -1681,7 +1681,7 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './SJTms/ETCDifAmount/DifAmountForm',
                 quickuuid: 'v_itms_realcost_etc',
-                authority: ['sjtms.bigData.shipareaDifferences'],
+                authority: ['sjtms.bigData.realcost'],
               },
               {
                 path: '/bigData/loading/realcostDtl',
@@ -1689,7 +1689,7 @@ export default [
                 org: ['DISPATCH_CENTER'],
                 component: './Component/RapidDevelopment/OnlForm/QuickFormDefault',
                 quickuuid: 'v_itms_realcost_etc_dtl	',
-                authority: ['sjtms.bigData.shipareaDifferences'],
+                authority: ['sjtms.bigData.realcostDtl'],
               },
             ],
           },

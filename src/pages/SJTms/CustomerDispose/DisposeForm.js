@@ -160,10 +160,7 @@ export default class DisposeForm extends Component {
           <Row justify="space-around">
             <Col span={6}>
               <Form.Item label="结果类型" {...formItem}>
-                {getFieldDecorator('resultTag', {
-                  rules: [{ required: true, message: '请选择结果类型' }],
-                  initialValue: bill.RESULTTAG,
-                })(
+                {getFieldDecorator('resultTag', { initialValue: bill.RESULTTAG })(
                   <SimpleAutoComplete
                     placeholder={'请选择结果类型'}
                     dictCode="serviceResultTag"

@@ -1,24 +1,20 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-31 15:03:10
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-04-11 16:10:09
  * @Description: 司机刷卡
- * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipe.js
+ * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipeInAndOut.js
  */
 import { PureComponent } from 'react';
 import { Card, Col, Input, Row, Spin, Select, message, Modal } from 'antd';
-import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
-import Empty from '@/pages/Component/Form/Empty';
-import {
-  driverSwipe,
-  getSwipeSchedule,
-  swipeByScheduleUuid,
-} from '@/services/sjitms/ScheduleProcess';
-import { queryDictByCode } from '@/services/quick/Quick';
-import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
 import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
+import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
+import Empty from '@/pages/Component/Form/Empty';
+import { getSwipeSchedule, swipeByScheduleUuid } from '@/services/sjitms/ScheduleProcess';
+import { queryDictByCode } from '@/services/quick/Quick';
+import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
 import { loginOrg } from '@/utils/LoginContext';
 export default class Swiper extends PureComponent {
   state = {
