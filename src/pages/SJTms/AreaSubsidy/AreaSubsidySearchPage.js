@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-04-11 15:38:06
+ * @LastEditTime: 2023-04-12 09:47:38
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -10,6 +10,7 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
 import { DndProvider } from 'react-dnd';
+import { havePermission } from '@/utils/authority';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import { Button, Modal, Form, Input, DatePicker, message, Spin } from 'antd';
 import { bak } from '@/services/sjitms/AreaSubsidy';
@@ -25,6 +26,7 @@ export default class AreaSubsidySearchPage extends QuickFormSearchPage {
     ...this.state,
     showBak: false,
     loading: false,
+    authority: 'sjtms.basic.areasubsidy',
   };
 
   componentDidMount() {
@@ -75,6 +77,7 @@ export default class AreaSubsidySearchPage extends QuickFormSearchPage {
     return (
       <span>
         <Button
+          hidden={!havePermission(this.state.authority + '.createProject')}
           onClick={() => {
             this.addItem();
           }}
@@ -82,6 +85,7 @@ export default class AreaSubsidySearchPage extends QuickFormSearchPage {
           新增方案
         </Button>
         <Button
+          hidden={!havePermission(this.state.authority + '.bak')}
           onClick={() => {
             this.setState({ showBak: true });
           }}

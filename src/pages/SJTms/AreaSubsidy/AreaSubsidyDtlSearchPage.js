@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-10-22 09:45:04
+ * @LastEditTime: 2023-04-12 09:24:30
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -13,6 +13,7 @@ import { DndProvider } from 'react-dnd';
 import { message, Popconfirm, Button, Modal } from 'antd';
 import TableTransfer from '@/pages/SJTms/LineSystem/TableTransfer';
 import { onSave, deleteDtl } from '@/services/sjitms/AreaSubsidy';
+import { havePermission } from '@/utils/authority';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -28,6 +29,7 @@ export default class AreaSubsidyDtlSearchPage extends QuickFormSearchPage {
     transferColumnsTitle: '',
     modalQuickuuid: '',
     buttonDisable: false,
+    authority: 'sjtms.basic.areasubsidy',
     // canDragTable: true,
   };
   componentDidMount() {
@@ -113,7 +115,6 @@ export default class AreaSubsidyDtlSearchPage extends QuickFormSearchPage {
       this.refreshTable();
     }
   };
-  drawActionButton = () => {};
   drawToolbarPanel = () => {
     const {
       modalVisible,
@@ -125,13 +126,16 @@ export default class AreaSubsidyDtlSearchPage extends QuickFormSearchPage {
     return (
       <div style={{ marginTop: '10px' }}>
         <Button
+          hidden={!havePermission(this.state.authority + '.addStore')}
           onClick={() => {
             this.handleAddStore();
           }}
         >
           添加门店
         </Button>
-        <Button onClick={this.delete}>删除</Button>
+        <Button onClick={this.delete} hidden={!havePermission(this.state.authority + '.newDelete')}>
+          删除
+        </Button>
         <Modal
           title={modalTitle}
           width={1290}
