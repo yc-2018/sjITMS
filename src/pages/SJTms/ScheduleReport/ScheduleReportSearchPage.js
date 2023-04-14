@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-14 11:10:24
+ * @LastEditTime: 2023-04-14 14:13:34
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -42,22 +42,22 @@ export default class ScheduleReportSearchPage extends QuickFormSearchPage {
   //查询数据
   getData = pageFilters => {
     const { dispatch } = this.props;
-    const deliverypointCode = pageFilters.superQuery.queryParams.find(
+    let queryFilter = { ...pageFilters };
+    const deliverypointCode = queryFilter.superQuery.queryParams.find(
       x => x.field == 'DELIVERYPOINTCODE'
     );
+    queryFilter.applySql = '';
     if (deliverypointCode) {
-      pageFilters.applySql = ` uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
+      queryFilter.applySql = ` uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
         deliverypointCode.val
       }')`;
-      pageFilters.superQuery.queryParams = pageFilters.superQuery.queryParams.filter(
+      queryFilter.superQuery.queryParams = queryFilter.superQuery.queryParams.filter(
         x => x.field != 'DELIVERYPOINTCODE'
       );
-    } else {
-      pageFilters.applySql = '';
     }
     dispatch({
       type: 'quick/queryData',
-      payload: pageFilters,
+      payload: queryFilter,
       callback: response => {
         if (response.data) this.initData(response.data);
       },
