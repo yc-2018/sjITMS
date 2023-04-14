@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-04-11 16:31:58
+ * @LastEditTime: 2023-04-14 15:30:15
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -35,11 +35,11 @@ export default class AreaSubsidyDtlBakSearchPage extends QuickFormSearchPage {
   }
   componentWillReceiveProps(nextProps) {
     if (nextProps.selectedRow != this.props.selectedRow) {
-      this.onSearch(nextProps.selectedRow);
+      this.onChangeSearch(nextProps.selectedRow);
     }
   }
 
-  onSearch = data => {
+  onChangeSearch = data => {
     const { selectedRow } = this.props;
     let UUID = typeof data == 'undefined' ? selectedRow : data;
     const pageFilters = {
@@ -58,6 +58,36 @@ export default class AreaSubsidyDtlBakSearchPage extends QuickFormSearchPage {
     };
     this.state.pageFilters = pageFilters;
     this.refreshTable();
+  };
+
+  onSearch = (filter, isNotFirstSearch) => {
+    if ((!isNotFirstSearch || isNotFirstSearch == undefined) && filter != undefined) {
+      const { selectedRow } = this.props;
+      let uuidParams = [
+        {
+          field: 'billuuid',
+          type: 'VarChar',
+          rule: 'eq',
+          val: selectedRow,
+        },
+      ];
+      let queryParams = filter.queryParams.filter(item => {
+        return (
+          item.field != 'dispatchCenterUuid' &&
+          item.field != 'dcUuid' &&
+          item.field != 'companyuuid'
+        );
+      });
+      const pageFilters = {
+        ...this.state.pageFilters,
+        superQuery: {
+          matchType: '',
+          queryParams: [...uuidParams, ...queryParams],
+        },
+      };
+      // this.state.pageFilters = pageFilters;
+      this.getData(pageFilters);
+    }
   };
 
   render() {
