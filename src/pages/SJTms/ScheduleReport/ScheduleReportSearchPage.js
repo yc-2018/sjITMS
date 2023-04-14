@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-07 14:24:52
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-04-14 11:10:24
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -45,7 +45,6 @@ export default class ScheduleReportSearchPage extends QuickFormSearchPage {
     const deliverypointCode = pageFilters.superQuery.queryParams.find(
       x => x.field == 'DELIVERYPOINTCODE'
     );
-    pageFilters.applySql = '';
     if (deliverypointCode) {
       pageFilters.applySql = ` uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
         deliverypointCode.val
@@ -53,6 +52,8 @@ export default class ScheduleReportSearchPage extends QuickFormSearchPage {
       pageFilters.superQuery.queryParams = pageFilters.superQuery.queryParams.filter(
         x => x.field != 'DELIVERYPOINTCODE'
       );
+    } else {
+      pageFilters.applySql = '';
     }
     dispatch({
       type: 'quick/queryData',
