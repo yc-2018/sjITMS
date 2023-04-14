@@ -962,6 +962,7 @@ export default class OrderPoolPage extends Component {
             </div>
             {/* 排车modal */}
             <DispatchingCreatePage
+              zIndex={99999}
               modal={{ title: '排车' }}
               refresh={() => {
                 this.refreshTable();
