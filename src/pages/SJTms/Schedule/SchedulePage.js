@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:01:35
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-06 17:44:50
+ * @LastEditTime: 2023-04-17 15:35:30
  * @Description: 排车单
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\SchedulePage.js
  */
@@ -25,6 +25,7 @@ export default class SchedulePage extends PureComponent {
   state = {
     selectedRows: {},
     params: { title: '' },
+    comKey: 'scheduleSearchPage',
     isShowDetail: false,
   };
   //刷新
@@ -48,7 +49,7 @@ export default class SchedulePage extends PureComponent {
   };
 
   render() {
-    const { isShowDetail, selectedRows, params } = this.state;
+    const { isShowDetail, comKey, selectedRows, params } = this.state;
     return (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
@@ -56,6 +57,7 @@ export default class SchedulePage extends PureComponent {
             <ScheduleSearchPage
               selectedRows={selectedRows}
               quickuuid="sj_itms_schedule"
+              comKey={comKey}
               refreshSelectedRow={this.refreshSelectedRow}
               memberModalClick={this.memberModalClick}
               removeCarModalClick={this.removeCarModalClick}
@@ -84,7 +86,7 @@ export default class SchedulePage extends PureComponent {
                 title: params.title,
                 width: 1000,
                 afterClose: () => {
-                  this.setState({ selectedRows: [] });
+                  this.setState({ comKey: Math.ceil(Math.random() * 1000) });
                 },
               }}
               page={{
@@ -101,7 +103,11 @@ export default class SchedulePage extends PureComponent {
                 title: params.title,
                 width: 1000,
                 afterClose: () => {
-                  this.setState({ selectedRows: [] });
+                  this.setState({
+                    comKey: Math.ceil(Math.random() * 1000),
+                    isShowDetail: false,
+                    selectedRows: [],
+                  });
                 },
               }}
               page={{ quickuuid: 'sj_itms_schedule_removecar', params }}

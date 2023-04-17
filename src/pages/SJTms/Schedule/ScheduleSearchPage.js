@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-17 15:17:15
+ * @LastEditTime: 2023-04-17 15:33:34
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -77,6 +77,14 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   componentDidMount() {
     this.queryCoulumns();
     this.getCreateConfig();
+  }
+
+  componentWillReceiveProps(newProps) {
+    const { comKey } = this.props;
+    if (newProps.comKey != comKey) {
+      this.queryCoulumns();
+      this.getCreateConfig();
+    }
   }
 
   defaultSearch = () => {
