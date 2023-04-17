@@ -10,6 +10,7 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { Popconfirm, Button, message } from 'antd';
 import { approval, rejected } from '@/services/sjitms/ETCIssueAndRecycle';
+import { havePermission } from '@/utils/authority';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -87,7 +88,12 @@ export default class ETCApplyRecordSearchPage extends QuickFormSearchPage {
             });
           }}
         >
-          <Button onClick={() => this.approval()}>批准</Button>
+          <Button
+            onClick={() => this.approval()}
+            hidden={!havePermission(this.state.authority + '.approval')}
+          >
+            批准
+          </Button>
         </Popconfirm>
 
         <Popconfirm
@@ -109,7 +115,12 @@ export default class ETCApplyRecordSearchPage extends QuickFormSearchPage {
             });
           }}
         >
-          <Button onClick={() => this.rejected()}>驳回</Button>
+          <Button
+            onClick={() => this.rejected()}
+            hidden={!havePermission(this.state.authority + '.rejected')}
+          >
+            驳回
+          </Button>
         </Popconfirm>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </span>

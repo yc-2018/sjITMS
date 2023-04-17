@@ -141,6 +141,16 @@ export default class PlanConfig extends ConfigSearchPage {
         );
       },
     },
+    {
+      title: dispatcherConfigLocale.rollbackApproval,
+      dataIndex: 'rollbackApproval',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'rollbackApproval', event)}
+        />
+      ),
+    }
   ];
 
   onChange = (record, field, event) => {

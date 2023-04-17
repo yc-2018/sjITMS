@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-07 14:24:52
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-04-17 15:15:44
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -42,21 +42,23 @@ export default class ScheduleReportSearchPage extends QuickFormSearchPage {
   //查询数据
   getData = pageFilters => {
     const { dispatch } = this.props;
-    const deliverypointCode = pageFilters.superQuery.queryParams.find(
+    let newFilters = { ...pageFilters };
+    const deliverypointCode = newFilters.superQuery.queryParams.find(
       x => x.field == 'DELIVERYPOINTCODE'
     );
-    pageFilters.applySql = '';
+    let queryParams = [...newFilters.superQuery.queryParams];
     if (deliverypointCode) {
-      pageFilters.applySql = ` uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
+      newFilters.applySql = ` uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
         deliverypointCode.val
       }')`;
-      pageFilters.superQuery.queryParams = pageFilters.superQuery.queryParams.filter(
-        x => x.field != 'DELIVERYPOINTCODE'
-      );
+      queryParams = newFilters.superQuery.queryParams.filter(x => x.field != 'DELIVERYPOINTCODE');
     }
     dispatch({
       type: 'quick/queryData',
-      payload: pageFilters,
+      payload: {
+        ...newFilters,
+        superQuery: { matchType: newFilters.superQuery.matchType, queryParams },
+      },
       callback: response => {
         if (response.data) this.initData(response.data);
       },

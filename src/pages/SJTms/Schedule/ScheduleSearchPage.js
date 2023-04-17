@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-11 11:18:47
+ * @LastEditTime: 2023-04-17 15:33:34
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -77,6 +77,14 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   componentDidMount() {
     this.queryCoulumns();
     this.getCreateConfig();
+  }
+
+  componentWillReceiveProps(newProps) {
+    const { comKey } = this.props;
+    if (newProps.comKey != comKey) {
+      this.queryCoulumns();
+      this.getCreateConfig();
+    }
   }
 
   defaultSearch = () => {
@@ -182,21 +190,23 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   //查询数据
   getData = pageFilters => {
     const { dispatch } = this.props;
-    const deliverypointCode = pageFilters.superQuery.queryParams.find(
+    let newFilters = { ...pageFilters };
+    const deliverypointCode = newFilters.superQuery.queryParams.find(
       x => x.field == 'DELIVERYPOINTCODE'
     );
-    pageFilters.applySql = '';
+    let queryParams = [...newFilters.superQuery.queryParams];
     if (deliverypointCode) {
-      pageFilters.applySql = ` uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
+      newFilters.applySql = ` uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
         deliverypointCode.val
       }')`;
-      pageFilters.superQuery.queryParams = pageFilters.superQuery.queryParams.filter(
-        x => x.field != 'DELIVERYPOINTCODE'
-      );
+      queryParams = newFilters.superQuery.queryParams.filter(x => x.field != 'DELIVERYPOINTCODE');
     }
     dispatch({
       type: 'quick/queryData',
-      payload: pageFilters,
+      payload: {
+        ...newFilters,
+        superQuery: { matchType: newFilters.superQuery.matchType, queryParams },
+      },
       callback: response => {
         if (response.data) this.initData(response.data);
       },

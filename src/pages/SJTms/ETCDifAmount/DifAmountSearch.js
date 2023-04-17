@@ -2,17 +2,16 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-30 09:27:20
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-04-11 09:23:59
+ * @LastEditTime: 2023-04-13 16:37:36
  * @version: 1.0
  */
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { Button, Icon, Upload, message, Modal, Spin } from 'antd';
-import configs from '@/utils/config';
-import { loginKey, loginCompany, loginOrg } from '@/utils/LoginContext';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
+import { havePermission } from '@/utils/authority';
 
 @connect(({ quick, loading }) => ({
   quick,
