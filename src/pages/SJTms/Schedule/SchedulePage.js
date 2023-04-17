@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:01:35
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-17 15:43:41
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-04-17 16:17:39
  * @Description: 排车单
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\SchedulePage.js
  */
@@ -107,6 +107,7 @@ export default class SchedulePage extends PureComponent {
                 extension: true,
                 showPageNow: 'update',
                 planConfig: planConfig,
+                style: { color: 'black' },
               }}
               onSaved={this.refreshSelecteds}
               customPage={ScheduleCreatePage}
