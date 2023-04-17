@@ -157,12 +157,12 @@ export default class QuickFormSearchPage extends SearchPage {
               {
                 field: 'companyuuid',
                 type: 'VarChar',
-                rule: 'eq',
+                rule: companyuuid.searchCondition || 'eq',
                 val: loginCompany().uuid,
               },
             ];
           }
-
+          console.log(companyuuid, org);
           if (org) {
             this.setState({
               isOrgQuery: queryConfig.reportHead.organizationQuery
@@ -173,7 +173,7 @@ export default class QuickFormSearchPage extends SearchPage {
                           ? loginOrg().type.toLowerCase() + 'Uuid'
                           : 'dispatchCenterUuid',
                       type: 'VarChar',
-                      rule: 'like',
+                      rule: org.searchCondition || 'like',
                       val: loginOrg().uuid,
                     },
                     ...this.state.isOrgQuery,
