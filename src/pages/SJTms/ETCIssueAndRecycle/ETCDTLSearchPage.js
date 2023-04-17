@@ -24,6 +24,7 @@ export default class ETCSearchPage extends QuickFormSearchPage {
     ...this.state,
     showCancel: false,
     showApply: false,
+    isRadio:true
   };
 
   componentDidMount() {
@@ -32,13 +33,14 @@ export default class ETCSearchPage extends QuickFormSearchPage {
     this.props.onRef && this.props.onRef(this);
   }
 
-  handleOnRow = record => {
-    return {
-      onClick: () => {
-        this.props.refreshSelectedRow(record);
-      },
-    };
-  };
+  handleSelectRows = (rows,s)=>{
+    this.setState({
+      selectedRows:rows
+    });
+    this.changeSelectedRows && this.changeSelectedRows(rows);
+    this.props.refreshSelectedRow(rows);
+  }
+
 
   //取消发卡（多选）
   cancelIssue = () => {
@@ -154,9 +156,9 @@ export default class ETCSearchPage extends QuickFormSearchPage {
       </div>
     );
     if (this.state.isDrag) {
-      return <DndProvider backend={HTML5Backend}>{ret}</DndProvider>;
+      return !this.props.row&&<DndProvider backend={HTML5Backend}>{ret}</DndProvider>;
     } else {
-      return ret;
+      return !this.props.row&& ret;
     }
   }
 }
