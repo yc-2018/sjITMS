@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-09-23 16:17:11
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-21 11:23:35
+ * @LastEditTime: 2023-04-17 15:09:23
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -86,7 +86,6 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
 
   //刷新
   refreshSelectedRow = row => {
-    console.log("row",row);
     this.setState({ selectRows: row[0] });
   };
 
@@ -101,7 +100,7 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
               refreshSelectedRow={this.refreshSelectedRow}
               quickuuid="sj_itms_etc_issue"
               onRef={node => (this.handlePage = node)}
-              row = {this.state.row}
+              row={this.state.row}
             />
           </Content>
           <Sider style={{ backgroundColor: 'rgb(237, 241, 245)' }} width={'30%'}>
@@ -116,6 +115,7 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
                     showPageNow="update"
                     passCard={passCard}
                     onRef={node => (this.getCardEntity = node)}
+                    style={{ color: 'black' }}
                   />
                 </Card>
               </Col>

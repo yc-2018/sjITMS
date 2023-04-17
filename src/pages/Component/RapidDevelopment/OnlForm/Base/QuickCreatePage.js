@@ -453,7 +453,10 @@ export default class QuickCreatePage extends CreatePage {
         }
         const commonPropertis = {
           disabled: this.isReadOnly(field.isReadOnly),
-          style: { width: field.fieldLength == 0 ? '100%' : field.fieldLength },
+          style: {
+            width: field.fieldLength == 0 ? '100%' : field.fieldLength,
+            ...this.props?.style,
+          },
         }; // 通用属性
         const placeholder = this.getPlaceholder(field) + field.dbFieldTxt;
         let item = {
