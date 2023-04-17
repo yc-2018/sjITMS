@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2023-01-07 16:10:19
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-10 14:56:05
+ * @LastEditTime: 2023-04-07 09:20:13
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\CustomerDispose\CustomerSearch.js
  */
@@ -19,7 +19,7 @@ import { havePermission } from '@/utils/authority';
   loading: loading.models.quick,
 }))
 export default class CustomerSearch extends QuickFormSearchPage {
-  state = { ...this.state, departments: [] };
+  state = { ...this.state, isRadio: true, departments: [] };
 
   editColumns = queryConfig => {
     const { departments } = this.state;
@@ -27,6 +27,7 @@ export default class CustomerSearch extends QuickFormSearchPage {
     creatorCol.searchDefVal = departments[0];
     return queryConfig;
   };
+
   drawcell = row => {
     if (row.column.fieldName == 'BILLNUMBER') {
       row.component = (
@@ -35,6 +36,10 @@ export default class CustomerSearch extends QuickFormSearchPage {
         </a>
       );
     }
+  };
+
+  onView = record => {
+    this.disposePageRef.show(record);
   };
 
   componentDidMount() {

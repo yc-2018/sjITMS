@@ -395,7 +395,8 @@ export default class DispatchMap extends Component {
 
   //右键菜单
   drawMenu = () => {
-    if (this.contextMenu) return;
+    const { orders } = this.state;
+    if (orders.length <= 0 || this.contextMenu) return;
     const menuItems = [
       {
         text: '排车',

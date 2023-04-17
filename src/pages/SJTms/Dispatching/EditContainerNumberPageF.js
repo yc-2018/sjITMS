@@ -65,6 +65,7 @@ export default class EditContainerNumberPageF extends Component {
         remWeight,
         volume: collectVolume,
         weight: collectWeight,
+        delCartonCount: Number(fieldsValue.cartonCount),
         cartonCount: order.stillCartonCount - Number(fieldsValue.cartonCount),
       });
     });

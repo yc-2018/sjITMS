@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-04 16:48:25
+ * @LastEditTime: 2023-04-07 11:47:58
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
@@ -143,10 +143,11 @@ export default class SchedulePage extends Component {
         showTotal: total => `共 ${total} 条`,
       };
       let scheduleData = response.data.records ? response.data.records : [];
-      scheduleData = scheduleData?.map(order => {
-        order.uuid = `${order.UUID}`;
-        order.warning = order.ISSPLIT > 0;
-        return order;
+      scheduleData = scheduleData?.map(schedule => {
+        schedule.uuid = `${schedule.UUID}`;
+        schedule.warning = schedule.ISSPLIT > 0;
+        schedule.error = schedule.WEIGHT > schedule.BEARWEIGHT;
+        return schedule;
       });
       this.setState({
         searchPagination,
@@ -543,7 +544,11 @@ export default class SchedulePage extends Component {
 
     columns[0].render = (val, record) => {
       return record.STAT == 'Saved' ? (
-        <a href="#" onClick={this.editTable(record)}>
+        <a
+          href="#"
+          onClick={this.editTable(record)}
+          style={{ color: `${record.WEIGHT > record.BEARWEIGHT ? '#ff0000' : '#3B77E3'}` }}
+        >
           {val}
         </a>
       ) : (

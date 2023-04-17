@@ -130,7 +130,7 @@ export default class SimpleSelect extends PureComponent {
     const { sourceData } = this.state;
     return sourceData.map(data => {
       return (
-        <Select.Option value={data.VALUE} label={data.NAME}>
+        <Select.Option value={data.VALUE} label={data.NAME} title={data.NAME}>
           {data.NAME}
         </Select.Option>
       );

@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-24 09:42:13
+ * @LastEditTime: 2023-04-07 11:34:36
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -116,13 +116,14 @@ export default class OrderPoolPage extends Component {
 
   refreshOrderPool = (params, pages, sorter) => {
     this.setState({ loading: true });
-    let orderType = params?.find(e => e.field == 'ORDERTYPE');
-    if (orderType && orderType.val.split('||').indexOf('TakeDelivery') != -1) {
-      this.setState({ comId: 'orderTakeDelivery' });
-    } else {
-      this.setState({ comId: 'orderPool' });
+    if (params && !params.superQuery) {
+      let orderType = params?.find(e => e.field == 'ORDERTYPE');
+      if (orderType && orderType.val.split('||').indexOf('TakeDelivery') != -1) {
+        this.setState({ comId: 'orderTakeDelivery' });
+      } else {
+        this.setState({ comId: 'orderPool' });
+      }
     }
-
     let body = document.querySelector('.ant-table-body');
     if (body) {
       body.scrollTop = 0;
@@ -170,10 +171,15 @@ export default class OrderPoolPage extends Component {
           current: response.data.page,
           showTotal: total => `共 ${total} 条`,
         };
-        const data = response.data.records ? response.data.records : [];
+        let data = response.data.records ? response.data.records : [];
         const collectResponse = this.props.dispatchConfig?.isShowSum
           ? await queryCollectAuditedOrder(filter)
           : {};
+        data = data?.map(order => {
+          const cartonCount = order.realCartonCount || order.cartonCount;
+          order.warning = order.stillCartonCount < cartonCount;
+          return order;
+        });
         this.setState({
           searchPagination,
           auditedData: data,
@@ -956,6 +962,7 @@ export default class OrderPoolPage extends Component {
             </div>
             {/* 排车modal */}
             <DispatchingCreatePage
+              zIndex={99999}
               modal={{ title: '排车' }}
               refresh={() => {
                 this.refreshTable();
