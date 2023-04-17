@@ -18,4 +18,5 @@ export const dispatcherConfigLocale = {
   etcRecycleStat: '粤通卡允许收卡状态',
   printShip: '刷卡打印是否装车开始',
   vehicleWeight: '车辆调吨限制',
+  rollbackApproval:'编辑回到批准状态'
 };
