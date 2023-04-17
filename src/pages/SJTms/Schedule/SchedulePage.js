@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:01:35
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-17 15:35:30
+ * @LastEditTime: 2023-04-17 15:43:41
  * @Description: 排车单
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\SchedulePage.js
  */
@@ -17,7 +17,8 @@ import RemoveCarCreatePage from './RemoveCarCreatePage';
 import ScheduleDetailSearchPage from './ScheduleDetailSearchPage';
 import EntityLogTab from '@/pages/Component/Page/inner/EntityLogTab';
 import emptySvg from '@/assets/common/img_empoty.svg';
-
+import { getByDispatchcenterUuid } from '@/services/tms/DispatcherConfig';
+import { loginOrg } from '@/utils/LoginContext';
 const { Content } = Layout;
 const TabPane = Tabs.TabPane;
 
@@ -27,12 +28,21 @@ export default class SchedulePage extends PureComponent {
     params: { title: '' },
     comKey: 'scheduleSearchPage',
     isShowDetail: false,
+    planConfig: {},
   };
   //刷新
   refreshSelectedRow = row => {
     const { selectedRows } = this.state;
     if (selectedRows.UUID != row.UUID) this.setState({ selectedRows: row, isShowDetail: true });
   };
+
+  componentDidMount() {
+    getByDispatchcenterUuid(loginOrg().uuid).then(e => {
+      if (e.success) {
+        this.setState({ planConfig: e.data });
+      }
+    });
+  }
   //修改人员
   memberModalClick = record => {
     this.setState({
@@ -47,9 +57,11 @@ export default class SchedulePage extends PureComponent {
     });
     this.RemoveCarModalRef.show();
   };
-
+  refreshSelecteds = () => {
+    this.createPageModalRef.hide();
+  };
   render() {
-    const { isShowDetail, comKey, selectedRows, params } = this.state;
+    const { isShowDetail, comKey, selectedRows, params, planConfig } = this.state;
     return (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
@@ -94,7 +106,9 @@ export default class SchedulePage extends PureComponent {
                 params,
                 extension: true,
                 showPageNow: 'update',
+                planConfig: planConfig,
               }}
+              onSaved={this.refreshSelecteds}
               customPage={ScheduleCreatePage}
               onRef={node => (this.createPageModalRef = node)}
             />
