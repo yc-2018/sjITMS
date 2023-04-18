@@ -168,8 +168,6 @@ export default class DispatchingCreatePage extends Component {
           ? schedule.details.map(item => {
               return {
                 ...item,
-                uuid: item.orderUuid,
-                billNumber: item.orderNumber,
                 stillCartonCount: item.realCartonCount || item.cartonCount,
                 stillScatteredCount: item.realScatteredCount || item.scatteredCount,
                 stillContainerCount: item.realContainerCount || item.containerCount,
@@ -938,13 +936,14 @@ export default class DispatchingCreatePage extends Component {
         result.weight
       }t ，是否确定拆单？`,
       onOk() {
-        const index = orders.findIndex(x => x.billNumber == result.billNumber);
+        const index = orders.findIndex(x => (x.orderNumber || x.billNumber) == result.billNumber);
         let record = { ...orders[index] };
         record.volume = Number(result.remVolume);
         record.weight = Number(result.remWeight);
         record.unDispatchCarton = record.stillCartonCount - result.cartonCount;
         record.stillCartonCount = result.cartonCount;
         record.isSplit = 1;
+        record.uuid = record.uuid + 'abc';
         orders.splice(index, 1, record);
         that.setState({ orders, editPageVisible: false });
       },
