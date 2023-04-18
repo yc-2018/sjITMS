@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-07 11:34:36
+ * @LastEditTime: 2023-04-17 16:45:23
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -656,6 +656,7 @@ export default class OrderPoolPage extends Component {
       Number(orders.realScatteredCount) +
       Number(orders.realContainerCount) * 2;
     const vehicleCount = Math.ceil(count / dispatchConfig.calvehicle);
+    const vehicleCount1 = Math.ceil(orders.weight / (dispatchConfig.calvehicle1 / 1000));
     return (
       <div style={{ display: 'flex' }}>
         <div style={{ ...columnStyle, flex: 1.3 }}>
@@ -665,13 +666,23 @@ export default class OrderPoolPage extends Component {
         {footer && dispatchConfig.calvehicle && dispatchConfig.calvehicle > 0 ? (
           <Tooltip
             title={
-              <div>
-                <p>
-                  单车体积: {Math.round((orders.volume / vehicleCount) * 1000) / 1000}
-                  m³
-                </p>
-                <p>单车重量: {Math.round((orders.weight / vehicleCount) * 1000) / 1000}t</p>
-                <p>单车总件数: {dispatchConfig.calvehicle}</p>
+              <div style={{ display: 'flex' }}>
+                <div style={{ flex: 1, border: '1px dashed #FFF' }}>
+                  <p>
+                    单车体积: {Math.round((orders.volume / vehicleCount) * 1000) / 1000}
+                    m³
+                  </p>
+                  <p>单车重量: {Math.round((orders.weight / vehicleCount) * 1000) / 1000}t</p>
+                  <p>单车总件数: {dispatchConfig.calvehicle}</p>
+                </div>
+                <div style={{ flex: 1, border: '1px dashed #FFF', marginLeft: 10 }}>
+                  <p>
+                    单车体积: {Math.round((orders.volume / vehicleCount1) * 1000) / 1000}
+                    m³
+                  </p>
+                  <p>单车重量: {dispatchConfig.calvehicle1 / 1000}t</p>
+                  <p>单车总件数: {count / vehicleCount1}</p>
+                </div>
               </div>
             }
           >
