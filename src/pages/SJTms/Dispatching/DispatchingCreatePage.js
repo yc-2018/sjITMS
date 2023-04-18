@@ -462,7 +462,7 @@ export default class DispatchingCreatePage extends Component {
     if (response.success) {
       message.success('保存成功！');
       this.props.refresh();
-      this.props.refreshMap();
+      this.props.refreshMap && this.props.refreshMap();
       //保存后清空选中的车与人
       this.setState({
         visible: false,
