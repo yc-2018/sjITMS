@@ -138,5 +138,8 @@
     "> 1%",
     "last 2 versions",
     "not ie <= 10"
-  ]
+  ],
+  "resolutions": {
+    "**/cheerio": "1.0.0-rc.10"
+  }
 }
