@@ -982,6 +982,7 @@ export default class OrderPoolPage extends Component {
               }}
               dispatchConfig={this.props.dispatchConfig}
               onRef={node => (this.createPageModalRef = node)}
+              refreshMap={() => this.dispatchMapRef?.refresh()}
             />
             <DispatchMap
               dispatchingByMap={this.dispatchingByMap}
