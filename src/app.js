@@ -60,7 +60,7 @@ const mergeRoutes = (routes, parentRoute) => {
 const AsyncComponent = componentPath => {
   return dynamic({
     loader: async function() {
-      const { default: AsyncComp } = await import(`./pages/${componentPath}`);
+      const { default: AsyncComp } = await import(`./pages/${componentPath}.js`);
       return AsyncComp;
     },
     loading: () => {
