@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2023-01-03 11:44:10
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-12 16:36:06
+ * @LastEditTime: 2023-04-17 11:30:13
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerCreate.js
  */
@@ -35,6 +35,16 @@ export default class CustomerCreate extends QuickCreatePage {
       rules.forEach(rule => {
         if (rule.hasOwnProperty('required')) {
           rule.required = valueEvent.record.DESCRIPTION === '1';
+        }
+      });
+      this.setState({ formItems });
+    }
+    if (fieldName == 'ISDISPOSE' && valueEvent) {
+      const { formItems } = this.state;
+      const rules = formItems['sj_itms_customer_service_DISPOSEDEPT']?.rules || [];
+      rules.forEach(rule => {
+        if (rule.hasOwnProperty('required')) {
+          rule.required = valueEvent.value == '1';
         }
       });
       this.setState({ formItems });

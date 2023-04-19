@@ -168,7 +168,6 @@ export default class DispatchingCreatePage extends Component {
           ? schedule.details.map(item => {
               return {
                 ...item,
-                uuid: item.orderUuid,
                 billNumber: item.orderNumber,
                 stillCartonCount: item.realCartonCount || item.cartonCount,
                 stillScatteredCount: item.realScatteredCount || item.scatteredCount,
@@ -464,6 +463,7 @@ export default class DispatchingCreatePage extends Component {
     if (response.success) {
       message.success('保存成功！');
       this.props.refresh();
+      this.props.refreshMap && this.props.refreshMap();
       //保存后清空选中的车与人
       this.setState({
         visible: false,
@@ -945,6 +945,7 @@ export default class DispatchingCreatePage extends Component {
         record.unDispatchCarton = record.stillCartonCount - result.cartonCount;
         record.stillCartonCount = result.cartonCount;
         record.isSplit = 1;
+        record.uuid = record.uuid + 'abc';
         orders.splice(index, 1, record);
         that.setState({ orders, editPageVisible: false });
       },

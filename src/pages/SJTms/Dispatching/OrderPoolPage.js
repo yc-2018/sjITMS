@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-07 11:34:36
+ * @LastEditTime: 2023-04-19 14:24:49
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -656,6 +656,7 @@ export default class OrderPoolPage extends Component {
       Number(orders.realScatteredCount) +
       Number(orders.realContainerCount) * 2;
     const vehicleCount = Math.ceil(count / dispatchConfig.calvehicle);
+    const vehicleCount1 = Math.ceil(orders.weight / (dispatchConfig.calvehicle1 / 1000));
     return (
       <div style={{ display: 'flex' }}>
         <div style={{ ...columnStyle, flex: 1.3 }}>
@@ -666,12 +667,24 @@ export default class OrderPoolPage extends Component {
           <Tooltip
             title={
               <div>
-                <p>
-                  单车体积: {Math.round((orders.volume / vehicleCount) * 1000) / 1000}
-                  m³
-                </p>
-                <p>单车重量: {Math.round((orders.weight / vehicleCount) * 1000) / 1000}t</p>
-                <p>单车总件数: {dispatchConfig.calvehicle}</p>
+                <div style={{ border: '1px dashed #FFF', padding: 5 }}>
+                  <p>预排(件数)：</p>
+                  <p>
+                    单车体积: {Math.round((orders.volume / vehicleCount) * 1000) / 1000}
+                    m³
+                  </p>
+                  <p>单车重量: {Math.round((orders.weight / vehicleCount) * 1000) / 1000}t</p>
+                  <p>单车总件数: {dispatchConfig.calvehicle}</p>
+                </div>
+                <div style={{ border: '1px dashed #FFF', marginTop: 10, padding: 5 }}>
+                  <p>预排(重量)：</p>
+                  <p>
+                    单车体积: {Math.round((orders.volume / vehicleCount1) * 1000) / 1000}
+                    m³
+                  </p>
+                  <p>单车重量: {dispatchConfig.calvehicle1 / 1000}t</p>
+                  <p>单车总件数: {Math.ceil(count / vehicleCount1)}</p>
+                </div>
               </div>
             }
           >
@@ -971,6 +984,7 @@ export default class OrderPoolPage extends Component {
               }}
               dispatchConfig={this.props.dispatchConfig}
               onRef={node => (this.createPageModalRef = node)}
+              refreshMap={() => this.dispatchMapRef?.refresh()}
             />
             <DispatchMap
               dispatchingByMap={this.dispatchingByMap}

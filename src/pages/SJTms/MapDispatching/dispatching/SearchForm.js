@@ -224,7 +224,6 @@ export default class SearchForm extends Component {
       }
       return item;
     });
-    console.log('newSelectFields', newSelectFields);
     return (
       <Skeleton active loading={loading} title={false} paragraph={{ rows: 1 }}>
         <Form

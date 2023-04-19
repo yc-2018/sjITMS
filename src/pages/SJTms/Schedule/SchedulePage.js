@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:01:35
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-06 17:44:50
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-04-17 16:17:39
  * @Description: 排车单
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\SchedulePage.js
  */
@@ -18,7 +18,7 @@ import ScheduleDetailSearchPage from './ScheduleDetailSearchPage';
 import EntityLogTab from '@/pages/Component/Page/inner/EntityLogTab';
 import emptySvg from '@/assets/common/img_empoty.svg';
 import { getByDispatchcenterUuid } from '@/services/tms/DispatcherConfig';
-import { loginOrg} from '@/utils/LoginContext';
+import { loginOrg } from '@/utils/LoginContext';
 const { Content } = Layout;
 const TabPane = Tabs.TabPane;
 
@@ -26,22 +26,23 @@ export default class SchedulePage extends PureComponent {
   state = {
     selectedRows: {},
     params: { title: '' },
+    comKey: 'scheduleSearchPage',
     isShowDetail: false,
-    planConfig:{}
+    planConfig: {},
   };
   //刷新
   refreshSelectedRow = row => {
     const { selectedRows } = this.state;
     if (selectedRows.UUID != row.UUID) this.setState({ selectedRows: row, isShowDetail: true });
   };
-  
+
   componentDidMount() {
-    getByDispatchcenterUuid(loginOrg().uuid).then(e=>{
-     if(e.success){
-       this.setState({planConfig:e.data});
-     }
-   });
- }
+    getByDispatchcenterUuid(loginOrg().uuid).then(e => {
+      if (e.success) {
+        this.setState({ planConfig: e.data });
+      }
+    });
+  }
   //修改人员
   memberModalClick = record => {
     this.setState({
@@ -56,11 +57,11 @@ export default class SchedulePage extends PureComponent {
     });
     this.RemoveCarModalRef.show();
   };
-  refreshSelecteds = ()=>{
+  refreshSelecteds = () => {
     this.createPageModalRef.hide();
-  }
+  };
   render() {
-    const { isShowDetail, selectedRows, params,planConfig } = this.state;
+    const { isShowDetail, comKey, selectedRows, params, planConfig } = this.state;
     return (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
@@ -68,6 +69,7 @@ export default class SchedulePage extends PureComponent {
             <ScheduleSearchPage
               selectedRows={selectedRows}
               quickuuid="sj_itms_schedule"
+              comKey={comKey}
               refreshSelectedRow={this.refreshSelectedRow}
               memberModalClick={this.memberModalClick}
               removeCarModalClick={this.removeCarModalClick}
@@ -96,7 +98,7 @@ export default class SchedulePage extends PureComponent {
                 title: params.title,
                 width: 1000,
                 afterClose: () => {
-                  this.setState({ selectedRows: [] });
+                  this.setState({ comKey: Math.ceil(Math.random() * 1000) });
                 },
               }}
               page={{
@@ -104,9 +106,10 @@ export default class SchedulePage extends PureComponent {
                 params,
                 extension: true,
                 showPageNow: 'update',
-                planConfig :planConfig
+                planConfig: planConfig,
+                style: { color: 'black' },
               }}
-              onSaved = {this.refreshSelecteds}
+              onSaved={this.refreshSelecteds}
               customPage={ScheduleCreatePage}
               onRef={node => (this.createPageModalRef = node)}
             />
@@ -115,7 +118,11 @@ export default class SchedulePage extends PureComponent {
                 title: params.title,
                 width: 1000,
                 afterClose: () => {
-                  this.setState({ selectedRows: [] });
+                  this.setState({
+                    comKey: Math.ceil(Math.random() * 1000),
+                    isShowDetail: false,
+                    selectedRows: [],
+                  });
                 },
               }}
               page={{ quickuuid: 'sj_itms_schedule_removecar', params }}
