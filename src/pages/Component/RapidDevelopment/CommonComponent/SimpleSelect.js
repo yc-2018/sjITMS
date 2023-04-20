@@ -183,10 +183,10 @@ export default class SimpleSelect extends PureComponent {
     this.props.setFieldsValues({ [key]: values });
   };
 
-  onChange = value => {
-    if (value instanceof Array) this.props.onChange && this.props.onChange(value.reverse());
-    else this.props.onChange && this.props.onChange(value);
-  };
+  // onChange = value => {
+  //   if (value instanceof Array) this.props.onChange && this.props.onChange(value.reverse());
+  //   else this.props.onChange && this.props.onChange(value);
+  // };
 
   render() {
     //查询类型为in时 变为多选
@@ -212,7 +212,7 @@ export default class SimpleSelect extends PureComponent {
       >
         <Select
           {...this.props}
-          onChange={this.onChange}
+          //onChange={this.onChange}
           onSearch={this.onSearch}
           onFocus={this.onFocus}
           {...mu}

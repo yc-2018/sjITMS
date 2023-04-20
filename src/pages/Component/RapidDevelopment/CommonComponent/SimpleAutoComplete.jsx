@@ -308,7 +308,7 @@ export default class SimpleAutoComplete extends Component {
     // 不需要record，直接返回值
     if (noRecord) {
       if (value instanceof Array && multipleSplit) {
-        value = value?.reverse();
+        //value = value?.reverse();
         data = value.length == 0 ? undefined : value.join(multipleSplit);
       } else {
         data = value;
@@ -320,7 +320,7 @@ export default class SimpleAutoComplete extends Component {
           data = findData;
         }
       } else {
-        value = value?.reverse();
+        //value = value?.reverse();
         const filterData = this.getOptions()
           .filter(x => value.indexOf(x.value) > -1)
           .map(x => x.data);
@@ -341,11 +341,6 @@ export default class SimpleAutoComplete extends Component {
     let { value } = this.state;
 
     let onSearch;
-    const options = this.getOptions().map(d => (
-      <Select.Option key={d.value} textfield={d.textField} title={d.textField}>
-        {d.label}
-      </Select.Option>
-    ));
 
     // autoComplete 则必须支持查询
     if (autoComplete) {
@@ -363,6 +358,23 @@ export default class SimpleAutoComplete extends Component {
     } else {
       value = value?.toString();
     }
+    //选中的置顶
+    let isSelect = [];
+    let other = [];
+    this.getOptions().map(d => {
+      let s = (
+        <Select.Option key={d.value} textfield={d.textField} title={d.textField}>
+          {d.label}
+        </Select.Option>
+      );
+      if (mode == 'multiple' && multipleSplit && value && value.indexOf(d.value) != -1) {
+        isSelect.push(s);
+      } else {
+        other.push(s);
+      }
+    });
+
+    const options = [...isSelect, ...other];
     // 将父组件传过来的属性传递下去，以适应Form、getFieldDecorator等处理
     return (
       <div>
