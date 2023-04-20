@@ -6,7 +6,7 @@
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
-import { Select, Divider, Row, Col, Button } from 'antd';
+import { Select, Divider, Row, Col, Button, Tooltip } from 'antd';
 import { selectCoulumns, dynamicQuery } from '@/services/quick/Quick';
 import moment from 'moment';
 
@@ -137,13 +137,6 @@ export default class SimpleSelect extends PureComponent {
     });
   };
 
-  onChange = value => {
-    // 用于form表单获取控件值
-    if (this.props.onChange) {
-      this.props.onChange(value);
-    }
-  };
-
   onFocus = async () => {
     this.initData();
   };
@@ -190,6 +183,10 @@ export default class SimpleSelect extends PureComponent {
     this.props.setFieldsValues({ [key]: values });
   };
 
+  onChange = value => {
+    this.props.onChange && this.props.onChange(value.reverse());
+  };
+
   render() {
     //查询类型为in时 变为多选
     let mu = {};
@@ -214,12 +211,21 @@ export default class SimpleSelect extends PureComponent {
       >
         <Select
           {...this.props}
-          // onChange={this.onChange}
+          onChange={this.onChange}
           onSearch={this.onSearch}
           onFocus={this.onFocus}
           {...mu}
           maxTagCount={1}
-          // maxTagCount={1}
+          maxTagPlaceholder={e => {
+            const { sourceData } = this.state;
+            let title = [];
+            sourceData.map(x => {
+              if (e.indexOf(x.VALUE) != -1) {
+                title.push(x.NAME);
+              }
+            });
+            return <Tooltip title={title.join(',')}>{`+${e?.length}`}</Tooltip>;
+          }}
           maxTagTextLength={this.props.searchField?.fieldWidth}
           dropdownRender={menu =>
             isMu ? (
