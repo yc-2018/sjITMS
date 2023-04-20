@@ -184,7 +184,8 @@ export default class SimpleSelect extends PureComponent {
   };
 
   onChange = value => {
-    this.props.onChange && this.props.onChange(value.reverse());
+    if (value instanceof Array) this.props.onChange && this.props.onChange(value.reverse());
+    else this.props.onChange && this.props.onChange(value);
   };
 
   render() {
