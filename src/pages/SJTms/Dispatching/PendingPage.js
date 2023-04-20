@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-07 11:38:59
+ * @LastEditTime: 2023-04-20 08:43:51
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -227,10 +227,10 @@ export default class PendingPage extends Component {
     return (
       <div style={{ padding: 5 }}>
         <Row style={{ marginBottom: 5, lineHeight: '28px' }}>
-          <Col span={12}>
+          <Col span={6}>
             <Text className={dispatchingStyles.cardTitle}>待定列表</Text>
           </Col>
-          <Col span={12} style={{ textAlign: 'right' }}>
+          <Col span={18} style={{ textAlign: 'right' }}>
             <Button
               onClick={() => this.refreshTable()}
               icon={loading ? 'loading' : 'sync'}
