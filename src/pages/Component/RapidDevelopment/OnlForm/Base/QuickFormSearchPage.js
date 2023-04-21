@@ -662,6 +662,9 @@ export default class QuickFormSearchPage extends SearchPage {
       });
     }
   };
+  onUpload = () => {
+    this.props.switchTab('import');
+  };
 
   //点击重置时，重置搜索条件
   onReset = (pageSize, exSearchFilter) => {
@@ -848,6 +851,13 @@ export default class QuickFormSearchPage extends SearchPage {
           type="primary"
         >
           导出
+        </Button>
+        <Button
+          hidden={!havePermission(this.state.authority + '.import')}
+          type="primary"
+          onClick={this.onUpload}
+        >
+          导入
         </Button>
         {this.drawTopButton()}
         {/* <SearchMoreAction menus={menus} /> */}
