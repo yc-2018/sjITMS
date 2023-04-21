@@ -698,7 +698,7 @@ export default class QuickFormSearchPage extends SearchPage {
       this.onReset(pageSize, [...exSearchFilter, ...defaultSearch]);
       return;
     }
-    const { pageFilters, isOrgQuery, superParams, linkQuery } = this.state;
+    const { pageFilters, isOrgQuery, defaultSort, superParams, linkQuery } = this.state;
     let simpleParams = [...exSearchFilter];
     if (filter?.queryParams) {
       //点击查询
@@ -723,6 +723,7 @@ export default class QuickFormSearchPage extends SearchPage {
       pageSize,
       page: 1,
       quickuuid,
+      order: defaultSort,
       superQuery: {
         matchType: 'and',
         queryParams: [...isOrgQuery, ...queryParams, ...params],
@@ -753,12 +754,13 @@ export default class QuickFormSearchPage extends SearchPage {
       queryParams = filter.queryParams;
     }
     const linkQuery = filter.linkQuery;
-    const { isOrgQuery, simpleParams } = this.state;
+    const { isOrgQuery, defaultSort, simpleParams } = this.state;
     const params = linkQuery == 1 && simpleParams ? simpleParams : [];
     let pageFilters = {
       pageSize,
       page: 1,
       quickuuid,
+      order: defaultSort,
       superQuery: {
         matchType: 'and',
         queryParams: [...isOrgQuery, ...params, ...queryParams],
