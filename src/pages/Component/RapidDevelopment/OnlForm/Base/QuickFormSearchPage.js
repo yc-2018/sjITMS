@@ -284,6 +284,24 @@ export default class QuickFormSearchPage extends SearchPage {
     const columns = queryConfig.columns;
     let quickColumns = new Array();
 
+    //增加序号
+    const c = {
+      title: '行号 ', //加个空格防止重名
+      dataIndex: 'line_show',
+      key: 'line_show',
+      sorter: false,
+      width: 48,
+      render: (val, record, index) => {
+        return (
+          <p3>
+            {(this.state.data?.pagination?.current - 1) * this.state.data?.pagination?.pageSize +
+              (index + 1)}
+          </p3>
+        );
+      },
+    };
+    quickColumns.push(c);
+
     columns.filter(data => data.isShow).forEach(column => {
       let preview;
       if (column.preview) {

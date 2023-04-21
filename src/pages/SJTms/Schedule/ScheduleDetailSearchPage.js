@@ -30,24 +30,24 @@ export default class ScheduleDetailSearchPage extends QuickFormSearchPage {
   }
 
   drawExColumns = e => {
-    if (e.column.fieldName == 'BILLNUMBER') {
-      const c = {
-        title: '序号',
-        dataIndex: 'line',
-        key: 'line',
-        sorter: false,
-        width: 60,
-        render: (val, record, index) => {
-          return (
-            <p3>
-              {(this.state.data?.pagination?.current - 1) * this.state.data?.pagination?.pageSize +
-                (index + 1)}
-            </p3>
-          );
-        },
-      };
-      return c;
-    }
+    // if (e.column.fieldName == 'BILLNUMBER') {
+    //   const c = {
+    //     title: '序号',
+    //     dataIndex: 'line',
+    //     key: 'line',
+    //     sorter: false,
+    //     width: 60,
+    //     render: (val, record, index) => {
+    //       return (
+    //         <p3>
+    //           {(this.state.data?.pagination?.current - 1) * this.state.data?.pagination?.pageSize +
+    //             (index + 1)}
+    //         </p3>
+    //       );
+    //     },
+    //   };
+    //   return c;
+    // }
   };
 
   componentWillReceiveProps(nextProps) {
