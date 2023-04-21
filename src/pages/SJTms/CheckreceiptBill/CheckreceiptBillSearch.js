@@ -372,7 +372,7 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
         c = receipted.val;
       }
     }
-    if (c === '0' || c=='2') {
+    //if (c === '0' || c=='2') {
       return (
         <span>
           <Popconfirm
@@ -406,30 +406,26 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
               批量设置处理方式
             </Button>
           </Dropdown>
-         {c==2 &&<Button 
+        <Button 
           hidden={!havePermission(this.state.authority + '.batchHandle')}
           onClick = {() => this.dispose()}
            >
               跟进处理
-          </Button>}
-        </span>
-      );
-    }else if (c==2){
-      
-    } else {
-      return (
-        <Popconfirm
+          </Button>
+          <Popconfirm
           title="确定取消回单所选的内容吗?"
           onConfirm={() => this.cancelReceipted()}
           okText="确定"
           cancelText="取消"
-        >
+          >
           <Button hidden={!havePermission(this.state.authority + '.cancleReceipted')}>
             取消回单
           </Button>
         </Popconfirm>
+        </span>
       );
-    }
+   
+    //}
   };
 
   //该方法用于写操作列的render
