@@ -774,7 +774,7 @@ export default class QuickFormSearchPage extends SearchPage {
    * 刷新/重置
    */
   refreshTable = filter => {
-    const { pageFilters } = this.state;
+    const { pageFilters, defaultSort } = this.state;
     let queryFilter = { ...pageFilters };
     if (filter) {
       var order = '';
@@ -793,6 +793,7 @@ export default class QuickFormSearchPage extends SearchPage {
     } else {
       //查询页码重置为1
       queryFilter.page = 1;
+      queryFilter.order = defaultSort;
     }
     this.state.pageFilters = queryFilter;
     this.getData(queryFilter);
