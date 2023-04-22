@@ -777,7 +777,7 @@ export default class QuickFormSearchPage extends SearchPage {
     const { pageFilters, defaultSort } = this.state;
     let queryFilter = { ...pageFilters };
     if (filter) {
-      var order = '';
+      let order = defaultSort;
       for (var key in filter.sortFields) {
         var sort = filter.sortFields[key] ? 'descend' : 'ascend';
         order = key + ',' + sort;
