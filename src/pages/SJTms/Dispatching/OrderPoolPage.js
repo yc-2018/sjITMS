@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-19 14:24:49
+ * @LastEditTime: 2023-04-22 08:47:39
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -674,7 +674,7 @@ export default class OrderPoolPage extends Component {
                     m³
                   </p>
                   <p>单车重量: {Math.round((orders.weight / vehicleCount) * 1000) / 1000}t</p>
-                  <p>单车总件数: {dispatchConfig.calvehicle}</p>
+                  <p>单车总件数: {Math.round((count / vehicleCount) * 100) / 100}</p>
                 </div>
                 <div style={{ border: '1px dashed #FFF', marginTop: 10, padding: 5 }}>
                   <p>预排(重量)：</p>
@@ -682,8 +682,8 @@ export default class OrderPoolPage extends Component {
                     单车体积: {Math.round((orders.volume / vehicleCount1) * 1000) / 1000}
                     m³
                   </p>
-                  <p>单车重量: {dispatchConfig.calvehicle1 / 1000}t</p>
-                  <p>单车总件数: {Math.ceil(count / vehicleCount1)}</p>
+                  <p>单车重量: {Math.round((orders.weight / vehicleCount1) * 1000) / 1000}t</p>
+                  <p>单车总件数: {Math.round((count / vehicleCount1) * 100) / 100}</p>
                 </div>
               </div>
             }
