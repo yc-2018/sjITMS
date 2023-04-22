@@ -899,10 +899,15 @@ export default class QuickFormSearchPage extends SearchPage {
    * 绘制搜索表格
    */
   drawSearchPanel = () => {
+    const { searchFields } = this.state;
     const { superQuery } = this.state.pageFilters;
     let filterValue = {};
     if (superQuery) {
       for (const item of superQuery.queryParams) {
+        const column = searchFields.find(x => x.fieldName == item.field);
+        if (column && item.rule != column.searchCondition) {
+          continue;
+        }
         if (item.type == 'Date') {
           let dateVal = item.val.split('||');
           filterValue[item.field] = [
