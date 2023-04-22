@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-22 08:47:39
+ * @LastEditTime: 2023-04-22 09:02:58
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -665,25 +665,34 @@ export default class OrderPoolPage extends Component {
         </div>
         {footer && dispatchConfig.calvehicle && dispatchConfig.calvehicle > 0 ? (
           <Tooltip
+            mouseLeaveDelay={20}
             title={
               <div>
                 <div style={{ border: '1px dashed #FFF', padding: 5 }}>
-                  <p>预排(件数)：</p>
+                  <p>
+                    预排(件数)(
+                    {vehicleCount}
+                    车)：
+                  </p>
                   <p>
                     单车体积: {Math.round((orders.volume / vehicleCount) * 1000) / 1000}
                     m³
                   </p>
                   <p>单车重量: {Math.round((orders.weight / vehicleCount) * 1000) / 1000}t</p>
-                  <p>单车总件数: {Math.round((count / vehicleCount) * 100) / 100}</p>
+                  <div>单车总件数: {Math.round((count / vehicleCount) * 100) / 100}</div>
                 </div>
                 <div style={{ border: '1px dashed #FFF', marginTop: 10, padding: 5 }}>
-                  <p>预排(重量)：</p>
+                  <p>
+                    预排(重量)(
+                    {vehicleCount1}
+                    车)：
+                  </p>
                   <p>
                     单车体积: {Math.round((orders.volume / vehicleCount1) * 1000) / 1000}
                     m³
                   </p>
                   <p>单车重量: {Math.round((orders.weight / vehicleCount1) * 1000) / 1000}t</p>
-                  <p>单车总件数: {Math.round((count / vehicleCount1) * 100) / 100}</p>
+                  <div>单车总件数: {Math.round((count / vehicleCount1) * 100) / 100}</div>
                 </div>
               </div>
             }
