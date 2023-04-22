@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-22 09:02:58
+ * @LastEditTime: 2023-04-22 09:17:40
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -665,7 +665,6 @@ export default class OrderPoolPage extends Component {
         </div>
         {footer && dispatchConfig.calvehicle && dispatchConfig.calvehicle > 0 ? (
           <Tooltip
-            mouseLeaveDelay={20}
             title={
               <div>
                 <div style={{ border: '1px dashed #FFF', padding: 5 }}>
