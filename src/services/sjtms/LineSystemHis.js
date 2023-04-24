@@ -198,3 +198,9 @@ export function exportLineSystem(payload) {
     method: 'POST'
   });
 }
+export async function checkShipArea(payload) {
+  return request(`/itms-schedule/itms-schedule/lineShipAddress/checkShipArea/${payload.lineuuid}`, {
+    method: 'POST',
+    body: payload.addressIds,
+  });
+}

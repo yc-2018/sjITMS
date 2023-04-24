@@ -25,7 +25,7 @@ import {
   updateNote,
   updateIsNewStore
 } from '@/services/sjtms/LineSystemHis';
-import { updateStoreAddressList } from '@/services/sjtms/LineSystemHis';
+import { updateStoreAddressList ,checkShipArea} from '@/services/sjtms/LineSystemHis';
 import { dynamicqueryById, dynamicDelete, dynamicQuery } from '@/services/quick/Quick';
 import { commonLocale } from '@/utils/CommonLocale';
 import TableTransfer from './TableTransfer';
@@ -34,6 +34,7 @@ import LineShipAddressPlan from './LineShipAddressPlan';
 import AlcNumModal from '@/pages/Wcs/Dps/Job/AlcNumModal';
 import { throttleSetter } from 'lodash-decorators';
 import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchForm';
+import { getDispatchConfig } from '@/services/tms/DispatcherConfig';
 import LineSystem from './LineSystem.less'
 import {
   findLineSystemTreeByStoreCode,
@@ -217,17 +218,18 @@ export default class LineShipAddress extends QuickFormSearchPage {
       }
     });
   };
-  componentDidMount() {
-    console.log("componentWillMount", this.props.lineTreeData, this.props);
+ async componentDidMount() {
     this.queryCoulumns();
     this.getCreateConfig();
     this.queryLineSystem();
-    // this.setState({
-    //   //canDragTable:false,
-    //   lineuuid: this.props.lineuuid,
-    //   systemLineFlag: this.props.systemLineFlag,
-    //   systemData:this.props.lineTreeData
-    // });
+    const response = await getDispatchConfig(loginOrg().uuid);
+    if (response.success) {
+      this.setState({
+        dispatchConfig: response.data,
+        ischeckArea: response.data?.checkLineArea == 1,
+      });
+    }
+   
   }
   // componentWillMount() {
   //   this.setState({
@@ -519,7 +521,8 @@ export default class LineShipAddress extends QuickFormSearchPage {
   };
   //保存
   handleStoreSave = async () => {
-    const { targetKeys, transferDataSource, data } = this.state;
+    const { targetKeys, transferDataSource, data,ischeckArea } = this.state;
+    console.log("ss",ischeckArea);
     const { lineuuid, linecode } = this.props;
     if (targetKeys.length == 0) {
       return;
@@ -552,7 +555,23 @@ export default class LineShipAddress extends QuickFormSearchPage {
         };
       });
     if (saveData.length > 0) {
-      this.saveFormData2(saveData);
+      if(ischeckArea){
+        const shipArea = await checkShipArea(
+          { lineuuid:lineuuid,
+            addressIds:saveData.map(e=>e.ADDRESSUUID)
+          }
+        );
+        if(!shipArea.data){
+          Modal.confirm({
+            title:"存在门店配送区域不一致，确定加入到同一个线路吗？",
+            onOk:()=>this.saveFormData2(saveData)
+          })
+          return;
+        }
+       
+      }else{
+        this.saveFormData2(saveData);
+      }
       this.setState({ targetKeys: [], transferDataSource: [] });
     } else {
       this.setState({ modalVisible: false });
@@ -613,7 +632,9 @@ export default class LineShipAddress extends QuickFormSearchPage {
       lineData,
       systemLineFlag,
       systemData,
-      updateNoteVisible
+      updateNoteVisible,
+      ischeckArea
+      
     } = this.state;
     const options = lineData.map(a => {
       return <Select.Option key={a.uuid}>{a.name}</Select.Option>;
@@ -635,6 +656,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
             //key={e.UUID}
             //showPageNow="query"
             quickuuid="sj_itms_line_shipAddress_plan"
+            ischeckArea = {ischeckArea}
             // location={{ pathname: '1' }}
             lineuuid={this.props.lineuuid}
           //pageFilters={{queryParams :[{field:"systemuuid", type:"VarChar", rule:"eq", val:"000000750000004"}]}}
