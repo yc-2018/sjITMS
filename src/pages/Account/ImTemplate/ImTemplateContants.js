@@ -104,6 +104,10 @@ export const ImportTemplateType = {
     name: 'CUSTOMERSERVICESBILL',
     caption: '客服工单',
   },
+  WEISHANG: {
+    name: 'WEISHANG',
+    caption: '唯尚费用',
+  },
   ETCCOST: {
     name: 'ETCCOST',
     caption: '粤通卡费用金额',

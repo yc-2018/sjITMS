@@ -224,19 +224,19 @@ export default class OrderSearch extends QuickFormSearchPage {
   };
 
   //该方法用于写最上层的按钮 多个按钮用<span>包裹
-  drawTopButton = () => {
-    return (
-      <span>
-        <Button
-          hidden={!havePermission(this.state.authority + '.import')}
-          type="primary"
-          onClick={this.onUpload}
-        >
-          导入
-        </Button>
-      </span>
-    );
-  };
+  // drawTopButton = () => {
+  //   return (
+  //     <span>
+  //       <Button
+  //         hidden={!havePermission(this.state.authority + '.import')}
+  //         type="primary"
+  //         onClick={this.onUpload}
+  //       >
+  //         导入
+  //       </Button>
+  //     </span>
+  //   );
+  // };
 
   /**
    * 编辑界面

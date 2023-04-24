@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-27 11:24:00
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-09 12:34:24
+ * @LastEditTime: 2023-04-18 10:58:16
  * @Description: 修改排车单 运输订单明细 整件配送数量
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\EditContainerNumberPageF.js
  */
@@ -60,7 +60,7 @@ export default class EditContainerNumberPageF extends Component {
     form.validateFields(async (err, fieldsValue) => {
       if (err) return;
       updateCartonCount({
-        billNumber: order.billNumber,
+        billNumber: order.orderNumber || order.billNumber,
         remVolume,
         remWeight,
         volume: collectVolume,
@@ -75,7 +75,7 @@ export default class EditContainerNumberPageF extends Component {
     let cartonVolume = order.volume;
     let cartonWeight = order.weight;
     let totalCartonCount = order.cartonCount;
-    const response = await getContainerByBillUuid(order.uuid);
+    const response = await getContainerByBillUuid(order.orderUuid || order.uuid);
     if (response.success) {
       const cartonNumber = response.data?.find(x => x.vehicleType == 'Carton');
       if (cartonNumber) {

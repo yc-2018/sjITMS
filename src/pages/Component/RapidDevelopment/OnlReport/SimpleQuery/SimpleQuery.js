@@ -2,11 +2,11 @@
  * @Author: guankongjin
  * @Date: 2022-01-15 16:03:07
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-21 15:09:08
+ * @LastEditTime: 2023-04-20 16:02:00
  * @Description: 快速开发简单查询
  * @FilePath: \iwms-web\src\pages\Component\RapidDevelopment\OnlReport\SimpleQuery\SimpleQuery.js
  */
-import { Form, Input, Select, DatePicker } from 'antd';
+import { Form, Input, DatePicker } from 'antd';
 import { notNullLocale } from '@/utils/CommonLocale';
 import SearchForm from '@/pages/Component/Form/SearchForm';
 import SFormItem from '@/pages/Component/Form/SFormItem';
@@ -26,12 +26,31 @@ const { RangePicker } = DatePicker;
 export default class SimpleQuery extends SearchForm {
   constructor(props) {
     super(props);
-    this.state = { toggle: undefined };
+    this.state = { toggle: undefined, runTimeProps: {} };
   }
 
   componentWillReceiveProps(props) {
-    const { toggle } = this.state;
+    let { toggle, runTimeProps } = this.state;
     const { selectFields } = props;
+    if (JSON.stringify(runTimeProps) == '{}') {
+      for (const searchField of selectFields) {
+        let searchProperties = searchField.searchProperties
+          ? JSON.parse(searchField.searchProperties)
+          : '';
+        if (searchProperties.linkFields) {
+          const linkFilters = this.buildLinkFilter(
+            searchField.searchDefVal,
+            searchProperties.linkFields
+          );
+          for (const linkField of searchProperties.linkFields) {
+            runTimeProps[linkField.field] = linkFilters;
+          }
+        }
+      }
+      if (JSON.stringify(runTimeProps) != '{}') {
+        this.setState({ runTimeProps });
+      }
+    }
     if (toggle == undefined && selectFields && selectFields.length > 3) {
       this.setState({ toggle: false });
     }
@@ -86,6 +105,55 @@ export default class SimpleQuery extends SearchForm {
     this.props.refresh({ matchType: '', queryParams: params });
   };
 
+  handleChange = (valueEvent, searchField) => {
+    let searchProperties = searchField.searchProperties
+      ? JSON.parse(searchField.searchProperties)
+      : '';
+    if (searchProperties.linkFields) {
+      const linkFilters = this.buildLinkFilter(valueEvent, searchProperties.linkFields);
+      let runTimeProps = {};
+      for (const linkField of searchProperties.linkFields) {
+        runTimeProps[linkField.field] = linkFilters;
+      }
+      this.setState({ runTimeProps });
+    }
+  };
+
+  buildLinkFilter = (valueEvent, linkFields) => {
+    let linkFilters = [];
+    for (const linkField of linkFields) {
+      let { outField, inField, valueSplit, rule } = linkField;
+      rule = rule || 'eq';
+      let filter = { field: outField, rule: rule, val: [''] };
+      // 多选的控件联动
+      if (valueEvent?.record) {
+        if (valueEvent.record instanceof Array) {
+          filter.rule = 'in';
+          if (valueSplit) {
+            let val = [];
+            for (const item of valueEvent.record) {
+              val = [...val, ...item[inField]?.split(inField)];
+            }
+            filter.val = val;
+          } else {
+            filter.val = valueEvent.record.map(x => x[inField]);
+          }
+        } else {
+          if (valueSplit) {
+            filter.rule = 'in';
+            filter.val = valueEvent.record[inField]?.split(valueSplit);
+          } else {
+            filter.val = [valueEvent.record[inField]];
+          }
+        }
+      } else {
+        filter.val = [valueEvent instanceof Array ? valueEvent.join('||') : valueEvent];
+      }
+      linkFilters.push(filter);
+    }
+    return linkFilters;
+  };
+
   //生成查询控件
   buildSearchItem = searchField => {
     let searchProperties = searchField.searchProperties
@@ -105,6 +173,9 @@ export default class SimpleQuery extends SearchForm {
         const params = [...searchProperties.queryParams.condition.params];
         searchProperties.queryParams.condition.params = [...params, ...loginParmas];
       }
+    }
+    if (searchProperties.isLink) {
+      searchProperties.linkFilter = this.state.runTimeProps[searchField.fieldName];
     }
     switch (searchField.searchShowtype) {
       case 'date':
@@ -155,6 +226,7 @@ export default class SimpleQuery extends SearchForm {
             searchField={searchField}
             {...searchProperties}
             setFieldsValues={this.props.form.setFieldsValue}
+            onChange={valueEvent => this.handleChange(valueEvent, searchField)}
           />
         );
       case 'radio':
@@ -170,6 +242,7 @@ export default class SimpleQuery extends SearchForm {
               searchField={searchField}
               isOrgQuery={this.props.isOrgQuery}
               setFieldsValues={this.props.form.setFieldsValue}
+              onChange={valueEvent => this.handleChange(valueEvent, searchField)}
             />
           );
         }
@@ -196,6 +269,7 @@ export default class SimpleQuery extends SearchForm {
           <SimpleAutoComplete
             placeholder={'请选择' + searchField.fieldTxt}
             searchField={searchField}
+            onChange={valueEvent => this.handleChange(valueEvent, searchField)}
             {...searchProperties}
           />
         );
@@ -220,7 +294,7 @@ export default class SimpleQuery extends SearchForm {
 
   drawCols = () => {
     const { form, filterValue, selectFields } = this.props;
-    const { getFieldDecorator } = this.props.form;
+    const { getFieldDecorator } = form;
     const { toggle } = this.state;
     const showSelectFields = toggle ? selectFields : selectFields.slice(0, 3);
     let cols = new Array();

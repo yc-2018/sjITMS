@@ -53,15 +53,12 @@ export async function portVehicleApply(payload) {
       },
     }
   ).then(res => {
-    const date = new Date();
-    const month = date.getMonth() + 1;
-    const day = date.getDate();
     const url = window.URL.createObjectURL(new Blob([res.data]));
     const link = document.createElement('a');
     link.href = url;
     link.setAttribute(
       'download',
-      '运管配送每日安排超限申报表（茶山配送组）' + month + day + '.xlsx'
+      decodeURI(res.headers['content-disposition'].split('=')[1])
     );
     document.body.appendChild(link);
     link.click();

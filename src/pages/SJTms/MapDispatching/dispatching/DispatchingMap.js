@@ -13,12 +13,17 @@ import style from './DispatchingMap.less';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import emptySvg from '@/assets/common/img_empoty.svg';
 import SearchForm from './SearchForm';
-import { queryAuditedOrder, queryDriverRoutes } from '@/services/sjitms/OrderBill';
+import {
+  queryAuditedOrder,
+  queryDriverRoutes,
+  queryAuditedOrderByParams,
+} from '@/services/sjitms/OrderBill';
 import { queryDict } from '@/services/quick/Quick';
 
 import ShopIcon from '@/assets/common/myj.png';
 import ShopClickIcon from '@/assets/common/otherMyj.png';
 import ShopClickIcon2 from '@/assets/common/otherMyj2.png';
+import van from '@/assets/common/van.svg';
 
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { sumBy, uniqBy } from 'lodash';
@@ -55,6 +60,8 @@ export default class DispatchMap extends Component {
     driverMileage: 0,
     isPoly: false,
     orderMarkers: [],
+    ScheduledMarkers: [],
+    showScheduled: false,
   };
 
   componentDidMount = () => {
@@ -109,36 +116,43 @@ export default class DispatchMap extends Component {
   //查询
   refresh = params => {
     this.setState({ loading: true });
+    const isOrgQuery = [
+      { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+      { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
+    ];
     let { pageFilter } = this.state;
     let filter = { pageSize: 4000, superQuery: { matchType: 'and', queryParams: [] } };
     if (params) {
       pageFilter = params;
     }
-    const isOrgQuery = [
-      { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
-      { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
-    ];
+
     filter.superQuery.queryParams = [
       ...pageFilter,
       ...isOrgQuery,
-      { field: 'STAT', type: 'VarChar', rule: 'in', val: 'Audited||PartScheduled' },
+      { field: 'STAT', type: 'VarChar', rule: 'in', val: 'Audited||PartScheduled||Scheduled' },
       { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
     ];
-    queryAuditedOrder(filter).then(response => {
+    // queryAuditedOrder
+    queryAuditedOrderByParams(filter).then(response => {
       if (response.success) {
-        let data = response.data.records ? response.data.records : [];
-        data = data.filter(x => x.longitude && x.latitude);
+        let result = response.data?.records ? response.data.records : [];
+        let data = result.filter(x => x.longitude && x.latitude);
         //计算所有
         let allTotals = this.getAllTotals(data);
 
         //去重
         var obj = {};
-        let orderMarkers = data.reduce((cur, next) => {
+        let orderMarkersAll = data.reduce((cur, next) => {
           obj[next.deliveryPoint.code]
             ? ''
             : (obj[next.deliveryPoint.code] = true && cur.push(next));
           return cur;
         }, []); //设置cur默认类型为数组，并且初始值为空的数组
+
+        let orderMarkers = orderMarkersAll.filter(e => e.stat != 'Scheduled');
+        let ScheduledMarkers = orderMarkersAll.filter(e => e.stat == 'Scheduled');
+
+        console.log('orderMarkers', orderMarkers, 'ScheduledMarkers', ScheduledMarkers);
 
         let isSelectOrdersArea =
           this.isSelectOrders && this.isSelectOrders.length > 0
@@ -162,7 +176,7 @@ export default class DispatchMap extends Component {
         });
 
         this.basicOrders = data;
-        this.setState({ orders: data, orderMarkers, allTotals }, () => {
+        this.setState({ orders: data, orderMarkers, allTotals, ScheduledMarkers }, () => {
           setTimeout(() => {
             // this.drawClusterLayer();
             this.drawMenu();
@@ -230,12 +244,14 @@ export default class DispatchMap extends Component {
 
   //标注点
   drawMarker = () => {
-    const { orders, orderMarkers } = this.state;
+    const { orders, orderMarkers, ScheduledMarkers } = this.state;
     let that = this;
     const otherStore = new BMapGL.Icon(ShopClickIcon, new BMapGL.Size(30, 30)); //42
     const otherStore2 = new BMapGL.Icon(ShopClickIcon2, new BMapGL.Size(30, 30)); //42
 
     const icon = new BMapGL.Icon(ShopIcon, new BMapGL.Size(30, 30));
+
+    const vanIcon = new BMapGL.Icon(van, new BMapGL.Size(30, 30));
     let markers = [];
     orderMarkers.map((order, index) => {
       var point = new BMapGL.Point(order.longitude, order.latitude);
@@ -265,6 +281,25 @@ export default class DispatchMap extends Component {
         }
       }
     });
+    if (this.state.showScheduled) {
+      ScheduledMarkers.map(order => {
+        var point = new BMapGL.Point(order.longitude, order.latitude);
+        markers.push(
+          <Marker
+            isTop={order.isSelect}
+            position={point}
+            icon={vanIcon}
+            // icon={[icon, otherStore][order.isSelect ? 1 : 0]}
+            shadow={true}
+            onMouseover={() => this.setState({ windowInfo: { point, order } })}
+            onMouseout={() => this.setState({ windowInfo: undefined })}
+            // onClick={event => {
+            //   that.onChangeSelect(!order.isSelect, order);
+            // }}
+          />
+        );
+      });
+    }
 
     return markers;
   };
@@ -452,6 +487,12 @@ export default class DispatchMap extends Component {
             ''
           )}&mode=driving&region=东莞市&output=html&src=webapp.companyName.appName&coord_type=bd09ll`;
           window.open(url, '_blank');
+        },
+      },
+      {
+        text: '显示已排',
+        callback: () => {
+          this.setState({ showScheduled: !this.state.showScheduled });
         },
       },
     ];
@@ -697,7 +738,7 @@ export default class DispatchMap extends Component {
           tip="加载中..."
           wrapperClassName={style.loading}
         >
-          <Row type="flex" style={{ height: window.innerHeight - 120 }}>
+          <Row type="flex" style={{ height: window.innerHeight - 130 }}>
             <Col span={6} style={{ height: '100%', background: '#fff', overflow: 'auto' }}>
               {selectOrder.length > 0 ? (
                 <div style={{ position: 'relative', height: '100%' }}>

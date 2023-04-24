@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-06-30 09:27:20
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-04-13 16:37:36
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-04-21 14:39:49
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -27,20 +27,20 @@ export default class DifAmountSearch extends QuickFormSearchPage {
   };
 
   //该方法用于写最上层的按钮 多个按钮用<span>包裹
-  drawToolsButton = () => {
-    const { isLoading } = this.state;
-    return (
-      <span>
-        <Button
-          onClick={this.upLoading.bind()}
-          hidden={!havePermission(this.state.authority + '.import')}
-        >
-          <Icon type="upload" loading={isLoading} />
-          导入
-        </Button>
-      </span>
-    );
-  };
+  // drawToolsButton = () => {
+  //   const { isLoading } = this.state;
+  //   return (
+  //     <span>
+  //       <Button
+  //         onClick={this.upLoading.bind()}
+  //         hidden={!havePermission(this.state.authority + '.import')}
+  //       >
+  //         <Icon type="upload" loading={isLoading} />
+  //         导入
+  //       </Button>
+  //     </span>
+  //   );
+  // };
 
   render() {
     let ret = this.state.canFullScreen ? (

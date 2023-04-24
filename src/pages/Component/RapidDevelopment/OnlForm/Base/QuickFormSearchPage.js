@@ -284,6 +284,24 @@ export default class QuickFormSearchPage extends SearchPage {
     const columns = queryConfig.columns;
     let quickColumns = new Array();
 
+    //增加序号
+    const c = {
+      title: '行号 ', //加个空格防止重名
+      dataIndex: 'line_show',
+      key: 'line_show',
+      sorter: false,
+      width: 48,
+      render: (val, record, index) => {
+        return (
+          <p3>
+            {(this.state.data?.pagination?.current - 1) * this.state.data?.pagination?.pageSize +
+              (index + 1)}
+          </p3>
+        );
+      },
+    };
+    quickColumns.push(c);
+
     columns.filter(data => data.isShow).forEach(column => {
       let preview;
       if (column.preview) {
@@ -644,6 +662,9 @@ export default class QuickFormSearchPage extends SearchPage {
       });
     }
   };
+  onUpload = () => {
+    this.props.switchTab('import');
+  };
 
   //点击重置时，重置搜索条件
   onReset = (pageSize, exSearchFilter) => {
@@ -677,7 +698,7 @@ export default class QuickFormSearchPage extends SearchPage {
       this.onReset(pageSize, [...exSearchFilter, ...defaultSearch]);
       return;
     }
-    const { pageFilters, isOrgQuery, superParams, linkQuery } = this.state;
+    const { pageFilters, isOrgQuery, defaultSort, superParams, linkQuery } = this.state;
     let simpleParams = [...exSearchFilter];
     if (filter?.queryParams) {
       //点击查询
@@ -702,6 +723,7 @@ export default class QuickFormSearchPage extends SearchPage {
       pageSize,
       page: 1,
       quickuuid,
+      order: defaultSort,
       superQuery: {
         matchType: 'and',
         queryParams: [...isOrgQuery, ...queryParams, ...params],
@@ -732,12 +754,13 @@ export default class QuickFormSearchPage extends SearchPage {
       queryParams = filter.queryParams;
     }
     const linkQuery = filter.linkQuery;
-    const { isOrgQuery, simpleParams } = this.state;
+    const { isOrgQuery, defaultSort, simpleParams } = this.state;
     const params = linkQuery == 1 && simpleParams ? simpleParams : [];
     let pageFilters = {
       pageSize,
       page: 1,
       quickuuid,
+      order: defaultSort,
       superQuery: {
         matchType: 'and',
         queryParams: [...isOrgQuery, ...params, ...queryParams],
@@ -751,10 +774,10 @@ export default class QuickFormSearchPage extends SearchPage {
    * 刷新/重置
    */
   refreshTable = filter => {
-    const { pageFilters } = this.state;
+    const { pageFilters, defaultSort } = this.state;
     let queryFilter = { ...pageFilters };
     if (filter) {
-      var order = '';
+      let order = defaultSort;
       for (var key in filter.sortFields) {
         var sort = filter.sortFields[key] ? 'descend' : 'ascend';
         order = key + ',' + sort;
@@ -770,6 +793,7 @@ export default class QuickFormSearchPage extends SearchPage {
     } else {
       //查询页码重置为1
       queryFilter.page = 1;
+      queryFilter.order = defaultSort;
     }
     this.state.pageFilters = queryFilter;
     this.getData(queryFilter);
@@ -831,6 +855,13 @@ export default class QuickFormSearchPage extends SearchPage {
         >
           导出
         </Button>
+        <Button
+          hidden={!havePermission(this.state.authority + '.import')}
+          type="primary"
+          onClick={this.onUpload}
+        >
+          导入
+        </Button>
         {this.drawTopButton()}
         {/* <SearchMoreAction menus={menus} /> */}
       </div>
@@ -868,10 +899,15 @@ export default class QuickFormSearchPage extends SearchPage {
    * 绘制搜索表格
    */
   drawSearchPanel = () => {
+    const { searchFields } = this.state;
     const { superQuery } = this.state.pageFilters;
     let filterValue = {};
     if (superQuery) {
       for (const item of superQuery.queryParams) {
+        const column = searchFields.find(x => x.fieldName == item.field);
+        if (column && item.rule != column.searchCondition) {
+          continue;
+        }
         if (item.type == 'Date') {
           let dateVal = item.val.split('||');
           filterValue[item.field] = [
