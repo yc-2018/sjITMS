@@ -924,7 +924,7 @@ export default class DispatchingCreatePage extends Component {
   };
   //更新state订单整件排车件数
   updateCartonCount = result => {
-    const { orders } = this.state;
+    const { orders, isEdit } = this.state;
     const totalData = this.groupByOrder(orders);
     const that = this;
     const stillSum =
@@ -945,7 +945,7 @@ export default class DispatchingCreatePage extends Component {
         record.unDispatchCarton = record.stillCartonCount - result.cartonCount;
         record.stillCartonCount = result.cartonCount;
         record.isSplit = 1;
-        record.uuid = record.uuid + 'abc';
+        record.uuid = isEdit ? record.uuid + 'abc' : record.uuid;
         orders.splice(index, 1, record);
         that.setState({ orders, editPageVisible: false });
       },
