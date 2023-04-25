@@ -74,7 +74,7 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
       } else if (pre.COLOR=='Red'){
       return styless.gaizRedStyle;
      } else if (pre.COLOR=='Purple'){
-      return styless.oneself.gaizPurpleStyle;
+      return styless.gaizPurpleStyle;
     }
     }
    
