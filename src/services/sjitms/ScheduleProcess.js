@@ -43,11 +43,11 @@ export async function swipe(empId, swipeFlag) {
   );
 }
 //司机刷卡
-export async function driverSwipe(empId, swipeFlag) {
+export async function driverSwipe(empId ,companyUuid, dispatchUuid,swipeFlag) {
   return request(
     `/itms-schedule/itms-schedule/openapi/bill/schedule/process/swipe?empId=${empId}&swipeFlag=${swipeFlag}&companyUuid=${
-      loginCompany().uuid
-    }&dispatchUuid=${loginOrg().uuid}`,
+      companyUuid
+    }&dispatchUuid=${dispatchUuid}`,
     {
       method: 'POST',
     }

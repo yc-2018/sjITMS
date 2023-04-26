@@ -567,6 +567,8 @@ export default class LineShipAddress extends QuickFormSearchPage {
             onOk:()=>this.saveFormData2(saveData)
           })
           return;
+        }else{
+          this.saveFormData2(saveData);
         }
        
       }else{
