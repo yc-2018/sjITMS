@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Layout, Row, Col, Modal, Button, Tabs, Divider, Tree, Input, Empty, message } from 'antd';
 import Page from '@/pages/Component/RapidDevelopment/CommonLayout/Page/Page';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import { getRoutesTreeByParam } from '@/services/route/Route';
+import { getRoutesTreeByParam, dragRouteMenu } from '@/services/route/Route';
 import {
   queryCreateConfig,
   dynamicqueryById,
@@ -101,28 +101,6 @@ export default class RoutePage extends Component {
     }
   };
 
-  drawContent = () => {
-    let orgMenus = [];
-    org.map(e => {
-      orgMenus.push(
-        <TabPane tab={e.value} key={e.key}>
-          {this.drawPage()}
-        </TabPane>
-      );
-    });
-
-    return (
-      <Tabs
-        // defaultActiveKey={org[0].key}
-        activeKey={this.state.tabKey}
-        onChange={e => this.tabChange(e)}
-        destroyInactiveTabPane
-      >
-        {orgMenus}
-      </Tabs>
-    );
-  };
-
   inputChange = (e, t) => {
     this.state.menusInfo[t] = e.target.value;
     this.setState({});
@@ -164,6 +142,297 @@ export default class RoutePage extends Component {
       });
     }
     this.setState({ createPageKey: e });
+  };
+
+  //点击树事件
+  onSelect = async e => {
+    const { onlFormField, tableName } = this.state;
+    let createProps = {
+      onlFormField,
+      //   quickuuid: 'sj_itms_route_menus',
+      tableName,
+      noBorder: true,
+      showPageNow: 'update',
+      params: { entityUuid: e[0] },
+      test: this.state.tabKey,
+    };
+    let createPage = (
+      <div>
+        <Create {...createProps} onRef={ref => (this.createRef[this.state.tabKey] = ref)} />
+        <div style={{ textAlign: 'center' }}>
+          <Button
+            type="primary"
+            onClick={async () => {
+              await this.createRef[this.state.tabKey].onSave();
+              this.tabChange(this.state.tabKey);
+            }}
+          >
+            保存
+          </Button>
+        </div>
+      </div>
+    );
+
+    this.setState({ entityUuid: e[0], createPage: undefined, createPageKey: 'route' }, () => {
+      if (this.state.entityUuid) {
+        this.setState({ createPage });
+      }
+    });
+  };
+
+  //是否勾选
+  onCheck = (checkedKeys, e) => {
+    let uuid = e?.node?.props?.eventKey;
+    let checked = e?.node.props.checked;
+    let param = {
+      tableName: this.state.tableName,
+      sets: { is_Enable: checked ? 0 : 1 },
+      condition: {
+        params: [
+          {
+            field: 'UUID',
+            rule: 'eq',
+            val: [uuid],
+          },
+        ],
+      },
+      updateAll: false,
+    };
+    updateEntity(param).then(e => {
+      if (e.result > 0) {
+        this.tabChange(this.state.tabKey);
+        message.success('操作成功！');
+      }
+    });
+    // console.log('check', e, e.node.props.eventKey);
+  };
+
+  deepCopy = source => {
+    if (typeof source != 'object') {
+      return source;
+    }
+    if (source == null) {
+      return source;
+    }
+    var newObj = source.constructor === Array ? [] : {}; //开辟一块新的内存空间
+    for (var i in source) {
+      newObj[i] = this.deepCopy(source[i]);
+    }
+    return newObj;
+  };
+  //查找树里面的节点
+  getNodeById = (tree, id) => {
+    let arr = Array.isArray(tree) ? this.deepCopy(tree) : this.deepCopy([tree]);
+    let result = null;
+    while (arr.length) {
+      let item = arr.pop();
+      if (item && item.uuid === id) {
+        result = item;
+        break;
+      } else if (item && item.routes && item.routes.length) {
+        arr.push(...item.routes);
+      }
+    }
+    return result;
+  };
+
+  // 拖拽 弃用 改后端处理
+  // onDrop = async info => {
+  //   console.log('info', info);
+  //   const { dropToGap, dragNode, dropPosition, node } = info;
+  //   const { tableName, menusTree } = this.state;
+  //   let dragKey = dragNode.props.eventKey;
+  //   let nodeKey = node.props.eventKey;
+  //   let dropPos = node.props.pos.split('-');
+  //   //dropToGap false为更改父uuid
+  //   if (!dropToGap) {
+  //     //查询父级路径 修改子路径 TODO:子类的路径也需要修改
+  //     let nodeInfo = this.getNodeById(menusTree, nodeKey);
+  //     let dragInfo = this.getNodeById(menusTree, dragKey);
+  //     let path = nodeInfo.path + dragInfo.path.slice(dragInfo.path.lastIndexOf('/'));
+  //     let param = {
+  //       tableName: tableName,
+  //       sets: { p_uuid: nodeKey, path },
+  //       condition: {
+  //         params: [
+  //           {
+  //             field: 'UUID',
+  //             rule: 'eq',
+  //             val: [dragKey],
+  //           },
+  //         ],
+  //       },
+  //       updateAll: false,
+  //     };
+  //     updateEntity(param).then(e => {
+  //       if (e.result > 0) {
+  //         this.tabChange(this.state.tabKey);
+  //         message.success('操作成功！');
+  //       }
+  //     });
+  //   } else {
+  //     //排序 修改序号
+  //     let nodeSort = Number(dropPos[dropPos.length - 1]);
+  //     const dropPosition = info.dropPosition - nodeSort;
+  //     let sort = nodeSort;
+  //     if (dropPosition == -1) {
+  //       sort -= 1;
+  //     }
+  //     // console.log('sort', sort);
+  //     // return;
+  //     let param = {
+  //       tableName: tableName,
+  //       sets: { sort: dropPosition },
+  //       condition: {
+  //         params: [
+  //           {
+  //             field: 'UUID',
+  //             rule: 'eq',
+  //             val: [dragKey],
+  //           },
+  //         ],
+  //       },
+  //       updateAll: false,
+  //     };
+  //     updateEntity(param).then(e => {
+  //       if (e.result > 0) {
+  //         this.tabChange(this.state.tabKey);
+  //         message.success('操作成功！');
+  //       }
+  //     });
+  //   }
+  // };
+
+  //拖拽
+  onDrop = async info => {
+    const { dropToGap, dragNode, node } = info;
+    let dragKey = dragNode.props.eventKey;
+    let dragPos = dragNode.props.pos.split('-');
+    let nodeKey = node.props.eventKey;
+    let dropPos = node.props.pos.split('-');
+    let param = {
+      dropNodeKey: dragKey,
+    };
+    let requestBody = [];
+    //dropToGap false为更改父uuid
+    if (!dropToGap) {
+      param = {
+        ...param,
+        targetKey: nodeKey,
+      };
+    } else {
+      //排序 修改序号
+      const { menusTree } = this.state;
+      let dragInfo = this.getNodeById(menusTree, dragKey);
+      let nodeInfo = this.getNodeById(menusTree, nodeKey);
+      if (dragInfo.puuid != nodeInfo.puuid) {
+        param = { ...param, targetKey: nodeInfo.puuid };
+      }
+      let nodes = this.getNodeById(menusTree, nodeInfo?.puuid)?.routes;
+      if (!nodes) {
+        //无则为顶级
+        nodes = menusTree;
+      }
+      nodes = nodes.filter(e => e.uuid != dragKey);
+      //找到移动位置的下标
+      let i = nodes.findIndex(e => e.uuid == nodeKey);
+      let nodeSort = Number(dropPos[dropPos.length - 1]); //end position
+      let sort = info.dropPosition;
+      let trueDropPosition = sort - nodeSort;
+      if (trueDropPosition === -1) {
+        // 移动到最顶级第一个位置
+        nodes.splice(i, 0, dragInfo);
+      } else {
+        // trueDropPosition:   1 | 0
+        nodes.splice(i + 1, 0, dragInfo);
+      }
+      nodes.map((e, index) => {
+        e.sort = index;
+      });
+      requestBody = nodes;
+    }
+    let res = await dragRouteMenu(param, requestBody);
+    if (res.success) {
+      this.tabChange(this.state.tabKey);
+      message.success('操作成功！');
+    }
+  };
+
+  onDragEnter = info => {
+    //console.log(info);
+    // expandedKeys 需要受控时设置
+    // this.setState({
+    //   expandedKeys: info.expandedKeys,
+    // });
+  };
+
+  //新建菜单
+  newClick = e => {
+    //阻止冒泡
+    const ev = e || window.event;
+    ev.stopPropagation();
+    let { onlFormField } = this.state;
+
+    onlFormField[0].onlFormFields.find(
+      e => e.dbFieldName == 'P_UUID'
+    ).fieldDefaultValue = this.state.entityUuid;
+
+    onlFormField[0].onlFormFields.find(
+      e => e.dbFieldName == 'ORG'
+    ).fieldDefaultValue = this.createRef[this.state.tabKey].entity['sj_itms_route_menus'][0].ORG;
+
+    onlFormField[0].onlFormFields.find(
+      e => e.dbFieldName == 'PATH'
+    ).fieldDefaultValue = this.createRef[this.state.tabKey].entity['sj_itms_route_menus'][0].PATH;
+
+    this.setState({ onlFormField }, () => {
+      this.routeCreateModal.show();
+    });
+  };
+
+  //菜单保存后新增权限
+  onSaved = async e => {
+    //保存成功后 若有填写authority 新增默认权限
+    let authority = e.param.entity['sj_itms_route_menus'][0]?.AUTHORITY;
+    if (e.response?.success && authority) {
+      //先判断是否存在该key 存在则不新增
+      let queryParams = {
+        tableName: 'sj_menus_permissions',
+        condition: {
+          params: [{ field: 'key', rule: 'eq', val: [authority] }],
+        },
+      };
+      let queryRes = await dynamicQuery(queryParams);
+      if (queryRes.success && queryRes?.result?.records == 'false') {
+        let parentEntity = this.createRef[this.state.tabKey].entity['sj_itms_route_menus'][0];
+        let entity = {
+          sj_menus_permissions: [
+            {
+              KEY: authority,
+              NAME: e.param.entity['sj_itms_route_menus'][0]?.NAME,
+              SYSTEM_NAME: 'TMS系统功能',
+              PROCESS_KEY: parentEntity.AUTHORITY,
+              PROCESS_NAME: parentEntity.NAME, //关联zhCN太麻烦，生成后自行修改
+              ORGS: parentEntity.ORG,
+            },
+          ],
+          sj_menus_permissions_items: [
+            // {
+            //   KEY: authority+'.view',
+            //   NAME: '查看',
+            // },
+          ],
+        };
+        const saveParam = { code: 'itms_permission', entity };
+        let saveRes = await saveFormData(saveParam);
+        if (saveRes.success) {
+          message.success('权限：' + authority + '新增成功');
+        } else {
+          message.error('权限：' + authority + '新增失败');
+        }
+      }
+    }
+    this.routeCreateModal?.hide();
   };
 
   drawPage = () => {
@@ -212,67 +481,6 @@ export default class RoutePage extends Component {
     );
   };
 
-  onSelect = async e => {
-    const { onlFormField, tableName } = this.state;
-    let createProps = {
-      onlFormField,
-      //   quickuuid: 'sj_itms_route_menus',
-      tableName,
-      noBorder: true,
-      showPageNow: 'update',
-      params: { entityUuid: e[0] },
-      test: this.state.tabKey,
-    };
-    let createPage = (
-      <div>
-        <Create {...createProps} onRef={ref => (this.createRef[this.state.tabKey] = ref)} />
-        <div style={{ textAlign: 'center' }}>
-          <Button
-            type="primary"
-            onClick={async () => {
-              await this.createRef[this.state.tabKey].onSave();
-              this.tabChange(this.state.tabKey);
-            }}
-          >
-            保存
-          </Button>
-        </div>
-      </div>
-    );
-
-    this.setState({ entityUuid: e[0], createPage: undefined, createPageKey: 'route' }, () => {
-      if (this.state.entityUuid) {
-        this.setState({ createPage });
-      }
-    });
-  };
-
-  onCheck = (checkedKeys, e) => {
-    let uuid = e?.node?.props?.eventKey;
-    let checked = e?.node.props.checked;
-    let param = {
-      tableName: this.state.tableName,
-      sets: { is_Enable: checked ? 0 : 1 },
-      condition: {
-        params: [
-          {
-            field: 'UUID',
-            rule: 'eq',
-            val: [uuid],
-          },
-        ],
-      },
-      updateAll: false,
-    };
-    updateEntity(param).then(e => {
-      if (e.result > 0) {
-        this.tabChange(this.state.tabKey);
-        message.success('操作成功！');
-      }
-    });
-    // console.log('check', e, e.node.props.eventKey);
-  };
-
   renderTree = () => {
     const { menusTree } = this.state;
     if (menusTree.length <= 0) return;
@@ -289,33 +497,13 @@ export default class RoutePage extends Component {
         checkedKeys={this.checkMenus}
         onSelect={this.onSelect}
         onCheck={this.onCheck}
+        onDrop={this.onDrop}
+        draggable
+        onDragEnter={this.onDragEnter}
       >
         {treeNodes}
       </Tree>
     );
-  };
-
-  newClick = e => {
-    //阻止冒泡
-    const ev = e || window.event;
-    ev.stopPropagation();
-    let { onlFormField } = this.state;
-
-    onlFormField[0].onlFormFields.find(
-      e => e.dbFieldName == 'P_UUID'
-    ).fieldDefaultValue = this.state.entityUuid;
-
-    onlFormField[0].onlFormFields.find(
-      e => e.dbFieldName == 'ORG'
-    ).fieldDefaultValue = this.createRef[this.state.tabKey].entity['sj_itms_route_menus'][0].ORG;
-
-    onlFormField[0].onlFormFields.find(
-      e => e.dbFieldName == 'PATH'
-    ).fieldDefaultValue = this.createRef[this.state.tabKey].entity['sj_itms_route_menus'][0].PATH;
-
-    this.setState({ onlFormField }, () => {
-      this.routeCreateModal.show();
-    });
   };
 
   getChild = menusTree => {
@@ -359,48 +547,26 @@ export default class RoutePage extends Component {
     return menus;
   };
 
-  onSaved = async e => {
-    //保存成功后 若有填写authority 新增默认权限
-    let authority = e.param.entity['sj_itms_route_menus'][0]?.AUTHORITY;
-    if (e.response?.success && authority) {
-      //先判断是否存在该key 存在则不新增
-      let queryParams = {
-        tableName: 'sj_menus_permissions',
-        condition: {
-          params: [{ field: 'key', rule: 'eq', val: [authority] }],
-        },
-      };
-      let queryRes = await dynamicQuery(queryParams);
-      if (queryRes.success && queryRes?.result?.records == 'false') {
-        let parentEntity = this.createRef[this.state.tabKey].entity['sj_itms_route_menus'][0];
-        let entity = {
-          sj_menus_permissions: [
-            {
-              KEY: authority,
-              NAME: e.param.entity['sj_itms_route_menus'][0]?.NAME,
-              SYSTEM_NAME: 'TMS系统功能',
-              PROCESS_KEY: parentEntity.AUTHORITY,
-              PROCESS_NAME: parentEntity.NAME, //关联zhCN太麻烦，生成后自行修改
-              ORGS: parentEntity.ORG,
-            },
-          ],
-          sj_menus_permissions_items: [
-            // {
-            //   KEY: authority+'.view',
-            //   NAME: '查看',
-            // },
-          ],
-        };
-        const saveParam = { code: 'itms_permission', entity };
-        let saveRes = await saveFormData(saveParam);
-        if (saveRes.success) {
-          message.success('权限：' + authority + '新增成功');
-        } else {
-          message.error('权限：' + authority + '新增失败');
-        }
-      }
-    }
-    this.routeCreateModal?.hide();
+  drawContent = () => {
+    let orgMenus = [];
+    org.map(e => {
+      orgMenus.push(
+        <TabPane tab={e.value} key={e.key}>
+          {this.drawPage()}
+        </TabPane>
+      );
+    });
+
+    return (
+      <Tabs
+        // defaultActiveKey={org[0].key}
+        activeKey={this.state.tabKey}
+        onChange={e => this.tabChange(e)}
+        destroyInactiveTabPane
+      >
+        {orgMenus}
+      </Tabs>
+    );
   };
 
   render() {

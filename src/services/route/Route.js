@@ -22,3 +22,14 @@ export async function getRoutesByParam(param) {
     headers: { check_flag: false },
   });
 }
+
+export async function dragRouteMenu(param, requestBody) {
+  let url = `/itms-schedule/itms-schedule/route/dragRouteMenu?dropNodeKey=${param.dropNodeKey}`;
+  if (param.targetKey) {
+    url += `&targetKey=${param.targetKey}`;
+  }
+  return request(url, {
+    method: 'POST',
+    body: requestBody,
+  });
+}
