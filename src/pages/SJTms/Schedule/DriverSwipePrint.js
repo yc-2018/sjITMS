@@ -29,6 +29,14 @@ export default class DriverSwipePrint extends PureComponent {
     companyUuid: undefined,
     dispatchUuid: undefined,
     dispatchName: undefined,
+    dc: [
+      '000000750000004',
+      '000008150000001',
+      '000000750000005',
+      '000008150000002',
+      '000008150000003',
+      '000000750000006',
+    ],
   };
   componentDidMount() {
     // ScheduleSearchPage.drawPrintPage();
@@ -59,7 +67,7 @@ export default class DriverSwipePrint extends PureComponent {
 
   //刷卡
   onSubmit = async event => {
-    const { dispatchUuid, companyUuid } = this.state;
+    const { dispatchUuid, companyUuid,dc } = this.state;
     if (dispatchUuid == undefined || companyUuid == undefined) {
       message.error('企业中心或调度中心值缺失！');
       return;
@@ -88,6 +96,7 @@ export default class DriverSwipePrint extends PureComponent {
         return;
       }
       LODOP.PRINT_INIT('排车单打印');
+      LODOP.SET_LICENSES("","EE0887D00FCC7D29375A695F728489A6","C94CEE276DB2187AE6B65D56B3FC2848","");
       LODOP.SET_PRINT_PAGESIZE(1, 2100, 1400, '210mm*140mm'); //1代表横的打印 2代表竖的打印 3纵向打印，宽度固定，高度按打印内容的高度自适应；
       LODOP.SET_PRINT_MODE('PRINT_DUPLEX', 1); //去掉双面打印
       const printPagess = await this.drawPrintPage(response.data, scheduleDetails);
@@ -96,12 +105,7 @@ export default class DriverSwipePrint extends PureComponent {
       const printPages = document.getElementById('printCell').childNodes;
       printPages.forEach(page => {
         LODOP.NewPageA();
-        if (loginOrg().uuid == '000000750000004' 
-        || loginOrg().uuid == '000008150000001'
-        ||loginOrg().uuid =='000000750000005' 
-        ||loginOrg().uuid =='000008150000002'
-        || loginOrg().uuid =='000000750000006'
-        || loginOrg().uuid =='000008150000003') {
+        if (dc.find(x => x == loginOrg().uuid) != undefined) {
           LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
         } else {
           LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
@@ -129,7 +133,7 @@ export default class DriverSwipePrint extends PureComponent {
     }
   };
   drawPrintPage = (schedule, scheduleDetails) => {
-    const { dispatchUuid, companyUuid } = this.state;
+    const { dispatchUuid, companyUuid,dc } = this.state;
     let scheduleDetailSum = {};
       let REALCARTONCOUNT = 0;
       let REALSCATTEREDCOUNT = 0;
@@ -156,7 +160,9 @@ export default class DriverSwipePrint extends PureComponent {
       .filter(e => e.memberType == 'Copilot')
       .map(e => '[' + e.member.code + ']' + e.member.name);
     //茶山调度
-    if (dispatchUuid == '000000750000004' || dispatchUuid == '000008150000001') {
+    // if (dispatchUuid == '000000750000004' 
+    // || dispatchUuid == '000008150000001') 
+    if(dc.find(x => x == loginOrg().uuid) != undefined) {
       return (
         <div>
           <table
