@@ -18,6 +18,9 @@ import {
   Form,
   InputNumber,
   Select,
+  Checkbox,
+  Row,
+  Col
 } from 'antd';
 import { convertDate, convertDateToTime } from '@/utils/utils';
 import { loginOrg, loginUser } from '@/utils/LoginContext';
@@ -40,6 +43,8 @@ import { groupBy, sumBy, orderBy } from 'lodash';
 import scher from '@/assets/common/scher.jpg';
 import { havePermission } from '@/utils/authority';
 import moment from 'moment';
+import { func } from 'prop-types';
+import { log } from 'lodash-decorators/utils';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -59,6 +64,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     showAbortAndReset: false,
     showUpdatePirsPop: false,
     showUpdateOutSerial: false,
+    basketMovement: false,
     outSerial: '1',
     newPirs: '',
     sourceData: [],
@@ -72,6 +78,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       '000000750000006',
     ],
     isRadio: true,
+    billnumbers:[]
   };
 
   componentDidMount() {
@@ -196,9 +203,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     );
     let queryParams = [...newFilters.superQuery.queryParams];
     if (deliverypointCode) {
-      newFilters.applySql = ` uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
-        deliverypointCode.val
-      }')`;
+      newFilters.applySql = ` uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${deliverypointCode.val
+        }')`;
       queryParams = newFilters.superQuery.queryParams.filter(x => x.field != 'DELIVERYPOINTCODE');
     }
     dispatch({
@@ -449,6 +455,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       showUpdatePirsPop,
       showUpdateOutSerial,
       showRefreshPop,
+      basketMovement,
+      billnumbers
     } = this.state;
     const menu = (
       <Menu>
@@ -602,7 +610,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
           <Button
             // onClick={() => this.handlePrint()}
             icon="printer"
-            // hidden={!havePermission(this.state.authority + '.print')}
+          // hidden={!havePermission(this.state.authority + '.print')}
           >
             打印 <Icon type="down" />
           </Button>
@@ -696,10 +704,37 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
             </Form.Item>
           </Form>
         </Modal>
+        <Modal
+          title="请选择需要藤筐迁移的排车单"
+          visible={basketMovement}
+          footer ={
+             (<Button onClick={this.again} type ='primary'>确定</Button>)
+          }
+        >
+          <Row gutter={[8, 16]}>
+            {
+              billnumbers?.map(bill => {
+                return <Col span={12}><Checkbox value={bill.checked} onChange={e => {
+                  bill.checked = !e.target.value;
+                  this.setState({ billnumbers })
+                }}>{bill.billnumber}</Checkbox></Col>
+              })
+            }
+          </Row>
+        </Modal>
       </>
     );
   };
-
+  again = () => {
+    const { billnumbers, selectedRows } = this.state;
+    billnumbers.forEach(e => {
+      const billNumber = selectedRows.filter(j => j.BILLNUMBER == e.billnumber)[0];
+      this.abortedAndReset(billNumber, e.checked);
+    });
+    message.success('作废成功！已生成新的排车单据！,所选排车单藤筐已迁移');
+    this.setState({basketMovement:false})
+    this.queryCoulumns();
+  }
   //批量取消批准
   onBatchRollBack = () => {
     const { selectedRows } = this.state;
@@ -710,11 +745,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     selectedRows.length == 1
       ? this.setState({ showRollBackPop: true })
       : this.batchProcessConfirmRef.show(
-          '取消批准',
-          selectedRows,
-          this.onRollBack,
-          this.queryCoulumns
-        );
+        '取消批准',
+        selectedRows,
+        this.onRollBack,
+        this.queryCoulumns
+      );
   };
 
   //刷新ETC资料
@@ -727,11 +762,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     selectedRows.length == 1
       ? this.setState({ showRefreshPop: true })
       : this.batchProcessConfirmRef.show(
-          'ETC资料刷新',
-          selectedRows,
-          this.onRefresh,
-          this.queryCoulumns
-        );
+        'ETC资料刷新',
+        selectedRows,
+        this.onRefresh,
+        this.queryCoulumns
+      );
   };
 
   //批量作废
@@ -750,26 +785,47 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   onBatchAbortAndReset = async () => {
     const { selectedRows } = this.state;
     this.setState({ showAbortAndReset: false });
-    let response = await getTengBoxRecord(selectedRows[0].BILLNUMBER);
-    if (response.success && response.data) {
-      Modal.confirm({
-        title: '该排车单已审核腾筐，是否将腾筐继承给新单？',
-        okText: '是',
-        cancelText: '否',
-        onOk: () => this.abortedAndReset(selectedRows[0], true),
-        onCancel: () => this.abortedAndReset(selectedRows[0], false),
-      });
+    const billnumbers = [];
+    for (const i in selectedRows) {
+      const e = selectedRows[i]
+      const response = await getTengBoxRecord(e.BILLNUMBER)
+      if (response.success && response.data) {
+        billnumbers.push({
+          billnumber: e.BILLNUMBER,
+          checked: false
+        })
+      } else {
+        this.abortedAndReset(e, false);
+      }
+    }
+    if (billnumbers.length == 0) {
+      message.success('作废成功！已生成新的排车单据！');
+      this.queryCoulumns();
       return;
     }
-    this.abortedAndReset(selectedRows[0], false);
-  };
+    this.setState({billnumbers:billnumbers, basketMovement: true });
+  }
+
+
+  //     // Modal.confirm({
+  //     //   title: '该排车单已审核腾筐，是否将腾筐继承给新单？',
+  //     //   okText: '是',
+  //     //   cancelText: '否',
+  //     //   onOk: () => this.abortedAndReset(selectedRows[0], true),
+  //     //   onCancel: () => this.abortedAndReset(selectedRows[0], false),
+  //     // });
+  //     // return;
+  //   }
+  //   this.abortedAndReset(selectedRows[0], false);
+  // };
   handleBatchAbortAndReset = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length != 1) {
-      message.warn('请选中一条数据！');
+    if (selectedRows.length == 0) {
+      message.warn('请至少选中一条数据！');
       return;
     }
     this.setState({ showAbortAndReset: true });
+
   };
 
   //移车
@@ -797,10 +853,10 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
 
   abortedAndReset = async (record, moveTengBox) => {
     const response = await abortedAndReset(record.UUID, moveTengBox);
-    if (response.success) {
-      message.success('作废成功！已生成新的排车单据！');
-      this.queryCoulumns();
-    }
+    // if (response.success) {
+    //   message.success('作废成功！已生成新的排车单据！');
+    //   this.queryCoulumns();
+    // }
   };
 
   //发运
@@ -854,6 +910,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     if (LODOP == undefined) return;
     LODOP.PRINT_INIT('排车单打印');
     LODOP.SET_PRINT_PAGESIZE(1, 2100, 1400, '210mm*140mm'); //1代表横的打印 2代表竖的打印 3纵向打印，宽度固定，高度按打印内容的高度自适应；
+    //LODOP.SET_LICENSES("","EE0887D00FCC7D29375A695F728489A6","C94CEE276DB2187AE6B65D56B3FC2848","");
     LODOP.SET_PRINT_MODE('PRINT_DUPLEX', 1); //去掉双面打印
     key == 'load' || key == 'loadNow'
       ? await this.buildPrintPage()
@@ -1225,8 +1282,8 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                   <div style={{ float: 'left', width: '80%' }}>
                     {schedule.USEETC == '是'
                       ? '粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为' +
-                        schedule.ETCAMOUNT +
-                        '元'
+                      schedule.ETCAMOUNT +
+                      '元'
                       : '粤通卡信息：'}
                     <br />
                     [线路]去程入口:
@@ -1297,8 +1354,8 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                     <td width={50}>{item.REALCONTAINERCOUNT}</td>
                     <td width={50}>{item.OWECARTONCOUNT}</td>
                     <td width={50}>{item.REALCONTAINERCOUNT + item.OWECARTONCOUNT}</td>
-                    <td width={50}>{}</td>
-                    <td width={50}>{}</td>
+                    <td width={50}>{ }</td>
+                    <td width={50}>{ }</td>
                     {/* <td width={80}>{}</td>
                     <td width={80}>{}</td>
                     <td width={80}>{}</td>
@@ -1331,14 +1388,14 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                 <td width={50}>{scheduleDetailSum.REALCONTAINERCOUNT}</td>
                 <td width={50}>{scheduleDetailSum.OWECARTONCOUNT}</td>
                 <td width={50}>{scheduleDetailSum.CONTAINERSum}</td>
-                <td width={50}>{}</td>
-                <td width={50}>{}</td>
+                <td width={50}>{ }</td>
+                <td width={50}>{ }</td>
                 {/* <td width={80}>{}</td>
             <td width={80}>{}</td>
             <td width={80}>{}</td>
             <td width={80}>{}</td> */}
                 <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
-                  {}
+                  { }
                 </td>
                 <td width={50} />
               </tr>
