@@ -154,3 +154,14 @@ export async function removeOrder(billUuid, dispatchCenterUuid) {
     }
   );
 }
+
+//修改作业号
+export async function updateOrderWavenum(uuids, WAVENUM) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/ordertms/updateOrderWavenum/${WAVENUM}`,
+    {
+      method: 'POST',
+      body: uuids
+    }
+  );
+}
