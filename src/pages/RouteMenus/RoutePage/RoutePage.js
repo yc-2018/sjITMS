@@ -3,6 +3,11 @@ import { Layout, Row, Col, Modal, Button, Tabs, Divider, Tree, Input, Empty, mes
 import Page from '@/pages/Component/RapidDevelopment/CommonLayout/Page/Page';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import { getRoutesTreeByParam, dragRouteMenu } from '@/services/route/Route';
+import { query, getResourceKeys, authorize } from '@/services/account/Company';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { confirmLeaveFunc, formatDate } from '@/utils/utils';
+import { orderBy, uniqBy } from 'lodash';
+
 import {
   queryCreateConfig,
   dynamicqueryById,
@@ -106,6 +111,14 @@ export default class RoutePage extends Component {
     this.setState({});
   };
 
+  //权限保存后 自动赋权
+  permissionSaved = res => {
+    let newResources = res.param.entity['sj_menus_permissions_items']?.map(e => e.KEY);
+    if (newResources && newResources.length > 0) {
+      this.grantedPermission(newResources);
+    }
+  };
+
   changeCreate = e => {
     if (e == 'route') {
       this.onSelect([this.state.entityUuid]);
@@ -122,7 +135,11 @@ export default class RoutePage extends Component {
       };
       let createPage = (
         <div>
-          <Create {...permissionProps} onRef={ref => (this.createRef[this.state.tabKey] = ref)} />
+          <Create
+            {...permissionProps}
+            onRef={ref => (this.createRef[this.state.tabKey] = ref)}
+            onSaved={this.permissionSaved}
+          />
           <div style={{ textAlign: 'center', marginTop: '10px' }}>
             <Button
               type="primary"
@@ -236,79 +253,12 @@ export default class RoutePage extends Component {
     return result;
   };
 
-  // 拖拽 弃用 改后端处理
-  // onDrop = async info => {
-  //   console.log('info', info);
-  //   const { dropToGap, dragNode, dropPosition, node } = info;
-  //   const { tableName, menusTree } = this.state;
-  //   let dragKey = dragNode.props.eventKey;
-  //   let nodeKey = node.props.eventKey;
-  //   let dropPos = node.props.pos.split('-');
-  //   //dropToGap false为更改父uuid
-  //   if (!dropToGap) {
-  //     //查询父级路径 修改子路径 TODO:子类的路径也需要修改
-  //     let nodeInfo = this.getNodeById(menusTree, nodeKey);
-  //     let dragInfo = this.getNodeById(menusTree, dragKey);
-  //     let path = nodeInfo.path + dragInfo.path.slice(dragInfo.path.lastIndexOf('/'));
-  //     let param = {
-  //       tableName: tableName,
-  //       sets: { p_uuid: nodeKey, path },
-  //       condition: {
-  //         params: [
-  //           {
-  //             field: 'UUID',
-  //             rule: 'eq',
-  //             val: [dragKey],
-  //           },
-  //         ],
-  //       },
-  //       updateAll: false,
-  //     };
-  //     updateEntity(param).then(e => {
-  //       if (e.result > 0) {
-  //         this.tabChange(this.state.tabKey);
-  //         message.success('操作成功！');
-  //       }
-  //     });
-  //   } else {
-  //     //排序 修改序号
-  //     let nodeSort = Number(dropPos[dropPos.length - 1]);
-  //     const dropPosition = info.dropPosition - nodeSort;
-  //     let sort = nodeSort;
-  //     if (dropPosition == -1) {
-  //       sort -= 1;
-  //     }
-  //     // console.log('sort', sort);
-  //     // return;
-  //     let param = {
-  //       tableName: tableName,
-  //       sets: { sort: dropPosition },
-  //       condition: {
-  //         params: [
-  //           {
-  //             field: 'UUID',
-  //             rule: 'eq',
-  //             val: [dragKey],
-  //           },
-  //         ],
-  //       },
-  //       updateAll: false,
-  //     };
-  //     updateEntity(param).then(e => {
-  //       if (e.result > 0) {
-  //         this.tabChange(this.state.tabKey);
-  //         message.success('操作成功！');
-  //       }
-  //     });
-  //   }
-  // };
-
   //拖拽
   onDrop = async info => {
     const { dropToGap, dragNode, node } = info;
-    let dragKey = dragNode.props.eventKey;
+    let dragKey = dragNode.props.eventKey; //移动的树节点
     let dragPos = dragNode.props.pos.split('-');
-    let nodeKey = node.props.eventKey;
+    let nodeKey = node.props.eventKey; //目标树节点
     let dropPos = node.props.pos.split('-');
     let param = {
       dropNodeKey: dragKey,
@@ -326,18 +276,21 @@ export default class RoutePage extends Component {
       let dragInfo = this.getNodeById(menusTree, dragKey);
       let nodeInfo = this.getNodeById(menusTree, nodeKey);
       if (dragInfo.puuid != nodeInfo.puuid) {
+        //父级不同则需要更改父级
         param = { ...param, targetKey: nodeInfo.puuid };
       }
       let nodes = this.getNodeById(menusTree, nodeInfo?.puuid)?.routes;
       if (!nodes) {
-        //无则为顶级
+        //无child则为顶级
         nodes = menusTree;
       }
+      //先将移动的节点移出数组
       nodes = nodes.filter(e => e.uuid != dragKey);
-      //找到移动位置的下标
+      //找到目标位置的下标
       let i = nodes.findIndex(e => e.uuid == nodeKey);
       let nodeSort = Number(dropPos[dropPos.length - 1]); //end position
       let sort = info.dropPosition;
+      //antd tree节点index计算规则 参考https://www.cnblogs.com/tommymarc/p/16718446.html
       let trueDropPosition = sort - nodeSort;
       if (trueDropPosition === -1) {
         // 移动到最顶级第一个位置
@@ -346,6 +299,7 @@ export default class RoutePage extends Component {
         // trueDropPosition:   1 | 0
         nodes.splice(i + 1, 0, dragInfo);
       }
+      //sort赋值
       nodes.map((e, index) => {
         e.sort = index;
       });
@@ -390,6 +344,50 @@ export default class RoutePage extends Component {
     });
   };
 
+  //判断b数组是否全部在a数组内
+  isContained = (a, b) => {
+    // a和b其中一个不是数组，直接返回false
+    if (!(a instanceof Array) || !(b instanceof Array)) return false;
+    const len = b.length;
+    // a的长度小于b的长度，直接返回false
+    if (a.length < len) return false;
+    for (let i = 0; i < len; i++) {
+      // 遍历b中的元素，遇到a没有包含某个元素的，直接返回false
+      if (!a.includes(b[i])) return false;
+    }
+    // 遍历结束，返回true
+    return true;
+  };
+
+  //企业端赋权
+  grantedPermission = async newResources => {
+    let res = await query({ searchKeyValues: { codeName: loginCompany().code } });
+    if (res.data?.records) {
+      const company = res.data.records[0];
+      const { uuid, version, validDate } = company;
+      getResourceKeys(uuid).then(async resourceRes => {
+        let resources = resourceRes.data;
+        let isContained = this.isContained(resources, newResources);
+        //全部包含则不更新
+        if (isContained) return;
+        let uniqResources = uniqBy([...resources, ...newResources]);
+
+        if (resourceRes.success && resources) {
+          const auth = {
+            validDate: formatDate(validDate),
+            resources: uniqResources,
+            uuid: uuid,
+            version: version,
+          };
+          let au = await authorize(auth);
+          if (au.success) {
+            message.success('企业端权限赋权成功！');
+          }
+        }
+      });
+    }
+  };
+
   //菜单保存后新增权限
   onSaved = async e => {
     //保存成功后 若有填写authority 新增默认权限
@@ -406,27 +404,30 @@ export default class RoutePage extends Component {
       if (queryRes.success && queryRes?.result?.records == 'false') {
         let parentEntity = this.createRef[this.state.tabKey].entity['sj_itms_route_menus'][0];
         let entity = {
+          //默认父级为init 需要后面自行调整
           sj_menus_permissions: [
             {
               KEY: authority,
               NAME: e.param.entity['sj_itms_route_menus'][0]?.NAME,
               SYSTEM_NAME: 'TMS系统功能',
-              PROCESS_KEY: parentEntity.AUTHORITY,
-              PROCESS_NAME: parentEntity.NAME, //关联zhCN太麻烦，生成后自行修改
+              PROCESS_KEY: 'sj.exec.init', //parentEntity.AUTHORITY,
+              PROCESS_NAME: '初始化权限', //parentEntity.NAME, //关联zhCN太麻烦，生成后自行修改
               ORGS: parentEntity.ORG,
             },
           ],
           sj_menus_permissions_items: [
-            // {
-            //   KEY: authority+'.view',
-            //   NAME: '查看',
-            // },
+            {
+              KEY: authority + '.view',
+              NAME: '查看',
+            },
           ],
         };
         const saveParam = { code: 'itms_permission', entity };
         let saveRes = await saveFormData(saveParam);
         if (saveRes.success) {
           message.success('权限：' + authority + '新增成功');
+          //权限增加成功后 自动给企业赋权 简化操作
+          this.grantedPermission([authority + '.view']);
         } else {
           message.error('权限：' + authority + '新增失败');
         }
