@@ -1535,7 +1535,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                   </th>
                 </tr> */}
               <tr>
-                <th colspan={15} style={{ border: 0, height: 27 }}>
+                <th colspan={16} style={{ border: 0, height: 27 }}>
                   <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                     <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
                       排车单号： {schedule.BILLNUMBER}
@@ -1573,14 +1573,14 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                 </th>
               </tr> */}
               <tr>
-                <th colspan={15} style={{ border: 0, height: 20 }}>
+                <th colspan={16} style={{ border: 0, height: 20 }}>
                   <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                     <div style={{ float: 'left', width: '80%' }}>
                       {schedule.USEETC == '是'
-                        ? '粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为' +
+                        ? 'ETC信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为' +
                         schedule.ETCAMOUNT +
                         '元'
-                        : '粤通卡信息：'}
+                        : 'ETC信息：'}
                       <br />
                       [线路]去程入口:
                       {schedule.ETCROUTE}
@@ -1606,7 +1606,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                 <th width={170} colSpan={7}>
                   送出
                 </th>
-                <th width={150} colSpan={3}>
+                <th width={150} colSpan={4}>
                   回收
                 </th>
                 <th width={120} rowSpan={2}>
@@ -1634,6 +1634,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                 <th>周转</th>
                 <th>冷藏</th>
                 <th>冷冻</th>
+                <th>箱总数</th>
               </tr>
             </thead>
             <tbody>
@@ -1641,7 +1642,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                 scheduleDetails.map((item, index) => {
                   return (
                     <tr style={{ textAlign: 'center', height: 33 }}>
-                      <td>{index+1}</td>
+                      <td width={10}>{index+1}</td>
                       <td width={130}>
                         {'[' + item.DELIVERYPOINTCODE + ']' + item.DELIVERYPOINTNAME}
                       </td>
@@ -1655,6 +1656,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                       <td width={50}>{0}</td>
                       <td width={50}>{0}</td>
                       <td width={50}>{0}</td>
+                      <td width={50}>{ }</td>
                       <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
                         {item.COLLECTBIN}
                       </td>
@@ -1662,6 +1664,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                         {item.SCATTEREDCOLLECTBIN}
                       </td>
                       <td width={50}>{ }</td>
+                      
                     </tr>
                   );
                 })
@@ -1670,7 +1673,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
               )}
               {scheduleDetails ? (
                 <tr style={{ textAlign: 'center', height: 25 }}>
-                  <td width={100}>{'合计'}</td>
+                  <td width={50}>{'合计'}</td>
                   <td
                    
                     width={80}
@@ -1694,7 +1697,10 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
               <td width={80}>{}</td>
               <td width={80}>{}</td>
               <td width={80}>{}</td> */}
-                  <td  width={120}>
+                  <td  width={50}>
+                    { }
+                  </td>
+                  <td  width={50}>
                     { }
                   </td>
                   <td  width={120}>
@@ -1703,7 +1709,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                   <td  width={120}>
                     { }
                   </td>
-                  <td  width={120}>
+                  <td  width={50}>
                     { }
                   </td>
                   
@@ -1717,7 +1723,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                 <td colSpan={2} width={100}>总配货额：{0}</td>
                 <td
                   width={80}
-                  colSpan={4}
+                  colSpan={5}
                   style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}
                 >
                  最远市区:{}
@@ -1739,8 +1745,9 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
               排车单备注：{schedule.NOTES}
               </td>
             </tr>
+            <tr><td  style = {{border: 0, fontWeight: 'normal',textAlign: 'center'}} colSpan={16}>总计周转箱(蓝)_______ 总计回冷藏箱(绿)__________  总计回冷冻箱(灰)_________</td></tr>
             <tr style={{ border: 0, height: 20 }}>
-              <td style={{ border: 0, fontWeight:'bold' }} colspan={11}>
+              <td style={{ border: 0, fontWeight:'bold' }} colspan={12}>
               注：现金高速路桥、停车费报销每月5号前必须清除掉上月的票据报销，逾期不报销
               </td>
                {/* <td style={{ border: 0 }} colspan={6}>
