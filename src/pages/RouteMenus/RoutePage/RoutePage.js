@@ -277,7 +277,7 @@ export default class RoutePage extends Component {
       let nodeInfo = this.getNodeById(menusTree, nodeKey);
       if (dragInfo.puuid != nodeInfo.puuid) {
         //父级不同则需要更改父级
-        param = { ...param, targetKey: nodeInfo.puuid };
+        param = { ...param, targetKey: nodeInfo.puuid ? nodeInfo.puuid : 'no' };
       }
       let nodes = this.getNodeById(menusTree, nodeInfo?.puuid)?.routes;
       if (!nodes) {
