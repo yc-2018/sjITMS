@@ -70,11 +70,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     sourceData: [],
     authority: this.props.authority ? this.props.authority[0] : null,
     dc: [
-      '000000750000004',
+     // '000000750000004',
       '000008150000001',
       '000000750000005',
       '000008150000002',
-      //'000008150000003',
+      '000008150000003',
       '000000750000006',
     ],
     isRadio: true,
@@ -919,7 +919,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     const printPages = document.getElementById('printPage').childNodes;
     printPages.forEach(page => {
       LODOP.NewPageA();
-      if (dc.find(x => x == loginOrg().uuid) != undefined) {
+      if (dc.find(x => x == loginOrg().uuid) != undefined || loginOrg().uuid =='000000750000004' ) {
         // if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001') {
         LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
       } else {
@@ -1462,7 +1462,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
         </table>
       </div>
     );
-  }else if (loginOrg().uuid == '000000750000003' || loginOrg().uuid == '000008150000005'){
+  }else if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000005'){
     // if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001') {
       let scheduleDetailSum = {};
       let REALCARTONCOUNT = 0;
@@ -1477,7 +1477,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
         REALCONTAINERCOUNT += item.REALCONTAINERCOUNT;
         OWECARTONCOUNT += item.OWECARTONCOUNT;
         CONTAINERSum += item.REALCONTAINERCOUNT + item.OWECARTONCOUNT;
-        cartonCounts += item.REALCARTONCOUNT+item.REALSCATTEREDCOUNT+item.REALCONTAINERCOUNT
+        cartonCounts += item.REALCONTAINERCOUNT+0
       });
       scheduleDetailSum.REALCARTONCOUNT = REALCARTONCOUNT;
       scheduleDetailSum.REALSCATTEREDCOUNT = REALSCATTEREDCOUNT;
@@ -1535,7 +1535,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                   </th>
                 </tr> */}
               <tr>
-                <th colspan={16} style={{ border: 0, height: 27 }}>
+                <th colspan={14} style={{ border: 0, height: 27 }}>
                   <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                     <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
                       排车单号： {schedule.BILLNUMBER}
@@ -1560,7 +1560,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                       {convertDateToTime(new Date())}
                     </div>
                     <div style={{ float: 'left', width: '50%', fontWeight: 'normal' }}>
-                      注：蓝箱,冷藏箱：绿色，冷冻箱：灰色
+                      注：周转箱:蓝色,冷藏箱:绿色,冷冻箱:灰色
                     </div>
                   </div>
                 </th>
@@ -1573,7 +1573,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                 </th>
               </tr> */}
               <tr>
-                <th colspan={16} style={{ border: 0, height: 20 }}>
+                <th colspan={14} style={{ border: 0, height: 20 }}>
                   <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                     <div style={{ float: 'left', width: '80%' }}>
                       {schedule.USEETC == '是'
@@ -1606,7 +1606,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                 <th width={170} colSpan={7}>
                   送出
                 </th>
-                <th width={150} colSpan={4}>
+                <th width={150} colSpan={2}>
                   回收
                 </th>
                 <th width={120} rowSpan={2}>
@@ -1626,14 +1626,15 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                 <th>冷冻</th>
                 <th>冷藏</th>
                 <th>箱总数</th>
-                <th>藤筐</th>
+                <th>腾筐</th>
                 {/* <th>福袋数</th>
                 <th>深通卡</th>
                 <th>退货单</th>
                 <th>差异单</th> */}
-                <th>周转</th>
+                {/* <th>周转</th>
                 <th>冷藏</th>
-                <th>冷冻</th>
+                <th>冷冻</th> */}
+                <th>委托方</th>
                 <th>箱总数</th>
               </tr>
             </thead>
@@ -1651,12 +1652,12 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                       <td width={50}>{item.REALCONTAINERCOUNT}</td>
                       <td width={50}>{0}</td>
                       <td width={50}>{0}</td>
-                      <td width={50}>{item.REALCARTONCOUNT+item.REALSCATTEREDCOUNT+item.REALCONTAINERCOUNT}</td>
+                      <td width={50}>{item.REALCONTAINERCOUNT+0}</td>
                       <td width={50}>{0}</td>
-                      <td width={50}>{0}</td>
-                      <td width={50}>{0}</td>
-                      <td width={50}>{0}</td>
-                      <td width={50}>{ }</td>
+                      <td width={50}>{item.OWNERNAME}</td>
+                      {/* <td width={50}>{0}</td>
+                      <td width={50}>{0}</td> */}
+                      <td width={50}>{item.REALCONTAINERCOUNT+0}</td>
                       <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
                         {item.COLLECTBIN}
                       </td>
@@ -1692,16 +1693,12 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                   <td width={50}>{scheduleDetailSum.cartonCounts}</td>
                   <td width={50}>{ }</td>
                   <td width={50}>{ }</td>
-                  <td width={50}>{ }</td>
-                  {/* <td width={80}>{}</td>
-              <td width={80}>{}</td>
-              <td width={80}>{}</td>
-              <td width={80}>{}</td> */}
+                  {/* <td width={50}>{ }</td>
                   <td  width={50}>
                     { }
-                  </td>
+                  </td> */}
                   <td  width={50}>
-                    { }
+                    {scheduleDetailSum.cartonCounts }
                   </td>
                   <td  width={120}>
                     { }
@@ -1729,8 +1726,8 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                  最远市区:{}
                 </td>
                 <td width={50} colSpan={3}>满载率:{schedule.CUBEDOUT}</td>
-                <td width={50} colSpan={3}> 体积(方):{schedule.VOLUME}</td>
-                <td width={50} colSpan={3}>重量:{schedule.WEIGHT}</td>
+                <td width={50} colSpan={2}> 体积(方):{schedule.VOLUME}</td>
+                <td width={50} colSpan={4}>重量:{schedule.WEIGHT}</td>
               </tr>
             }
             </tbody>
