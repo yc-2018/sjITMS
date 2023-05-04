@@ -74,7 +74,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       '000008150000001',
       '000000750000005',
       '000008150000002',
-      '000008150000003',
+      //'000008150000003',
       '000000750000006',
     ],
     isRadio: true,
@@ -1462,7 +1462,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
         </table>
       </div>
     );
-  }else if (loginOrg().uuid == '000000750000008' || loginOrg().uuid == '000008150000005'){
+  }else if (loginOrg().uuid == '000000750000003' || loginOrg().uuid == '000008150000005'){
     // if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001') {
       let scheduleDetailSum = {};
       let REALCARTONCOUNT = 0;
