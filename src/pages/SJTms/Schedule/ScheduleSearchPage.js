@@ -1600,13 +1600,14 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                 <th rowSpan={2}>
                   序号
                 </th>
+                <th width={50}  rowSpan={2}>委托方</th>
                 <th width={100} rowSpan={2}>
                   门店名称
                 </th>
                 <th width={170} colSpan={7}>
                   送出
                 </th>
-                <th width={150} colSpan={2}>
+                <th width={50} colSpan={1}>
                   回收
                 </th>
                 <th width={120} rowSpan={2}>
@@ -1634,7 +1635,6 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                 {/* <th>周转</th>
                 <th>冷藏</th>
                 <th>冷冻</th> */}
-                <th>委托方</th>
                 <th>箱总数</th>
               </tr>
             </thead>
@@ -1644,6 +1644,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                   return (
                     <tr style={{ textAlign: 'center', height: 33 }}>
                       <td width={10}>{index+1}</td>
+                      <td width={50}>{item.OWNERNAME}</td>
                       <td width={130}>
                         {'[' + item.DELIVERYPOINTCODE + ']' + item.DELIVERYPOINTNAME}
                       </td>
@@ -1654,7 +1655,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                       <td width={50}>{0}</td>
                       <td width={50}>{item.REALCONTAINERCOUNT+0}</td>
                       <td width={50}>{0}</td>
-                      <td width={50}>{item.OWNERNAME}</td>
+                      
                       {/* <td width={50}>{0}</td>
                       <td width={50}>{0}</td> */}
                       <td width={50}>{item.REALCONTAINERCOUNT+0}</td>
@@ -1674,7 +1675,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
               )}
               {scheduleDetails ? (
                 <tr style={{ textAlign: 'center', height: 25 }}>
-                  <td width={50}>{'合计'}</td>
+                  <td width={50} colSpan='2'>{'合计'}</td>
                   <td
                    
                     width={80}
@@ -1692,7 +1693,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                   <td width={50}>{}</td>
                   <td width={50}>{scheduleDetailSum.cartonCounts}</td>
                   <td width={50}>{ }</td>
-                  <td width={50}>{ }</td>
+                 
                   {/* <td width={50}>{ }</td>
                   <td  width={50}>
                     { }
