@@ -1577,7 +1577,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                   <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                     <div style={{ float: 'left', width: '80%' }}>
                       {schedule.USEETC == '是'
-                        ? 'ETC信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为' +
+                        ? 'ETC信息：请到调度窗口领取ETC卡，按规定行驶，该次费用为' +
                         schedule.ETCAMOUNT +
                         '元'
                         : 'ETC信息：'}
