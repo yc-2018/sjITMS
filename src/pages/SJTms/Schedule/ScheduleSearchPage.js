@@ -710,7 +710,9 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
           footer ={
              (<Button onClick={this.again} type ='primary'>确定</Button>)
           }
+          onCancel ={()=>this.setState({basketMovement:false})}
         >
+          
           <Row gutter={[8, 16]}>
             {
               billnumbers?.map(bill => {
@@ -926,8 +928,6 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
       }
     });
-    console.log(key);
-    console.log(key == 'loadNow' ? '是' : '否');
     key == 'loadNow' ? LODOP.PRINT() : LODOP.PREVIEW();
     // LODOP.PREVIEW();
     if (key == 'loadNow') {
@@ -1658,7 +1658,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                       
                       {/* <td width={50}>{0}</td>
                       <td width={50}>{0}</td> */}
-                      <td width={50}>{item.REALCONTAINERCOUNT+0}</td>
+                      <td width={50}>{}</td>
                       <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
                         {item.COLLECTBIN}
                       </td>
@@ -1743,7 +1743,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
               排车单备注：{schedule.NOTES}
               </td>
             </tr>
-            <tr><td  style = {{border: 0, fontWeight: 'normal',textAlign: 'center'}} colSpan={16}>总计周转箱(蓝)_______ 总计回冷藏箱(绿)__________  总计回冷冻箱(灰)_________</td></tr>
+            <tr><td  style = {{border: 0, fontWeight: 'normal',textAlign: 'center'}} colSpan={16}>总计周转箱(蓝)________总计回冷藏箱(绿)__________  总计回冷冻箱(灰)_________</td></tr>
             <tr style={{ border: 0, height: 20 }}>
               <td style={{ border: 0, fontWeight:'bold' }} colspan={12}>
               注：现金高速路桥、停车费报销每月5号前必须清除掉上月的票据报销，逾期不报销

@@ -165,3 +165,23 @@ export async function updateOrderWavenum(uuids, WAVENUM) {
     }
   );
 }
+//修改复核数
+export async function updateReview(uuid, Carton,Container,scattered) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/ordertms/updateReview?uuid=${uuid}&Carton=${Carton}&Container=${Container}&scattered=${scattered}`,
+    {
+      method: 'POST',
+    }
+  );
+}
+
+//复核确认
+export async function onConfirm(uuids) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/ordertms/onConfirm`,
+    {
+      method: 'POST',
+      body:uuids
+    }
+  );
+}

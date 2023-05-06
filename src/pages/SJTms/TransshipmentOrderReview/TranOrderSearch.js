@@ -6,22 +6,26 @@
  * @version: 1.0
  */
 import React from 'react';
-import { Button, Popconfirm, message, Menu, Modal, Form, Input } from 'antd';
+import { Button, Popconfirm, message, Menu, Modal, Form, Input ,InputNumber} from 'antd';
 import { connect } from 'dva';
 import { havePermission } from '@/utils/authority';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
-import { batchAudit, audit, cancel, removeOrder,updateOrderWavenum } from '@/services/sjitms/OrderBill';
+import { batchAudit, audit, cancel, removeOrder,updateOrderWavenum,updateReview,onConfirm } from '@/services/sjitms/OrderBill';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
+import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
+import { groupBy, sumBy, orderBy } from 'lodash';
 import { log } from 'lodash-decorators/utils';
+import { convertDate, convertDateToTime } from '@/utils/utils';
+import { loginOrg, loginUser } from '@/utils/LoginContext';
 
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
 //继承QuickFormSearchPage Search页面扩展
-export default class OrderSearch extends QuickFormSearchPage {
+export default class TranOrderSearch extends QuickFormSearchPage {
   state = {
     ...this.state,
     showAuditPop: false,
@@ -29,7 +33,8 @@ export default class OrderSearch extends QuickFormSearchPage {
     uploadModal: false,
     showRemovePop: false,
     dispatchCenter: '',
-    showUpdateWaven:false
+    showUpdateWaven:false,
+    handUpdateReview:false
   };
 
   onUpload = () => {
@@ -107,6 +112,20 @@ export default class OrderSearch extends QuickFormSearchPage {
     this.setState({ showUpdateWaven: true });
   };
 
+  handUpdateReview = ()=>{
+    const { selectedRows } = this.state;
+    if (selectedRows.length != 1) {
+      message.error('请选择一条数据！');
+      return;
+    }
+    this.setState({
+       handUpdateReview: true,
+      Carton:selectedRows[0].REALCARTONCOUNT,
+      Container:selectedRows[0].REALCONTAINERCOUNT,
+      scattered:selectedRows[0].REALSCATTEREDCOUNT
+    });
+  }
+
   // drawRightClickMenus = () => {
   //   return (
   //     <Menu>
@@ -155,16 +174,163 @@ export default class OrderSearch extends QuickFormSearchPage {
      }
     
   }
-
+  updatReviewHandleOk = async()=>{
+    const { 
+      selectedRows,
+      Carton,
+      Container,
+      scattered
+     } = this.state;
+    const response = await updateReview (selectedRows.map(e=>e.UUID),Carton,Container,scattered);
+    if(response && response.success){
+     message.success("修改成功");
+     this.setState({showUpdateWaven:false})
+     this.onSearch();
+    }
+  }
   remove = async record => {
     const { dispatchCenter } = this.state;
     return await removeOrder(record.UUID, dispatchCenter);
   };
+  //打印
+  handlePrint = async key => {
+    const { selectedRows, dc } = this.state;
+    if (selectedRows.length == 0) {
+      message.warn('请选择需要打印的单据！');
+      return;
+    }
+    const hide =
+      key == 'loadNow' ? message.loading('打印中，请稍后...', 6) : message.loading('加载中...', 5);
+    const LODOP = getLodop();
+    if (LODOP == undefined) return;
+    LODOP.PRINT_INIT('复合打印');
+    LODOP.SET_PRINT_PAGESIZE(1, 2100, 1400, '210mm*140mm'); //1代表横的打印 2代表竖的打印 3纵向打印，宽度固定，高度按打印内容的高度自适应；
+    //LODOP.SET_LICENSES("","EE0887D00FCC7D29375A695F728489A6","C94CEE276DB2187AE6B65D56B3FC2848","");
+    LODOP.SET_PRINT_MODE('PRINT_DUPLEX', 1); //去掉双面打印
+    key == 'load' || key == 'loadNow'
+      ? await this.buildPrintPage()
+      : '';
+    if (key != 'load' && key != 'loadNow') LODOP.SET_SHOW_MODE('SKIN_TYPE', 1);
+    const printPages = document.getElementById('printPagewe').childNodes;
+    printPages.forEach(page => {
+      LODOP.NewPageA();
+      LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
+     
+    });
+    key == 'loadNow' ? LODOP.PRINT() : LODOP.PREVIEW();
+    // LODOP.PREVIEW();
+    if (key == 'loadNow') {
+      setTimeout(() => {
+        message.success('打印成功！', 5);
+      }, 7000);
+    }
 
+    this.setState({ printPage: undefined });
+  };
+
+    
+    buildPrintPage = async () => {
+      const printPages = [];
+      const printPage = this.drawBillPage();
+        printPages.push(printPage);
+      
+      this.setState({ printPage: printPages });
+    };
+    drawBillPage = ()=>{
+      return (
+        <div>
+          <table
+            style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0 }}
+            border={1}
+            cellPadding={0}
+            cellSpacing={0}
+          >
+            <thead>
+              <tr style={{ height: 50 }}>
+                <th colspan={2} style={{ border: 0 }} />
+                <th colspan={4} style={{ border: 0 }}>
+                  <div style={{ fontSize: 18, textAlign: 'center' }}>福建时捷转运单复核单据</div>
+                </th>
+                <th colspan={2} style={{ border: 0 }}>
+                  <div style={{ fontSize: 14, textAlign: 'center' }}>
+                    <span>第</span>
+                    <font tdata="PageNO" color="blue">
+                      ##
+                    </font>
+                    <span>页/共</span>
+                    <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
+                      ##
+                    </font>
+                    <span>页</span>
+                  </div>
+                </th>
+              </tr>
+    
+              <tr>
+                <th colspan={4} style={{ border: 0, height: 25 }}>
+                  操作人： {loginUser().name}
+                </th>
+                <th colspan={5} style={{ border: 0, height: 25 }}>
+                  制单时间：{convertDateToTime(new Date())}
+                </th>
+              </tr>
+    
+              <tr style={{ height: 25 }}>
+                <th width={50}>序号</th>
+                <th width={80}>作业号</th>
+                <th width={100}>门店编码</th>
+                <th width={170}>门店名称</th>
+                <th width={80}>拣货次序</th>
+                <th width={80}>预估整件</th>
+                <th width={80}>复核整件</th>
+                <th width={80}>预估周转筐</th>
+                <th width={80}>复核周转筐</th>
+              </tr>
+            </thead>
+            <tbody>
+              {this.state.selectedRows ? (
+                this.state.selectedRows.map((item,index )=> {
+                  return (
+                    <tr style={{ textAlign: 'center', height: 20 }}>
+                      <td width={50}>{index+1}</td>
+                      <td width={80}>{item.WAVENUM}</td>
+                      <td width={100}>{item.DELIVERYPOINTCODE}</td>
+                      <td width={170}>{item.DELIVERYPOINTNAME}</td>
+                      <td width={80}>{item.LINECODE}</td>
+                      <td width={80}>{item.CARTONCOUNT}</td>
+                      <td width={80} >{item.REALCARTONCOUNT}</td>
+                      <td width={80} >{item.CONTAINERCOUNT}</td>
+                      <td width={80}>{item.REALCONTAINERCOUNT}</td>
+                    </tr>
+                  );
+                })
+              ) : (
+                <></>
+              )}
+             
+            </tbody>
+          </table>
+        </div>
+      );
+    }
   drawToolsButton = () => {
-    const { showAuditPop, showCancelPop, selectedRows, dispatchCenter, showRemovePop,showUpdateWaven } = this.state;
+    const { showAuditPop,
+       showCancelPop,
+        selectedRows,
+         dispatchCenter,
+          showRemovePop,
+          showUpdateWaven,
+          Carton,
+          Container,
+          scattered,
+          handUpdateReview,
+          printPage
+         } = this.state;
     return (
       <>
+      <div id="printPagewe" style={{ display: 'none' }}>
+          {printPage}
+        </div>
         <Popconfirm
           title="你确定要审核所选中的内容吗?"
           visible={showAuditPop}
@@ -221,11 +387,45 @@ export default class OrderSearch extends QuickFormSearchPage {
         >
           转仓
         </Button>
-        <Button
+        {/* <Button
           hidden={!havePermission(this.state.authority + '.updateWaven')}
           onClick={() =>this.handleUpdate()}
         >
           修改作业号
+        </Button> */}
+        <Button
+          hidden={!havePermission(this.state.authority + '.updateWaven')}
+          onClick={() =>this.handUpdateReview()}
+        >
+          修改复核数
+        </Button>
+        <Popconfirm
+          title="你确定要复核所选中的内容吗?"
+          onConfirm={() => {
+            if(selectedRows.length==0){
+              message.error("请选择一条数据")
+              return;
+            }
+            onConfirm(selectedRows.map(e=>e.UUID)).then(response => {
+              if (response.success) {
+                message.success('复核成功！');
+                this.onSearch();
+              }
+            });
+          }}
+        >
+        <Button
+          hidden={!havePermission(this.state.authority + '.updateWaven')}
+        >
+          复核确认
+        </Button>
+        </Popconfirm>
+
+        <Button
+          hidden={!havePermission(this.state.authority + '.updateWaven')}
+          onClick={()=>this.handlePrint("load")}
+        >
+          打印复核单据
         </Button>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
         <Modal
@@ -254,7 +454,7 @@ export default class OrderSearch extends QuickFormSearchPage {
           </Form>
         </Modal>
         <Modal
-          title="添加作业号"
+          title="修改作业号"
           visible={showUpdateWaven}
           onOk={() => {
             this.showUpdateWavenHandleOk();
@@ -268,6 +468,44 @@ export default class OrderSearch extends QuickFormSearchPage {
               <Input
                 onChange={e =>{
                   this.setState({ WAVENUM: e.target.value })
+                } }
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
+
+        <Modal
+          title="修改复核数"
+          visible={handUpdateReview}
+          onOk={() => {
+            this.updatReviewHandleOk();
+          }}
+          onCancel={() => {
+            this.setState({ handUpdateReview: false });
+          }}
+        >
+          <Form>
+            <Form.Item label="复核整件数:" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              <InputNumber 
+               value={Carton}
+                onChange={e =>{
+                  this.setState({ Carton: e })
+                } }
+              />
+            </Form.Item>
+            <Form.Item label="复核筐数:" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              <InputNumber 
+              value={Container}
+                onChange={e =>{
+                  this.setState({Container: e })
+                } }
+              />
+            </Form.Item>
+            <Form.Item label="复核散件:" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              <InputNumber 
+                value={scattered}
+                onChange={e =>{
+                  this.setState({ scattered: e })
                 } }
               />
             </Form.Item>
