@@ -6,14 +6,15 @@
  * @version: 1.0
  */
 import React from 'react';
-import { Button, Popconfirm, message, Menu, Modal, Form } from 'antd';
+import { Button, Popconfirm, message, Menu, Modal, Form, Input } from 'antd';
 import { connect } from 'dva';
 import { havePermission } from '@/utils/authority';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
-import { batchAudit, audit, cancel, removeOrder } from '@/services/sjitms/OrderBill';
+import { batchAudit, audit, cancel, removeOrder,updateOrderWavenum } from '@/services/sjitms/OrderBill';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
+import { log } from 'lodash-decorators/utils';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -28,6 +29,7 @@ export default class OrderSearch extends QuickFormSearchPage {
     uploadModal: false,
     showRemovePop: false,
     dispatchCenter: '',
+    showUpdateWaven:false
   };
 
   onUpload = () => {
@@ -96,6 +98,14 @@ export default class OrderSearch extends QuickFormSearchPage {
     }
     this.setState({ showRemovePop: true });
   };
+  handleUpdate = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length <= 0) {
+      message.error('至少选择一条数据！');
+      return;
+    }
+    this.setState({ showUpdateWaven: true });
+  };
 
   // drawRightClickMenus = () => {
   //   return (
@@ -127,6 +137,24 @@ export default class OrderSearch extends QuickFormSearchPage {
       this.setState({ showRemovePop: false });
     }
   };
+  showUpdateWavenHandleOk =async ()=>{
+    const { selectedRows,WAVENUM } = this.state;
+    if(selectedRows.length ==0 ){
+      message.error('至少选择一条数据');
+      return;
+    }
+    if(!WAVENUM){
+      message.error('请填写作业号'); 
+      return;
+    }
+     const response = await updateOrderWavenum (selectedRows.map(e=>e.UUID),WAVENUM);
+     if(response && response.success){
+      message.success("修改成功");
+      this.setState({showUpdateWaven:false})
+      this.onSearch();
+     }
+    
+  }
 
   remove = async record => {
     const { dispatchCenter } = this.state;
@@ -134,7 +162,7 @@ export default class OrderSearch extends QuickFormSearchPage {
   };
 
   drawToolsButton = () => {
-    const { showAuditPop, showCancelPop, selectedRows, dispatchCenter, showRemovePop } = this.state;
+    const { showAuditPop, showCancelPop, selectedRows, dispatchCenter, showRemovePop,showUpdateWaven } = this.state;
     return (
       <>
         <Popconfirm
@@ -193,6 +221,12 @@ export default class OrderSearch extends QuickFormSearchPage {
         >
           转仓
         </Button>
+        <Button
+          hidden={!havePermission(this.state.authority + '.updateWaven')}
+          onClick={() =>this.handleUpdate()}
+        >
+          修改作业号
+        </Button>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
         <Modal
           title="转仓"
@@ -215,6 +249,26 @@ export default class OrderSearch extends QuickFormSearchPage {
                 noRecord
                 style={{ width: 150 }}
                 allowClear={true}
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
+        <Modal
+          title="添加作业号"
+          visible={showUpdateWaven}
+          onOk={() => {
+            this.showUpdateWavenHandleOk();
+          }}
+          onCancel={() => {
+            this.setState({ showUpdateWaven: false });
+          }}
+        >
+          <Form>
+            <Form.Item label="作业号:" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              <Input
+                onChange={e =>{
+                  this.setState({ WAVENUM: e.target.value })
+                } }
               />
             </Form.Item>
           </Form>

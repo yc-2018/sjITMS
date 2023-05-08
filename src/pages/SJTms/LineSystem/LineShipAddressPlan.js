@@ -107,6 +107,8 @@ export default class LineShipAddressPlan extends QuickFormSearchPage {
           onOk:()=> this.savePlan(params)
         })
         return;
+      }else{
+        this.savePlan(params);
       }
     }else{
       this.savePlan(params);

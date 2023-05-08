@@ -1,15 +1,8 @@
 /*
  * @Author: Liaorongchang
- * @Date: 2022-04-16 17:45:18
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-20 15:38:24
- * @version: 1.0
- */
-/*
- * @Author: Liaorongchang
  * @Date: 2022-03-25 10:17:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-03-28 17:24:09
+ * @LastEditTime: 2023-05-03 15:46:28
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -18,6 +11,7 @@ import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/Qui
 import ItemEditTable from './ItemEditTable';
 import FormPanel from '@/pages/Component/RapidDevelopment/CommonLayout/Form/FormPanel';
 import CFormItem from '@/pages/Component/RapidDevelopment/CommonLayout/Form/CFormItem';
+import { updateSerialnumber } from '@/services/sjitms/HighWayAreaSubsidy';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -313,7 +307,6 @@ export default class HighWagAreaCreatePage extends QuickCreatePage {
   };
 
   exHandleChange = e => {
-    const { form } = this.props;
     if (e.fieldName == 'TOTAL') {
       let total = 0;
       this.entity['sj_itms_highwayareagroup_dtl'].forEach(data => {
@@ -331,5 +324,14 @@ export default class HighWagAreaCreatePage extends QuickCreatePage {
         i++;
       }
     });
+  };
+
+  afterSave = async data => {
+    const { UUID, COMPANYUUID, DISPATCHCENTERUUID, AREAGROUPUUID } = this.entity[
+      'sj_itms_highwayareagroup_head'
+    ][0];
+    if (data && UUID == undefined) {
+      await updateSerialnumber(COMPANYUUID, DISPATCHCENTERUUID, AREAGROUPUUID);
+    }
   };
 }

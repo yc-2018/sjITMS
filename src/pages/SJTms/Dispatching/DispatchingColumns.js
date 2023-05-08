@@ -244,7 +244,7 @@ export const OrderDetailColumns = [
   },
   {
     title: '周转箱',
-    dataIndex: 'stillCartonCount',
+    dataIndex: 'stillContainerCount',
     sorter: true,
     width: 60,
     render: val => (val != undefined ? <span>{val}</span> : <Empty />),

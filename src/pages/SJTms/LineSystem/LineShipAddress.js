@@ -40,6 +40,7 @@ import {
   findLineSystemTreeByStoreCode,
 } from '@/services/sjtms/LineSystemHis';
 import { flushSync } from 'react-dom';
+import { log } from 'lodash-decorators/utils';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -806,13 +807,59 @@ export default class LineShipAddress extends QuickFormSearchPage {
     })
   }
   handleAddToNewLine = async () => {
-    const { selectedRows, lineValue, pageFilters, lineuuid, addToNewLine } = this.state;
+    const { selectedRows, lineValue, pageFilters, lineuuid, addToNewLine,ischeckArea } = this.state;
     //true 添加到新线路
     if (addToNewLine) {
       let params = {
         lineUuid: lineValue.value,
         addressIds: selectedRows.map(e => e.UUID),
       };
+      if(ischeckArea){
+        const shipArea = await checkShipArea(
+          { lineuuid:lineValue.value,
+            addressIds:selectedRows.map(e=>e.ADDRESSUUID)
+          }
+        );
+        if(!shipArea.data){
+          Modal.confirm({
+            title:"存在门店配送区域不一致，确定加入到同一个线路吗？",
+            onOk:async ()=> {
+              await addToNewLines(params).then(result => {
+                if (result.success) {
+                  message.success('添加成功');
+                  this.getData(pageFilters);
+                } else {
+                  // message.error('添加失败');
+                }
+                this.setState({
+                  lineValue: undefined,
+                  lineData: [],
+                  selectedRows: [],
+                  lineModalVisible: false,
+                });
+              });
+              return;
+            }
+          })
+          return;
+        }else{
+          await addToNewLines(params).then(result => {
+            if (result.success) {
+              message.success('添加成功');
+              this.getData(pageFilters);
+            } else {
+              // message.error('添加失败');
+            }
+            this.setState({
+              lineValue: undefined,
+              lineData: [],
+              selectedRows: [],
+              lineModalVisible: false,
+            });
+          });
+          return;
+        }
+      }
       await addToNewLines(params).then(result => {
         if (result.success) {
           message.success('添加成功');
