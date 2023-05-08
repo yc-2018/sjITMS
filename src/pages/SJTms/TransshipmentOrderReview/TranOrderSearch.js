@@ -34,7 +34,8 @@ export default class TranOrderSearch extends QuickFormSearchPage {
     showRemovePop: false,
     dispatchCenter: '',
     showUpdateWaven:false,
-    handUpdateReview:false
+    handUpdateReview:false,
+    changeData:[]
   };
 
   onUpload = () => {
@@ -94,6 +95,46 @@ export default class TranOrderSearch extends QuickFormSearchPage {
     });
     return defaultSearch;
   };
+  // drawcell = e => {
+  //   debugger;
+  //   console.log("a",e);
+  //   const column = e.column;
+  //   const record = e.record;
+  //   const fieldName = column.fieldName;
+   
+    
+  //   if (fieldName == 'REALCARTONCOUNT') {
+  //     const component = (
+  //       <Input
+  //         className={e.record.ROW_ID + 'REALCARTONCOUNT'}
+  //         step={0.01}
+  //         style={{ width: 100 }}
+  //         onFocus={() => {
+  //           document.getElementsByClassName(e.record.ROW_ID + 'REALCARTONCOUNT')[0].select();
+  //         }}
+  //         onChange={event => this.onChange(record, column.fieldName, event.target.value)}
+  //         min={0}
+  //         defaultValue={record.REALCARTONCOUNT}
+  //       />
+  //     );
+  //     e.component = component;
+  //   }
+  //   if (fieldName == 'REALCONTAINERCOUNT') {
+  //     const component = (
+  //       <Input
+  //         className={e.record.ROW_ID + 'REALCONTAINERCOUNT'}
+  //         onFocus={() => {
+  //           document.getElementsByClassName(e.record.ROW_ID + 'REALCONTAINERCOUNT')[0].select();
+  //         }}
+  //         min={0}
+  //         defaultValue={record.REALCONTAINERCOUNT}
+  //         style={{ width: 100 }}
+  //         onChange={event => this.onChange(record, column.fieldName, Number(event.target.value))}
+  //       />
+  //     );
+  //     e.component = component;
+  //   }
+  // };
 
   handleRemove = () => {
     const { selectedRows } = this.state;
@@ -184,7 +225,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
     const response = await updateReview (selectedRows.map(e=>e.UUID),Carton,Container,scattered);
     if(response && response.success){
      message.success("修改成功");
-     this.setState({showUpdateWaven:false})
+     this.setState({handUpdateReview:false})
      this.onSearch();
     }
   }
@@ -267,7 +308,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               </tr>
     
               <tr>
-                <th colspan={4} style={{ border: 0, height: 25 }}>
+                <th colspan={5} style={{ border: 0, height: 25 }}>
                   操作人： {loginUser().name}
                 </th>
                 <th colspan={5} style={{ border: 0, height: 25 }}>
@@ -281,6 +322,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                 <th width={100}>门店编码</th>
                 <th width={170}>门店名称</th>
                 <th width={80}>拣货次序</th>
+                <th width ={80}>整件板位</th>
                 <th width={80}>预估整件</th>
                 <th width={80}>复核整件</th>
                 <th width={80}>预估周转筐</th>
@@ -297,6 +339,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                       <td width={100}>{item.DELIVERYPOINTCODE}</td>
                       <td width={170}>{item.DELIVERYPOINTNAME}</td>
                       <td width={80}>{item.LINECODE}</td>
+                      <td width={80}>{item.COLLECTBIN}</td>
                       <td width={80}>{item.CARTONCOUNT}</td>
                       <td width={80} >{item.REALCARTONCOUNT}</td>
                       <td width={80} >{item.CONTAINERCOUNT}</td>
@@ -331,68 +374,6 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       <div id="printPagewe" style={{ display: 'none' }}>
           {printPage}
         </div>
-        <Popconfirm
-          title="你确定要审核所选中的内容吗?"
-          visible={showAuditPop}
-          onVisibleChange={visible => {
-            if (!visible) this.setState({ showAuditPop: visible });
-          }}
-          onCancel={() => {
-            this.setState({ showAuditPop: false });
-          }}
-          onConfirm={() => {
-            this.setState({ showAuditPop: false });
-            this.onAudit(selectedRows[0]).then(response => {
-              if (response.success) {
-                message.success('审核成功！');
-                this.onSearch();
-              }
-            });
-          }}
-        >
-          <Button onClick={() => this.onBatchAudit()}>审核</Button>
-        </Popconfirm>
-        <Popconfirm
-          title="你确定要审全部的内容吗?"
-          onConfirm={() => this.onBatchAllAudit()}
-          okText="确定"
-          cancelText="取消"
-        >
-          <Button>批量审核</Button>
-        </Popconfirm>
-        <Popconfirm
-          title="你确定要取消所选中的内容吗?"
-          visible={showCancelPop}
-          onVisibleChange={visible => {
-            if (!visible) this.setState({ showCancelPop: visible });
-          }}
-          onCancel={() => {
-            this.setState({ showCancelPop: false });
-          }}
-          onConfirm={() => {
-            this.setState({ showCancelPop: false });
-            this.onCancel(selectedRows[0]).then(response => {
-              if (response.success) {
-                message.success('取消成功！');
-                this.onSearch();
-              }
-            });
-          }}
-        >
-          <Button onClick={() => this.onBatchCancel()}>取消</Button>
-        </Popconfirm>
-        <Button
-          hidden={!havePermission(this.state.authority + '.remove')}
-          onClick={() => this.handleRemove()}
-        >
-          转仓
-        </Button>
-        {/* <Button
-          hidden={!havePermission(this.state.authority + '.updateWaven')}
-          onClick={() =>this.handleUpdate()}
-        >
-          修改作业号
-        </Button> */}
         <Button
           hidden={!havePermission(this.state.authority + '.updateWaven')}
           onClick={() =>this.handUpdateReview()}
@@ -585,8 +566,53 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       ? this.setState({ showCancelPop: true })
       : this.batchProcessConfirmRef.show('取消', selectedRows, this.onCancel, this.onSearch);
   };
+ 
+  onChange = (record, fieldName, value) => {
+    const { data } = this.state;
+    let newData = { ...data };
+    let row = newData.list.find(x => x.uuid == record.uuid);
+    const  oldvalue = row[fieldName];
+    row[fieldName] = value;
+    const index = newData.list.findIndex(x => x.uuid == row.uuid);
+    newData.list[index] = row;
+    this.setState({ data: newData});
+  };
+  onfocuschange =(record, fieldName, value)=>{
+    const { changeData} = this.state;
+    const change = changeData.find(x=>x.UUID==record.UUID);
+    if(change){
+      change[fieldName] = value;
+    }else{
+      const sa ={};
+      sa[fieldName]= value;
+      sa.UUID = record.UUID;
+      changeData.push(sa); 
+    }
+    this.setState({changeData});
+  }
+  blurSave  = async (record,fieldName,value)=>{
+    const { data, changeData} = this.state;
+    let newData = { ...data };
+    let row = newData.list.find(x => x.uuid == record.uuid);
+    const change = changeData.find(x=>x.UUID==record.UUID);
+    if(change && change[fieldName] != value){
+      const sa ={};
+      sa[fieldName]= value;
+      sa.UUID = record.UUID;
+      changeData.push(sa); 
+      const response = await updateReview (record.UUID,row.REALCARTONCOUNT,row.REALCONTAINERCOUNT,row.REALSCATTEREDCOUNT);
+      if(response && response.success){
+       message.success("修改成功");
+       this.setState({changeData})
+       this.onSearch();
+    }
+    }
+  }
 
   drawcell = e => {
+    const column = e.column;
+    const record = e.record;
+    const fieldName = column.fieldName;
     if (e.column.fieldName == 'STAT') {
       let color = this.colorChange(e.record.STAT, e.column.textColorJson);
       let textColor = color ? this.hexToRgb(color) : 'black';
@@ -594,6 +620,41 @@ export default class TranOrderSearch extends QuickFormSearchPage {
         <div style={{ backgroundColor: color, textAlign: 'center', color: textColor }}>{e.val}</div>
         // <div style={{ border: '1px solid ' + color, textAlign: 'center' }}>{e.val}</div>
       );
+    }
+    if (fieldName == 'REALCARTONCOUNT') {
+      const component = (
+        <Input
+          className={e.record.ROW_ID + 'REALCARTONCOUNT'}
+          step={0.01}
+          style={{ width: 100 }}
+          onFocus={(event) => {
+            document.getElementsByClassName(e.record.ROW_ID + 'REALCARTONCOUNT')[0].select();
+              this.onfocuschange(record,column.fieldName,event.target.value);
+          }}
+          onBlur={(event)=>this.blurSave(record,column.fieldName,event.target.value)}
+          onChange={event => this.onChange(record, column.fieldName, event.target.value)}
+          min={0}
+          defaultValue={record.REALCARTONCOUNT}
+        />
+      );
+      e.component = component;
+    }
+    if (fieldName == 'REALCONTAINERCOUNT') {
+      const component = (
+        <Input
+          className={e.record.ROW_ID + 'REALCONTAINERCOUNT'}
+          onFocus={(event) => {
+            document.getElementsByClassName(e.record.ROW_ID + 'REALCONTAINERCOUNT')[0].select();
+            this.onfocuschange(record,column.fieldName,event.target.value);
+          }}
+          min={0}
+          defaultValue={record.REALCONTAINERCOUNT}
+          style={{ width: 100 }}
+          onBlur={(event)=>this.blurSave(record,column.fieldName,event.target.value)}
+          onChange={event => this.onChange(record, column.fieldName, event.target.value)}
+        />
+      );
+      e.component = component;
     }
   };
 }
