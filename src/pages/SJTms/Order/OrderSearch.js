@@ -225,7 +225,7 @@ export default class OrderSearch extends QuickFormSearchPage {
           hidden={!havePermission(this.state.authority + '.updateWaven')}
           onClick={() =>this.handleUpdate()}
         >
-          修改作业号
+          添加作业号
         </Button>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
         <Modal
@@ -254,7 +254,7 @@ export default class OrderSearch extends QuickFormSearchPage {
           </Form>
         </Modal>
         <Modal
-          title="修改作业号"
+          title="添加作业号"
           visible={showUpdateWaven}
           onOk={() => {
             this.showUpdateWavenHandleOk();
@@ -267,7 +267,6 @@ export default class OrderSearch extends QuickFormSearchPage {
             <Form.Item label="作业号:" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
               <Input
                 onChange={e =>{
-                console.log(e.target.value);
                   this.setState({ WAVENUM: e.target.value })
                 } }
               />

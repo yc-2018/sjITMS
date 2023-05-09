@@ -70,7 +70,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     sourceData: [],
     authority: this.props.authority ? this.props.authority[0] : null,
     dc: [
-     // '000000750000004',
+      '000000750000004',
       '000008150000001',
       '000000750000005',
       '000008150000002',
@@ -710,7 +710,9 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
           footer ={
              (<Button onClick={this.again} type ='primary'>确定</Button>)
           }
+          onCancel ={()=>this.setState({basketMovement:false})}
         >
+          
           <Row gutter={[8, 16]}>
             {
               billnumbers?.map(bill => {
@@ -919,15 +921,14 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     const printPages = document.getElementById('printPage').childNodes;
     printPages.forEach(page => {
       LODOP.NewPageA();
-      if (dc.find(x => x == loginOrg().uuid) != undefined || loginOrg().uuid =='000000750000004' ) {
-        // if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001') {
+      if (dc.find(x => x == loginOrg().uuid) != undefined
+       || loginOrg().uuid =='000000750000008' 
+      || loginOrg().uuid =='000008150000005') {
         LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
       } else {
         LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
       }
     });
-    console.log(key);
-    console.log(key == 'loadNow' ? '是' : '否');
     key == 'loadNow' ? LODOP.PRINT() : LODOP.PREVIEW();
     // LODOP.PREVIEW();
     if (key == 'loadNow') {
@@ -1462,8 +1463,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
         </table>
       </div>
     );
-  }else if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000005'){
-    // if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001') {
+  }else if ( loginOrg().uuid =='000000750000008' || loginOrg().uuid =='000008150000005'){
       let scheduleDetailSum = {};
       let REALCARTONCOUNT = 0;
       let REALSCATTEREDCOUNT = 0;
@@ -1591,13 +1591,14 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                       &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;途径高速:
                       {schedule.ETCROUTEINFO}
                       <br />
-                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如有异常需超额使用粤通卡的，请致电（670607）
+                      &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如有异常需超额使用ETC卡的，请致电（670607）
                     </div>
                   </div>
                 </th>
               </tr>
               <tr style={{ height: 25 }}>
-                <th rowSpan={2}>
+                <th rowSpan={2} width={30}>
+                
                   序号
                 </th>
                 <th width={50}  rowSpan={2}>委托方</th>
@@ -1643,7 +1644,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                 scheduleDetails.map((item, index) => {
                   return (
                     <tr style={{ textAlign: 'center', height: 33 }}>
-                      <td width={10}>{index+1}</td>
+                      <td width={30}>{index+1}</td>
                       <td width={50}>{item.OWNERNAME}</td>
                       <td width={130}>
                         {'[' + item.DELIVERYPOINTCODE + ']' + item.DELIVERYPOINTNAME}
@@ -1658,7 +1659,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                       
                       {/* <td width={50}>{0}</td>
                       <td width={50}>{0}</td> */}
-                      <td width={50}>{item.REALCONTAINERCOUNT+0}</td>
+                      <td width={50}>{}</td>
                       <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
                         {item.COLLECTBIN}
                       </td>
@@ -1675,7 +1676,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
               )}
               {scheduleDetails ? (
                 <tr style={{ textAlign: 'center', height: 25 }}>
-                  <td width={50} colSpan='2'>{'合计'}</td>
+                  <td width={80} colSpan={2}>{'合计'}</td>
                   <td
                    
                     width={80}
@@ -1699,7 +1700,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                     { }
                   </td> */}
                   <td  width={50}>
-                    {scheduleDetailSum.cartonCounts }
+                    { }
                   </td>
                   <td  width={120}>
                     { }
@@ -1718,7 +1719,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
               )}
                 {
                 <tr style={{ textAlign: 'left', height: 25 }}>
-                <td colSpan={2} width={100}>总配货额：{0}</td>
+                <td colSpan={2} width={80}>总配货额：{0}</td>
                 <td
                   width={80}
                   colSpan={5}
@@ -1743,7 +1744,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
               排车单备注：{schedule.NOTES}
               </td>
             </tr>
-            <tr><td  style = {{border: 0, fontWeight: 'normal',textAlign: 'center'}} colSpan={16}>总计周转箱(蓝)_______ 总计回冷藏箱(绿)__________  总计回冷冻箱(灰)_________</td></tr>
+            <tr><td  style = {{border: 0, fontWeight: 'normal',textAlign: 'center'}} colSpan={16}>总计周转箱(蓝)________总计回冷藏箱(绿)__________  总计回冷冻箱(灰)_________</td></tr>
             <tr style={{ border: 0, height: 20 }}>
               <td style={{ border: 0, fontWeight:'bold' }} colspan={12}>
               注：现金高速路桥、停车费报销每月5号前必须清除掉上月的票据报销，逾期不报销
