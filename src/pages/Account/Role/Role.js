@@ -1,3 +1,10 @@
+/*
+ * @Author: Liaorongchang
+ * @Date: 2023-03-27 17:04:08
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-04-21 15:11:04
+ * @version: 1.0
+ */
 import React from 'react';
 import { connect } from 'dva';
 import { Menu, Tabs, Button, message, Empty, Input, Tooltip, Icon } from 'antd';
@@ -77,6 +84,8 @@ export default class Role extends SiderPage {
       dispatchCenterResourceTree: [],
       dcCheckedResourceKeys: [],
       dispatchCenterCheckedResourceKeys: [],
+      ownerCheckedResourceTree: [],
+      ownerCheckedResourceKeys: [],
       contentStyle: {
         marginTop: 0,
       },
@@ -148,6 +157,7 @@ export default class Role extends SiderPage {
             dispatchCenterResourceTree: res[orgType.dispatchCenter.name]
               ? res[orgType.dispatchCenter.name]
               : [],
+            ownerCheckedResourceTree: res[orgType.owner.name] ? res[orgType.owner.name] : [],
           });
         }
       },
@@ -285,6 +295,7 @@ export default class Role extends SiderPage {
             dispatchCenterCheckedResourceKeys: res[orgType.dispatchCenter.name]
               ? res[orgType.dispatchCenter.name]
               : [],
+            ownerCheckedResourceKeys: res[orgType.owner.name] ? res[orgType.owner.name] : [],
           });
         }
       },
@@ -986,7 +997,9 @@ export default class Role extends SiderPage {
       vendorResourceTree,
       carrierResourceTree,
       dispatchCenterResourceTree,
+      ownerCheckedResourceTree,
     } = this.state;
+    console.log('state', this.state);
     const tabPanes = [];
     let i = 2;
     let height = 'calc(100vh - 240px)';
@@ -1044,7 +1057,7 @@ export default class Role extends SiderPage {
             height={height}
             handleAuthorize={this.handleAuthorize}
             loading={this.props.loading}
-            orgType={orgType.vendor.name}
+            orgType={orgType.store.name}
           />
         </TabPane>
       );
@@ -1059,7 +1072,7 @@ export default class Role extends SiderPage {
             height={height}
             handleAuthorize={this.handleAuthorize}
             loading={this.props.loading}
-            orgType={orgType.carrier.name}
+            orgType={orgType.vendor.name}
           />
         </TabPane>
       );
@@ -1075,6 +1088,21 @@ export default class Role extends SiderPage {
             handleAuthorize={this.handleAuthorize}
             loading={this.props.loading}
             orgType={orgType.carrier.name}
+          />
+        </TabPane>
+      );
+      i = i + 1;
+    }
+    if (ownerCheckedResourceTree && ownerCheckedResourceTree.length > 0) {
+      tabPanes.push(
+        <TabPane tab={roleLocale.ownerTabPermissionInfoTitle} key={i}>
+          <RolePermissionInfo
+            data={ownerCheckedResourceTree}
+            checkedKeys={this.state.ownerCheckedResourceKeys}
+            height={height}
+            handleAuthorize={this.handleAuthorize}
+            loading={this.props.loading}
+            orgType={orgType.owner.name}
           />
         </TabPane>
       );

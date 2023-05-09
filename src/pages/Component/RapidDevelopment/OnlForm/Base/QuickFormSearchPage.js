@@ -147,9 +147,10 @@ export default class QuickFormSearchPage extends SearchPage {
             item => item.fieldName.toLowerCase() == 'companyuuid'
           );
           let orgName =
-            loginOrg().type.toLowerCase() == 'dc'
-              ? loginOrg().type.toLowerCase() + 'Uuid'
-              : 'dispatchcenteruuid';
+            loginOrg()
+              .type.replace('_', '')
+              .toLowerCase() + 'uuid';
+          console.log('orgName', orgName, queryConfig);
           let org = queryConfig.columns.find(item => item.fieldName.toLowerCase() == orgName);
 
           if (companyuuid) {
@@ -169,9 +170,9 @@ export default class QuickFormSearchPage extends SearchPage {
                 ? [
                     {
                       field:
-                        loginOrg().type.toLowerCase() == 'dc'
-                          ? loginOrg().type.toLowerCase() + 'Uuid'
-                          : 'dispatchCenterUuid',
+                        loginOrg()
+                          .type.replace('_', '')
+                          .toLowerCase() + 'Uuid',
                       type: 'VarChar',
                       rule: org.searchCondition || 'like',
                       val: loginOrg().uuid,
