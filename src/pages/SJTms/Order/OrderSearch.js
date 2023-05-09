@@ -225,7 +225,7 @@ export default class OrderSearch extends QuickFormSearchPage {
           hidden={!havePermission(this.state.authority + '.updateWaven')}
           onClick={() =>this.handleUpdate()}
         >
-          修改作业号
+          添加作业号
         </Button>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
         <Modal

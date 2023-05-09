@@ -375,7 +375,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
           {printPage}
         </div>
         <Button
-          hidden={!havePermission(this.state.authority + '.updateWaven')}
+          hidden={!havePermission(this.state.authority + '.updateReviewCount')}
           onClick={() =>this.handUpdateReview()}
         >
           修改复核数
@@ -396,14 +396,14 @@ export default class TranOrderSearch extends QuickFormSearchPage {
           }}
         >
         <Button
-          hidden={!havePermission(this.state.authority + '.updateWaven')}
+          hidden={!havePermission(this.state.authority + '.confirmReview')}
         >
           复核确认
         </Button>
         </Popconfirm>
 
         <Button
-          hidden={!havePermission(this.state.authority + '.updateWaven')}
+          hidden={!havePermission(this.state.authority + '.printReviewInfo')}
           onClick={()=>this.handlePrint("load")}
         >
           打印复核单据
