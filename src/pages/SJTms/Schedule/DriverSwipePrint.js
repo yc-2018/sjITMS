@@ -107,16 +107,16 @@ export default class DriverSwipePrint extends PureComponent {
       const printPages = document.getElementById('printCell').childNodes;
       printPages.forEach(page => {
         LODOP.NewPageA();
-        if (dc.find(x => x == loginOrg().uuid) != undefined 
-        || loginOrg().uuid =='000000750000008'
-         || loginOrg().uuid =='000008150000005') {
+        if (dc.find(x => x == dispatchUuid) != undefined 
+        || dispatchUuid =='000000750000008'
+         || dispatchUuid =='000008150000005') {
           LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
         } else {
           LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
         }
       });
       //TODO 测试先显示打印界面 上线前改为直接打印
-     // LODOP.PREVIEW();
+      //LODOP.PREVIEW();
       LODOP.PRINT();
       //hide();
       setTimeout(() => {
@@ -166,7 +166,7 @@ export default class DriverSwipePrint extends PureComponent {
     //茶山调度
     // if (dispatchUuid == '000000750000004' 
     // || dispatchUuid == '000008150000001') 
-    if(dc.find(x => x == loginOrg().uuid) != undefined) {
+    if(dc.find(x => x == dispatchUuid) != undefined) {
       return (
         <div>
           <table
@@ -433,7 +433,7 @@ export default class DriverSwipePrint extends PureComponent {
           </table>
         </div>
       );
-    } else if (loginOrg().uuid == '000000750000003' || loginOrg().uuid == '000008110000001') {
+    } else if (dispatchUuid == '000000750000003' || dispatchUuid == '000008110000001') {
       return (
         <div>
           <table
@@ -562,7 +562,7 @@ export default class DriverSwipePrint extends PureComponent {
           </table>
         </div>
       );
-    } else if ( loginOrg().uuid =='000000750000008' || loginOrg().uuid =='000008150000005'){
+    } else if ( dispatchUuid =='000000750000008' || dispatchUuid =='000008150000005'){
         let scheduleDetailSum = {};
         let REALCARTONCOUNT = 0;
         let REALSCATTEREDCOUNT = 0;
