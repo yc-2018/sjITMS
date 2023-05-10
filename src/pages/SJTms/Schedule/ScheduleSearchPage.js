@@ -141,7 +141,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     defaultSearch.push({
       field: 'WAVENUM',
       type: 'VARCHAR',
-      rule: 'eq',
+      rule: 'in',
       val: moment(new Date()).format('YYMMDD') + '0001',
     });
     return defaultSearch;
