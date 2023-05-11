@@ -570,6 +570,8 @@ export default class DriverSwipePrint extends PureComponent {
         let OWECARTONCOUNT = 0;
         let CONTAINERSum = 0;
         let cartonCounts = 0;
+        let REALCOLDCONTAINERCOUNT = 0;
+        let REALFREEZECONTAINERCOUNT = 0;
         let sds = [];
         scheduleDetails.forEach(e=>{
           let data = sds.find(f=>f.DELIVERYPOINTCODE == e.DELIVERYPOINTCODE);
@@ -577,6 +579,8 @@ export default class DriverSwipePrint extends PureComponent {
             data.REALCARTONCOUNT = data.REALCARTONCOUNT+e.REALCARTONCOUNT;
             data.REALSCATTEREDCOUNT =  data.REALSCATTEREDCOUNT+e.REALSCATTEREDCOUNT;
             data.REALCONTAINERCOUNT = data.REALCONTAINERCOUNT+e.REALCONTAINERCOUNT;
+            data.REALCOLDCONTAINERCOUNT = data.REALCOLDCONTAINERCOUNT+e.REALCOLDCONTAINERCOUNT;
+            data.REALFREEZECONTAINERCOUNT = data.REALFREEZECONTAINERCOUNT;
             const index =  sds.map(g=>g.DELIVERYPOINTCODE).indexOf(e.DELIVERYPOINTCODE)
             sds.splice(index,1,data);
           }else{
@@ -588,6 +592,8 @@ export default class DriverSwipePrint extends PureComponent {
             fs.COLLECTBIN = e.COLLECTBIN;
             fs.DELIVERYPOINTNAME = e.DELIVERYPOINTNAME;
             fs.REALCONTAINERCOUNT = e.REALCONTAINERCOUNT
+            fs.REALCOLDCONTAINERCOUNT = e.REALCOLDCONTAINERCOUNT;
+            fs.REALFREEZECONTAINERCOUNT = e.REALFREEZECONTAINERCOUNT
             sds.push(fs);
           }
         })
@@ -595,9 +601,11 @@ export default class DriverSwipePrint extends PureComponent {
           REALCARTONCOUNT += item.REALCARTONCOUNT;
           REALSCATTEREDCOUNT += item.REALSCATTEREDCOUNT;
           REALCONTAINERCOUNT += item.REALCONTAINERCOUNT;
+          REALCOLDCONTAINERCOUNT+=item.REALCOLDCONTAINERCOUNT;
+          REALFREEZECONTAINERCOUNT+=item.REALFREEZECONTAINERCOUNT;
           OWECARTONCOUNT += item.OWECARTONCOUNT;
           CONTAINERSum += item.REALCONTAINERCOUNT + item.OWECARTONCOUNT;
-          cartonCounts += item.REALCONTAINERCOUNT+0
+          cartonCounts += item.REALCONTAINERCOUNT+item.REALCOLDCONTAINERCOUNT+item.REALFREEZECONTAINERCOUNT
         });
         scheduleDetailSum.REALCARTONCOUNT = REALCARTONCOUNT;
         scheduleDetailSum.REALSCATTEREDCOUNT = REALSCATTEREDCOUNT;
@@ -606,6 +614,8 @@ export default class DriverSwipePrint extends PureComponent {
         scheduleDetailSum.CONTAINERSum = CONTAINERSum;
         scheduleDetailSum.StoreSum = scheduleDetails.length;
         scheduleDetailSum.cartonCounts = cartonCounts;
+        scheduleDetailSum.REALCOLDCONTAINERCOUNT = REALCOLDCONTAINERCOUNT;
+        scheduleDetailSum.REALFREEZECONTAINERCOUNT = REALFREEZECONTAINERCOUNT;
         const stevedore = schedule.memberDetails
         .filter(e => e.memberType == 'DeliveryMan')
         .map(e => '[' + e.member.code + ']' + e.member.name);
@@ -762,9 +772,9 @@ export default class DriverSwipePrint extends PureComponent {
                         <td width={50}>{item.REALCARTONCOUNT}</td>
                         <td width={50}>{item.REALSCATTEREDCOUNT}</td>
                         <td width={50}>{item.REALCONTAINERCOUNT}</td>
-                        <td width={50}>{0}</td>
-                        <td width={50}>{0}</td>
-                        <td width={50}>{item.REALCONTAINERCOUNT+0}</td>
+                        <td width={50}>{item.REALFREEZECONTAINERCOUNT}</td>
+                        <td width={50}>{item.REALCOLDCONTAINERCOUNT}</td>
+                        <td width={50}>{item.REALCONTAINERCOUNT+item.REALFREEZECONTAINERCOUNT+item.REALCOLDCONTAINERCOUNT}</td>
                         <td width={50}>{0}</td>
                         
                         {/* <td width={50}>{0}</td>
@@ -800,8 +810,8 @@ export default class DriverSwipePrint extends PureComponent {
                     <td width={50}>{scheduleDetailSum.REALCARTONCOUNT}</td>
                     <td width={50}>{scheduleDetailSum.REALSCATTEREDCOUNT}</td>
                     <td width={50}>{scheduleDetailSum.REALCONTAINERCOUNT}</td>
-                    <td width={50}>{}</td>
-                    <td width={50}>{}</td>
+                    <td width={50}>{scheduleDetailSum.REALFREEZECONTAINERCOUNT}</td>
+                    <td width={50}>{scheduleDetailSum.REALCOLDCONTAINERCOUNT}</td>
                     <td width={50}>{scheduleDetailSum.cartonCounts}</td>
                     <td width={50}>{ }</td>
                    

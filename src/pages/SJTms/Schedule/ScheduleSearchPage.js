@@ -1471,6 +1471,8 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
       let OWECARTONCOUNT = 0;
       let CONTAINERSum = 0;
       let cartonCounts = 0;
+      let REALCOLDCONTAINERCOUNT = 0;
+      let REALFREEZECONTAINERCOUNT = 0;
       //scheduleDetails =   sumBy(scheduleDetails,'DELIVERYPOINTCODE');
      // console.log("scheduleDetails",scheduleDetails);
       scheduleDetails.forEach(item => {
@@ -1478,8 +1480,10 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
         REALSCATTEREDCOUNT += item.REALSCATTEREDCOUNT;
         REALCONTAINERCOUNT += item.REALCONTAINERCOUNT;
         OWECARTONCOUNT += item.OWECARTONCOUNT;
+        REALCOLDCONTAINERCOUNT+=item.REALCOLDCONTAINERCOUNT;
+        REALFREEZECONTAINERCOUNT+=item.REALFREEZECONTAINERCOUNT;
         CONTAINERSum += item.REALCONTAINERCOUNT + item.OWECARTONCOUNT;
-        cartonCounts += item.REALCONTAINERCOUNT+0
+        cartonCounts += item.REALCONTAINERCOUNT+item.REALCOLDCONTAINERCOUNT+item.REALFREEZECONTAINERCOUNT
       });
       let sds = [];
       scheduleDetails.forEach(e=>{
@@ -1488,6 +1492,8 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
           data.REALCARTONCOUNT = data.REALCARTONCOUNT+e.REALCARTONCOUNT;
           data.REALSCATTEREDCOUNT =  data.REALSCATTEREDCOUNT+e.REALSCATTEREDCOUNT;
           data.REALCONTAINERCOUNT = data.REALCONTAINERCOUNT+e.REALCONTAINERCOUNT;
+          data.REALCOLDCONTAINERCOUNT = data.REALCOLDCONTAINERCOUNT+e.REALCOLDCONTAINERCOUNT;
+          data.REALFREEZECONTAINERCOUNT = data.REALFREEZECONTAINERCOUNT;
           const index =  sds.map(g=>g.DELIVERYPOINTCODE).indexOf(e.DELIVERYPOINTCODE)
           sds.splice(index,1,data);
         }else{
@@ -1499,6 +1505,8 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
           fs.COLLECTBIN = e.COLLECTBIN;
           fs.DELIVERYPOINTNAME = e.DELIVERYPOINTNAME;
           fs.REALCONTAINERCOUNT = e.REALCONTAINERCOUNT
+          fs.REALCOLDCONTAINERCOUNT = e.REALCOLDCONTAINERCOUNT;
+          fs.REALFREEZECONTAINERCOUNT = e.REALFREEZECONTAINERCOUNT
           sds.push(fs);
         }
       })
@@ -1509,6 +1517,8 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
       scheduleDetailSum.CONTAINERSum = CONTAINERSum;
       scheduleDetailSum.StoreSum = scheduleDetails.length;
       scheduleDetailSum.cartonCounts = cartonCounts;
+      scheduleDetailSum.REALCOLDCONTAINERCOUNT = REALCOLDCONTAINERCOUNT;
+      scheduleDetailSum.REALFREEZECONTAINERCOUNT = REALFREEZECONTAINERCOUNT;
       return (
         <div>
           <table
@@ -1675,9 +1685,9 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                       <td width={50}>{item.REALCARTONCOUNT}</td>
                       <td width={50}>{item.REALSCATTEREDCOUNT}</td>
                       <td width={50}>{item.REALCONTAINERCOUNT}</td>
-                      <td width={50}>{0}</td>
-                      <td width={50}>{0}</td>
-                      <td width={50}>{item.REALCONTAINERCOUNT+0}</td>
+                      <td width={50}>{item.REALFREEZECONTAINERCOUNT}</td>
+                      <td width={50}>{item.REALCOLDCONTAINERCOUNT}</td>
+                      <td width={50}>{item.REALCONTAINERCOUNT+item.REALFREEZECONTAINERCOUNT+item.REALCOLDCONTAINERCOUNT}</td>
                       <td width={50}>{0}</td>
                       
                       {/* <td width={50}>{0}</td>
@@ -1713,8 +1723,8 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                   <td width={50}>{scheduleDetailSum.REALCARTONCOUNT}</td>
                   <td width={50}>{scheduleDetailSum.REALSCATTEREDCOUNT}</td>
                   <td width={50}>{scheduleDetailSum.REALCONTAINERCOUNT}</td>
-                  <td width={50}>{}</td>
-                  <td width={50}>{}</td>
+                  <td width={50}>{scheduleDetailSum.REALFREEZECONTAINERCOUNT}</td>
+                  <td width={50}>{scheduleDetailSum.REALCOLDCONTAINERCOUNT}</td>
                   <td width={50}>{scheduleDetailSum.cartonCounts}</td>
                   <td width={50}>{ }</td>
                  
