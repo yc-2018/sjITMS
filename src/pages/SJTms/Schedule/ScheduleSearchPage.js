@@ -1471,6 +1471,8 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
       let OWECARTONCOUNT = 0;
       let CONTAINERSum = 0;
       let cartonCounts = 0;
+      //scheduleDetails =   sumBy(scheduleDetails,'DELIVERYPOINTCODE');
+     // console.log("scheduleDetails",scheduleDetails);
       scheduleDetails.forEach(item => {
         REALCARTONCOUNT += item.REALCARTONCOUNT;
         REALSCATTEREDCOUNT += item.REALSCATTEREDCOUNT;
@@ -1479,6 +1481,27 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
         CONTAINERSum += item.REALCONTAINERCOUNT + item.OWECARTONCOUNT;
         cartonCounts += item.REALCONTAINERCOUNT+0
       });
+      let sds = [];
+      scheduleDetails.forEach(e=>{
+        let data = sds.find(f=>f.DELIVERYPOINTCODE == e.DELIVERYPOINTCODE);
+        if(data){
+          data.REALCARTONCOUNT = data.REALCARTONCOUNT+e.REALCARTONCOUNT;
+          data.REALSCATTEREDCOUNT =  data.REALSCATTEREDCOUNT+e.REALSCATTEREDCOUNT;
+          data.REALCONTAINERCOUNT = data.REALCONTAINERCOUNT+e.REALCONTAINERCOUNT;
+          const index =  sds.map(g=>g.DELIVERYPOINTCODE).indexOf(e.DELIVERYPOINTCODE)
+          sds.splice(index,1,data);
+        }else{
+          let fs ={}; 
+          fs.DELIVERYPOINTCODE = e.DELIVERYPOINTCODE;
+          fs.REALCARTONCOUNT = e.REALCARTONCOUNT;
+          fs.OWNERNAME = e.OWNERNAME;
+          fs.REALSCATTEREDCOUNT = e.REALSCATTEREDCOUNT;
+          fs.COLLECTBIN = e.COLLECTBIN;
+          fs.DELIVERYPOINTNAME = e.DELIVERYPOINTNAME;
+          fs.REALCONTAINERCOUNT = e.REALCONTAINERCOUNT
+          sds.push(fs);
+        }
+      })
       scheduleDetailSum.REALCARTONCOUNT = REALCARTONCOUNT;
       scheduleDetailSum.REALSCATTEREDCOUNT = REALSCATTEREDCOUNT;
       scheduleDetailSum.REALCONTAINERCOUNT = REALCONTAINERCOUNT;
@@ -1640,8 +1663,8 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
               </tr>
             </thead>
             <tbody>
-              {scheduleDetails ? (
-                scheduleDetails.map((item, index) => {
+              {sds ? (
+                sds.map((item, index) => {
                   return (
                     <tr style={{ textAlign: 'center', height: 33 }}>
                       <td width={30}>{index+1}</td>
