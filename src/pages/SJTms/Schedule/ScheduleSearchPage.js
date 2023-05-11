@@ -1480,10 +1480,11 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
         REALSCATTEREDCOUNT += item.REALSCATTEREDCOUNT;
         REALCONTAINERCOUNT += item.REALCONTAINERCOUNT;
         OWECARTONCOUNT += item.OWECARTONCOUNT;
-        REALCOLDCONTAINERCOUNT+=item.REALCOLDCONTAINERCOUNT;
-        REALFREEZECONTAINERCOUNT+=item.REALFREEZECONTAINERCOUNT;
+        REALCOLDCONTAINERCOUNT+=(!item.REALCOLDCONTAINERCOUNT?0:item.REALCOLDCONTAINERCOUNT);
+        REALFREEZECONTAINERCOUNT+=(!item.REALFREEZECONTAINERCOUNT?0:item.REALFREEZECONTAINERCOUNT);
         CONTAINERSum += item.REALCONTAINERCOUNT + item.OWECARTONCOUNT;
-        cartonCounts += item.REALCONTAINERCOUNT+item.REALCOLDCONTAINERCOUNT+item.REALFREEZECONTAINERCOUNT
+        cartonCounts += (!item.REALCONTAINERCOUNT?0:item.REALCONTAINERCOUNT)
+        +(!item.REALCOLDCONTAINERCOUNT?0:item.REALCOLDCONTAINERCOUNT)+(!item.REALFREEZECONTAINERCOUNT?0:item.REALFREEZECONTAINERCOUNT)
       });
       let sds = [];
       scheduleDetails.forEach(e=>{
@@ -1685,9 +1686,11 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                       <td width={50}>{item.REALCARTONCOUNT}</td>
                       <td width={50}>{item.REALSCATTEREDCOUNT}</td>
                       <td width={50}>{item.REALCONTAINERCOUNT}</td>
-                      <td width={50}>{item.REALFREEZECONTAINERCOUNT}</td>
-                      <td width={50}>{item.REALCOLDCONTAINERCOUNT}</td>
-                      <td width={50}>{item.REALCONTAINERCOUNT+item.REALFREEZECONTAINERCOUNT+item.REALCOLDCONTAINERCOUNT}</td>
+                      <td width={50}>{!item.REALFREEZECONTAINERCOUNT?0:item.REALFREEZECONTAINERCOUNT}</td>
+                      <td width={50}>{!item.REALCOLDCONTAINERCOUNT?0:item.REALCOLDCONTAINERCOUNT}</td>
+                      <td width={50}>{(!item.REALCONTAINERCOUNT?0:item.REALCONTAINERCOUNT)+
+                      (!item.REALFREEZECONTAINERCOUNT?0:item.REALFREEZECONTAINERCOUNT)+(!item.REALCOLDCONTAINERCOUNT?0:item.REALCOLDCONTAINERCOUNT)
+                    }</td>
                       <td width={50}>{0}</td>
                       
                       {/* <td width={50}>{0}</td>

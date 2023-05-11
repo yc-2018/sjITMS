@@ -601,11 +601,12 @@ export default class DriverSwipePrint extends PureComponent {
           REALCARTONCOUNT += item.REALCARTONCOUNT;
           REALSCATTEREDCOUNT += item.REALSCATTEREDCOUNT;
           REALCONTAINERCOUNT += item.REALCONTAINERCOUNT;
-          REALCOLDCONTAINERCOUNT+=item.REALCOLDCONTAINERCOUNT;
-          REALFREEZECONTAINERCOUNT+=item.REALFREEZECONTAINERCOUNT;
-          OWECARTONCOUNT += item.OWECARTONCOUNT;
-          CONTAINERSum += item.REALCONTAINERCOUNT + item.OWECARTONCOUNT;
-          cartonCounts += item.REALCONTAINERCOUNT+item.REALCOLDCONTAINERCOUNT+item.REALFREEZECONTAINERCOUNT
+
+         REALCOLDCONTAINERCOUNT+=(!item.REALCOLDCONTAINERCOUNT?0:item.REALCOLDCONTAINERCOUNT);
+         REALFREEZECONTAINERCOUNT+=(!item.REALFREEZECONTAINERCOUNT?0:item.REALFREEZECONTAINERCOUNT);
+        CONTAINERSum += item.REALCONTAINERCOUNT + item.OWECARTONCOUNT;
+        cartonCounts += (!item.REALCONTAINERCOUNT?0:item.REALCONTAINERCOUNT)
+        +(!item.REALCOLDCONTAINERCOUNT?0:item.REALCOLDCONTAINERCOUNT)+(!item.REALFREEZECONTAINERCOUNT?0:item.REALFREEZECONTAINERCOUNT)
         });
         scheduleDetailSum.REALCARTONCOUNT = REALCARTONCOUNT;
         scheduleDetailSum.REALSCATTEREDCOUNT = REALSCATTEREDCOUNT;
@@ -772,10 +773,11 @@ export default class DriverSwipePrint extends PureComponent {
                         <td width={50}>{item.REALCARTONCOUNT}</td>
                         <td width={50}>{item.REALSCATTEREDCOUNT}</td>
                         <td width={50}>{item.REALCONTAINERCOUNT}</td>
-                        <td width={50}>{item.REALFREEZECONTAINERCOUNT}</td>
-                        <td width={50}>{item.REALCOLDCONTAINERCOUNT}</td>
-                        <td width={50}>{item.REALCONTAINERCOUNT+item.REALFREEZECONTAINERCOUNT+item.REALCOLDCONTAINERCOUNT}</td>
-                        <td width={50}>{0}</td>
+                        <td width={50}>{!item.REALFREEZECONTAINERCOUNT?0:item.REALFREEZECONTAINERCOUNT}</td>
+                        <td width={50}>{!item.REALCOLDCONTAINERCOUNT?0:item.REALCOLDCONTAINERCOUNT}</td>
+                        <td width={50}>{(!item.REALCONTAINERCOUNT?0:item.REALCONTAINERCOUNT)+
+                      (!item.REALFREEZECONTAINERCOUNT?0:item.REALFREEZECONTAINERCOUNT)+(!item.REALCOLDCONTAINERCOUNT?0:item.REALCOLDCONTAINERCOUNT)
+                    }</td>                        <td width={50}>{0}</td>
                         
                         {/* <td width={50}>{0}</td>
                         <td width={50}>{0}</td> */}
