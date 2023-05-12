@@ -319,7 +319,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               <tr style={{ height: 25 }}>
                 <th width={50}>序号</th>
                 <th width={80}>作业号</th>
-                <th width={100}>门店编码</th>
+                <th width={80}>门店编码</th>
                 <th width={170}>门店名称</th>
                 <th width={80}>拣货次序</th>
                 <th width ={80}>整件板位</th>
@@ -327,6 +327,8 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                 <th width={80}>复核整件</th>
                 <th width={80}>预估周转筐</th>
                 <th width={80}>复核周转筐</th>
+                <th width={80}>周转筐(冷藏)</th>
+                <th width={80}>周转筐(冷冻)</th>
               </tr>
             </thead>
             <tbody>
@@ -344,6 +346,8 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                       <td width={80} >{item.REALCARTONCOUNT}</td>
                       <td width={80} >{item.CONTAINERCOUNT}</td>
                       <td width={80}>{item.REALCONTAINERCOUNT}</td>
+                      <td width={80} >{item.REALCOLDCONTAINER}</td>
+                      <td width={80}>{item.REALFREEZECONTAINER}</td>
                     </tr>
                   );
                 })
