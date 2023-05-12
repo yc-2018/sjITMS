@@ -277,7 +277,23 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       
       this.setState({ printPage: printPages });
     };
+ 
     drawBillPage = ()=>{
+      let  REALCARTONCOUNT  =0;
+      let  CARTONCOUNT = 0;
+      let CONTAINERCOUNT = 0;
+      let  REALCONTAINERCOUNT =0;
+      let REALCOLDCONTAINER = 0;
+      let REALFREEZECONTAINER = 0;
+      this.state.selectedRows.map(e=>{
+        REALCARTONCOUNT+=e.REALCARTONCOUNT;
+        CONTAINERCOUNT+=e.CONTAINERCOUNT;
+        CARTONCOUNT+=e.CARTONCOUNT;
+        REALCONTAINERCOUNT+=e.REALCONTAINERCOUNT;
+        REALFREEZECONTAINER+=e.REALFREEZECONTAINER;
+        REALCOLDCONTAINER+=e.REALCOLDCONTAINER;
+      })
+
       return (
         <div>
           <table
@@ -323,12 +339,10 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                 <th width={170}>门店名称</th>
                 <th width={80}>拣货次序</th>
                 <th width ={80}>整件板位</th>
-                <th width={80}>预估整件</th>
-                <th width={80}>复核整件</th>
-                <th width={80}>预估周转筐</th>
-                <th width={80}>复核周转筐</th>
-                <th width={80}>周转筐(冷藏)</th>
-                <th width={80}>周转筐(冷冻)</th>
+                <th width={100}>整件</th>
+                <th width={100}>周转筐</th>
+                <th width={100}>保温箱</th>
+                <th width={100}>冷冻箱</th>
               </tr>
             </thead>
             <tbody>
@@ -342,9 +356,9 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                       <td width={170}>{item.DELIVERYPOINTNAME}</td>
                       <td width={80}>{item.LINECODE}</td>
                       <td width={80}>{item.COLLECTBIN}</td>
-                      <td width={80}>{item.CARTONCOUNT}</td>
+                      {/* <td width={80}>{item.CARTONCOUNT}</td> */}
                       <td width={80} >{item.REALCARTONCOUNT}</td>
-                      <td width={80} >{item.CONTAINERCOUNT}</td>
+                      {/* <td width={80} >{item.CONTAINERCOUNT}</td> */}
                       <td width={80}>{item.REALCONTAINERCOUNT}</td>
                       <td width={80} >{item.REALCOLDCONTAINER}</td>
                       <td width={80}>{item.REALFREEZECONTAINER}</td>
@@ -354,6 +368,24 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               ) : (
                 <></>
               )}
+              
+                    <tr style={{ textAlign: 'center', height: 20 }}>
+                      <td width={50} colSpan={2}>合计</td>
+                     
+                      <td width={100} colSpan={2}>{this.state.selectedRows.length}</td>
+                      <td width={80}>{}</td>
+                      <td width={80}>{}</td>
+                      {/* <td width={80}>{CARTONCOUNT}</td> */}
+                      <td width={100} >{REALCARTONCOUNT}</td>
+                      {/* <td width={80} >{CONTAINERCOUNT}</td> */}
+                      <td width={100}>{REALCONTAINERCOUNT}</td>
+                      <td width={100} >{REALCOLDCONTAINER}</td>
+                      <td width={100}>{REALFREEZECONTAINER}</td>
+                    </tr>
+                  
+              
+              
+              
              
             </tbody>
           </table>
