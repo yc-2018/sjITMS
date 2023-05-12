@@ -745,9 +745,9 @@ export default class DriverSwipePrint extends PureComponent {
                 <tr style={{ height: 25 }}>
                   <th>整件</th>
                   <th>散件</th>
-                  <th>周转</th>
-                  <th>冷冻</th>
-                  <th>冷藏</th>
+                  <th>周转箱</th>
+                  <th>冷冻箱</th>
+                  <th>保温箱</th>
                   <th>箱总数</th>
                   <th>腾筐</th>
                   {/* <th>福袋数</th>
