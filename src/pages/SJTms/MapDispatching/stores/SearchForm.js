@@ -2,9 +2,9 @@
  * @Author: guankongjin
  * @Date: 2022-10-25 10:25:16
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-23 17:11:06
+ * @LastEditTime: 2023-05-12 10:20:29
  * @Description:地图排车查询面板
- * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\SearchForm.js
+ * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\stores\SearchForm.js
  */
 
 import React, { Component } from 'react';
@@ -158,6 +158,26 @@ export default class SearchForm extends Component {
         searchProperties = {
           ...searchProperties,
           linkFilter: [linkFilter],
+        };
+      }
+    }
+    if (searchProperties.isOrgSearch) {
+      const orgFields = searchProperties.isOrgSearch.split(',');
+      let loginOrgType = loginOrg().type.replace('_', '');
+      let loginParmas = [];
+      if (orgFields.indexOf('Company') != -1) {
+        loginParmas.push({ field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] });
+      }
+      if (orgFields.indexOf('Org') != -1) {
+        loginParmas.push({ field: loginOrgType + 'UUID', rule: 'like', val: [loginOrg().uuid] });
+      }
+      if (searchProperties.queryParams.condition) {
+        const params = [...searchProperties.queryParams.condition.params];
+        searchProperties.queryParams.condition.params = [...params, ...loginParmas];
+      } else {
+        searchProperties.queryParams = {
+          ...searchProperties.queryParams,
+          condition: { params: loginParmas },
         };
       }
     }
