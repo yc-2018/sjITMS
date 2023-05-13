@@ -1659,8 +1659,8 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                 <th>整件</th>
                 <th>散件</th>
                 <th>周转箱</th>
-                <th>冷冻箱</th>
                 <th>冷藏箱</th>
+                <th>冷冻箱</th>
                 <th>箱总数</th>
                 <th>腾筐</th>
                 {/* <th>福袋数</th>
@@ -1686,8 +1686,8 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                       <td width={50}>{item.REALCARTONCOUNT}</td>
                       <td width={50}>{item.REALSCATTEREDCOUNT}</td>
                       <td width={50}>{item.REALCONTAINERCOUNT}</td>
-                      <td width={50}>{!item.REALFREEZECONTAINERCOUNT?0:item.REALFREEZECONTAINERCOUNT}</td>
                       <td width={50}>{!item.REALCOLDCONTAINERCOUNT?0:item.REALCOLDCONTAINERCOUNT}</td>
+                      <td width={50}>{!item.REALFREEZECONTAINERCOUNT?0:item.REALFREEZECONTAINERCOUNT}</td>
                       <td width={50}>{(!item.REALCONTAINERCOUNT?0:item.REALCONTAINERCOUNT)+
                       (!item.REALFREEZECONTAINERCOUNT?0:item.REALFREEZECONTAINERCOUNT)+(!item.REALCOLDCONTAINERCOUNT?0:item.REALCOLDCONTAINERCOUNT)
                     }</td>
@@ -1726,8 +1726,8 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                   <td width={50}>{scheduleDetailSum.REALCARTONCOUNT}</td>
                   <td width={50}>{scheduleDetailSum.REALSCATTEREDCOUNT}</td>
                   <td width={50}>{scheduleDetailSum.REALCONTAINERCOUNT}</td>
-                  <td width={50}>{scheduleDetailSum.REALFREEZECONTAINERCOUNT}</td>
                   <td width={50}>{scheduleDetailSum.REALCOLDCONTAINERCOUNT}</td>
+                  <td width={50}>{scheduleDetailSum.REALFREEZECONTAINERCOUNT}</td>
                   <td width={50}>{scheduleDetailSum.cartonCounts}</td>
                   <td width={50}>{ }</td>
                  
