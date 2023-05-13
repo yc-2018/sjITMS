@@ -166,11 +166,12 @@ export async function updateOrderWavenum(uuids, WAVENUM) {
   );
 }
 //修改复核数
-export async function updateReview(uuid, Carton,Container,scattered) {
+export async function updateReview(data) {
   return request(
-    `/itms-schedule/itms-schedule/sj/bill/ordertms/updateReview?uuid=${uuid}&Carton=${Carton}&Container=${Container}&scattered=${scattered}`,
+    `/itms-schedule/itms-schedule/sj/bill/ordertms/updateReview`,
     {
       method: 'POST',
+      body:data
     }
   );
 }
