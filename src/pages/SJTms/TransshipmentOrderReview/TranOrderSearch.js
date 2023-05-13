@@ -340,8 +340,8 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                 <th width={80}>拣货次序</th>
                 <th width ={80}>整件板位</th>
                 <th width={100}>整件</th>
-                <th width={100}>周转筐</th>
-                <th width={100}>保温箱</th>
+                <th width={100}>周转箱</th>
+                <th width={100}>冷藏箱</th>
                 <th width={100}>冷冻箱</th>
               </tr>
             </thead>
@@ -410,12 +410,12 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       <div id="printPagewe" style={{ display: 'none' }}>
           {printPage}
         </div>
-        <Button
+        {/* <Button
           hidden={!havePermission(this.state.authority + '.updateReviewCount')}
           onClick={() =>this.handUpdateReview()}
         >
           修改复核数
-        </Button>
+        </Button> */}
         <Popconfirm
           title="你确定要复核所选中的内容吗?"
           onConfirm={() => {
@@ -636,7 +636,15 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       sa[fieldName]= value;
       sa.UUID = record.UUID;
       changeData.push(sa); 
-      const response = await updateReview (record.UUID,row.REALCARTONCOUNT,row.REALCONTAINERCOUNT,row.REALSCATTEREDCOUNT);
+     const real = {
+        uuid:record.UUID,
+        realCartonCount:row.REALCARTONCOUNT,
+        realContainerCount:row.REALCONTAINERCOUNT,
+        realScatteredCount: row.REALSCATTEREDCOUNT,
+        realColdContainerCount: row.REALCOLDCONTAINER,
+        realFreezeContainerCount: row.REALFREEZECONTAINER
+      }
+      const response = await updateReview (real);
       if(response && response.success){
        message.success("修改成功");
        this.setState({changeData})
@@ -685,6 +693,40 @@ export default class TranOrderSearch extends QuickFormSearchPage {
           }}
           min={0}
           defaultValue={record.REALCONTAINERCOUNT}
+          style={{ width: 100 }}
+          onBlur={(event)=>this.blurSave(record,column.fieldName,event.target.value)}
+          onChange={event => this.onChange(record, column.fieldName, event.target.value)}
+        />
+      );
+      e.component = component;
+    }
+    if (fieldName == 'REALFREEZECONTAINER') {
+      const component = (
+        <Input
+          className={e.record.ROW_ID + 'REALFREEZECONTAINER'}
+          onFocus={(event) => {
+            document.getElementsByClassName(e.record.ROW_ID + 'REALFREEZECONTAINER')[0].select();
+            this.onfocuschange(record,column.fieldName,event.target.value);
+          }}
+          min={0}
+          defaultValue={record.REALFREEZECONTAINER}
+          style={{ width: 100 }}
+          onBlur={(event)=>this.blurSave(record,column.fieldName,event.target.value)}
+          onChange={event => this.onChange(record, column.fieldName, event.target.value)}
+        />
+      );
+      e.component = component;
+    }
+    if (fieldName == 'REALCOLDCONTAINER') {
+      const component = (
+        <Input
+          className={e.record.ROW_ID + 'REALCOLDCONTAINER'}
+          onFocus={(event) => {
+            document.getElementsByClassName(e.record.ROW_ID + 'REALCOLDCONTAINER')[0].select();
+            this.onfocuschange(record,column.fieldName,event.target.value);
+          }}
+          min={0}
+          defaultValue={record.REALCOLDCONTAINER}
           style={{ width: 100 }}
           onBlur={(event)=>this.blurSave(record,column.fieldName,event.target.value)}
           onChange={event => this.onChange(record, column.fieldName, event.target.value)}
