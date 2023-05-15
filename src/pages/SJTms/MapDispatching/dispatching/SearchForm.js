@@ -151,6 +151,26 @@ export default class SearchForm extends Component {
         };
       }
     }
+    if (searchProperties.isOrgSearch) {
+      const orgFields = searchProperties.isOrgSearch.split(',');
+      let loginOrgType = loginOrg().type.replace('_', '');
+      let loginParmas = [];
+      if (orgFields.indexOf('Company') != -1) {
+        loginParmas.push({ field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] });
+      }
+      if (orgFields.indexOf('Org') != -1) {
+        loginParmas.push({ field: loginOrgType + 'UUID', rule: 'like', val: [loginOrg().uuid] });
+      }
+      if (searchProperties.queryParams.condition) {
+        const params = [...searchProperties.queryParams.condition.params];
+        searchProperties.queryParams.condition.params = [...params, ...loginParmas];
+      } else {
+        searchProperties.queryParams = {
+          ...searchProperties.queryParams,
+          condition: { params: loginParmas },
+        };
+      }
+    }
     switch (searchField.searchShowtype) {
       case 'date':
         return <RangePicker style={{ width: '100%' }} />;

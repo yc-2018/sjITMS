@@ -1190,10 +1190,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
     scheduleDetailSum.REALCONTAINERCOUNT = REALCONTAINERCOUNT;
     scheduleDetailSum.OWECARTONCOUNT = OWECARTONCOUNT;
     scheduleDetailSum.CONTAINERSum = CONTAINERSum;
-    const deliveryPointCount = scheduleDetails
-      ? uniq(scheduleDetails.map(x => x.DELIVERYPOINTCODE)).length
-      : 0;
-    scheduleDetailSum.StoreSum = deliveryPointCount;
+    scheduleDetailSum.StoreSum = scheduleDetails.length;
     return (
       <div>
         <table
@@ -1532,7 +1529,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
     scheduleDetailSum.REALCONTAINERCOUNT = REALCONTAINERCOUNT;
     scheduleDetailSum.OWECARTONCOUNT = OWECARTONCOUNT;
     scheduleDetailSum.CONTAINERSum = CONTAINERSum;
-    scheduleDetailSum.StoreSum = scheduleDetails.length;
+    scheduleDetailSum.StoreSum = sds.length;
     scheduleDetailSum.cartonCounts = cartonCounts;
     scheduleDetailSum.REALCOLDCONTAINERCOUNT = REALCOLDCONTAINERCOUNT;
     scheduleDetailSum.REALFREEZECONTAINERCOUNT = REALFREEZECONTAINERCOUNT;
@@ -1738,7 +1735,7 @@ const drawPrintPage = (schedule, scheduleDetails, dc) => {
                   {'合计'}
                 </td>
                 <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
-                  {scheduleDetailSum.StoreSum}
+                  { scheduleDetailSum.StoreSum}
                 </td>
                 {/* <td width={120}>
                 {scheduleDetailSum.StoreSum}

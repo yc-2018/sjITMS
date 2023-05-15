@@ -134,6 +134,12 @@ export const OrderColumns = [
     width: 80,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
+  {
+    title: '配送备注',
+    dataIndex: 'tmsNote',
+    width: 80,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  }
 ];
 export const OrderCollectColumns = [
   {

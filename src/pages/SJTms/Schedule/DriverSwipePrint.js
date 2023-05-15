@@ -613,7 +613,7 @@ export default class DriverSwipePrint extends PureComponent {
         scheduleDetailSum.REALCONTAINERCOUNT = REALCONTAINERCOUNT;
         scheduleDetailSum.OWECARTONCOUNT = OWECARTONCOUNT;
         scheduleDetailSum.CONTAINERSum = CONTAINERSum;
-        scheduleDetailSum.StoreSum = scheduleDetails.length;
+        scheduleDetailSum.StoreSum = sds.length;
         scheduleDetailSum.cartonCounts = cartonCounts;
         scheduleDetailSum.REALCOLDCONTAINERCOUNT = REALCOLDCONTAINERCOUNT;
         scheduleDetailSum.REALFREEZECONTAINERCOUNT = REALFREEZECONTAINERCOUNT;
