@@ -1,12 +1,12 @@
 let itemConfig = {
   '000000750000004': [
     {
-      key: 'init',
-      tab: '默认匹配',
-    },
-    {
       key: 'recommend',
       tab: '熟练度匹配',
+    },
+    {
+      key: 'init',
+      tab: '默认匹配',
     },
     {
       key: 'area',
@@ -43,12 +43,12 @@ let itemConfig = {
   ], //ydzs
   '000008150000001': [
     {
-      key: 'init',
-      tab: '默认匹配',
-    },
-    {
       key: 'recommend',
       tab: '熟练度匹配',
+    },
+    {
+      key: 'init',
+      tab: '默认匹配',
     },
     {
       key: 'area',
