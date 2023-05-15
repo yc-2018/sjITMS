@@ -556,6 +556,7 @@ export default class LineSystemSearchPage extends Component {
           this.setState({
             errorMessage: '导入成功,共导入' + result.data + '家门店',
             errorMessageVisible: true,
+            uploadLineVisible: false
           });
         } else {
           this.setState({ errorMessage: result.message, errorMessageVisible: true });
