@@ -65,7 +65,9 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
    
     const pre = this.state.pretype?.filter(e=>e.NAME ==record.DEALMETHOD)[0]
     if( record.RECEIPTED==2 && pre?.ISCOLOR=='是'){
-      if (pre.COLOR=='Blue' ){
+      if(record.DISPOSEFLAG=='Disposed'){
+        return styless.lightRow;
+      }else if (pre.COLOR=='Blue' ){
         return styless.gaizBlueStyle;
       } else if (pre.COLOR=='Yellow'){
         return styless.gaizYellowStyle;
