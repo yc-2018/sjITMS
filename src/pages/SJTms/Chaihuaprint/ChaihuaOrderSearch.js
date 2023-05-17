@@ -6,12 +6,12 @@
  * @version: 1.0
  */
 import React from 'react';
-import { Button, Popconfirm, message, Menu, Modal, Form, Input ,InputNumber} from 'antd';
+import { Button, Popconfirm, message, Menu, Modal, Form, Input, InputNumber } from 'antd';
 import { connect } from 'dva';
 import { havePermission } from '@/utils/authority';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
-import { batchAudit, audit, cancel, removeOrder,updateOrderWavenum,updateReview,onConfirm } from '@/services/sjitms/OrderBill';
+import { batchAudit, audit, cancel, removeOrder, updateOrderWavenum, updateReview, onConfirm } from '@/services/sjitms/OrderBill';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
 import { queryAllData } from '@/services/quick/Quick';
@@ -34,9 +34,9 @@ export default class TranOrderSearch extends QuickFormSearchPage {
     uploadModal: false,
     showRemovePop: false,
     dispatchCenter: '',
-    showUpdateWaven:false,
-    handUpdateReview:false,
-    changeData:[]
+    showUpdateWaven: false,
+    handUpdateReview: false,
+    changeData: []
   };
 
   onUpload = () => {
@@ -102,8 +102,8 @@ export default class TranOrderSearch extends QuickFormSearchPage {
   //   const column = e.column;
   //   const record = e.record;
   //   const fieldName = column.fieldName;
-   
-    
+
+
   //   if (fieldName == 'REALCARTONCOUNT') {
   //     const component = (
   //       <Input
@@ -154,17 +154,17 @@ export default class TranOrderSearch extends QuickFormSearchPage {
     this.setState({ showUpdateWaven: true });
   };
 
-  handUpdateReview = ()=>{
+  handUpdateReview = () => {
     const { selectedRows } = this.state;
     if (selectedRows.length != 1) {
       message.error('请选择一条数据！');
       return;
     }
     this.setState({
-       handUpdateReview: true,
-      Carton:selectedRows[0].REALCARTONCOUNT,
-      Container:selectedRows[0].REALCONTAINERCOUNT,
-      scattered:selectedRows[0].REALSCATTEREDCOUNT
+      handUpdateReview: true,
+      Carton: selectedRows[0].REALCARTONCOUNT,
+      Container: selectedRows[0].REALCONTAINERCOUNT,
+      scattered: selectedRows[0].REALSCATTEREDCOUNT
     });
   }
 
@@ -198,36 +198,36 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       this.setState({ showRemovePop: false });
     }
   };
-  showUpdateWavenHandleOk =async ()=>{
-    const { selectedRows,WAVENUM } = this.state;
-    if(selectedRows.length ==0 ){
+  showUpdateWavenHandleOk = async () => {
+    const { selectedRows, WAVENUM } = this.state;
+    if (selectedRows.length == 0) {
       message.error('至少选择一条数据');
       return;
     }
-    if(!WAVENUM){
-      message.error('请填写作业号'); 
+    if (!WAVENUM) {
+      message.error('请填写作业号');
       return;
     }
-     const response = await updateOrderWavenum (selectedRows.map(e=>e.UUID),WAVENUM);
-     if(response && response.success){
+    const response = await updateOrderWavenum(selectedRows.map(e => e.UUID), WAVENUM);
+    if (response && response.success) {
       message.success("修改成功");
-      this.setState({showUpdateWaven:false})
+      this.setState({ showUpdateWaven: false })
       this.onSearch();
-     }
-    
+    }
+
   }
-  updatReviewHandleOk = async()=>{
-    const { 
+  updatReviewHandleOk = async () => {
+    const {
       selectedRows,
       Carton,
       Container,
       scattered
-     } = this.state;
-    const response = await updateReview (selectedRows.map(e=>e.UUID),Carton,Container,scattered);
-    if(response && response.success){
-     message.success("修改成功");
-     this.setState({handUpdateReview:false})
-     this.onSearch();
+    } = this.state;
+    const response = await updateReview(selectedRows.map(e => e.UUID), Carton, Container, scattered);
+    if (response && response.success) {
+      message.success("修改成功");
+      this.setState({ handUpdateReview: false })
+      this.onSearch();
     }
   }
   remove = async record => {
@@ -235,7 +235,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
     return await removeOrder(record.UUID, dispatchCenter);
   };
   //打印
-  handlePrint = async (key,flag) => {
+  handlePrint = async (key, flag) => {
     const { selectedRows, dc } = this.state;
     if (selectedRows.length == 0) {
       message.warn('请选择需要打印的单据！');
@@ -258,7 +258,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       LODOP.NewPageA();
       LODOP.ADD_PRINT_TABLE('2%', '2%', '96%', '96%', page.innerHTML);
       //LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
-     
+
     });
     key == 'loadNow' ? LODOP.PRINT() : LODOP.PREVIEW();
     // LODOP.PREVIEW();
@@ -271,360 +271,62 @@ export default class TranOrderSearch extends QuickFormSearchPage {
     this.setState({ printPage: undefined });
   };
 
-    
-    buildPrintPage = async (flag) => {
-      const printPages = [];
-      const printPage =  await this.drawBillPage(flag);
-        printPages.push(printPage);
-      
-      this.setState({ printPage: printPages });
-    };
- 
-    drawBillPage = async (flag)=>{
-      if(flag=='销售单'){
-        const sadf  = await  queryAllData({
-          quickuuid: 'v_iwms_saleorder_d',
-          superQuery: {
-            queryParams: [
-              {
-                field: 'WSS',
-                type: 'VarChar',
-                rule: 'eq',
-                val: this.state.selectedRows[0].WSS,
-              },
-            ],
-          },
-        });
-        const xsdd = sadf.data.records;
-        const xsddsum = sumBy(xsdd,'REALQTY');
 
-        const henadss  = await  queryAllData({
-          quickuuid: 'v_iwms_saleorder_h',
-          superQuery: {
-            queryParams: [
-              {
-                field: 'WSS',
-                type: 'VarChar',
-                rule: 'eq',
-                val: this.state.selectedRows[0].WSS,
-              },
-            ],
-          },
-        });
-        const heands = henadss.data.records;
-        const heandsum = sumBy(heands,'TOTALREALAMOUNT');
-        const henadsd  = await  queryAllData({
-          quickuuid: 'v_iwms_saleorder_h2',
-          superQuery: {
-            queryParams: [
-              {
-                field: 'WSS',
-                type: 'VarChar',
-                rule: 'eq',
-                val: this.state.selectedRows[0].WSS,
-              },
-            ],
-          },
-        });
-        const heandsdd = henadsd.data.records;
-            return (
-              <div>
-              <table
-                style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0 }}
-                border={1}
-                cellPadding={0}
-                cellSpacing={0}
-              >
-                <thead>
-                  <tr style={{ height: 50 }}>
-                    <th colspan={2} style={{ border: 0 }} />
-                    <th colspan={4} style={{ border: 0 }}>
-                      <div style={{ fontSize: 18, textAlign: 'center' }}>彩华销售单</div>
-                    </th>
-                    <th colspan={2} style={{ border: 0 }}>
-                      <div style={{ fontSize: 14, textAlign: 'center' }}>
-                        <span>第</span>
-                        <font tdata="PageNO" color="blue">
-                          ##
-                        </font>
-                        <span>页/共</span>
-                        <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
-                          ##
-                        </font>
-                        <span>页</span>
-                      </div>
-                    </th>
-                  </tr>
-        
-                  <tr>
-                    <th colspan={3} style={{ border: 0, height: 25 }}>
-                      配货日期： {convertDateToTime(new Date())}
-                    </th>
-                    <th colspan={3} style={{ border: 0, height: 25 }}>
-                      司机：{xsdd[0].CARRIERNAME}
-                    </th>
-                    <th colspan={3} style={{ border: 0, height: 25 }}>
-                      司机电话：{xsdd[0].TEL}
-                    </th>
-                    <th colspan={3} style={{ border: 0, height: 25 }}>
-                      装车单号：{xsdd[0].SCHEDULENUM}
-                    </th>
-                    
-                  </tr>
-                  <tr>
-                    <th colspan={3} style={{ border: 0, height: 25 }}>
-                      客户电话： {xsdd[0].CONTACTPHONE}
-                    </th>
-                    <th colspan={3} style={{ border: 0, height: 25 }}>
-                      车牌号：{xsdd[0].VEHICLEPLATENUMBER}
-                    </th>
-                    <th colspan={3} style={{ border: 0, height: 25 }}>
-                      业务电话：{xsdd[0].NOTE}
-                    </th>
-                    <th colspan={3} style={{ border: 0, height: 25 }}>
-                      作业号：{xsdd[0].WAVEBILLNUMBER}
-                    </th>
-                  </tr>
-                  <tr>
-                    <th colspan={6} style={{ border: 0, height: 25 }}>
-                      收货地址 {xsdd[0].STREET}
-                    </th>
-                    <th colspan={6} style={{ border: 0, height: 25 }}>
-                      收货客户：{xsdd[0].STORECODE}
-                    </th>
-                  </tr>
-        
-                  <tr style={{ height: 25 }}>
-                    <th width={30}>序号</th>
-                    <th width={80}>商品代码</th>
-                    <th width={80}>国际条码</th>
-                    <th width={170}>品名</th>
-                    <th width={80}>批次</th>
-                    <th width ={30}>单位</th>
-                    <th width={80}>数量</th>
-                    <th width={80}>包装</th>
-                    <th width={80}>件数</th>
-                    <th width={80}>销售价</th>
-                    <th width={80}>销售金额</th>
-                    <th width={80}>折扣金额</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {xsdd ? (
-                    xsdd.map((item,index )=> {
-                      return (
-                        <tr style={{ textAlign: 'center', height: 20 }}>
-                          <td width={50}>{index+1}</td>
-                          <td width={80}>{item.ARTICLECODE}</td>
-                          <td width={100}>{item.BARCODE}</td>
-                          <td width={170}>{item.ARTICLENAME}</td>
-                          <td width={80}>{item.BATCHNUM}</td>
-                          <td width={80}>{item.MUNIT}</td>
-                          {/* <td width={80}>{item.CARTONCOUNT}</td> */}
-                          <td width={80} >{item.REALQTY}</td>
-                          {/* <td width={80} >{item.CONTAINERCOUNT}</td> */}
-                          <td width={80}>{item.PAQ}</td>
-                          <td width={80} >{item.REALQTYSTR}</td>
-                          <td width={80}>{item.PRICE}</td>
-                          <td width={80}>{item.PRICE1}</td>
-                          <td width={80}>{}</td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <></>
-                  )}
-                     {heands ? (
-                    heands.map((item,index )=> {
-                      return (
-                        <tr style={{ textAlign: 'center', height: 20 }}>
-                        <td width={100} colSpan={3}>{item.SOURCEBILLNUMBER}</td>
-                        <td width={100} colSpan={5}>{item.BILLNUMBER}</td>
-                        <td width={80} colSpan={2}>{item.BNUMBERS}</td>
-                        <td width={80} colSpan={2}>{item.TOTALREALAMOUNT}</td>
-                      </tr>
-                      );
-                    })
-                    
-                  ) : (
-                    <></>
-                  )}
-                  {heandsdd ? (
-                    heandsdd.map((item,index )=> {
-                      return (
-                        <tr style={{ textAlign: 'center', height: 20 }}>
-                        <td width={100} colSpan={10}>{item.SELLDISCOUNTORDERNO}</td>
-                        <td width={100} colSpan={2}>{item.CASHTICKETMONEY}</td>
-                      </tr>
-                      );
-                    })
-                    
-                  ) : (
-                    <></>
-                  )}
-                  {
-                    (<tr>
-                      <td style={{ border: 0 }} colSpan={4}>合计：</td>
-                      <td style={{ border: 0 }} colSpan={4}>销售数量：{xsddsum}</td>
-                      <td style={{ border: 0 }} colSpan={4}>销售金额：{heandsum}</td>
-                    </tr>)
-                  }
-                   {
-                    (<tr >
-                      <td  colSpan={12} style={{ border: 0 }}>
-                      请门店务必核对送货单件数，如有问题请及时联系物流部，调度服务电话:07383338671-6007 (8:00-17:30) 400热线:4008306700<br></br>注意:货物当面点清并检查无破损、融化、否则后果自负。司机送货到店,所有整件、周转箱数量务必当面点清。司机离开后,少整件、少周转箱的情况,物流概不处理.
-                      </td>
-                    </tr>
-                  
-                    )
-                  }
-                  {
-                    <tr><td  colSpan={12}   style={{ border: 0 }} >客户收货时间:</td></tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-            )
-      }else{
-        const sign  = await  queryAllData({
-          quickuuid: 'v_iwms_sign',
-          superQuery: {
-            queryParams: [
-              {
-                field: 'PK',
-                type: 'VarChar',
-                rule: 'eq',
-                val: this.state.selectedRows[0].WSS,
-              },
-            ],
-          },
-        });
-        const signs = sign.data.records; 
-        return (
-          <div>
-            <table
-              style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0 }}
-              border={1}
-              cellPadding={0}
-              cellSpacing={0}
-            >
-              <thead>
-                <tr style={{ height: 50 }}>
-                  <th colspan={2} style={{ border: 0 }} />
-                  <th colspan={4} style={{ border: 0 }}>
-                    <div style={{ fontSize: 18, textAlign: 'center' }}>签收单</div>
-                  </th>
-                  <th colspan={2} style={{ border: 0 }}>
-                    <div style={{ fontSize: 14, textAlign: 'center' }}>
-                      <span>第</span>
-                      <font tdata="PageNO" color="blue">
-                        ##
-                      </font>
-                      <span>页/共</span>
-                      <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
-                        ##
-                      </font>
-                      <span>页</span>
-                    </div>
-                  </th>
-                </tr>
-      
-                <tr>
-                  <th colspan={5} style={{ border: 0, height: 25 }}>
-                    配货日期： {convertDateToTime(new Date())}
-                  </th>
-                  <th colspan={5} style={{ border: 0, height: 25 }}>
-                    装车单号：{convertDateToTime(new Date())}
-                  </th>
-                  <th colspan={5} style={{ border: 0, height: 25 }}>
-                    打印时间：{convertDateToTime(new Date())}
-                  </th>
-                </tr>
-                <tr>
-                  <th colspan={5} style={{ border: 0, height: 25 }}>
-                    客户名称： {convertDateToTime(new Date())}
-                  </th>
-                  <th colspan={5} style={{ border: 0, height: 25 }}>
-                    收货地址：{convertDateToTime(new Date())}
-                  </th>
-                </tr>
-      
-                {/* <tr style={{ height: 25 }}>
-                  <th width={50}>序号</th>
-                  <th width={80}>作业号</th>
-                  <th width={80}>门店编码</th>
-                  <th width={170}>门店名称</th>
-                  <th width={80}>拣货次序</th>
-                  <th width ={80}>整件板位</th>
-                  <th width={100}>整件</th>
-                  <th width={100}>周转箱</th>
-                  <th width={100}>冷藏箱</th>
-                  <th width={100}>冷冻箱</th>
-                </tr> */}
-              </thead>
-              <tbody>
-                {signs ? (
-                 signs.map((item,index )=> {
-                    return (
-                      <tr style={{ textAlign: 'center', height: 20 }}>
-                        <td width={50}>{index+1}</td>
-                        <td width={80}>{item.WAVENUM}</td>
-                        <td width={100}>{item.DELIVERYPOINTCODE}</td>
-                        <td width={170}>{item.DELIVERYPOINTNAME}</td>
-                        <td width={80}>{item.LINECODE}</td>
-                        <td width={80}>{item.COLLECTBIN}</td>
-                        {/* <td width={80}>{item.CARTONCOUNT}</td> */}
-                        <td width={80} >{item.REALCARTONCOUNT}</td>
-                        {/* <td width={80} >{item.CONTAINERCOUNT}</td> */}
-                        <td width={80}>{item.REALCONTAINERCOUNT}</td>
-                        <td width={80} >{item.REALCOLDCONTAINER}</td>
-                        <td width={80}>{item.REALFREEZECONTAINER}</td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <></>
-                )}
-                
-                      <tr style={{ textAlign: 'center', height: 20 }}>
-                        <td width={50} colSpan={2}>合计</td>
-                       
-                        <td width={100} colSpan={2}>{this.state.selectedRows.length}</td>
-                        <td width={80}>{}</td>
-                        <td width={80}>{}</td>
-                        {/* <td width={80}>{CARTONCOUNT}</td> */}
-                        <td width={100} >{REALCARTONCOUNT}</td>
-                        {/* <td width={80} >{CONTAINERCOUNT}</td> */}
-                        <td width={100}>{REALCONTAINERCOUNT}</td>
-                        <td width={100} >{REALCOLDCONTAINER}</td>
-                        <td width={100}>{REALFREEZECONTAINER}</td>
-                      </tr>
-                    
-                
-                
-                
-               
-              </tbody>
-            </table>
-          </div>
-        );
+  buildPrintPage = async (flag) => {
+    const printPages = [];
+    const printPage = await this.drawBillPage(flag);
+    printPages.push(printPage);
 
-      }
-      let  REALCARTONCOUNT  =0;
-      let  CARTONCOUNT = 0;
-      let CONTAINERCOUNT = 0;
-      let  REALCONTAINERCOUNT =0;
-      let REALCOLDCONTAINER = 0;
-      let REALFREEZECONTAINER = 0;
-      this.state.selectedRows.map(e=>{
-        REALCARTONCOUNT+=e.REALCARTONCOUNT;
-        CONTAINERCOUNT+=e.CONTAINERCOUNT;
-        CARTONCOUNT+=e.CARTONCOUNT;
-        REALCONTAINERCOUNT+=e.REALCONTAINERCOUNT;
-        REALFREEZECONTAINER+=e.REALFREEZECONTAINER;
-        REALCOLDCONTAINER+=e.REALCOLDCONTAINER;
-      })
+    this.setState({ printPage: printPages });
+  };
 
+  drawBillPage = async (flag) => {
+    if (flag == '销售单') {
+      const sadf = await queryAllData({
+        quickuuid: 'v_iwms_saleorder_d',
+        superQuery: {
+          queryParams: [
+            {
+              field: 'WSS',
+              type: 'VarChar',
+              rule: 'eq',
+              val: this.state.selectedRows[0].WSS,
+            },
+          ],
+        },
+      });
+      const xsdd = sadf.data.records;
+      const xsddsum = sumBy(xsdd, 'REALQTY');
+
+      const henadss = await queryAllData({
+        quickuuid: 'v_iwms_saleorder_h',
+        superQuery: {
+          queryParams: [
+            {
+              field: 'WSS',
+              type: 'VarChar',
+              rule: 'eq',
+              val: this.state.selectedRows[0].WSS,
+            },
+          ],
+        },
+      });
+      const heands = henadss.data.records;
+      const heandsum = sumBy(heands, 'TOTALREALAMOUNT');
+      const henadsd = await queryAllData({
+        quickuuid: 'v_iwms_saleorder_h2',
+        superQuery: {
+          queryParams: [
+            {
+              field: 'WSS',
+              type: 'VarChar',
+              rule: 'eq',
+              val: this.state.selectedRows[0].WSS,
+            },
+          ],
+        },
+      });
+      const heandsdd = henadsd.data.records;
       return (
         <div>
           <table
@@ -637,7 +339,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               <tr style={{ height: 50 }}>
                 <th colspan={2} style={{ border: 0 }} />
                 <th colspan={4} style={{ border: 0 }}>
-                  <div style={{ fontSize: 18, textAlign: 'center' }}>福建时捷转运单复核单据</div>
+                  <div style={{ fontSize: 18, textAlign: 'center' }}>彩华销售单</div>
                 </th>
                 <th colspan={2} style={{ border: 0 }}>
                   <div style={{ fontSize: 14, textAlign: 'center' }}>
@@ -653,109 +355,446 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                   </div>
                 </th>
               </tr>
-    
+
               <tr>
-                <th colspan={5} style={{ border: 0, height: 25 }}>
-                  操作人： {loginUser().name}
+                <th colspan={3} style={{ border: 0, height: 25 }}>
+                  配货日期： {convertDateToTime(new Date())}
                 </th>
-                <th colspan={5} style={{ border: 0, height: 25 }}>
-                  制单时间：{convertDateToTime(new Date())}
+                <th colspan={3} style={{ border: 0, height: 25 }}>
+                  司机：{xsdd[0].CARRIERNAME}
+                </th>
+                <th colspan={3} style={{ border: 0, height: 25 }}>
+                  司机电话：{xsdd[0].TEL}
+                </th>
+                <th colspan={3} style={{ border: 0, height: 25 }}>
+                  装车单号：{xsdd[0].SCHEDULENUM}
+                </th>
+
+              </tr>
+              <tr>
+                <th colspan={3} style={{ border: 0, height: 25 }}>
+                  客户电话： {xsdd[0].CONTACTPHONE}
+                </th>
+                <th colspan={3} style={{ border: 0, height: 25 }}>
+                  车牌号：{xsdd[0].VEHICLEPLATENUMBER}
+                </th>
+                <th colspan={3} style={{ border: 0, height: 25 }}>
+                  业务电话：{xsdd[0].NOTE}
+                </th>
+                <th colspan={3} style={{ border: 0, height: 25 }}>
+                  作业号：{xsdd[0].WAVEBILLNUMBER}
                 </th>
               </tr>
-    
+              <tr>
+                <th colspan={6} style={{ border: 0, height: 25 }}>
+                  收货地址 {xsdd[0].STREET}
+                </th>
+                <th colspan={6} style={{ border: 0, height: 25 }}>
+                  收货客户：{xsdd[0].STORECODE}
+                </th>
+              </tr>
+
               <tr style={{ height: 25 }}>
-                <th width={50}>序号</th>
-                <th width={80}>作业号</th>
-                <th width={80}>门店编码</th>
-                <th width={170}>门店名称</th>
-                <th width={80}>拣货次序</th>
-                <th width ={80}>整件板位</th>
-                <th width={100}>整件</th>
-                <th width={100}>周转箱</th>
-                <th width={100}>冷藏箱</th>
-                <th width={100}>冷冻箱</th>
+                <th width={30}>序号</th>
+                <th width={80}>商品代码</th>
+                <th width={80}>国际条码</th>
+                <th width={170}>品名</th>
+                <th width={80}>批次</th>
+                <th width={30}>单位</th>
+                <th width={80}>数量</th>
+                <th width={80}>包装</th>
+                <th width={80}>件数</th>
+                <th width={80}>销售价</th>
+                <th width={80}>销售金额</th>
+                <th width={80}>折扣金额</th>
               </tr>
             </thead>
             <tbody>
-              {this.state.selectedRows ? (
-                this.state.selectedRows.map((item,index )=> {
+              {xsdd ? (
+                xsdd.map((item, index) => {
                   return (
                     <tr style={{ textAlign: 'center', height: 20 }}>
-                      <td width={50}>{index+1}</td>
-                      <td width={80}>{item.WAVENUM}</td>
-                      <td width={100}>{item.DELIVERYPOINTCODE}</td>
-                      <td width={170}>{item.DELIVERYPOINTNAME}</td>
-                      <td width={80}>{item.LINECODE}</td>
-                      <td width={80}>{item.COLLECTBIN}</td>
+                      <td width={50}>{index + 1}</td>
+                      <td width={80}>{item.ARTICLECODE}</td>
+                      <td width={100}>{item.BARCODE}</td>
+                      <td width={170}>{item.ARTICLENAME}</td>
+                      <td width={80}>{item.BATCHNUM}</td>
+                      <td width={80}>{item.MUNIT}</td>
                       {/* <td width={80}>{item.CARTONCOUNT}</td> */}
-                      <td width={80} >{item.REALCARTONCOUNT}</td>
+                      <td width={80} >{item.REALQTY}</td>
                       {/* <td width={80} >{item.CONTAINERCOUNT}</td> */}
-                      <td width={80}>{item.REALCONTAINERCOUNT}</td>
-                      <td width={80} >{item.REALCOLDCONTAINER}</td>
-                      <td width={80}>{item.REALFREEZECONTAINER}</td>
+                      <td width={80}>{item.PAQ}</td>
+                      <td width={80} >{item.REALQTYSTR}</td>
+                      <td width={80}>{item.PRICE}</td>
+                      <td width={80}>{item.PRICE1}</td>
+                      <td width={80}>{ }</td>
                     </tr>
                   );
                 })
               ) : (
                 <></>
               )}
-              
+              {heands ? (
+                heands.map((item, index) => {
+                  return (
                     <tr style={{ textAlign: 'center', height: 20 }}>
-                      <td width={50} colSpan={2}>合计</td>
-                     
-                      <td width={100} colSpan={2}>{this.state.selectedRows.length}</td>
-                      <td width={80}>{}</td>
-                      <td width={80}>{}</td>
-                      {/* <td width={80}>{CARTONCOUNT}</td> */}
-                      <td width={100} >{REALCARTONCOUNT}</td>
-                      {/* <td width={80} >{CONTAINERCOUNT}</td> */}
-                      <td width={100}>{REALCONTAINERCOUNT}</td>
-                      <td width={100} >{REALCOLDCONTAINER}</td>
-                      <td width={100}>{REALFREEZECONTAINER}</td>
+                      <td width={100} colSpan={3}>{item.SOURCEBILLNUMBER}</td>
+                      <td width={100} colSpan={5}>{item.BILLNUMBER}</td>
+                      <td width={80} colSpan={2}>{item.BNUMBERS}</td>
+                      <td width={80} colSpan={2}>{item.TOTALREALAMOUNT}</td>
                     </tr>
-                  
-              
-              
-              
-             
+                  );
+                })
+
+              ) : (
+                <></>
+              )}
+              {heandsdd ? (
+                heandsdd.map((item, index) => {
+                  return (
+                    <tr style={{ textAlign: 'center', height: 20 }}>
+                      <td width={100} colSpan={10}>{item.SELLDISCOUNTORDERNO}</td>
+                      <td width={100} colSpan={2}>{item.CASHTICKETMONEY}</td>
+                    </tr>
+                  );
+                })
+
+              ) : (
+                <></>
+              )}
+              {
+                (<tr>
+                  <td style={{ border: 0 }} colSpan={4}>合计：</td>
+                  <td style={{ border: 0 }} colSpan={4}>销售数量：{xsddsum}</td>
+                  <td style={{ border: 0 }} colSpan={4}>销售金额：{heandsum}</td>
+                </tr>)
+              }
+              {
+                (<tr >
+                  <td colSpan={12} style={{ border: 0 }}>
+                    请门店务必核对送货单件数，如有问题请及时联系物流部，调度服务电话:07383338671-6007 (8:00-17:30) 400热线:4008306700<br></br>注意:货物当面点清并检查无破损、融化、否则后果自负。司机送货到店,所有整件、周转箱数量务必当面点清。司机离开后,少整件、少周转箱的情况,物流概不处理.
+                  </td>
+                </tr>
+
+                )
+              }
+              {
+                <tr><td colSpan={12} style={{ border: 0 }} >客户收货时间:</td></tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      )
+    } else {
+      const sign = await queryAllData({
+        quickuuid: 'v_iwms_sign',
+        superQuery: {
+          queryParams: [
+            {
+              field: 'PK',
+              type: 'VarChar',
+              rule: 'eq',
+              val: this.state.selectedRows[0].WSS,
+            },
+          ],
+        },
+      });
+      const signs = sign.data.records;
+      return (
+        <div>
+          <table
+            style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0 }}
+            border={1}
+            cellPadding={0}
+            cellSpacing={0}
+          >
+            <thead>
+              <tr style={{ height: 50 }}>
+                <th colspan={4} style={{ border: 0 }}>
+                  <div style={{ fontSize: 18, textAlign:'right'}}>签收单</div>
+                </th>
+                <th colspan={2} style={{ border: 0 }}>
+                  <div style={{ fontSize: 14, textAlign: 'right' }}>
+                    <span>第</span>
+                    <font tdata="PageNO" color="blue">
+                      ##
+                    </font>
+                    <span>页/共</span>
+                    <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
+                      ##
+                    </font>
+                    <span>页</span>
+                  </div>
+                </th>
+              </tr>
+
+              <tr>
+                <th colspan={3} style={{ border: 0, textAlign:'left', width:'100px'  }}>
+                  配货日期： {signs[0].PICKDATE}
+                </th>
+                <th colspan={2} style={{ border: 0,  textAlign:'right',  width:'100px'  }}>
+                  装车单号：{signs[0].SCHEDULENUM}
+                </th>
+                <th colspan={2} style={{ border: 0, textAlign:'right',width:'100px'  }}>
+                  打印时间：{convertDateToTime(new Date())}
+                </th>
+              </tr>
+              <tr style={{height:30}}>
+                <th colspan={3} style={{ border: 0, textAlign:'left' }}>
+                  客户名称： {signs[0].STORE}
+                </th>
+                <th colspan={3} style={{ border: 0, textAlign:'right'  }}>
+                  收货地址：{signs[0].STREET}
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {signs ? (
+                signs.map((item, index) => {
+                    return (
+                      <>
+                         <>
+                      <tr >
+                        <td style={{  textAlign: 'center' ,width: '30px'}} rowspan={7}>
+                          客<br></br>户<br></br>填<br></br>写<br></br>栏
+                        </td>
+                      </tr>
+                      <tr style={{height:30,textAlign: 'center' }}>
+                        <td rowspan={4} style={{ width: '100px', textAlign: 'center'  }}>
+                          货物<br></br>签收
+                        </td>
+                        <td style={{ width: '200px' }}>货物</td>
+                        <td style={{ width: '100px' }}>件数</td>
+                        <td style={{ width: '200px' }}>实收件数</td>
+                        <td style={{ width: '600px' }}>客户签名</td>
+                      </tr>
+                      <tr style={{height:30,textAlign: 'center' }}>
+                        <td >整件件数</td>
+                        <td>{item.STOCKQTYSTR}</td>
+                        <td />
+                        <td rowspan={4} />
+                      </tr>
+                      <tr style={{height:30,textAlign: 'center' }}>
+                        <td>周转箱/冷藏箱数</td>
+                        <td>{item.BOXNUM}</td>
+                        <td />
+                      </tr>
+                      <tr style={{height:30,textAlign: 'center' }}>
+                        <td>巧克力/面包 此项<br></br>填是/否</td>
+                        <td>否/否</td>
+                        <td />
+                      </tr>
+                      <tr style={{height:30,textAlign: 'center' }}>
+                        <td rowspan={2}  style={{ textAlign: 'center' }}>周转<br></br>箱</td>
+                        <td>本次送出箱数</td>
+                        <td>上次欠箱数</td>
+                        <td>本次应收回箱总<br></br>数</td>
+                      </tr>
+                      <tr style={{height:30 }}>
+                        <td style={{ textAlign: 'center' }}>{item.BOXNUM}</td>
+                        <td />
+                        <td />
+                        <td rowspan={7}>
+                          未付金额:
+                          <br />
+                          <br />
+                          <br />
+                          客户签名(盖章) :<br /><br />
+                          结算类型 :<br /><br />
+                          业务确认:
+                          <br />
+                          <br />
+                          <div style={{ textAlign: 'center' }}>口确认 口未确认</div>
+                        </td>
+                      </tr>
+                      <tr style={{textAlign: 'center' }}>
+                        <td rowspan={6} style ={{textAlign: 'center',width: '30px' }}>司<br></br>机<br></br>填<br></br>写<br></br>栏</td>
+                        <td rowspan={6} style ={{textAlign: 'center' }}>应收<br></br>金额</td>
+                      </tr>
+                      <tr style={{height:30,textAlign: 'center' }} >
+                        <td>单据类型</td>
+                        <td>单据尾号</td>
+                        <td>应收金额</td>
+                      </tr>
+                      <tr style={{height:30,textAlign: 'center' }} >
+                        <td>销售单</td>
+                        <td>{item.SOURCEBILLNUMBER}</td>
+                        <td>{item.CASHTICKETMONEY}</td>
+                      </tr>
+                      <tr style={{height:30,textAlign: 'center' }}>
+                        <td>退货单</td>
+                        <td />
+                        <td />
+                      </tr>
+                      <tr style={{height:30,textAlign: 'center' }}> 
+                        <td>销售差异单</td>
+                        <td />
+                        <td />
+                      </tr>
+                      <tr style={{height:30,textAlign: 'center' }}>
+                        <td>差异单(可机手写)</td>
+                        <td />
+                        <td />
+                      </tr>
+                    </>
+                     </>
+                    )
+                })
+              ) : (
+                <></>
+              )}
             </tbody>
           </table>
         </div>
       );
+
     }
+    let REALCARTONCOUNT = 0;
+    let CARTONCOUNT = 0;
+    let CONTAINERCOUNT = 0;
+    let REALCONTAINERCOUNT = 0;
+    let REALCOLDCONTAINER = 0;
+    let REALFREEZECONTAINER = 0;
+    this.state.selectedRows.map(e => {
+      REALCARTONCOUNT += e.REALCARTONCOUNT;
+      CONTAINERCOUNT += e.CONTAINERCOUNT;
+      CARTONCOUNT += e.CARTONCOUNT;
+      REALCONTAINERCOUNT += e.REALCONTAINERCOUNT;
+      REALFREEZECONTAINER += e.REALFREEZECONTAINER;
+      REALCOLDCONTAINER += e.REALCOLDCONTAINER;
+    })
+
+    return (
+      <div>
+        <table
+          style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0 }}
+          border={1}
+          cellPadding={0}
+          cellSpacing={0}
+        >
+          <thead>
+            <tr style={{ height: 50 }}>
+              <th colspan={2} style={{ border: 0 }} />
+              <th colspan={4} style={{ border: 0 }}>
+                <div style={{ fontSize: 18, textAlign: 'center' }}>福建时捷转运单复核单据</div>
+              </th>
+              <th colspan={2} style={{ border: 0 }}>
+                <div style={{ fontSize: 14, textAlign: 'center' }}>
+                  <span>第</span>
+                  <font tdata="PageNO" color="blue">
+                    ##
+                  </font>
+                  <span>页/共</span>
+                  <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
+                    ##
+                  </font>
+                  <span>页</span>
+                </div>
+              </th>
+            </tr>
+
+            <tr>
+              <th colspan={5} style={{ border: 0, height: 25 }}>
+                操作人： {loginUser().name}
+              </th>
+              <th colspan={5} style={{ border: 0, height: 25 }}>
+                制单时间：{convertDateToTime(new Date())}
+              </th>
+            </tr>
+
+            <tr style={{ height: 25 }}>
+              <th width={50}>序号</th>
+              <th width={80}>作业号</th>
+              <th width={80}>门店编码</th>
+              <th width={170}>门店名称</th>
+              <th width={80}>拣货次序</th>
+              <th width={80}>整件板位</th>
+              <th width={100}>整件</th>
+              <th width={100}>周转箱</th>
+              <th width={100}>冷藏箱</th>
+              <th width={100}>冷冻箱</th>
+            </tr>
+          </thead>
+          <tbody>
+            {this.state.selectedRows ? (
+              this.state.selectedRows.map((item, index) => {
+                return (
+                  <tr style={{ textAlign: 'center', height: 20 }}>
+                    <td width={50}>{index + 1}</td>
+                    <td width={80}>{item.WAVENUM}</td>
+                    <td width={100}>{item.DELIVERYPOINTCODE}</td>
+                    <td width={170}>{item.DELIVERYPOINTNAME}</td>
+                    <td width={80}>{item.LINECODE}</td>
+                    <td width={80}>{item.COLLECTBIN}</td>
+                    {/* <td width={80}>{item.CARTONCOUNT}</td> */}
+                    <td width={80} >{item.REALCARTONCOUNT}</td>
+                    {/* <td width={80} >{item.CONTAINERCOUNT}</td> */}
+                    <td width={80}>{item.REALCONTAINERCOUNT}</td>
+                    <td width={80} >{item.REALCOLDCONTAINER}</td>
+                    <td width={80}>{item.REALFREEZECONTAINER}</td>
+                  </tr>
+                );
+              })
+            ) : (
+              <></>
+            )}
+
+            <tr style={{ textAlign: 'center', height: 20 }}>
+              <td width={50} colSpan={2}>合计</td>
+
+              <td width={100} colSpan={2}>{this.state.selectedRows.length}</td>
+              <td width={80}>{ }</td>
+              <td width={80}>{ }</td>
+              {/* <td width={80}>{CARTONCOUNT}</td> */}
+              <td width={100} >{REALCARTONCOUNT}</td>
+              {/* <td width={80} >{CONTAINERCOUNT}</td> */}
+              <td width={100}>{REALCONTAINERCOUNT}</td>
+              <td width={100} >{REALCOLDCONTAINER}</td>
+              <td width={100}>{REALFREEZECONTAINER}</td>
+            </tr>
+
+
+
+
+
+          </tbody>
+        </table>
+      </div>
+    );
+  }
   drawToolsButton = () => {
     const { showAuditPop,
-       showCancelPop,
-        selectedRows,
-         dispatchCenter,
-          showRemovePop,
-          showUpdateWaven,
-          Carton,
-          Container,
-          scattered,
-          handUpdateReview,
-          printPage
-         } = this.state;
+      showCancelPop,
+      selectedRows,
+      dispatchCenter,
+      showRemovePop,
+      showUpdateWaven,
+      Carton,
+      Container,
+      scattered,
+      handUpdateReview,
+      printPage
+    } = this.state;
     return (
       <>
-      <div id="printPagewes" style={{ display: 'none' }}>
+        <div id="printPagewes" style={{ display: 'none' }}>
           {printPage}
         </div>
         <Button
-         // hidden={!havePermission(this.state.authority + '.confirmReview')}
-          onClick={()=>this.handlePrint("load","销售单")}
+          // hidden={!havePermission(this.state.authority + '.confirmReview')}
+          onClick={() => this.handlePrint("load", "销售单")}
         >
-         打印销售单
+          打印销售单
         </Button>
         <Button
-         // hidden={!havePermission(this.state.authority + '.printReviewInfo')}
-          onClick={()=>this.handlePrint("load","签收单")}
+          // hidden={!havePermission(this.state.authority + '.printReviewInfo')}
+          onClick={() => this.handlePrint("load", "签收单")}
         >
           打印签收单
         </Button>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
-     
-      
+
+
 
       </>
     );
@@ -831,54 +870,54 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       ? this.setState({ showCancelPop: true })
       : this.batchProcessConfirmRef.show('取消', selectedRows, this.onCancel, this.onSearch);
   };
- 
+
   onChange = (record, fieldName, value) => {
     const { data } = this.state;
     let newData = { ...data };
     let row = newData.list.find(x => x.uuid == record.uuid);
-    const  oldvalue = row[fieldName];
+    const oldvalue = row[fieldName];
     row[fieldName] = value;
     const index = newData.list.findIndex(x => x.uuid == row.uuid);
     newData.list[index] = row;
-    this.setState({ data: newData});
+    this.setState({ data: newData });
   };
-  onfocuschange =(record, fieldName, value)=>{
-    const { changeData} = this.state;
-    const change = changeData.find(x=>x.UUID==record.UUID);
-    if(change){
+  onfocuschange = (record, fieldName, value) => {
+    const { changeData } = this.state;
+    const change = changeData.find(x => x.UUID == record.UUID);
+    if (change) {
       change[fieldName] = value;
-    }else{
-      const sa ={};
-      sa[fieldName]= value;
+    } else {
+      const sa = {};
+      sa[fieldName] = value;
       sa.UUID = record.UUID;
-      changeData.push(sa); 
+      changeData.push(sa);
     }
-    this.setState({changeData});
+    this.setState({ changeData });
   }
-  blurSave  = async (record,fieldName,value)=>{
-    const { data, changeData} = this.state;
+  blurSave = async (record, fieldName, value) => {
+    const { data, changeData } = this.state;
     let newData = { ...data };
     let row = newData.list.find(x => x.uuid == record.uuid);
-    const change = changeData.find(x=>x.UUID==record.UUID);
-    if(change && change[fieldName] != value){
-      const sa ={};
-      sa[fieldName]= value;
+    const change = changeData.find(x => x.UUID == record.UUID);
+    if (change && change[fieldName] != value) {
+      const sa = {};
+      sa[fieldName] = value;
       sa.UUID = record.UUID;
-      changeData.push(sa); 
-     const real = {
-        uuid:record.UUID,
-        realCartonCount:row.REALCARTONCOUNT,
-        realContainerCount:row.REALCONTAINERCOUNT,
+      changeData.push(sa);
+      const real = {
+        uuid: record.UUID,
+        realCartonCount: row.REALCARTONCOUNT,
+        realContainerCount: row.REALCONTAINERCOUNT,
         realScatteredCount: row.REALSCATTEREDCOUNT,
         realColdContainerCount: row.REALCOLDCONTAINER,
         realFreezeContainerCount: row.REALFREEZECONTAINER
       }
-      const response = await updateReview (real);
-      if(response && response.success){
-       message.success("修改成功");
-       this.setState({changeData})
-       this.onSearch();
-    }
+      const response = await updateReview(real);
+      if (response && response.success) {
+        message.success("修改成功");
+        this.setState({ changeData })
+        this.onSearch();
+      }
     }
   }
 
@@ -902,9 +941,9 @@ export default class TranOrderSearch extends QuickFormSearchPage {
           style={{ width: 100 }}
           onFocus={(event) => {
             document.getElementsByClassName(e.record.ROW_ID + 'REALCARTONCOUNT')[0].select();
-              this.onfocuschange(record,column.fieldName,event.target.value);
+            this.onfocuschange(record, column.fieldName, event.target.value);
           }}
-          onBlur={(event)=>this.blurSave(record,column.fieldName,event.target.value)}
+          onBlur={(event) => this.blurSave(record, column.fieldName, event.target.value)}
           onChange={event => this.onChange(record, column.fieldName, event.target.value)}
           min={0}
           defaultValue={record.REALCARTONCOUNT}
@@ -918,12 +957,12 @@ export default class TranOrderSearch extends QuickFormSearchPage {
           className={e.record.ROW_ID + 'REALCONTAINERCOUNT'}
           onFocus={(event) => {
             document.getElementsByClassName(e.record.ROW_ID + 'REALCONTAINERCOUNT')[0].select();
-            this.onfocuschange(record,column.fieldName,event.target.value);
+            this.onfocuschange(record, column.fieldName, event.target.value);
           }}
           min={0}
           defaultValue={record.REALCONTAINERCOUNT}
           style={{ width: 100 }}
-          onBlur={(event)=>this.blurSave(record,column.fieldName,event.target.value)}
+          onBlur={(event) => this.blurSave(record, column.fieldName, event.target.value)}
           onChange={event => this.onChange(record, column.fieldName, event.target.value)}
         />
       );
@@ -935,12 +974,12 @@ export default class TranOrderSearch extends QuickFormSearchPage {
           className={e.record.ROW_ID + 'REALFREEZECONTAINER'}
           onFocus={(event) => {
             document.getElementsByClassName(e.record.ROW_ID + 'REALFREEZECONTAINER')[0].select();
-            this.onfocuschange(record,column.fieldName,event.target.value);
+            this.onfocuschange(record, column.fieldName, event.target.value);
           }}
           min={0}
           defaultValue={record.REALFREEZECONTAINER}
           style={{ width: 100 }}
-          onBlur={(event)=>this.blurSave(record,column.fieldName,event.target.value)}
+          onBlur={(event) => this.blurSave(record, column.fieldName, event.target.value)}
           onChange={event => this.onChange(record, column.fieldName, event.target.value)}
         />
       );
@@ -952,12 +991,12 @@ export default class TranOrderSearch extends QuickFormSearchPage {
           className={e.record.ROW_ID + 'REALCOLDCONTAINER'}
           onFocus={(event) => {
             document.getElementsByClassName(e.record.ROW_ID + 'REALCOLDCONTAINER')[0].select();
-            this.onfocuschange(record,column.fieldName,event.target.value);
+            this.onfocuschange(record, column.fieldName, event.target.value);
           }}
           min={0}
           defaultValue={record.REALCOLDCONTAINER}
           style={{ width: 100 }}
-          onBlur={(event)=>this.blurSave(record,column.fieldName,event.target.value)}
+          onBlur={(event) => this.blurSave(record, column.fieldName, event.target.value)}
           onChange={event => this.onChange(record, column.fieldName, event.target.value)}
         />
       );
