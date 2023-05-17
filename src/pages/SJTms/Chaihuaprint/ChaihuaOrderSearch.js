@@ -337,7 +337,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       return (
         <div>
           <table
-            style={{ width: '98%', borderCollapse: 'collapse',fontFamily: "微软雅黑", fontWeight: 'normal',fontSize: 13, border: 0 }}
+            style={{ width: '95%', borderCollapse: 'collapse',fontFamily: "微软雅黑", fontWeight: 'normal',fontSize: 13, border: 0 }}
             border={1}
             cellPadding={0}
             cellSpacing={0}
@@ -391,9 +391,9 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               <tr style={{ height: 25 }}>
                 <th width={30}>序号</th>
                 <th width={70} style={{fontSize:11}}>商品代码</th>
-                <th width={80} style={{fontSize:11}}>国际条码</th>
-                <th width={120}>品名</th>
-                <th width={60} style={{fontSize:11}}>批次</th>
+                <th width={60} style={{fontSize:11}}>国际条码</th>
+                <th width={110}>品名</th>
+                <th width={40} style={{fontSize:11}}>批次</th>
                 <th width={30}>单位</th>
                 <th width={40}>数量</th>
                 <th width={40}>包装</th>
@@ -406,16 +406,16 @@ export default class TranOrderSearch extends QuickFormSearchPage {
             <tbody>
               {sdasfa ? 
                   (sdasfa.map((ss,index)=>{
-                   return <> <tr ><td height={30} colspan={13} >{ss}</td>{ss}</tr>
+                   return <> <tr ><td height={30} colspan={13} >{ss}</td></tr>
                     {  sd[ss].map((item,index)=>{
                       return (
                         <tr style={{ textAlign: 'center', height: 20 }}>
-                          <td width={40}>{index + 1}</td>
-                          <td width={78} style={{textAlign: 'left'}}
+                          <td width={30}>{index + 1}</td>
+                          <td width={70} style={{textAlign: 'left',fontSize:11}}
                           >{item.ARTICLECODE}</td>
-                          <td style={{textAlign: 'left'}} width={80}>{item.BARCODE}</td>
-                          <td style={{textAlign: 'left'}} width={120}>{item.ARTICLENAME}</td>
-                          <td width={60}>{item.BATCHNUM}</td>
+                          <td style={{textAlign: 'left',fontSize:11}} width={60}>{item.BARCODE}</td>
+                          <td style={{textAlign: 'left'}} width={110}>{item.ARTICLENAME}</td>
+                          <td width={40}>{item.BATCHNUM}</td>
                           <td width={30}>{item.MUNIT}</td>
                           {/* <td width={80}>{item.CARTONCOUNT}</td> */}
                           <td width={40} >{item.REALQTY}</td>
@@ -423,8 +423,8 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                           <td width={40}>{item.PAQ}</td>
                           <td width={40} >{item.REALQTYSTR}</td>
                           <td width={40}>{item.PRICE}</td>
-                          <td width={65}>{item.PRICE1}</td>
-                          <td width={65}>{ }</td>
+                          <td width={40}>{item.PRICE1}</td>
+                          <td width={40}>{ }</td>
                         </tr>
                       );
                     })
@@ -441,8 +441,8 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                 heands.map((item, index) => {
                   return (
                     <tr style={{ textAlign: 'center', height: 20 }}>
-                      <td width={100} colSpan={3}>{item.SOURCEBILLNUMBER}</td>
-                      <td width={100} colSpan={5}>{item.BILLNUMBER}</td>
+                      <td width={80} colSpan={3}>{item.SOURCEBILLNUMBER}</td>
+                      <td width={80} colSpan={5}>{item.BILLNUMBER}</td>
                       <td width={80} colSpan={2}>{item.BNUMBERS}</td>
                       <td width={80} colSpan={2}>{item.TOTALREALAMOUNT}</td>
                     </tr>
@@ -456,8 +456,8 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                 heandsdd.map((item, index) => {
                   return (
                     <tr style={{ textAlign: 'center', height: 20 }}>
-                      <td width={100} colSpan={10}>{item.SELLDISCOUNTORDERNO}</td>
-                      <td width={100} colSpan={2}>{item.CASHTICKETMONEY}</td>
+                      <td width={80} colSpan={10}>{item.SELLDISCOUNTORDERNO}</td>
+                      <td width={80} colSpan={2}>{item.CASHTICKETMONEY}</td>
                     </tr>
                   );
                 })
