@@ -296,6 +296,8 @@ export default class TranOrderSearch extends QuickFormSearchPage {
         },
       });
       const xsdd = sadf.data.records;
+      const sd  = groupBy(xsdd,'BOXNUM');
+      console.log("sd",sd);
       const xsddsum = sumBy(xsdd, 'REALQTY');
 
       const henadss = await queryAllData({
@@ -330,19 +332,19 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       return (
         <div>
           <table
-            style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0 }}
+            style={{ width: '100%', borderCollapse: 'collapse',fontFamily: "微软雅黑" ,fontSize: 12, border: 0 }}
             border={1}
             cellPadding={0}
             cellSpacing={0}
           >
             <thead>
               <tr style={{ height: 50 }}>
-                <th colspan={2} style={{ border: 0 }} />
+                <th colspan={3} style={{ border: 0 }} />
                 <th colspan={4} style={{ border: 0 }}>
                   <div style={{ fontSize: 18, textAlign: 'center' }}>彩华销售单</div>
                 </th>
-                <th colspan={2} style={{ border: 0 }}>
-                  <div style={{ fontSize: 14, textAlign: 'center' }}>
+                <th colspan={3} style={{ border: 0 }}>
+                  <div style={{ fontSize: 12, textAlign: 'rigth' }}>
                     <span>第</span>
                     <font tdata="PageNO" color="blue">
                       ##
@@ -357,39 +359,39 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               </tr>
 
               <tr>
-                <th colspan={3} style={{ border: 0, height: 25 }}>
+                <th colspan={3} style={{ border: 0, height: 25, textAlign: 'left' }}>
                   配货日期： {convertDate(xsdd[0].ALCTIME)}
                 </th>
-                <th colspan={3} style={{ border: 0, height: 25 }}>
+                <th colspan={2} style={{ border: 0, height: 25 ,textAlign: 'left'}}>
                   司机：{xsdd[0].CARRIERNAME}
                 </th>
-                <th colspan={3} style={{ border: 0, height: 25 }}>
+                <th colspan={4} style={{ border: 0, height: 25,textAlign: 'left' }}>
                   司机电话：{xsdd[0].TEL}
                 </th>
-                <th colspan={3} style={{ border: 0, height: 25 }}>
+                <th colspan={3} style={{ border: 0, height: 25,textAlign: 'left' }}>
                   装车单号：{xsdd[0].SCHEDULENUM}
                 </th>
 
               </tr>
               <tr>
-                <th colspan={3} style={{ border: 0, height: 25 }}>
+                <th colspan={3} style={{ border: 0, height: 25,textAlign: 'left' }}>
                   客户电话： {xsdd[0].CONTACTPHONE}
                 </th>
-                <th colspan={3} style={{ border: 0, height: 25 }}>
+                <th colspan={2} style={{ border: 0, height: 25,textAlign: 'left' }}>
                   车牌号：{xsdd[0].VEHICLEPLATENUMBER}
                 </th>
-                <th colspan={3} style={{ border: 0, height: 25 }}>
+                <th colspan={4} style={{ border: 0, height: 25,textAlign: 'left' }}>
                   业务电话：{xsdd[0].NOTE}
                 </th>
-                <th colspan={3} style={{ border: 0, height: 25 }}>
+                <th colspan={3} style={{ border: 0, height: 25,textAlign: 'left' }}>
                   作业号：{xsdd[0].WAVEBILLNUMBER}
                 </th>
               </tr>
               <tr>
-                <th colspan={6} style={{ border: 0, height: 25 }}>
+                <th colspan={6} style={{ border: 0, height: 25,textAlign: 'left' }}>
                   收货地址 {xsdd[0].STREET}
                 </th>
-                <th colspan={6} style={{ border: 0, height: 25 }}>
+                <th colspan={6} style={{ border: 0, height: 25 ,textAlign: 'left'}}>
                   收货客户：{xsdd[0].STORECODE}
                 </th>
               </tr>
@@ -412,6 +414,9 @@ export default class TranOrderSearch extends QuickFormSearchPage {
             <tbody>
               {xsdd ? (
                 xsdd.map((item, index) => {
+                  // <tr>
+                  //   <td>item.</td>
+                  // </tr>
                   return (
                     <tr style={{ textAlign: 'center', height: 20 }}>
                       <td width={50}>{index + 1}</td>
@@ -566,7 +571,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                         <td style={{ width: '200px' }}>货物</td>
                         <td style={{ width: '100px' }}>件数</td>
                         <td style={{ width: '200px' }}>实收件数</td>
-                        <td style={{ width: '550px' }}>客户签名</td>
+                        <td style={{ width: '450px' }}>客户签名</td>
                       </tr>
                       <tr style={{height:30,textAlign: 'center' }}>
                         <td >整件件数</td>
