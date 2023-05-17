@@ -440,11 +440,11 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               {heands ? (
                 heands.map((item, index) => {
                   return (
-                    <tr style={{ textAlign: 'center', height: 20 }}>
-                      <td  colSpan={3}>{item.SOURCEBILLNUMBER}</td>
-                      <td  colSpan={5}>{item.BILLNUMBER}</td>
-                      <td  colSpan={2}>{item.BNUMBERS}</td>
-                      <td colSpan={2}>{item.TOTALREALAMOUNT}</td>
+                    <tr style={{ textAlign: 'center', height: 25 }}>
+                      <td  colSpan={3} style={{fontSize:14}}>{item.SOURCEBILLNUMBER}</td>
+                      <td  colSpan={5}style={{fontSize:14}}>{item.BILLNUMBER}</td>
+                      <td  colSpan={2}style={{fontSize:14}}>{item.BNUMBERS}</td>
+                      <td colSpan={2}style={{fontSize:14}}>{item.TOTALREALAMOUNT}</td>
                     </tr>
                   );
                 })
@@ -455,9 +455,9 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               {heandsdd ? (
                 heandsdd.map((item, index) => {
                   return (
-                    <tr style={{ textAlign: 'center', height: 20 }}>
-                      <td  colSpan={10}>{item.SELLDISCOUNTORDERNO}</td>
-                      <td  colSpan={2}>{item.CASHTICKETMONEY}</td>
+                    <tr style={{ textAlign: 'center', height: 25 }}>
+                      <td  colSpan={10} style={{fontSize:14}}>{item.SELLDISCOUNTORDERNO}</td>
+                      <td  colSpan={2} style={{fontSize:14}}>{item.CASHTICKETMONEY}</td>
                     </tr>
                   );
                 })
@@ -506,7 +506,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       return (
         <div>
           <table
-            style={{ width: '99%', borderCollapse: 'collapse', fontSize: 14, border: 0,}}
+            style={{ width: '94%', borderCollapse: 'collapse', fontSize: 14, border: 0}}
             border={1}
             cellPadding={0}
             cellSpacing={0}
