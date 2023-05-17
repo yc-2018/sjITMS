@@ -299,7 +299,12 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       const sd  = groupBy(xsdd,'BOXNUM');
       console.log("sd",sd);
       const xsddsum = sumBy(xsdd, 'REALQTY');
-
+      const sdasfa =  Reflect.ownKeys(sd);
+      sdasfa.map(s=>{
+        console.log("s",s);
+         console.log("sdsadsa",sd[s]);
+      })
+      console.log("sd", Reflect.ownKeys(sd));
       const henadss = await queryAllData({
         quickuuid: 'v_iwms_saleorder_h',
         superQuery: {
@@ -332,7 +337,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       return (
         <div>
           <table
-            style={{ width: '100%', borderCollapse: 'collapse',fontFamily: "微软雅黑" ,fontSize: 12, border: 0 }}
+            style={{ width: '100%', borderCollapse: 'collapse',fontFamily: "微软雅黑" ,fontSize: 13, border: 0 }}
             border={1}
             cellPadding={0}
             cellSpacing={0}
@@ -359,83 +364,82 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               </tr>
 
               <tr>
-                <th colspan={3} style={{ border: 0, height: 25, textAlign: 'left' }}>
+                <th colspan={3} style={{ border: 0, height: 25,fontSize: 14 ,textAlign: 'left' }}>
                   配货日期： {convertDate(xsdd[0].ALCTIME)}
                 </th>
-                <th colspan={2} style={{ border: 0, height: 25 ,textAlign: 'left'}}>
+                <th colspan={2} style={{ border: 0, height: 25 ,fontSize: 14 , textAlign: 'left',width:120}}>
                   司机：{xsdd[0].CARRIERNAME}
                 </th>
-                <th colspan={4} style={{ border: 0, height: 25,textAlign: 'left' }}>
+                <th colspan={5} style={{ border: 0, height: 25,fontSize: 14 , textAlign: 'left'  ,width:100}}>
                   司机电话：{xsdd[0].TEL}
                 </th>
-                <th colspan={3} style={{ border: 0, height: 25,textAlign: 'left' }}>
+                <th colspan={3} style={{ border: 0, height: 25,fontSize: 14 , textAlign: 'left'  ,width:100}}>
                   装车单号：{xsdd[0].SCHEDULENUM}
                 </th>
 
               </tr>
               <tr>
-                <th colspan={3} style={{ border: 0, height: 25,textAlign: 'left' }}>
+                <th colspan={3} style={{ border: 0, height: 25,fontSize: 14 , textAlign: 'left' }}>
                   客户电话： {xsdd[0].CONTACTPHONE}
                 </th>
-                <th colspan={2} style={{ border: 0, height: 25,textAlign: 'left' }}>
+                <th colspan={2} style={{ border: 0, height: 25,fontSize: 14 , textAlign: 'left' }}>
                   车牌号：{xsdd[0].VEHICLEPLATENUMBER}
                 </th>
-                <th colspan={4} style={{ border: 0, height: 25,textAlign: 'left' }}>
+                <th colspan={4} style={{ border: 0, height: 25,fontSize: 14 , textAlign: 'left' ,width:100}}>
                   业务电话：{xsdd[0].NOTE}
                 </th>
-                <th colspan={3} style={{ border: 0, height: 25,textAlign: 'left' }}>
+                <th colspan={3} style={{ border: 0, height: 25,fontSize: 14 , textAlign: 'left' }}>
                   作业号：{xsdd[0].WAVEBILLNUMBER}
                 </th>
               </tr>
               <tr>
-                <th colspan={6} style={{ border: 0, height: 25,textAlign: 'left' }}>
+                <th colspan={6} style={{ border: 0, height: 25,fontSize: 14 , textAlign: 'left' }}>
                   收货地址 {xsdd[0].STREET}
                 </th>
-                <th colspan={6} style={{ border: 0, height: 25 ,textAlign: 'left'}}>
+                <th colspan={6} style={{ border: 0, height: 25 ,fontSize: 14 , textAlign: 'left'}}>
                   收货客户：{xsdd[0].STORECODE}
                 </th>
               </tr>
 
               <tr style={{ height: 25 }}>
                 <th width={30}>序号</th>
-                <th width={80}>商品代码</th>
+                <th width={70}>商品代码</th>
                 <th width={80}>国际条码</th>
-                <th width={170}>品名</th>
+                <th width={175}>品名</th>
                 <th width={80}>批次</th>
                 <th width={30}>单位</th>
-                <th width={80}>数量</th>
-                <th width={80}>包装</th>
-                <th width={80}>件数</th>
-                <th width={80}>销售价</th>
-                <th width={80}>销售金额</th>
-                <th width={80}>折扣金额</th>
+                <th width={40}>数量</th>
+                <th width={40}>包装</th>
+                <th width={40}>件数</th>
+                <th width={70}>销售价</th>
+                <th width={70}>销售金额</th>
+                <th width={70}>折扣金额</th>
               </tr>
             </thead>
             <tbody>
-              {xsdd ? (
-                xsdd.map((item, index) => {
-                  // <tr>
-                  //   <td>item.</td>
-                  // </tr>
-                  return (
-                    <tr style={{ textAlign: 'center', height: 20 }}>
-                      <td width={50}>{index + 1}</td>
-                      <td width={80}>{item.ARTICLECODE}</td>
-                      <td width={100}>{item.BARCODE}</td>
-                      <td width={170}>{item.ARTICLENAME}</td>
-                      <td width={80}>{item.BATCHNUM}</td>
-                      <td width={80}>{item.MUNIT}</td>
-                      {/* <td width={80}>{item.CARTONCOUNT}</td> */}
-                      <td width={80} >{item.REALQTY}</td>
-                      {/* <td width={80} >{item.CONTAINERCOUNT}</td> */}
-                      <td width={80}>{item.PAQ}</td>
-                      <td width={80} >{item.REALQTYSTR}</td>
-                      <td width={80}>{item.PRICE}</td>
-                      <td width={80}>{item.PRICE1}</td>
-                      <td width={80}>{ }</td>
-                    </tr>
-                  );
-                })
+              {xsdd ? 
+                  (xsdd.map((item,index)=>{
+                    return (
+                      <tr style={{ textAlign: 'center', height: 20 }}>
+                        <td width={40}>{index + 1}</td>
+                        <td width={78}>{item.ARTICLECODE}</td>
+                        <td width={80}>{item.BARCODE}</td>
+                        <td width={175}>{item.ARTICLENAME}</td>
+                        <td width={60}>{item.BATCHNUM}</td>
+                        <td width={30}>{item.MUNIT}</td>
+                        {/* <td width={80}>{item.CARTONCOUNT}</td> */}
+                        <td width={40} >{item.REALQTY}</td>
+                        {/* <td width={80} >{item.CONTAINERCOUNT}</td> */}
+                        <td width={40}>{item.PAQ}</td>
+                        <td width={70} >{item.REALQTYSTR}</td>
+                        <td width={70}>{item.PRICE}</td>
+                        <td width={70}>{item.PRICE1}</td>
+                        <td width={70}>{ }</td>
+                      </tr>
+                    );
+                  })
+                  
+                
               ) : (
                 <></>
               )}
@@ -508,15 +512,16 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       return (
         <div>
           <table
-            style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14, border: 0 }}
+            style={{ width: '100%', borderCollapse: 'collapse', fontSize: 14, border: 0,marginRight:50 }}
             border={1}
             cellPadding={0}
             cellSpacing={0}
+
           >
             <thead>
               <tr style={{ height: 50 }}>
                 <th colspan={5} style={{ border: 0 }}>
-                  <div style={{ fontSize: 18, textAlign:'right'}}>签收单</div>
+                  <div style={{ fontSize: 18, textAlign:'center'}}>签收单</div>
                 </th>
                 <th colspan={1} style={{ border: 0 }}>
                   <div style={{ fontSize: 12, textAlign: 'center' }}>
@@ -571,7 +576,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                         <td style={{ width: '200px' }}>货物</td>
                         <td style={{ width: '100px' }}>件数</td>
                         <td style={{ width: '200px' }}>实收件数</td>
-                        <td style={{ width: '450px' }}>客户签名</td>
+                        <td style={{ width: '300px' }}>客户签名</td>
                       </tr>
                       <tr style={{height:30,textAlign: 'center' }}>
                         <td >整件件数</td>
