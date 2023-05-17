@@ -510,7 +510,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
           >
             <thead>
               <tr style={{ height: 50 }}>
-                <th colspan={4} style={{ border: 0 }}>
+                <th colspan={5} style={{ border: 0 }}>
                   <div style={{ fontSize: 18, textAlign:'right'}}>签收单</div>
                 </th>
                 <th colspan={2} style={{ border: 0 }}>
@@ -636,6 +636,11 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                         <td />
                         <td />
                       </tr>
+                      <tr>
+                        <td style={{border:0}} colSpan={6}>(以上一项司机卸货后客户当场填写)(单据备注白联~物流留底黄联~门店留底自联作为客户查单的依据)请门店务以核对送货单件<br></br>
+数，如有问题请及时联系物流部，客服务电话:0731-83338671-6007 (8:00-17:30)400热线:4008306700</td>
+                        
+                      </tr>
                     </>
                      </>
                     )
@@ -649,118 +654,6 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       );
 
     }
-    let REALCARTONCOUNT = 0;
-    let CARTONCOUNT = 0;
-    let CONTAINERCOUNT = 0;
-    let REALCONTAINERCOUNT = 0;
-    let REALCOLDCONTAINER = 0;
-    let REALFREEZECONTAINER = 0;
-    this.state.selectedRows.map(e => {
-      REALCARTONCOUNT += e.REALCARTONCOUNT;
-      CONTAINERCOUNT += e.CONTAINERCOUNT;
-      CARTONCOUNT += e.CARTONCOUNT;
-      REALCONTAINERCOUNT += e.REALCONTAINERCOUNT;
-      REALFREEZECONTAINER += e.REALFREEZECONTAINER;
-      REALCOLDCONTAINER += e.REALCOLDCONTAINER;
-    })
-
-    return (
-      <div>
-        <table
-          style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12, border: 0 }}
-          border={1}
-          cellPadding={0}
-          cellSpacing={0}
-        >
-          <thead>
-            <tr style={{ height: 50 }}>
-              <th colspan={2} style={{ border: 0 }} />
-              <th colspan={4} style={{ border: 0 }}>
-                <div style={{ fontSize: 18, textAlign: 'center' }}>福建时捷转运单复核单据</div>
-              </th>
-              <th colspan={2} style={{ border: 0 }}>
-                <div style={{ fontSize: 14, textAlign: 'center' }}>
-                  <span>第</span>
-                  <font tdata="PageNO" color="blue">
-                    ##
-                  </font>
-                  <span>页/共</span>
-                  <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
-                    ##
-                  </font>
-                  <span>页</span>
-                </div>
-              </th>
-            </tr>
-
-            <tr>
-              <th colspan={5} style={{ border: 0, height: 25 }}>
-                操作人： {loginUser().name}
-              </th>
-              <th colspan={5} style={{ border: 0, height: 25 }}>
-                制单时间：{convertDateToTime(new Date())}
-              </th>
-            </tr>
-
-            <tr style={{ height: 25 }}>
-              <th width={50}>序号</th>
-              <th width={80}>作业号</th>
-              <th width={80}>门店编码</th>
-              <th width={170}>门店名称</th>
-              <th width={80}>拣货次序</th>
-              <th width={80}>整件板位</th>
-              <th width={100}>整件</th>
-              <th width={100}>周转箱</th>
-              <th width={100}>冷藏箱</th>
-              <th width={100}>冷冻箱</th>
-            </tr>
-          </thead>
-          <tbody>
-            {this.state.selectedRows ? (
-              this.state.selectedRows.map((item, index) => {
-                return (
-                  <tr style={{ textAlign: 'center', height: 20 }}>
-                    <td width={50}>{index + 1}</td>
-                    <td width={80}>{item.WAVENUM}</td>
-                    <td width={100}>{item.DELIVERYPOINTCODE}</td>
-                    <td width={170}>{item.DELIVERYPOINTNAME}</td>
-                    <td width={80}>{item.LINECODE}</td>
-                    <td width={80}>{item.COLLECTBIN}</td>
-                    {/* <td width={80}>{item.CARTONCOUNT}</td> */}
-                    <td width={80} >{item.REALCARTONCOUNT}</td>
-                    {/* <td width={80} >{item.CONTAINERCOUNT}</td> */}
-                    <td width={80}>{item.REALCONTAINERCOUNT}</td>
-                    <td width={80} >{item.REALCOLDCONTAINER}</td>
-                    <td width={80}>{item.REALFREEZECONTAINER}</td>
-                  </tr>
-                );
-              })
-            ) : (
-              <></>
-            )}
-
-            <tr style={{ textAlign: 'center', height: 20 }}>
-              <td width={50} colSpan={2}>合计</td>
-
-              <td width={100} colSpan={2}>{this.state.selectedRows.length}</td>
-              <td width={80}>{ }</td>
-              <td width={80}>{ }</td>
-              {/* <td width={80}>{CARTONCOUNT}</td> */}
-              <td width={100} >{REALCARTONCOUNT}</td>
-              {/* <td width={80} >{CONTAINERCOUNT}</td> */}
-              <td width={100}>{REALCONTAINERCOUNT}</td>
-              <td width={100} >{REALCOLDCONTAINER}</td>
-              <td width={100}>{REALFREEZECONTAINER}</td>
-            </tr>
-
-
-
-
-
-          </tbody>
-        </table>
-      </div>
-    );
   }
   drawToolsButton = () => {
     const { showAuditPop,
