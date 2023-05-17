@@ -486,8 +486,8 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               }
                {
                 <tr>
-                  <td colSpan={6} style={{ border: 0 }} >备注:{}</td>
-                  <td colSpan={6} style={{ border: 0 }} >CH单号:{}</td>
+                  <td colSpan={12} style={{ border: 0 }} >备注:{xsdd[0].NOTE}</td>
+                  {/* <td colSpan={6} style={{ border: 0 }} >CH单号:{}</td> */}
                   </tr>
               }
                {
