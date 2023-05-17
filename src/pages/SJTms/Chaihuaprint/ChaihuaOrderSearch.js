@@ -337,7 +337,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       return (
         <div>
           <table
-            style={{ width: '99%', borderCollapse: 'collapse',fontFamily: "微软雅黑", fontWeight: 'normal',fontSize: 13, border: 0 }}
+            style={{ width: '98%', borderCollapse: 'collapse',fontFamily: "微软雅黑", fontWeight: 'normal',fontSize: 13, border: 0 }}
             border={1}
             cellPadding={0}
             cellSpacing={0}
@@ -349,7 +349,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                   <div style={{ fontSize: 18, textAlign: 'center' }}>彩华销售单</div>
                 </th>
                 <th colspan={3} style={{ border: 0 }}>
-                  <div style={{ fontSize: 12, textAlign: 'rigth' }}>
+                  <div style={{ fontSize: 12, textAlign: 'right' }}>
                     <span>第</span>
                     <font tdata="PageNO" color="blue">
                       ##
@@ -390,45 +390,51 @@ export default class TranOrderSearch extends QuickFormSearchPage {
 
               <tr style={{ height: 25 }}>
                 <th width={30}>序号</th>
-                <th width={70}>商品代码</th>
-                <th width={80}>国际条码</th>
-                <th width={175}>品名</th>
-                <th width={80}>批次</th>
+                <th width={70} style={{fontSize:11}}>商品代码</th>
+                <th width={80} style={{fontSize:11}}>国际条码</th>
+                <th width={120}>品名</th>
+                <th width={60} style={{fontSize:11}}>批次</th>
                 <th width={30}>单位</th>
                 <th width={40}>数量</th>
                 <th width={40}>包装</th>
                 <th width={40}>件数</th>
-                <th width={65}>销售价</th>
-                <th width={65}>销售金额</th>
-                <th width={65}>折扣金额</th>
+                <th width={40}>销售价</th>
+                <th width={40}>销售金额</th>
+                <th width={40}>折扣金额</th>
               </tr>
             </thead>
             <tbody>
-              {xsdd ? 
-                  (xsdd.map((item,index)=>{
-                    return (
-                      <tr style={{ textAlign: 'center', height: 20 }}>
-                        <td width={40}>{index + 1}</td>
-                        <td width={78} style={{textAlign: 'left'}}
-                        >{item.ARTICLECODE}</td>
-                        <td style={{textAlign: 'left'}} width={80}>{item.BARCODE}</td>
-                        <td style={{textAlign: 'left'}} width={175}>{item.ARTICLENAME}</td>
-                        <td width={60}>{item.BATCHNUM}</td>
-                        <td width={30}>{item.MUNIT}</td>
-                        {/* <td width={80}>{item.CARTONCOUNT}</td> */}
-                        <td width={40} >{item.REALQTY}</td>
-                        {/* <td width={80} >{item.CONTAINERCOUNT}</td> */}
-                        <td width={40}>{item.PAQ}</td>
-                        <td width={40} >{item.REALQTYSTR}</td>
-                        <td width={65}>{item.PRICE}</td>
-                        <td width={65}>{item.PRICE1}</td>
-                        <td width={65}>{ }</td>
-                      </tr>
-                    );
+              {sdasfa ? 
+                  (sdasfa.map((ss,index)=>{
+                   return <> <tr ><td height={30} colspan={13} >{ss}</td>{ss}</tr>
+                    {  sd[ss].map((item,index)=>{
+                      return (
+                        <tr style={{ textAlign: 'center', height: 20 }}>
+                          <td width={40}>{index + 1}</td>
+                          <td width={78} style={{textAlign: 'left'}}
+                          >{item.ARTICLECODE}</td>
+                          <td style={{textAlign: 'left'}} width={80}>{item.BARCODE}</td>
+                          <td style={{textAlign: 'left'}} width={120}>{item.ARTICLENAME}</td>
+                          <td width={60}>{item.BATCHNUM}</td>
+                          <td width={30}>{item.MUNIT}</td>
+                          {/* <td width={80}>{item.CARTONCOUNT}</td> */}
+                          <td width={40} >{item.REALQTY}</td>
+                          {/* <td width={80} >{item.CONTAINERCOUNT}</td> */}
+                          <td width={40}>{item.PAQ}</td>
+                          <td width={40} >{item.REALQTYSTR}</td>
+                          <td width={40}>{item.PRICE}</td>
+                          <td width={65}>{item.PRICE1}</td>
+                          <td width={65}>{ }</td>
+                        </tr>
+                      );
+                    })
+                  }
+                  </>
                   })
                   
                 
-              ) : (
+              ) 
+              : (
                 <></>
               )}
               {heands ? (
