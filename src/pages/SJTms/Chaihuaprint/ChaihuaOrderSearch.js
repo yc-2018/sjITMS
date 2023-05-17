@@ -337,7 +337,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       return (
         <div>
           <table
-            style={{ width: '100%', borderCollapse: 'collapse',fontFamily: "微软雅黑", fontWeight: 'normal',fontSize: 13, border: 0 }}
+            style={{ width: '99%', borderCollapse: 'collapse',fontFamily: "微软雅黑", fontWeight: 'normal',fontSize: 13, border: 0 }}
             border={1}
             cellPadding={0}
             cellSpacing={0}
@@ -409,9 +409,10 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                     return (
                       <tr style={{ textAlign: 'center', height: 20 }}>
                         <td width={40}>{index + 1}</td>
-                        <td width={78}>{item.ARTICLECODE}</td>
-                        <td width={80}>{item.BARCODE}</td>
-                        <td width={175}>{item.ARTICLENAME}</td>
+                        <td width={78} style={{textAlign: 'left'}}
+                        >{item.ARTICLECODE}</td>
+                        <td style={{textAlign: 'left'}} width={80}>{item.BARCODE}</td>
+                        <td style={{textAlign: 'left'}} width={175}>{item.ARTICLENAME}</td>
                         <td width={60}>{item.BATCHNUM}</td>
                         <td width={30}>{item.MUNIT}</td>
                         {/* <td width={80}>{item.CARTONCOUNT}</td> */}
@@ -507,11 +508,12 @@ export default class TranOrderSearch extends QuickFormSearchPage {
           >
             <thead>
               <tr style={{ height: 50 }}>
-                <th colspan={6} style={{ border: 0 }}>
+                <th colSpan={2} style={{ border: 0 }}></th>
+                <th colspan={3} style={{ border: 0 }}>
                   <div style={{ fontSize: 18, textAlign:'center'}}>签收单</div>
                 </th>
-                <th colspan={2} style={{ border: 0 }}>
-                  <div style={{ fontSize: 12, textAlign: 'center' }}>
+                <th colspan={1} style={{ border: 0 }}>
+                  <div style={{ fontSize: 12, textAlign: 'left' }}>
                     <span>第</span>
                     <font tdata="PageNO" color="blue">
                       ##
