@@ -256,7 +256,12 @@ export default class TranOrderSearch extends QuickFormSearchPage {
     const printPages = document.getElementById('printPagewes').childNodes;
     printPages.forEach(page => {
       LODOP.NewPageA();
-      LODOP.ADD_PRINT_TABLE('2%', '0.5%', '96%', '96%', page.innerHTML);
+      if(flag=='销售单'){
+        LODOP.ADD_PRINT_TABLE('2%', '0.1%', '96%', '96%', page.innerHTML);
+      }else{
+        LODOP.ADD_PRINT_TABLE('2%', '1%', '96%', '96%', page.innerHTML);
+      }
+     
       //LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
 
     });
