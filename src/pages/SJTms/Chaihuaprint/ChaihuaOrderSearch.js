@@ -441,10 +441,10 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                 heands.map((item, index) => {
                   return (
                     <tr style={{ textAlign: 'center', height: 25 }}>
-                      <td  colSpan={3} style={{fontSize:14}}>{item.SOURCEBILLNUMBER}</td>
-                      <td  colSpan={5}style={{fontSize:14}}>{item.BILLNUMBER}</td>
-                      <td  colSpan={2}style={{fontSize:14}}>{item.BNUMBERS}</td>
-                      <td colSpan={2}style={{fontSize:14}}>{item.TOTALREALAMOUNT}</td>
+                      <td  colSpan={3} style={{fontSize:14, textAlign: 'left'}}>{item.SOURCEBILLNUMBER}</td>
+                      <td  colSpan={5}style={{fontSize:14, textAlign: 'left'}}>{item.BILLNUMBER}</td>
+                      <td  colSpan={2}style={{fontSize:14, textAlign: 'left'}}>{item.BNUMBERS}</td>
+                      <td colSpan={2}style={{fontSize:14, textAlign: 'left'}}>{item.TOTALREALAMOUNT}</td>
                     </tr>
                   );
                 })
@@ -456,8 +456,8 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                 heandsdd.map((item, index) => {
                   return (
                     <tr style={{ textAlign: 'center', height: 25 }}>
-                      <td  colSpan={10} style={{fontSize:14}}>{item.SELLDISCOUNTORDERNO}</td>
-                      <td  colSpan={2} style={{fontSize:14}}>{item.CASHTICKETMONEY}</td>
+                      <td  colSpan={10} style={{fontSize:14, textAlign: 'left'}}>{item.SELLDISCOUNTORDERNO}</td>
+                      <td  colSpan={2} style={{fontSize:14, textAlign: 'left'}}>{item.CASHTICKETMONEY}</td>
                     </tr>
                   );
                 })
@@ -475,7 +475,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               {
                 (<tr >
                   <td colSpan={12} style={{ border: 0 }}>
-                    请门店务必核对送货单件数，如有问题请及时联系物流部，调度服务电话:07383338671-6007 (8:00-17:30) 400热线:4008306700<br></br>注意:货物当面点清并检查无破损、融化、否则后果自负。司机送货到店,所有整件、周转箱数量务必当面点清。司机离开后,少整件、少周转箱的情况,物流概不处理.
+                    请门店务必核对送货单件数，如有问题请及时联系物流部，调度服务电话:07383338671-6007 (8:00-17:30) 400热线:4008306700<br></br>注意:货物当面点清并检查无破损、融化、否则后果自负。司机送货到店,所有整件、周转箱数量务必当面点清。司机离开后,少整件、<br></br>少周转箱的情况,物流概不处理.
                   </td>
                 </tr>
 
@@ -483,6 +483,19 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               }
               {
                 <tr><td colSpan={12} style={{ border: 0 }} >客户收货时间:</td></tr>
+              }
+               {
+                <tr>
+                  <td colSpan={6} style={{ border: 0 }} >备注:{}</td>
+                  <td colSpan={6} style={{ border: 0 }} >CH单号:{}</td>
+                  </tr>
+              }
+               {
+                <tr>
+                  <td colSpan={4} style={{ border: 0 }} >白联:存根联</td>
+                  <td colSpan={4} style={{ border: 0 }} >红联:财联</td>
+                  <td colSpan={4} style={{ border: 0 }} >黄联:客户</td>
+                  </tr>
               }
             </tbody>
           </table>
@@ -506,20 +519,20 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       return (
         <div>
           <table
-            style={{ width: '94%', borderCollapse: 'collapse', fontSize: 14, border: 0}}
+            style={{ width: '92%', borderCollapse: 'collapse', fontSize: 14.5, border: 0}}
             border={1}
             cellPadding={0}
             cellSpacing={0}
 
           >
             <thead>
-              <tr style={{ height: 50 }}>
+              <tr style={{ height: 40 }}>
                 <th colSpan={2} style={{ border: 0 }}></th>
                 <th colspan={3} style={{ border: 0 }}>
-                  <div style={{ fontSize: 18, textAlign:'center'}}>签收单</div>
+                  <div style={{ fontSize: 17, textAlign:'center'}}>签收单</div>
                 </th>
                 <th colspan={1} style={{ border: 0 }}>
-                  <div style={{ fontSize: 12, textAlign: 'left' }}>
+                  <div style={{ fontSize: 14, textAlign: 'left' }}>
                     <span>第</span>
                     <font tdata="PageNO" color="blue">
                       ##
@@ -534,7 +547,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               </tr>
 
               <tr>
-              <th colspan={6} style={{ border: 0, textAlign:'left' }} >
+              <th colspan={6} style={{ border: 0,fontSize: 15, textAlign:'left' }} >
                 配货日期： {convertDate(signs[0].PICKDATE)} &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 &nbsp;&nbsp;
                 装车单号：{signs[0].SCHEDULENUM} &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -552,8 +565,8 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                   打印时间：{convertDateToTime(new Date())}
                 </th> */}
               </tr>
-              <tr style={{height:30}}>
-                <th colspan={6} style={{ border: 0, textAlign:'left' }} > 
+              <tr style={{height:25}}>
+                <th colspan={6} style={{ border: 0, textAlign:'left', fontSize: 15,}} > 
                 客户名称： {signs[0].STORE} &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 收货地址：{signs[0].STREET}</th>
                 {/* <th colspan={4} style={{ border: 0, textAlign:'left' }}>
