@@ -259,7 +259,8 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       if(flag=='销售单'){
         LODOP.ADD_PRINT_TABLE('2%', '0.1%', '96%', '96%', page.innerHTML);
       }else{
-        LODOP.ADD_PRINT_TABLE('2%', '1%', '96%', '96%', page.innerHTML);
+        LODOP.ADD_PRINT_HTM('2%', '1%', '96%', '96%', page.innerHTML);
+       // LODOP.ADD_PRINT_TABLE('2%', '1%', '96%', '96%', page.innerHTML);
       }
      
       //LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
@@ -472,7 +473,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                 (<tr>
                   <td style={{ border: 0 }} colSpan={4}>合计：</td>
                   <td style={{ border: 0 }} colSpan={4}>销售数量：{xsddsum}</td>
-                  <td style={{ border: 0 }} colSpan={4}>销售金额：{heandsum}</td>
+                  <td style={{ border: 0 }} colSpan={4}>销售金额：{heandsum.toFixed(2)}</td>
                 </tr>)
               }
               {
