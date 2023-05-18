@@ -34,6 +34,7 @@ export default class HighWayAreaGroupSearchPage extends QuickFormSearchPage {
     return (
       <span>
         <Button
+          hidden={!havePermission(this.state.authority + '.maintenance')}
           onClick={() => {
             this.setState({ isModalVisible: true });
           }}
