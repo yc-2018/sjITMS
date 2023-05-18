@@ -10,6 +10,7 @@ import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { Button, Modal } from 'antd';
 import HighWayAreaSearchPage from '@/pages/SJTms/HighWayArea/HighWayAreaSearchPage';
+import { havePermission } from '@/utils/authority';
 
 @connect(({ quick, loading }) => ({
   quick,
