@@ -174,7 +174,7 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
             okText="确定"
             cancelText="取消"
           >
-            <Button>确认</Button>
+            <Button hidden={!havePermission(this.state.authority + '.confirm')}>确认</Button>
           </Popconfirm>
         </span>
       );
