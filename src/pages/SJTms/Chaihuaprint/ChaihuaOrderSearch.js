@@ -248,7 +248,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
     LODOP.PRINT_INIT('复合打印');
     //1代表横的打印 2代表竖的打印 3纵向打印，宽度固定，高度按打印内容的高度自适应；
     if(flag=='销售单'){
-    LODOP.SET_PRINT_PAGESIZE(1, 2400, 1400, '240mm*140mm'); 
+    LODOP.SET_PRINT_PAGESIZE(0, 2400, 1400, '240mm*140mm'); 
     }else{
       LODOP.SET_PRINT_PAGESIZE(1, 2400, 1400, '240mm*141mm'); 
     }
