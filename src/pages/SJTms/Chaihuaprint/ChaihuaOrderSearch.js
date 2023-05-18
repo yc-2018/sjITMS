@@ -278,14 +278,16 @@ export default class TranOrderSearch extends QuickFormSearchPage {
 
 
   buildPrintPage = async (flag) => {
+    const {selectedRows }  = this.state;
     const printPages = [];
-    const printPage = await this.drawBillPage(flag);
-    printPages.push(printPage);
-
-    this.setState({ printPage: printPages });
+    for(let index = 0 ;selectedRows.length > index;index++){
+      const printPage = await this.drawBillPage(flag,selectedRows[index].WSS);
+      printPages.push(printPage);
+    }
+    this.setState({ printPage: printPages});
   };
 
-  drawBillPage = async (flag) => {
+  drawBillPage = async (flag,wss) => {
     if (flag == '销售单') {
       const sadf = await queryAllData({
         quickuuid: 'v_iwms_saleorder_d',
@@ -295,21 +297,15 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               field: 'WSS',
               type: 'VarChar',
               rule: 'eq',
-              val: this.state.selectedRows[0].WSS,
+              val: wss,
             },
           ],
         },
       });
       const xsdd = sadf.data.records;
       const sd  = groupBy(xsdd,'BOXNUM');
-      console.log("sd",sd);
       const xsddsum = sumBy(xsdd, 'REALQTY');
       const sdasfa =  Reflect.ownKeys(sd);
-      sdasfa.map(s=>{
-        console.log("s",s);
-         console.log("sdsadsa",sd[s]);
-      })
-      console.log("sd", Reflect.ownKeys(sd));
       const henadss = await queryAllData({
         quickuuid: 'v_iwms_saleorder_h',
         superQuery: {
@@ -318,13 +314,13 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               field: 'WSS',
               type: 'VarChar',
               rule: 'eq',
-              val: this.state.selectedRows[0].WSS,
+              val: wss,
             },
           ],
         },
       });
       const heands = henadss.data.records;
-      const heandsum = sumBy(heands, 'TOTALREALAMOUNT');
+      let heandsum = sumBy(heands, 'TOTALREALAMOUNT');
       const henadsd = await queryAllData({
         quickuuid: 'v_iwms_saleorder_h2',
         superQuery: {
@@ -333,12 +329,14 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               field: 'WSS',
               type: 'VarChar',
               rule: 'eq',
-              val: this.state.selectedRows[0].WSS,
+              val: wss,
             },
           ],
         },
       });
       const heandsdd = henadsd.data.records;
+
+      heandsum = heandsum - sumBy(heandsdd,'CASHTICKETMONEY');
       return (
         <div>
           <table
@@ -515,7 +513,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               field: 'PK',
               type: 'VarChar',
               rule: 'eq',
-              val: this.state.selectedRows[0].WSS,
+              val:wss,
             },
           ],
         },
@@ -653,7 +651,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                       <tr style={{height:30,textAlign: 'center' }} >
                         <td>销售单</td>
                         <td>{item.SOURCEBILLNUMBER}</td>
-                        <td>{item.CASHTICKETMONEY}</td>
+                        <td>{item.TOTALREALAMOUNT}</td>
                       </tr>
                       <tr style={{height:30,textAlign: 'center' }}>
                         <td>退货单</td>
