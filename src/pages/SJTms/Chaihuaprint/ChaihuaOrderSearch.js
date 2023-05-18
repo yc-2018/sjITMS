@@ -242,11 +242,16 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       return;
     }
     const hide =
-      key == 'loadNow' ? message.loading('打印中，请稍后...', 6) : message.loading('加载中...', 5);
+      key == 'loadNow' ? message.loading('打印中，请稍后...', 10) : message.loading('加载中...', 10);
     const LODOP = getLodop();
     if (LODOP == undefined) return;
     LODOP.PRINT_INIT('复合打印');
-    LODOP.SET_PRINT_PAGESIZE(1, 2400, 1400, '240mm*140mm'); //1代表横的打印 2代表竖的打印 3纵向打印，宽度固定，高度按打印内容的高度自适应；
+    //1代表横的打印 2代表竖的打印 3纵向打印，宽度固定，高度按打印内容的高度自适应；
+    if(flag=='销售单'){
+    LODOP.SET_PRINT_PAGESIZE(1, 2400, 1400, '240mm*140mm'); 
+    }else{
+      LODOP.SET_PRINT_PAGESIZE(1, 2400, 1400, '240mm*141mm'); 
+    }
     //LODOP.SET_LICENSES("","EE0887D00FCC7D29375A695F728489A6","C94CEE276DB2187AE6B65D56B3FC2848","");
     LODOP.SET_PRINT_MODE('PRINT_DUPLEX', 1); //去掉双面打印
     key == 'load' || key == 'loadNow'
@@ -259,7 +264,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       if(flag=='销售单'){
         LODOP.ADD_PRINT_TABLE('2%', '0.1%', '96%', '96%', page.innerHTML);
       }else{
-        LODOP.ADD_PRINT_HTM('2%', '1%', '96%', '96%', page.innerHTML);
+        LODOP.ADD_PRINT_HTM('0', '0', '100%', '100%', page.innerHTML);
        // LODOP.ADD_PRINT_TABLE('2%', '1%', '96%', '96%', page.innerHTML);
       }
      
@@ -341,7 +346,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       return (
         <div>
           <table
-            style={{ width: '94%', borderCollapse: 'collapse',fontFamily: "微软雅黑", fontWeight: 'normal',fontSize: 13, border: 0 }}
+            style={{ width: '94%', borderCollapse: 'collapse', fontWeight: 'normal',fontSize: 13, border: 0 }}
             border={1}
             cellPadding={0}
             cellSpacing={0}
@@ -445,10 +450,10 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                 heands.map((item, index) => {
                   return (
                     <tr style={{ textAlign: 'center', height: 25 }}>
-                      <td  colSpan={3} style={{fontSize:14, textAlign: 'left'}}>{item.SOURCEBILLNUMBER}</td>
-                      <td  colSpan={5}style={{fontSize:14, textAlign: 'left'}}>{item.BILLNUMBER}</td>
-                      <td  colSpan={2}style={{fontSize:14, textAlign: 'left'}}>{item.BNUMBERS}</td>
-                      <td colSpan={2}style={{fontSize:14, textAlign: 'left'}}>{item.TOTALREALAMOUNT}</td>
+                      <td  colSpan={3} style={{fontSize:15,textAlign: 'left'}}>{item.SOURCEBILLNUMBER}</td>
+                      <td  colSpan={5}style={{fontSize:15, textAlign: 'left'}}>{item.BILLNUMBER}</td>
+                      <td  colSpan={2}style={{fontSize:15, textAlign: 'left'}}>{item.BNUMBERS}</td>
+                      <td colSpan={2}style={{fontSize:15, textAlign: 'left'}}>{item.TOTALREALAMOUNT}</td>
                     </tr>
                   );
                 })
@@ -460,8 +465,8 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                 heandsdd.map((item, index) => {
                   return (
                     <tr style={{ textAlign: 'center', height: 25 }}>
-                      <td  colSpan={10} style={{fontSize:14, textAlign: 'left'}}>{item.SELLDISCOUNTORDERNO}</td>
-                      <td  colSpan={2} style={{fontSize:14, textAlign: 'left'}}>{item.CASHTICKETMONEY}</td>
+                      <td  colSpan={10} style={{fontSize:15, textAlign: 'left'}}>{item.SELLDISCOUNTORDERNO}</td>
+                      <td  colSpan={2} style={{fontSize:15, textAlign: 'left'}}>{item.CASHTICKETMONEY}</td>
                     </tr>
                   );
                 })
@@ -523,17 +528,17 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       return (
         <div>
           <table
-            style={{ width: '92%', borderCollapse: 'collapse', fontSize: 14.5, border: 0}}
+            style={{ width: '85%', borderCollapse: 'collapse',  fontWeight: 'normal' ,fontSize:16, border: 0}}
             border={1}
             cellPadding={0}
             cellSpacing={0}
 
           >
             <thead>
-              <tr style={{ height: 40 }}>
+              <tr style={{ height: 30 }}>
                 <th colSpan={2} style={{ border: 0 }}></th>
                 <th colspan={3} style={{ border: 0 }}>
-                  <div style={{ fontSize: 17, textAlign:'center'}}>签收单</div>
+                  <div style={{ fontSize: 20, textAlign:'center'}}>签收单</div>
                 </th>
                 <th colspan={1} style={{ border: 0 }}>
                   <div style={{ fontSize: 14, textAlign: 'left' }}>
@@ -551,7 +556,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               </tr>
 
               <tr>
-              <th colspan={6} style={{ border: 0,fontSize: 15, textAlign:'left' }} >
+              <th colspan={6} style={{ border: 0,fontSize:17 , textAlign:'left' }} >
                 配货日期： {convertDate(signs[0].PICKDATE)} &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 &nbsp;&nbsp;
                 装车单号：{signs[0].SCHEDULENUM} &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
@@ -569,8 +574,8 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                   打印时间：{convertDateToTime(new Date())}
                 </th> */}
               </tr>
-              <tr style={{height:25}}>
-                <th colspan={6} style={{ border: 0, textAlign:'left', fontSize: 15,}} > 
+              <tr style={{height:20}}>
+                <th colspan={6} style={{ border: 0, textAlign:'left', fontSize: 17,}} > 
                 客户名称： {signs[0].STORE} &nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                 收货地址：{signs[0].STREET}</th>
                 {/* <th colspan={4} style={{ border: 0, textAlign:'left' }}>
@@ -593,13 +598,13 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                         </td>
                       </tr>
                       <tr style={{height:30,textAlign: 'center' }}>
-                        <td rowspan={4} style={{ width: '60px', textAlign: 'center'  }}>
+                        <td rowspan={4} width ={50} style={{textAlign: 'center' }}>
                           货物<br></br>签收
                         </td>
                         <td width={60}>货物</td>
                         <td width={60}>件数</td>
                         <td width={60}>实收件数</td>
-                        <td width={300} >客户签名</td>
+                        <td width={250} >客户签名</td>
                       </tr>
                       <tr style={{height:30,textAlign: 'center' }}>
                         <td >整件件数</td>
@@ -608,12 +613,12 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                         <td rowspan={4} />
                       </tr>
                       <tr style={{height:30,textAlign: 'center' }}>
-                        <td>周转箱/冷藏箱数</td>
+                        <td>周转箱/冷<br/>藏箱数</td>
                         <td>{item.BOXNUM}</td>
                         <td />
                       </tr>
                       <tr style={{height:30,textAlign: 'center' }}>
-                        <td>巧克力/面包 此项<br></br>填是/否</td>
+                        <td>巧克力/面包 此<br/>项填是/否</td>
                         <td>否/否</td>
                         <td />
                       </tr>
@@ -621,12 +626,12 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                         <td rowspan={2}  style={{ textAlign: 'center' }}>周转<br></br>箱</td>
                         <td>本次送出箱数</td>
                         <td>上次欠箱数</td>
-                        <td>本次应收回箱总<br></br>数</td>
+                        <td>本次应收<br/>回箱总数</td>
                       </tr>
                       <tr style={{height:30 }}>
                         <td style={{ textAlign: 'center' }}>{item.BOXNUM}</td>
-                        <td />
-                        <td />
+                        <td  style={{ border: 0}}/>
+                        <td style={{ border: 0}}/>
                         <td rowspan={7}>
                           未付金额:
                           <br />
@@ -642,7 +647,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                       </tr>
                       <tr style={{textAlign: 'center' }}>
                         <td rowspan={6} style ={{textAlign: 'center',width: '30px' }}>司<br></br>机<br></br>填<br></br>写<br></br>栏</td>
-                        <td rowspan={6} style ={{textAlign: 'center' }}>应收<br></br>金额</td>
+                        <td rowspan={6} style ={{textAlign: 'center' }}>应收<br/>金额</td>
                       </tr>
                       <tr style={{height:30,textAlign: 'center' }} >
                         <td>单据类型</td>
@@ -656,22 +661,23 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                       </tr>
                       <tr style={{height:30,textAlign: 'center' }}>
                         <td>退货单</td>
-                        <td />
+                        <td/>
                         <td />
                       </tr>
                       <tr style={{height:30,textAlign: 'center' }}> 
                         <td>销售差异单</td>
-                        <td />
-                        <td />
+                        <td/>
+                        <td/>
                       </tr>
                       <tr style={{height:30,textAlign: 'center' }}>
                         <td>差异单(可机手写)</td>
-                        <td />
-                        <td />
+                        <td/>
+                        <td/>
                       </tr>
                       <tr>
-                        <td style={{border:0,fontSize:12}} colSpan={6}>(以上一项司机卸货后客户当场填写)(单据备注白联~物流留底黄联~门店留底自联作为客户查单的依据)请门店务以核对送货单件<br></br>
-数，如有问题请及时联系物流部，客服务电话:0731-83338671-6007 (8:00-17:30)400热线:4008306700</td>
+                        <td style={{border:0,fontSize:15}} colSpan={6}>
+                           (以上一项司机卸货后客户当场填写)(单据备注白联~物流留底黄联~门店留底自联作为客户查单的依据)请门店务以核对送货单件数，如有问题请及时联系物流部，客服务电话:0731-83338671-6007 (8:00-17:30)400热线:4008306700
+                          </td>
                         
                       </tr>
                     </>
