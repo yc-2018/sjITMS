@@ -882,6 +882,7 @@ export default class OrderPoolPage extends Component {
                         ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1)
                         : [];
                       orders = [...orders, ...selectPending];
+                      window.removeEventListener('keydown', this.keyDown);
                       this.dispatchMapRef.show(orders);
                     }}
                   >
@@ -967,7 +968,13 @@ export default class OrderPoolPage extends Component {
               </div>
             )}
             <div style={{ position: 'absolute', top: 12, left: 160 }}>
-              <a href="#" onClick={() => this.dispatchMapRef.show()}>
+              <a
+                href="#"
+                onClick={() => {
+                  window.removeEventListener('keydown', this.keyDown);
+                  this.dispatchMapRef.show();
+                }}
+              >
                 <img src={mapIcon} style={{ width: 20, height: 20 }} />
                 地图
               </a>
@@ -997,6 +1004,9 @@ export default class OrderPoolPage extends Component {
             <DispatchMap
               dispatchingByMap={this.dispatchingByMap}
               onRef={node => (this.dispatchMapRef = node)}
+              addEvent={() => {
+                window.addEventListener('keydown', this.keyDown);
+              }}
             />
           </TabPane>
           <TabPane tab={<span className={dispatchingStyles.cardTitle}>运力池</span>} key="Vehicle">
