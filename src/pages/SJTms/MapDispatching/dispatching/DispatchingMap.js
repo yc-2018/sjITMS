@@ -78,6 +78,21 @@ export default class DispatchMap extends Component {
       } else {
         this.drawingManagerRef.drawingmanager?.close();
       }
+    } else if (e && e.keyCode == 81 && e.altKey) {
+      //81 = q Q
+      const { orders, orderMarkers } = this.state;
+      let selectOrderStoreCodes = orderMarkers
+        .filter(x => x.isSelect)
+        .map(e => e.deliveryPoint.code);
+      let allSelectOrders = orders.filter(
+        e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
+      );
+      // const selectPoints = orders.filter(x => x.isSelect);
+      if (allSelectOrders.length === 0) {
+        message.error('请选择需要排车的门店！');
+        return;
+      }
+      this.props.dispatchingByMap(allSelectOrders);
     }
   };
 
@@ -110,7 +125,10 @@ export default class DispatchMap extends Component {
     this.clusterLayer = undefined;
     this.contextMenu = undefined;
     this.isSelectOrders = [];
-    window.removeEventListener('keydown', this.keyDown);
+    setTimeout(() => {
+      window.removeEventListener('keydown', this.keyDown);
+    }, 500);
+    this.props.addEvent();
   };
 
   //查询
@@ -181,7 +199,7 @@ export default class DispatchMap extends Component {
             // this.drawClusterLayer();
             this.drawMenu();
             // this.clusterSetData(data);
-            this.autoViewPort(data);
+            this.autoViewPort(orderMarkers);
 
             window.addEventListener('keydown', this.keyDown);
           }, 500);

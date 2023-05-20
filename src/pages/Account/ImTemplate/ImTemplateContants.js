@@ -112,4 +112,12 @@ export const ImportTemplateType = {
     name: 'ETCCOST',
     caption: '粤通卡费用金额',
   },
+  OMSWAREHOUSINGORDER: {
+    name: 'OMSWAREHOUSINGORDER',
+    caption: 'OMS入库订单',
+  },
+  OMSOUTBOUNDORDER: {
+    name: 'OMSOUTBOUNDORDER',
+    caption: 'OMS出库订单',
+  },
 };
