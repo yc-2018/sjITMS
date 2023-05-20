@@ -10,6 +10,7 @@ import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { Button, Modal } from 'antd';
 import HighWayAreaSearchPage from '@/pages/SJTms/HighWayArea/HighWayAreaSearchPage';
+import { havePermission } from '@/utils/authority';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -34,6 +35,7 @@ export default class HighWayAreaGroupSearchPage extends QuickFormSearchPage {
     return (
       <span>
         <Button
+          hidden={!havePermission(this.state.authority + '.maintenance')}
           onClick={() => {
             this.setState({ isModalVisible: true });
           }}

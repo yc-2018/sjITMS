@@ -613,7 +613,7 @@ export default class DriverSwipePrint extends PureComponent {
         scheduleDetailSum.REALCONTAINERCOUNT = REALCONTAINERCOUNT;
         scheduleDetailSum.OWECARTONCOUNT = OWECARTONCOUNT;
         scheduleDetailSum.CONTAINERSum = CONTAINERSum;
-        scheduleDetailSum.StoreSum = scheduleDetails.length;
+        scheduleDetailSum.StoreSum = sds.length;
         scheduleDetailSum.cartonCounts = cartonCounts;
         scheduleDetailSum.REALCOLDCONTAINERCOUNT = REALCOLDCONTAINERCOUNT;
         scheduleDetailSum.REALFREEZECONTAINERCOUNT = REALFREEZECONTAINERCOUNT;
@@ -745,9 +745,9 @@ export default class DriverSwipePrint extends PureComponent {
                 <tr style={{ height: 25 }}>
                   <th>整件</th>
                   <th>散件</th>
-                  <th>周转</th>
-                  <th>冷冻</th>
-                  <th>冷藏</th>
+                  <th>周转箱</th>
+                  <th>冷藏箱</th>
+                  <th>冷冻箱</th>
                   <th>箱总数</th>
                   <th>腾筐</th>
                   {/* <th>福袋数</th>
@@ -773,8 +773,8 @@ export default class DriverSwipePrint extends PureComponent {
                         <td width={50}>{item.REALCARTONCOUNT}</td>
                         <td width={50}>{item.REALSCATTEREDCOUNT}</td>
                         <td width={50}>{item.REALCONTAINERCOUNT}</td>
-                        <td width={50}>{!item.REALFREEZECONTAINERCOUNT?0:item.REALFREEZECONTAINERCOUNT}</td>
                         <td width={50}>{!item.REALCOLDCONTAINERCOUNT?0:item.REALCOLDCONTAINERCOUNT}</td>
+                        <td width={50}>{!item.REALFREEZECONTAINERCOUNT?0:item.REALFREEZECONTAINERCOUNT}</td>
                         <td width={50}>{(!item.REALCONTAINERCOUNT?0:item.REALCONTAINERCOUNT)+
                       (!item.REALFREEZECONTAINERCOUNT?0:item.REALFREEZECONTAINERCOUNT)+(!item.REALCOLDCONTAINERCOUNT?0:item.REALCOLDCONTAINERCOUNT)
                     }</td>                        <td width={50}>{0}</td>
@@ -812,8 +812,8 @@ export default class DriverSwipePrint extends PureComponent {
                     <td width={50}>{scheduleDetailSum.REALCARTONCOUNT}</td>
                     <td width={50}>{scheduleDetailSum.REALSCATTEREDCOUNT}</td>
                     <td width={50}>{scheduleDetailSum.REALCONTAINERCOUNT}</td>
-                    <td width={50}>{scheduleDetailSum.REALFREEZECONTAINERCOUNT}</td>
                     <td width={50}>{scheduleDetailSum.REALCOLDCONTAINERCOUNT}</td>
+                    <td width={50}>{scheduleDetailSum.REALFREEZECONTAINERCOUNT}</td>
                     <td width={50}>{scheduleDetailSum.cartonCounts}</td>
                     <td width={50}>{ }</td>
                    

@@ -277,7 +277,23 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       
       this.setState({ printPage: printPages });
     };
+ 
     drawBillPage = ()=>{
+      let  REALCARTONCOUNT  =0;
+      let  CARTONCOUNT = 0;
+      let CONTAINERCOUNT = 0;
+      let  REALCONTAINERCOUNT =0;
+      let REALCOLDCONTAINER = 0;
+      let REALFREEZECONTAINER = 0;
+      this.state.selectedRows.map(e=>{
+        REALCARTONCOUNT+=e.REALCARTONCOUNT;
+        CONTAINERCOUNT+=e.CONTAINERCOUNT;
+        CARTONCOUNT+=e.CARTONCOUNT;
+        REALCONTAINERCOUNT+=e.REALCONTAINERCOUNT;
+        REALFREEZECONTAINER+=e.REALFREEZECONTAINER;
+        REALCOLDCONTAINER+=e.REALCOLDCONTAINER;
+      })
+
       return (
         <div>
           <table
@@ -319,14 +335,14 @@ export default class TranOrderSearch extends QuickFormSearchPage {
               <tr style={{ height: 25 }}>
                 <th width={50}>序号</th>
                 <th width={80}>作业号</th>
-                <th width={100}>门店编码</th>
+                <th width={80}>门店编码</th>
                 <th width={170}>门店名称</th>
                 <th width={80}>拣货次序</th>
                 <th width ={80}>整件板位</th>
-                <th width={80}>预估整件</th>
-                <th width={80}>复核整件</th>
-                <th width={80}>预估周转筐</th>
-                <th width={80}>复核周转筐</th>
+                <th width={100}>整件</th>
+                <th width={100}>周转箱</th>
+                <th width={100}>冷藏箱</th>
+                <th width={100}>冷冻箱</th>
               </tr>
             </thead>
             <tbody>
@@ -340,16 +356,36 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                       <td width={170}>{item.DELIVERYPOINTNAME}</td>
                       <td width={80}>{item.LINECODE}</td>
                       <td width={80}>{item.COLLECTBIN}</td>
-                      <td width={80}>{item.CARTONCOUNT}</td>
+                      {/* <td width={80}>{item.CARTONCOUNT}</td> */}
                       <td width={80} >{item.REALCARTONCOUNT}</td>
-                      <td width={80} >{item.CONTAINERCOUNT}</td>
+                      {/* <td width={80} >{item.CONTAINERCOUNT}</td> */}
                       <td width={80}>{item.REALCONTAINERCOUNT}</td>
+                      <td width={80} >{item.REALCOLDCONTAINER}</td>
+                      <td width={80}>{item.REALFREEZECONTAINER}</td>
                     </tr>
                   );
                 })
               ) : (
                 <></>
               )}
+              
+                    <tr style={{ textAlign: 'center', height: 20 }}>
+                      <td width={50} colSpan={2}>合计</td>
+                     
+                      <td width={100} colSpan={2}>{this.state.selectedRows.length}</td>
+                      <td width={80}>{}</td>
+                      <td width={80}>{}</td>
+                      {/* <td width={80}>{CARTONCOUNT}</td> */}
+                      <td width={100} >{REALCARTONCOUNT}</td>
+                      {/* <td width={80} >{CONTAINERCOUNT}</td> */}
+                      <td width={100}>{REALCONTAINERCOUNT}</td>
+                      <td width={100} >{REALCOLDCONTAINER}</td>
+                      <td width={100}>{REALFREEZECONTAINER}</td>
+                    </tr>
+                  
+              
+              
+              
              
             </tbody>
           </table>
@@ -374,12 +410,12 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       <div id="printPagewe" style={{ display: 'none' }}>
           {printPage}
         </div>
-        <Button
+        {/* <Button
           hidden={!havePermission(this.state.authority + '.updateReviewCount')}
           onClick={() =>this.handUpdateReview()}
         >
           修改复核数
-        </Button>
+        </Button> */}
         <Popconfirm
           title="你确定要复核所选中的内容吗?"
           onConfirm={() => {
@@ -600,7 +636,15 @@ export default class TranOrderSearch extends QuickFormSearchPage {
       sa[fieldName]= value;
       sa.UUID = record.UUID;
       changeData.push(sa); 
-      const response = await updateReview (record.UUID,row.REALCARTONCOUNT,row.REALCONTAINERCOUNT,row.REALSCATTEREDCOUNT);
+     const real = {
+        uuid:record.UUID,
+        realCartonCount:row.REALCARTONCOUNT,
+        realContainerCount:row.REALCONTAINERCOUNT,
+        realScatteredCount: row.REALSCATTEREDCOUNT,
+        realColdContainerCount: row.REALCOLDCONTAINER,
+        realFreezeContainerCount: row.REALFREEZECONTAINER
+      }
+      const response = await updateReview (real);
       if(response && response.success){
        message.success("修改成功");
        this.setState({changeData})
@@ -649,6 +693,40 @@ export default class TranOrderSearch extends QuickFormSearchPage {
           }}
           min={0}
           defaultValue={record.REALCONTAINERCOUNT}
+          style={{ width: 100 }}
+          onBlur={(event)=>this.blurSave(record,column.fieldName,event.target.value)}
+          onChange={event => this.onChange(record, column.fieldName, event.target.value)}
+        />
+      );
+      e.component = component;
+    }
+    if (fieldName == 'REALFREEZECONTAINER') {
+      const component = (
+        <Input
+          className={e.record.ROW_ID + 'REALFREEZECONTAINER'}
+          onFocus={(event) => {
+            document.getElementsByClassName(e.record.ROW_ID + 'REALFREEZECONTAINER')[0].select();
+            this.onfocuschange(record,column.fieldName,event.target.value);
+          }}
+          min={0}
+          defaultValue={record.REALFREEZECONTAINER}
+          style={{ width: 100 }}
+          onBlur={(event)=>this.blurSave(record,column.fieldName,event.target.value)}
+          onChange={event => this.onChange(record, column.fieldName, event.target.value)}
+        />
+      );
+      e.component = component;
+    }
+    if (fieldName == 'REALCOLDCONTAINER') {
+      const component = (
+        <Input
+          className={e.record.ROW_ID + 'REALCOLDCONTAINER'}
+          onFocus={(event) => {
+            document.getElementsByClassName(e.record.ROW_ID + 'REALCOLDCONTAINER')[0].select();
+            this.onfocuschange(record,column.fieldName,event.target.value);
+          }}
+          min={0}
+          defaultValue={record.REALCOLDCONTAINER}
           style={{ width: 100 }}
           onBlur={(event)=>this.blurSave(record,column.fieldName,event.target.value)}
           onChange={event => this.onChange(record, column.fieldName, event.target.value)}
