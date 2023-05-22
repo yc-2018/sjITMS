@@ -191,7 +191,7 @@ export default class JmlCostOrderSearch extends QuickFormSearchPage {
     const errordata = [];
     selectedRows.map(e=>{
       if(e.ADJOININGSTORECODENAME=='' ||e.ADJOININGSTORECODENAME=='[]'){
-        errordata .push("排车单："+e.BILLNUMBER+" 门店："+e.DELIVERYPOINTCODENAME+" 没有设置临近门店！");
+        errordata .push("排车单："+e.BILLNUMBER+" 门店："+e.DELIVERYPOINTCODENAME+" 没有设置邻近门店！");
           flag = true;
           return;
       }
@@ -270,7 +270,7 @@ export default class JmlCostOrderSearch extends QuickFormSearchPage {
           </Button>
         </Popconfirm>
         <Button onClick={() => this.handNearStore()} type='primary'>
-          添加临近门店
+          添加邻近门店
         </Button>
         <Modal visible={uploadModal}
           onOk={() => this.addNearStore()}
