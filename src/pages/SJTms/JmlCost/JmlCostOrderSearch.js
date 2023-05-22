@@ -9,7 +9,7 @@ import React from 'react';
 import { Button, Popconfirm, message, Modal, Form } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { addNearStore, audits } from '@/services/sjitms/Jmlcost';
+import { addNearStore, audits,cancelAudits } from '@/services/sjitms/Jmlcost';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
 import { loginOrg, loginUser, loginCompany } from '@/utils/LoginContext';
@@ -187,6 +187,19 @@ export default class JmlCostOrderSearch extends QuickFormSearchPage {
       message.error("请选中一条记录");
       return;
     }
+    let flag = false;
+    const errordata = [];
+    selectedRows.map(e=>{
+      if(e.ADJOININGSTORECODENAME=='' ||e.ADJOININGSTORECODENAME=='[]'){
+        errordata .push("排车单："+e.BILLNUMBER+" 门店："+e.DELIVERYPOINTCODENAME+" 没有设置临近门店！");
+          flag = true;
+          return;
+      }
+    })
+    if(flag){
+      message.error(errordata[0]);
+      return;
+    }
     const reslut = await audits(selectedRows.map(e => e.COSTUUID));
     if (reslut.success) {
       message.success("审核成功！");
@@ -195,12 +208,34 @@ export default class JmlCostOrderSearch extends QuickFormSearchPage {
     }
   }
 
+  cancelAudits = async()=>{
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.error("请选中一条记录");
+      return;
+    }
+    const reslut = await cancelAudits(selectedRows.map(e => e.COSTUUID));
+
+    if (reslut.success) {
+      message.success("取消审核成功！");
+      this.setState({ uploadModal: false })
+      this.onSearch();
+    }
+  }
   addNearStore = async () => {
     const { selectedRows, NearStore } = this.state;
     if (!NearStore) {
       message.error("请选择门店");
+      return;
     }
-    const result = await addNearStore(loginCompany().uuid, loginOrg().uuid, NearStore, selectedRows[0].UUID, selectedRows[0].BILLNUMBER);
+
+    const params = selectedRows.map(e=>{
+      return {
+        orderUuid:e.UUID,
+        scheduleBillnumber:e.BILLNUMBER
+      }
+    })
+    const result = await addNearStore(loginCompany().uuid, loginOrg().uuid, NearStore, params);
     if (result.success) {
       message.success("保存成功！");
       this.setState({ uploadModal: false })
@@ -213,8 +248,8 @@ export default class JmlCostOrderSearch extends QuickFormSearchPage {
 
   handNearStore = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length !== 1) {
-      message.error("请选中一条记录");
+    if (selectedRows.length == 0) {
+      message.error("请选中条记录");
       return;
     }
     this.setState({ uploadModal: true })
@@ -227,6 +262,11 @@ export default class JmlCostOrderSearch extends QuickFormSearchPage {
         <Popconfirm placement="top" title={"确认审核？"} onConfirm={() => this.audits()} okText="是" cancelText="否">
           <Button type='primary'>
             审核
+          </Button>
+        </Popconfirm>
+        <Popconfirm placement="top" title={"确认取消审核？"} onConfirm={() => this.cancelAudits()} okText="是" cancelText="否">
+          <Button type='primary'>
+            取消审核
           </Button>
         </Popconfirm>
         <Button onClick={() => this.handNearStore()} type='primary'>
