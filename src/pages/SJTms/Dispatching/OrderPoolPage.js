@@ -289,7 +289,7 @@ export default class OrderPoolPage extends Component {
       const  inSchedule =  await checkOrderInSchedule(auditedRowKeys,"");
       if (inSchedule && inSchedule.data && inSchedule.data?.length > 0) {
         Modal.confirm({
-          title: '门店：['+inSchedule.data[0]?.details[0]?.deliveryPoint.code+']'+inSchedule.data[0]?.details[0]?.deliveryPoint.name+"在排车单："+inSchedule.data[0]?.billNumber+" 已有未装车的任务，请检查！",
+          title: '门店：['+inSchedule.data[0]?.details[0]?.deliveryPoint.code+']'+inSchedule.data[0]?.details[0]?.deliveryPoint.name+"在排车单："+inSchedule.data[0]?.billNumber+" 已有未装车的任务，确认排车吗？",
           onOk: () => {
             this.dispatching(true,true);
           },
@@ -470,7 +470,7 @@ export default class OrderPoolPage extends Component {
       const  inSchedule =  await checkOrderInSchedule(auditedRowKeys,scheduleRowKeys[0]);
       if(inSchedule.success && inSchedule.data && inSchedule.data.length > 0 ){
         Modal.confirm({
-          title: '门店：['+inSchedule.data[0]?.details[0]?.deliveryPoint.code+']'+inSchedule.data[0]?.details[0]?.deliveryPoint.name+"在排车单："+inSchedule.data[0]?.billNumber+" 已有未装车的任务，是否添加新的排车单？",
+          title: '门店：['+inSchedule.data[0]?.details[0]?.deliveryPoint.code+']'+inSchedule.data[0]?.details[0]?.deliveryPoint.name+"在排车单："+inSchedule.data[0]?.billNumber+" 已有未装车的任务，是否添加到新的排车单？",
           onOk: () => {
             this.handleAddOrder(checkWeight,true,true);
           },
