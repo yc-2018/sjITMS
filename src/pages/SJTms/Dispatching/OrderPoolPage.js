@@ -39,7 +39,7 @@ import {
   savePending,
   getContainerByBillUuid,
 } from '@/services/sjitms/OrderBill';
-import { batchSave, addOrders, checkArea, checkAreaSchedule } from '@/services/sjitms/ScheduleBill';
+import { batchSave, addOrders, checkArea, checkAreaSchedule ,checkOrderInSchedule} from '@/services/sjitms/ScheduleBill';
 import { groupBy, sumBy, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
@@ -262,7 +262,7 @@ export default class OrderPoolPage extends Component {
   };
 
   //排车
-  dispatching = async () => {
+  dispatching = async (checkAreas,checkexistSchedule) => {
     const { auditedRowKeys, auditedData } = this.state;
     const selectPending = this.props.selectPending();
     if (auditedRowKeys.length + selectPending.length == 0) {
@@ -272,22 +272,33 @@ export default class OrderPoolPage extends Component {
     let orders = auditedData ? auditedData.filter(x => auditedRowKeys.indexOf(x.uuid) != -1) : [];
     orders = [...orders, ...selectPending];
     //校验区域组合
-    if (this.props.dispatchConfig.checkArea != 1) {
-      this.dispatchingCom(orders);
-    } else {
+    if (this.props.dispatchConfig.checkArea == 1 && checkAreas == undefined) {
       const result = await checkArea(orders);
       if (result && result.data) {
         Modal.confirm({
           title: '所选门店配送区域不一样，确定排车吗？',
           onOk: () => {
-            this.dispatchingCom(orders);
+            this.dispatching(true);
           },
         });
         return;
-      } else {
-        this.dispatchingCom(orders);
       }
+    } 
+    //校验装车任务
+    if(this.props.dispatchConfig.existsSchedule == 1 && checkexistSchedule == undefined){
+      const  inSchedule =  await checkOrderInSchedule(auditedRowKeys,"");
+      if (inSchedule && inSchedule.data && inSchedule.data?.length > 0) {
+        Modal.confirm({
+          title: '门店：['+inSchedule.data[0]?.details[0]?.deliveryPoint.code+']'+inSchedule.data[0]?.details[0]?.deliveryPoint.name+"在排车单："+inSchedule.data[0]?.billNumber+" 已有未装车的任务，请检查！",
+          onOk: () => {
+            this.dispatching(true,true);
+          },
+        });
+        return;
+      }
+     
     }
+    this.dispatchingCom(orders);
   };
 
   dispatchingCom(orders) {
@@ -408,7 +419,7 @@ export default class OrderPoolPage extends Component {
   };
 
   //添加到排车单
-  handleAddOrder = async (checkWeight, checkArea) => {
+  handleAddOrder = async (checkWeight, checkArea,checkInSchedule) => {
     const { auditedRowKeys, auditedData } = this.state;
     const scheduleRowKeys = this.props.scheduleRowKeys();
     if (scheduleRowKeys == undefined || scheduleRowKeys.length != 1) {
@@ -446,6 +457,22 @@ export default class OrderPoolPage extends Component {
           title: '所选门店配送区域不一样，确定排车吗？',
           onOk: () => {
             this.handleAddOrder(checkWeight, true);
+          },
+          onCancel: () => {
+            this.setState({ btnLoading: false });
+          },
+        });
+        return;
+      }
+    }
+    if(this.props.dispatchConfig.existsSchedule == 1 && checkInSchedule==undefined)
+    {
+      const  inSchedule =  await checkOrderInSchedule(auditedRowKeys,scheduleRowKeys[0]);
+      if(inSchedule.success && inSchedule.data && inSchedule.data.length > 0 ){
+        Modal.confirm({
+          title: '门店：['+inSchedule.data[0]?.details[0]?.deliveryPoint.code+']'+inSchedule.data[0]?.details[0]?.deliveryPoint.name+"在排车单："+inSchedule.data[0]?.billNumber+" 已有未装车的任务，是否添加新的排车单？",
+          onOk: () => {
+            this.handleAddOrder(checkWeight,true,true);
           },
           onCancel: () => {
             this.setState({ btnLoading: false });

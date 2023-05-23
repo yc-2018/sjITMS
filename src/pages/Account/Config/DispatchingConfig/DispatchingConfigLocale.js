@@ -18,5 +18,6 @@ export const DispatchingConfigLocale = {
   checkBaseData: '校验基础资料',
   calvehicle: '预排车辆基数',
   isAbortedPool: '作废池',
-  checkLineArea:'线路配送区域'
+  checkLineArea:'线路配送区域',
+  existsSchedule:"校验门店装车任务"
 };

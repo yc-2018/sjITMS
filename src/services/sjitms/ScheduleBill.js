@@ -233,3 +233,12 @@ export async function refreshETC(scheduleuuid) {
     method: 'POST',
   });
 }
+export async function checkOrderInSchedule(payload,scheduleuuid) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/checkOrderInSchedule?scheduleUuid=${scheduleuuid}`,
+    {
+      method: 'POST',
+      body: payload,
+    }
+  );
+}

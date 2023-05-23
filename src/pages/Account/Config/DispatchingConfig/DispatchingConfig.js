@@ -140,6 +140,16 @@ export default class DispatchingConfig extends ConfigSearchPage {
         />
       ),
     },
+    {
+      title: DispatchingConfigLocale.existsSchedule,
+      dataIndex: 'existsSchedule',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'existsSchedule', event)}
+        />
+      ),
+    },
   ];
 
   onChange = (record, field, event) => {
