@@ -489,6 +489,13 @@ export const CreatePageOrderColumns = [
     sorter: true,
     render: val => (val ? <span>{(val / 1000).toFixed(3)}</span> : <Empty />),
   },
+  {
+    title: '配送区域',
+    dataIndex: 'shipAreaName',
+    width: 80,
+    sorter: true,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
 ];
 
 export const ScheduleColumns = [
@@ -731,6 +738,13 @@ export const ScheduleDetailColumns = [
     dataIndex: 'note',
     sorter: true,
     width: 80,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '配送区域',
+    dataIndex: 'shipAreaName',
+    width: 80,
+    sorter: true,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
 ];

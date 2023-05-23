@@ -1304,7 +1304,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                       {item.ARTICLENAME}
                     </td>
                     <td width={50}>{item.FREIGHTSPACE}</td>
-                    <td width={50}>{item.QPCSTR}</td>
+                    <td width={50}>{item.FPAQSTANDARD}</td>
                     <td width={40}>{item.AMOUNT}</td>
                     <td width={50}>{item.QTYSTR}</td>
                     <td width={50}>{(item.WEIGHT/1000).toFixed(2)}</td>
@@ -1318,7 +1318,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
             )}
             {
               <tr>
-                <td>合计</td>
+                <td style={{ textAlign: 'center',}}>合计</td>
                 <td style={{ textAlign: 'center',}}>{article.length}</td>
                 <td style={{ textAlign: 'center',}}>{}</td>
                 <td style={{ textAlign: 'center',}}>{}</td>
