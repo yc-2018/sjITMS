@@ -9,11 +9,15 @@ import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
+import { loginOrg, loginUser,loginCompany } from '@/utils/LoginContext';
 import { DndProvider } from 'react-dnd';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { message, Popconfirm, Button } from 'antd';
-import { deleteHead } from '@/services/sjitms/StoreTeam';
+import { deleteHead ,exports} from '@/services/sjitms/StoreTeam';
+import { log } from 'lodash-decorators/utils';
+import ExportJsonExcel from 'js-export-excel';
+import { convertDate, convertDateToTime } from '@/utils/utils';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -94,7 +98,32 @@ export default class StoreTeamHeadSearchPage extends QuickFormSearchPage {
   handleDelete = async selectedRow => {
     return await deleteHead(selectedRow.UUID);
   };
-
+  exports =async ()=>{
+      const response = await exports(loginCompany().uuid,loginOrg().uuid);
+      if (response) {
+        const sheetHeader = ['方案编号', '方案名称', '补贴金额', '备注','门店代码','门店名称'];
+        var option = [];
+        const sheetFilter = [
+          'code',
+          'name',
+          'amount',
+          'notes',
+          'storeCode',
+          'storeName'
+        ];
+        option.fileName = '门店停车组队方案'+convertDateToTime(new Date());
+        option.datas = [
+          {
+            sheetData: response.data,
+            sheetName: '门店停车组队方案', //工作表的名字
+            sheetFilter: sheetFilter,
+            sheetHeader: sheetHeader,
+          },
+        ];
+        const toExcel = new ExportJsonExcel(option);
+        toExcel.saveExcel();
+      }
+  }
   //该方法用于写中间的功能按钮 多个按钮用<span>包裹
   drawToolsButton = () => {
     const { showDelete, selectedRows } = this.state;
@@ -131,6 +160,14 @@ export default class StoreTeamHeadSearchPage extends QuickFormSearchPage {
             删除方案
           </Button>
         </Popconfirm>
+
+        <Button
+          onClick={() => {
+            this.exports();
+          }}
+        >
+          导出
+        </Button>
 
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </span>
