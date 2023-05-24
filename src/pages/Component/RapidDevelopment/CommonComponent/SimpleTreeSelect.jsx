@@ -182,8 +182,17 @@ export default class SimpleTreeSelect extends Component {
    * 值更新事件
    */
   onChange = value => {
+    let data;
     if (this.props.onChange) {
-      let data = this.findData(value);
+      if (Array.isArray(value)) {
+        //多选封装
+        data = {
+          value: value,
+          record: {}, //record用处？
+        };
+      } else {
+        data = this.findData(value);
+      }
       if (!data) {
         data = {
           value: undefined,
@@ -197,11 +206,20 @@ export default class SimpleTreeSelect extends Component {
   onSearch = key => {};
 
   render() {
+    //in notin 默认多选
+    const { searchField } = this.props;
+    let mu = {};
+    if (searchField?.searchCondition == 'in' || searchField?.searchCondition == 'notIn') {
+      mu = {
+        multiple: true,
+      };
+    }
     // 将父组件传过来的属性传递下去，以适应Form、getFieldDecorator等处理
     return (
       <TreeSelect
         allowClear={true}
         {...this.props}
+        {...mu}
         treeNodeFilterProp="title" // 	输入项过滤对应的 treeNode 属性
         treeData={this.getTreeData()}
         // 将value进行了一层包装，以方便日后扩展
