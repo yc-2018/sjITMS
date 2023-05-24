@@ -39,6 +39,32 @@ export default class StoreTeamHeadSearchPage extends QuickFormSearchPage {
     };
   };
 
+    //查询数据
+    getData = pageFilters => {
+      const { dispatch } = this.props;
+      let newFilters = { ...pageFilters };
+      const deliverypointCode = newFilters.superQuery.queryParams.find(
+        x => x.field == 'DELIVERYPOINTCODE'
+      );
+      let queryParams = [...newFilters.superQuery.queryParams];
+      if (deliverypointCode) {
+        newFilters.applySql = ` uuid in (select headuuid from v_sj_itms_storeteam_dtl where storecode='${
+          deliverypointCode.val
+        }')`;
+        queryParams = newFilters.superQuery.queryParams.filter(x => x.field != 'DELIVERYPOINTCODE');
+      }
+      dispatch({
+        type: 'quick/queryData',
+        payload: {
+          ...newFilters,
+          superQuery: { matchType: newFilters.superQuery.matchType, queryParams },
+        },
+        callback: response => {
+          if (response.data) this.initData(response.data);
+        },
+      });
+    };
+
   addItem = data => {
     const param = {
       quickuuid: 'sj_itms_storeteam_head',
