@@ -225,21 +225,39 @@ export default class QuickCreatePage extends CreatePage {
       let param;
       // 主表用主键关联，附表用外键关联
       if (onlFormHead.tableType != 2) {
-        var field = onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
-        param = {
-          tableName: tableName,
-          condition: {
-            params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
-          },
-        };
+        // var field = onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
+        //增加自定义查询主键searchField、自定义查询参数updateSearchParam
+        var field = this.props.searchField
+          ? this.props.searchField
+          : onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
+        param = this.props.updateSearchParam
+          ? this.props.updateSearchParam
+          : {
+              tableName: tableName,
+              condition: {
+                params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
+              },
+            };
       } else {
-        var field = onlFormFields.find(x => x.mainField != null && x.mainField != '')?.dbFieldName;
-        param = {
-          tableName: onlFormHead.tableName,
-          condition: {
-            params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
-          },
-        };
+        var field = this.props.childSearchField
+          ? this.props.childSearchField
+          : onlFormFields.find(x => x.mainField != null && x.mainField != '')?.dbFieldName;
+        param = this.props.updateChildSearchParam
+          ? this.props.updateChildSearchParam
+          : {
+              tableName: onlFormHead.tableName,
+              condition: {
+                params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
+              },
+            };
+
+        // var field = onlFormFields.find(x => x.mainField != null && x.mainField != '')?.dbFieldName;
+        // param = {
+        //   tableName: onlFormHead.tableName,
+        //   condition: {
+        //     params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
+        //   },
+        // };
       }
       const response = await this.queryEntityData(param);
       // 请求的数据为空

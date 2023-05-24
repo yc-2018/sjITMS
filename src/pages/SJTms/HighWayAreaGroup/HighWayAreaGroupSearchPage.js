@@ -11,6 +11,8 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import { Button, Modal } from 'antd';
 import HighWayAreaSearchPage from '@/pages/SJTms/HighWayArea/HighWayAreaSearchPage';
 import { havePermission } from '@/utils/authority';
+import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
+import { loginOrg } from '@/utils/LoginContext';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -32,6 +34,7 @@ export default class HighWayAreaGroupSearchPage extends QuickFormSearchPage {
 
   drawToolsButton = () => {
     const { isModalVisible } = this.state;
+
     return (
       <span>
         <Button
@@ -42,6 +45,14 @@ export default class HighWayAreaGroupSearchPage extends QuickFormSearchPage {
         >
           高速区域维护
         </Button>
+        <Button
+          hidden={!havePermission(this.state.authority + '.updateNumber')}
+          onClick={() => {
+            this.updateNumberRef?.show();
+          }}
+        >
+          高速区域编号设置
+        </Button>
         <Modal
           visible={isModalVisible}
           onOk={this.handleOk.bind()}
@@ -51,6 +62,24 @@ export default class HighWayAreaGroupSearchPage extends QuickFormSearchPage {
         >
           <HighWayAreaSearchPage quickuuid="sj_itms_highwayarea" />
         </Modal>
+        <CreatePageModal
+          modal={{
+            title: '编辑高速区域编号',
+            width: 500,
+            bodyStyle: { marginRight: '40px' },
+            // afterClose: () => {
+            //   this.refreshTable();
+            // },
+          }}
+          // customPage={HighWayAreaCreatePage}
+          page={{
+            quickuuid: 'sj_itms_serialnumber',
+            showPageNow: 'update',
+            searchField: 'DISPATCHCENTERUUID',
+            params: { entityUuid: loginOrg().uuid },
+          }}
+          onRef={node => (this.updateNumberRef = node)}
+        />
       </span>
     );
   }; //扩展中间功能按钮
