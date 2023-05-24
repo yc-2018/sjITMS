@@ -15,6 +15,7 @@ import {
   SimpleSelect,
   SimpleRadio,
   SimpleAutoComplete,
+  SimpleAutoCompleteEasy,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { queryColumns } from '@/services/quick/Quick';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
@@ -71,6 +72,20 @@ export default class SearchForm extends Component {
       if (err) return;
       this.onSearch(fieldsValue);
     });
+  };
+
+  handleChange = (valueEvent, searchField) => {
+    let searchProperties = searchField.searchProperties
+      ? JSON.parse(searchField.searchProperties)
+      : '';
+    if (searchProperties.linkFields) {
+      const linkFilters = this.buildLinkFilter(valueEvent, searchProperties.linkFields);
+      let runTimeProps = {};
+      for (const linkField of searchProperties.linkFields) {
+        runTimeProps[linkField.field] = linkFilters;
+      }
+      this.setState({ runTimeProps });
+    }
   };
 
   //查询
@@ -200,14 +215,38 @@ export default class SearchForm extends Component {
       case 'radio':
         return <SimpleRadio {...searchProperties} />;
       case 'sel_search':
+        // return (
+        //   <SimpleSelect
+        //     showSearch
+        //     allowClear
+        //     placeholder={'请输入' + searchField.fieldTxt}
+        //     searchField={searchField}
+        //     reportCode={this.state.quickuuid}
+        //     isOrgQuery={isOrgQuery}
+        //   />
+        // );
+        if (searchField.searchCondition == 'in' || searchField.searchCondition == 'notIn') {
+          return (
+            <SimpleSelect
+              showSearch
+              allowClear
+              placeholder={'请输入' + searchField.fieldTxt}
+              reportCode={this.state.quickuuid}
+              searchField={searchField}
+              isOrgQuery={isOrgQuery}
+              setFieldsValues={this.props.form.setFieldsValue}
+              onChange={valueEvent => this.handleChange(valueEvent, searchField)}
+            />
+          );
+        }
         return (
-          <SimpleSelect
-            showSearch
-            allowClear
+          <SimpleAutoCompleteEasy
             placeholder={'请输入' + searchField.fieldTxt}
-            searchField={searchField}
+            allowClear
             reportCode={this.state.quickuuid}
+            searchField={searchField}
             isOrgQuery={isOrgQuery}
+            {...searchProperties}
           />
         );
       case 'auto_complete':

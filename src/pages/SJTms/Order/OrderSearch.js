@@ -15,12 +15,14 @@ import { batchAudit, audit, cancel, removeOrder,updateOrderWavenum } from '@/ser
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
 import { log } from 'lodash-decorators/utils';
+import { loginOrg, loginUser,loginCompany } from '@/utils/LoginContext';
 
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
 //继承QuickFormSearchPage Search页面扩展
+@Form.create()
 export default class OrderSearch extends QuickFormSearchPage {
   state = {
     ...this.state,
@@ -162,6 +164,7 @@ export default class OrderSearch extends QuickFormSearchPage {
   };
 
   drawToolsButton = () => {
+    const{getFieldDecorator} =  this.props.form;
     const { showAuditPop, showCancelPop, selectedRows, dispatchCenter, showRemovePop,showUpdateWaven } = this.state;
     return (
       <>
@@ -265,11 +268,38 @@ export default class OrderSearch extends QuickFormSearchPage {
         >
           <Form>
             <Form.Item label="作业号:" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
-              <Input
+              {/* <Input
                 onChange={e =>{
                   this.setState({ WAVENUM: e.target.value })
                 } }
-              />
+              /> */}
+                {getFieldDecorator('WAVENUM', {
+                        rules: [{ required: true, message: '请选择作业号' }],
+                      })(
+                        <SimpleAutoComplete
+                        autoComplete
+                          showSearch
+                          placeholder=""
+                          textField="WAVENUM"
+                          valueField="WAVENUM"
+                          searchField="WAVENUM"
+                          //value={this.state.lineSystemValue}
+                          queryParams={{
+                            tableName: 'V_SJ_ITMS_ORDER_WAVENUM',
+                            isCache: 'false',
+                            condition: {
+                              params: [
+                                { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+                                { field: 'DISPATCHCENTERUUID', rule: 'eq', val: [loginOrg().uuid] },
+                              ],
+                            },
+                          }}
+                          onChange={e => this.setState({ WAVENUM: e })}
+                          noRecord
+                          style={{ width: 200 }}
+                          allowClear={true}
+                        />
+                      )}
             </Form.Item>
           </Form>
         </Modal>

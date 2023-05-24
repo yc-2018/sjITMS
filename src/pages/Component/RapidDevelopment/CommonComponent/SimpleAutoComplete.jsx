@@ -5,7 +5,7 @@ import Bind from 'lodash-decorators/bind';
 import memoize from 'memoize-one';
 import { addCondition, getFieldShow, memoizeDynamicQuery } from '@/utils/ryzeUtils';
 import { loginOrg, loginCompany } from '@/utils/LoginContext';
-import { uniqBy,isEqual,uniqWith } from 'lodash';
+import { uniqBy, isEqual, uniqWith } from 'lodash';
 
 /**
  * 下拉列表输入框控件，可传入props同antd select
@@ -271,7 +271,8 @@ export default class SimpleAutoComplete extends Component {
           )
         : [];
     sourceData = [...sourceData, ...oldData];
-    sourceData = uniqWith(sourceData,isEqual);
+    sourceData = uniqBy(sourceData, valueField);
+    sourceData = uniqWith(sourceData, isEqual);
     this.setState({ sourceData: sourceData });
     if (this.props.onSourceDataChange) {
       this.props.onSourceDataChange(

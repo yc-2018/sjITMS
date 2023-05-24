@@ -86,7 +86,11 @@ export default class SimpleQuery extends SearchForm {
       }
       //多选下拉框时修改入参,非下拉框暂时不支持in 改为like
       if (field.searchCondition == 'in' || field.searchCondition == 'notIn') {
-        if (field.searchShowtype == 'list' || field.searchShowtype == 'sel_search') {
+        if (
+          field.searchShowtype == 'list' ||
+          field.searchShowtype == 'sel_search' ||
+          field.searchShowtype == 'sel_tree'
+        ) {
           val = val.join('||');
         } else if (field.searchShowtype != 'auto_complete') {
           field.searchCondition = 'like';
@@ -285,7 +289,11 @@ export default class SimpleQuery extends SearchForm {
         return <Address />;
       case 'sel_tree':
         return (
-          <SimpleTreeSelect placeholder={'请选择' + searchField.fieldTxt} {...searchProperties} />
+          <SimpleTreeSelect
+            placeholder={'请选择' + searchField.fieldTxt}
+            {...searchProperties}
+            searchField={searchField}
+          />
         );
       default:
         return <Input placeholder={'请输入' + searchField.fieldTxt} />;
@@ -301,7 +309,9 @@ export default class SimpleQuery extends SearchForm {
     showSelectFields.forEach(searchField => {
       //select多选默认值
       if (
-        (searchField.searchShowtype == 'list' || searchField.searchShowtype == 'sel_search') &&
+        (searchField.searchShowtype == 'list' ||
+          searchField.searchShowtype == 'sel_search' ||
+          searchField.searchShowtype == 'sel_tree') &&
         (searchField.searchCondition == 'in' || searchField.searchCondition == 'notIn')
       ) {
         if (typeof filterValue[searchField.fieldName] === 'string') {

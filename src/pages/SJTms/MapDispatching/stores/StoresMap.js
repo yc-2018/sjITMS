@@ -134,7 +134,7 @@ export default class StoresMap extends Component {
               // this.drawMenu();
               // this.clusterSetData(data, otherData);
               // this.drawMarker(data);
-              this.autoViewPort(data);
+              this.autoViewPort([...data, ...storeRes]);
             }, 500);
           }
         );
@@ -147,6 +147,7 @@ export default class StoresMap extends Component {
 
   //自动聚焦
   autoViewPort = points => {
+    console.log('points', points);
     const newPoints = points.map(point => {
       return new BMapGL.Point(point.longitude, point.latitude);
     });
@@ -190,6 +191,33 @@ export default class StoresMap extends Component {
     // this.storeFilter('');
   };
 
+  lastSelectedTowerId = -1; //全局变量
+  lastSelectTowerTime = -1; //全局变量
+  onDoubleClickMarker = order => {
+    //官方onDbclick不生效 手动写双击事件
+    let a = 0;
+    if (this.lastSelectedTowerId && this.lastSelectTowerTime) {
+      let time = new Date().getTime();
+      let t = time - this.lastSelectTowerTime;
+      if (this.lastSelectedTowerId == order.uuid && t < 300) {
+        //双击事件
+        this.autoViewPort([order]);
+      } else {
+        a = 1; //如果是单机则改为1；如果是方法的话需要执行，导致时间会边长，只能赋值；不能走方法
+      }
+    }
+    let b = 0;
+    setTimeout(function() {
+      if (b == 0) {
+        if (a == 1) {
+          //单击事件
+          b = 1;
+        }
+      }
+    }, 300);
+    this.lastSelectedTowerId = order.uuid;
+    this.lastSelectTowerTime = new Date().getTime();
+  };
   //标注点
   drawMarker = () => {
     const { orders, otherData, canDrag } = this.state;
@@ -208,7 +236,8 @@ export default class StoresMap extends Component {
           shadow={true}
           onMouseover={() => this.setState({ windowInfo: { point, order } })}
           onMouseout={() => this.setState({ windowInfo: undefined })}
-          onClick={() => this.autoViewPort([order])}
+          onClick={() => this.onDoubleClickMarker(order)}
+          // onDbclick={() => this.autoViewPort([order])}
           enableDragging={canDrag}
           onDragend={e => this.changePoint(e, order)}
         />
@@ -226,8 +255,9 @@ export default class StoresMap extends Component {
           onMouseover={() => this.setState({ windowInfo: { point, order } })}
           onMouseout={() => this.setState({ windowInfo: undefined })}
           onClick={() => {
-            this.autoViewPort([order]);
+            this.onDoubleClickMarker(order);
           }}
+          // onDbclick={() => this.autoViewPort([order])}
           enableDragging={canDrag}
           onDragend={e => this.changePoint(e, order)}
         />
@@ -610,7 +640,7 @@ export default class StoresMap extends Component {
             () => {
               setTimeout(() => {
                 // this.drawMenu();
-                this.autoViewPort(res.data.records);
+                this.autoViewPort([...res.data.records, ...this.state.orders]);
               }, 500);
             }
           );
