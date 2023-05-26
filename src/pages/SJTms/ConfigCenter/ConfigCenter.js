@@ -9,6 +9,8 @@ import {
 } from '@/services/sjconfigcenter/ConfigCenter';
 import ConfigSearchPageE from './ConfigSearchPage/ConfigSearchPageE';
 import { notNullLocale } from '@/utils/CommonLocale';
+import { havePermission } from '@/utils/authority';
+
 @Form.create()
 export default class ConfigCenter extends SiderPage {
   constructor(props) {
@@ -31,6 +33,7 @@ export default class ConfigCenter extends SiderPage {
         height: window.innerHeight, //'650px',
         overflow: 'auto',
       },
+      authority: props.route?.authority ? props.route.authority[0] : null,
     };
   }
 
@@ -241,13 +244,24 @@ export default class ConfigCenter extends SiderPage {
             onClick={() => {
               this.setState({ visibleCreate: true });
             }}
+            hidden={!havePermission(this.state.authority + '.create')}
           >
             新建
           </Button>
-          <Button type="primary" style={{ marginLeft: '5px' }} onClick={this.onEdit}>
+          <Button
+            type="primary"
+            style={{ marginLeft: '5px' }}
+            onClick={this.onEdit}
+            hidden={!havePermission(this.state.authority + '.edit')}
+          >
             编辑
           </Button>
-          <Button type="danger" style={{ marginLeft: '5px' }} onClick={this.onDelete}>
+          <Button
+            type="danger"
+            style={{ marginLeft: '5px' }}
+            onClick={this.onDelete}
+            hidden={!havePermission(this.state.authority + '.delete')}
+          >
             删除
           </Button>
         </div>
