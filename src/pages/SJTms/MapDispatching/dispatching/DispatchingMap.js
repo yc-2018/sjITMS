@@ -1050,6 +1050,7 @@ export default class DispatchMap extends Component {
                   enableScrollWheelZoom
                   enableRotate={false}
                   enableTilt={false}
+                  enableAutoResize
                   ref={ref => (this.map = ref?.map)}
                   style={{ height: '100%' }}
                 >
