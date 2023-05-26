@@ -1196,7 +1196,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
           style={{
             width: '100%',
             borderCollapse: 'collapse',
-            fontSize: 14,
+            fontSize: 12,
             border: 0,
             fontWeight: 'normal',
           }}
@@ -1740,6 +1740,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
         fs.DELIVERYPOINTCODE = e.DELIVERYPOINTCODE;
         fs.REALCARTONCOUNT = e.REALCARTONCOUNT;
         fs.OWNERNAME = e.OWNERNAME;
+        fs.SHIPAREANAME = e.SHIPAREANAME;
         fs.REALSCATTEREDCOUNT = e.REALSCATTEREDCOUNT;
         fs.COLLECTBIN = e.COLLECTBIN;
         fs.DELIVERYPOINTNAME = e.DELIVERYPOINTNAME;
@@ -1875,6 +1876,9 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
               <th width={50} rowSpan={2}>
                 委托方
               </th>
+              <th width={120} rowSpan={2}>
+                配送区域
+              </th>
               <th width={100} rowSpan={2}>
                 门店名称
               </th>
@@ -1885,10 +1889,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 回收
               </th>
               <th width={120} rowSpan={2}>
-                整箱板位
-              </th>
-              <th width={120} rowSpan={2}>
-                零板位
+                板位
               </th>
               <th width={50} rowSpan={2}>
                 装车排序
@@ -1919,6 +1920,9 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   <tr style={{ textAlign: 'center', height: 33 }}>
                     <td width={30}>{index + 1}</td>
                     <td width={50}>{item.OWNERNAME}</td>
+                      <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
+                      {item.SHIPAREANAME}
+                    </td>
                     <td width={130}>
                       {'[' + item.DELIVERYPOINTCODE + ']' + item.DELIVERYPOINTNAME}
                     </td>
@@ -1944,9 +1948,9 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                     <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
                       {item.COLLECTBIN}
                     </td>
-                    <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
+                    {/* <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                       {item.SCATTEREDCOLLECTBIN}
-                    </td>
+                    </td> */}
                     <td width={50}>{}</td>
                   </tr>
                 );
@@ -1959,6 +1963,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 <td width={80} colSpan={2}>
                   {'合计'}
                 </td>
+                <td style={{ textAlign: 'center' }}></td>
                 <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                   { scheduleDetailSum.StoreSum}
                 </td>
@@ -1979,7 +1984,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   </td> */}
                 <td width={50}>{}</td>
                 <td width={120}>{}</td>
-                <td width={120}>{}</td>
+                {/* <td width={120}>{}</td> */}
                 <td width={50}>{}</td>
               </tr>
             ) : (
@@ -1993,7 +1998,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 </td>
                 <td
                   width={80}
-                  colSpan={5}
+                  colSpan={4}
                   style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}
                 >
                   最远市区:
@@ -2003,7 +2008,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   满载率:
                   {schedule.CUBEDOUT}
                 </td>
-                <td width={50} colSpan={2}>
+                <td width={50} colSpan={3}>
                   {' '}
                   体积(方):
                   {schedule.VOLUME}
