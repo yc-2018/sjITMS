@@ -36,6 +36,7 @@ export default class SearchForm extends Component {
   };
 
   async componentDidMount() {
+    this.props.onRef && this.props.onRef(this);
     this.setState({ loading: true });
     const response = await queryColumns({ reportCode: this.state.quickuuid, sysCode: 'tms' });
     const { form } = this.props;
@@ -68,7 +69,7 @@ export default class SearchForm extends Component {
 
   onSubmit = event => {
     const { form } = this.props;
-    event.preventDefault();
+    event?.preventDefault();
     form.validateFields((err, fieldsValue) => {
       if (err) return;
       this.onSearch(fieldsValue);

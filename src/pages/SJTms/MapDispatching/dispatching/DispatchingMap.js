@@ -7,18 +7,33 @@
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
 import React, { Component } from 'react';
-import { Divider, Modal, Button, Row, Col, Empty, Spin, message, Input } from 'antd';
+import {
+  Divider,
+  Modal,
+  Button,
+  Row,
+  Col,
+  Empty,
+  Spin,
+  message,
+  Input,
+  List,
+  Avatar,
+  Icon,
+} from 'antd';
 import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
+import { getSchedule, getDetailByBillUuids } from '@/services/sjitms/ScheduleBill';
 import style from './DispatchingMap.less';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import emptySvg from '@/assets/common/img_empoty.svg';
 import SearchForm from './SearchForm';
 import {
+  queryAuditedOrderByStoreMap,
   queryAuditedOrder,
   queryDriverRoutes,
   queryAuditedOrderByParams,
 } from '@/services/sjitms/OrderBill';
-import { queryDict } from '@/services/quick/Quick';
+import { queryDict, queryData } from '@/services/quick/Quick';
 
 import ShopIcon from '@/assets/common/myj.png';
 import ShopClickIcon from '@/assets/common/otherMyj.png';
@@ -27,6 +42,7 @@ import van from '@/assets/common/van.svg';
 
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { sumBy, uniqBy } from 'lodash';
+import truck from '@/assets/common/truck.svg';
 
 const { Search } = Input;
 
@@ -50,7 +66,7 @@ export default class DispatchMap extends Component {
       totalCount: 0, //总件数
     },
     visible: false,
-    loading: true,
+    // loading: true,
     windowInfo: undefined,
     loading: false,
     startPoint: '',
@@ -62,6 +78,10 @@ export default class DispatchMap extends Component {
     orderMarkers: [],
     ScheduledMarkers: [],
     showScheduled: false,
+    scheduleList: [],
+    isEdit: false,
+    schdule: undefined,
+    closeLeft: false,
   };
 
   componentDidMount = () => {
@@ -80,19 +100,20 @@ export default class DispatchMap extends Component {
       }
     } else if (e && e.keyCode == 81 && e.altKey) {
       //81 = q Q
-      const { orders, orderMarkers } = this.state;
-      let selectOrderStoreCodes = orderMarkers
-        .filter(x => x.isSelect)
-        .map(e => e.deliveryPoint.code);
-      let allSelectOrders = orders.filter(
-        e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
-      );
-      // const selectPoints = orders.filter(x => x.isSelect);
-      if (allSelectOrders.length === 0) {
-        message.error('请选择需要排车的门店！');
-        return;
-      }
-      this.props.dispatchingByMap(allSelectOrders);
+      // const { orders, orderMarkers } = this.state;
+      // let selectOrderStoreCodes = orderMarkers
+      //   .filter(x => x.isSelect)
+      //   .map(e => e.deliveryPoint.code);
+      // let allSelectOrders = orders.filter(
+      //   e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
+      // );
+      // // const selectPoints = orders.filter(x => x.isSelect);
+      // if (allSelectOrders.length === 0) {
+      //   message.error('请选择需要排车的门店！');
+      //   return;
+      // }
+      // this.props.dispatchingByMap(allSelectOrders);
+      this.saveSchedule();
     }
   };
 
@@ -100,6 +121,7 @@ export default class DispatchMap extends Component {
     window.removeEventListener('keydown', this.keyDown);
   }
 
+  basicScheduleList = [];
   //显示modal
   show = orders => {
     this.setState({ visible: true });
@@ -118,10 +140,13 @@ export default class DispatchMap extends Component {
       }
       this.isSelectOrders = orders;
     }
+    setTimeout(() => {
+      this.drawMenu();
+    }, 1000);
   };
   //隐藏modal
   hide = () => {
-    this.setState({ visible: false });
+    this.setState({ visible: false, isEdit: false });
     this.clusterLayer = undefined;
     this.contextMenu = undefined;
     this.isSelectOrders = [];
@@ -166,12 +191,14 @@ export default class DispatchMap extends Component {
             : (obj[next.deliveryPoint.code] = true && cur.push(next));
           return cur;
         }, []); //设置cur默认类型为数组，并且初始值为空的数组
-
+        //未排车marker
         let orderMarkers = orderMarkersAll.filter(e => e.stat != 'Scheduled');
+        //已排车marker
         let ScheduledMarkers = orderMarkersAll.filter(e => e.stat == 'Scheduled');
 
-        console.log('orderMarkers', orderMarkers, 'ScheduledMarkers', ScheduledMarkers);
+        // console.log('orderMarkers', orderMarkers, 'ScheduledMarkers', ScheduledMarkers);
 
+        //获取选中订单相同区域门店
         let isSelectOrdersArea =
           this.isSelectOrders && this.isSelectOrders.length > 0
             ? uniqBy(
@@ -192,21 +219,42 @@ export default class DispatchMap extends Component {
             }
           }
         });
+        let filterData = data.filter(e => e.stat != 'Scheduled');
+        this.basicOrders = filterData;
+        this.setState(
+          { orders: filterData, orderMarkers, allTotals, ScheduledMarkers, isEdit: false },
+          () => {
+            setTimeout(() => {
+              // this.drawClusterLayer();
+              this.drawMenu();
+              // this.clusterSetData(data);
+              this.autoViewPort(orderMarkers);
 
-        this.basicOrders = data;
-        this.setState({ orders: data, orderMarkers, allTotals, ScheduledMarkers }, () => {
-          setTimeout(() => {
-            // this.drawClusterLayer();
-            this.drawMenu();
-            // this.clusterSetData(data);
-            this.autoViewPort(orderMarkers);
-
-            window.addEventListener('keydown', this.keyDown);
-          }, 500);
-        });
+              window.addEventListener('keydown', this.keyDown);
+            }, 500);
+          }
+        );
         // this.drawingManagerRef?.open();
         // this.drawingManagerRef?.setDrawingMode(BMAP_DRAWING_RECTANGLE);
       }
+      //查询排车单
+      let queryParams = {
+        page: 1,
+        pageSize: 100,
+        quickuuid: 'sj_itms_schedulepool',
+        superQuery: {
+          matchType: 'and',
+          queryParams: [
+            { field: 'STAT', type: 'VarChar', rule: 'eq', val: 'Saved' },
+            { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+            { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
+          ],
+        },
+      };
+      queryData(queryParams).then(res => {
+        this.setState({ scheduleList: res?.data?.records });
+        this.basicScheduleList = res?.data?.records;
+      });
       this.setState({ loading: false, pageFilter });
     });
   };
@@ -253,16 +301,19 @@ export default class DispatchMap extends Component {
     orders.map(order => {
       (order.isSelect = false), (order.sort = null);
     });
-    this.setState({ orders, driverMileage: 0, storeInfo: '' }, () => {
+    this.setState({ orders, driverMileage: 0, storeInfo: '', isEdit: false }, () => {
       // this.map?.clearOverlays();
       // this.clusterSetData(orders);
     });
     this.storeFilter('');
+    this.searchFormRef?.onSubmit();
+    this.isSelectOrders = [];
   };
 
   //标注点
   drawMarker = () => {
     const { orders, orderMarkers, ScheduledMarkers } = this.state;
+    // console.log('orderMarkers', orderMarkers);
     let that = this;
     const otherStore = new BMapGL.Icon(ShopClickIcon, new BMapGL.Size(30, 30)); //42
     const otherStore2 = new BMapGL.Icon(ShopClickIcon2, new BMapGL.Size(30, 30)); //42
@@ -446,6 +497,25 @@ export default class DispatchMap extends Component {
     });
   };
 
+  saveSchedule = () => {
+    const { orders, orderMarkers, isEdit, schdule } = this.state;
+    let selectOrderStoreCodes = orderMarkers.filter(x => x.isSelect).map(e => e.deliveryPoint.code);
+    let allSelectOrders = orders.filter(
+      e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
+    );
+    // console.log('22', selectOrderStoreCodes, allSelectOrders);
+    // const selectPoints = orders.filter(x => x.isSelect);
+    if (allSelectOrders.length === 0) {
+      message.error('请选择需要排车的门店！');
+      return;
+    }
+    if (schdule) {
+      schdule.uuid = schdule.UUID;
+    }
+    allSelectOrders = uniqBy(allSelectOrders, 'uuid');
+    this.props.dispatchingByMap(isEdit, isEdit ? schdule : allSelectOrders, allSelectOrders);
+  };
+
   //右键菜单
   drawMenu = () => {
     const { orders } = this.state;
@@ -454,19 +524,7 @@ export default class DispatchMap extends Component {
       {
         text: '排车',
         callback: () => {
-          const { orders, orderMarkers } = this.state;
-          let selectOrderStoreCodes = orderMarkers
-            .filter(x => x.isSelect)
-            .map(e => e.deliveryPoint.code);
-          let allSelectOrders = orders.filter(
-            e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
-          );
-          // const selectPoints = orders.filter(x => x.isSelect);
-          if (allSelectOrders.length === 0) {
-            message.error('请选择需要排车的门店！');
-            return;
-          }
-          this.props.dispatchingByMap(allSelectOrders);
+          this.saveSchedule();
         },
       },
       {
@@ -633,7 +691,7 @@ export default class DispatchMap extends Component {
     let selectOrderStoreCodes = selectOrder.map(e => e.deliveryPoint.code);
     const { orders } = this.state;
     let allSelectOrders = orders.filter(
-      e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
+      e => selectOrderStoreCodes.indexOf(e.deliveryPoint?.code) != -1
     );
 
     let totals = {
@@ -676,9 +734,72 @@ export default class DispatchMap extends Component {
     return totals;
   };
 
+  scheduleFilter = value => {
+    let serachSchedule = [...this.basicScheduleList];
+    if (value) {
+      serachSchedule = serachSchedule.filter(e => {
+        return e.BILLNUMBER.search(value) != -1;
+      });
+    }
+    this.setState({ scheduleList: serachSchedule });
+  };
+
+  clickSchdule = async schdule => {
+    // this.setState({ loading: true });
+    let { orderMarkers, orders } = this.state;
+    let params = {
+      pageSize: 20,
+      superQuery: {
+        matchType: 'and',
+        queryParams: [
+          { field: 'SCHEDULENUM', type: 'VarChar', rule: 'like', val: schdule.BILLNUMBER },
+          { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+          { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
+          { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
+        ],
+      },
+    };
+    // const response = await queryAuditedOrderByParams(params);
+    const response = await getDetailByBillUuids([schdule.UUID]);
+    if (response.success) {
+      let details = response.data;
+      details = details?.filter(x => x.longitude && x.latitude);
+      details?.map((e, index) => {
+        // console.log('orderMarkers', orderMarkers, e);
+        let deliveryP = orderMarkers?.find(o => o.deliveryPoint?.code == e.deliveryPoint?.code);
+        // console.log('deliveryP', deliveryP);
+        if (deliveryP) {
+          deliveryP.isSelect = true;
+          deliveryP.sort = index + 1;
+        } else {
+          e.isSelect = true;
+          e.sort = index + 1;
+          orderMarkers.push(e);
+          orders.push(e);
+        }
+      });
+      this.setState({ orderMarkers, orders, isEdit: true, schdule: schdule }, () => {
+        setTimeout(() => {
+          this.drawMenu();
+        }, 500);
+      });
+    }
+    this.setState({ loading: false });
+  };
+
   render() {
-    const { visible, loading, windowInfo, orders, allTotals } = this.state;
-    const selectOrder = orders.filter(x => x.isSelect).sort(x => x.sort);
+    const {
+      visible,
+      loading,
+      windowInfo,
+      orders,
+      allTotals,
+      orderMarkers,
+      isEdit,
+      schdule,
+      closeLeft,
+    } = this.state;
+    const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
     let totals = this.getTotals(selectOrder);
 
@@ -697,7 +818,7 @@ export default class DispatchMap extends Component {
           <div>
             <Row type="flex" justify="space-between">
               <Col span={21}>
-                <SearchForm refresh={this.refresh} />
+                <SearchForm refresh={this.refresh} onRef={node => (this.searchFormRef = node)} />
               </Col>
               {/* <Col span={1}>
               <Search
@@ -756,10 +877,35 @@ export default class DispatchMap extends Component {
           tip="加载中..."
           wrapperClassName={style.loading}
         >
-          <Row type="flex" style={{ height: window.innerHeight - 130 }}>
-            <Col span={6} style={{ height: '100%', background: '#fff', overflow: 'auto' }}>
-              {selectOrder.length > 0 ? (
-                <div style={{ position: 'relative', height: '100%' }}>
+          <Row type="flex" style={{ height: window.innerHeight - 145 }}>
+            <Col
+              span={closeLeft ? 0 : 6}
+              style={{ height: '100%', background: '#fff', overflow: 'auto' }}
+            >
+              {isEdit || selectOrder.length > 0 ? (
+                <div style={{ position: 'relative', height: '100%', marginTop: '10px' }}>
+                  <Button
+                    style={{ float: 'left' }}
+                    onClick={() => {
+                      this.setState({ isEdit: false });
+                      this.isSelectOrders = [];
+                      this.searchFormRef?.onSubmit();
+                    }}
+                  >
+                    返回
+                  </Button>
+                  <div
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      marginBottom: '10px',
+                      marginRight: '20px',
+                    }}
+                  >
+                    {isEdit ? `编辑排车单:${schdule.BILLNUMBER}` : '新建排车单'}
+                  </div>
+
                   {selectOrder.map(order => {
                     let totals = this.getOrderTotal(order.deliveryPoint.code);
                     return (
@@ -836,15 +982,67 @@ export default class DispatchMap extends Component {
                   </Row> */}
                 </div>
               ) : (
-                <Empty
-                  style={{ marginTop: 80 }}
-                  image={emptySvg}
-                  description="暂无数据，请选择排车门店！"
+                // <Empty
+                //   style={{ marginTop: 80 }}
+                //   image={emptySvg}
+                //   description="暂无数据，请选择排车门店！"
+                // />
+                <List
+                  header={
+                    <div style={{ textAlign: 'center', fontSize: '18px', fontWeight: 'bold' }}>
+                      排车单查询：
+                      <Input
+                        style={{ width: '150px', marginLeft: '10px' }}
+                        onChange={e => this.scheduleFilter(e.target.value)}
+                      />
+                    </div>
+                  }
+                  size="large"
+                  itemLayout="horizontal"
+                  dataSource={this.state.scheduleList}
+                  renderItem={item => (
+                    <List.Item>
+                      <List.Item.Meta
+                        avatar={<Avatar style={{ width: '50px', height: '50px' }} src={truck} />}
+                        title={
+                          <a
+                            style={{ fontSize: '15px' }}
+                            onClick={() => {
+                              this.clickSchdule(item);
+                            }}
+                          >
+                            {item.BILLNUMBER}
+                          </a>
+                        }
+                        description={
+                          <div style={{ fontWeight: 'bold' }}>
+                            车辆：
+                            {item.VEHICLEPLATENUMBER ? item.VEHICLEPLATENUMBER : '<空>'}
+                            &nbsp;&nbsp;司机：[
+                            {item.CARRIERCODE ? item.CARRIERCODE : '<空>'}]
+                            {item.CARRIERNAME ? item.CARRIERNAME : ''}
+                          </div>
+                        }
+                      />
+                    </List.Item>
+                  )}
                 />
               )}
             </Col>
-            <Col span={18}>
-              {orders.length > 0 ? (
+            <Col span={closeLeft ? 24 : 18}>
+              <a
+                onClick={() => {
+                  this.setState({ closeLeft: !this.state.closeLeft });
+                }}
+              >
+                <div style={{ float: 'left', height: '100%' }}>
+                  <Icon
+                    type={closeLeft ? 'caret-right' : 'caret-left'}
+                    style={{ marginTop: (window.innerHeight - 145) / 2 }}
+                  />
+                </div>
+              </a>
+              {orderMarkers.length > 0 ? (
                 <Map
                   center={{ lng: 113.809388, lat: 23.067107 }}
                   zoom={10}

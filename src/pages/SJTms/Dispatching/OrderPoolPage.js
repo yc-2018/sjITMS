@@ -39,7 +39,13 @@ import {
   savePending,
   getContainerByBillUuid,
 } from '@/services/sjitms/OrderBill';
-import { batchSave, addOrders, checkArea, checkAreaSchedule ,checkOrderInSchedule} from '@/services/sjitms/ScheduleBill';
+import {
+  batchSave,
+  addOrders,
+  checkArea,
+  checkAreaSchedule,
+  checkOrderInSchedule,
+} from '@/services/sjitms/ScheduleBill';
 import { groupBy, sumBy, uniqBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
@@ -262,7 +268,7 @@ export default class OrderPoolPage extends Component {
   };
 
   //排车
-  dispatching = async (checkAreas,checkexistSchedule) => {
+  dispatching = async (checkAreas, checkexistSchedule) => {
     const { auditedRowKeys, auditedData } = this.state;
     const selectPending = this.props.selectPending();
     if (auditedRowKeys.length + selectPending.length == 0) {
@@ -283,20 +289,26 @@ export default class OrderPoolPage extends Component {
         });
         return;
       }
-    } 
+    }
     //校验装车任务
-    if(this.props.dispatchConfig.existsSchedule == 1 && checkexistSchedule == undefined){
-      const  inSchedule =  await checkOrderInSchedule(auditedRowKeys,"");
+    if (this.props.dispatchConfig.existsSchedule == 1 && checkexistSchedule == undefined) {
+      const inSchedule = await checkOrderInSchedule(auditedRowKeys, '');
       if (inSchedule && inSchedule.data && inSchedule.data?.length > 0) {
         Modal.confirm({
-          title: '门店：['+inSchedule.data[0]?.details[0]?.deliveryPoint.code+']'+inSchedule.data[0]?.details[0]?.deliveryPoint.name+"在排车单："+inSchedule.data[0]?.billNumber+" 已有未装车的任务，确认排车吗？",
+          title:
+            '门店：[' +
+            inSchedule.data[0]?.details[0]?.deliveryPoint.code +
+            ']' +
+            inSchedule.data[0]?.details[0]?.deliveryPoint.name +
+            '在排车单：' +
+            inSchedule.data[0]?.billNumber +
+            ' 已有未装车的任务，确认排车吗？',
           onOk: () => {
-            this.dispatching(true,true);
+            this.dispatching(true, true);
           },
         });
         return;
       }
-     
     }
     this.dispatchingCom(orders);
   };
@@ -388,7 +400,7 @@ export default class OrderPoolPage extends Component {
     return true;
   };
   //地图排车
-  dispatchingByMap = orders => {
+  dispatchingByMap = (isEdit, record, orders) => {
     // if (orders.length <= 0) {
     //   message.warning('请选择门店！');
     //   return;
@@ -398,7 +410,7 @@ export default class OrderPoolPage extends Component {
       return;
     }
     // this.setState({ mapModal: false });
-    this.createPageModalRef.show(false, orders);
+    this.createPageModalRef.show(isEdit, record, orders);
   };
 
   //添加到待定池
@@ -419,7 +431,7 @@ export default class OrderPoolPage extends Component {
   };
 
   //添加到排车单
-  handleAddOrder = async (checkWeight, checkArea,checkInSchedule) => {
+  handleAddOrder = async (checkWeight, checkArea, checkInSchedule) => {
     const { auditedRowKeys, auditedData } = this.state;
     const scheduleRowKeys = this.props.scheduleRowKeys();
     if (scheduleRowKeys == undefined || scheduleRowKeys.length != 1) {
@@ -465,14 +477,20 @@ export default class OrderPoolPage extends Component {
         return;
       }
     }
-    if(this.props.dispatchConfig.existsSchedule == 1 && checkInSchedule==undefined)
-    {
-      const  inSchedule =  await checkOrderInSchedule(auditedRowKeys,scheduleRowKeys[0]);
-      if(inSchedule.success && inSchedule.data && inSchedule.data.length > 0 ){
+    if (this.props.dispatchConfig.existsSchedule == 1 && checkInSchedule == undefined) {
+      const inSchedule = await checkOrderInSchedule(auditedRowKeys, scheduleRowKeys[0]);
+      if (inSchedule.success && inSchedule.data && inSchedule.data.length > 0) {
         Modal.confirm({
-          title: '门店：['+inSchedule.data[0]?.details[0]?.deliveryPoint.code+']'+inSchedule.data[0]?.details[0]?.deliveryPoint.name+"在排车单："+inSchedule.data[0]?.billNumber+" 已有未装车的任务，是否添加到新的排车单？",
+          title:
+            '门店：[' +
+            inSchedule.data[0]?.details[0]?.deliveryPoint.code +
+            ']' +
+            inSchedule.data[0]?.details[0]?.deliveryPoint.name +
+            '在排车单：' +
+            inSchedule.data[0]?.billNumber +
+            ' 已有未装车的任务，是否添加到新的排车单？',
           onOk: () => {
-            this.handleAddOrder(checkWeight,true,true);
+            this.handleAddOrder(checkWeight, true, true);
           },
           onCancel: () => {
             this.setState({ btnLoading: false });
@@ -1017,7 +1035,6 @@ export default class OrderPoolPage extends Component {
             </div>
             {/* 排车modal */}
             <DispatchingCreatePage
-              zIndex={99999}
               modal={{ title: '排车' }}
               refresh={() => {
                 this.refreshTable();
