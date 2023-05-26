@@ -244,7 +244,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
     return this.state.data;
   };
   componentWillReceiveProps = async nextProps => {
-    if (nextProps.lineuuid != this.props.lineuuid) {
+    if (nextProps.lineuuid != this.props.lineuuid && nextProps.lineuuid!=undefined) {
       this.state.lineuuid = nextProps.lineuuid;
       this.state.systemLineFlag = nextProps.systemLineFlag;
       this.state.buttonDisable = false;
@@ -323,10 +323,18 @@ export default class LineShipAddress extends QuickFormSearchPage {
 
   exSearchFilter = async () => {
     const { systemLineFlag, lineuuid } = this.state;
-    if (!lineuuid) {
-      return [];
-    }
     let parmas = [];
+    if (!lineuuid) {
+      return [
+        {
+          field: 'SYSTEMUUID',
+          type: 'VarChar',
+          rule: 'eq',
+          val: this.props.lineuuid,
+        },
+      ];
+    }
+    
     if (systemLineFlag) {
       parmas = [
         {
