@@ -42,3 +42,8 @@ export async function deleteHead(payload) {
     body: payload,
   });
 }
+export async function exports(commpanyuuid,dispatchCenterUuid) {
+  return request(`/itms-schedule/itms-schedule/sj/storeTeam/exports/${commpanyuuid}/${dispatchCenterUuid}`, {
+    method: 'POST',
+  });
+}

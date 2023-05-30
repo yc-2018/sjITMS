@@ -10,7 +10,7 @@ import React, { Component } from 'react';
 import { Button, Modal, message } from 'antd';
 import { getRecords, release, dispose, saveResult } from '@/services/sjitms/Customer';
 import DisposeForm from './DisposeForm';
-
+import moment from 'moment';
 export default class DisposePageModal extends Component {
   state = {
     visible: false,
@@ -80,15 +80,24 @@ export default class DisposePageModal extends Component {
   //客服发布
   handleRelease = async () => {
     const { bill } = this.state;
-    const validate = await this.formRef.validateFields();
-    this.setState({ saving: true });
-    const response = await release(bill.UUID, validate.remark);
-    if (response.success) {
-      message.success('发布成功！');
-      this.hide();
-      this.props.onSearch();
-    }
-    this.setState({ saving: false });
+    this.formRef.validateFields( async(err,validate)=>{
+      if(!err){
+        const params ={
+          remark :validate.remark,
+          COMPLETIONTIME:validate.COMPLETIONTIME,
+          DEADLINE: moment(validate.DEADLINE).format('YYYY-MM-DD HH:mm:ss')
+        }
+        this.setState({ saving: true });
+        const response = await release(bill.UUID, params);
+        if (response.success) {
+          message.success('发布成功！');
+          this.hide();
+          this.props.onSearch();
+        }
+        this.setState({ saving: false });
+      }
+      
+    });
   };
 
   drawButton = operation => {
@@ -147,6 +156,7 @@ export default class DisposePageModal extends Component {
           bill={bill}
           records={records}
           operation={operation}
+          seelct
           ref={node => (this.formRef = node)}
         />
       </Modal>

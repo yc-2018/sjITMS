@@ -1196,7 +1196,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
           style={{
             width: '100%',
             borderCollapse: 'collapse',
-            fontSize: 14,
+            fontSize: 12,
             border: 0,
             fontWeight: 'normal',
           }}
@@ -1205,15 +1205,12 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
           cellSpacing={0}
         >
           <thead>
-            <tr style={{ height: 50 }}>
-              <th colspan={1} style={{ border: 0 }}>
-                <img style={{ height: 30, width: 120 }} src={scher} />
-              </th>
-              <th colspan={5} style={{ border: 0 }}>
-                <div style={{ fontSize: 18, textAlign: 'center' }}>东莞市时捷物流有限公司提货计划表</div>
-              </th>
-              <th colspan={4} style={{ border: 0 }}>
-                <div style={{ fontSize: 12, textAlign: 'center' }}>
+            <tr style={{ height: 30 }}>
+              <th colspan={10} style={{ border: 0, height: 30 }}>
+                <div>
+                <div  style={{height: 30, width:'30%', float: 'left',textAlign: 'left' }} ><img style={{ height: 30, width: 120 }} src={scher} /></div>
+                <div style={{  width: '40%' , fontSize: 17,float: 'left',textAlign: 'center'}}>东莞市时捷物流有限公司提货计划表</div>
+                 <div style={{ fontSize: 12, float: 'left' , textAlign: 'center',  width: '30%'}}>
                   <span>第</span>
                   <font tdata="PageNO" color="blue">
                     ##
@@ -1223,6 +1220,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                     ##
                   </font>
                   <span>页</span>
+                </div>
                 </div>
               </th>
             </tr>
@@ -1258,7 +1256,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
               </th>
             </tr>
             <tr>
-              <th colspan={12} style={{ border: 0, height: 30 }}>
+              <th colspan={10} style={{ border: 0, height: 20 }}>
                 <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
                     驾驶员电话： {schedule.TEL}
@@ -1279,16 +1277,16 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
               </th>
             </tr>
             <tr style={{ height: 25 }}>
-              <th>商品代码</th>
-              <th>商品条码</th>
-              <th>商品名称</th>
-              <th>仓位</th>
-              <th>装盘</th>
-              <th>单价</th>
-              <th>件数</th>
-              <th>重量（吨）</th>
-              <th>体积（m3）</th>
-              <th>订单号</th>
+              <th width={76}>商品代码</th>
+              <th width={76}>商品条码</th>
+              <th width={130}>商品名称</th>
+              <th width={50}>仓位</th>
+              <th width={50}>装盘</th>
+              <th width={50}>单价</th>
+              <th width={40}>件数</th>
+              <th width={50}>重量（吨）</th>
+              <th width={50}>体积（m3）</th>
+              <th  width={80}>订单号</th>
             </tr>
           </thead>
           <tbody>
@@ -1296,20 +1294,20 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
               article.map((item, index) => {
                 return (
                   <tr style={{ textAlign: 'center', height: 30 }}>
-                    <td width={80}>{item.ARTICLECODE}</td>
-                    <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
+                    <td >{item.ARTICLECODE}</td>
+                    <td  style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                       {item.BARCODE}
                     </td>
-                    <td width={130}>
+                    <td >
                       {item.ARTICLENAME}
                     </td>
-                    <td width={50}>{item.FREIGHTSPACE}</td>
-                    <td width={50}>{item.FPAQSTANDARD}</td>
-                    <td width={40}>{item.AMOUNT}</td>
-                    <td width={50}>{item.QTYSTR}</td>
-                    <td width={50}>{(item.WEIGHT/1000).toFixed(2)}</td>
-                    <td width={50}>{item.VOLUME}</td>
-                    <td width={50}>{orders.find(e=>e.UUID==item.BILLUUID).SOURCENUM}</td>
+                    <td >{item.FREIGHTSPACE}</td>
+                    <td >{item.FPAQSTANDARD}</td>
+                    <td >{item.AMOUNT.toFixed(2)}</td>
+                    <td >{item.QTYSTR}</td>
+                    <td >{(item.WEIGHT/1000).toFixed(2)}</td>
+                    <td >{item.VOLUME.toFixed(3)}</td>
+                    <td>{orders.find(e=>e.UUID==item.BILLUUID).SOURCENUM}</td>
                   </tr>
                 );
               })
@@ -1332,19 +1330,19 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
             }
           </tbody>
           <tfoot border={0}>
-            <tr style={{ height: 20, border: 0, fontSize: '15px' }} border={0}>
+            <tr style={{ height: 20, border: 0,}} border={0}>
               <td style={{ border: 0, paddingTop: 10 }} colSpan={2}>
                 <div style={{fontWeight: 'normal' }}>
                   调度签名(盖章)： {}
                 </div>
               </td>
               <td
-                style={{ border: 0, textAlign: 'right', paddingTop: 10, fontWeight: 'normal' }}
+                style={{ border: 0, textAlign: 'left', paddingTop: 10,  fontWeight: 'normal' }}
                 colSpan={3}
               >
                 <div>打印日期:{convertDateToTime(new Date())}</div>
               </td>
-              <td style={{ border: 0, fontWeight: 'normal' }} colspan={5}>
+              <td style={{ border: 0, fontWeight: 'normal',paddingTop: 10 }} colspan={5}>
                 (白联：时捷收货部，红联：供应商，黄联：驾驶员)
               </td>
             </tr>
@@ -1740,6 +1738,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
         fs.DELIVERYPOINTCODE = e.DELIVERYPOINTCODE;
         fs.REALCARTONCOUNT = e.REALCARTONCOUNT;
         fs.OWNERNAME = e.OWNERNAME;
+        fs.SHIPAREANAME = e.SHIPAREANAME;
         fs.REALSCATTEREDCOUNT = e.REALSCATTEREDCOUNT;
         fs.COLLECTBIN = e.COLLECTBIN;
         fs.DELIVERYPOINTNAME = e.DELIVERYPOINTNAME;
@@ -1875,6 +1874,9 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
               <th width={50} rowSpan={2}>
                 委托方
               </th>
+              <th width={120} rowSpan={2}>
+                配送区域
+              </th>
               <th width={100} rowSpan={2}>
                 门店名称
               </th>
@@ -1885,10 +1887,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 回收
               </th>
               <th width={120} rowSpan={2}>
-                整箱板位
-              </th>
-              <th width={120} rowSpan={2}>
-                零板位
+                板位
               </th>
               <th width={50} rowSpan={2}>
                 装车排序
@@ -1919,6 +1918,9 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   <tr style={{ textAlign: 'center', height: 33 }}>
                     <td width={30}>{index + 1}</td>
                     <td width={50}>{item.OWNERNAME}</td>
+                      <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
+                      {item.SHIPAREANAME}
+                    </td>
                     <td width={130}>
                       {'[' + item.DELIVERYPOINTCODE + ']' + item.DELIVERYPOINTNAME}
                     </td>
@@ -1944,9 +1946,9 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                     <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
                       {item.COLLECTBIN}
                     </td>
-                    <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
+                    {/* <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                       {item.SCATTEREDCOLLECTBIN}
-                    </td>
+                    </td> */}
                     <td width={50}>{}</td>
                   </tr>
                 );
@@ -1959,6 +1961,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 <td width={80} colSpan={2}>
                   {'合计'}
                 </td>
+                <td style={{ textAlign: 'center' }}></td>
                 <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                   { scheduleDetailSum.StoreSum}
                 </td>
@@ -1979,7 +1982,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   </td> */}
                 <td width={50}>{}</td>
                 <td width={120}>{}</td>
-                <td width={120}>{}</td>
+                {/* <td width={120}>{}</td> */}
                 <td width={50}>{}</td>
               </tr>
             ) : (
@@ -1993,7 +1996,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 </td>
                 <td
                   width={80}
-                  colSpan={5}
+                  colSpan={4}
                   style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}
                 >
                   最远市区:
@@ -2003,7 +2006,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   满载率:
                   {schedule.CUBEDOUT}
                 </td>
-                <td width={50} colSpan={2}>
+                <td width={50} colSpan={3}>
                   {' '}
                   体积(方):
                   {schedule.VOLUME}

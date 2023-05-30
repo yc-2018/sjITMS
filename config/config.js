@@ -64,6 +64,9 @@ export default {
     API_ENV: process.env.API_ENV || '',
   },
   devtool: 'source-map',
+  uglifyJSOptions: {
+    sourceMap: false,
+  },
   // 路由配置
   routes: pageRoutes,
   // Theme for antd

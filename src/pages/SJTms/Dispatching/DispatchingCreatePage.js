@@ -27,7 +27,8 @@ import { CreatePageOrderColumns } from './DispatchingColumns';
 import disStyle from './Dispatching.less';
 import { sumBy, uniq, uniqBy, orderBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { itemConfig, carSearchSortConfig } from './DispatchingConfig';
+// import { itemConfig, carSearchSortConfig } from './DispatchingConfig';
+import { getConfigDataByParams } from '@/services/sjconfigcenter/ConfigCenter';
 
 const { Search } = Input;
 const { confirm } = Modal;
@@ -36,6 +37,20 @@ export default class DispatchingCreatePage extends Component {
   basicEmployee = [];
   basicVehicle = [];
   dict = [];
+  VehicleCardConfig = [
+    {
+      key: 'init',
+      tab: '默认匹配',
+    },
+    {
+      key: 'recommend',
+      tab: '熟练度匹配',
+    },
+    {
+      key: 'area',
+      tab: '区域匹配',
+    },
+  ];
 
   state = {
     loading: false,
@@ -63,14 +78,28 @@ export default class DispatchingCreatePage extends Component {
       // empType: '',
       // empInfo: '',
     },
-    carKey:
-      itemConfig[loginOrg().uuid] && itemConfig[loginOrg().uuid][0]?.key
-        ? itemConfig[loginOrg().uuid][0].key
-        : 'init',
+    carSort: [1, 2, 3],
+    carKey: 'init',
+    carSearchSort: [1, 2, 3],
   };
 
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
+    this.initConfg();
+  };
+
+  //获取配置
+  initConfg = async () => {
+    let res = await getConfigDataByParams('dispatch', loginOrg().uuid);
+    if (res.success && res.data?.length > 0) {
+      let carSort = res.data[0].carSort.split(',');
+      let carSearchSort = res.data[0].carSearchSort.split(',');
+      this.setState({
+        carSort,
+        carKey: this.VehicleCardConfig[parseInt(carSort[0]) - 1].key,
+        carSearchSort: carSearchSort ? carSearchSort : [1, 2, 3],
+      });
+    }
   };
 
   keyDown = (event, ...args) => {
@@ -121,7 +150,8 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //初始化数据
-  initData = async (isEdit, record) => {
+  initData = async (isEdit, record, orders) => {
+    // console.log('isEdit', isEdit, record, orders);
     let { vehicles, employees } = this.state;
     // 查询字典
     queryDictByCode(['vehicleOwner', 'employeeType', 'relation']).then(
@@ -161,11 +191,28 @@ export default class DispatchingCreatePage extends Component {
     let selectVehicle = undefined;
     //编辑初始化排车单
     if (isEdit) {
+      //适配地图排车编辑排车单
       const response = await getSchedule(record.uuid);
       if (response.success) {
         schedule = response.data;
-        details = schedule.details
-          ? schedule.details.map(item => {
+        if (!orders) {
+          details = schedule.details
+            ? schedule.details.map(item => {
+                return {
+                  ...item,
+                  billNumber: item.orderNumber,
+                  stillCartonCount: item.realCartonCount || item.cartonCount,
+                  stillScatteredCount: item.realScatteredCount || item.scatteredCount,
+                  stillContainerCount: item.realContainerCount || item.containerCount,
+                };
+              })
+            : [];
+        } else {
+          // details = orderBy(orders, x => x.archLine);
+          let oldDetails = orders.filter(x => x.billUuid == schedule.uuid);
+          let newDetails = orders.filter(x => x.billUuid != schedule.uuid);
+          details = oldDetails
+            .map(item => {
               return {
                 ...item,
                 billNumber: item.orderNumber,
@@ -174,8 +221,10 @@ export default class DispatchingCreatePage extends Component {
                 stillContainerCount: item.realContainerCount || item.containerCount,
               };
             })
-          : [];
+            .concat(newDetails);
+        }
       }
+
       //edit init
       this.setState({ carKey: 'init' });
     }
@@ -226,10 +275,22 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //显示
-  show = (isEdit, record) => {
-    this.setState({ visible: true, isEdit, loading: true, rowKeys: [] }, () => {
-      this.initData(isEdit, record);
-    });
+  show = (isEdit, record, orders) => {
+    const { carSort } = this.state;
+    this.setState(
+      {
+        visible: true,
+        isEdit,
+        loading: true,
+        rowKeys: [],
+        carKey: this.VehicleCardConfig[parseInt(carSort[0]) - 1]?.key
+          ? this.VehicleCardConfig[parseInt(carSort[0]) - 1]?.key
+          : 'init',
+      },
+      () => {
+        this.initData(isEdit, record, orders);
+      }
+    );
     window.addEventListener('keydown', this.keyDown);
   };
   //取消隐藏
@@ -246,10 +307,6 @@ export default class DispatchingCreatePage extends Component {
       selectVehicle: [],
       carEmpNums: 20,
       carEmpSearch: {},
-      carKey:
-        itemConfig[loginOrg().uuid] && itemConfig[loginOrg().uuid][0]?.key
-          ? itemConfig[loginOrg().uuid][0].key
-          : 'init',
     });
     window.removeEventListener('keydown', this.keyDown);
   };
@@ -713,26 +770,21 @@ export default class DispatchingCreatePage extends Component {
   };
 
   buildSelectVehicleCard = () => {
-    const { vehicles, selectVehicle, carKey } = this.state;
+    const { vehicles, selectVehicle, carKey, carSort, carSearchSort } = this.state;
     let sliceVehicles =
       this.state.carEmpNums == 'all' ? vehicles : vehicles.slice(0, this.state.carEmpNums);
 
-    const carTabList = itemConfig[loginOrg().uuid]
-      ? itemConfig[loginOrg().uuid]
-      : [
-          {
-            key: 'init',
-            tab: '默认匹配',
-          },
-          {
-            key: 'recommend',
-            tab: '熟练度匹配',
-          },
-          {
-            key: 'area',
-            tab: '区域匹配',
-          },
-        ];
+    let carTabList;
+    try {
+      carTabList = carSort.map(e => {
+        return this.VehicleCardConfig[parseInt(e) - 1];
+      });
+    } catch (error) {
+      carTabList = this.VehicleCardConfig;
+    }
+    if (carTabList.indexOf(undefined) != -1) {
+      carTabList = this.VehicleCardConfig;
+    }
 
     let carCard = undefined;
 
@@ -855,7 +907,7 @@ export default class DispatchingCreatePage extends Component {
     }
 
     //sort
-    let carSearchSort = {
+    let carSearchSortConfig = {
       '1': (
         <Select
           onChange={e => this.setState({ carEmpNums: e })}
@@ -892,9 +944,6 @@ export default class DispatchingCreatePage extends Component {
       ),
     };
 
-    let orgSort = carSearchSortConfig[loginOrg().uuid]
-      ? carSearchSortConfig[loginOrg().uuid]
-      : [1, 2, 3];
     return (
       <Card
         // loading={this.state.carLoading}
@@ -907,8 +956,8 @@ export default class DispatchingCreatePage extends Component {
         bodyStyle={{ padding: 0, paddingTop: 8, height: '26vh', overflowY: 'auto' }}
         extra={
           <div>
-            {orgSort.map(e => {
-              return carSearchSort[e];
+            {carSearchSort.map(e => {
+              return carSearchSortConfig[e];
             })}
           </div>
         }
@@ -987,6 +1036,7 @@ export default class DispatchingCreatePage extends Component {
 
     return (
       <Modal
+        zIndex={99999}
         visible={this.state.visible}
         onOk={() => this.handleSave()}
         onCancel={() => this.hide()}

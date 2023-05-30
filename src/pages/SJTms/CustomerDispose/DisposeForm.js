@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
-import { Form, Input, Row, Col, Tooltip, Collapse, Divider } from 'antd';
+import { Form, Input, Row, Col, Tooltip, Collapse, Divider,DatePicker } from 'antd';
 import IconFont from '@/components/IconFont';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import Empty from '@/pages/Component/Form/Empty';
 import styles from './DisposePage.less';
+import moment from 'moment';
+import log from '@/models/common/log';
+import Select from '@/components/ExcelImport/Select';
 const Panel = Collapse.Panel;
 
 @Form.create()
@@ -13,20 +16,38 @@ export default class DisposeForm extends Component {
     Result: '客服结果',
     Dispose: '处理说明',
   };
-
+  state={
+    records:[],
+    operation:""
+  }
   onResponsibilityChange = data => {
     this.props.form.setFieldsValue({ responsibilityName: data.record.NAME });
   };
 
+  componentWillReceiveProps(nextProps){
+    if(this.props.bill !== nextProps.bill){
+      this.setState({bill:nextProps.bill,records:nextProps.records,operation:nextProps.operation});
+    }
+  }
+  componentWillUnmount (){
+    this.setState = (state,callback)=>{
+      return;
+    };
+  }
+  componentDidMount(){
+      const { bill, records, operation } = this.props;
+      this.setState({bill:bill,records:records,operation:operation});
+  }
   render() {
     const formItem = {
       labelCol: { span: 8 },
       wrapperCol: { span: 16 },
     };
-    const { bill, records, operation } = this.props;
+    const { bill, records, operation } = this.state;
+    console.log('b',bill?.DEADLINE);
     const { getFieldDecorator } = this.props.form;
     return (
-      <Form labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
+      bill ? <Form labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
         <Row gutter={[12, 0]}>
           <Col span={8}>
             <Form.Item label="客诉单号">
@@ -77,12 +98,41 @@ export default class DisposeForm extends Component {
           </Col>
           <Col span={8}>
             <Form.Item label="完成时效">
-              <Tooltip>{bill.COMPLETIONTIME || <Empty />} </Tooltip>
+              {
+               (getFieldDecorator('COMPLETIONTIME', { 
+                  rules: [{ required: true, message: '请选择完成时效'},],
+                  initialValue: bill.COMPLETIONTIME, getValueFromEvent :(e)=>{
+                    const{bill} = this.state;
+                    bill.DEADLINE = moment(bill.FEEDBACKTIME)
+                     .add(Number(e), 'hours')
+                      .format('YYYY-MM-DD HH:mm:ss');
+                      this.setState({bill})
+                      return e;
+                    
+                  }})(
+                  <SimpleAutoComplete
+                    placeholder={'请选择完成时效'}
+                    dictCode="completionTime"
+                    allowClear
+                    noRecord
+                  />
+                
+                ))
+              }
+             
             </Form.Item>
           </Col>
           <Col span={8}>
             <Form.Item label="截止时间">
-              <Tooltip>{bill.DEADLINE || <Empty />} </Tooltip>
+              {
+                 (getFieldDecorator('DEADLINE', { 
+                  rules: [{ required: true, message: '请填写截止时间'}],
+                  initialValue:moment(bill.DEADLINE,'YYYY-MM-DD HH:mm:ss')} )(
+                  <DatePicker
+                  style={{width:'100%'}}  format="YYYY-MM-DD HH:mm:ss" showTime
+                  />
+                ))
+              }
             </Form.Item>
           </Col>
           <Col span={8}>
@@ -230,7 +280,7 @@ export default class DisposeForm extends Component {
         ) : (
           <></>
         )}
-      </Form>
+      </Form>:<></>
     );
   }
 }

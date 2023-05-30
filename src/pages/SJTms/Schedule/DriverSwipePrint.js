@@ -588,6 +588,7 @@ export default class DriverSwipePrint extends PureComponent {
             fs.DELIVERYPOINTCODE = e.DELIVERYPOINTCODE;
             fs.REALCARTONCOUNT = e.REALCARTONCOUNT;
             fs.OWNERNAME = e.OWNERNAME;
+            fs.SHIPAREANAME= e.SHIPAREANAME;
             fs.REALSCATTEREDCOUNT = e.REALSCATTEREDCOUNT;
             fs.COLLECTBIN = e.COLLECTBIN;
             fs.DELIVERYPOINTNAME = e.DELIVERYPOINTNAME;
@@ -723,6 +724,9 @@ export default class DriverSwipePrint extends PureComponent {
                     序号
                   </th>
                   <th width={50}  rowSpan={2}>委托方</th>
+                  <th width={120} rowSpan={2}>
+                    配送区域
+                  </th>
                   <th width={100} rowSpan={2}>
                     门店名称
                   </th>
@@ -733,10 +737,7 @@ export default class DriverSwipePrint extends PureComponent {
                     回收
                   </th>
                   <th width={120} rowSpan={2}>
-                    整箱板位
-                  </th>
-                  <th width={120} rowSpan={2}>
-                    零板位
+                    板位
                   </th>
                   <th width={50} rowSpan={2}>
                     装车排序
@@ -767,6 +768,9 @@ export default class DriverSwipePrint extends PureComponent {
                       <tr style={{ textAlign: 'center', height: 33 }}>
                         <td width={30}>{index+1}</td>
                         <td width={50}>{item.OWNERNAME}</td>
+                        <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
+                          {item.SHIPAREANAME}
+                        </td>
                         <td width={130}>
                           {'[' + item.DELIVERYPOINTCODE + ']' + item.DELIVERYPOINTNAME}
                         </td>
@@ -785,9 +789,7 @@ export default class DriverSwipePrint extends PureComponent {
                         <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
                           {item.COLLECTBIN}
                         </td>
-                        <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
-                          {item.SCATTEREDCOLLECTBIN}
-                        </td>
+                       
                         <td width={50}>{ }</td>
                         
                       </tr>
@@ -799,6 +801,7 @@ export default class DriverSwipePrint extends PureComponent {
                 {scheduleDetails ? (
                   <tr style={{ textAlign: 'center', height: 25 }}>
                     <td width={80} colSpan={2}>{'合计'}</td>
+                    <td style={{ textAlign: 'center',}} ></td>
                     <td
                      
                       width={80}
@@ -827,9 +830,6 @@ export default class DriverSwipePrint extends PureComponent {
                     <td  width={120}>
                       { }
                     </td>
-                    <td  width={120}>
-                      { }
-                    </td>
                     <td  width={50}>
                       { }
                     </td>
@@ -844,13 +844,13 @@ export default class DriverSwipePrint extends PureComponent {
                   <td colSpan={2} width={80}>总配货额：{0}</td>
                   <td
                     width={80}
-                    colSpan={5}
+                    colSpan={4}
                     style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}
                   >
                    最远市区:{}
                   </td>
                   <td width={50} colSpan={3}>满载率:{schedule.cubedOut*100}%</td>
-                  <td width={50} colSpan={2}> 体积(方):{schedule.volume.toFixed(2)}</td>
+                  <td width={50} colSpan={3}> 体积(方):{schedule.volume.toFixed(2)}</td>
                   <td width={50} colSpan={4}>重量:{(schedule.weight/1000).toFixed(2)}</td>
                 </tr>
               }
