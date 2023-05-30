@@ -7,7 +7,7 @@
  * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineShipAddress.js
  */
 import { connect } from 'dva';
-import { Modal, Button, Input, message, Form, Row, Col, Select, TreeSelect,Icon, } from 'antd';
+import { Modal, Button, Input, message, Form, Row, Col, Select, TreeSelect, Icon, Menu, Dropdown } from 'antd';
 import OperateCol from '@/pages/Component/Form/OperateCol';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
@@ -22,8 +22,10 @@ import {
   checkStoreExist,
   switchLineAddress,
   getMatchLine,
+  updateNote,
+  updateIsNewStore
 } from '@/services/sjtms/LineSystemHis';
-import { updateStoreAddressList } from '@/services/sjtms/LineSystemHis';
+import { updateStoreAddressList ,checkShipArea} from '@/services/sjtms/LineSystemHis';
 import { dynamicqueryById, dynamicDelete, dynamicQuery } from '@/services/quick/Quick';
 import { commonLocale } from '@/utils/CommonLocale';
 import TableTransfer from './TableTransfer';
@@ -32,10 +34,13 @@ import LineShipAddressPlan from './LineShipAddressPlan';
 import AlcNumModal from '@/pages/Wcs/Dps/Job/AlcNumModal';
 import { throttleSetter } from 'lodash-decorators';
 import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchForm';
+import { getDispatchConfig } from '@/services/tms/DispatcherConfig';
 import LineSystem from './LineSystem.less'
 import {
- findLineSystemTreeByStoreCode,
+  findLineSystemTreeByStoreCode,
 } from '@/services/sjtms/LineSystemHis';
+import { flushSync } from 'react-dom';
+import { log } from 'lodash-decorators/utils';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -107,17 +112,17 @@ export default class LineShipAddress extends QuickFormSearchPage {
             this.setState({
               isOrgQuery: response.result.reportHead.organizationQuery
                 ? [
-                    {
-                      field:
-                        loginOrg().type.toLowerCase() == 'dc'
-                          ? loginOrg().type.toLowerCase() + 'Uuid'
-                          : 'dispatchCenterUuid',
-                      type: 'VarChar',
-                      rule: 'like',
-                      val: loginOrg().uuid,
-                    },
-                    ...this.state.isOrgQuery,
-                  ]
+                  {
+                    field:
+                      loginOrg().type.toLowerCase() == 'dc'
+                        ? loginOrg().type.toLowerCase() + 'Uuid'
+                        : 'dispatchCenterUuid',
+                    type: 'VarChar',
+                    rule: 'like',
+                    val: loginOrg().uuid,
+                  },
+                  ...this.state.isOrgQuery,
+                ]
                 : [...this.state.isOrgQuery],
             });
           }
@@ -143,48 +148,48 @@ export default class LineShipAddress extends QuickFormSearchPage {
       },
     });
   };
-//遍历树
-getLineSystemTree = (data, itemData, lineData) => {
-  let treeNode = [];
-  let ef = [];
-  if (Array.isArray(data)) {
-    data.forEach(e => {
-      let temp = {};
-      temp.value = e.uuid;
-      temp.key = e.uuid;
-      temp.title = `[${e.code}]` + e.name;
-      temp.icon = <Icon type="swap" rotate={90} />;
-      // temp.system=true;
-      treeNode.push(temp);
-      ef.push(e);
+  //遍历树
+  getLineSystemTree = (data, itemData, lineData) => {
+    let treeNode = [];
+    let ef = [];
+    if (Array.isArray(data)) {
+      data.forEach(e => {
+        let temp = {};
+        temp.value = e.uuid;
+        temp.key = e.uuid;
+        temp.title = `[${e.code}]` + e.name;
+        temp.icon = <Icon type="swap" rotate={90} />;
+        // temp.system=true;
+        treeNode.push(temp);
+        ef.push(e);
+        if (data.type == 'lineSystem') {
+          //temp.disabled=true;
+          temp.system = true;
+          temp.selectable = false;
+        }
+        data.type = 'line' && lineData.push(e);
+      });
+      itemData.children = treeNode;
+      ef.forEach((f, index) => {
+        this.getLineSystemTree(f, treeNode[index], lineData);
+      });
+    } else {
+      itemData.value = data.uuid;
+      itemData.key = data.uuid;
+      itemData.title = `[${data.code}]` + data.name;
+      itemData.icon = <Icon type="swap" rotate={90} />;
       if (data.type == 'lineSystem') {
-        //temp.disabled=true;
-        temp.system = true;
-        temp.selectable = false;
+        itemData.system = true;
+        // itemData.disabled=true;
+        itemData.selectable = false;
       }
-      data.type = 'line' && lineData.push(e);
-    });
-    itemData.children = treeNode;
-    ef.forEach((f, index) => {
-      this.getLineSystemTree(f, treeNode[index], lineData);
-    });
-  } else {
-    itemData.value = data.uuid;
-    itemData.key = data.uuid;
-    itemData.title = `[${data.code}]` + data.name;
-    itemData.icon = <Icon type="swap" rotate={90} />;
-    if (data.type == 'lineSystem') {
-      itemData.system = true;
-      // itemData.disabled=true;
-      itemData.selectable = false;
-    }
-    data.type = 'line' && lineData.push(data);
+      data.type = 'line' && lineData.push(data);
 
-    if (data.childLines) {
-      this.getLineSystemTree(data.childLines, itemData, lineData);
+      if (data.childLines) {
+        this.getLineSystemTree(data.childLines, itemData, lineData);
+      }
     }
-  }
-};
+  };
   queryLineSystem = async lineuuid => {
     const parmas = {
       company: loginCompany().uuid,
@@ -202,29 +207,30 @@ getLineSystemTree = (data, itemData, lineData) => {
           lineTreeData.push(itemData);
         });
         if (lineuuid == undefined) {
-          lineuuid = lineTreeData? lineTreeData[0].key:undefined;
+          lineuuid = lineTreeData ? lineTreeData[0].key : undefined;
           // lineuuid = lineTreeData
           //   ? lineTreeData[0]?.children
           //     ? lineTreeData[0].children[0]?.key
           //     : lineTreeData[0]?.key
           //   : undefined;
         }
-        this.setState({systemData:lineTreeData})
-       
+        this.setState({ systemData: lineTreeData })
+
       }
     });
   };
-  componentDidMount(){
-    console.log("componentWillMount",this.props.lineTreeData,this.props);
+ async componentDidMount() {
     this.queryCoulumns();
     this.getCreateConfig();
     this.queryLineSystem();
-    // this.setState({
-    //   //canDragTable:false,
-    //   lineuuid: this.props.lineuuid,
-    //   systemLineFlag: this.props.systemLineFlag,
-    //   systemData:this.props.lineTreeData
-    // });
+    const response = await getDispatchConfig(loginOrg().uuid);
+    if (response.success) {
+      this.setState({
+        dispatchConfig: response.data,
+        ischeckArea: response.data?.checkLineArea == 1,
+      });
+    }
+   
   }
   // componentWillMount() {
   //   this.setState({
@@ -238,7 +244,7 @@ getLineSystemTree = (data, itemData, lineData) => {
     return this.state.data;
   };
   componentWillReceiveProps = async nextProps => {
-    if (nextProps.lineuuid != this.props.lineuuid) {
+    if (nextProps.lineuuid != this.props.lineuuid && nextProps.lineuuid!=undefined) {
       this.state.lineuuid = nextProps.lineuuid;
       this.state.systemLineFlag = nextProps.systemLineFlag;
       this.state.buttonDisable = false;
@@ -310,14 +316,25 @@ getLineSystemTree = (data, itemData, lineData) => {
       }
       event.component = component;
     }
+    if(event.column.fieldName =='ADDRESSNAME' && event.record['ISNEWSTORE'] == 1){
+      event.component = <span style={{color:'red'}}>{event.val}</span>
+    }
   };
 
   exSearchFilter = async () => {
     const { systemLineFlag, lineuuid } = this.state;
-    if (!lineuuid) {
-      return [];
-    }
     let parmas = [];
+    if (!lineuuid) {
+      return [
+        {
+          field: 'SYSTEMUUID',
+          type: 'VarChar',
+          rule: 'eq',
+          val: this.props.lineuuid,
+        },
+      ];
+    }
+    
     if (systemLineFlag) {
       parmas = [
         {
@@ -513,7 +530,8 @@ getLineSystemTree = (data, itemData, lineData) => {
   };
   //保存
   handleStoreSave = async () => {
-    const { targetKeys, transferDataSource, data } = this.state;
+    const { targetKeys, transferDataSource, data,ischeckArea } = this.state;
+    console.log("ss",ischeckArea);
     const { lineuuid, linecode } = this.props;
     if (targetKeys.length == 0) {
       return;
@@ -546,7 +564,25 @@ getLineSystemTree = (data, itemData, lineData) => {
         };
       });
     if (saveData.length > 0) {
-      this.saveFormData2(saveData);
+      if(ischeckArea){
+        const shipArea = await checkShipArea(
+          { lineuuid:lineuuid,
+            addressIds:saveData.map(e=>e.ADDRESSUUID)
+          }
+        );
+        if(!shipArea.data){
+          Modal.confirm({
+            title:"存在门店配送区域不一致，确定加入到同一个线路吗？",
+            onOk:()=>this.saveFormData2(saveData)
+          })
+          return;
+        }else{
+          this.saveFormData2(saveData);
+        }
+       
+      }else{
+        this.saveFormData2(saveData);
+      }
       this.setState({ targetKeys: [], transferDataSource: [] });
     } else {
       this.setState({ modalVisible: false });
@@ -588,7 +624,7 @@ getLineSystemTree = (data, itemData, lineData) => {
   onTranferFetch = dataSource => {
     this.setState({ transferDataSource: dataSource });
   };
-  handleOk = () => {};
+  handleOk = () => { };
   handleCancel = () => {
     this.setState({ isModalVisible: false });
   };
@@ -606,7 +642,10 @@ getLineSystemTree = (data, itemData, lineData) => {
       lineModalVisible,
       lineData,
       systemLineFlag,
-      systemData
+      systemData,
+      updateNoteVisible,
+      ischeckArea
+      
     } = this.state;
     const options = lineData.map(a => {
       return <Select.Option key={a.uuid}>{a.name}</Select.Option>;
@@ -628,9 +667,10 @@ getLineSystemTree = (data, itemData, lineData) => {
             //key={e.UUID}
             //showPageNow="query"
             quickuuid="sj_itms_line_shipAddress_plan"
+            ischeckArea = {ischeckArea}
             // location={{ pathname: '1' }}
             lineuuid={this.props.lineuuid}
-            //pageFilters={{queryParams :[{field:"systemuuid", type:"VarChar", rule:"eq", val:"000000750000004"}]}}
+          //pageFilters={{queryParams :[{field:"systemuuid", type:"VarChar", rule:"eq", val:"000000750000004"}]}}
           />
         </Modal>
         <Modal
@@ -665,7 +705,7 @@ getLineSystemTree = (data, itemData, lineData) => {
               <Col>
                 <Form.Item label="线路">
                   <TreeSelect
-                    treeNodeFilterProp="title"  
+                    treeNodeFilterProp="title"
                     showSearch
                     allowClear={true}
                     optionFilterProp="children"
@@ -679,6 +719,27 @@ getLineSystemTree = (data, itemData, lineData) => {
               </Col>
             </Row>
           </Form>
+        </Modal>
+        <Modal
+          title={modalTitle}
+          width={800}
+          visible={updateNoteVisible}
+          onOk={this.updateNote}
+          confirmLoading={false}
+          onCancel={() => this.setState({ updateNoteVisible: false })}
+          destroyOnClose={true}
+        >
+          <Row>
+            <Col>
+              <Form ref="updateNote">
+                <Row>
+                  <Col>
+                    <Input defaultValue={this.state.note} onChange={(e) => this.setState({ note: e.target.value })}></Input>
+                  </Col>
+                </Row>
+              </Form>
+            </Col>
+          </Row>
         </Modal>
         {this.state.canDragTable && (
           <Button
@@ -726,14 +787,87 @@ getLineSystemTree = (data, itemData, lineData) => {
   handleChange = e => {
     this.setState({ lineValue: e });
   };
+  updateNote = async () => {
+    const { selectedRows, note, pageFilters } = this.state;
+    await updateNote({ uuid: selectedRows[0].UUID, note: note }).then(result => {
+      if (result.success) {
+        message.success('修改成功');
+        this.getData(pageFilters);
+        this.setState({ updateNoteVisible: false })
+      }
+    })
+  }
+  updateIsNewStore = async (e) => {
+   
+    console.log("e", e);
+    const { selectedRows, pageFilters } = this.state;
+    if(selectedRows.length ==0){ 
+      message.error("请至少选择一条记录")
+      return;
+    }
+    const  uuids = selectedRows.map(e=>e.UUID);
+    console.log(uuids);
+    await updateIsNewStore({ uuids: uuids, flag: e.key }).then(result => {
+      if (result.success) {
+        message.success('修改成功');
+        this.getData(pageFilters);
+      }
+    })
+  }
   handleAddToNewLine = async () => {
-    const { selectedRows, lineValue, pageFilters, lineuuid, addToNewLine } = this.state;
+    const { selectedRows, lineValue, pageFilters, lineuuid, addToNewLine,ischeckArea } = this.state;
     //true 添加到新线路
     if (addToNewLine) {
       let params = {
         lineUuid: lineValue.value,
         addressIds: selectedRows.map(e => e.UUID),
       };
+      if(ischeckArea){
+        const shipArea = await checkShipArea(
+          { lineuuid:lineValue.value,
+            addressIds:selectedRows.map(e=>e.ADDRESSUUID)
+          }
+        );
+        if(!shipArea.data){
+          Modal.confirm({
+            title:"存在门店配送区域不一致，确定加入到同一个线路吗？",
+            onOk:async ()=> {
+              await addToNewLines(params).then(result => {
+                if (result.success) {
+                  message.success('添加成功');
+                  this.getData(pageFilters);
+                } else {
+                  // message.error('添加失败');
+                }
+                this.setState({
+                  lineValue: undefined,
+                  lineData: [],
+                  selectedRows: [],
+                  lineModalVisible: false,
+                });
+              });
+              return;
+            }
+          })
+          return;
+        }else{
+          await addToNewLines(params).then(result => {
+            if (result.success) {
+              message.success('添加成功');
+              this.getData(pageFilters);
+            } else {
+              // message.error('添加失败');
+            }
+            this.setState({
+              lineValue: undefined,
+              lineData: [],
+              selectedRows: [],
+              lineModalVisible: false,
+            });
+          });
+          return;
+        }
+      }
       await addToNewLines(params).then(result => {
         if (result.success) {
           message.success('添加成功');
@@ -819,6 +953,7 @@ getLineSystemTree = (data, itemData, lineData) => {
 
   drawToolbarPanel = () => {
     const { buttonDisable } = this.state;
+   
     return (
       <>
         {buttonDisable ? <Button onClick={this.tableSortSave}>排序并保存</Button> : <></>}
@@ -860,8 +995,21 @@ getLineSystemTree = (data, itemData, lineData) => {
             >
               移入到新线路
             </Button>
+            
+
           </>
         )}
+        <Button
+              onClick={() => {
+                if (this.state.selectedRows.length == 0) {
+                  message.info('请选择记录');
+                  return;
+                }
+                this.setState({ updateNoteVisible: true, note: this.state.selectedRows[0].NOTE });
+              }}
+            >
+              编辑备注
+            </Button>
       </>
     );
   };

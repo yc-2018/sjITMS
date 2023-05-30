@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-20 10:41:30
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-19 11:33:34
+ * @LastEditTime: 2023-03-22 15:20:56
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -48,6 +48,8 @@ export default class BasicDtlCreatPage extends QuickCreatePage {
       });
       line = line + 1;
     });
+
+    this.onSaveSetOrg();
 
     //入参
     const param = { code: this.state.onlFormInfos[0].onlFormHead.code, entity: entity };

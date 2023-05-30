@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-01 09:06:04
+ * @LastEditTime: 2023-04-04 16:36:19
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -110,15 +110,14 @@ export default class ScheduleDetailPage extends Component {
       message.warning('请选择订单明细！');
       return;
     }
+    this.setState({ loading: true });
     const orderUuids = scheduleDetail
       .filter(x => selectedRowKeys.indexOf(x.uuid) != -1)
       .map(x => x.orderUuid);
     removeOrders({ billUuid: schedule.uuid, orderUuids }).then(response => {
       if (response.success) {
         message.success('保存成功！');
-        this.refreshTable();
-        this.props.refreshPending();
-        this.props.refreshSchedule();
+        this.props.refreshSchedule(schedule);
       }
     });
   };
@@ -165,7 +164,11 @@ export default class ScheduleDetailPage extends Component {
           </Col>
           <Col span={12} style={{ textAlign: 'right' }}>
             {schedule.STAT == 'Saved' ? (
-              <Button style={{ marginRight: 30 }} onClick={() => this.handleRemoveDetail()}>
+              <Button
+                style={{ marginRight: 30 }}
+                onClick={() => this.handleRemoveDetail()}
+                loading={loading}
+              >
                 移除
               </Button>
             ) : (

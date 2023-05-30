@@ -8,13 +8,14 @@
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import OperateCol from '@/pages/Component/Form/OperateCol';
-import { Checkbox, Select, Input, Button, Popconfirm, message, Dropdown, Menu, Empty } from 'antd';
+import { Checkbox, Select, Input, Button, Popconfirm, message, Dropdown, Menu, Empty, Modal} from 'antd';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { dynamicQuery, saveFormData } from '@/services/quick/Quick';
-import { confirm, cancelReceipted } from '@/services/sjitms/Checkreceipt';
+import { confirm, cancelReceipted,dispose } from '@/services/sjitms/Checkreceipt';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import { havePermission } from '@/utils/authority';
-
+import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuery/SimpleQuery';
+ import styless from '@/pages/Tms/TransportOrder/transportOrder.less';
 const { Option } = Select;
 @connect(({ quick, loading }) => ({
   quick,
@@ -23,18 +24,82 @@ const { Option } = Select;
 //继承QuickFormSearchPage Search页面扩展
 export default class CheckreceiptBillSearch extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
-  state = { ...this.state, noActionCol: false, isShow: false, sourceData: [] };
-
+  state = {
+     ...this.state, noActionCol: false, isShow: false, sourceData: [],
+     notDispatchCenterUuids:[
+      '000008150000002',
+     '000008150000001',
+     '000000750000004',
+     '000000750000005',
+     '000000750000006',
+     '000008150000003'
+    ],
+     updateReceiptedLoading:false
+    };
   componentDidMount() {
+    const pageFilter = this.state.pageFilter;
+    pageFilter.pageSize = 50;
+    this.setState({pageFilter:pageFilter})
     this.queryCoulumns();
     this.getCreateConfig();
     this.initOptionsData();
-  }
+    const param = {
+      tableName: 'SJ_ITMS_PRETYPE',
+      condition: {
+        params: [
+          { field: 'DISPATCHCENTERUUID', rule: 'eq', val: [loginOrg().uuid] },
+          { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] }
+        ],
+      },
+    };
+    dynamicQuery(param).then(e=>{
+      if(e.success){
+        this.setState({
+          pretype:e.result.records
+        })
+      }
+    });
 
+  }
+  setrowClassName = (record,index)=>{
+   
+    const pre = this.state.pretype?.filter(e=>e.NAME ==record.DEALMETHOD)[0]
+    if( record.RECEIPTED==2 && pre?.ISCOLOR=='是'){
+      if(record.DISPOSEFLAG=='Disposed'){
+        return styless.lightRow;
+      }else if (pre.COLOR=='Blue' ){
+        return styless.gaizBlueStyle;
+      } else if (pre.COLOR=='Yellow'){
+        return styless.gaizYellowStyle;
+      } else if (pre.COLOR=='Green'){
+        return styless.gaizGreenStyle;
+      } else if (pre.COLOR=='Red'){
+      return styless.gaizRedStyle;
+     } else if (pre.COLOR=='Purple'){
+      return styless.gaizPurpleStyle;
+    }
+    }
+   
+}
   onType = () => {
     this.props.switchTab('view');
   };
-
+  editColumns =(data)=>{
+    if(loginOrg().uuid=='000000750000005' || loginOrg().uuid=='000008150000002'){
+      data.columns.forEach(e=>{
+        if(e.fieldName=='SCHEDULENUMBER'){
+            e.searchDefVal ='30YD'
+        }
+    })
+    }else if (loginOrg().uuid=='000000750000006' || loginOrg().uuid=='000008150000003'){
+      data.columns.forEach(e=>{
+        if(e.fieldName=='SCHEDULENUMBER'){
+            e.searchDefVal ='30YX'
+        }
+    })
+    }
+    return data;
+  }
   onCheckreceiptSave = async () => {
     const { selectedRows } = this.state;
     if (selectedRows.length !== 0) {
@@ -54,11 +119,13 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
         list.push(data);
       });
       if (msg) {
+        this.setState({updateReceiptedLoading:true})
         const result = await confirm(list);
         if (result.success) {
           message.success('保存成功');
           this.refreshTable();
         }
+        this.setState({updateReceiptedLoading:false})
       }
     } else {
       message.error('请至少选中一条数据！');
@@ -89,17 +156,49 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
   };
 
   updateReceipted = () => {
-    const { selectedRows } = this.state;
+    const { selectedRows,notDispatchCenterUuids } = this.state;
     if (selectedRows.length !== 0) {
       selectedRows.forEach(row => {
         row.RECEIPTED = 1;
         row.DEALMETHOD = '';
       });
       this.setState({ selectedRows });
+      if(notDispatchCenterUuids.includes(loginOrg().uuid)){
+        this.onCheckreceiptSave()
+      }else{
+        Modal.confirm({
+          title:"确定全部回单吗？",
+          onOk:()=>this.onCheckreceiptSave()
+        })
+      }
     } else {
       message.error('请至少选中一条数据！');
     }
   };
+
+  dispose = async ()=>{
+    const { selectedRows } = this.state;
+    const list = [];
+    if (selectedRows.length !== 0) {  
+      selectedRows.forEach(row => {
+        let data = {
+          receipted: row.RECEIPTED == '0' ? false : true,
+          uuid: row.UUID,
+          dealMethod: row.DEALMETHOD,
+          note: row.NOTE,
+        };
+        list.push(data);
+      });
+      await dispose(list).then(e=>{
+        if(e && e.success){
+          message.success('保存成功！');
+          this.refreshTable();
+        }
+      })
+    } else {
+      message.error('请至少选中一条数据！');
+    }
+  }
 
   /**
    * 绘制右上角按钮
@@ -197,6 +296,15 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
         row.DEALMETHOD = key;
       });
       this.setState({ selectedRows });
+      if(this.state.notDispatchCenterUuids.includes(loginOrg().uuid)){
+        this.onCheckreceiptSave()
+      }else{
+        Modal.confirm({
+          title:`确定`+key+`吗`,
+          onOk:()=>this.onCheckreceiptSave()
+        })
+      }
+      
     } else {
       message.error('请至少选中一条数据！');
     }
@@ -266,7 +374,7 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
         c = receipted.val;
       }
     }
-    if (c === '0') {
+    //if (c === '0' || c=='2') {
       return (
         <span>
           <Popconfirm
@@ -287,33 +395,39 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
           >
            
           </Popconfirm> */}
-          <Button 
-          hidden={!havePermission(this.state.authority + '.allReceipted')}
-          onClick = {() => this.updateReceipted()}
-           >
-              全部回单
-            </Button>
+            
+            <Button 
+            hidden={!havePermission(this.state.authority + '.allReceipted')}
+            onClick = {() => this.updateReceipted() }
+            loading = {this.state.updateReceiptedLoading}
+            >
+                全部回单
+              </Button>
           <Dropdown overlay={this.buildMenu.bind()}>
             <Button hidden={!havePermission(this.state.authority + '.batchHandle')}>
               批量设置处理方式
             </Button>
           </Dropdown>
-        </span>
-      );
-    } else {
-      return (
-        <Popconfirm
+        <Button 
+          hidden={!havePermission(this.state.authority + '.batchHandle')}
+          onClick = {() => this.dispose()}
+           >
+              跟进处理
+          </Button>
+          <Popconfirm
           title="确定取消回单所选的内容吗?"
           onConfirm={() => this.cancelReceipted()}
           okText="确定"
           cancelText="取消"
-        >
+          >
           <Button hidden={!havePermission(this.state.authority + '.cancleReceipted')}>
             取消回单
           </Button>
         </Popconfirm>
+        </span>
       );
-    }
+   
+    //}
   };
 
   //该方法用于写操作列的render

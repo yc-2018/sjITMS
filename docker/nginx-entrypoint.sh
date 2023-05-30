@@ -44,6 +44,9 @@ if [ $deployMode = "single" ]; then
   echo "更改 zuul 代理地址: $PROXY_ZUUL_HOST"
   sed -i "s/PROXY_ZUUL_HOST/$PROXY_ZUUL_HOST/g" /etc/nginx/nginx.conf
 
+    echo "更改 zuul 端口号: $PROXY_ZUUL_PORT"
+  sed -i "s/PROXY_ZUUL_PORT/$PROXY_ZUUL_PORT/g" /etc/nginx/nginx.conf
+
   echo '配置 single 结束...'
 elif [ $deployMode = "cluster" ]; then
   echo '选择 cluster 部署'

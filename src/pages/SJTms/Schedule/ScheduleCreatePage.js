@@ -2,16 +2,17 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-25 10:17:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-02-10 09:22:07
+ * @LastEditTime: 2023-04-17 16:28:55
  * @version: 1.0
  */
 import { connect } from 'dva';
-import { Form, Input, message } from 'antd';
+import { Form, Input, message, Modal } from 'antd';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import { loginCompany } from '@/utils/LoginContext';
-import { dynamicqueryById } from '@/services/quick/Quick';
+import { dynamicqueryById, dynamicQuery } from '@/services/quick/Quick';
 import { commonLocale } from '@/utils/CommonLocale';
 import { calculateMemberWage } from '@/services/cost/CostCalculation';
+import { aborted } from '@/services/sjitms/VehicleWeight';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -25,6 +26,7 @@ export default class ScheduleCreatePage extends QuickCreatePage {
       ...this.state,
       CCCWEIGHT: '',
       CCCVOLUME: '',
+      saveControl: false,
     };
   }
 
@@ -32,11 +34,17 @@ export default class ScheduleCreatePage extends QuickCreatePage {
     const { fieldName, valueEvent } = e;
     const { form } = this.props;
     if (fieldName == 'VEHICLEUUID' && valueEvent) {
+      if (valueEvent.record.JOB_STATE != 'Used') {
+        message.error(valueEvent.record.PLATENUMBER + '不是正常状态，不能选择！');
+        this.setState({ saveControl: true });
+        return;
+      }
       this.props.form.setFieldsValue({ ['CCCWEIGHT']: valueEvent.record.BEARWEIGHT });
       this.props.form.setFieldsValue({ ['CCCVOLUME']: valueEvent.record.BEARVOLUME });
       this.setState({
         CCCWEIGHT: valueEvent.record.BEARWEIGHT,
         CCCVOLUME: valueEvent.record.BEARVOLUME,
+        saveControl: false,
       });
       const param = {
         tableName: 'sj_itms_vehicle_employee',
@@ -62,7 +70,7 @@ export default class ScheduleCreatePage extends QuickCreatePage {
               MEMBERCODE: data.EMPCODE,
               MEMBERNAME: data.EMPNAME,
               MEMBERTYPE: data.WORKTYPE,
-              MEMBERUUID: data.UUID,
+              MEMBERUUID: data.EMPUUID,
               line: index + 1,
               key: this.tableKey++,
             });
@@ -71,7 +79,7 @@ export default class ScheduleCreatePage extends QuickCreatePage {
           if (cc != undefined) {
             this.entity['sj_itms_schedule'][0] = {
               ...this.entity['sj_itms_schedule'][0],
-              CARRIERUUID: cc.UUID,
+              CARRIERUUID: cc.EMPUUID,
               CARRIERCODE: cc.EMPCODE,
               CARRIERNAME: cc.EMPNAME,
             };
@@ -130,7 +138,7 @@ export default class ScheduleCreatePage extends QuickCreatePage {
         key: 'CCCWEIGHT',
         label: '车辆承重(换)',
         tableName: 'sj_itms_schedule',
-        props: { disabled: true },
+        props: { disabled: true, style: { color: 'black' } },
       };
 
       formItems['CCCVOLUME'] = {
@@ -141,14 +149,18 @@ export default class ScheduleCreatePage extends QuickCreatePage {
         key: 'CCCVOLUME',
         label: '车辆体积(换)',
         tableName: 'sj_itms_schedule',
-        props: { disabled: true },
+        props: { disabled: true, style: { color: 'black' } },
       };
     }
   };
 
   onSave = async data => {
     const { entity } = this;
-    const { onlFormInfos } = this.state;
+    const { onlFormInfos, saveControl } = this.state;
+    if (saveControl) {
+      message.error('该车辆不是正常状态，不能选择！');
+      return;
+    }
 
     //保存前对address字段做处理 不进行保存
     for (let onlFormInfo of onlFormInfos) {
@@ -164,7 +176,36 @@ export default class ScheduleCreatePage extends QuickCreatePage {
     }
 
     this.onSaveSetOrg();
-
+    if (this.props.planConfig?.rollbackApproval == 1) {
+      const param = {
+        tableName: 'sj_itms_schedule',
+        condition: {
+          params: [{ field: 'UUID', rule: 'eq', val: [entity.sj_itms_schedule[0].UUID] }],
+        },
+      };
+      const result = await dynamicQuery(param);
+      const data = result.result.records[0];
+      if (data.PIRS != '' && data.CHECKTIME != null) {
+        if (data.STAT == 'Shiped' || data.STAT == 'Shipping') {
+          entity.sj_itms_schedule[0].STAT = 'Approved';
+          entity.sj_itms_schedule[0].CHECKTIME = '';
+          entity.sj_itms_schedule[0].PIRS = '';
+          entity.sj_itms_schedule[0].SHIPSTARTTIME = '';
+          entity.sj_itms_schedule[0].SHIPENDTIME = '';
+          const Modaldis = Modal.confirm({
+            title: '该排车单状态会回退到已批准，是否继续操作？',
+            onOk: () => {
+              this.dosaved(entity);
+              Modaldis.destroy();
+            },
+          });
+          return;
+        }
+      }
+    }
+    this.dosaved(entity);
+  };
+  dosaved = async entity => {
     const editableState = ['Approved', 'Shipping', 'Shiped'];
     //入参
     const param = { code: this.state.onlFormInfos[0].onlFormHead.code, entity: entity };
@@ -178,6 +219,13 @@ export default class ScheduleCreatePage extends QuickCreatePage {
       if (editableState.includes(entity.sj_itms_schedule[0].STAT)) {
         const operation = await calculateMemberWage(entity.sj_itms_schedule[0].BILLNUMBER);
       }
+    }
+  };
+
+  afterSave = async data => {
+    const { entity } = this;
+    if (data) {
+      const response = await aborted(entity['sj_itms_schedule'][0].UUID, 'updateVehicle');
     }
   };
 }

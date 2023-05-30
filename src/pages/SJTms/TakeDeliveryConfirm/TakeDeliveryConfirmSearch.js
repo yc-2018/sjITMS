@@ -10,6 +10,7 @@ import { Button, InputNumber, message, Popconfirm, Input, Modal, Form } from 'an
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { saveFormData, updateEntity } from '@/services/quick/Quick';
+import { havePermission } from '@/utils/authority';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -174,7 +175,7 @@ export default class TakeDeliveryConfirmSearch extends QuickFormSearchPage {
             okText="确定"
             cancelText="取消"
           >
-            <Button>确认</Button>
+            <Button hidden={!havePermission(this.state.authority + '.confirm')}>确认</Button>
           </Popconfirm>
         </span>
       );

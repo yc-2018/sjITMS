@@ -68,9 +68,10 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
       e.fixed = true;
       e.component = component;
     }
-    if (fieldName == 'FVERSION') {
+    if (fieldName == 'OTHERAMOUNT') {
+      
       const component = (
-        <a onClick={() => this.showOrderFee(record.BILLNUMBER, record.UUID)}>查看编辑</a>
+        <a onClick={() => this.showOrderFee(record.BILLNUMBER, record.UUID)}>{record.OTHERAMOUNT}</a>
       );
       e.fixed = true;
       e.component = component;
@@ -90,7 +91,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           max={10000}
           disabled={e.record.INOUTCHECKED == 1}
           defaultValue={
-            record.INOUTCHECKED == 0 ? record.LAST_RETURN_MILEAGE : record.DISPATCHMILEAGE
+            record.INOUTCHECKED == 0 &&( record.DISPATCHMILEAGE == 0 || record.DISPATCHMILEAGE ==null) ? record.LAST_RETURN_MILEAGE : record.DISPATCHMILEAGE
           }
         />
       );
@@ -183,7 +184,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           okText="确定"
           cancelText="取消"
         >
-          <Button type="primary">保存审核</Button>
+          <Button type="primary">公里数审核</Button>
         </Popconfirm>
         <Popconfirm
           title="确定保存?"
@@ -191,7 +192,7 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           okText="确定"
           cancelText="取消"
         >
-          <Button>保存</Button>
+          <Button>公里数保存</Button>
         </Popconfirm>
         <Popconfirm
           title="确定取消?"
@@ -237,6 +238,8 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
         if (response && response.success) {
           this.refreshTable();
           message.success(commonLocale.saveSuccessLocale);
+        }else{
+          message.error(response.message);
         }
       },
     });
@@ -252,6 +255,8 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
         if (response && response.success) {
           this.refreshTable();
           message.success(commonLocale.saveSuccessLocale);
+        }else{
+          message.error(response.message);
         }
       },
     });

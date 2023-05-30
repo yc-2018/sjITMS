@@ -2,9 +2,9 @@
  * @Author: guankongjin
  * @Date: 2022-10-25 10:25:16
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-23 17:11:06
+ * @LastEditTime: 2023-05-12 10:20:29
  * @Description:地图排车查询面板
- * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\SearchForm.js
+ * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\stores\SearchForm.js
  */
 
 import React, { Component } from 'react';
@@ -15,6 +15,7 @@ import {
   SimpleSelect,
   SimpleRadio,
   SimpleAutoComplete,
+  SimpleAutoCompleteEasy,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { queryColumns } from '@/services/quick/Quick';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
@@ -73,6 +74,20 @@ export default class SearchForm extends Component {
     });
   };
 
+  handleChange = (valueEvent, searchField) => {
+    let searchProperties = searchField.searchProperties
+      ? JSON.parse(searchField.searchProperties)
+      : '';
+    if (searchProperties.linkFields) {
+      const linkFilters = this.buildLinkFilter(valueEvent, searchProperties.linkFields);
+      let runTimeProps = {};
+      for (const linkField of searchProperties.linkFields) {
+        runTimeProps[linkField.field] = linkFilters;
+      }
+      this.setState({ runTimeProps });
+    }
+  };
+
   //查询
   onSearch = async searchParam => {
     let params = new Array();
@@ -109,7 +124,8 @@ export default class SearchForm extends Component {
           field.fieldName == 'LINEAREA' ||
           field.fieldName == 'SHIPAREA' ||
           field.fieldName == 'CONTACT' ||
-          field.fieldName == 'DELIVERYPOINTCODE'
+          field.fieldName == 'DELIVERYPOINTCODE' ||
+          field.fieldName == 'COLLECTAREA'
         ) {
           storeParams = { ...storeParams, [field.fieldName]: val };
         } else {
@@ -160,6 +176,26 @@ export default class SearchForm extends Component {
         };
       }
     }
+    if (searchProperties.isOrgSearch) {
+      const orgFields = searchProperties.isOrgSearch.split(',');
+      let loginOrgType = loginOrg().type.replace('_', '');
+      let loginParmas = [];
+      if (orgFields.indexOf('Company') != -1) {
+        loginParmas.push({ field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] });
+      }
+      if (orgFields.indexOf('Org') != -1) {
+        loginParmas.push({ field: loginOrgType + 'UUID', rule: 'like', val: [loginOrg().uuid] });
+      }
+      if (searchProperties.queryParams.condition) {
+        const params = [...searchProperties.queryParams.condition.params];
+        searchProperties.queryParams.condition.params = [...params, ...loginParmas];
+      } else {
+        searchProperties.queryParams = {
+          ...searchProperties.queryParams,
+          condition: { params: loginParmas },
+        };
+      }
+    }
     switch (searchField.searchShowtype) {
       case 'date':
         return <RangePicker style={{ width: '100%' }} />;
@@ -179,14 +215,38 @@ export default class SearchForm extends Component {
       case 'radio':
         return <SimpleRadio {...searchProperties} />;
       case 'sel_search':
+        // return (
+        //   <SimpleSelect
+        //     showSearch
+        //     allowClear
+        //     placeholder={'请输入' + searchField.fieldTxt}
+        //     searchField={searchField}
+        //     reportCode={this.state.quickuuid}
+        //     isOrgQuery={isOrgQuery}
+        //   />
+        // );
+        if (searchField.searchCondition == 'in' || searchField.searchCondition == 'notIn') {
+          return (
+            <SimpleSelect
+              showSearch
+              allowClear
+              placeholder={'请输入' + searchField.fieldTxt}
+              reportCode={this.state.quickuuid}
+              searchField={searchField}
+              isOrgQuery={isOrgQuery}
+              setFieldsValues={this.props.form.setFieldsValue}
+              onChange={valueEvent => this.handleChange(valueEvent, searchField)}
+            />
+          );
+        }
         return (
-          <SimpleSelect
-            showSearch
-            allowClear
+          <SimpleAutoCompleteEasy
             placeholder={'请输入' + searchField.fieldTxt}
-            searchField={searchField}
+            allowClear
             reportCode={this.state.quickuuid}
+            searchField={searchField}
             isOrgQuery={isOrgQuery}
+            {...searchProperties}
           />
         );
       case 'auto_complete':

@@ -1,12 +1,12 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-02-10 14:16:00
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-12-08 10:05:00
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-03-22 14:55:01
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
-import { Select, Divider, Icon, Button } from 'antd';
+import { Select, Divider, Row, Col, Button, Tooltip } from 'antd';
 import { selectCoulumns, dynamicQuery } from '@/services/quick/Quick';
 import moment from 'moment';
 
@@ -76,7 +76,9 @@ export default class SimpleSelect extends PureComponent {
           val: '',
         });
         for (let key in dateParam) {
-          let endDate = moment(new Date()).format('YYYY-MM-DD');
+          let endDate = moment(new Date())
+            .add(1, 'days')
+            .format('YYYY-MM-DD');
           let startDate = moment(new Date())
             .add(-dateParam[key], 'days')
             .format('YYYY-MM-DD');
@@ -128,18 +130,11 @@ export default class SimpleSelect extends PureComponent {
     const { sourceData } = this.state;
     return sourceData.map(data => {
       return (
-        <Select.Option value={data.VALUE} label={data.NAME}>
+        <Select.Option value={data.VALUE} label={data.NAME} title={data.NAME}>
           {data.NAME}
         </Select.Option>
       );
     });
-  };
-
-  onChange = value => {
-    // 用于form表单获取控件值
-    if (this.props.onChange) {
-      this.props.onChange(value);
-    }
   };
 
   onFocus = async () => {
@@ -188,6 +183,11 @@ export default class SimpleSelect extends PureComponent {
     this.props.setFieldsValues({ [key]: values });
   };
 
+  // onChange = value => {
+  //   if (value instanceof Array) this.props.onChange && this.props.onChange(value.reverse());
+  //   else this.props.onChange && this.props.onChange(value);
+  // };
+
   render() {
     //查询类型为in时 变为多选
     let mu = {};
@@ -212,29 +212,43 @@ export default class SimpleSelect extends PureComponent {
       >
         <Select
           {...this.props}
-          // onChange={this.onChange}
+          //onChange={this.onChange}
           onSearch={this.onSearch}
           onFocus={this.onFocus}
           {...mu}
+          maxTagCount={1}
+          maxTagPlaceholder={e => {
+            const { sourceData } = this.state;
+            let title = [];
+            sourceData.map(x => {
+              if (e.indexOf(x.VALUE) != -1) {
+                title.push(x.NAME);
+              }
+            });
+            return <Tooltip title={title.join(',')}>{`+${e?.length}`}</Tooltip>;
+          }}
+          maxTagTextLength={this.props.searchField?.fieldWidth}
           dropdownRender={menu =>
             isMu ? (
               <div>
                 {menu}
                 <Divider style={{ margin: '4px 0' }} />
-                <Button
-                  type="primary"
-                  onClick={() => this.checkAll('all')}
-                  style={{ margin: '0 2px 2px 2px' }}
-                >
-                  全选
-                </Button>
-                <Button
-                  // type="primary"
-                  onClick={() => this.checkAll('no')}
-                  style={{ margin: '0 2px 2px 2px' }}
-                >
-                  全不选
-                </Button>
+                <Row>
+                  <Col span={12}>
+                    <Button
+                      type="primary"
+                      onClick={() => this.checkAll('all')}
+                      style={{ margin: '0 2px 2px 2px' }}
+                    >
+                      全选
+                    </Button>
+                  </Col>
+                  <Col span={12}>
+                    <Button onClick={() => this.checkAll('no')} style={{ margin: '0 2px 2px 2px' }}>
+                      全不选
+                    </Button>
+                  </Col>
+                </Row>
               </div>
             ) : (
               <div>{menu}</div>

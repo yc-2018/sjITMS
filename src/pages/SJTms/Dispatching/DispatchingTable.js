@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-29 15:33:45
+ * @LastEditTime: 2023-04-07 11:42:22
  * @Description: 可伸缩表格
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\DispatchingTable.js
  */
@@ -29,6 +29,14 @@ const ResizeableTitle = props => {
       height={0}
       onResize={onResize}
       draggableOpts={{ enableUserSelectHack: false }}
+      handle={
+        <span
+          className="react-resizable-handle"
+          onClick={e => {
+            e.stopPropagation();
+          }}
+        />
+      }
     >
       <th {...restProps} />
     </Resizable>
@@ -46,33 +54,50 @@ export default class DispatchingTable extends Component {
 
   //表格行点击选中
   onClickRow = (record, index, event) => {
+    //整体选择逻辑 参考EXCEL中的选择逻辑
     if (this.props.clickRow == undefined) return;
     const { selectedRowKeys, dataSource } = this.props;
     let { lastIndex } = this.state;
     let rowKeys = [...selectedRowKeys];
+    let rowKeysShift = [];
     let allRowKeys = [...dataSource].map(x => x.uuid);
     const indicatrix = rowKeys.indexOf(record.uuid);
     const selected = indicatrix == -1;
     if (event.ctrlKey) {
       selected ? rowKeys.push(record.uuid) : rowKeys.splice(indicatrix, 1);
+      rowKeys = uniqBy(rowKeys);
+      this.props.changeSelectRows(rowKeys);
+      //ctrl后保留之前选中
+      dataSource.filter(e => rowKeys.indexOf(e.uuid) != -1).map(x => (x.isCtrl = true));
     } else if (event.shiftKey && lastIndex >= 0) {
+      //shift选择时 保留ctrl选择的record
+      let ctrlRowKeys = dataSource.filter(e => e.isCtrl).map(x => x.uuid);
       allRowKeys =
         index > lastIndex
           ? allRowKeys.filter((_, i) => i >= lastIndex && i <= index)
           : allRowKeys.filter((_, i) => i >= index && i <= lastIndex);
-      rowKeys = rowKeys.concat(allRowKeys);
-      // rowKeys = selected
-      //   ? rowKeys.concat(allRowKeys)
-      //   : rowKeys.filter(x => allRowKeys.indexOf(x) == -1);
+
+      //拼接ctrlKeys与allRowKeys
+      rowKeysShift = rowKeysShift.concat(allRowKeys).concat(ctrlRowKeys);
+      rowKeysShift = uniqBy(rowKeysShift);
+
+      this.props.changeSelectRows(rowKeysShift);
     } else {
+      //单点时 去除除该条外的所有ctrl记录
+      dataSource.filter(e => e.isCtrl).map(x => (x.isCtrl = false));
+      record.isCtrl = true;
       rowKeys = [record.uuid];
+      rowKeys = uniqBy(rowKeys);
+      this.props.changeSelectRows(rowKeys);
     }
-    rowKeys = uniqBy(rowKeys);
-    this.props.changeSelectRows(rowKeys);
-    this.setState({ lastIndex: index });
-    // if (this.props.onClickRow) {
-    //   this.props.onClickRow(record);
-    // }
+
+    if (!event.shiftKey) {
+      this.setState({ lastIndex: index });
+    }
+
+    if (this.props.onClickRow) {
+      this.props.onClickRow(record, index, event);
+    }
   };
 
   onChange = selectedRowKeys => {
@@ -156,7 +181,7 @@ export default class DispatchingTable extends Component {
   };
 
   render() {
-    this.refreshColumns(this.props.columns);
+    // this.refreshColumns(this.props.columns);
 
     const { selectedRowKeys } = this.props;
     const rowSelection = selectedRowKeys
@@ -203,15 +228,29 @@ export default class DispatchingTable extends Component {
             if (record.clicked) {
               return 'clickedStyle';
             }
+            if (record.error) {
+              return 'errorStyle';
+            }
+            if (record.orderType == 'DeliveryAgain' && this.props.comId == 'pendingOrder') {
+              return 'warningStyle';
+            }
           }}
           columns={columns}
-          onRowClick={this.props.onClickRow || this.onClickRow}
+          // onRowClick={this.props.onClickRow || this.onClickRow}
+          onRowClick={this.onClickRow}
           onChange={this.handleStandardTableChange}
           rowKey={record => record.uuid}
           rowSelection={rowSelection}
           bodyStyle={{ height: this.props.scrollY }}
           scroll={{ y: this.props.scrollY, x: '100%' }}
           className={this.props.className || dispatchingTableStyles.dispatchingTable}
+          onRow={record => {
+            return {
+              onDoubleClick: event => {
+                this.props.onDoubleClick ? this.props.onDoubleClick(record) : '';
+              },
+            };
+          }}
         />
       </div>
     );

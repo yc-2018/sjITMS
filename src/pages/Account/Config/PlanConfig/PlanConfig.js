@@ -67,6 +67,7 @@ export default class PlanConfig extends ConfigSearchPage {
       dataIndex: 'shipTime',
       render: (val, record) => (
         <Input
+          style={{ width: 80 }}
           defaultValue={val}
           onBlur={event => this.onInputChange(record, 'shipTime', event.target.value)}
         />
@@ -79,7 +80,7 @@ export default class PlanConfig extends ConfigSearchPage {
         let vaule = val?.split(',');
         return (
           <SimpleSelect
-            style={{ width: 250 }}
+            style={{ width: 150 }}
             searchField={{ searchCondition: 'in' }}
             value={vaule}
             onChange={value => this.onSelectChange(record, 'etcissuestat', value)}
@@ -95,7 +96,7 @@ export default class PlanConfig extends ConfigSearchPage {
         let vaule = val?.split(',');
         return (
           <SimpleSelect
-            style={{ width: 250 }}
+            style={{ width: 150 }}
             searchField={{ searchCondition: 'in' }}
             value={vaule}
             onChange={value => this.onSelectChange(record, 'etcrecyclestat', value)}
@@ -114,6 +115,42 @@ export default class PlanConfig extends ConfigSearchPage {
         />
       ),
     },
+    {
+      title: dispatcherConfigLocale.printShip,
+      dataIndex: 'printShip',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'printShip', event)}
+        />
+      ),
+    },
+    {
+      title: dispatcherConfigLocale.vehicleWeight,
+      dataIndex: 'vehicleWeight',
+      render: (val, record) => {
+        let vaule = val?.split(',');
+        return (
+          <SimpleSelect
+            style={{ width: 150 }}
+            searchField={{ searchCondition: 'in' }}
+            value={vaule}
+            onChange={value => this.onSelectChange(record, 'vehicleWeight', value)}
+            dictCode={'vehicleWeightConfige'}
+          />
+        );
+      },
+    },
+    {
+      title: dispatcherConfigLocale.rollbackApproval,
+      dataIndex: 'rollbackApproval',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'rollbackApproval', event)}
+        />
+      ),
+    }
   ];
 
   onChange = (record, field, event) => {

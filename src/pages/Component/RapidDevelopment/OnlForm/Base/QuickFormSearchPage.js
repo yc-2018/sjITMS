@@ -7,9 +7,10 @@ import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuer
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import ExportJsonExcel from 'js-export-excel';
 import { routerRedux } from 'dva/router';
-import { loginCompany, loginOrg, getTableColumns } from '@/utils/LoginContext';
+import { loginCompany, loginOrg, getTableColumns, cacheTableColumns } from '@/utils/LoginContext';
 import { guid } from '@/utils/utils';
 import moment from 'moment';
+
 import { updateEntity } from '@/services/quick/Quick';
 
 /**
@@ -25,6 +26,7 @@ export default class QuickFormSearchPage extends SearchPage {
   renderOperateCol = () => {}; //操作列
   drapTableChange = e => {}; //拖拽事件
   exSearchFilter = () => {}; //扩展查询
+  drawRightClickMenus = () => {}; //右键菜单
 
   defaultSearch = () => {
     //默认查询
@@ -92,6 +94,7 @@ export default class QuickFormSearchPage extends SearchPage {
       colTotal: [],
       queryConfigColumns: [],
       tableName: '',
+      linkQuery: 0,
       authority: props.route?.authority ? props.route.authority[0] : null,
     };
   }
@@ -144,9 +147,10 @@ export default class QuickFormSearchPage extends SearchPage {
             item => item.fieldName.toLowerCase() == 'companyuuid'
           );
           let orgName =
-            loginOrg().type.toLowerCase() == 'dc'
-              ? loginOrg().type.toLowerCase() + 'Uuid'
-              : 'dispatchcenteruuid';
+            loginOrg()
+              .type.replace('_', '')
+              .toLowerCase() + 'uuid';
+          console.log('orgName', orgName, queryConfig);
           let org = queryConfig.columns.find(item => item.fieldName.toLowerCase() == orgName);
 
           if (companyuuid) {
@@ -154,23 +158,23 @@ export default class QuickFormSearchPage extends SearchPage {
               {
                 field: 'companyuuid',
                 type: 'VarChar',
-                rule: 'eq',
+                rule: companyuuid.searchCondition || 'eq',
                 val: loginCompany().uuid,
               },
             ];
           }
-
+          console.log(companyuuid, org);
           if (org) {
             this.setState({
               isOrgQuery: queryConfig.reportHead.organizationQuery
                 ? [
                     {
                       field:
-                        loginOrg().type.toLowerCase() == 'dc'
-                          ? loginOrg().type.toLowerCase() + 'Uuid'
-                          : 'dispatchCenterUuid',
+                        loginOrg()
+                          .type.replace('_', '')
+                          .toLowerCase() + 'Uuid',
                       type: 'VarChar',
-                      rule: 'like',
+                      rule: org.searchCondition || 'like',
                       val: loginOrg().uuid,
                     },
                     ...this.state.isOrgQuery,
@@ -190,10 +194,10 @@ export default class QuickFormSearchPage extends SearchPage {
 
           //查询条件有必填时默认不查询
           //if (queryRequired) return;
-
           //配置查询成功后再去查询数据
-          this.onSearch();
-
+          //首次进入是否查询
+          let isNotFirstSearch = queryConfig.reportHead.firstSearch == 0;
+          this.onSearch('first', isNotFirstSearch);
           //扩展State
           this.changeState();
         }
@@ -280,6 +284,24 @@ export default class QuickFormSearchPage extends SearchPage {
   initConfig = queryConfig => {
     const columns = queryConfig.columns;
     let quickColumns = new Array();
+
+    //增加序号
+    const c = {
+      title: '行号 ', //加个空格防止重名
+      dataIndex: 'line_show',
+      key: 'line_show',
+      sorter: false,
+      width: 48,
+      render: (val, record, index) => {
+        return (
+          <p3>
+            {(this.state.data?.pagination?.current - 1) * this.state.data?.pagination?.pageSize +
+              (index + 1)}
+          </p3>
+        );
+      },
+    };
+    quickColumns.push(c);
 
     columns.filter(data => data.isShow).forEach(column => {
       let preview;
@@ -441,6 +463,7 @@ export default class QuickFormSearchPage extends SearchPage {
 
   onView = record => {
     const { onlFormField } = this.props;
+    if (!onlFormField) return;
     var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
     if (record.ROW_ID) {
       this.props.switchTab('view', {
@@ -555,7 +578,7 @@ export default class QuickFormSearchPage extends SearchPage {
 
   //导出
   port = () => {
-    const { key } = this.state;
+    const { key, selectedRows } = this.state;
     let defaultCache =
       getTableColumns(key + 'columnInfo') && typeof getTableColumns(key + 'columnInfo') != 'object'
         ? JSON.parse(getTableColumns(key + 'columnInfo'))
@@ -565,143 +588,197 @@ export default class QuickFormSearchPage extends SearchPage {
       columnsList = defaultCache.newList;
     }
     //const { dispatch } = this.props;
-    this.props.dispatch({
-      type: 'quick/queryAllData',
-      payload: this.state.pageFilters,
-      callback: response => {
-        if (response && response.success) {
-          let columns = this.state.columns;
-          var option = [];
-          let sheetfilter = []; //对应列表数据中的key值数组，就是上面resdata中的 name，address
-          let sheetheader = []; //对应key值的表头，即excel表头
 
-          let excelColumns = [];
-          if (columnsList.length > 0) {
-            columnsList.map(e => {
-              let column = columns.find(i => i.title == e);
-              if (column.preview != 'N') {
-                excelColumns.push(column.preview);
-              } else {
-                excelColumns.push(column.key);
-              }
-            });
-            sheetheader = columnsList;
-            sheetfilter = excelColumns;
+    let columns = this.state.columns;
+    var option = [];
+    let sheetfilter = []; //对应列表数据中的key值数组，就是上面resdata中的 name，address
+    let sheetheader = []; //对应key值的表头，即excel表头
+
+    let excelColumns = [];
+    if (columnsList.length > 0) {
+      columnsList.map(e => {
+        let column = columns.find(i => i.title == e);
+        if (column) {
+          if (column.preview != 'N') {
+            excelColumns.push(column.preview);
           } else {
-            columns.map(a => {
-              let excelColumn = '';
-              if (a.preview != 'N') {
-                excelColumn = a.preview;
-              } else {
-                excelColumn = a.key;
-              }
-              sheetfilter.push(excelColumn);
-              sheetheader.push(a.title);
-            });
+            excelColumns.push(column.key);
           }
-
-          option.fileName = this.state.title; //导出的Excel文件名
-          response.data.records.map(item => {});
-          option.datas = [
-            {
-              sheetData: response.data.records,
-              sheetName: this.state.title, //工作表的名字
-              sheetFilter: sheetfilter,
-              sheetHeader: sheetheader,
-            },
-          ];
-          var toExcel = new ExportJsonExcel(option);
-          toExcel.saveExcel();
+        } else {
+          //不存在则缓存中删除该字段 更新缓存
+          let newList = columnsList.filter(i => i !== e);
+          let cache = {
+            cacheList: defaultCache.cacheList,
+            newList: newList,
+          };
+          cacheTableColumns(this.state.key + 'columnInfo', cache);
         }
-      },
-    });
+      });
+      sheetheader = columnsList;
+      sheetfilter = excelColumns;
+    } else {
+      columns.map(a => {
+        let excelColumn = '';
+        if (a.preview != 'N') {
+          excelColumn = a.preview;
+        } else {
+          excelColumn = a.key;
+        }
+        sheetfilter.push(excelColumn);
+        sheetheader.push(a.title);
+      });
+    }
+
+    option.fileName = this.state.title; //导出的Excel文件名
+    if (selectedRows.length > 0) {
+      option.datas = [
+        {
+          sheetData: selectedRows,
+          sheetName: this.state.title, //工作表的名字
+          sheetFilter: sheetfilter,
+          sheetHeader: sheetheader,
+        },
+      ];
+      var toExcel = new ExportJsonExcel(option);
+      toExcel.saveExcel();
+    } else {
+      this.props.dispatch({
+        type: 'quick/queryAllData',
+        payload: this.state.pageFilters,
+        callback: response => {
+          if (response && response.success) {
+            // response.data.records.map(item => {});
+            option.datas = [
+              {
+                sheetData: response.data.records,
+                sheetName: this.state.title, //工作表的名字
+                sheetFilter: sheetfilter,
+                sheetHeader: sheetheader,
+              },
+            ];
+            var toExcel = new ExportJsonExcel(option);
+            toExcel.saveExcel();
+          }
+        },
+      });
+    }
+  };
+  onUpload = () => {
+    this.props.switchTab('import');
   };
 
-  /**
-   * 查询
-   */
-  onSearch = filter => {
+  //点击重置时，重置搜索条件
+  onReset = (pageSize, exSearchFilter) => {
+    let { pageFilters, isOrgQuery, defaultSort } = this.state;
+    const { quickuuid } = this.props;
+    pageFilters = {
+      pageSize,
+      order: defaultSort,
+      quickuuid: quickuuid,
+      superQuery: {
+        matchType: 'and',
+        queryParams: [...isOrgQuery, ...exSearchFilter],
+      },
+    };
+    this.setState({ pageFilters, superParams: [] });
+    this.getData(pageFilters);
+  };
+
+  //查询
+  onSearch = (filter, isNotFirstSearch) => {
     let exSearchFilter = this.exSearchFilter();
     if (!exSearchFilter) exSearchFilter = [];
-
     let defaultSearch = this.defaultSearch();
     if (!defaultSearch) defaultSearch = [];
-
+    const { quickuuid } = this.props;
     //增加查询页数从缓存中读取
-    let pageSize = localStorage.getItem(this.props.quickuuid + 'searchPageLine')
-      ? parseInt(localStorage.getItem(this.props.quickuuid + 'searchPageLine'))
-      : 20;
+    let pageSize = Number(localStorage.getItem(quickuuid + 'searchPageLine')) || 20;
 
-    if (typeof filter == 'undefined') {
-      // console.log('this.state.pageFilters', this.state.pageFilters);
-      let queryParams = this.state.pageFilters.superQuery?.queryParams?.filter(item => {
-        return (
-          item.field != 'dispatchCenterUuid' &&
-          item.field != 'dcUuid' &&
-          item.field != 'companyuuid'
-        );
-      });
-      let pageFilters = this.state.pageFilters;
-      if (this.state.pageFilters.superQuery && exSearchFilter.length == 0) {
-        pageFilters = {
-          pageSize,
-          ...this.state.pageFilters,
-          superQuery: {
-            ...this.state.pageFilters.superQuery,
-            queryParams: [...queryParams, ...this.state.isOrgQuery],
-          },
-        };
-        // console.log('pageFiltersaa', pageFilters);
-        this.getData(pageFilters);
-      } else {
-        this.state.pageFilters = {
-          pageSize,
-          order: this.state.defaultSort,
-          quickuuid: this.props.quickuuid,
-          superQuery: {
-            matchType: '',
-            queryParams: [...this.state.isOrgQuery, ...exSearchFilter, ...defaultSearch],
-          },
-        }; //增加组织 公司id查询条件
-        this.getData(this.state.pageFilters);
-      }
-    } else if (filter == 'reset') {
-      //点击重置时，重置搜索条件
-      this.state.pageFilters = {
-        pageSize,
-        order: this.state.defaultSort,
-        quickuuid: this.props.quickuuid,
-        superQuery: {
-          matchType: '',
-          queryParams: [...this.state.isOrgQuery, ...exSearchFilter, ...defaultSearch],
-        },
-      }; //增加组织 公司id查询条件
-      this.getData(this.state.pageFilters);
+    //点击重置
+    if (filter == 'reset') {
+      this.onReset(pageSize, [...exSearchFilter, ...defaultSearch]);
+      return;
+    }
+    const { pageFilters, isOrgQuery, defaultSort, superParams, linkQuery } = this.state;
+    let simpleParams = [...exSearchFilter];
+    if (filter?.queryParams) {
+      //点击查询
+      simpleParams = simpleParams.concat(filter.queryParams);
     } else {
-      const { dispatch } = this.props;
-      const { columns } = this.state;
-      const pageFilters = {
-        pageSize,
-        ...this.state.pageFilters,
-        superQuery: {
-          matchType: filter.matchType,
-          queryParams: [...filter.queryParams, ...this.state.isOrgQuery, ...exSearchFilter],
+      if (!pageFilters.superQuery) {
+        //首次加载
+        simpleParams = simpleParams.concat(defaultSearch);
+      } else {
+        //查看返回时添加查询过的条件
+        simpleParams = simpleParams.concat(pageFilters.superQuery.queryParams);
+      }
+    }
+    let queryParams = [...simpleParams];
+    queryParams = queryParams.filter(item => {
+      return (
+        item.field != 'dispatchCenterUuid' && item.field != 'dcUuid' && item.field != 'companyuuid'
+      );
+    });
+    const params = linkQuery == 1 && superParams ? superParams : [];
+    const newPageFilters = {
+      pageSize,
+      page: 1,
+      quickuuid,
+      order: defaultSort,
+      superQuery: {
+        matchType: 'and',
+        queryParams: [...isOrgQuery, ...queryParams, ...params],
+      },
+    };
+    this.setState({ pageFilters: newPageFilters, simpleParams });
+    if (!(filter == 'first' && isNotFirstSearch)) this.getData(newPageFilters);
+  };
+
+  //高级查询
+  onSuperSearch = filter => {
+    const { quickuuid } = this.props;
+    //增加查询页数从缓存中读取
+    let pageSize = localStorage.getItem(quickuuid + 'searchPageLine')
+      ? parseInt(localStorage.getItem(quickuuid + 'searchPageLine'))
+      : 20;
+    let queryParams = [];
+    //or的情况，org为and 其余为or
+    if (filter.matchType == 'or') {
+      let queryParamWithOr = {
+        nestCondition: {
+          matchType: 'or',
+          queryParams: [...filter.queryParams],
         },
       };
-      this.state.pageFilters = pageFilters;
-      this.refreshTable();
+      queryParams.push(queryParamWithOr);
+    } else {
+      queryParams = filter.queryParams;
     }
+    const linkQuery = filter.linkQuery;
+    const { isOrgQuery, defaultSort, simpleParams } = this.state;
+    const params = linkQuery == 1 && simpleParams ? simpleParams : [];
+    let pageFilters = {
+      pageSize,
+      page: 1,
+      quickuuid,
+      order: defaultSort,
+      superQuery: {
+        matchType: 'and',
+        queryParams: [...isOrgQuery, ...params, ...queryParams],
+      },
+    };
+    this.setState({ superParams: filter.queryParams, linkQuery });
+    this.getData(pageFilters);
   };
 
   /**
    * 刷新/重置
    */
   refreshTable = filter => {
-    const { dispatch } = this.props;
-    const { pageFilters } = this.state;
+    const { pageFilters, defaultSort } = this.state;
     let queryFilter = { ...pageFilters };
     if (filter) {
-      var order = '';
+      let order = defaultSort;
       for (var key in filter.sortFields) {
         var sort = filter.sortFields[key] ? 'descend' : 'ascend';
         order = key + ',' + sort;
@@ -717,6 +794,7 @@ export default class QuickFormSearchPage extends SearchPage {
     } else {
       //查询页码重置为1
       queryFilter.page = 1;
+      queryFilter.order = defaultSort;
     }
     this.state.pageFilters = queryFilter;
     this.getData(queryFilter);
@@ -778,6 +856,13 @@ export default class QuickFormSearchPage extends SearchPage {
         >
           导出
         </Button>
+        <Button
+          hidden={!havePermission(this.state.authority + '.import')}
+          type="primary"
+          onClick={this.onUpload}
+        >
+          导入
+        </Button>
         {this.drawTopButton()}
         {/* <SearchMoreAction menus={menus} /> */}
       </div>
@@ -802,7 +887,7 @@ export default class QuickFormSearchPage extends SearchPage {
           searchFields={this.state.advancedFields}
           fieldInfos={this.columns}
           filterValue={this.state.pageFilter.searchKeyValues}
-          refresh={this.onSearch}
+          refresh={this.onSuperSearch}
           reportCode={this.state.reportCode}
           isOrgQuery={this.state.isOrgQuery}
         />
@@ -815,10 +900,15 @@ export default class QuickFormSearchPage extends SearchPage {
    * 绘制搜索表格
    */
   drawSearchPanel = () => {
+    const { searchFields } = this.state;
     const { superQuery } = this.state.pageFilters;
     let filterValue = {};
     if (superQuery) {
       for (const item of superQuery.queryParams) {
+        const column = searchFields.find(x => x.fieldName == item.field);
+        if (column && item.rule != column.searchCondition) {
+          continue;
+        }
         if (item.type == 'Date') {
           let dateVal = item.val.split('||');
           filterValue[item.field] = [
@@ -845,6 +935,9 @@ export default class QuickFormSearchPage extends SearchPage {
     return (
       <div>
         <SimpleQuery
+          toggleCallback={() => {
+            this.setState({});
+          }}
           selectFields={this.state.searchFields}
           filterValue={filterValue}
           refresh={this.onSearch}
@@ -853,5 +946,39 @@ export default class QuickFormSearchPage extends SearchPage {
         />
       </div>
     );
+  };
+  //判断颜色为深色还是浅色
+  hexToRgb = val => {
+    //HEX十六进制颜色值转换为RGB(A)颜色值
+    // 16进制颜色值的正则
+    var reg = /^#([0-9a-fA-f]{3}|[0-9a-fA-f]{6})$/;
+    // 把颜色值变成小写
+    var color = val.toLowerCase();
+    var result = '';
+    if (reg.test(color)) {
+      // 如果只有三位的值，需变成六位，如：#fff => #ffffff
+      if (color.length === 4) {
+        var colorNew = '#';
+        for (var i = 1; i < 4; i += 1) {
+          colorNew += color.slice(i, i + 1).concat(color.slice(i, i + 1));
+        }
+        color = colorNew;
+      }
+      // 处理六位的颜色值，转为RGB
+      var colorChange = [];
+      for (var i = 1; i < 7; i += 2) {
+        colorChange.push(parseInt('0x' + color.slice(i, i + 2)));
+      }
+      var grayLevel = colorChange[0] * 0.299 + colorChange[1] * 0.587 + colorChange[2] * 0.114;
+      if (grayLevel >= 192) {
+        //浅色模式
+        return '#000';
+      } else {
+        return '#fff';
+      }
+    } else {
+      result = '无效';
+      return { rgb: result };
+    }
   };
 }

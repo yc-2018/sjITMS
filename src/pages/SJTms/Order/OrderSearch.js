@@ -2,29 +2,36 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-07-27 16:31:04
+ * @LastEditTime: 2023-03-28 15:48:34
  * @version: 1.0
  */
 import React from 'react';
-import { Button, Popconfirm, message } from 'antd';
+import { Button, Popconfirm, message, Menu, Modal, Form, Input } from 'antd';
 import { connect } from 'dva';
 import { havePermission } from '@/utils/authority';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
-import { batchAudit, audit, cancel } from '@/services/sjitms/OrderBill';
+import { batchAudit, audit, cancel, removeOrder,updateOrderWavenum } from '@/services/sjitms/OrderBill';
+import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
+import { log } from 'lodash-decorators/utils';
+import { loginOrg, loginUser,loginCompany } from '@/utils/LoginContext';
 
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
 //继承QuickFormSearchPage Search页面扩展
+@Form.create()
 export default class OrderSearch extends QuickFormSearchPage {
   state = {
     ...this.state,
     showAuditPop: false,
     showCancelPop: false,
     uploadModal: false,
+    showRemovePop: false,
+    dispatchCenter: '',
+    showUpdateWaven:false
   };
 
   onUpload = () => {
@@ -79,16 +86,88 @@ export default class OrderSearch extends QuickFormSearchPage {
     defaultSearch.push({
       field: 'WAVENUM',
       type: 'VARCHAR',
-      rule: 'eq',
+      rule: 'in',
       val: moment(new Date()).format('YYMMDD') + '0001',
     });
     return defaultSearch;
   };
 
+  handleRemove = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length <= 0) {
+      message.error('请先选择排车单！');
+      return;
+    }
+    this.setState({ showRemovePop: true });
+  };
+  handleUpdate = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length <= 0) {
+      message.error('至少选择一条数据！');
+      return;
+    }
+    this.setState({ showUpdateWaven: true });
+  };
+
+  // drawRightClickMenus = () => {
+  //   return (
+  //     <Menu>
+  //       <Menu.Item
+  //         key="1"
+  //         hidden={!havePermission(this.state.authority + '.remove')}
+  //         onClick={() => this.handleRemove()}
+  //       >
+  //         转仓
+  //       </Menu.Item>
+  //     </Menu>
+  //   );
+  // };
+
+  handleOk = async () => {
+    const { selectedRows, dispatchCenter } = this.state;
+    if (selectedRows.length == 1) {
+      const response = await removeOrder(selectedRows[0].UUID, dispatchCenter);
+      if (response && response.success) {
+        message.success('转仓成功');
+        this.setState({ showRemovePop: false });
+        this.onSearch();
+      } else {
+        message.error('转仓失败');
+      }
+    } else {
+      this.batchProcessConfirmRef.show('转仓', selectedRows, this.remove, this.onSearch);
+      this.setState({ showRemovePop: false });
+    }
+  };
+  showUpdateWavenHandleOk =async ()=>{
+    const { selectedRows,WAVENUM } = this.state;
+    if(selectedRows.length ==0 ){
+      message.error('至少选择一条数据');
+      return;
+    }
+    if(!WAVENUM){
+      message.error('请填写作业号'); 
+      return;
+    }
+     const response = await updateOrderWavenum (selectedRows.map(e=>e.UUID),WAVENUM);
+     if(response && response.success){
+      message.success("修改成功");
+      this.setState({showUpdateWaven:false})
+      this.onSearch();
+     }
+    
+  }
+
+  remove = async record => {
+    const { dispatchCenter } = this.state;
+    return await removeOrder(record.UUID, dispatchCenter);
+  };
+
   drawToolsButton = () => {
-    const { showAuditPop, showCancelPop, selectedRows } = this.state;
+    const{getFieldDecorator} =  this.props.form;
+    const { showAuditPop, showCancelPop, selectedRows, dispatchCenter, showRemovePop,showUpdateWaven } = this.state;
     return (
-      <span>
+      <>
         <Popconfirm
           title="你确定要审核所选中的内容吗?"
           visible={showAuditPop}
@@ -139,25 +218,109 @@ export default class OrderSearch extends QuickFormSearchPage {
         >
           <Button onClick={() => this.onBatchCancel()}>取消</Button>
         </Popconfirm>
+        <Button
+          hidden={!havePermission(this.state.authority + '.remove')}
+          onClick={() => this.handleRemove()}
+        >
+          转仓
+        </Button>
+        <Button
+          hidden={!havePermission(this.state.authority + '.updateWaven')}
+          onClick={() =>this.handleUpdate()}
+        >
+          添加作业号
+        </Button>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
-      </span>
+        <Modal
+          title="转仓"
+          visible={showRemovePop}
+          onOk={() => {
+            this.handleOk();
+          }}
+          onCancel={() => {
+            this.setState({ showRemovePop: false });
+          }}
+        >
+          <Form>
+            <Form.Item label="转仓:" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              <SimpleAutoComplete
+                showSearch
+                placeholder="请选择调度中心"
+                dictCode="dispatchCenter"
+                value={dispatchCenter}
+                onChange={e => this.setState({ dispatchCenter: e })}
+                noRecord
+                style={{ width: 150 }}
+                allowClear={true}
+              />
+            </Form.Item>
+          </Form>
+        </Modal>
+        <Modal
+          title="添加作业号"
+          visible={showUpdateWaven}
+          onOk={() => {
+            this.showUpdateWavenHandleOk();
+          }}
+          onCancel={() => {
+            this.setState({ showUpdateWaven: false });
+          }}
+        >
+          <Form>
+            <Form.Item label="作业号:" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              {/* <Input
+                onChange={e =>{
+                  this.setState({ WAVENUM: e.target.value })
+                } }
+              /> */}
+                {getFieldDecorator('WAVENUM', {
+                        rules: [{ required: true, message: '请选择作业号' }],
+                      })(
+                        <SimpleAutoComplete
+                        autoComplete
+                          showSearch
+                          placeholder=""
+                          textField="WAVENUM"
+                          valueField="WAVENUM"
+                          searchField="WAVENUM"
+                          //value={this.state.lineSystemValue}
+                          queryParams={{
+                            tableName: 'V_SJ_ITMS_ORDER_WAVENUM',
+                            isCache: 'false',
+                            condition: {
+                              params: [
+                                { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+                                { field: 'DISPATCHCENTERUUID', rule: 'eq', val: [loginOrg().uuid] },
+                              ],
+                            },
+                          }}
+                          onChange={e => this.setState({ WAVENUM: e })}
+                          noRecord
+                          style={{ width: 200 }}
+                          allowClear={true}
+                        />
+                      )}
+            </Form.Item>
+          </Form>
+        </Modal>
+      </>
     );
   };
 
   //该方法用于写最上层的按钮 多个按钮用<span>包裹
-  drawTopButton = () => {
-    return (
-      <span>
-        <Button
-          hidden={!havePermission(this.state.authority + '.import')}
-          type="primary"
-          onClick={this.onUpload}
-        >
-          导入
-        </Button>
-      </span>
-    );
-  };
+  // drawTopButton = () => {
+  //   return (
+  //     <span>
+  //       <Button
+  //         hidden={!havePermission(this.state.authority + '.import')}
+  //         type="primary"
+  //         onClick={this.onUpload}
+  //       >
+  //         导入
+  //       </Button>
+  //     </span>
+  //   );
+  // };
 
   /**
    * 编辑界面
@@ -213,5 +376,16 @@ export default class OrderSearch extends QuickFormSearchPage {
     selectedRows.length == 1
       ? this.setState({ showCancelPop: true })
       : this.batchProcessConfirmRef.show('取消', selectedRows, this.onCancel, this.onSearch);
+  };
+
+  drawcell = e => {
+    if (e.column.fieldName == 'STAT') {
+      let color = this.colorChange(e.record.STAT, e.column.textColorJson);
+      let textColor = color ? this.hexToRgb(color) : 'black';
+      e.component = (
+        <div style={{ backgroundColor: color, textAlign: 'center', color: textColor }}>{e.val}</div>
+        // <div style={{ border: '1px solid ' + color, textAlign: 'center' }}>{e.val}</div>
+      );
+    }
   };
 }

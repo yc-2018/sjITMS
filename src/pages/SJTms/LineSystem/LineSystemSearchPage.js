@@ -52,7 +52,8 @@ const { TreeNode } = Tree;
 const { TabPane } = Tabs;
 import { havePermission } from '@/utils/authority';
 import { throttleSetter } from 'lodash-decorators';
-
+import { getDispatchConfig } from '@/services/tms/DispatcherConfig';
+import imTemplate from '@/models/account/imTemplate';
 @connect(({ lineSystem, loading }) => ({
   lineSystem,
   loading: loading.models.lineSystem,
@@ -78,8 +79,14 @@ export default class LineSystemSearchPage extends Component {
       treeuuid :'treeuuid'
     };
   }
-  componentDidMount() {
+  async componentDidMount() {
     this.queryLineSystem();
+    const response = await getDispatchConfig(loginOrg().uuid);
+    if (response.success) {
+      this.setState({
+        dispatchConfig: response.data,
+      });
+    }
   }
   //遍历树
   getLineSystemTree = (data, itemData, lineData) => {
@@ -92,6 +99,8 @@ export default class LineSystemSearchPage extends Component {
         temp.key = e.uuid;
         temp.title = `[${e.code}]` + e.name;
         temp.icon = <Icon type="swap" rotate={90} />;
+        temp.region = data.region;  
+        temp.isnewstoreline = data.isnewstoreline;
         // temp.system=true;
         treeNode.push(temp);
         ef.push(e);
@@ -111,6 +120,8 @@ export default class LineSystemSearchPage extends Component {
       itemData.key = data.uuid;
       itemData.title = `[${data.code}]` + data.name;
       itemData.icon = <Icon type="swap" rotate={90} />;
+      itemData.region = data.region;
+      itemData.isnewstoreline = data.isnewstoreline;
       if (data.type == 'lineSystem') {
         itemData.system = true;
         // itemData.disabled=true;
@@ -393,9 +404,11 @@ export default class LineSystemSearchPage extends Component {
     // };
     const renderTreeNode = data => {
       let nodeArr = data.map(item => {
+       const reion = !item.system && item.region==1 && this.state.dispatchConfig.checkLineArea==1 ;
+       const isnewstoreline = !item.system && item.isnewstoreline==1;
         item.title = (
-          <div>
-            <span>{item.title}</span>
+          <div  style={reion?{color:'red'}:{}}>
+            <span>{item.title }{isnewstoreline?<span style={isnewstoreline?{color: '#2dcb38'}:{}}>(新)</span>:null}</span>
             {item.key != selectLineUuid ? (
               <></>
             ) : item.system ? (
@@ -500,7 +513,7 @@ export default class LineSystemSearchPage extends Component {
         sheetData: [],
         sheetName: '线路', //工作表的名字
         sheetFilter: [],
-        sheetHeader: ['门店号', '班组', '门店名称', '调整后线路'],
+        sheetHeader: ['门店号', '班组', '门店名称', '调整后线路','备注'],
       },
     ];
     var toExcel = new ExportJsonExcel(option);
@@ -543,6 +556,7 @@ export default class LineSystemSearchPage extends Component {
           this.setState({
             errorMessage: '导入成功,共导入' + result.data + '家门店',
             errorMessageVisible: true,
+            uploadLineVisible: false
           });
         } else {
           this.setState({ errorMessage: result.message, errorMessageVisible: true });

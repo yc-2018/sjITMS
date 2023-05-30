@@ -7,28 +7,66 @@
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
 import React, { Component } from 'react';
-import { Divider, Modal, Button, Row, Col, Empty, Spin, message, Input } from 'antd';
-import { Map, Marker, CustomOverlay, DrawingManager } from 'react-bmapgl';
+import {
+  Divider,
+  Modal,
+  Button,
+  Row,
+  Col,
+  Empty,
+  Spin,
+  message,
+  Input,
+  List,
+  Avatar,
+  Icon,
+} from 'antd';
+import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
+import { getSchedule, getDetailByBillUuids } from '@/services/sjitms/ScheduleBill';
 import style from './DispatchingMap.less';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import emptySvg from '@/assets/common/img_empoty.svg';
 import SearchForm from './SearchForm';
-import { queryAuditedOrder, queryDriverRoutes } from '@/services/sjitms/OrderBill';
-import { queryDict } from '@/services/quick/Quick';
+import {
+  queryAuditedOrderByStoreMap,
+  queryAuditedOrder,
+  queryDriverRoutes,
+  queryAuditedOrderByParams,
+} from '@/services/sjitms/OrderBill';
+import { queryDict, queryData } from '@/services/quick/Quick';
 
 import ShopIcon from '@/assets/common/myj.png';
-import ShopClickIcon from '@/assets/common/myjClick.png';
+import ShopClickIcon from '@/assets/common/otherMyj.png';
+import ShopClickIcon2 from '@/assets/common/otherMyj2.png';
+import van from '@/assets/common/van.svg';
 
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { sumBy, uniqBy } from 'lodash';
+import truck from '@/assets/common/truck.svg';
 
 const { Search } = Input;
 
+//百度地图api变量
+// BMAP_DRAWING_MARKER    = "marker",     // 鼠标画点模式
+// BMAP_DRAWING_CLOSE  = "close",   // 鼠标画线模式
+// BMAP_DRAWING_POLYLINE  = "polyline",   // 鼠标画线模式
+// BMAP_DRAWING_CIRCLE    = "circle",     // 鼠标画圆模式
+// BMAP_DRAWING_RECTANGLE = "rectangle",  // 鼠标画矩形模式
+// BMAP_DRAWING_POLYGON   = "polygon";    // 鼠标画多边形模式
 export default class DispatchMap extends Component {
   basicOrders = [];
+  isSelectOrders = [];
   state = {
+    allTotals: {
+      cartonCount: 0, //整件数
+      scatteredCount: 0, //散件数
+      containerCount: 0, //周转箱
+      volume: 0, //体积
+      weight: 0, //重量,
+      totalCount: 0, //总件数
+    },
     visible: false,
-    loading: true,
+    // loading: true,
     windowInfo: undefined,
     loading: false,
     startPoint: '',
@@ -37,62 +75,186 @@ export default class DispatchMap extends Component {
     driverTime: 0,
     driverMileage: 0,
     isPoly: false,
+    orderMarkers: [],
+    ScheduledMarkers: [],
+    showScheduled: false,
+    scheduleList: [],
+    isEdit: false,
+    schdule: undefined,
+    closeLeft: false,
   };
 
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
   };
 
+  keyDown = (event, ...args) => {
+    let that = this;
+    var e = event || window.event || args.callee.caller.arguments[0];
+    if (e && e.keyCode == 82 && e.altKey) {
+      if (!this.drawingManagerRef.drawingmanager?._isOpen) {
+        this.drawingManagerRef.drawingmanager?.open();
+        this.drawingManagerRef.drawingmanager?.setDrawingMode('rectangle');
+      } else {
+        this.drawingManagerRef.drawingmanager?.close();
+      }
+    } else if (e && e.keyCode == 81 && e.altKey) {
+      //81 = q Q
+      // const { orders, orderMarkers } = this.state;
+      // let selectOrderStoreCodes = orderMarkers
+      //   .filter(x => x.isSelect)
+      //   .map(e => e.deliveryPoint.code);
+      // let allSelectOrders = orders.filter(
+      //   e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
+      // );
+      // // const selectPoints = orders.filter(x => x.isSelect);
+      // if (allSelectOrders.length === 0) {
+      //   message.error('请选择需要排车的门店！');
+      //   return;
+      // }
+      // this.props.dispatchingByMap(allSelectOrders);
+      this.saveSchedule();
+    }
+  };
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.keyDown);
+  }
+
+  basicScheduleList = [];
   //显示modal
-  show = () => {
+  show = orders => {
     this.setState({ visible: true });
     queryDict('warehouse').then(res => {
       this.setState({
         startPoint: res.data.find(x => x.itemValue == loginOrg().uuid)?.description,
       });
     });
+    if (orders) {
+      for (const order of orders.filter(x => !x.isSelect)) {
+        let num = orders.filter(e => {
+          return e.isSelect;
+        }).length;
+        order.isSelect = true;
+        order.sort = num + 1;
+      }
+      this.isSelectOrders = orders;
+    }
+    setTimeout(() => {
+      this.drawMenu();
+    }, 1000);
   };
   //隐藏modal
   hide = () => {
-    this.setState({ visible: false });
+    this.setState({ visible: false, isEdit: false });
     this.clusterLayer = undefined;
     this.contextMenu = undefined;
+    this.isSelectOrders = [];
+    setTimeout(() => {
+      window.removeEventListener('keydown', this.keyDown);
+    }, 500);
+    this.props.addEvent();
   };
 
   //查询
   refresh = params => {
     this.setState({ loading: true });
-    let { pageFilter } = this.state;
-    let filter = { pageSize: 200, superQuery: { matchType: 'and', queryParams: [] } };
-    if (params) {
-      pageFilter = params;
-    }
     const isOrgQuery = [
       { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
       { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
     ];
+    let { pageFilter } = this.state;
+    let filter = { pageSize: 4000, superQuery: { matchType: 'and', queryParams: [] } };
+    if (params) {
+      pageFilter = params;
+    }
+
     filter.superQuery.queryParams = [
       ...pageFilter,
       ...isOrgQuery,
-      { field: 'STAT', type: 'VarChar', rule: 'in', val: 'Audited||PartScheduled' },
+      { field: 'STAT', type: 'VarChar', rule: 'in', val: 'Audited||PartScheduled||Scheduled' },
       { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
     ];
-    queryAuditedOrder(filter).then(response => {
+    // queryAuditedOrder
+    queryAuditedOrderByParams(filter).then(response => {
       if (response.success) {
-        let data = response.data.records ? response.data.records : [];
-        data = data.filter(x => x.longitude && x.latitude);
-        this.basicOrders = data;
-        this.setState({ orders: data }, () => {
-          setTimeout(() => {
-            this.drawClusterLayer();
-            this.drawMenu();
-            this.clusterSetData(data);
-            this.autoViewPort(data);
-          }, 500);
+        let result = response.data?.records ? response.data.records : [];
+        let data = result.filter(x => x.longitude && x.latitude);
+        //计算所有
+        let allTotals = this.getAllTotals(data);
+
+        //去重
+        var obj = {};
+        let orderMarkersAll = data.reduce((cur, next) => {
+          obj[next.deliveryPoint.code]
+            ? ''
+            : (obj[next.deliveryPoint.code] = true && cur.push(next));
+          return cur;
+        }, []); //设置cur默认类型为数组，并且初始值为空的数组
+        //未排车marker
+        let orderMarkers = orderMarkersAll.filter(e => e.stat != 'Scheduled');
+        //已排车marker
+        let ScheduledMarkers = orderMarkersAll.filter(e => e.stat == 'Scheduled');
+
+        // console.log('orderMarkers', orderMarkers, 'ScheduledMarkers', ScheduledMarkers);
+
+        //获取选中订单相同区域门店
+        let isSelectOrdersArea =
+          this.isSelectOrders && this.isSelectOrders.length > 0
+            ? uniqBy(
+                this.isSelectOrders.map(e => {
+                  return e.shipAreaName;
+                })
+              )
+            : [];
+
+        orderMarkers.map(e => {
+          if (this.isSelectOrders && this.isSelectOrders.length > 0) {
+            let x = this.isSelectOrders.find(
+              item => item.deliveryPoint.code == e.deliveryPoint.code
+            );
+            if (isSelectOrdersArea.indexOf(e.shipAreaName) != -1) {
+              e.isSelect = true;
+              e.sort = x?.sort ? x.sort : undefined;
+            }
+          }
         });
+        let filterData = data.filter(e => e.stat != 'Scheduled');
+        this.basicOrders = filterData;
+        this.setState(
+          { orders: filterData, orderMarkers, allTotals, ScheduledMarkers, isEdit: false },
+          () => {
+            setTimeout(() => {
+              // this.drawClusterLayer();
+              this.drawMenu();
+              // this.clusterSetData(data);
+              this.autoViewPort(orderMarkers);
+
+              window.addEventListener('keydown', this.keyDown);
+            }, 500);
+          }
+        );
         // this.drawingManagerRef?.open();
         // this.drawingManagerRef?.setDrawingMode(BMAP_DRAWING_RECTANGLE);
       }
+      //查询排车单
+      let queryParams = {
+        page: 1,
+        pageSize: 100,
+        quickuuid: 'sj_itms_schedulepool',
+        superQuery: {
+          matchType: 'and',
+          queryParams: [
+            { field: 'STAT', type: 'VarChar', rule: 'eq', val: 'Saved' },
+            { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+            { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
+          ],
+        },
+      };
+      queryData(queryParams).then(res => {
+        this.setState({ scheduleList: res?.data?.records });
+        this.basicScheduleList = res?.data?.records;
+      });
       this.setState({ loading: false, pageFilter });
     });
   };
@@ -106,16 +268,17 @@ export default class DispatchMap extends Component {
   };
 
   //选门店
-  onChangeSelect = (checked, record) => {
+  onChangeSelect = (checked, order) => {
     let { orders } = this.state;
-    let order = orders.find(x => x.uuid == record.uuid);
+    // let order = orders.find(x => x.uuid == record.uuid);
+    // console.log('order', order);
     let num = orders.filter(e => {
       return e.isSelect;
     }).length;
     if (!checked) {
       //取消时-1
       orders.map(e => {
-        if (e.sort > record.sort) {
+        if (e.sort > order.sort) {
           e.sort -= 1;
         }
       });
@@ -123,9 +286,12 @@ export default class DispatchMap extends Component {
     if (order) {
       order.isSelect = checked;
       order.sort = checked ? num + 1 : null;
-      this.setState({ orders }, () => {
-        this.clusterSetData(orders);
-      });
+      this.setState(
+        { orders }
+        // , () => {
+        // this.clusterSetData(orders);
+        // }
+      );
     }
   };
 
@@ -135,28 +301,76 @@ export default class DispatchMap extends Component {
     orders.map(order => {
       (order.isSelect = false), (order.sort = null);
     });
-    this.setState({ orders, driverMileage: 0, storeInfo: '' }, () => {
-      this.map?.clearOverlays();
-      this.clusterSetData(orders);
+    this.setState({ orders, driverMileage: 0, storeInfo: '', isEdit: false }, () => {
+      // this.map?.clearOverlays();
+      // this.clusterSetData(orders);
     });
     this.storeFilter('');
+    this.searchFormRef?.onSubmit();
+    this.isSelectOrders = [];
   };
 
   //标注点
   drawMarker = () => {
-    const { orders } = this.state;
-    return orders.map(order => {
+    const { orders, orderMarkers, ScheduledMarkers } = this.state;
+    // console.log('orderMarkers', orderMarkers);
+    let that = this;
+    const otherStore = new BMapGL.Icon(ShopClickIcon, new BMapGL.Size(30, 30)); //42
+    const otherStore2 = new BMapGL.Icon(ShopClickIcon2, new BMapGL.Size(30, 30)); //42
+
+    const icon = new BMapGL.Icon(ShopIcon, new BMapGL.Size(30, 30));
+
+    const vanIcon = new BMapGL.Icon(van, new BMapGL.Size(30, 30));
+    let markers = [];
+    orderMarkers.map((order, index) => {
       var point = new BMapGL.Point(order.longitude, order.latitude);
-      return (
+      markers.push(
         <Marker
+          isTop={order.isSelect}
           position={point}
-          icon={order.isSelect ? ShopClickIcon : ShopIcon}
+          icon={order.isSelect ? (order.sort ? otherStore2 : otherStore) : icon}
+          // icon={[icon, otherStore][order.isSelect ? 1 : 0]}
           shadow={true}
           onMouseover={() => this.setState({ windowInfo: { point, order } })}
           onMouseout={() => this.setState({ windowInfo: undefined })}
+          onClick={event => {
+            that.onChangeSelect(!order.isSelect, order);
+          }}
         />
       );
+      if (order.isSelect) {
+        if (order.sort) {
+          markers.push(
+            <Label
+              position={new BMapGL.Point(order.longitude, order.latitude)}
+              offset={new BMapGL.Size(30, -30)}
+              text={order.sort}
+            />
+          );
+        }
+      }
     });
+    if (this.state.showScheduled) {
+      ScheduledMarkers.map(order => {
+        var point = new BMapGL.Point(order.longitude, order.latitude);
+        markers.push(
+          <Marker
+            isTop={order.isSelect}
+            position={point}
+            icon={vanIcon}
+            // icon={[icon, otherStore][order.isSelect ? 1 : 0]}
+            shadow={true}
+            onMouseover={() => this.setState({ windowInfo: { point, order } })}
+            onMouseout={() => this.setState({ windowInfo: undefined })}
+            // onClick={event => {
+            //   that.onChangeSelect(!order.isSelect, order);
+            // }}
+          />
+        );
+      });
+    }
+
+    return markers;
   };
 
   //数字
@@ -234,7 +448,7 @@ export default class DispatchMap extends Component {
 
   //路线规划
   searchRoute = async selectPoints => {
-    this.clusterSetData([]);
+    // this.clusterSetData([]);
     const map = this.map;
     const { startPoint } = this.state;
     const pointArr = selectPoints.map(order => {
@@ -283,20 +497,34 @@ export default class DispatchMap extends Component {
     });
   };
 
+  saveSchedule = () => {
+    const { orders, orderMarkers, isEdit, schdule } = this.state;
+    let selectOrderStoreCodes = orderMarkers.filter(x => x.isSelect).map(e => e.deliveryPoint.code);
+    let allSelectOrders = orders.filter(
+      e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
+    );
+    // console.log('22', selectOrderStoreCodes, allSelectOrders);
+    // const selectPoints = orders.filter(x => x.isSelect);
+    if (allSelectOrders.length === 0) {
+      message.error('请选择需要排车的门店！');
+      return;
+    }
+    if (schdule) {
+      schdule.uuid = schdule.UUID;
+    }
+    allSelectOrders = uniqBy(allSelectOrders, 'uuid');
+    this.props.dispatchingByMap(isEdit, isEdit ? schdule : allSelectOrders, allSelectOrders);
+  };
+
   //右键菜单
   drawMenu = () => {
-    if (this.contextMenu) return;
+    const { orders } = this.state;
+    if (orders.length <= 0 || this.contextMenu) return;
     const menuItems = [
       {
         text: '排车',
         callback: () => {
-          const { orders } = this.state;
-          const selectPoints = orders.filter(x => x.isSelect);
-          if (selectPoints.length === 0) {
-            message.error('请选择需要排车的门店！');
-            return;
-          }
-          this.props.dispatchingByMap(selectPoints);
+          this.saveSchedule();
         },
       },
       {
@@ -337,6 +565,12 @@ export default class DispatchMap extends Component {
           window.open(url, '_blank');
         },
       },
+      {
+        text: '显示已排',
+        callback: () => {
+          this.setState({ showScheduled: !this.state.showScheduled });
+        },
+      },
     ];
 
     const menu = new BMapGL.ContextMenu();
@@ -351,7 +585,7 @@ export default class DispatchMap extends Component {
 
   //画框选取送货点
   drawSelete = event => {
-    let { orders } = this.state;
+    let { orders, orderMarkers } = this.state;
     let overlays = [];
     overlays.push(event.overlay);
     let pStart = event.overlay.getPath()[3]; //矩形左上角坐标
@@ -360,7 +594,7 @@ export default class DispatchMap extends Component {
     var pt2 = new BMapGL.Point(pEnd.lng, pEnd.lat); //1象限
     var bds = new BMapGL.Bounds(pt1, pt2); //范围
 
-    for (const order of orders.filter(x => !x.isSelect)) {
+    for (const order of orderMarkers.filter(x => !x.isSelect)) {
       var pt = new BMapGL.Point(order.longitude, order.latitude);
       let num = orders.filter(e => {
         return e.isSelect;
@@ -370,9 +604,9 @@ export default class DispatchMap extends Component {
     }
     this.map.removeOverlay(event.overlay);
     this.setState({ orders }, () => {
-      this.clusterSetData(orders);
+      // this.clusterSetData(orders);
     });
-    this.props.dispatchingByMap(orders.filter(x => x.isSelect));
+    // this.props.dispatchingByMap(orders.filter(x => x.isSelect));
   };
   //判断一个点是否在某个矩形中
   isPointInRect = (point, bounds) => {
@@ -387,15 +621,53 @@ export default class DispatchMap extends Component {
     );
     this.setState({ orders: serachStores, storeInfo: e }, () => {
       setTimeout(() => {
-        this.drawClusterLayer();
+        // this.drawClusterLayer();
         this.drawMenu();
-        this.clusterSetData(serachStores);
+        // this.clusterSetData(serachStores);
         this.autoViewPort(serachStores);
       }, 500);
     });
   };
+  //计算小数
+  accAdd = (arg1, arg2) => {
+    if (isNaN(arg1)) {
+      arg1 = 0;
+    }
+    if (isNaN(arg2)) {
+      arg2 = 0;
+    }
+    arg1 = Number(arg1);
+    arg2 = Number(arg2);
+    var r1, r2, m, c;
+    try {
+      r1 = arg1.toString().split('.')[1].length;
+    } catch (e) {
+      r1 = 0;
+    }
+    try {
+      r2 = arg2.toString().split('.')[1].length;
+    } catch (e) {
+      r2 = 0;
+    }
+    c = Math.abs(r1 - r2);
+    m = Math.pow(10, Math.max(r1, r2));
+    if (c > 0) {
+      var cm = Math.pow(10, c);
+      if (r1 > r2) {
+        arg1 = Number(arg1.toString().replace('.', ''));
+        arg2 = Number(arg2.toString().replace('.', '')) * cm;
+      } else {
+        arg1 = Number(arg1.toString().replace('.', '')) * cm;
+        arg2 = Number(arg2.toString().replace('.', ''));
+      }
+    } else {
+      arg1 = Number(arg1.toString().replace('.', ''));
+      arg2 = Number(arg2.toString().replace('.', ''));
+    }
+    return (arg1 + arg2) / m;
+  };
 
-  getTotals = selectOrder => {
+  getAllTotals = orders => {
     let totals = {
       cartonCount: 0, //整件数
       scatteredCount: 0, //散件数
@@ -404,22 +676,137 @@ export default class DispatchMap extends Component {
       weight: 0, //重量,
       totalCount: 0, //总件数
     };
-    selectOrder.map(e => {
+    orders.map(e => {
       totals.cartonCount += e.cartonCount;
       totals.scatteredCount += e.scatteredCount;
       totals.containerCount += e.containerCount;
-      totals.volume += e.volume;
-      totals.weight += e.weight;
+      totals.volume = this.accAdd(totals.volume, e.volume);
+      totals.weight = this.accAdd(totals.weight, e.weight);
     });
     totals.totalCount = totals.cartonCount + totals.scatteredCount + totals.containerCount * 2;
     return totals;
   };
 
+  getTotals = selectOrder => {
+    let selectOrderStoreCodes = selectOrder.map(e => e.deliveryPoint.code);
+    const { orders } = this.state;
+    let allSelectOrders = orders.filter(
+      e => selectOrderStoreCodes.indexOf(e.deliveryPoint?.code) != -1
+    );
+
+    let totals = {
+      cartonCount: 0, //整件数
+      scatteredCount: 0, //散件数
+      containerCount: 0, //周转箱
+      volume: 0, //体积
+      weight: 0, //重量,
+      totalCount: 0, //总件数
+    };
+    allSelectOrders.map(e => {
+      totals.cartonCount += e.cartonCount;
+      totals.scatteredCount += e.scatteredCount;
+      totals.containerCount += e.containerCount;
+      totals.volume = this.accAdd(totals.volume, e.volume);
+      totals.weight = this.accAdd(totals.weight, e.weight);
+    });
+    totals.totalCount = totals.cartonCount + totals.scatteredCount + totals.containerCount * 2;
+    return totals;
+  };
+
+  //一家门店多份运输订单数量合并
+  getOrderTotal = storeCode => {
+    let totals = {
+      cartonCount: 0, //整件数
+      scatteredCount: 0, //散件数
+      containerCount: 0, //周转箱
+      volume: 0, //体积
+      weight: 0, //重量,
+    };
+    const { orders } = this.state;
+    let isOrder = orders.filter(e => e.deliveryPoint.code == storeCode);
+    isOrder.map(e => {
+      totals.cartonCount += e.cartonCount;
+      totals.scatteredCount += e.scatteredCount;
+      totals.containerCount += e.containerCount;
+      totals.volume = this.accAdd(totals.volume, e.volume);
+      totals.weight = this.accAdd(totals.weight, e.weight);
+    });
+    return totals;
+  };
+
+  scheduleFilter = value => {
+    let serachSchedule = [...this.basicScheduleList];
+    if (value) {
+      serachSchedule = serachSchedule.filter(e => {
+        return e.BILLNUMBER.search(value) != -1;
+      });
+    }
+    this.setState({ scheduleList: serachSchedule });
+  };
+
+  clickSchdule = async schdule => {
+    // this.setState({ loading: true });
+    let { orderMarkers, orders } = this.state;
+    let params = {
+      pageSize: 20,
+      superQuery: {
+        matchType: 'and',
+        queryParams: [
+          { field: 'SCHEDULENUM', type: 'VarChar', rule: 'like', val: schdule.BILLNUMBER },
+          { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+          { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
+          { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
+        ],
+      },
+    };
+    // const response = await queryAuditedOrderByParams(params);
+    const response = await getDetailByBillUuids([schdule.UUID]);
+    if (response.success) {
+      let details = response.data;
+      details = details?.filter(x => x.longitude && x.latitude);
+      details?.map((e, index) => {
+        // console.log('orderMarkers', orderMarkers, e);
+        let deliveryP = orderMarkers?.find(o => o.deliveryPoint?.code == e.deliveryPoint?.code);
+        // console.log('deliveryP', deliveryP);
+        if (deliveryP) {
+          deliveryP.isSelect = true;
+          deliveryP.sort = index + 1;
+        } else {
+          e.isSelect = true;
+          e.sort = index + 1;
+          orderMarkers.push(e);
+          orders.push(e);
+        }
+      });
+      this.setState({ orderMarkers, orders, isEdit: true, schdule: schdule }, () => {
+        setTimeout(() => {
+          this.drawMenu();
+        }, 500);
+      });
+    }
+    this.setState({ loading: false });
+  };
+
   render() {
-    const { visible, loading, windowInfo, orders } = this.state;
-    const selectOrder = orders.filter(x => x.isSelect);
+    const {
+      visible,
+      loading,
+      windowInfo,
+      orders,
+      allTotals,
+      orderMarkers,
+      isEdit,
+      schdule,
+      closeLeft,
+    } = this.state;
+    const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
     let totals = this.getTotals(selectOrder);
+
+    let windowsInfoTotals = {};
+    if (windowInfo) {
+      windowsInfoTotals = this.getOrderTotal(windowInfo.order.deliveryPoint.code);
+    }
     return (
       <Modal
         style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
@@ -431,7 +818,7 @@ export default class DispatchMap extends Component {
           <div>
             <Row type="flex" justify="space-between">
               <Col span={21}>
-                <SearchForm refresh={this.refresh} />
+                <SearchForm refresh={this.refresh} onRef={node => (this.searchFormRef = node)} />
               </Col>
               {/* <Col span={1}>
               <Search
@@ -474,7 +861,8 @@ export default class DispatchMap extends Component {
                 </div>
                 <div style={{ flex: 1, fontWeight: 'bold' }}>
                   重量:
-                  {totals.weight}
+                  {/* {totals.weight} */}
+                  {(totals.weight / 1000).toFixed(3)}
                 </div>
               </div>
             </Row>
@@ -489,11 +877,37 @@ export default class DispatchMap extends Component {
           tip="加载中..."
           wrapperClassName={style.loading}
         >
-          <Row type="flex" style={{ height: '100%' }}>
-            <Col span={6} style={{ height: '100%', background: '#fff', overflow: 'auto' }}>
-              {selectOrder.length > 0 ? (
-                <div style={{ position: 'relative', height: '100%' }}>
+          <Row type="flex" style={{ height: window.innerHeight - 145 }}>
+            <Col
+              span={closeLeft ? 0 : 6}
+              style={{ height: '100%', background: '#fff', overflow: 'auto' }}
+            >
+              {isEdit || selectOrder.length > 0 ? (
+                <div style={{ position: 'relative', height: '100%', marginTop: '10px' }}>
+                  <Button
+                    style={{ float: 'left' }}
+                    onClick={() => {
+                      this.setState({ isEdit: false });
+                      this.isSelectOrders = [];
+                      this.searchFormRef?.onSubmit();
+                    }}
+                  >
+                    返回
+                  </Button>
+                  <div
+                    style={{
+                      fontSize: '14px',
+                      fontWeight: 'bold',
+                      textAlign: 'center',
+                      marginBottom: '10px',
+                      marginRight: '20px',
+                    }}
+                  >
+                    {isEdit ? `编辑排车单:${schdule.BILLNUMBER}` : '新建排车单'}
+                  </div>
+
                   {selectOrder.map(order => {
+                    let totals = this.getOrderTotal(order.deliveryPoint.code);
                     return (
                       <div
                         className={style.storeCard}
@@ -524,12 +938,19 @@ export default class DispatchMap extends Component {
                           <div style={{ flex: 1 }}>体积</div>
                           <div style={{ flex: 1 }}>重量</div>
                         </div>
-                        <div style={{ display: 'flex' }}>
+                        {/* <div style={{ display: 'flex' }}>
                           <div style={{ flex: 1 }}>{order.cartonCount}</div>
                           <div style={{ flex: 1 }}>{order.scatteredCount}</div>
                           <div style={{ flex: 1 }}>{order.containerCount}</div>
                           <div style={{ flex: 1 }}>{order.volume}</div>
                           <div style={{ flex: 1 }}>{(order.weight / 1000).toFixed(3)}</div>
+                        </div> */}
+                        <div style={{ display: 'flex' }}>
+                          <div style={{ flex: 1 }}>{totals.cartonCount}</div>
+                          <div style={{ flex: 1 }}>{totals.scatteredCount}</div>
+                          <div style={{ flex: 1 }}>{totals.containerCount}</div>
+                          <div style={{ flex: 1 }}>{totals.volume}</div>
+                          <div style={{ flex: 1 }}>{(totals.weight / 1000).toFixed(3)}</div>
                         </div>
                       </div>
                     );
@@ -561,15 +982,67 @@ export default class DispatchMap extends Component {
                   </Row> */}
                 </div>
               ) : (
-                <Empty
-                  style={{ marginTop: 80 }}
-                  image={emptySvg}
-                  description="暂无数据，请选择排车门店！"
+                // <Empty
+                //   style={{ marginTop: 80 }}
+                //   image={emptySvg}
+                //   description="暂无数据，请选择排车门店！"
+                // />
+                <List
+                  header={
+                    <div style={{ textAlign: 'center', fontSize: '18px', fontWeight: 'bold' }}>
+                      排车单查询：
+                      <Input
+                        style={{ width: '150px', marginLeft: '10px' }}
+                        onChange={e => this.scheduleFilter(e.target.value)}
+                      />
+                    </div>
+                  }
+                  size="large"
+                  itemLayout="horizontal"
+                  dataSource={this.state.scheduleList}
+                  renderItem={item => (
+                    <List.Item>
+                      <List.Item.Meta
+                        avatar={<Avatar style={{ width: '50px', height: '50px' }} src={truck} />}
+                        title={
+                          <a
+                            style={{ fontSize: '15px' }}
+                            onClick={() => {
+                              this.clickSchdule(item);
+                            }}
+                          >
+                            {item.BILLNUMBER}
+                          </a>
+                        }
+                        description={
+                          <div style={{ fontWeight: 'bold' }}>
+                            车辆：
+                            {item.VEHICLEPLATENUMBER ? item.VEHICLEPLATENUMBER : '<空>'}
+                            &nbsp;&nbsp;司机：[
+                            {item.CARRIERCODE ? item.CARRIERCODE : '<空>'}]
+                            {item.CARRIERNAME ? item.CARRIERNAME : ''}
+                          </div>
+                        }
+                      />
+                    </List.Item>
+                  )}
                 />
               )}
             </Col>
-            <Col span={18}>
-              {orders.length > 0 ? (
+            <Col span={closeLeft ? 24 : 18}>
+              <a
+                onClick={() => {
+                  this.setState({ closeLeft: !this.state.closeLeft });
+                }}
+              >
+                <div style={{ float: 'left', height: '100%' }}>
+                  <Icon
+                    type={closeLeft ? 'caret-right' : 'caret-left'}
+                    style={{ marginTop: (window.innerHeight - 145) / 2 }}
+                  />
+                </div>
+              </a>
+              {orderMarkers.length > 0 ? (
                 <Map
                   center={{ lng: 113.809388, lat: 23.067107 }}
                   zoom={10}
@@ -577,11 +1050,14 @@ export default class DispatchMap extends Component {
                   enableScrollWheelZoom
                   enableRotate={false}
                   enableTilt={false}
+                  enableAutoResize
                   ref={ref => (this.map = ref?.map)}
                   style={{ height: '100%' }}
                 >
+                  {this.drawMarker()}
                   {/* 鼠标绘制工具 */}
                   <DrawingManager
+                    // isOpen={true}
                     enableLimit
                     enableCalculate
                     // enableDrawingTool={false}
@@ -590,6 +1066,7 @@ export default class DispatchMap extends Component {
                     drawingToolOptions={{
                       drawingModes: ['rectangle'],
                     }}
+                    drawingMode={'rectangle'}
                     rectangleOptions={{
                       strokeColor: '#d9534f', //边线颜色。
                       fillColor: '#f4cdcc', //填充颜色。当参数为空时，圆形将没有填充效果。
@@ -598,7 +1075,8 @@ export default class DispatchMap extends Component {
                       fillOpacity: 0.3, //填充的透明度，取值范围0 - 1。
                       strokeStyle: 'dashed', //边线的样式，solid或dashed。
                     }}
-                    ref={ref => (this.drawingManagerRef = ref?.drawingmanager)}
+                    // ref={ref => (this.drawingManagerRef = ref?.drawingmanager)}
+                    ref={ref => (this.drawingManagerRef = ref)}
                   />
 
                   {windowInfo ? (
@@ -629,12 +1107,19 @@ export default class DispatchMap extends Component {
                           <div style={{ flex: 1 }}>重量</div>
                         </div>
                         <div style={{ display: 'flex' }}>
-                          <div style={{ flex: 1 }}>{windowInfo.order.cartonCount}</div>
+                          {/* <div style={{ flex: 1 }}>{windowInfo.order.cartonCount}</div>
                           <div style={{ flex: 1 }}>{windowInfo.order.scatteredCount}</div>
                           <div style={{ flex: 1 }}>{windowInfo.order.containerCount}</div>
                           <div style={{ flex: 1 }}>{windowInfo.order.volume}</div>
                           <div style={{ flex: 1 }}>
                             {(windowInfo.order.weight / 1000).toFixed(3)}
+                          </div> */}
+                          <div style={{ flex: 1 }}>{windowsInfoTotals.cartonCount}</div>
+                          <div style={{ flex: 1 }}>{windowsInfoTotals.scatteredCount}</div>
+                          <div style={{ flex: 1 }}>{windowsInfoTotals.containerCount}</div>
+                          <div style={{ flex: 1 }}>{windowsInfoTotals.volume}</div>
+                          <div style={{ flex: 1 }}>
+                            {(windowsInfoTotals.weight / 1000).toFixed(3)}
                           </div>
                         </div>
                       </div>
@@ -655,6 +1140,36 @@ export default class DispatchMap extends Component {
                 />
               )}
             </Col>
+          </Row>
+          <Divider style={{ margin: 0, marginTop: 5 }} />
+          <Row width="100%">
+            <div style={{ display: 'flex', marginTop: 5, fontSize: '14px' }}>
+              <div style={{ flex: 1, fontWeight: 'bold' }}>
+                总件数:
+                {allTotals.totalCount}
+              </div>
+              <div style={{ flex: 1, fontWeight: 'bold' }}>
+                总整件数:
+                {allTotals.cartonCount}
+              </div>
+              <div style={{ flex: 1, fontWeight: 'bold' }}>
+                总散件数:
+                {allTotals.scatteredCount}
+              </div>
+              <div style={{ flex: 1, fontWeight: 'bold' }}>
+                总周转箱:
+                {allTotals.containerCount}
+              </div>
+              <div style={{ flex: 1, fontWeight: 'bold' }}>
+                总体积:
+                {allTotals.volume}
+              </div>
+              <div style={{ flex: 1, fontWeight: 'bold' }}>
+                总重量:
+                {/* {totals.weight} */}
+                {(allTotals.weight / 1000).toFixed(3)}
+              </div>
+            </div>
           </Row>
         </Spin>
       </Modal>

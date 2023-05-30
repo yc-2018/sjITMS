@@ -24,6 +24,8 @@ import styles from '@/pages/Tms/TransportOrder/transportOrder.less';
  */
 export default class RyzeSearchPage extends Component {
   drapTableChange = () => {}; //拖拽事件
+  setrowClassName = ()=>{}//表格样式
+
   constructor(props) {
     super(props);
 
@@ -186,6 +188,8 @@ export default class RyzeSearchPage extends Component {
         {this.drawToolbarTwo()}
         {!this.state.noTable ? (
           <StandardTable
+            onView={this.onView}
+            rowSelection={this.state.rowSelection}
             quickuuid={this.props.quickuuid}
             minHeight={this.state.minHeight}
             colTotal={this.state.colTotal ? this.state.colTotal : []}
@@ -213,6 +217,9 @@ export default class RyzeSearchPage extends Component {
               if (record.errorStyle) {
                 return styles.errorStyle;
               }
+             if(this.setrowClassName(record, index)){
+              return this.setrowClassName(record, index)
+              }
               if (index % 2 === 0) {
                 return styles.lightRow;
               }
@@ -226,6 +233,9 @@ export default class RyzeSearchPage extends Component {
                 : true
             }
             drapTableChange={this.drapTableChange}
+            handleRowClick={this.handleRowClick}
+            isRadio={this.state.isRadio}
+            RightClickMenu={this.drawRightClickMenus()}
           />
         ) : null}
         {this.drawOtherCom && this.drawOtherCom()}

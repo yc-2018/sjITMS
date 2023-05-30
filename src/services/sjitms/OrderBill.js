@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-03-12 16:08:35
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-21 16:51:14
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-03-20 09:59:19
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -43,6 +43,13 @@ export async function queryAuditedOrder(params) {
 
 export async function queryAuditedOrderByStoreMap(params) {
   return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/queryAuditedOrderByStoreMap`, {
+    method: 'POST',
+    body: params,
+  });
+}
+
+export async function queryAuditedOrderByParams(params) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/queryAuditedOrderByParams`, {
     method: 'POST',
     body: params,
   });
@@ -134,6 +141,48 @@ export async function cancel(payload) {
     }&dispatchCenterUuid=${loginOrg().uuid}&billNumber=${payload}`,
     {
       method: 'POST',
+    }
+  );
+}
+
+//转仓
+export async function removeOrder(billUuid, dispatchCenterUuid) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/ordertms/removeOrder?billUuid=${billUuid}&dispatchCenterUuid=${dispatchCenterUuid}`,
+    {
+      method: 'POST',
+    }
+  );
+}
+
+//修改作业号
+export async function updateOrderWavenum(uuids, WAVENUM) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/ordertms/updateOrderWavenum/${WAVENUM}`,
+    {
+      method: 'POST',
+      body: uuids
+    }
+  );
+}
+//修改复核数
+export async function updateReview(data) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/ordertms/updateReview`,
+    {
+      method: 'POST',
+      body:data
+    }
+  );
+}
+
+//复核确认
+export async function onConfirm(uuids) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/ordertms/onConfirm`,
+    {
+      method: 'POST',
+      body:uuids
     }
   );
 }

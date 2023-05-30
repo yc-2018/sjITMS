@@ -2,12 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-06 14:45:34
+ * @LastEditTime: 2023-04-20 08:43:51
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
 import React, { Component } from 'react';
-import { Button, Row, Col, Typography, message, Icon } from 'antd';
+import { Button, Row, Col, Typography, message, Icon, Modal } from 'antd';
 import {
   OrderColumns,
   OrderCollectColumns,
@@ -15,7 +15,7 @@ import {
   pagination,
 } from './DispatchingColumns';
 import { getOrderInPending, removePending } from '@/services/sjitms/OrderBill';
-import { addOrders } from '@/services/sjitms/ScheduleBill';
+import { addOrders, checkAreaSchedule } from '@/services/sjitms/ScheduleBill';
 import DispatchingTable from './DispatchingTable';
 import DispatchingChildTable from './DispatchingChildTable';
 import dispatchingStyles from './Dispatching.less';
@@ -26,6 +26,7 @@ const { Text } = Typography;
 export default class PendingPage extends Component {
   state = {
     loading: false,
+    btnLoading: false,
     pendingData: [],
     pendingCollectData: [],
     pendingParentRowKeys: [],
@@ -52,6 +53,12 @@ export default class PendingPage extends Component {
     this.setState({ loading: true });
     getOrderInPending().then(response => {
       if (response.success) {
+        let data = response.data || [];
+        data = data?.map(order => {
+          const cartonCount = order.realCartonCount || order.cartonCount;
+          order.warning = order.stillCartonCount < cartonCount;
+          return order;
+        });
         this.setState({
           loading: false,
           pendingData: response.data,
@@ -95,23 +102,24 @@ export default class PendingPage extends Component {
   };
 
   //删除待定
-  handleRemovePending = () => {
+  handleRemovePending = async () => {
     const { pendingRowKeys } = this.state;
     if (pendingRowKeys.length == 0) {
       message.warning('请选择运输订单！');
       return;
     }
-    removePending(pendingRowKeys).then(response => {
-      if (response.success) {
-        message.success('保存成功！');
-        this.refreshTable();
-        this.props.refreshOrder();
-      }
-    });
+    this.setState({ btnLoading: true });
+    const response = await removePending(pendingRowKeys);
+    if (response.success) {
+      message.success('保存成功！');
+      this.refreshTable();
+      this.props.refreshOrder();
+    }
+    this.setState({ btnLoading: false });
   };
 
   //添加到排车单
-  handleAddOrder = () => {
+  handleAddOrder = async () => {
     const { pendingRowKeys } = this.state;
     const scheduleRowKeys = this.props.scheduleRowKeys();
     if (scheduleRowKeys.length != 1 || scheduleRowKeys == undefined) {
@@ -122,18 +130,34 @@ export default class PendingPage extends Component {
       message.warning('请选择待定运输订单！');
       return;
     }
-    addOrders({
-      billUuid: scheduleRowKeys[0],
-      orderUuids: pendingRowKeys,
-    }).then(response => {
-      if (response.success) {
-        message.success('保存成功！');
-        this.refreshTable();
-        this.props.refreshSchedule();
-      }
-    });
+    this.setState({ btnLoading: true });
+    const checkResponse = await checkAreaSchedule(pendingRowKeys, scheduleRowKeys[0]);
+    if (checkResponse && checkResponse.data) {
+      Modal.confirm({
+        title: '所选门店配送区域不一样，确定排车吗？',
+        onOk: async () => {
+          this.doAddOrders(scheduleRowKeys[0], pendingRowKeys);
+        },
+        onCancel: () => {
+          this.setState({ btnLoading: false });
+        },
+      });
+      return;
+    }
+    this.doAddOrders(scheduleRowKeys[0], pendingRowKeys);
   };
-
+  doAddOrders = async (billUuid, orderUuids) => {
+    const response = await addOrders({
+      billUuid: billUuid,
+      orderUuids: orderUuids,
+    });
+    if (response.success) {
+      message.success('保存成功！');
+      this.refreshTable();
+      this.props.refreshSchedule();
+    }
+    this.setState({ btnLoading: false });
+  };
   //表格行选择
   tableChangeRows = selectedRowKeys => {
     const { pendingData } = this.state;
@@ -169,6 +193,7 @@ export default class PendingPage extends Component {
   render() {
     const {
       loading,
+      btnLoading,
       pendingData,
       pendingCollectData,
       pendingParentRowKeys,
@@ -202,10 +227,10 @@ export default class PendingPage extends Component {
     return (
       <div style={{ padding: 5 }}>
         <Row style={{ marginBottom: 5, lineHeight: '28px' }}>
-          <Col span={12}>
+          <Col span={6}>
             <Text className={dispatchingStyles.cardTitle}>待定列表</Text>
           </Col>
-          <Col span={12} style={{ textAlign: 'right' }}>
+          <Col span={18} style={{ textAlign: 'right' }}>
             <Button
               onClick={() => this.refreshTable()}
               icon={loading ? 'loading' : 'sync'}
@@ -213,8 +238,14 @@ export default class PendingPage extends Component {
             >
               刷新
             </Button>
-            <Button onClick={() => this.handleAddOrder()}>添加到排车单</Button>
-            <Button style={{ marginLeft: 10 }} onClick={() => this.handleRemovePending()}>
+            <Button onClick={() => this.handleAddOrder()} loading={btnLoading}>
+              添加到排车单
+            </Button>
+            <Button
+              style={{ marginLeft: 10 }}
+              onClick={() => this.handleRemovePending()}
+              loading={btnLoading}
+            >
               移除待定
             </Button>
           </Col>

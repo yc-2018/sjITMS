@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-12-19 17:48:10
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-16 11:34:37
+ * @LastEditTime: 2023-04-21 14:39:39
  * @Description: 客服工单
  * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerSearch.js
  */
@@ -166,19 +166,19 @@ export default class CustomerSearch extends QuickFormSearchPage {
     this.setState({ releaseRemark: event.target.value });
   };
 
-  drawTopButton = () => {
-    return (
-      <span>
-        <Button
-          hidden={!havePermission(this.state.authority + '.import')}
-          type="primary"
-          onClick={this.onUpload}
-        >
-          导入
-        </Button>
-      </span>
-    );
-  };
+  // drawTopButton = () => {
+  //   return (
+  //     <span>
+  //       <Button
+  //         hidden={!havePermission(this.state.authority + '.import')}
+  //         type="primary"
+  //         onClick={this.onUpload}
+  //       >
+  //         导入
+  //       </Button>
+  //     </span>
+  //   );
+  // };
 
   onUpload = () => {
     this.props.switchTab('import');

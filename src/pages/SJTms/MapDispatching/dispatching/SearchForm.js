@@ -18,6 +18,7 @@ import {
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { queryColumns } from '@/services/quick/Quick';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import moment from 'moment';
 
 const { RangePicker } = DatePicker;
 const isOrgQuery = [
@@ -35,6 +36,7 @@ export default class SearchForm extends Component {
   };
 
   async componentDidMount() {
+    this.props.onRef && this.props.onRef(this);
     this.setState({ loading: true });
     const response = await queryColumns({ reportCode: this.state.quickuuid, sysCode: 'tms' });
     const { form } = this.props;
@@ -64,9 +66,10 @@ export default class SearchForm extends Component {
       );
     }
   }
+
   onSubmit = event => {
     const { form } = this.props;
-    event.preventDefault();
+    event?.preventDefault();
     form.validateFields((err, fieldsValue) => {
       if (err) return;
       this.onSearch(fieldsValue);
@@ -149,6 +152,26 @@ export default class SearchForm extends Component {
         };
       }
     }
+    if (searchProperties.isOrgSearch) {
+      const orgFields = searchProperties.isOrgSearch.split(',');
+      let loginOrgType = loginOrg().type.replace('_', '');
+      let loginParmas = [];
+      if (orgFields.indexOf('Company') != -1) {
+        loginParmas.push({ field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] });
+      }
+      if (orgFields.indexOf('Org') != -1) {
+        loginParmas.push({ field: loginOrgType + 'UUID', rule: 'like', val: [loginOrg().uuid] });
+      }
+      if (searchProperties.queryParams.condition) {
+        const params = [...searchProperties.queryParams.condition.params];
+        searchProperties.queryParams.condition.params = [...params, ...loginParmas];
+      } else {
+        searchProperties.queryParams = {
+          ...searchProperties.queryParams,
+          condition: { params: loginParmas },
+        };
+      }
+    }
     switch (searchField.searchShowtype) {
       case 'date':
         return <RangePicker style={{ width: '100%' }} />;
@@ -217,6 +240,9 @@ export default class SearchForm extends Component {
           .format('YYYY-MM-DD');
         item.searchDefVal = `${startDate}||${endDate}`;
       }
+      if (item.fieldName == 'WAVENUM') {
+        item.searchDefVal = [moment(new Date()).format('YYMMDD') + '0001'];
+      }
       return item;
     });
     return (
@@ -228,9 +254,26 @@ export default class SearchForm extends Component {
           autoComplete="off"
         >
           <Row justify="space-around">
-            {newSelectFields.filter((_, index) => index < 5).map(searchField => {
+            {newSelectFields.filter((_, index) => index < 4).map(searchField => {
               return (
                 <Col span={4}>
+                  <Form.Item key={searchField.id} label={searchField.fieldTxt}>
+                    {getFieldDecorator(searchField.fieldName, {
+                      initialValue: searchField.searchDefVal || undefined,
+                      rules: [
+                        {
+                          required: searchField.searchRequire,
+                          message: notNullLocale(searchField.fieldTxt),
+                        },
+                      ],
+                    })(this.buildSearchItem(searchField))}
+                  </Form.Item>
+                </Col>
+              );
+            })}
+            {newSelectFields.filter((_, index) => index >= 4 && index < 6).map(searchField => {
+              return (
+                <Col span={3}>
                   <Form.Item key={searchField.id} label={searchField.fieldTxt}>
                     {getFieldDecorator(searchField.fieldName, {
                       initialValue: searchField.searchDefVal || undefined,

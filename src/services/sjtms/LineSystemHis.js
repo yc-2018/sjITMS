@@ -173,3 +173,34 @@ export function getMatchLine(payload) {
     },
   });
 }
+export function updateNote(payload) {
+  return request(`/itms-schedule/itms-schedule/lineShipAddress/updateNote/${payload.uuid}/${payload.note}`, {
+    method: 'get'
+   
+  });
+}
+export function updateIsNewStore(payload) {
+  return request(`/itms-schedule/itms-schedule/lineShipAddress/updateIsNewStore/${payload.flag}`, {
+    method: 'POST',
+    body:payload.uuids
+   
+  });
+}updateIsNewStore
+export function YDSiparea(payload) {
+  return request(`/itms-schedule/itms-schedule/LineSystem/YDSiparea/${payload.systemUUID}`, {
+    method: 'POST'
+   
+  });
+}
+
+export function exportLineSystem(payload) {
+  return request(`/itms-schedule/itms-schedule/LineSystem/export/${payload.systemUUID}`, {
+    method: 'POST'
+  });
+}
+export async function checkShipArea(payload) {
+  return request(`/itms-schedule/itms-schedule/lineShipAddress/checkShipArea/${payload.lineuuid}`, {
+    method: 'POST',
+    body: payload.addressIds,
+  });
+}

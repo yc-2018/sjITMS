@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-15 14:40:40
+ * @LastEditTime: 2023-04-07 16:36:19
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -14,6 +14,7 @@ import {
   vehicleApplyAudit,
   vehicleApplyRejected,
   portVehicleApply,
+  aborted,
 } from '@/services/sjitms/VehicleWeight';
 
 @connect(({ quick, loading }) => ({
@@ -25,11 +26,24 @@ export default class VehicleWeightSearchPage extends QuickFormSearchPage {
     ...this.state,
     showAuditPop: false,
     showRejectedPop: false,
+    showAbortedPop: false,
     noActionCol: true,
   };
 
   port = async () => {
-    const { pageFilters } = this.state;
+    const { pageFilters, selectedRows } = this.state;
+    let uuid = '';
+    if (selectedRows.length > 0) {
+      selectedRows.map((row, index) => {
+        if (index == 0) {
+          uuid = "'" + row.UUID + "'";
+        } else {
+          uuid = uuid + ",'" + row.UUID + "'";
+        }
+      });
+    }
+    pageFilters.lastSql = `and uuid in (${uuid})`;
+    // console.log('pageFilters', pageFilters);
     await portVehicleApply(pageFilters);
   };
 
@@ -55,18 +69,34 @@ export default class VehicleWeightSearchPage extends QuickFormSearchPage {
       : this.batchProcessConfirmRef.show('驳回', selectedRows, this.onRejected, this.onSearch);
   };
 
+  onBatchAborted = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.warn('请选中一条数据！');
+      return;
+    }
+    selectedRows.length == 1
+      ? this.setState({ showAbortedPop: true })
+      : this.batchProcessConfirmRef.show('作废', selectedRows, this.aborted, this.onSearch);
+  };
+
   //审核
   onAudit = async record => {
     return await vehicleApplyAudit(record.UUID);
   };
 
-  //审核
+  //驳回
   onRejected = async record => {
     return await vehicleApplyRejected(record.UUID);
   };
 
+  //作废
+  aborted = async record => {
+    return await aborted(record.UUID, 'aborted');
+  };
+
   drawToolsButton = () => {
-    const { showAuditPop, showRejectedPop, selectedRows } = this.state;
+    const { showAuditPop, showRejectedPop, selectedRows, showAbortedPop } = this.state;
     return (
       <span>
         <Popconfirm
@@ -122,7 +152,34 @@ export default class VehicleWeightSearchPage extends QuickFormSearchPage {
           >
             驳回
           </Button>
-          {/* <Button onClick={() => this.port()}>导出</Button> */}
+        </Popconfirm>
+
+        <Popconfirm
+          title="你确定要作废所选中的内容吗?"
+          visible={showAbortedPop}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showAbortedPop: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showAbortedPop: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showAbortedPop: false });
+            this.aborted(selectedRows[0]).then(response => {
+              if (response.success) {
+                message.success('作废成功！');
+                this.onSearch();
+              }
+            });
+          }}
+        >
+          <Button
+            type="danger"
+            onClick={() => this.onBatchAborted()}
+            hidden={!havePermission(this.state.authority + '.aborted')}
+          >
+            作废
+          </Button>
         </Popconfirm>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </span>

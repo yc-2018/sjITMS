@@ -8,6 +8,7 @@
 import { connect } from 'dva';
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
 import StoreCreatePage from './StoreCreatePage';
+import StoreSearchPage from './StoreSearchPage';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -21,6 +22,10 @@ export default class StoreForm extends QuickForm {
     } else if (e.showPageNow === 'update') {
       const component = <StoreCreatePage {...e.props} />;
       e.component = component;
+    }else if(e.showPageNow === 'query'){
+      const component = <StoreSearchPage {...e.props} />;
+      e.component = component;
     }
   };
+  
 }

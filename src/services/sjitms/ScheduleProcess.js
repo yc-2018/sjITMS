@@ -2,12 +2,35 @@
  * @Author: guankongjin
  * @Date: 2022-07-13 10:25:32
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-01-30 14:55:56
+ * @LastEditTime: 2023-03-31 11:52:53
  * @Description: file content
  * @FilePath: \iwms-web\src\services\sjitms\ScheduleProcess.js
  */
 import request from '@/utils/request';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
+
+//获取刷卡排车单信息
+export async function getSwipeSchedule(empId, swipeFlag) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/process/getSwipeSchedule?empId=${empId}&swipeFlag=${swipeFlag}&companyUuid=${
+      loginCompany().uuid
+    }&dispatchUuid=${loginOrg().uuid}`,
+    {
+      method: 'POST',
+    }
+  );
+}
+
+//根据排车单刷卡
+export async function swipeByScheduleUuid(uuid) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/process/swipeByScheduleUuid?uuid=${uuid}`,
+    {
+      method: 'POST',
+    }
+  );
+}
+
 //刷卡
 export async function swipe(empId, swipeFlag) {
   return request(
@@ -20,9 +43,11 @@ export async function swipe(empId, swipeFlag) {
   );
 }
 //司机刷卡
-export async function driverSwipe(empId, companyUuid, dispatchUuid, swipeFlag) {
+export async function driverSwipe(empId ,companyUuid, dispatchUuid,swipeFlag) {
   return request(
-    `/itms-schedule/itms-schedule/openapi/bill/schedule/process/swipe?empId=${empId}&swipeFlag=${swipeFlag}&companyUuid=${companyUuid}&dispatchUuid=${dispatchUuid}`,
+    `/itms-schedule/itms-schedule/openapi/bill/schedule/process/swipe?empId=${empId}&swipeFlag=${swipeFlag}&companyUuid=${
+      companyUuid
+    }&dispatchUuid=${dispatchUuid}`,
     {
       method: 'POST',
     }
@@ -102,4 +127,12 @@ export async function recordLog(billNumber, type) {
       method: 'POST',
     }
   );
+}
+
+//g7接口
+export async function callG7Interface(apiName, params) {
+  return request(`/itms-schedule/itms-schedule/g7/callG7Interface/${apiName}`, {
+    method: 'POST',
+    body: params,
+  });
 }

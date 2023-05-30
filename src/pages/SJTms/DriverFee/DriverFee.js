@@ -18,7 +18,7 @@ import StorePakingFeeSearch from './StorePakingFeeSearch';
 export default class DriverFee extends PureComponent {
   constructor(props) {
     super(props);
-    this.state = { visible: false, record: {} };
+    this.state = { visible: false, record: {},Logvisible:false };
   }
 
   onClose = record => {
@@ -27,12 +27,18 @@ export default class DriverFee extends PureComponent {
     }
     this.setState({ visible: !this.state.visible });
   };
+  onCloseLog = record => {
+    if (record) {
+      this.setState({ record });
+    }
+    this.setState({ Logvisible: !this.state.Logvisible });
+  };
 
   render() {
-    const { visible, record } = this.state;
+    const { visible, Logvisible,record } = this.state;
     return (
       <div>
-        <DriverFeeSearchPage {...this.props} onClose={this.onClose} />
+        <DriverFeeSearchPage {...this.props} onClose={this.onClose}  onLogClose = {this.onCloseLog}/>
         <Drawer
           placement="right"
           onClose={() => this.onClose()}
@@ -45,6 +51,20 @@ export default class DriverFee extends PureComponent {
             quickuuid={'v_sj_itms_schedule_store_fee'}
             record={record}
           />
+          
+        </Drawer>
+        <Drawer
+         placement="right"
+         onClose={() => this.onCloseLog()}
+         visible={Logvisible}
+         width={'50%'}
+         destroyOnClose
+        >
+          <StorePakingFeeSearch
+              {...this.props}
+              quickuuid={'v_sj_itms_tollfee_log'}
+              record={record}
+            />
         </Drawer>
       </div>
     );

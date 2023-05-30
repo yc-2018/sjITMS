@@ -1,14 +1,14 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-16 15:03:01
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-04-18 15:39:37
  * @version: 1.0
  */
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { Button, Popconfirm, message, Modal, Form, Input } from 'antd';
-import { handleBill } from '@/services/sjitms/TollFee';
+import { handleBill, handleConfirm } from '@/services/sjitms/TollFee';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { havePermission } from '@/utils/authority';
 
@@ -23,6 +23,7 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
     showAuditPop: false,
     showRejectedModal: false,
     showCheckPop: false,
+    showConfirmPop: false,
     operation: '',
   };
 
@@ -34,9 +35,19 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
     return await handleBill(data, operation, fieldsValue.note);
   };
 
+  handleConfirm = async data => {
+    return await handleConfirm(data);
+  };
+
   //该方法用于写中间的功能按钮 多个按钮用<span>包裹
   drawToolsButton = () => {
-    const { showAuditPop, showCheckPop, selectedRows, showRejectedModal } = this.state;
+    const {
+      showAuditPop,
+      showCheckPop,
+      selectedRows,
+      showRejectedModal,
+      showConfirmPop,
+    } = this.state;
     const { getFieldDecorator } = this.props.form;
 
     return (
@@ -102,6 +113,35 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
         >
           驳回
         </Button>
+
+        <Popconfirm
+          title="你确定要确认所选中的内容吗?"
+          visible={showConfirmPop}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showConfirmPop: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showConfirmPop: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showConfirmPop: false });
+            this.handleConfirm(selectedRows[0]).then(response => {
+              if (response.success) {
+                message.success('确认成功！');
+                this.setState({ operation: '' });
+                this.onSearch();
+              }
+            });
+          }}
+        >
+          <Button
+            hidden={!havePermission(this.state.authority + '.confirm')}
+            onClick={() => this.onBatchConfirm()}
+          >
+            确认
+          </Button>
+        </Popconfirm>
+
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
         <Modal
           title="驳回申请"
@@ -147,6 +187,17 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
       : this.batchProcessConfirmRef.show('核对', selectedRows, this.handleBill, this.onSearch);
   };
 
+  onBatchConfirm = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.warn('请选中一条数据！');
+      return;
+    }
+    selectedRows.length == 1
+      ? this.setState({ showConfirmPop: true })
+      : this.batchProcessConfirmRef.show('确认', selectedRows, this.handleConfirm, this.onSearch);
+  };
+
   onBatchApproved = () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
@@ -174,17 +225,32 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
 
   drawcell = row => {
     if (row.column.fieldName == 'PARKINGFEE') {
+      const params = {
+        field: 'UUID',
+        type: 'VarChar',
+        rule: 'eq',
+        val: row.record.UUID,
+      };
       row.component =
         row.record.MAXPARKINGFEE < row.record.PARKINGFEE ? (
           <span
             style={{ padding: '0 10px', background: 'red', color: '#fff' }}
-            onClick={() => this.props.onClose(row.record.UUID)}
+            onClick={() => this.props.onClose(params)}
           >
             {row.val}
           </span>
         ) : (
-          <a onClick={() => this.props.onClose(row.record.UUID)}>{row.val}</a>
+          <a onClick={() => this.props.onClose(params)}>{row.val}</a>
         );
+    }
+    if (row.column.fieldName == 'BILLNUMBER') {
+      const params = {
+        field: 'SCHEDULENUM',
+        type: 'VarChar',
+        rule: 'eq',
+        val: row.record.BILLNUMBER,
+      };
+      row.component = <a onClick={() => this.props.onLogClose(params)}>{row.val}</a>;
     }
   };
 }

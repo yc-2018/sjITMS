@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-01-30 11:26:17
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-04-11 09:34:32
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -114,10 +114,21 @@ export async function aborted(Uuid) {
 }
 
 //作废并重排
-export async function abortedAndReset(Uuid) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/abortedAndReset?billUuid=${Uuid}`, {
-    method: 'PUT',
-  });
+export async function abortedAndReset(Uuid, moveTengBox) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/abortedAndReset?billUuid=${Uuid}&moveTengBox=${moveTengBox}`,
+    {
+      method: 'PUT',
+    }
+  );
+}
+export async function getTengBoxRecord(billNumber) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/getTengBoxRecord?billNumber=${billNumber}`,
+    {
+      method: 'GET',
+    }
+  );
 }
 
 //取消作废
@@ -190,6 +201,44 @@ export async function getVehicleByScheduleUuid(payload) {
     `/itms-schedule/itms-schedule/sj/bill/schedule/getVehicleByScheduleUuid?uuid=${payload}`,
     {
       method: 'POST',
+    }
+  );
+}
+
+export async function checkArea(payload) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/checkArea`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+export async function checkBaseData(commuuid, dcuuid) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/checkBaseData/${commuuid}/${dcuuid}`,
+    {
+      method: 'POST',
+    }
+  );
+}
+export async function checkAreaSchedule(payload, scheduleuuid) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/checkAreaSchedule?scheduleUuid=${scheduleuuid}`,
+    {
+      method: 'POST',
+      body: payload,
+    }
+  );
+}
+export async function refreshETC(scheduleuuid) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/refreshETC?uuid=${scheduleuuid}`, {
+    method: 'POST',
+  });
+}
+export async function checkOrderInSchedule(payload,scheduleuuid) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/checkOrderInSchedule?scheduleUuid=${scheduleuuid}`,
+    {
+      method: 'POST',
+      body: payload,
     }
   );
 }

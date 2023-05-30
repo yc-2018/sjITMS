@@ -89,6 +89,67 @@ export default class DispatchingConfig extends ConfigSearchPage {
         />
       ),
     },
+    {
+      title: DispatchingConfigLocale.checkArea,
+      dataIndex: 'checkArea',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'checkArea', event)}
+        />
+      ),
+    },
+    {
+      title: DispatchingConfigLocale.checkBaseData,
+      dataIndex: 'checkBaseData',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'checkBaseData', event)}
+        />
+      ),
+    },
+    {
+      title: DispatchingConfigLocale.isAbortedPool,
+      dataIndex: 'isAbortedPool',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'isAbortedPool', event)}
+        />
+      ),
+    },
+    {
+      title: DispatchingConfigLocale.calvehicle,
+      dataIndex: 'calvehicle',
+      render: (val, record) => (
+        <Input
+          style={{ width: 80 }}
+          defaultValue={val}
+          onBlur={event => this.onInputChange(record, 'calvehicle', event.target.value)}
+        />
+      ),
+    },
+    {
+      title: DispatchingConfigLocale.checkLineArea,
+      dataIndex: 'checkLineArea',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'checkLineArea', event)}
+        />
+      ),
+    },
+    {
+      title: DispatchingConfigLocale.existsSchedule,
+      dataIndex: 'existsSchedule',
+      render: (val, record) => (
+        <Checkbox
+          checked={val === 1}
+          onChange={event => this.onChange(record, 'existsSchedule', event)}
+        />
+      ),
+    },
   ];
 
   onChange = (record, field, event) => {

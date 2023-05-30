@@ -226,6 +226,17 @@ export default class RyzeSettingDrowDown extends Component {
     };
   }
 
+  componentWillReceiveProps(nextprops) {
+    if (nextprops.comId != this.state.key) {
+      const { columns } = this.props;
+      // console.log('nextprops', nextprops);
+      let optionsList = fetchOptions(columns, nextprops.comId);
+      this.setState({ key: nextprops.comId, optionsList }, () => {
+        this.handleOK();
+      });
+    }
+  }
+
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
     this.handleOK();
@@ -351,7 +362,7 @@ export default class RyzeSettingDrowDown extends Component {
     //获取当前页签的footer
     const footerElement = document
       .getElementById(this.state.pathname)
-      .getElementsByTagName('footer')[1];
+      ?.getElementsByTagName('footer')[1];
     const footerPos = footerElement ? footerElement.getBoundingClientRect() : {};
     let height = this.props.tableHeight ? this.props.tableHeight : footerPos.top - pos.top - 40;
     let dataHeight = optionsList ? optionsList.length * 30 + 40 : 0;

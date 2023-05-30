@@ -358,6 +358,7 @@ export default class ItemEditTable extends PureComponent {
 
   drawFormRows = () => {
     const { data } = this.state;
+    let { totalsCols } = this.props;
     this.rowSelection.selectedRowKeys = this.state.selectedRowKeys;
     let rMargin = 100 + parseInt(data.length / 10) * 24 + 'px';
     let waveTotal = (
@@ -428,6 +429,7 @@ export default class ItemEditTable extends PureComponent {
         }
 
         newTotalWidth = newTotalWidth + ncolumns[idx].width;
+        totalsCols[idx].width = ncolumns[idx].width;
       }
     }
     let pagination = {
@@ -469,6 +471,11 @@ export default class ItemEditTable extends PureComponent {
         {commonLocale.batchAddDataLocale}
       </a>
     );
+    let status =
+      this.props.totalDatas && this.props.totalDatas.length == '0'
+        ? { display: 'none' }
+        : { display: 'block' };
+    console.log('ncolumns', ncolumns, totalsCols);
     return (
       <div id="editTable" className={style.itemEditTable}>
         {showToolbar && (
@@ -500,9 +507,33 @@ export default class ItemEditTable extends PureComponent {
           dataSource={data}
           onChange={this.handleStandardTableChange}
           pagination={pagination}
-          scroll={this.props.scroll ? this.props.scroll : scroll}
+          // scroll={this.props.scroll ? this.props.scroll : scroll}
+          scroll={
+            this.props.scroll ? { x: this.props.scroll.x, y: false } : { x: scroll.x, y: false }
+          }
           size="middle"
           onkeyDown={this.newMember}
+          footer={() => {
+            return (
+              <Table
+                id={'noHappy2'}
+                columns={totalsCols}
+                // scroll={{ x: scroll.x, y: false }}
+                scroll={
+                  this.props.scroll
+                    ? { x: this.props.scroll.x, y: false }
+                    : { x: scroll.x, y: false }
+                }
+                rowKey={() => Math.random()}
+                pagination={false}
+                showHeader={false} // table 的 columns 头部隐藏
+                dataSource={this.props.totalDatas ? this.props.totalDatas : []}
+                size={this.props.size ? this.props.size : 'middle'}
+                // components={this.components}
+                style={{ ...status, overflow: 'hidden !important' }}
+              />
+            );
+          }}
         />
         {this.props.batchAdd ? waveTotal : null}
       </div>

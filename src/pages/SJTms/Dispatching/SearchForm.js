@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-04-28 10:08:40
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-21 15:31:57
+ * @LastEditTime: 2023-05-12 10:19:36
  * @Description: 订单池查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SearchForm.js
  */
@@ -104,7 +104,6 @@ export default class SearchForm extends Component {
       //多选下拉框时修改入参,非下拉框暂时不支持in 改为like
       if (field.searchCondition == 'in' || field.searchCondition == 'notIn') {
         if (field.searchShowtype == 'list' || field.searchShowtype == 'sel_search') {
-          console.log('param', param, val);
           val = val.join('||');
         } else if (field.searchShowtype == 'auto_complete') {
           val = val.replace(',', '||');
@@ -204,6 +203,11 @@ export default class SearchForm extends Component {
       if (searchProperties.queryParams.condition) {
         const params = [...searchProperties.queryParams.condition.params];
         searchProperties.queryParams.condition.params = [...params, ...loginParmas];
+      } else {
+        searchProperties.queryParams = {
+          ...searchProperties.queryParams,
+          condition: { params: loginParmas },
+        };
       }
     }
 

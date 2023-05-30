@@ -2,12 +2,12 @@
  * @Author: guankongjin
  * @Date: 2022-03-31 09:15:58
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-02-28 14:11:55
+ * @LastEditTime: 2023-04-07 11:47:58
  * @Description: 排车单面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\SchedulePage.js
  */
 import React, { Component } from 'react';
-import { Modal, Tabs, Button, message, Typography, Dropdown, Menu, Icon } from 'antd';
+import { Modal, Tabs, Button, message, Typography, Dropdown, Menu, Icon, notification } from 'antd';
 import DispatchingTable from './DispatchingTable';
 import DispatchingCreatePage from './DispatchingCreatePage';
 import SearchForm from './SearchForm';
@@ -42,6 +42,7 @@ const { TabPane } = Tabs;
 export default class SchedulePage extends Component {
   state = {
     loading: false,
+    btnLoading: false,
     columns: [...ScheduleColumns],
     savedRowKeys: [],
     approvedRowKeys: [],
@@ -56,6 +57,7 @@ export default class SchedulePage extends Component {
     users: [],
     authority: this.props.authority ? this.props.authority[0] : null,
     maxAdjustWeight: '',
+    searchKey: 'schedulePoolSearch',
   };
 
   componentDidMount() {
@@ -69,10 +71,20 @@ export default class SchedulePage extends Component {
     { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
     { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
   ];
+  initialiPage = () => {
+    this.setState({
+      searchKey: 'schedulePoolSearch' + Math.ceil(Math.random() * 1000),
+    });
+  };
   //刷新
-  refreshTable = (searchKeyValues, key) => {
-    this.refreshSchedulePool(searchKeyValues, undefined, undefined, key);
+  refreshTable = searchKeyValues => {
+    this.refreshSchedulePool(searchKeyValues, undefined, undefined);
     this.props.refreshDetail(undefined);
+  };
+  refreshScheduleTable = async schedule => {
+    await this.refreshSchedulePool();
+    this.setState({ savedRowKeys: [schedule.uuid] });
+    this.props.refreshDetail(schedule);
   };
   refreshScheduleAndpending = () => {
     this.refreshTable();
@@ -80,16 +92,16 @@ export default class SchedulePage extends Component {
   };
 
   //获取排车单
-  refreshSchedulePool = (params, pages, sorter, key) => {
-    let { searchFilter, searchPagination } = this.state;
-    const activeKey = key ? key : this.state.activeKey;
+  refreshSchedulePool = async (params, pages, sorter) => {
+    const { searchFilter, searchPagination, activeKey } = this.state;
+    let newSearchFilter = { ...searchFilter };
     let filter = { superQuery: { matchType: 'and', queryParams: [] } };
     if (params) {
       if (params.superQuery) {
         filter = params;
-        searchFilter[activeKey] = params.superQuery.queryParams;
+        newSearchFilter[activeKey] = params.superQuery.queryParams;
       } else {
-        searchFilter[activeKey] = params;
+        newSearchFilter[activeKey] = params;
       }
     }
     if (sorter && sorter.column) {
@@ -112,14 +124,14 @@ export default class SchedulePage extends Component {
       filter.pageSize = searchPagination.pageSize || pageSize;
     }
     filter.superQuery.queryParams = [
-      ...searchFilter[activeKey],
+      ...newSearchFilter[activeKey],
       ...this.isOrgQuery,
       { field: 'STAT', type: 'VarChar', rule: 'eq', val: activeKey },
     ];
     filter.quickuuid = 'sj_itms_schedulepool';
-    this.searchSchedulePool(filter, searchFilter, searchPagination, activeKey);
+    await this.searchSchedulePool(filter, newSearchFilter, searchPagination);
   };
-  searchSchedulePool = async (filter, searchFilter, searchPagination, activeKey) => {
+  searchSchedulePool = async (filter, searchFilter, searchPagination) => {
     this.setState({ loading: true });
     const response = await queryData(filter);
     if (response.success) {
@@ -131,10 +143,11 @@ export default class SchedulePage extends Component {
         showTotal: total => `共 ${total} 条`,
       };
       let scheduleData = response.data.records ? response.data.records : [];
-      scheduleData = scheduleData?.map(order => {
-        order.uuid = `${order.UUID}`;
-        order.warning = order.ISSPLIT > 0;
-        return order;
+      scheduleData = scheduleData?.map(schedule => {
+        schedule.uuid = `${schedule.UUID}`;
+        schedule.warning = schedule.ISSPLIT > 0;
+        schedule.error = schedule.WEIGHT > schedule.BEARWEIGHT;
+        return schedule;
       });
       this.setState({
         searchPagination,
@@ -142,14 +155,17 @@ export default class SchedulePage extends Component {
         savedRowKeys: [],
         approvedRowKeys: [],
         abortedRowKeys: [],
+        loading: false,
+        searchFilter,
       });
+    } else {
+      this.setState({ loading: false, searchFilter });
     }
-    this.setState({ activeKey, loading: false, searchFilter });
   };
 
   //标签页切换
   handleTabChange = activeKey => {
-    this.refreshTable(undefined, activeKey);
+    this.setState({ activeKey });
   };
 
   //新建排车单
@@ -283,19 +299,20 @@ export default class SchedulePage extends Component {
   };
 
   //批准
-  handleApprove = () => {
+  handleApprove = async () => {
     const { savedRowKeys } = this.state;
     if (savedRowKeys.length == 0) {
       message.warning('请选择排车单！');
       return;
     }
     if (savedRowKeys.length == 1) {
-      this.approveSchedule(savedRowKeys[0]).then(response => {
-        if (response.success) {
-          message.success('批准成功！');
-          this.refreshSchedulePool();
-        }
-      });
+      this.setState({ btnLoading: true });
+      const response = await this.approveSchedule(savedRowKeys[0]);
+      if (response.success) {
+        message.success('批准成功！');
+        this.refreshSchedulePool();
+      }
+      this.setState({ btnLoading: false });
     } else {
       this.batchProcessConfirmRef.show(
         '批准',
@@ -305,13 +322,29 @@ export default class SchedulePage extends Component {
       );
     }
   };
+
+  openNotification = data => {
+    notification.warning({
+      message: '排车单高速区域异常',
+      description: data,
+      duration: null,
+      onClick: () => {
+        // console.log('Notification Clicked!');
+      },
+    });
+  };
+
   approveSchedule = async uuid => {
     const { scheduleData } = this.state;
     const schedule = scheduleData.find(x => x.uuid == uuid);
     if (schedule.STAT != 'Saved') {
       return null;
     }
-    return await approve(schedule.uuid, schedule.VERSION);
+    const response = await approve(schedule.uuid, schedule.VERSION);
+    if (response.success && response.data) {
+      this.openNotification(response.data);
+    }
+    return response;
   };
 
   //删除
@@ -362,7 +395,7 @@ export default class SchedulePage extends Component {
         selectSchedule = item;
         // selectSchedule.isSelect = true;
       }
-      item.clicked = selected && !item.clicked;
+      // item.clicked = selected && !item.clicked;
       return item;
     });
     let rowKeys = { savedRowKeys: [record.uuid] };
@@ -420,6 +453,7 @@ export default class SchedulePage extends Component {
   };
 
   buildOperations = activeKey => {
+    const { btnLoading } = this.state;
     switch (activeKey) {
       case 'Approved':
         return (
@@ -470,6 +504,7 @@ export default class SchedulePage extends Component {
               type={'primary'}
               style={{ marginLeft: 10 }}
               onClick={this.handleApprove}
+              loading={btnLoading}
               hidden={!havePermission(this.state.authority + '.approve')}
             >
               批准
@@ -486,6 +521,11 @@ export default class SchedulePage extends Component {
     }
   };
 
+  //双击进入排车界面
+  onDoubleClick = record => {
+    this.createPageModalRef.show(true, record);
+  };
+
   render() {
     const {
       loading,
@@ -499,11 +539,16 @@ export default class SchedulePage extends Component {
       approvedRowKeys,
       abortedRowKeys,
       maxAdjustWeight,
+      searchKey,
     } = this.state;
 
     columns[0].render = (val, record) => {
       return record.STAT == 'Saved' ? (
-        <a href="#" onClick={this.editTable(record)}>
+        <a
+          href="#"
+          onClick={this.editTable(record)}
+          style={{ color: `${record.WEIGHT > record.BEARWEIGHT ? '#ff0000' : '#3B77E3'}` }}
+        >
           {val}
         </a>
       ) : (
@@ -558,6 +603,7 @@ export default class SchedulePage extends Component {
             <SearchForm
               quickuuid="sj_itms_schedulepool"
               users={users}
+              key={searchKey + '1'}
               dispatchcenterSearch={true}
               refreshOrderPool={this.refreshTable}
             />
@@ -583,6 +629,7 @@ export default class SchedulePage extends Component {
                   pagination={searchPagination || false}
                   loading={loading}
                   onClickRow={this.onClickRow}
+                  onDoubleClick={this.onDoubleClick}
                   selectedRowKeys={savedRowKeys}
                   refreshDataSource={(_, pagination, sorter) => {
                     this.refreshSchedulePool(undefined, pagination, sorter);
@@ -625,6 +672,7 @@ export default class SchedulePage extends Component {
             <SearchForm
               quickuuid="sj_itms_schedulepool"
               users={users}
+              key={searchKey + '2'}
               dispatchcenterSearch={true}
               refreshOrderPool={this.refreshTable}
             />
@@ -673,57 +721,65 @@ export default class SchedulePage extends Component {
               </div>
             )}
           </TabPane>
-          <TabPane tab={<Text className={dispatchingStyles.cardTitle}>已作废</Text>} key="Aborted">
-            {/* <ScheduleSearchForm refresh={this.refreshTable} users={users} /> */}
-            {/* 查询表单 */}
-            <SearchForm
-              quickuuid="sj_itms_schedulepool"
-              users={users}
-              dispatchcenterSearch={true}
-              refreshOrderPool={this.refreshTable}
-            />
-            <DispatchingTable
-              comId="abortedSchedule"
-              clickRow
-              pagination={searchPagination || false}
-              loading={loading}
-              onClickRow={this.onClickRow}
-              selectedRowKeys={abortedRowKeys}
-              changeSelectRows={this.tableChangeRows('Aborted')}
-              dataSource={scheduleData}
-              refreshDataSource={(_, pagination, sorter) => {
-                this.refreshSchedulePool(undefined, pagination, sorter);
-              }}
-              columns={columns}
-              scrollY="calc(86vh - 180px)"
-            />
-            {scheduleData.length == 0 ? (
-              <></>
-            ) : (
-              <div className={dispatchingStyles.orderPoolFooter}>
-                <div className={dispatchingStyles.orderTotalPane}>
-                  <Icon type="info-circle" theme="filled" style={{ color: '#3B77E3' }} />
-                  <span style={{ marginLeft: 5 }}>
-                    已选择
-                    <span style={{ color: '#3B77E3', margin: '0 2px' }}>
-                      {abortedRowKeys.length}
+          {this.props.dispatchConfig.isAbortedPool ? (
+            <TabPane
+              tab={<Text className={dispatchingStyles.cardTitle}>已作废</Text>}
+              key="Aborted"
+            >
+              {/* <ScheduleSearchForm refresh={this.refreshTable} users={users} /> */}
+              {/* 查询表单 */}
+              <SearchForm
+                quickuuid="sj_itms_schedulepool"
+                users={users}
+                key={searchKey + '3'}
+                dispatchcenterSearch={true}
+                refreshOrderPool={this.refreshTable}
+              />
+              <DispatchingTable
+                comId="abortedSchedule"
+                clickRow
+                pagination={searchPagination || false}
+                loading={loading}
+                onClickRow={this.onClickRow}
+                selectedRowKeys={abortedRowKeys}
+                changeSelectRows={this.tableChangeRows('Aborted')}
+                dataSource={scheduleData}
+                refreshDataSource={(_, pagination, sorter) => {
+                  this.refreshSchedulePool(undefined, pagination, sorter);
+                }}
+                columns={columns}
+                scrollY="calc(86vh - 180px)"
+              />
+              {scheduleData.length == 0 ? (
+                <></>
+              ) : (
+                <div className={dispatchingStyles.orderPoolFooter}>
+                  <div className={dispatchingStyles.orderTotalPane}>
+                    <Icon type="info-circle" theme="filled" style={{ color: '#3B77E3' }} />
+                    <span style={{ marginLeft: 5 }}>
+                      已选择
+                      <span style={{ color: '#3B77E3', margin: '0 2px' }}>
+                        {abortedRowKeys.length}
+                      </span>
+                      项
                     </span>
-                    项
-                  </span>
-                  <a
-                    href="##"
-                    style={{ marginLeft: 10 }}
-                    onClick={() => {
-                      this.setState({ abortedRowKeys: [] });
-                      this.props.refreshDetail(undefined);
-                    }}
-                  >
-                    取消全部
-                  </a>
+                    <a
+                      href="##"
+                      style={{ marginLeft: 10 }}
+                      onClick={() => {
+                        this.setState({ abortedRowKeys: [] });
+                        this.props.refreshDetail(undefined);
+                      }}
+                    >
+                      取消全部
+                    </a>
+                  </div>
                 </div>
-              </div>
-            )}
-          </TabPane>
+              )}
+            </TabPane>
+          ) : (
+            <></>
+          )}
         </Tabs>
       </div>
     );

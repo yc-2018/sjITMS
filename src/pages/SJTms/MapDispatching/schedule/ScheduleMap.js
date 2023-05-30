@@ -92,10 +92,19 @@ export default class DispatchMap extends Component {
             this.map?.clearOverlays();
             this.drawMarker(orders);
             this.drawMenu();
+            this.autoViewPort(orders);
           }, 500);
         }
       }
     }
+  };
+
+  //自动聚焦
+  autoViewPort = points => {
+    const newPoints = points.map(point => {
+      return new BMapGL.Point(point.longitude, point.latitude);
+    });
+    this.map?.setViewport(newPoints);
   };
 
   //送货点标注

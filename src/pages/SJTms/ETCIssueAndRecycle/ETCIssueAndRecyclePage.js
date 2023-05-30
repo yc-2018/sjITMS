@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-09-23 16:17:11
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-21 11:23:35
+ * @LastEditTime: 2023-04-18 14:40:44
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -20,15 +20,36 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
     passCard: {},
   };
 
+  componentDidMount() {
+    window.addEventListener('keydown', this.keyDown);
+  }
+
+  keyDown = (event, ...args) => {
+    let that = this;
+    var e = event || window.event || args.callee.caller.arguments[0];
+    console.log('e', e);
+    if (e && e.keyCode == 90 && e.altKey) {
+      that.recommend();
+    } else if (e && e.keyCode == 88 && e.altKey) {
+      that.issue();
+    } else if (e && e.keyCode == 67 && e.altKey) {
+      that.recycle();
+    }
+  };
+
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this.keyDown);
+  }
+
   issueButton = () => {
     return (
       <span>
-        <Button onClick={this.recommend.bind()}>推荐</Button>
+        <Button onClick={this.recommend.bind()}>推荐(Alt+Z)</Button>
         <Button type="primary" style={{ margin: '0 10px' }} onClick={this.issue.bind()}>
-          发放
+          发放(Alt+X)
         </Button>
         <Button type="danger" onClick={this.recycle.bind()}>
-          回收
+          回收(Alt+C)
         </Button>
       </span>
     );
@@ -48,6 +69,7 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
     const { selectRows } = this.state;
     if (selectRows.BILLNUMBER == undefined) {
       message.error('请选择需要推荐粤通卡的排车单');
+      return;
     }
     const response = await recommend(selectRows.BILLNUMBER);
     if (response.success && response.data) {
@@ -60,8 +82,14 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
     const { selectRows } = this.state;
     if (selectRows.BILLNUMBER == undefined) {
       message.error('请选择需要发放粤通卡的排车单');
+      return;
     }
     const data = this.getCardEntity.getEntity();
+    console.log('data', data);
+    if (data.v_sj_itms_etc_issueandrecycle[0].CARDNO == undefined) {
+      message.error('请填写发放的粤通卡号');
+      return;
+    }
     const response = await issue(data);
     if (response.success) {
       message.success('发放成功');
@@ -75,8 +103,13 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
     const { selectRows } = this.state;
     if (selectRows.BILLNUMBER == undefined) {
       message.error('请选择需要回收粤通卡的排车单');
+      return;
     }
     const data = this.getCardEntity.getEntity();
+    if (data.v_sj_itms_etc_issueandrecycle[0].CARDNO == undefined) {
+      message.error('该排车单无需回收粤通卡');
+      return;
+    }
     const response = await recycle(data);
     if (response.success) {
       message.success('回收成功');
@@ -86,7 +119,7 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
 
   //刷新
   refreshSelectedRow = row => {
-    this.setState({ selectRows: row });
+    this.setState({ selectRows: row[0] });
   };
 
   render() {
@@ -100,6 +133,7 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
               refreshSelectedRow={this.refreshSelectedRow}
               quickuuid="sj_itms_etc_issue"
               onRef={node => (this.handlePage = node)}
+              row={this.state.row}
             />
           </Content>
           <Sider style={{ backgroundColor: 'rgb(237, 241, 245)' }} width={'30%'}>
@@ -110,10 +144,11 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
                     noBorder
                     noCategory
                     quickuuid="sj_itms_etc_issue"
-                    params={{ entityUuid: selectRows.BILLNUMBER }}
+                    params={{ entityUuid: selectRows?.BILLNUMBER }}
                     showPageNow="update"
                     passCard={passCard}
                     onRef={node => (this.getCardEntity = node)}
+                    style={{ color: 'black' }}
                   />
                 </Card>
               </Col>

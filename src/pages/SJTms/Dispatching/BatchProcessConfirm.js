@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-05-27 09:11:09
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-07-20 15:12:31
+ * @LastEditTime: 2023-03-09 16:22:19
  * @Description: 批处理
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\BatchProcessConfirm.js
  */
@@ -299,7 +299,20 @@ export default class BatchProcessConfirm extends Component {
         {/* 失败提示 */}
         <Modal
           visible={showFailedResultModal}
-          footer={[]}
+          footer={
+            <div>
+              <Button onClick={this.handleRerty}>重试</Button>
+              <Button
+                type="primary"
+                onClick={() => {
+                  this.resetProgress();
+                  this.setState({ showFailedResultModal: false });
+                }}
+              >
+                关闭
+              </Button>
+            </div>
+          }
           onCancel={this.handleRetryCancel}
           width={350}
           destroyOnClose
@@ -310,15 +323,11 @@ export default class BatchProcessConfirm extends Component {
             <br />
             <br />
             {this.renderProgressFeedbackFailedResult()}
-            <br />
-            <Button type="primary" onClick={this.handleRerty}>
-              重试
-            </Button>
             {errMsg.length > 0 ? (
-              <div style={{ marginTop: '15px', color: 'red' }}>
+              <div style={{ marginTop: 15, color: 'red' }}>
                 失败原因
                 {errMsg.map(err => {
-                  return <p style={{ marginTop: '5px' }}>{err}</p>;
+                  return <p style={{ marginTop: 5 }}>{err}</p>;
                 })}
               </div>
             ) : null}

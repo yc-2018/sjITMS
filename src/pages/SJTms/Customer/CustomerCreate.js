@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2023-01-03 11:44:10
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-01-12 14:36:30
+ * @LastEditTime: 2023-04-17 11:30:13
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerCreate.js
  */
@@ -39,16 +39,36 @@ export default class CustomerCreate extends QuickCreatePage {
       });
       this.setState({ formItems });
     }
-    if (fieldName == 'SPECIFICTYPE' && valueEvent) {
+    if (fieldName == 'ISDISPOSE' && valueEvent) {
       const { formItems } = this.state;
-      let rules = formItems['sj_itms_customer_service_RESULTTAG'].rules;
+      const rules = formItems['sj_itms_customer_service_DISPOSEDEPT']?.rules || [];
       rules.forEach(rule => {
         if (rule.hasOwnProperty('required')) {
-          rule.required = valueEvent.record.REQUIRED === 1;
+          rule.required = valueEvent.value == '1';
         }
       });
       this.setState({ formItems });
     }
+    // if (fieldName == 'RESPONSIBILITYDEPT' && valueEvent) {
+    //   const { formItems } = this.state;
+    //   let rules = formItems['sj_itms_customer_service_RESULTTAG'].rules;
+    //   rules.forEach(rule => {
+    //     if (rule.hasOwnProperty('required')) {
+    //       rule.required = valueEvent.value != undefined;
+    //     }
+    //   });
+    //   this.setState({ formItems });
+    // }
+    // if (fieldName == 'SPECIFICTYPE' && valueEvent) {
+    //   const { formItems } = this.state;
+    //   let rules = formItems['sj_itms_customer_service_RESULTTAG'].rules;
+    //   rules.forEach(rule => {
+    //     if (rule.hasOwnProperty('required')) {
+    //       rule.required = valueEvent.record.REQUIRED === 1;
+    //     }
+    //   });
+    //   this.setState({ formItems });
+    // }
     if (fieldName == 'DISPOSEDEPT' && valueEvent) {
       this.entity[mainName][0]['DISPOSEDEPTNAME'] = valueEvent.record.NAME;
       // this.entity[mainName][0]['DISPOSECODE'] = valueEvent.record.MANAGERCODE?.split(',')[0];
@@ -66,6 +86,14 @@ export default class CustomerCreate extends QuickCreatePage {
       if (feedbackTime) {
         this.entity[mainName][0]['DEADLINE'] = moment(feedbackTime)
           .add(Number(valueEvent.value), 'hours')
+          .format('YYYY-MM-DD HH:mm:ss');
+      }
+    }
+    if (fieldName == 'FEEDBACKTIME' && valueEvent) {
+      const completionTime = this.entity[mainName][0]['COMPLETIONTIME'];
+      if (completionTime) {
+        this.entity[mainName][0]['DEADLINE'] = moment(valueEvent)
+          .add(Number(completionTime), 'hours')
           .format('YYYY-MM-DD HH:mm:ss');
       }
     }

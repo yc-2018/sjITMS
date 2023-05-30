@@ -8,7 +8,8 @@ import { calculateMemberWage } from '@/services/cost/CostCalculation';
 import { dynamicqueryById, dynamicDelete, dynamicQuery } from '@/services/quick/Quick';
 import {
   savePlan,
-  deleteAddressPlanByUuids
+  deleteAddressPlanByUuids,
+  checkShipArea
 } from '@/services/sjtms/LineSystemHis';
 import { havePermission } from '@/utils/authority';
 @connect(({ quick, loading }) => ({
@@ -84,21 +85,45 @@ export default class LineShipAddressPlan extends QuickFormSearchPage {
   }
   checkSave =async()=>{
     const {selectedRows} = this.state;
+    const {lineuuid,ischeckArea} = this.props;
     if(selectedRows && selectedRows.length ==0){
       message.info("请至少选择一条记录");
     }
     const params = {
-      addressIds:selectedRows.map(e=>{
+      addressIds: selectedRows.map(e=>{
         return e.UUID;
       }),
-      lineuuid:this.props.lineuuid
+      lineuuid:lineuuid
     }
+    if(ischeckArea){
+      const shipArea = await checkShipArea(
+        { lineuuid:lineuuid,
+          addressIds:selectedRows.map(e=>e.STOREUUID)
+        }
+      );
+      if(!shipArea.data){
+        Modal.confirm({
+          title:"存在门店配送区域不一致，确定加入到同一个线路吗？",
+          onOk:()=> this.savePlan(params)
+        })
+        return;
+      }else{
+        this.savePlan(params);
+      }
+    }else{
+      this.savePlan(params);
+    }
+    
+  
+   
+  }
+
+  savePlan = async(params)=>{
     await savePlan(params).then(result =>{
       if(result && result.success){
         message.success("添加成功");
         this.onSearch();
       }
-
     })
   }
   //该方法会覆盖所有的中间功能按钮
