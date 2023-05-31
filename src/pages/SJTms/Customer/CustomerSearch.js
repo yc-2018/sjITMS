@@ -15,7 +15,7 @@ import { release, finished, unFinished, norm } from '@/services/sjitms/Customer'
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { loginUser } from '@/utils/LoginContext';
 import DisposePage from '../CustomerDispose/DisposePage';
-
+import moment from 'moment';
 import { havePermission } from '@/utils/authority';
 
 @connect(({ quick, loading }) => ({
@@ -154,7 +154,12 @@ export default class CustomerSearch extends QuickFormSearchPage {
   };
   onRelease = async () => {
     const { selectedRows, releaseRemark } = this.state;
-    const response = await release(selectedRows[0].UUID, releaseRemark);
+    const response = await release(selectedRows[0].UUID,  
+    {
+      COMPLETIONTIME:selectedRows[0].COMPLETIONTIME,
+      DEADLINE:moment(new Date()).format(selectedRows[0].DEADLINE),
+      remark:releaseRemark
+    });
     if (response.success) {
       message.success('发布成功！');
       this.setState({ releaseModal: false });
@@ -219,7 +224,11 @@ export default class CustomerSearch extends QuickFormSearchPage {
       return;
     }
     if (selectedRows.length == 1) {
-      this.release(selectedRows[0].UUID).then(response => {
+      this.release(selectedRows[0].UUID,
+      {
+        COMPLETIONTIME:selectedRows[0].COMPLETIONTIME,
+        DEADLINE:moment(new Date()).format(selectedRows[0].DEADLINE)
+      }).then(response => {
         if (response.success) {
           message.success('发布成功！');
           this.onSearch();
@@ -234,8 +243,8 @@ export default class CustomerSearch extends QuickFormSearchPage {
       );
     }
   };
-  release = async uuid => {
-    return await release(uuid, '');
+  release = async (uuid ,data)=> {
+    return await release(uuid, data);
   };
 
   handleResult = () => {
