@@ -30,6 +30,19 @@ export async function issue(payload) {
     }
   );
 }
+
+//补发卡
+export async function repairIssue(payload) {
+  return request(
+    `/itms-schedule/itms-schedule/sj/etc/repairIssue?companyUuid=${loginCompany().uuid}&dcUuid=${
+      loginOrg().uuid
+    }`,
+    {
+      method: 'POST',
+      body: payload,
+    }
+  );
+}
 //取消发卡
 export async function cancelIssue(billNumber) {
   return request(

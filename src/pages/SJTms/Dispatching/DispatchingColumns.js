@@ -211,6 +211,13 @@ export const OrderCollectColumns = [
     width: 80,
     render: val => (val ? <span>{(val / 1000).toFixed(3)}</span> : <Empty />),
   },
+  {
+    title: '配送区域',
+    dataIndex: 'shipAreaName',
+    sorter: true,
+    width: 100,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
 ];
 export const OrderDetailColumns = [
   {
@@ -287,6 +294,13 @@ export const OrderDetailColumns = [
     title: '备注',
     dataIndex: 'note',
     width: 80,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '配送区域',
+    dataIndex: 'shipAreaName',
+    sorter: true,
+    width: 100,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
 ];
