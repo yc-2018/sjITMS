@@ -1432,7 +1432,7 @@ class StandardTable extends Component {
           ...pagination,
           // defaultPageSize: 20,
           pageSize: this.state.pageSize ? this.state.pageSize : 20,
-          pageSizeOptions: ['20', '50', '100', '200', '500'],
+          pageSizeOptions: ['20', '50', '100', '200'], //500
         };
       }
     }
