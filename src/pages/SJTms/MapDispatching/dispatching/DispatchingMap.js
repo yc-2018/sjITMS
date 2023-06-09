@@ -20,6 +20,7 @@ import {
   List,
   Avatar,
   Icon,
+  Checkbox,
 } from 'antd';
 import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
 import { getSchedule, getDetailByBillUuids } from '@/services/sjitms/ScheduleBill';
@@ -35,14 +36,15 @@ import {
 } from '@/services/sjitms/OrderBill';
 import { queryDict, queryData } from '@/services/quick/Quick';
 
-import ShopIcon from '@/assets/common/myj.png';
-import ShopClickIcon from '@/assets/common/otherMyj.png';
-import ShopClickIcon2 from '@/assets/common/otherMyj2.png';
+import ShopIcon from '@/assets/common/22.png';
+import ShopClickIcon from '@/assets/common/23.png';
+import ShopClickIcon2 from '@/assets/common/24.png';
 import van from '@/assets/common/van.svg';
 
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { sumBy, uniqBy } from 'lodash';
 import truck from '@/assets/common/truck.svg';
+import ShopsIcons from '@/assets/common/shops.png';
 
 const { Search } = Input;
 
@@ -82,7 +84,32 @@ export default class DispatchMap extends Component {
     isEdit: false,
     schdule: undefined,
     closeLeft: false,
+    checkSchedules: [],
+    checkScheduleOrders: [],
   };
+
+  colors = [
+    '#0069FF',
+    '#EF233C',
+    '#20BF55',
+    '#07BEB8',
+    '#FF715B',
+    '#523F38',
+    '#FF206E',
+    '#086375',
+    '#A9E5BB',
+    '#8F2D56',
+    '#004E98',
+    '#5D576B',
+    '#248232',
+    '#9A031E',
+    '#8E443D',
+    '#F15152',
+    '#F79256',
+    '#640D14',
+    '#3F88C5',
+    '#0FA3B1',
+  ];
 
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
@@ -146,7 +173,7 @@ export default class DispatchMap extends Component {
   };
   //隐藏modal
   hide = () => {
-    this.setState({ visible: false, isEdit: false });
+    this.setState({ visible: false, isEdit: false, checkScheduleOrders: [], checkSchedules: [] });
     this.clusterLayer = undefined;
     this.contextMenu = undefined;
     this.isSelectOrders = [];
@@ -301,10 +328,20 @@ export default class DispatchMap extends Component {
     orders.map(order => {
       (order.isSelect = false), (order.sort = null);
     });
-    this.setState({ orders, driverMileage: 0, storeInfo: '', isEdit: false }, () => {
-      // this.map?.clearOverlays();
-      // this.clusterSetData(orders);
-    });
+    this.setState(
+      {
+        orders,
+        driverMileage: 0,
+        storeInfo: '',
+        isEdit: false,
+        checkScheduleOrders: [],
+        checkSchedules: [],
+      },
+      () => {
+        // this.map?.clearOverlays();
+        // this.clusterSetData(orders);
+      }
+    );
     this.storeFilter('');
     this.searchFormRef?.onSubmit();
     this.isSelectOrders = [];
@@ -369,7 +406,7 @@ export default class DispatchMap extends Component {
         );
       });
     }
-
+    markers = [...markers, ...this.drawCheckSchedules()];
     return markers;
   };
 
@@ -522,7 +559,7 @@ export default class DispatchMap extends Component {
     if (orders.length <= 0 || this.contextMenu) return;
     const menuItems = [
       {
-        text: '排车',
+        text: '排车(ALT+Q)',
         callback: () => {
           this.saveSchedule();
         },
@@ -722,8 +759,10 @@ export default class DispatchMap extends Component {
       volume: 0, //体积
       weight: 0, //重量,
     };
-    const { orders } = this.state;
-    let isOrder = orders.filter(e => e.deliveryPoint.code == storeCode);
+    const { orders, checkScheduleOrders } = this.state;
+    let isOrder = [...orders, ...checkScheduleOrders].filter(
+      e => e.deliveryPoint.code == storeCode
+    );
     isOrder.map(e => {
       totals.cartonCount += e.cartonCount;
       totals.scatteredCount += e.scatteredCount;
@@ -745,21 +784,8 @@ export default class DispatchMap extends Component {
   };
 
   clickSchdule = async schdule => {
-    // this.setState({ loading: true });
+    this.setState({ loading: true });
     let { orderMarkers, orders } = this.state;
-    let params = {
-      pageSize: 20,
-      superQuery: {
-        matchType: 'and',
-        queryParams: [
-          { field: 'SCHEDULENUM', type: 'VarChar', rule: 'like', val: schdule.BILLNUMBER },
-          { field: 'COMPANYUUID', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
-          { field: 'DISPATCHCENTERUUID', type: 'VarChar', rule: 'eq', val: loginOrg().uuid },
-          { field: 'PENDINGTAG', type: 'VarChar', rule: 'eq', val: 'Normal' },
-        ],
-      },
-    };
-    // const response = await queryAuditedOrderByParams(params);
     const response = await getDetailByBillUuids([schdule.UUID]);
     if (response.success) {
       let details = response.data;
@@ -778,13 +804,86 @@ export default class DispatchMap extends Component {
           orders.push(e);
         }
       });
-      this.setState({ orderMarkers, orders, isEdit: true, schdule: schdule }, () => {
-        setTimeout(() => {
-          this.drawMenu();
-        }, 500);
-      });
+      this.setState(
+        {
+          orderMarkers,
+          orders,
+          isEdit: true,
+          schdule: schdule,
+          checkScheduleOrders: [],
+          checkSchedules: [],
+        },
+        () => {
+          setTimeout(() => {
+            this.drawMenu();
+          }, 500);
+        }
+      );
     }
     this.setState({ loading: false });
+  };
+
+  checkSchedule = async (e, schdule) => {
+    const { checkSchedules } = this.state;
+    let checked = e.target.checked;
+    let checkList = [...checkSchedules];
+    let data = [];
+    if (checked) {
+      checkList.push(schdule);
+    } else {
+      checkList = checkList.filter(e => e != schdule);
+    }
+    if (checkList.length > 0) {
+      const response = await getDetailByBillUuids(checkList);
+      if (response.success) {
+        data = response.data;
+        checkList.map((e, index) => {
+          data.map(order => {
+            if (order.billUuid == e) {
+              order.scheduleNum = index + 1;
+            }
+          });
+        });
+      }
+    }
+    this.setState({ checkSchedules: checkList, checkScheduleOrders: data });
+  };
+
+  drawCheckSchedules = () => {
+    const { checkScheduleOrders } = this.state;
+    let markers = [];
+    checkScheduleOrders.map(order => {
+      var point = new BMapGL.Point(order.longitude, order.latitude);
+      markers.push(
+        <Marker
+          isTop={true}
+          position={point}
+          icon={this.drawIcon(order.scheduleNum)}
+          // icon={[icon, otherStore][order.isSelect ? 1 : 0]}
+          shadow={true}
+          onMouseover={() => this.setState({ windowInfo: { point, order } })}
+          onMouseout={() => this.setState({ windowInfo: undefined })}
+          // onClick={event => {
+          //   that.onChangeSelect(!order.isSelect, order);
+          // }}
+        />
+      );
+    });
+    return markers;
+  };
+
+  //标注icon
+  drawIcon = num => {
+    const index = num % 20;
+    const multiple = 5;
+    const icon = new BMapGL.Icon(ShopsIcons, new BMapGL.Size(160 / multiple, 160 / multiple), {
+      imageOffset: new BMapGL.Size(
+        (160 / multiple) * ((index % 5) - 1),
+        (160 / multiple) * (Math.ceil(index / 5) - 1)
+      ),
+      imageSize: new BMapGL.Size(800 / multiple, 1000 / multiple),
+    });
+    return icon;
   };
 
   render() {
@@ -798,6 +897,8 @@ export default class DispatchMap extends Component {
       isEdit,
       schdule,
       closeLeft,
+      checkScheduleOrders,
+      checkSchedules,
     } = this.state;
     const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
@@ -904,6 +1005,7 @@ export default class DispatchMap extends Component {
                     }}
                   >
                     {isEdit ? `编辑排车单:${schdule.BILLNUMBER}` : '新建排车单'}
+                    (ALT+Q)
                   </div>
 
                   {selectOrder.map(order => {
@@ -955,38 +1057,8 @@ export default class DispatchMap extends Component {
                       </div>
                     );
                   })}
-                  {/* <Row
-                    style={{
-                      position: 'sticky',
-                      bottom: 0,
-                      left: 0,
-                      background: '#fff',
-                      width: '100%',
-                    }}
-                  >
-                    <Col span={6}>
-                      门店数:
-                      {stores.length || 0}
-                    </Col>
-                    <Col span={6}>
-                      总体积:
-                      {Math.round(sumBy(selectOrder, 'weight') * 1000) / 1000}
-                    </Col>
-                    <Col span={6}>
-                      总重量:
-                      {Math.round(sumBy(selectOrder, 'volume') * 1000) / 1000}
-                    </Col>
-                    <Col span={6}>
-                      <Button>排车</Button>
-                    </Col>
-                  </Row> */}
                 </div>
               ) : (
-                // <Empty
-                //   style={{ marginTop: 80 }}
-                //   image={emptySvg}
-                //   description="暂无数据，请选择排车门店！"
-                // />
                 <List
                   header={
                     <div style={{ textAlign: 'center', fontSize: '18px', fontWeight: 'bold' }}>
@@ -1001,7 +1073,36 @@ export default class DispatchMap extends Component {
                   itemLayout="horizontal"
                   dataSource={this.state.scheduleList}
                   renderItem={item => (
-                    <List.Item>
+                    <List.Item
+                      style={
+                        {
+                          // backgroundColor: this.colors[
+                          //   checkSchedules.findIndex(e => e == item.UUID) % 20
+                          // ],
+                        }
+                      }
+                      extra={
+                        <div>
+                          <Checkbox
+                            style={{ marginRight: '10px' }}
+                            onChange={e => this.checkSchedule(e, item.UUID)}
+                            checked={this.state.checkSchedules.indexOf(item.UUID) != -1}
+                          />
+                          <div
+                            style={{
+                              backgroundColor: this.colors[
+                                checkSchedules.findIndex(e => e == item.UUID) % 20
+                              ],
+                              width: '20px',
+                              height: '20px',
+                              float: 'left',
+                              marginRight: '10px',
+                              borderRadius: '50px',
+                            }}
+                          />
+                        </div>
+                      }
+                    >
                       <List.Item.Meta
                         avatar={<Avatar style={{ width: '50px', height: '50px' }} src={truck} />}
                         title={
@@ -1042,7 +1143,7 @@ export default class DispatchMap extends Component {
                   />
                 </div>
               </a>
-              {orderMarkers.length > 0 ? (
+              {orderMarkers.length > 0 || checkScheduleOrders.length > 0 ? (
                 <Map
                   center={{ lng: 113.809388, lat: 23.067107 }}
                   zoom={10}
@@ -1055,6 +1156,7 @@ export default class DispatchMap extends Component {
                   style={{ height: '100%' }}
                 >
                   {this.drawMarker()}
+                  {/* {this.drawCheckSchedules()} */}
                   {/* 鼠标绘制工具 */}
                   <DrawingManager
                     // isOpen={true}
@@ -1066,6 +1168,7 @@ export default class DispatchMap extends Component {
                     drawingToolOptions={{
                       drawingModes: ['rectangle'],
                     }}
+                    // skipEditing={true}
                     drawingMode={'rectangle'}
                     rectangleOptions={{
                       strokeColor: '#d9534f', //边线颜色。

@@ -46,7 +46,7 @@ import {
   checkAreaSchedule,
   checkOrderInSchedule,
 } from '@/services/sjitms/ScheduleBill';
-import { groupBy, sumBy, uniqBy } from 'lodash';
+import { groupBy, sumBy, uniqBy,orderBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
 import VehiclePoolPage from './VehiclePoolPage';
@@ -231,7 +231,7 @@ export default class OrderPoolPage extends Component {
     deliveryPointGroupArr.forEach(data => {
       data.details = output[data.pointCode];
     });
-    return deliveryPointGroupArr;
+    return orderBy(deliveryPointGroupArr,"shipAreaName");
   };
 
   //标签页切换事件
