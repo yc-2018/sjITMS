@@ -8,7 +8,7 @@
  */
 import { PureComponent } from 'react';
 import { Card, Input, Spin, Select, message, InputNumber } from 'antd';
-import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
+//import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
@@ -106,7 +106,7 @@ export default class DriverSwipeLoading extends PureComponent {
   render() {
     const { loading, dict, empId, errMsg, message, isShip, dispatchName } = this.state;
     return (
-      <FreshPageHeaderWrapper>
+      // <FreshPageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
           <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
             <NavigatorPanel title="司机装车刷卡" canFullScreen={true} />
@@ -237,7 +237,7 @@ export default class DriverSwipeLoading extends PureComponent {
             </Card>
           </Spin>
         </Page>
-      </FreshPageHeaderWrapper>
+      
     );
   }
 }
