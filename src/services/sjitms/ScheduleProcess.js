@@ -10,11 +10,11 @@ import request from '@/utils/request';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 
 //获取刷卡排车单信息
-export async function getSwipeSchedule(empId, swipeFlag) {
+export async function getSwipeSchedule(empId, swipeFlag,companyUuid,dispatchUuid) {
   return request(
-    `/itms-schedule/itms-schedule/sj/bill/schedule/process/getSwipeSchedule?empId=${empId}&swipeFlag=${swipeFlag}&companyUuid=${
-      loginCompany().uuid
-    }&dispatchUuid=${loginOrg().uuid}`,
+    `/itms-schedule/itms-schedule/openapi/bill/schedule/process/getSwipeSchedule?empId=${empId}&swipeFlag=${swipeFlag}&companyUuid=${
+      companyUuid
+    }&dispatchUuid=${dispatchUuid}`,
     {
       method: 'POST',
     }
@@ -24,7 +24,7 @@ export async function getSwipeSchedule(empId, swipeFlag) {
 //根据排车单刷卡
 export async function swipeByScheduleUuid(uuid) {
   return request(
-    `/itms-schedule/itms-schedule/sj/bill/schedule/process/swipeByScheduleUuid?uuid=${uuid}`,
+    `/itms-schedule/itms-schedule/openapi/bill/schedule/process/swipeByScheduleUuid?uuid=${uuid}`,
     {
       method: 'POST',
     }

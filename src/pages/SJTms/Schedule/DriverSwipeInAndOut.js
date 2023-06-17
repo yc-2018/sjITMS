@@ -66,7 +66,7 @@ export default class Swiper extends PureComponent {
     }
     localStorage.setItem('showMessage', '0');
     this.setState({ loading: true, errMsg: undefined });
-    const response = await getSwipeSchedule(event.target.value, swipeFlag);
+    const response = await getSwipeSchedule(event.target.value, swipeFlag,companyUuid,dispatchUuid);
     if (response.success) {
       this.setState({
         empId: '',
