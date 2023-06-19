@@ -385,7 +385,7 @@ export default class TranOrderSearch extends QuickFormSearchPage {
                 <th colSpan={13} style={{ border: 0, height: 25,fontSize: 14 ,textAlign: 'left'}} >
                 客户电话： {xsdd[0].CONTACTPHONE}&nbsp;&nbsp;&nbsp;&nbsp;
                 车牌号：{xsdd[0].VEHICLEPLATENUMBER}&nbsp;&nbsp;&nbsp;&nbsp;
-                业务电话：{xsdd.filter(x=>x.NOTE!=undefined || x.NOTE!='')[0].NOTE}&nbsp;&nbsp;&nbsp;&nbsp;
+                业务电话：{xsdd.filter(x=>x.NOTE!=undefined)[0].NOTE}&nbsp;&nbsp;&nbsp;&nbsp;
                 作业号：{xsdd[0].WAVEBILLNUMBER}
                 </th>
               </tr>
