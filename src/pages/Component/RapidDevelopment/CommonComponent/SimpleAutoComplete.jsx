@@ -284,7 +284,7 @@ export default class SimpleAutoComplete extends Component {
   };
 
   loadData = async queryParams => {
-    const response = await memoizeDynamicQuery(queryParams);
+    const response = await memoizeDynamicQuery(queryParams, this.props.dbSource);
     if (!response || !response.success || !Array.isArray(response.result.records)) {
       this.setSourceData([]);
     } else {

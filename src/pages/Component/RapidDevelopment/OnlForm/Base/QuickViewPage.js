@@ -7,6 +7,7 @@ import { havePermission } from '@/utils/authority';
 import { itemColWidth } from '@/utils/ColWidth';
 import ViewTablePanel from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeView/ViewTablePanel';
 import { routerRedux } from 'dva/router';
+import { dynamicqueryById } from '@/services/quick/Quick';
 
 const TabPane = Tabs.TabPane;
 
@@ -54,6 +55,7 @@ export default class QuickView extends RyzeViewPage {
       noActionCol: true,
       notNote: true,
       authority: props.route?.authority ? props.route.authority[0] : null,
+      dbSource: 'init',
     };
   }
 
@@ -62,17 +64,22 @@ export default class QuickView extends RyzeViewPage {
   }
 
   init = async () => {
-    if (!this.props.onlFormField) {
+    let onlFormInfos = this.props.onlFormField;
+    if (!onlFormInfos) {
       const response = await this.queryCreateConfig();
       if (response.result) {
+        onlFormInfos = response.result;
         this.setState({
           onlFormInfos: response.result,
         });
       }
     }
-    this.initonlFormField();
-    this.dynamicqueryById();
-    this.initAllViewItems();
+    let dbSource = onlFormInfos?.find(e => e.onlFormHead.tableType != 2)?.onlFormHead?.dbSource;
+    this.setState({ dbSource }, () => {
+      this.initonlFormField();
+      this.dynamicqueryById();
+      this.initAllViewItems();
+    });
   };
 
   /**
@@ -175,6 +182,7 @@ export default class QuickView extends RyzeViewPage {
   dynamicqueryById() {
     //const { onlFormField } = this.props;
     const onsda = this.state.onlFormInfos;
+    const { dbSource } = this.state;
     onsda.forEach(item => {
       let tableName;
       if (item.onlFormHead.viewSql) {
@@ -190,26 +198,42 @@ export default class QuickView extends RyzeViewPage {
             params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
           },
         };
-        this.props.dispatch({
-          type: 'quick/dynamicqueryById',
-          payload: param,
-          callback: response => {
-            if (response.result.records != 'false') {
-              this.entity[tableName] = response.result.records;
-              let title = item.onlFormHead.formTitle;
-              if (item.onlFormHead.formTitle && item.onlFormHead.formTitle.indexOf(']') != -1) {
-                const titles = item.onlFormHead.formTitle.split(']');
-                var entityCode = response.result.records[0][titles[0].replace('[', '')];
-                var entityTitle =
-                  titles[1].indexOf('}') == -1
-                    ? titles[1]
-                    : response.result.records[0][titles[1].replace('}', '').replace('{', '')];
-                title = '[' + entityCode + ']' + entityTitle;
-              }
-              this.setState({ title: title, entityCode: entityCode });
+        dynamicqueryById(param, dbSource).then(response => {
+          if (response.result.records != 'false') {
+            this.entity[tableName] = response.result.records;
+            let title = item.onlFormHead.formTitle;
+            if (item.onlFormHead.formTitle && item.onlFormHead.formTitle.indexOf(']') != -1) {
+              const titles = item.onlFormHead.formTitle.split(']');
+              var entityCode = response.result.records[0][titles[0].replace('[', '')];
+              var entityTitle =
+                titles[1].indexOf('}') == -1
+                  ? titles[1]
+                  : response.result.records[0][titles[1].replace('}', '').replace('{', '')];
+              title = '[' + entityCode + ']' + entityTitle;
             }
-          },
+            this.setState({ title: title, entityCode: entityCode });
+          }
         });
+        // this.props.dispatch({
+        //   type: 'quick/dynamicqueryById',
+        //   payload: param,
+        //   callback: response => {
+        //     if (response.result.records != 'false') {
+        //       this.entity[tableName] = response.result.records;
+        //       let title = item.onlFormHead.formTitle;
+        //       if (item.onlFormHead.formTitle && item.onlFormHead.formTitle.indexOf(']') != -1) {
+        //         const titles = item.onlFormHead.formTitle.split(']');
+        //         var entityCode = response.result.records[0][titles[0].replace('[', '')];
+        //         var entityTitle =
+        //           titles[1].indexOf('}') == -1
+        //             ? titles[1]
+        //             : response.result.records[0][titles[1].replace('}', '').replace('{', '')];
+        //         title = '[' + entityCode + ']' + entityTitle;
+        //       }
+        //       this.setState({ title: title, entityCode: entityCode });
+        //     }
+        //   },
+        // });
       } else {
         var field = item.onlFormFields.find(x => x.mainField != null && x.mainField != '')
           ?.dbFieldName;
@@ -219,20 +243,30 @@ export default class QuickView extends RyzeViewPage {
             params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
           },
         };
-        this.props.dispatch({
-          type: 'quick/dynamicqueryById',
-          payload: param,
-          callback: response => {
-            if (response.result.records != 'false') {
-              this.entity[tableName] = response.result.records;
-              for (let i = 0; i < this.entity[tableName].length; i++) {
-                //增加line
-                this.entity[tableName][i] = { ...this.entity[tableName][i], line: i + 1 };
-              }
-              this.setState({});
+        dynamicqueryById(param, dbSource).then(response => {
+          if (response.result.records != 'false') {
+            this.entity[tableName] = response.result.records;
+            for (let i = 0; i < this.entity[tableName].length; i++) {
+              //增加line
+              this.entity[tableName][i] = { ...this.entity[tableName][i], line: i + 1 };
             }
-          },
+            this.setState({});
+          }
         });
+        // this.props.dispatch({
+        //   type: 'quick/dynamicqueryById',
+        //   payload: param,
+        //   callback: response => {
+        //     if (response.result.records != 'false') {
+        //       this.entity[tableName] = response.result.records;
+        //       for (let i = 0; i < this.entity[tableName].length; i++) {
+        //         //增加line
+        //         this.entity[tableName][i] = { ...this.entity[tableName][i], line: i + 1 };
+        //       }
+        //       this.setState({});
+        //     }
+        //   },
+        // });
       }
     });
   }
@@ -240,7 +274,7 @@ export default class QuickView extends RyzeViewPage {
    * 通过指定字段查
    */
   dynamicQuery(entityCode, entityUuid) {
-    const { onlFormInfos } = this.state;
+    const { onlFormInfos, dbSource } = this.state;
     onlFormInfos.forEach(item => {
       let tableName;
       if (item.onlFormHead.viewSql) {
@@ -264,28 +298,46 @@ export default class QuickView extends RyzeViewPage {
             params: [{ field: field, rule: 'eq', val: [entityCode] }],
           },
         };
-        this.props.dispatch({
-          type: 'quick/dynamicqueryById',
-          payload: param,
-          callback: response => {
-            if (response.result.records != 'false') {
-              this.entity[tableName] = response.result.records;
-              var entityTitle =
-                titles[1].indexOf('}') == -1
-                  ? titles[1]
-                  : response.result.records[0][titles[1].replace('}', '').replace('{', '')];
-              let title = '[' + response.result.records[0][titles[0].substr(1)] + ']' + entityTitle;
+        dynamicqueryById(param, dbSource).then(response => {
+          if (response.result.records != 'false') {
+            this.entity[tableName] = response.result.records;
+            var entityTitle =
+              titles[1].indexOf('}') == -1
+                ? titles[1]
+                : response.result.records[0][titles[1].replace('}', '').replace('{', '')];
+            let title = '[' + response.result.records[0][titles[0].substr(1)] + ']' + entityTitle;
 
-              this.setState({
-                entityCode: entityCode,
-                title: title,
-                entityUuid: response.result.records[0][keyName],
-              });
-            } else {
-              message.error('查询的数据不存在！');
-            }
-          },
+            this.setState({
+              entityCode: entityCode,
+              title: title,
+              entityUuid: response.result.records[0][keyName],
+            });
+          } else {
+            message.error('查询的数据不存在！');
+          }
         });
+        // this.props.dispatch({
+        //   type: 'quick/dynamicqueryById',
+        //   payload: param,
+        //   callback: response => {
+        //     if (response.result.records != 'false') {
+        //       this.entity[tableName] = response.result.records;
+        //       var entityTitle =
+        //         titles[1].indexOf('}') == -1
+        //           ? titles[1]
+        //           : response.result.records[0][titles[1].replace('}', '').replace('{', '')];
+        //       let title = '[' + response.result.records[0][titles[0].substr(1)] + ']' + entityTitle;
+
+        //       this.setState({
+        //         entityCode: entityCode,
+        //         title: title,
+        //         entityUuid: response.result.records[0][keyName],
+        //       });
+        //     } else {
+        //       message.error('查询的数据不存在！');
+        //     }
+        //   },
+        // });
       } else {
         var field = item.onlFormFields.find(x => x.mainField != null && x.mainField != '')
           ?.dbFieldName;
@@ -295,20 +347,30 @@ export default class QuickView extends RyzeViewPage {
             params: [{ field: field, rule: 'eq', val: [this.props.params.entityUuid] }],
           },
         };
-        this.props.dispatch({
-          type: 'quick/dynamicqueryById',
-          payload: param,
-          callback: response => {
-            if (response.result.records != 'false') {
-              this.entity[tableName] = response.result.records;
-              for (let i = 0; i < this.entity[tableName].length; i++) {
-                //增加line
-                this.entity[tableName][i] = { ...this.entity[tableName][i], line: i + 1 };
-              }
-              this.setState({});
+        dynamicqueryById(param, dbSource).then(response => {
+          if (response.result.records != 'false') {
+            this.entity[tableName] = response.result.records;
+            for (let i = 0; i < this.entity[tableName].length; i++) {
+              //增加line
+              this.entity[tableName][i] = { ...this.entity[tableName][i], line: i + 1 };
             }
-          },
+            this.setState({});
+          }
         });
+        // this.props.dispatch({
+        //   type: 'quick/dynamicqueryById',
+        //   payload: param,
+        //   callback: response => {
+        //     if (response.result.records != 'false') {
+        //       this.entity[tableName] = response.result.records;
+        //       for (let i = 0; i < this.entity[tableName].length; i++) {
+        //         //增加line
+        //         this.entity[tableName][i] = { ...this.entity[tableName][i], line: i + 1 };
+        //       }
+        //       this.setState({});
+        //     }
+        //   },
+        // });
       }
     });
   }

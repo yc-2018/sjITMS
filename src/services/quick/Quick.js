@@ -48,33 +48,6 @@ export async function saveFormData(param) {
   });
 }
 
-export async function dynamicDelete(payload) {
-  return request(`/itms-schedule/itms-schedule/devDynamicCRUD/delete/${payload.code}`, {
-    method: 'POST',
-    body: payload.params,
-  });
-}
-
-export async function dyDelete(payload) {
-  return request(`/itms-schedule/itms-schedule/devDynamicCRUD/delete`, {
-    method: 'POST',
-    body: payload.params,
-  });
-}
-
-export async function dynamicQuery(payload) {
-  return request(`/itms-schedule/itms-schedule/devDynamicCRUD/query`, {
-    method: 'POST',
-    body: payload,
-  });
-}
-
-export async function dynamicqueryById(payload) {
-  return request(`/itms-schedule/itms-schedule/devDynamicCRUD/query`, {
-    method: 'POST',
-    body: payload,
-  });
-}
 export async function selectCoulumns(payload) {
   return request(`/itms-schedule/itms-schedule/dev/selectCoulumns/${payload.quickuuid}`, {
     method: 'POST',
@@ -82,15 +55,51 @@ export async function selectCoulumns(payload) {
   });
 }
 
-export async function saveOrUpdateEntities(payload) {
-  return request('/itms-schedule/itms-schedule/devDynamicCRUD/saveOrUpdateEntities', {
+//---------------------------------------------------------------------------------------------------//
+
+export async function dynamicDelete(payload, dbSource) {
+  return request(
+    `/itms-schedule/itms-schedule/devDynamicCRUD/delete/${payload.code}?dbSource=${dbSource}`,
+    {
+      method: 'POST',
+      body: payload.params,
+    }
+  );
+}
+
+export async function dyDelete(payload, dbSource) {
+  return request(`/itms-schedule/itms-schedule/devDynamicCRUD/delete?dbSource=${dbSource}`, {
+    method: 'POST',
+    body: payload.params,
+  });
+}
+
+export async function dynamicQuery(payload, dbSource) {
+  return request(`/itms-schedule/itms-schedule/devDynamicCRUD/query?dbSource=${dbSource}`, {
     method: 'POST',
     body: payload,
   });
 }
 
-export async function updateEntity(payload) {
-  return request('/itms-schedule/itms-schedule/devDynamicCRUD/update', {
+export async function dynamicqueryById(payload, dbSource) {
+  return request(`/itms-schedule/itms-schedule/devDynamicCRUD/query?dbSource=${dbSource}`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function saveOrUpdateEntities(payload, dbSource) {
+  return request(
+    `/itms-schedule/itms-schedule/devDynamicCRUD/saveOrUpdateEntities?dbSource=${dbSource}`,
+    {
+      method: 'POST',
+      body: payload,
+    }
+  );
+}
+
+export async function updateEntity(payload, dbSource) {
+  return request(`/itms-schedule/itms-schedule/devDynamicCRUD/update`, {
     method: 'POST',
     body: payload,
   });
