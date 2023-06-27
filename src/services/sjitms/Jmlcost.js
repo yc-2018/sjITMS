@@ -2,7 +2,7 @@
  * @Author: qiuhui
  * @Date: 2023-05-19 10:28:30
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-06-27 15:38:49
+ * @LastEditTime: 2023-06-27 16:47:39
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -32,7 +32,6 @@ export async function cancelAudits(costUuids) {
 }
 
 export async function batchImport(payload) {
-  console.log('aaaa');
   return request(
     `/itms-schedule/itms-schedule/jmlCostApi/batchImport?companyUuid=${
       loginCompany().uuid
