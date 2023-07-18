@@ -26,6 +26,7 @@ export default class Swiper extends PureComponent {
     dispatchUuid: undefined,
     dispatchName: undefined,
   };
+  enterStatus = false;  
   componentDidMount() {
     this.empInputRef.focus();
     // 查询字典
@@ -54,6 +55,11 @@ export default class Swiper extends PureComponent {
 
   //刷卡
   onSubmit = async event => {
+    if(this.enterStatus){
+      message.error("请不要重复刷");
+      return;
+    }
+    this.enterStatus = true;
     const { dispatchUuid, companyUuid } = this.state;
     if (dispatchUuid == undefined || companyUuid == undefined) {
       message.error('企业中心或调度中心值缺失！');
@@ -65,6 +71,7 @@ export default class Swiper extends PureComponent {
     localStorage.setItem('showMessage', '1');
     if (response.success) {
       this.speech('刷卡成功');
+      this.enterStatus = false;
       this.setState({
         empId: '',
         loading: false,
