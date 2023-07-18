@@ -69,9 +69,9 @@ export default class Swiper extends PureComponent {
     this.setState({ loading: true, errMsg: undefined });
     const response = await driverswipeSign(event.target.value, companyUuid, dispatchUuid);
     localStorage.setItem('showMessage', '1');
-    this.speech('刷卡成功');
+    this.enterStatus = false;
     if (response.success) {
-      this.enterStatus = false;
+      this.speech('刷卡成功');
       this.setState({
         empId: '',
         loading: false,
