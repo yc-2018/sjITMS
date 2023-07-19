@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:26:59
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-05-14 19:04:12
+ * @LastEditTime: 2023-07-18 10:08:50
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
@@ -38,13 +38,12 @@ import {
   getTengBoxRecord,
 } from '@/services/sjitms/ScheduleBill';
 import { depart, back, recordLog, callG7Interface } from '@/services/sjitms/ScheduleProcess';
+import DispatchMap from '@/pages/SJTms/Schedule/ScheduleMap';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
-import { groupBy, uniq, sumBy, orderBy } from 'lodash';
+import { groupBy, sumBy, orderBy } from 'lodash';
 import scher from '@/assets/common/scher.jpg';
 import { havePermission } from '@/utils/authority';
 import moment from 'moment';
-import { func } from 'prop-types';
-import { log } from 'lodash-decorators/utils';
 import { dynamicQuery } from '@/services/quick/Quick';
 @connect(({ quick, loading }) => ({
   quick,
@@ -203,9 +202,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     );
     let queryParams = [...newFilters.superQuery.queryParams];
     if (deliverypointCode) {
-      newFilters.applySql = ` uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
-        deliverypointCode.val
-      }')`;
+      newFilters.applySql = ` uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${deliverypointCode.val
+        }')`;
       queryParams = newFilters.superQuery.queryParams.filter(x => x.field != 'DELIVERYPOINTCODE');
     }
     dispatch({
@@ -360,6 +358,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
             color: textColor,
             borderRadius: '10px',
           }}
+          onClick={() => this.progressingMapRef?.show(e.record)}
         >
           {e.val}
         </div>
@@ -611,7 +610,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
           <Button
             // onClick={() => this.handlePrint()}
             icon="printer"
-            // hidden={!havePermission(this.state.authority + '.print')}
+          // hidden={!havePermission(this.state.authority + '.print')}
           >
             打印 <Icon type="down" />
           </Button>
@@ -733,6 +732,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
             })}
           </Row>
         </Modal>
+        <DispatchMap onRef={node => (this.progressingMapRef = node)} />
       </>
     );
   };
@@ -756,11 +756,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     selectedRows.length == 1
       ? this.setState({ showRollBackPop: true })
       : this.batchProcessConfirmRef.show(
-          '取消批准',
-          selectedRows,
-          this.onRollBack,
-          this.queryCoulumns
-        );
+        '取消批准',
+        selectedRows,
+        this.onRollBack,
+        this.queryCoulumns
+      );
   };
 
   //刷新ETC资料
@@ -773,11 +773,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     selectedRows.length == 1
       ? this.setState({ showRefreshPop: true })
       : this.batchProcessConfirmRef.show(
-          'ETC资料刷新',
-          selectedRows,
-          this.onRefresh,
-          this.queryCoulumns
-        );
+        'ETC资料刷新',
+        selectedRows,
+        this.onRefresh,
+        this.queryCoulumns
+      );
   };
 
   //批量作废
@@ -1170,22 +1170,22 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
 //装车单
 const drawPrintPage = async (schedule, scheduleDetails, dc) => {
 
-  if(schedule.TASKTYPESEARCH == 'TakeDelivery'){
+  if (schedule.TASKTYPESEARCH == 'TakeDelivery') {
     const param = {
-        tableName: 'SJ_ITMS_ORDER_ARTICLE',
-        condition: {
-          params: [{ field: 'billuuid', rule: 'in', val: scheduleDetails.map(e=>e.ORDERUUID) }],
-        },
-      };
-      const paramOrder = {
-        tableName: 'SJ_ITMS_ORDER',
-        condition: {
-          params: [{ field: 'UUID', rule: 'in', val: scheduleDetails.map(e=>e.ORDERUUID) }],
-        },
-      };
+      tableName: 'SJ_ITMS_ORDER_ARTICLE',
+      condition: {
+        params: [{ field: 'billuuid', rule: 'in', val: scheduleDetails.map(e => e.ORDERUUID) }],
+      },
+    };
+    const paramOrder = {
+      tableName: 'SJ_ITMS_ORDER',
+      condition: {
+        params: [{ field: 'UUID', rule: 'in', val: scheduleDetails.map(e => e.ORDERUUID) }],
+      },
+    };
     const response = await dynamicQuery(param);
-    const article = response.success && Array.isArray(response.result.records)  ? response.result.records : [];
-    article.forEach(e=>{
+    const article = response.success && Array.isArray(response.result.records) ? response.result.records : [];
+    article.forEach(e => {
       e.QTYSTR = parseFloat(e.QTYSTR);
     })
     const responseOrder = await dynamicQuery(paramOrder);
@@ -1208,19 +1208,19 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
             <tr style={{ height: 30 }}>
               <th colspan={10} style={{ border: 0, height: 30 }}>
                 <div>
-                <div  style={{height: 30, width:'30%', float: 'left',textAlign: 'left' }} ><img style={{ height: 30, width: 120 }} src={scher} /></div>
-                <div style={{  width: '40%' , fontSize: 17,float: 'left',textAlign: 'center'}}>东莞市时捷物流有限公司提货计划表</div>
-                 <div style={{ fontSize: 12, float: 'left' , textAlign: 'center',  width: '30%'}}>
-                  <span>第</span>
-                  <font tdata="PageNO" color="blue">
-                    ##
-                  </font>
-                  <span>页/共</span>
-                  <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
-                    ##
-                  </font>
-                  <span>页</span>
-                </div>
+                  <div style={{ height: 30, width: '30%', float: 'left', textAlign: 'left' }} ><img style={{ height: 30, width: 120 }} src={scher} /></div>
+                  <div style={{ width: '40%', fontSize: 17, float: 'left', textAlign: 'center' }}>东莞市时捷物流有限公司提货计划表</div>
+                  <div style={{ fontSize: 12, float: 'left', textAlign: 'center', width: '30%' }}>
+                    <span>第</span>
+                    <font tdata="PageNO" color="blue">
+                      ##
+                    </font>
+                    <span>页/共</span>
+                    <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
+                      ##
+                    </font>
+                    <span>页</span>
+                  </div>
                 </div>
               </th>
             </tr>
@@ -1250,7 +1250,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   </div>
                   <div style={{ float: 'left', width: '40%', fontWeight: 'normal' }}>
                     供应商：
-                    {'['+scheduleDetails[0].DELIVERYPOINTCODE+"]"+scheduleDetails[0].DELIVERYPOINTNAME}
+                    {'[' + scheduleDetails[0].DELIVERYPOINTCODE + "]" + scheduleDetails[0].DELIVERYPOINTNAME}
                   </div>
                 </div>
               </th>
@@ -1267,7 +1267,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   </div>
                   <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                     <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                     提货点： {scheduleDetails[0].DELIVERYPOINTCODE}
+                      提货点： {scheduleDetails[0].DELIVERYPOINTCODE}
                     </div>
                   </div>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
@@ -1286,7 +1286,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
               <th width={40}>件数</th>
               <th width={50}>重量（吨）</th>
               <th width={50}>体积（m3）</th>
-              <th  width={80}>订单号</th>
+              <th width={80}>订单号</th>
             </tr>
           </thead>
           <tbody>
@@ -1295,7 +1295,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 return (
                   <tr style={{ textAlign: 'center', height: 30 }}>
                     <td >{item.ARTICLECODE}</td>
-                    <td  style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
+                    <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                       {item.BARCODE}
                     </td>
                     <td >
@@ -1305,9 +1305,9 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                     <td >{item.FPAQSTANDARD}</td>
                     <td >{item.AMOUNT.toFixed(2)}</td>
                     <td >{item.QTYSTR}</td>
-                    <td >{(item.WEIGHT/1000).toFixed(2)}</td>
+                    <td >{(item.WEIGHT / 1000).toFixed(2)}</td>
                     <td >{item.VOLUME.toFixed(3)}</td>
-                    <td>{orders.find(e=>e.UUID==item.BILLUUID).SOURCENUM}</td>
+                    <td>{orders.find(e => e.UUID == item.BILLUUID).SOURCENUM}</td>
                   </tr>
                 );
               })
@@ -1316,33 +1316,33 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
             )}
             {
               <tr>
-                <td style={{ textAlign: 'center',}}>合计</td>
-                <td style={{ textAlign: 'center',}}>{article.length}</td>
-                <td style={{ textAlign: 'center',}}>{}</td>
-                <td style={{ textAlign: 'center',}}>{}</td>
-                <td style={{ textAlign: 'center',}}>{}</td>
-                <td style={{ textAlign: 'center',}}>{}</td>
-                <td style={{ textAlign: 'center',}}>{sumBy(article,'QTYSTR')}</td>
-                <td style={{ textAlign: 'center',}}>{(sumBy(article,'WEIGHT')/1000).toFixed(2)}</td>
-                <td style={{ textAlign: 'center',}}>{sumBy(article,'VOLUME').toFixed(2)}</td>
-                <td style={{ textAlign: 'center',}}>{}</td>
+                <td style={{ textAlign: 'center', }}>合计</td>
+                <td style={{ textAlign: 'center', }}>{article.length}</td>
+                <td style={{ textAlign: 'center', }}>{ }</td>
+                <td style={{ textAlign: 'center', }}>{ }</td>
+                <td style={{ textAlign: 'center', }}>{ }</td>
+                <td style={{ textAlign: 'center', }}>{ }</td>
+                <td style={{ textAlign: 'center', }}>{sumBy(article, 'QTYSTR')}</td>
+                <td style={{ textAlign: 'center', }}>{(sumBy(article, 'WEIGHT') / 1000).toFixed(2)}</td>
+                <td style={{ textAlign: 'center', }}>{sumBy(article, 'VOLUME').toFixed(2)}</td>
+                <td style={{ textAlign: 'center', }}>{ }</td>
               </tr>
             }
           </tbody>
           <tfoot border={0}>
-            <tr style={{ height: 20, border: 0,}} border={0}>
+            <tr style={{ height: 20, border: 0, }} border={0}>
               <td style={{ border: 0, paddingTop: 10 }} colSpan={2}>
-                <div style={{fontWeight: 'normal' }}>
-                  调度签名(盖章)： {}
+                <div style={{ fontWeight: 'normal' }}>
+                  调度签名(盖章)： { }
                 </div>
               </td>
               <td
-                style={{ border: 0, textAlign: 'left', paddingTop: 10,  fontWeight: 'normal' }}
+                style={{ border: 0, textAlign: 'left', paddingTop: 10, fontWeight: 'normal' }}
                 colSpan={3}
               >
                 <div>打印日期:{convertDateToTime(new Date())}</div>
               </td>
-              <td style={{ border: 0, fontWeight: 'normal',paddingTop: 10 }} colspan={5}>
+              <td style={{ border: 0, fontWeight: 'normal', paddingTop: 10 }} colspan={5}>
                 (白联：时捷收货部，红联：供应商，黄联：驾驶员)
               </td>
             </tr>
@@ -1351,10 +1351,10 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 制单人：{loginUser().name}
               </td>
               <td style={{ border: 0, fontWeight: 'normal' }} colspan={3}>
-                驾驶员签名：{}
+                驾驶员签名：{ }
               </td>
               <td style={{ border: 0, fontWeight: 'normal' }} colspan={3}>
-              时捷收货签名：{}
+                时捷收货签名：{ }
               </td>
               {/* <td style={{ border: 0 }} colspan={6}>
                 收退货签字：
@@ -1391,9 +1391,9 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
         </table>
       </div>
     );
-    
+
     //茶山调度
-  }else if (dc.find(x => x == loginOrg().uuid) != undefined) {
+  } else if (dc.find(x => x == loginOrg().uuid) != undefined) {
     // if (loginOrg().uuid == '000000750000004' || loginOrg().uuid == '000008150000001') {
     let scheduleDetailSum = {};
     let REALCARTONCOUNT = 0;
@@ -1515,8 +1515,8 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   <div style={{ float: 'left', width: '80%' }}>
                     {schedule.USEETC == '是'
                       ? '粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为' +
-                        schedule.ETCAMOUNT +
-                        '元'
+                      schedule.ETCAMOUNT +
+                      '元'
                       : '粤通卡信息：'}
                     <br />
                     [线路]去程入口:
@@ -1587,8 +1587,8 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                     <td width={50}>{item.REALCONTAINERCOUNT}</td>
                     <td width={50}>{item.OWECARTONCOUNT}</td>
                     <td width={50}>{item.REALCONTAINERCOUNT + item.OWECARTONCOUNT}</td>
-                    <td width={50}>{}</td>
-                    <td width={50}>{}</td>
+                    <td width={50}>{ }</td>
+                    <td width={50}>{ }</td>
                     {/* <td width={80}>{}</td>
                     <td width={80}>{}</td>
                     <td width={80}>{}</td>
@@ -1621,14 +1621,14 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 <td width={50}>{scheduleDetailSum.REALCONTAINERCOUNT}</td>
                 <td width={50}>{scheduleDetailSum.OWECARTONCOUNT}</td>
                 <td width={50}>{scheduleDetailSum.CONTAINERSum}</td>
-                <td width={50}>{}</td>
-                <td width={50}>{}</td>
+                <td width={50}>{ }</td>
+                <td width={50}>{ }</td>
                 {/* <td width={80}>{}</td>
             <td width={80}>{}</td>
             <td width={80}>{}</td>
             <td width={80}>{}</td> */}
                 <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
-                  {}
+                  { }
                 </td>
                 <td width={50} />
               </tr>
@@ -1849,8 +1849,8 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   <div style={{ float: 'left', width: '80%' }}>
                     {schedule.USEETC == '是'
                       ? 'ETC信息：请到调度窗口领取ETC卡，按规定行驶，该次费用为' +
-                        schedule.ETCAMOUNT +
-                        '元'
+                      schedule.ETCAMOUNT +
+                      '元'
                       : 'ETC信息：'}
                     <br />
                     [线路]去程入口:
@@ -1918,7 +1918,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   <tr style={{ textAlign: 'center', height: 33 }}>
                     <td width={30}>{index + 1}</td>
                     <td width={50}>{item.OWNERNAME}</td>
-                      <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
+                    <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                       {item.SHIPAREANAME}
                     </td>
                     <td width={130}>
@@ -1942,14 +1942,14 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
 
                     {/* <td width={50}>{0}</td>
                       <td width={50}>{0}</td> */}
-                    <td width={50}>{}</td>
+                    <td width={50}>{ }</td>
                     <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
                       {item.COLLECTBIN}
                     </td>
                     {/* <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                       {item.SCATTEREDCOLLECTBIN}
                     </td> */}
-                    <td width={50}>{}</td>
+                    <td width={50}>{ }</td>
                   </tr>
                 );
               })
@@ -1963,7 +1963,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 </td>
                 <td style={{ textAlign: 'center' }}></td>
                 <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
-                  { scheduleDetailSum.StoreSum}
+                  {scheduleDetailSum.StoreSum}
                 </td>
                 {/* <td width={120}>
                 {scheduleDetailSum.StoreSum}
@@ -1974,16 +1974,16 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 <td width={50}>{scheduleDetailSum.REALCOLDCONTAINERCOUNT}</td>
                 <td width={50}>{scheduleDetailSum.REALFREEZECONTAINERCOUNT}</td>
                 <td width={50}>{scheduleDetailSum.cartonCounts}</td>
-                <td width={50}>{}</td>
+                <td width={50}>{ }</td>
 
                 {/* <td width={50}>{ }</td>
                   <td  width={50}>
                     { }
                   </td> */}
-                <td width={50}>{}</td>
-                <td width={120}>{}</td>
+                <td width={50}>{ }</td>
+                <td width={120}>{ }</td>
                 {/* <td width={120}>{}</td> */}
-                <td width={50}>{}</td>
+                <td width={50}>{ }</td>
               </tr>
             ) : (
               <></>
@@ -2000,7 +2000,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}
                 >
                   最远市区:
-                  {}
+                  { }
                 </td>
                 <td width={50} colSpan={3}>
                   满载率:
