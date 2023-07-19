@@ -725,7 +725,7 @@ export default class QuickFormSearchPage extends SearchPage {
       pageSize,
       page: 1,
       quickuuid,
-      order: defaultSort,
+      order: this.state.pageFilters?.order ? this.state.pageFilters?.order : defaultSort,
       superQuery: {
         matchType: 'and',
         queryParams: [...isOrgQuery, ...queryParams, ...params],
