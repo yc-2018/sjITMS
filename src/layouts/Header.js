@@ -10,9 +10,7 @@ import styles from './Header.less';
 import Authorized from '@/utils/Authorized';
 import ModifyPwd from '@/pages/Account/Login/ModifyPwd';
 import SwitchOrg from '@/pages/Account/Login/SwitchOrg';
-import {reloadAuthorized} from '@/utils/Authorized';
-import { routerRedux, Link } from 'dva/router';
-import { loginOrg, loginUser,loginCompany } from '@/utils/LoginContext';
+import { loginOrg, loginUser } from '@/utils/LoginContext';
 import defaultSettings from '../defaultSettings';
 
 const { Header } = Layout;
@@ -20,8 +18,9 @@ class HeaderView extends PureComponent {
   state = {
     visible: true,
     modifyPasswdModalVisible: false,
-    switchOrgModalVisible:false,
+    switchOrgModalVisible: false,
     confirmLoading: false,
+    compelPasswd: false,
   };
 
   static getDerivedStateFromProps(props, state) {
@@ -34,6 +33,9 @@ class HeaderView extends PureComponent {
   }
 
   componentDidMount() {
+    if (!loginUser().passwordUsable) {
+      this.setState({ modifyPasswdModalVisible: true, compelPasswd: true });
+    }
     document.addEventListener('scroll', this.handScroll, { passive: true });
   }
 
@@ -67,33 +69,33 @@ class HeaderView extends PureComponent {
     );
 
     const { dispatch } = this.props;
-    if(type==='notification'){
+    if (type === 'notification') {
       dispatch({
         type: 'notice/clearNotice',
-        payload:{
-          orgUuid:loginOrg().uuid,
+        payload: {
+          orgUuid: loginOrg().uuid,
           userUuid: loginUser().uuid
         },
-        callback:()=>{
+        callback: () => {
           this.props.refreshNotice();
         }
       });
 
       this.props.refreshNotice();
-    }else{
+    } else {
       dispatch({
         type: 'notice/clearReplition',
-        payload:{
+        payload: {
           userUuid: loginUser().uuid,
         },
-        callback:()=>{
+        callback: () => {
           this.props.refreshNotice();
         }
       });
     }
   };
 
-  onAll=()=> {
+  onAll = () => {
     this.props.dispatch({
       type: 'notice/onShowPage',
       payload: {
@@ -107,7 +109,7 @@ class HeaderView extends PureComponent {
     if (key === 'userCenter') {
       router.push('/account/center');
       return;
-    }else if(key==='version'){
+    } else if (key === 'version') {
       router.push('/account/version');
       return;
     }
@@ -130,9 +132,7 @@ class HeaderView extends PureComponent {
     }
     if (key === 'modify') {
       // router.push('/account/settings/modifyPwd');
-      this.setState({
-        modifyPasswdModalVisible: !!true,
-      });
+      this.setState({ modifyPasswdModalVisible: true });
     }
     if (key === 'logout') {
       dispatch({
@@ -193,7 +193,7 @@ class HeaderView extends PureComponent {
     });
   }
   // 切换组织
-  switchOrg = (orgUuid,userUuid) =>{
+  switchOrg = (orgUuid, userUuid) => {
     this.setConfirmLoading(true);
     this.props.dispatch({
       type: 'login/switchOrg',
@@ -223,9 +223,9 @@ class HeaderView extends PureComponent {
     });
   }
   render() {
-    const { isMobile, handleMenuCollapse, setting ,notices,replitions} = this.props;
+    const { isMobile, handleMenuCollapse, setting, notices, replitions } = this.props;
     const { navTheme, layout, fixedHeader } = setting;
-    const { visible,modifyPasswdModalVisible,switchOrgModalVisible,orgInfos,confirmLoading } = this.state;
+    const { visible, compelPasswd, modifyPasswdModalVisible, switchOrgModalVisible, orgInfos, confirmLoading } = this.state;
     const isTop = layout === 'topmenu';
     const width = this.getHeadWidth();
     const HeaderDom = visible ? (
@@ -257,6 +257,7 @@ class HeaderView extends PureComponent {
           modifyPasswdModalVisible={modifyPasswdModalVisible}
           hideModifyModal={this.hidePwdModifyModal}
           modifyPasswd={this.modifyPasswd}
+          compel={compelPasswd}
           confirmLoading={confirmLoading}
         >
         </ModifyPwd>
