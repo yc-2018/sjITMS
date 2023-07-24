@@ -174,7 +174,6 @@ class HeaderView extends PureComponent {
   };
   // 修改密码
   modifyPasswd = (values) => {
-    const { compelPasswd } = this.state
     this.setConfirmLoading(true);
     this.props.dispatch({
       type: 'login/modifyPassword',
@@ -183,9 +182,7 @@ class HeaderView extends PureComponent {
         if (response.success) {
           message.success(formatMessage({ id: 'user.modify.password.success' }));
           this.setState({ modifyPasswdModalVisible: false });
-          if (compelPasswd) {
-            dispatch({ type: 'login/logout' });
-          }
+          this.props.dispatch({ type: 'login/logout' });
         }
         this.setConfirmLoading(false);
       },
