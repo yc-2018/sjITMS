@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-07-19 17:27:25
+ * @LastEditTime: 2023-07-22 22:51:53
  * @Description: 配送进度
  */
 import React, { Component } from 'react';
@@ -13,26 +13,33 @@ import { getAddressByUuids } from '@/services/sjitms/StoreTeam';
 import ShopsIcon from '@/assets/common/shops.png';
 import myjPointNormal from '@/assets/common/myjPoint_normal.svg';
 import myjPointClick from '@/assets/common/myjPoint_click.svg';
-import riskNormal from '@/assets/common/risk_normal.png';
+import truckStop from '@/assets/common/truck_stop.png';
 import { uniqBy, orderBy, groupBy, sumBy } from 'lodash';
 import moment from 'moment';
 import styles from './ScheduleMap.less';
-let timer = undefined;
 
 export default class DispatchMap extends Component {
   state = {
+    timer: undefined,
     visible: false,
     windowInfo: undefined,
     schedule: {},
     orders: [],
     points: [],
-    marker: {}
+    startMarker: undefined,
+    currentMarker: undefined,
+    lastPoints: [],
+    firstTime: "",
+    lastTime: ""
   };
+
+
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
   };
 
   componentWillUnmount() {
+    const { timer } = this.state;
     clearInterval(timer);
   }
 
@@ -63,9 +70,14 @@ export default class DispatchMap extends Component {
     if (schedule) {
       this.initialize(schedule);
     }
-    this.contextMenu = undefined;
     this.setState({ visible: true });
   };
+
+  hide = () => {
+    const { timer } = this.state;
+    clearInterval(timer);
+    this.setState({ visible: false, timer: undefined });
+  }
 
   //初始化
   initialize = async (schedule) => {
@@ -73,19 +85,56 @@ export default class DispatchMap extends Component {
     if (response.success) {
       let orders = response.data || [];
       const points = await this.initPoints(schedule.BILLNUMBER, orders);
-      this.setState({ orders, points, schedule });
+      const platenumber = schedule.VEHICLEPLATENUMBER;
+      const dispatchtime = schedule.DISPATCHTIME;
+      const returntime = schedule.RETURNTIME;
+      let firstTime = moment().format("YYYY-MM-DD HH:mm:ss");
+      this.setState({
+        startMarker: undefined,
+        currentMarker: undefined,
+        lastPoints: [],
+        orders, points, schedule, firstTime
+      });
+      //初始化车辆历史轨迹
       setTimeout(() => {
         this.map?.clearOverlays();
-        this.getHistoryLocation(schedule);//历史轨迹
-        this.getTrunkLocation(schedule.VEHICLEPLATENUMBER);//当前位置
+        const hours = Math.ceil(moment(returntime || moment()).diff(dispatchtime, "minute") / 60);
+        if (hours > 2) {
+          for (let i = 0; i < Math.ceil(hours / 2); i++) {
+            const from = moment(dispatchtime).add(i * 2, "hours").format("YYYY-MM-DD HH:mm:ss");
+            if (moment().isAfter(from)) {
+              let to = moment(dispatchtime).add((i + 1) * 2, "hours").format("YYYY-MM-DD HH:mm:ss");
+              to = moment().isAfter(to) ? to : firstTime;
+              this.getHistoryLocation(platenumber, from, to, []);
+            }
+          }
+        } else {
+          this.getHistoryLocation(platenumber, dispatchtime, returntime || firstTime, []);
+        }
+        //初始化车辆当前位置
+        this.getTrunkLocation(platenumber);
+        //初始化门店marker
         this.drawMarker(points);
         this.autoViewPort(points);
+        this.autoFresh(platenumber, returntime);
       }, 500);
-      timer = setInterval(() => {
-        this.getTrunkLocation(schedule.VEHICLEPLATENUMBER);//当前位置
-      }, 5000);
     }
   };
+
+  //定时刷新
+  autoFresh = (platenumber, returntime) => {
+    const timer = setInterval(() => {
+      //历史轨迹
+      if (returntime == undefined) {
+        const { lastTime, lastPoints } = this.state;
+        this.getHistoryLocation(platenumber, lastTime, moment().format("YYYY-MM-DD HH:mm:ss"), lastPoints);
+      }
+      //当前位置
+      this.getTrunkLocation(platenumber);
+    }, 5000);
+    this.setState({ timer });
+  }
+
   //初始化门店
   initPoints = async (billNumber, orders) => {
     const pointUuids = uniqBy(orders.map(x => x.deliveryPoint), x => x.uuid).map(x => x.uuid);
@@ -104,7 +153,7 @@ export default class DispatchMap extends Component {
         ...order,
         complete: shipedPoints.indexOf(store?.code) != -1 || false,
         longitude: store?.longitude || 113.809388,
-        latitude: store?.latitude || 23.067107,
+        latitude: store?.latitude || 23.067107
       };
     });
   }
@@ -198,32 +247,27 @@ export default class DispatchMap extends Component {
   };
 
   //历史轨迹
-  getHistoryLocation = async (schedule) => {
-    const params = {
-      plate_num: "粤" + schedule.VEHICLEPLATENUMBER,
-      from: schedule.DISPATCHTIME,
-      to: schedule.RETURNTIME || moment().format("YYYY-MM-DD HH:mm:ss"),
-      timeInterval: "10",
-      map: "baidu"
-    }
-    const response = await GetHistoryLocation(params)
+  getHistoryLocation = async (platenumber, from, to, lastPoints) => {
+    const params = { plate_num: "粤" + platenumber, from, to, timeInterval: "20", map: "baidu" }
+    const response = await GetHistoryLocation(params);
     if (response.data.code == 0) {
-      const historys = response.data.data || []
+      let { startMarker } = this.state;
+      let pts = [...lastPoints];
+      const historys = response.data.data || [];
       if (historys.length > 0) {
-        let pts = new Array();
         historys.forEach(point => {
           pts.push(new BMapGL.Point(point.lng, point.lat));
         });
-        var polyline = new BMapGL.Polyline(pts, {
-          strokeColor: "#3e3eff",
-          strokeWeight: 4,
-          strokeOpacity: 1,
-        });
-        const startPoint = historys[0];
-        this.map?.addOverlay(
-          this.drawRouteMarker(startPoint.lng, startPoint.lat, 50, 80, 400, 278)
-        );
-        this.map?.addOverlay(polyline);
+        if (startMarker == undefined) {
+          const startPoint = historys[0];
+          startMarker = this.drawRouteMarker(startPoint.lng, startPoint.lat, 50, 80, 400, 278);
+          this.map?.addOverlay(startMarker);
+        }
+        if (pts.length > 1) {
+          this.map?.addOverlay(new BMapGL.Polyline(pts, { strokeColor: "#3e3eff", strokeWeight: 4, strokeOpacity: 1 }));
+        }
+        const lastPoints = [...pts];
+        this.setState({ startMarker, lastTime: to, lastPoints: lastPoints.slice(-2) });
       }
     }
   }
@@ -239,23 +283,21 @@ export default class DispatchMap extends Component {
     }
     const response = await GetTrunkData(params);
     if (response.data.code == 0 && response.data.data) {
-      let { marker } = this.state;
+      let { currentMarker } = this.state;
       const point = response.data.data || {};
       const rotaition = point.loc.course;
-      console.log(rotaition);
-      this.map?.removeOverlay(marker);
-      marker = new BMapGL.Marker(new BMapGL.Point(point.loc.lng, point.loc.lat), {
-        icon: new BMapGL.Icon(riskNormal, new BMapGL.Size(40, 40)),
-        rotation: rotaition
+      this.map?.removeOverlay(currentMarker);
+      currentMarker = new BMapGL.Marker(new BMapGL.Point(point.loc.lng, point.loc.lat), {
+        icon: new BMapGL.Icon(truckStop, new BMapGL.Size(40, 40))
       });
-      console.log(marker);
-      this.setState({ marker })
-      this.map?.addOverlay(marker);
+      currentMarker.setRotation(rotaition);
+      this.setState({ currentMarker });
+      this.map?.addOverlay(currentMarker);
     }
   }
 
   render() {
-    const { visible, windowInfo, orders, points } = this.state;
+    const { visible, windowInfo, orders, points, timer } = this.state;
     let completePoints = [], currentPoint = undefined;
     if (points.length > 0) {
       completePoints = points.filter(x => x.complete == true);
@@ -270,7 +312,8 @@ export default class DispatchMap extends Component {
         style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
         width="100vw"
         bodyStyle={{ margin: -24, height: '100vh' }}
-        afterClose={() => { clearInterval(timer) }}
+        afterClose={() => clearInterval(timer)}
+        onCancel={() => this.hide()}
         visible={visible}
         title={
           <Row type="flex" justify="space-between">

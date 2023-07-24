@@ -120,4 +120,8 @@ export const ImportTemplateType = {
     name: 'OMSOUTBOUNDORDER',
     caption: 'OMS出库订单',
   },
+  JMLCOSTSTORE: {
+    name: 'JMLCOSTSTORE',
+    caption: '今麦郎邻近门店导入',
+  },
 };

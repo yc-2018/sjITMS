@@ -96,6 +96,7 @@ export default class QuickFormSearchPage extends SearchPage {
       tableName: '',
       linkQuery: 0,
       authority: props.route?.authority ? props.route.authority[0] : null,
+      queryConfig: {},
     };
   }
 
@@ -150,7 +151,6 @@ export default class QuickFormSearchPage extends SearchPage {
             loginOrg()
               .type.replace('_', '')
               .toLowerCase() + 'uuid';
-          console.log('orgName', orgName, queryConfig);
           let org = queryConfig.columns.find(item => item.fieldName.toLowerCase() == orgName);
 
           if (companyuuid) {
@@ -345,6 +345,7 @@ export default class QuickFormSearchPage extends SearchPage {
       searchFields: columns.filter(data => data.isSearch),
       queryConfigColumns: queryConfig.columns,
       tableName,
+      queryConfig: queryConfig,
     });
   };
 
@@ -828,7 +829,7 @@ export default class QuickFormSearchPage extends SearchPage {
     return (
       <div>
         <Button
-          hidden={!havePermission(this.state.authority + '.create')}
+          // hidden={!havePermission(this.state.authority + '.create')}
           onClick={this.onCreate}
           type="primary"
           icon="plus"
@@ -836,28 +837,28 @@ export default class QuickFormSearchPage extends SearchPage {
           新建
         </Button>
         <Button
-          hidden={!havePermission(this.state.authority + '.edit')}
+          // hidden={!havePermission(this.state.authority + '.edit')}
           onClick={this.onUpdate}
           type="primary"
         >
           编辑
         </Button>
         <Button
-          hidden={!havePermission(this.state.authority + '.view')}
+          // hidden={!havePermission(this.state.authority + '.view')}
           onClick={this.onView}
           type="primary"
         >
           查看
         </Button>
         <Button
-          hidden={!havePermission(this.state.authority + '.port')}
+          // hidden={!havePermission(this.state.authority + '.port')}
           onClick={this.port}
           type="primary"
         >
           导出
         </Button>
         <Button
-          hidden={!havePermission(this.state.authority + '.import')}
+          // hidden={!havePermission(this.state.authority + '.import')}
           type="primary"
           onClick={this.onUpload}
         >
@@ -881,7 +882,11 @@ export default class QuickFormSearchPage extends SearchPage {
           okText="确定"
           cancelText="取消"
         >
-          <Button hidden={!havePermission(this.state.authority + '.delete')}>删除</Button>
+          <Button
+          // hidden={!havePermission(this.state.authority + '.delete')}
+          >
+            删除
+          </Button>
         </Popconfirm>
         <AdvanceQuery
           searchFields={this.state.advancedFields}
@@ -943,6 +948,7 @@ export default class QuickFormSearchPage extends SearchPage {
           refresh={this.onSearch}
           reportCode={this.state.reportCode}
           isOrgQuery={this.state.isOrgQuery}
+          dbSource={this.state.queryConfig?.reportHead?.dbSource}
         />
       </div>
     );

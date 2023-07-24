@@ -11,14 +11,14 @@ let loginOutTime = null; //定时器
 
 export function iterateAllData(callback) {
   localforage
-    .iterate(function(value, key, iterationNumber) {
+    .iterate(function (value, key, iterationNumber) {
       // 查询全部的存储信息 并赋值
       cache[key] = value;
     })
-    .then(function() {
+    .then(function () {
       if (callback) callback();
     })
-    .catch(function(err) {
+    .catch(function (err) {
       // 当出错时，此处代码运行
       console.log(err);
     });
@@ -62,6 +62,7 @@ export function cacheLogin(loginContext) {
       phone: loginContext.userPhone,
       avatar: loginContext.userAvatar,
       resources: loginContext.resources,
+      passwordUsable: loginContext.passwordUsable,
     })
   );
   localStorage.setItem(

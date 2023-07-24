@@ -2,14 +2,14 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-28 15:48:34
+ * @LastEditTime: 2023-06-27 09:00:19
  * @version: 1.0
  */
 import React from 'react';
 import { Button, Popconfirm, message, Modal, Form } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { addNearStore, audits,cancelAudits } from '@/services/sjitms/Jmlcost';
+import { addNearStore, audits, cancelAudits } from '@/services/sjitms/Jmlcost';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
 import { loginOrg, loginUser, loginCompany } from '@/utils/LoginContext';
@@ -30,7 +30,7 @@ export default class JmlCostOrderSearch extends QuickFormSearchPage {
     dispatchCenter: '',
     showUpdateWaven: false,
     handUpdateReview: false,
-    changeData: []
+    changeData: [],
   };
 
   onUpload = () => {
@@ -97,7 +97,6 @@ export default class JmlCostOrderSearch extends QuickFormSearchPage {
   //   const record = e.record;
   //   const fieldName = column.fieldName;
 
-
   //   if (fieldName == 'REALCARTONCOUNT') {
   //     const component = (
   //       <Input
@@ -158,9 +157,9 @@ export default class JmlCostOrderSearch extends QuickFormSearchPage {
       handUpdateReview: true,
       Carton: selectedRows[0].REALCARTONCOUNT,
       Container: selectedRows[0].REALCONTAINERCOUNT,
-      scattered: selectedRows[0].REALSCATTEREDCOUNT
+      scattered: selectedRows[0].REALSCATTEREDCOUNT,
     });
-  }
+  };
 
   // drawRightClickMenus = () => {
   //   return (
@@ -176,103 +175,116 @@ export default class JmlCostOrderSearch extends QuickFormSearchPage {
   //   );
   // };
 
-
-
-
-
-
   audits = async () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
-      message.error("请选中一条记录");
+      message.error('请选中一条记录');
       return;
     }
     let flag = false;
     const errordata = [];
-    selectedRows.map(e=>{
-      if(e.ADJOININGSTORECODENAME=='' ||e.ADJOININGSTORECODENAME=='[]'){
-        errordata .push("排车单："+e.BILLNUMBER+" 门店："+e.DELIVERYPOINTCODENAME+" 没有设置邻近门店！");
-          flag = true;
-          return;
+    selectedRows.map(e => {
+      if (e.ADJOININGSTORECODENAME == '' || e.ADJOININGSTORECODENAME == '[]') {
+        errordata.push(
+          '排车单：' + e.BILLNUMBER + ' 门店：' + e.DELIVERYPOINTCODENAME + ' 没有设置邻近门店！'
+        );
+        flag = true;
+        return;
       }
-    })
-    if(flag){
+    });
+    if (flag) {
       message.error(errordata[0]);
       return;
     }
     const reslut = await audits(selectedRows.map(e => e.COSTUUID));
     if (reslut.success) {
-      message.success("审核成功！");
-      this.setState({ uploadModal: false })
+      message.success('审核成功！');
+      this.setState({ uploadModal: false });
       this.onSearch();
     }
-  }
+  };
 
-  cancelAudits = async()=>{
+  cancelAudits = async () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
-      message.error("请选中一条记录");
+      message.error('请选中一条记录');
       return;
     }
     const reslut = await cancelAudits(selectedRows.map(e => e.COSTUUID));
 
     if (reslut.success) {
-      message.success("取消审核成功！");
-      this.setState({ uploadModal: false })
+      message.success('取消审核成功！');
+      this.setState({ uploadModal: false });
       this.onSearch();
     }
-  }
+  };
   addNearStore = async () => {
     const { selectedRows, NearStore } = this.state;
     if (!NearStore) {
-      message.error("请选择门店");
+      message.error('请选择门店');
       return;
     }
 
-    const params = selectedRows.map(e=>{
+    const params = selectedRows.map(e => {
       return {
-        orderUuid:e.UUID,
-        scheduleBillnumber:e.BILLNUMBER
-      }
-    })
+        orderUuid: e.UUID,
+        scheduleBillnumber: e.BILLNUMBER,
+      };
+    });
     const result = await addNearStore(loginCompany().uuid, loginOrg().uuid, NearStore, params);
     if (result.success) {
-      message.success("保存成功！");
-      this.setState({ uploadModal: false })
+      message.success('保存成功！');
+      this.setState({ uploadModal: false });
       this.onSearch();
     }
-  }
-  handChanges = (e) => {
+  };
+  handChanges = e => {
     this.setState({ NearStore: e.target.value });
-  }
+  };
 
   handNearStore = () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
-      message.error("请选中条记录");
+      message.error('请选中条记录');
       return;
     }
-    this.setState({ uploadModal: true })
-  }
+    this.setState({ uploadModal: true });
+  };
   drawToolsButton = () => {
     const { getFieldDecorator } = this.props.form;
     const { uploadModal } = this.state;
     return (
       <>
-        <Popconfirm placement="top" title={"确认审核？"} onConfirm={() => this.audits()} okText="是" cancelText="否">
-          <Button type='primary'>
-            审核
-          </Button>
+        <Popconfirm
+          placement="top"
+          title={'确认审核？'}
+          onConfirm={() => this.audits()}
+          okText="是"
+          cancelText="否"
+        >
+          <Button type="primary">审核</Button>
         </Popconfirm>
-        <Popconfirm placement="top" title={"确认取消审核？"} onConfirm={() => this.cancelAudits()} okText="是" cancelText="否">
-          <Button type='primary'>
-            取消审核
-          </Button>
+        <Popconfirm
+          placement="top"
+          title={'确认取消审核？'}
+          onConfirm={() => this.cancelAudits()}
+          okText="是"
+          cancelText="否"
+        >
+          <Button type="primary">取消审核</Button>
         </Popconfirm>
-        <Button onClick={() => this.handNearStore()} type='primary'>
+        <Button onClick={() => this.handNearStore()} type="primary">
           添加邻近门店
         </Button>
-        <Modal visible={uploadModal}
+        <Button
+          onClick={() => {
+            this.props.switchTab('import');
+          }}
+        >
+          导入邻近门店
+        </Button>
+        <Modal
+          visible={uploadModal}
           onOk={() => this.addNearStore()}
           onCancel={() => this.setState({ uploadModal: false })}
         >
@@ -309,7 +321,7 @@ export default class JmlCostOrderSearch extends QuickFormSearchPage {
           </Form>
         </Modal>
       </>
-    )
+    );
   };
 
   //该方法用于写最上层的按钮 多个按钮用<span>包裹
@@ -343,7 +355,5 @@ export default class JmlCostOrderSearch extends QuickFormSearchPage {
     }
   };
 
-
-
-  drawcell = e => { };
+  drawcell = e => {};
 }

@@ -160,6 +160,7 @@ export default class SimpleQuery extends SearchForm {
 
   //生成查询控件
   buildSearchItem = searchField => {
+    const { dbSource } = this.props;
     let searchProperties = searchField.searchProperties
       ? JSON.parse(searchField.searchProperties)
       : '';
@@ -225,6 +226,7 @@ export default class SimpleQuery extends SearchForm {
       case 'list':
         return (
           <SimpleSelect
+            dbSource={dbSource}
             allowClear
             placeholder={'请选择' + searchField.fieldTxt}
             searchField={searchField}
@@ -239,6 +241,7 @@ export default class SimpleQuery extends SearchForm {
         if (searchField.searchCondition == 'in' || searchField.searchCondition == 'notIn') {
           return (
             <SimpleSelect
+              dbSource={dbSource}
               showSearch
               allowClear
               placeholder={'请输入' + searchField.fieldTxt}
@@ -271,6 +274,7 @@ export default class SimpleQuery extends SearchForm {
         //     : {};
         return (
           <SimpleAutoComplete
+            dbSource={dbSource}
             placeholder={'请选择' + searchField.fieldTxt}
             searchField={searchField}
             onChange={valueEvent => this.handleChange(valueEvent, searchField)}
@@ -290,6 +294,7 @@ export default class SimpleQuery extends SearchForm {
       case 'sel_tree':
         return (
           <SimpleTreeSelect
+            dbSource={dbSource}
             placeholder={'请选择' + searchField.fieldTxt}
             {...searchProperties}
             searchField={searchField}

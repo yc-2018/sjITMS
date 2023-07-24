@@ -14,7 +14,13 @@ import {
 import ItemEditTable from '@/pages/Component/RapidDevelopment/CommonLayout/Form/ItemEditTable';
 import Address from '@/pages/Component/Form/Address';
 import { addCondition, getFieldShow } from '@/utils/ryzeUtils';
-import { dynamicQuery } from '@/services/quick/Quick';
+import {
+  dynamicQuery,
+  dynamicqueryById,
+  saveFormData,
+  saveOrUpdateEntities,
+  updateEntity,
+} from '@/services/quick/Quick';
 
 /**
  * 新增编辑界面
@@ -143,6 +149,7 @@ export default class QuickCreatePage extends CreatePage {
       tableItems: {},
       categories: [],
       runTimeProps: {},
+      dbSource: 'init',
     };
   }
 
@@ -202,21 +209,25 @@ export default class QuickCreatePage extends CreatePage {
    */
   initEntity = async () => {
     const { onlFormInfos } = this.state;
-    //初始化entity
-    onlFormInfos.forEach(item => {
-      this.entity[item.onlFormHead.tableName] = [];
+    let dbSource = onlFormInfos?.find(e => e.onlFormHead.tableType != 2)?.onlFormHead?.dbSource;
+    this.setState({ dbSource: dbSource }, async () => {
+      //初始化entity
+      onlFormInfos.forEach(item => {
+        this.entity[item.onlFormHead.tableName] = [];
+      });
+      if (this.props.showPageNow == 'update') {
+        await this.initUpdateEntity(onlFormInfos);
+      } else {
+        this.initCreateEntity(onlFormInfos);
+      }
     });
-    if (this.props.showPageNow == 'update') {
-      await this.initUpdateEntity(onlFormInfos);
-    } else {
-      this.initCreateEntity(onlFormInfos);
-    }
   };
 
   /**
    * 初始化更新表单
    */
   initUpdateEntity = async onlFormInfos => {
+    const { dbSource } = this.state;
     for (const onlFormInfo of onlFormInfos) {
       const { onlFormHead, onlFormFields } = onlFormInfo;
       let tableName = onlFormHead.tableName;
@@ -259,7 +270,8 @@ export default class QuickCreatePage extends CreatePage {
         //   },
         // };
       }
-      const response = await this.queryEntityData(param);
+      // const response = await this.queryEntityData(param);
+      const response = await dynamicqueryById(param, dbSource);
       // 请求的数据为空
       if (response.result.records == 'false') {
         return;
@@ -446,7 +458,7 @@ export default class QuickCreatePage extends CreatePage {
    * 初始化字段控件
    */
   initFormItems = () => {
-    const { onlFormInfos } = this.state;
+    const { onlFormInfos, dbSource } = this.state;
     let formItems = {};
     let tableItems = {};
     // 根据查询出来的配置渲染表单新增页面
@@ -483,7 +495,7 @@ export default class QuickCreatePage extends CreatePage {
           label: field.dbFieldTxt,
           rules: rules,
           component: this.getComponent(field),
-          props: { ...commonPropertis, ...fieldExtendJson, placeholder },
+          props: { ...commonPropertis, ...fieldExtendJson, placeholder, dbSource: dbSource },
           tableName,
           fieldName: field.dbFieldName,
           fieldShowType: field.fieldShowType,
@@ -527,7 +539,7 @@ export default class QuickCreatePage extends CreatePage {
     //入参
     const param = { code: this.state.onlFormInfos[0].onlFormHead.code, entity: entity };
     this.onSaving();
-    const response = await this.saveEntityData(param);
+    const response = await saveFormData(param);
     const success = response.success == true;
     this.afterSave(success);
     this.onSaved({ response, param });

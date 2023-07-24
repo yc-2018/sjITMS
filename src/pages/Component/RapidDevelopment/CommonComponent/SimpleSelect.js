@@ -21,7 +21,9 @@ import moment from 'moment';
 export default class SimpleSelect extends PureComponent {
   constructor(props) {
     super(props);
-    this.state = { sourceData: [] };
+    this.state = {
+      sourceData: [],
+    };
   }
 
   componentDidMount() {
@@ -47,7 +49,7 @@ export default class SimpleSelect extends PureComponent {
             params: [{ field: 'DICT_CODE', rule: 'eq', val: [dictCode] }],
           },
         };
-        const response = await dynamicQuery(queryParamsJson);
+        const response = await dynamicQuery(queryParamsJson, this.props.dbSource);
         if (!response || !response.success || !Array.isArray(response.result.records)) {
           this.setSourceData([]);
         } else {
