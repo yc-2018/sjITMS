@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-07-21 17:56:32
+ * @LastEditTime: 2023-07-22 22:51:53
  * @Description: 配送进度
  */
 import React, { Component } from 'react';
@@ -18,10 +18,9 @@ import { uniqBy, orderBy, groupBy, sumBy } from 'lodash';
 import moment from 'moment';
 import styles from './ScheduleMap.less';
 
-let timer = undefined;
-
 export default class DispatchMap extends Component {
   state = {
+    timer: undefined,
     visible: false,
     windowInfo: undefined,
     schedule: {},
@@ -33,11 +32,14 @@ export default class DispatchMap extends Component {
     firstTime: "",
     lastTime: ""
   };
+
+
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
   };
 
   componentWillUnmount() {
+    const { timer } = this.state;
     clearInterval(timer);
   }
 
@@ -72,8 +74,9 @@ export default class DispatchMap extends Component {
   };
 
   hide = () => {
-    this.setState({ startMarker: undefined, currentMarker: undefined });
+    const { timer } = this.state;
     clearInterval(timer);
+    this.setState({ visible: false, timer: undefined });
   }
 
   //初始化
@@ -86,41 +89,52 @@ export default class DispatchMap extends Component {
       const dispatchtime = schedule.DISPATCHTIME;
       const returntime = schedule.RETURNTIME;
       let firstTime = moment().format("YYYY-MM-DD HH:mm:ss");
-      this.setState({ orders, points, schedule, firstTime });
+      this.setState({
+        startMarker: undefined,
+        currentMarker: undefined,
+        lastPoints: [],
+        orders, points, schedule, firstTime
+      });
       //初始化车辆历史轨迹
-      setTimeout(async () => {
+      setTimeout(() => {
         this.map?.clearOverlays();
         const hours = Math.ceil(moment(returntime || moment()).diff(dispatchtime, "minute") / 60);
-        if (hours > 4) {
-          for (let i = 0; i < Math.ceil(hours / 4); i++) {
-            const from = moment(dispatchtime).add(i * 4, "hours").format("YYYY-MM-DD HH:mm:ss");
-            const to = moment(dispatchtime).add((i + 1) * 4, "hours").format("YYYY-MM-DD HH:mm:ss");
-            await this.getHistoryLocation(platenumber, from, to);
+        if (hours > 2) {
+          for (let i = 0; i < Math.ceil(hours / 2); i++) {
+            const from = moment(dispatchtime).add(i * 2, "hours").format("YYYY-MM-DD HH:mm:ss");
+            if (moment().isAfter(from)) {
+              let to = moment(dispatchtime).add((i + 1) * 2, "hours").format("YYYY-MM-DD HH:mm:ss");
+              to = moment().isAfter(to) ? to : firstTime;
+              this.getHistoryLocation(platenumber, from, to, []);
+            }
           }
         } else {
-          this.getHistoryLocation(platenumber, dispatchtime, returntime || firstTime);
+          this.getHistoryLocation(platenumber, dispatchtime, returntime || firstTime, []);
         }
         //初始化车辆当前位置
         this.getTrunkLocation(platenumber);
         //初始化门店marker
         this.drawMarker(points);
         this.autoViewPort(points);
+        this.autoFresh(platenumber, returntime);
       }, 500);
-
-      timer = setInterval(() => {
-        //历史轨迹
-        if (returntime == undefined) {
-          let { lastTime, firstTime } = this.state;
-          if (moment().isBefore(lastTime)) {
-            lastTime = firstTime
-          }
-          this.getHistoryLocation(platenumber, lastTime, moment().format("YYYY-MM-DD HH:mm:ss"));
-        }
-        //当前位置
-        this.getTrunkLocation(platenumber);
-      }, 10000);
     }
   };
+
+  //定时刷新
+  autoFresh = (platenumber, returntime) => {
+    const timer = setInterval(() => {
+      //历史轨迹
+      if (returntime == undefined) {
+        const { lastTime, lastPoints } = this.state;
+        this.getHistoryLocation(platenumber, lastTime, moment().format("YYYY-MM-DD HH:mm:ss"), lastPoints);
+      }
+      //当前位置
+      this.getTrunkLocation(platenumber);
+    }, 5000);
+    this.setState({ timer });
+  }
+
   //初始化门店
   initPoints = async (billNumber, orders) => {
     const pointUuids = uniqBy(orders.map(x => x.deliveryPoint), x => x.uuid).map(x => x.uuid);
@@ -233,22 +247,26 @@ export default class DispatchMap extends Component {
   };
 
   //历史轨迹
-  getHistoryLocation = async (platenumber, from, to) => {
-    const params = { plate_num: "粤" + platenumber, from, to, timeInterval: "10", map: "baidu" }
+  getHistoryLocation = async (platenumber, from, to, lastPoints) => {
+    const params = { plate_num: "粤" + platenumber, from, to, timeInterval: "20", map: "baidu" }
     const response = await GetHistoryLocation(params);
     if (response.data.code == 0) {
-      let { startMarker, lastPoints } = this.state;
+      let { startMarker } = this.state;
+      let pts = [...lastPoints];
       const historys = response.data.data || [];
       if (historys.length > 0) {
         historys.forEach(point => {
-          lastPoints.push(new BMapGL.Point(point.lng, point.lat));
+          pts.push(new BMapGL.Point(point.lng, point.lat));
         });
         if (startMarker == undefined) {
           const startPoint = historys[0];
           startMarker = this.drawRouteMarker(startPoint.lng, startPoint.lat, 50, 80, 400, 278);
           this.map?.addOverlay(startMarker);
         }
-        this.map?.addOverlay(new BMapGL.Polyline(lastPoints, { strokeColor: "#3e3eff", strokeWeight: 4, strokeOpacity: 1 }));
+        if (pts.length > 1) {
+          this.map?.addOverlay(new BMapGL.Polyline(pts, { strokeColor: "#3e3eff", strokeWeight: 4, strokeOpacity: 1 }));
+        }
+        const lastPoints = [...pts];
         this.setState({ startMarker, lastTime: to, lastPoints: lastPoints.slice(-2) });
       }
     }
@@ -279,7 +297,7 @@ export default class DispatchMap extends Component {
   }
 
   render() {
-    const { visible, windowInfo, orders, points } = this.state;
+    const { visible, windowInfo, orders, points, timer } = this.state;
     let completePoints = [], currentPoint = undefined;
     if (points.length > 0) {
       completePoints = points.filter(x => x.complete == true);
@@ -294,7 +312,8 @@ export default class DispatchMap extends Component {
         style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
         width="100vw"
         bodyStyle={{ margin: -24, height: '100vh' }}
-        afterClose={() => this.hide()}
+        afterClose={() => clearInterval(timer)}
+        onCancel={() => this.hide()}
         visible={visible}
         title={
           <Row type="flex" justify="space-between">
