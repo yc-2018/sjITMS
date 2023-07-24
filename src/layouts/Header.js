@@ -33,7 +33,7 @@ class HeaderView extends PureComponent {
   }
 
   componentDidMount() {
-    if (!loginUser().passwordUsable) {
+    if (!loginUser().passwordUsable && API_ENV != 'test') {
       this.setState({ modifyPasswdModalVisible: true, compelPasswd: true });
     }
     document.addEventListener('scroll', this.handScroll, { passive: true });

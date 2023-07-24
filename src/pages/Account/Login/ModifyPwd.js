@@ -65,6 +65,7 @@ export default class ModifyPasswd extends Component {
         destroyOnClose={!compel}
         maskClosable={!compel}
         closable={!compel}
+        keyboard={!compel}
         cancelButtonProps={{ disabled: !!compel }}
         confirmLoading={confirmLoading}
       >
