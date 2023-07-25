@@ -2,19 +2,26 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-07-22 22:51:53
+ * @LastEditTime: 2023-07-25 13:07:12
  * @Description: 配送进度
  */
 import React, { Component } from 'react';
 import { Divider, Modal, Button, Row, Col } from 'antd';
 import { Map, CustomOverlay } from 'react-bmapgl';
-import { getDetailByBillUuids, GetHistoryLocation, GetTrunkData, GetScheduleEvent } from '@/services/sjitms/ScheduleBill';
+import {
+  getDetailByBillUuids,
+  GetHistoryLocation,
+  GetTrunkData,
+  GetScheduleEvent,
+  GetStopEvent
+} from '@/services/sjitms/ScheduleBill';
 import { getAddressByUuids } from '@/services/sjitms/StoreTeam';
 import ShopsIcon from '@/assets/common/shops.png';
 import myjPointNormal from '@/assets/common/myjPoint_normal.svg';
 import myjPointClick from '@/assets/common/myjPoint_click.svg';
 import truckStop from '@/assets/common/truck_stop.png';
 import { uniqBy, orderBy, groupBy, sumBy } from 'lodash';
+import { gcj02tobd09, getDistance } from '@/utils/gcoord'
 import moment from 'moment';
 import styles from './ScheduleMap.less';
 
@@ -84,7 +91,8 @@ export default class DispatchMap extends Component {
     const response = await getDetailByBillUuids([schedule.UUID]);
     if (response.success) {
       let orders = response.data || [];
-      const points = await this.initPoints(schedule.BILLNUMBER, orders);
+      let points = await this.initPoints(schedule.BILLNUMBER, orders);
+      points = await this.stopEvent(points, schedule.BILLNUMBER);
       const platenumber = schedule.VEHICLEPLATENUMBER;
       const dispatchtime = schedule.DISPATCHTIME;
       const returntime = schedule.RETURNTIME;
@@ -95,6 +103,7 @@ export default class DispatchMap extends Component {
         lastPoints: [],
         orders, points, schedule, firstTime
       });
+      console.log(points);
       //初始化车辆历史轨迹
       setTimeout(() => {
         this.map?.clearOverlays();
@@ -140,22 +149,47 @@ export default class DispatchMap extends Component {
     const pointUuids = uniqBy(orders.map(x => x.deliveryPoint), x => x.uuid).map(x => x.uuid);
     if (pointUuids.length == 0) { return []; }
     const storeRespones = await getAddressByUuids(pointUuids);
-    const stores = storeRespones.success ? storeRespones.data || [] : [];
+    const stores = await storeRespones.success ? storeRespones.data || [] : [];
     const response = await GetScheduleEvent(billNumber);
     let shipedPoints = response.success ? response.data || [] : []
     if (shipedPoints.length > 0) {
       shipedPoints = shipedPoints.map(x => x.pointcode);
     }
     orders = this.groupData(orders);
-    return orders.map(order => {
+    orders = orders.map(order => {
       const store = stores?.find(point => point.uuid == order.deliveryPoint.uuid);
+      const shipedPoint = shipedPoints?.find(x => x.pointcode);
       return {
         ...order,
-        complete: shipedPoints.indexOf(store?.code) != -1 || false,
+        complete: shipedPoint || false,
+        startTime: shipedPoint?.intime || "---",
+        endTime: shipedPoint?.outtime || "---",
         longitude: store?.longitude || 113.809388,
         latitude: store?.latitude || 23.067107
       };
     });
+    return orders;
+  }
+  //计算停留事件
+  stopEvent = async (points, billNumber) => {
+    const resStopEvent = await GetStopEvent(billNumber);
+    let stopEvents = resStopEvent.success ? resStopEvent.data || [] : [];
+    //未送达门店判断是否存在100米内停留事件
+    const notShiedPoint = points.filter(x => x.complete == false);
+    notShiedPoint.forEach(x => {
+      stopEvents.forEach(event => {
+        const stopLngLat = gcj02tobd09(event.startlng, event.startlat);
+        const distance = getDistance(stopLngLat[1], stopLngLat[0], x.latitude, x.longitude);
+        if (distance <= 100) {
+          const index = points.findIndex(pt => pt.deliveryPoint.code == x.deliveryPoint.code);
+          x.complete = true;
+          x.startTime = event.starttime || "---";
+          x.endTime = event.endtime || "---";
+          points[index] = x;
+        }
+      })
+    });
+    return points;
   }
 
   //按送货点汇总运输订单
@@ -248,7 +282,7 @@ export default class DispatchMap extends Component {
 
   //历史轨迹
   getHistoryLocation = async (platenumber, from, to, lastPoints) => {
-    const params = { plate_num: "粤" + platenumber, from, to, timeInterval: "20", map: "baidu" }
+    const params = { plate_num: "粤" + platenumber, from, to, timeInterval: "10", map: "baidu" }
     const response = await GetHistoryLocation(params);
     if (response.data.code == 0) {
       let { startMarker } = this.state;
