@@ -225,7 +225,7 @@ class HeaderView extends PureComponent {
 
   //校验密码强度
   checkPassword = () => {
-    if (loginUser()?.name.indexOf("刷卡") == -1 && configs[API_ENV].PRO_ENV)
+    if (loginUser()?.name.indexOf("刷卡") == -1 && configs[API_ENV].PRO_ENV == 1)
       this.props.dispatch({
         type: 'login/checkPassword',
         callback: (passwordUsable) => {
