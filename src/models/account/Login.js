@@ -1,6 +1,7 @@
 import { routerRedux } from 'dva/router';
 import { getPageQuery } from '@/utils/utils';
 import { cacheLogin, clearLogin, loginKey } from '@/utils/LoginContext';
+import { setCookie } from '@/utils/Cookies';
 import { stringify } from 'qs';
 import {
   accountLogin,
@@ -47,8 +48,8 @@ export default {
         }
         const passwordUsable = payload.loginAccount != payload.password
           && payload.loginAccount.indexOf(payload.password) == -1;
-        yield put({ type: 'changePasswordUsable', payload: passwordUsable });
-        yield put(routerRedux.replace('/bigData/count'));
+        setCookie("passwordUsable", passwordUsable ? 1 : 0, 1);
+        yield put(routerRedux.replace('/'));
       } else {
         yield put({
           type: 'changeLoginStatus',
@@ -207,10 +208,6 @@ export default {
       const response = yield call(resetPassword, payload);
       if (callback) { callback(response); }
     },
-    *checkPassword({ callback }, { select }) {
-      const response = yield select(state => state.login.passwordUsable);
-      if (callback) { callback(response); }
-    }
   },
 
   reducers: {
@@ -220,12 +217,6 @@ export default {
         result: payload.result,
         message: payload.message,
         status: payload.status,
-      };
-    },
-    changePasswordUsable(state, { payload }) {
-      return {
-        ...state,
-        passwordUsable: payload,
       };
     },
     changeSubmitting(state, { payload }) {
