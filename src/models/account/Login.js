@@ -8,8 +8,6 @@ import {
   forgetPassword,
   modifyPassword,
   switchOrg,
-  get,
-  getOrgs,
   resetPassword,
 } from '@/services/account/Login';
 import { reloadAuthorized } from '@/utils/Authorized';
@@ -22,12 +20,8 @@ export default {
   },
   effects: {
     *accountLogin({ payload, callback }, { call, put }) {
-      yield put({
-        type: 'changeSubmitting',
-        payload: true,
-      });
+      yield put({ type: 'changeSubmitting', payload: true, });
       const response = yield call(accountLogin, payload);
-
       if (response && response.success) {
         cacheLogin(response.data);
         reloadAuthorized();
@@ -51,6 +45,9 @@ export default {
             return;
           }
         }
+        const passwordUsable = payload.loginAccount != payload.password
+          && payload.loginAccount.indexOf(payload.password) == -1;
+        yield put({ type: 'changePasswordUsable', payload: passwordUsable });
         yield put(routerRedux.replace('/bigData/count'));
       } else {
         yield put({
@@ -209,6 +206,10 @@ export default {
     *resetPassword({ payload, callback }, { call, put }) {
       const response = yield call(resetPassword, payload);
       if (callback) { callback(response); }
+    },
+    *checkPassword({ callback }, { select }) {
+      const response = yield select(state => state.login.passwordUsable);
+      if (callback) { callback(response); }
     }
   },
 
@@ -219,6 +220,12 @@ export default {
         result: payload.result,
         message: payload.message,
         status: payload.status,
+      };
+    },
+    changePasswordUsable(state, { payload }) {
+      return {
+        ...state,
+        passwordUsable: payload,
       };
     },
     changeSubmitting(state, { payload }) {

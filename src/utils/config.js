@@ -9,6 +9,7 @@ const configs = {
     'avatar.default.url': 'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',
     RPORTER_SERVER: 'http://app5.iwms.hd123.cn:8081/iwms-report/decision/view/report',
     PRINT_TYPE: 0,
+    PRO_ENV: false,
   },
   // 开发环境
   dev: {
@@ -16,6 +17,7 @@ const configs = {
     'avatar.default.url': 'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',
     RPORTER_SERVER: 'http://app5.iwms.hd123.cn:8081/iwms-report/decision/view/report',
     PRINT_TYPE: 0,
+    PRO_ENV: false
   },
   // 测试环境
   test: {
@@ -23,6 +25,7 @@ const configs = {
     'avatar.default.url': avatarSvg,
     RPORTER_SERVER: 'http://DOCKER_RPORTER_SERVER_ADDR/iwms-report/decision/view/report',
     PRINT_TYPE: 0,
+    PRO_ENV: false
   },
   // Docker 模拟部署环境
   docker: {
@@ -30,6 +33,7 @@ const configs = {
     'avatar.default.url': avatarSvg,
     RPORTER_SERVER: 'http://DOCKER_RPORTER_SERVER_ADDR/iwms-report/decision/view/report',
     PRINT_TYPE: 0,
+    PRO_ENV: 'DOCKER_PRO_ENV'
   },
 };
 
