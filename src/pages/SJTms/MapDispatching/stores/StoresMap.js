@@ -574,12 +574,12 @@ export default class StoresMap extends Component {
             // }]${'\r\r'}[纬度:${point.point.lat}]`;
             point.address = point.address
               ? point.address +
-                '<br/>纬度:[' +
+                '<br/>经度:[' +
                 point.point.lng +
-                ']<br/>经度:[' +
+                ']<br/>纬度:[' +
                 point.point.lat +
                 ']'
-              : '' + ']<br/>纬度:[' + point.point.lng + ']<br/>经度:[' + point.point.lat + ']';
+              : '' + ']<br/>经度:[' + point.point.lng + ']<br/>纬度:[' + point.point.lat + ']';
           });
         });
 
