@@ -61,8 +61,7 @@ export function cacheLogin(loginContext) {
       name: loginContext.userName,
       phone: loginContext.userPhone,
       avatar: loginContext.userAvatar,
-      resources: loginContext.resources,
-      passwordUsable: loginContext.passwordUsable,
+      resources: loginContext.resources
     })
   );
   localStorage.setItem(

@@ -332,7 +332,7 @@ export default {
   'menu.notice': '通知发布',
   'menu.account': '个人中心',
   'menu.account.modify': '修改密码',
-  'menu.account.modify.compel': '您的密码过于简单，请修改密码',
+  'menu.account.modify.compel': '您的密码强度太弱，请修改密码',
   'menu.account.switch': '切换组织',
   'menu.account.logout': '退出登录',
   'menu.account.center': '账户信息',

@@ -11,6 +11,8 @@ import Authorized from '@/utils/Authorized';
 import ModifyPwd from '@/pages/Account/Login/ModifyPwd';
 import SwitchOrg from '@/pages/Account/Login/SwitchOrg';
 import { loginOrg, loginUser } from '@/utils/LoginContext';
+import { getCookie } from '@/utils/Cookies';
+import configs from '@/utils/config';
 import defaultSettings from '../defaultSettings';
 
 const { Header } = Layout;
@@ -33,11 +35,8 @@ class HeaderView extends PureComponent {
   }
 
   componentDidMount() {
-    const passwordUsable = loginUser().passwordUsable;
-    if (!passwordUsable && API_ENV != 'test') {
-      this.setState({ modifyPasswdModalVisible: true, compelPasswd: true });
-    }
     document.addEventListener('scroll', this.handScroll, { passive: true });
+    this.checkPassword();
   }
 
   componentWillUnmount() {
@@ -224,6 +223,17 @@ class HeaderView extends PureComponent {
       switchOrgModalVisible: !!flag,
     });
   }
+
+  //校验密码强度
+  checkPassword = () => {
+    if (loginUser()?.name.indexOf("刷卡") == -1 && configs[API_ENV].PRO_ENV == 1) {
+      const passwordUsable = getCookie("passwordUsable");
+      if (passwordUsable == 0 && passwordUsable != undefined) {
+        this.setState({ modifyPasswdModalVisible: true, compelPasswd: true });
+      }
+    }
+  }
+
   render() {
     const { isMobile, handleMenuCollapse, setting, notices, replitions } = this.props;
     const { navTheme, layout, fixedHeader } = setting;

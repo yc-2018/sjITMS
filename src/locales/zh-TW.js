@@ -304,7 +304,7 @@ export default {
   'menu.bigData': '大數據',
   'menu.notice': '通知',
   'menu.account.modify': '修改密碼',
-  'menu.account.modify.compel': '您的密码过于简单，请修改密码',
+  'menu.account.modify.compel': '您的密码强度太弱，请修改密码',
   'menu.account.switch': '切換組織',
   'menu.sjtms.basic': '基本資料',
   'menu.sjtms.basic.dc': '配送中心',
