@@ -8,6 +8,7 @@ import {
   phoneLogin,
   forgetPassword,
   modifyPassword,
+  modifyNewPassword,
   switchOrg,
   resetPassword,
 } from '@/services/account/Login';
@@ -162,6 +163,18 @@ export default {
         payload: true,
       });
       const response = yield call(modifyPassword, payload);
+      yield put({
+        type: 'changeSubmitting',
+        payload: false,
+      });
+      if (callback) { callback(response); }
+    },
+    *modifyNewPassword({ payload, callback }, { call, put }) {
+      yield put({
+        type: 'changeSubmitting',
+        payload: true,
+      });
+      const response = yield call(modifyNewPassword, payload);
       yield put({
         type: 'changeSubmitting',
         payload: false,

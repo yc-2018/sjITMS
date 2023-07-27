@@ -71,24 +71,25 @@ export default class ModifyPasswd extends Component {
       >
         <div>
           <Form>
-            <FormItem
-              {...formItemLayout}
-              label={formatMessage({ id: 'user.modify.old.password.label' })}>
-              {getFieldDecorator('oldPassword', {
-                initialValue: '',
-                rules: [{
-                  required: true, message: formatMessage({ id: 'user.modify.old.password' }),
-                }, {
-                  // pattern: /^[\x21-\x7E]{5,16}$/, message: formatMessage({ id: 'user.modify.ckeckPassword' }),
-                }],
-              })(
-                <Input
-                  prefix={<Icon type="lock" />}
-                  type="password"
-                  placeholder={formatMessage({ id: 'user.modify.old.password' })}
-                />
-              )}
-            </FormItem>
+            {compel ? <></> :
+              <FormItem
+                {...formItemLayout}
+                label={formatMessage({ id: 'user.modify.old.password.label' })}>
+                {getFieldDecorator('oldPassword', {
+                  initialValue: '',
+                  rules: [{
+                    required: true, message: formatMessage({ id: 'user.modify.old.password' }),
+                  }, {
+                    // pattern: /^[\x21-\x7E]{5,16}$/, message: formatMessage({ id: 'user.modify.ckeckPassword' }),
+                  }],
+                })(
+                  <Input
+                    prefix={<Icon type="lock" />}
+                    type="password"
+                    placeholder={formatMessage({ id: 'user.modify.old.password' })}
+                  />
+                )}
+              </FormItem>}
             <FormItem
               {...formItemLayout}
               label={formatMessage({ id: 'user.modify.new.password.label' })}>
