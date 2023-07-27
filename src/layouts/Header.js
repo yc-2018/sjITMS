@@ -234,6 +234,23 @@ class HeaderView extends PureComponent {
     }
   }
 
+  // 强制修改密码
+  modifyNewPassword = (values) => {
+    this.setConfirmLoading(true);
+    this.props.dispatch({
+      type: 'login/modifyNewPassword',
+      payload: values,
+      callback: (response) => {
+        if (response.success) {
+          message.success(formatMessage({ id: 'user.modify.password.success' }));
+          this.setState({ modifyPasswdModalVisible: false });
+          this.props.dispatch({ type: 'login/logout' });
+        }
+        this.setConfirmLoading(false);
+      },
+    });
+  }
+
   render() {
     const { isMobile, handleMenuCollapse, setting, notices, replitions } = this.props;
     const { navTheme, layout, fixedHeader } = setting;
@@ -268,7 +285,7 @@ class HeaderView extends PureComponent {
         <ModifyPwd
           modifyPasswdModalVisible={modifyPasswdModalVisible}
           hideModifyModal={this.hidePwdModifyModal}
-          modifyPasswd={this.modifyPasswd}
+          modifyPasswd={compelPasswd ? this.modifyNewPassword : this.modifyPasswd}
           compel={compelPasswd}
           confirmLoading={confirmLoading}
         >
