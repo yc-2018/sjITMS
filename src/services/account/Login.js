@@ -15,12 +15,17 @@ export async function phoneLogin(payload) {
 
 export async function forgetPassword(payload) {
   return request(`/iwms-account/account/login/forgetpassword?phone=${payload.phone}&captcha=${payload.captcha}&newPassword=${payload.newPassword}`, {
-    method: 'POST',   
+    method: 'POST',
   });
 }
 
 export async function modifyPassword(payload) {
   return request(`/iwms-account/account/login/modify?userUuid=${payload.userUuid}&oldPassword=${payload.oldPassword}&newPassword=${payload.newPassword}`, {
+    method: 'POST',
+  });
+}
+export async function modifyNewPassword(payload) {
+  return request(`/iwms-account/account/login/modifyNewPassword?userUuid=${payload.userUuid}&newPassword=${payload.newPassword}`, {
     method: 'POST',
   });
 }
