@@ -131,7 +131,7 @@ export default class HighWagAreaCreatePage extends QuickCreatePage {
             let initialValue =
               this.entity[tableName][record.line - 1] &&
               this.entity[tableName][record.line - 1][fieldName]; // 初始值
-            if (initialValue == undefined && onlFormField.fieldDefaultValue) {
+            if (initialValue == undefined && onlFormField.fieldDefaultValue && record.line != undefined) {
               this.entity[tableName][record.line - 1][fieldName] = onlFormField.fieldDefaultValue;
               initialValue = onlFormField.fieldDefaultValue;
             }
