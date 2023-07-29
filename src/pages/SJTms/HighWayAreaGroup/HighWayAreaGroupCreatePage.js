@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-25 10:17:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-05-03 15:46:28
+ * @LastEditTime: 2023-07-29 16:23:57
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -131,7 +131,11 @@ export default class HighWagAreaCreatePage extends QuickCreatePage {
             let initialValue =
               this.entity[tableName][record.line - 1] &&
               this.entity[tableName][record.line - 1][fieldName]; // 初始值
-            if (initialValue == undefined && onlFormField.fieldDefaultValue) {
+            if (
+              initialValue == undefined &&
+              onlFormField.fieldDefaultValue &&
+              record.line != undefined
+            ) {
               this.entity[tableName][record.line - 1][fieldName] = onlFormField.fieldDefaultValue;
               initialValue = onlFormField.fieldDefaultValue;
             }
@@ -283,7 +287,6 @@ export default class HighWagAreaCreatePage extends QuickCreatePage {
       }
       const tableName = onlFormHead.tableName;
       this.entity[tableName][0] = {};
-      console.log(onlFormHead);
       const result = onlFormFields.filter(x => x.fieldDefaultValue !== undefined);
       result.forEach(data => {
         this.entity[tableName][0][data.dbFieldName] = data.fieldDefaultValue;
