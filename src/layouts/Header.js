@@ -11,7 +11,7 @@ import Authorized from '@/utils/Authorized';
 import ModifyPwd from '@/pages/Account/Login/ModifyPwd';
 import SwitchOrg from '@/pages/Account/Login/SwitchOrg';
 import { loginOrg, loginUser } from '@/utils/LoginContext';
-import { getCookie } from '@/utils/Cookies';
+import { clearCookie, getCookie } from '@/utils/Cookies';
 import configs from '@/utils/config';
 import defaultSettings from '../defaultSettings';
 
@@ -244,6 +244,7 @@ class HeaderView extends PureComponent {
         if (response.success) {
           message.success(formatMessage({ id: 'user.modify.password.success' }));
           this.setState({ modifyPasswdModalVisible: false });
+          clearCookie("user_passwordUsable");
           this.props.dispatch({ type: 'login/logout' });
         }
         this.setConfirmLoading(false);
