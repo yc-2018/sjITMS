@@ -7,7 +7,7 @@ import OtherFeeModal from './OtherFeeModal';
 import { commonLocale } from '@/utils/CommonLocale';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { submitFee } from '@/services/sjtms/OtherFeeService';
-
+import { havePermission } from '@/utils/authority';
 @connect(({ quick, sjdispatchReturn, loading }) => ({
   quick,
   sjdispatchReturn,
@@ -53,6 +53,44 @@ export default class InAndOutInfoSearch extends QuickFormSearchPage {
           scheduleBillNumber={scheduleBillNumber}
           handleModal={() => this.setState({ otherFeeModalVisible: false })}
         />
+          <Button
+           hidden={!havePermission(this.state.authority + '.create')}
+          onClick={this.onCreate}
+          type="primary"
+          icon="plus"
+        >
+          新建
+        </Button>
+        <Button
+           hidden={!havePermission(this.state.authority + '.edit')}
+          onClick={this.onUpdate}
+          type="primary"
+        >
+          编辑
+        </Button>
+        <Button
+           hidden={!havePermission(this.state.authority + '.view')}
+          onClick={this.onView}
+          type="primary"
+        >
+          查看
+        </Button>
+        <Button
+          hidden={!havePermission(this.state.authority + '.port')}
+          onClick={this.port}
+          type="primary"
+        >
+          导出
+        </Button>
+        <Button
+           hidden={!havePermission(this.state.authority + '.import')}
+          type="primary"
+          onClick={this.onUpload}
+        >
+          导入
+        </Button>
+        {this.drawTopButton()}
+        {/* <SearchMoreAction menus={menus} /> */}
       </>
     );
   };
