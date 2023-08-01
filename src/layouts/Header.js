@@ -228,7 +228,7 @@ class HeaderView extends PureComponent {
   checkPassword = () => {
     if (loginUser()?.name.indexOf("刷卡") == -1 && configs[API_ENV].PRO_ENV == 1) {
       const passwordUsable = getCookie("passwordUsable");
-      if (passwordUsable == 0 && passwordUsable != undefined) {
+      if (passwordUsable == 'N' && passwordUsable != undefined) {
         this.setState({ modifyPasswdModalVisible: true, compelPasswd: true });
       }
     }
@@ -244,7 +244,7 @@ class HeaderView extends PureComponent {
         if (response.success) {
           message.success(formatMessage({ id: 'user.modify.password.success' }));
           this.setState({ modifyPasswdModalVisible: false });
-          clearCookie("user_passwordUsable");
+          clearCookie("passwordUsable");
           this.props.dispatch({ type: 'login/logout' });
         }
         this.setConfirmLoading(false);
