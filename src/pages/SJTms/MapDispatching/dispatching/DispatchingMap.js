@@ -34,7 +34,7 @@ import {
   queryDriverRoutes,
   queryAuditedOrderByParams,
 } from '@/services/sjitms/OrderBill';
-import { queryDict, queryData } from '@/services/quick/Quick';
+import { queryDict, queryData,dynamicQuery } from '@/services/quick/Quick';
 
 import ShopIcon from '@/assets/common/22.png';
 import ShopClickIcon from '@/assets/common/23.png';
@@ -86,6 +86,16 @@ export default class DispatchMap extends Component {
     closeLeft: false,
     checkSchedules: [],
     checkScheduleOrders: [],
+     totals : {
+      cartonCount: 0, //整件数
+      scatteredCount: 0, //散件数
+      containerCount: 0, //周转箱
+      volume: 0, //体积
+      weight: 0, //重量,
+      totalCount: 0, //总件数
+      BEARWEIGHT:0,
+      volumet:0
+    }
   };
 
   colors = [
@@ -229,10 +239,10 @@ export default class DispatchMap extends Component {
         let isSelectOrdersArea =
           this.isSelectOrders && this.isSelectOrders.length > 0
             ? uniqBy(
-              this.isSelectOrders.map(e => {
-                return e.shipAreaName;
-              })
-            )
+                this.isSelectOrders.map(e => {
+                  return e.shipAreaName;
+                })
+              )
             : [];
 
         orderMarkers.map(e => {
@@ -399,9 +409,9 @@ export default class DispatchMap extends Component {
             shadow={true}
             onMouseover={() => this.setState({ windowInfo: { point, order } })}
             onMouseout={() => this.setState({ windowInfo: undefined })}
-          // onClick={event => {
-          //   that.onChangeSelect(!order.isSelect, order);
-          // }}
+            // onClick={event => {
+            //   that.onChangeSelect(!order.isSelect, order);
+            // }}
           />
         );
       });
@@ -722,7 +732,7 @@ export default class DispatchMap extends Component {
     return totals;
   };
 
-  getTotals = selectOrder => {
+  getTotals = async selectOrder => {
     let selectOrderStoreCodes = selectOrder.map(e => e.deliveryPoint.code);
     const { orders } = this.state;
     let allSelectOrders = orders.filter(
@@ -736,7 +746,25 @@ export default class DispatchMap extends Component {
       volume: 0, //体积
       weight: 0, //重量,
       totalCount: 0, //总件数
+      BEARWEIGHT:0,
+      volumet:0
     };
+    if(allSelectOrders[0]?.billUuid){
+      const scheule = await getSchedule(allSelectOrders[0]?.billUuid);
+      if(scheule.success){
+        const param = {
+          tableName: 'SJ_ITMS_VEHICLE',
+          condition: {
+            params: [{ field: 'uuid', rule: 'eq', val: [scheule.data.vehicle.uuid] }],
+          },
+        };
+       const vehicle = await dynamicQuery(param);
+      if(vehicle.success){
+        totals.BEARWEIGHT = vehicle.result.records[0].BEARWEIGHT
+        totals.volumet = vehicle.result.records[0].LENGTH*vehicle.result.records[0].HEIGHT*vehicle.result.records[0].WIDTH
+      }
+    } 
+    }
     allSelectOrders.map(e => {
       totals.cartonCount += e.cartonCount;
       totals.scatteredCount += e.scatteredCount;
@@ -802,10 +830,13 @@ export default class DispatchMap extends Component {
           orders.push(e);
         }
       });
+      const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
+     let totals = await this.getTotals(selectOrder);
       this.setState(
         {
           orderMarkers,
           orders,
+          totals,
           isEdit: true,
           schdule: schdule,
           checkScheduleOrders: [],
@@ -861,9 +892,9 @@ export default class DispatchMap extends Component {
           shadow={true}
           onMouseover={() => this.setState({ windowInfo: { point, order } })}
           onMouseout={() => this.setState({ windowInfo: undefined })}
-        // onClick={event => {
-        //   that.onChangeSelect(!order.isSelect, order);
-        // }}
+          // onClick={event => {
+          //   that.onChangeSelect(!order.isSelect, order);
+          // }}
         />
       );
     });
@@ -897,11 +928,13 @@ export default class DispatchMap extends Component {
       closeLeft,
       checkScheduleOrders,
       checkSchedules,
+      totals
     } = this.state;
     const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
-    let totals = this.getTotals(selectOrder);
-
+   // let totals = this.getTotals(selectOrder);
+    
+    
     let windowsInfoTotals = {};
     if (windowInfo) {
       windowsInfoTotals = this.getOrderTotal(windowInfo.order.deliveryPoint.code);
@@ -962,6 +995,16 @@ export default class DispatchMap extends Component {
                   重量:
                   {/* {totals.weight} */}
                   {(totals.weight / 1000).toFixed(3)}
+                </div>
+                <div style={{ flex: 1, fontWeight: 'bold' }}>
+                车辆承重(T):
+                  {/* {totals.weight} */}
+                  {(totals.BEARWEIGHT/1000).toFixed(3)}
+                </div>
+                <div style={{ flex: 1, fontWeight: 'bold' }}>
+                  车辆体积(m3):
+                  {/* {totals.weight} */}
+                  {(totals.volumet/1000000).toFixed(3)}
                 </div>
               </div>
             </Row>
