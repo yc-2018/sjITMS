@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-21 14:24:03
+ * @LastEditTime: 2023-07-27 17:43:32
  * @Description: 排车单地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\schedule\ScheduleMap.js
  */
@@ -194,8 +194,8 @@ export default class DispatchMap extends Component {
       pointArr[pointArr.length - 1],
       waypoints.join('|')
     );
-    if (response.success && response.data.status == 0) {
-      const routePaths = response.data.result.routes[0].steps.map(x => x.path);
+    if (response.success) {
+      const routePaths = response.result.routes[0].steps.map(x => x.path);
       let pts = new Array();
       routePaths.forEach(path => {
         const points = path.split(';');

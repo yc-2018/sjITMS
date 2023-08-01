@@ -1,15 +1,15 @@
 import { routerRedux } from 'dva/router';
 import { getPageQuery } from '@/utils/utils';
 import { cacheLogin, clearLogin, loginKey } from '@/utils/LoginContext';
+import { setCookie } from '@/utils/Cookies';
 import { stringify } from 'qs';
 import {
   accountLogin,
   phoneLogin,
   forgetPassword,
   modifyPassword,
+  modifyNewPassword,
   switchOrg,
-  get,
-  getOrgs,
   resetPassword,
 } from '@/services/account/Login';
 import { reloadAuthorized } from '@/utils/Authorized';
@@ -22,12 +22,8 @@ export default {
   },
   effects: {
     *accountLogin({ payload, callback }, { call, put }) {
-      yield put({
-        type: 'changeSubmitting',
-        payload: true,
-      });
+      yield put({ type: 'changeSubmitting', payload: true, });
       const response = yield call(accountLogin, payload);
-
       if (response && response.success) {
         cacheLogin(response.data);
         reloadAuthorized();
@@ -51,7 +47,10 @@ export default {
             return;
           }
         }
-        yield put(routerRedux.replace('/bigData/zs/count'));
+        const passwordUsable = payload.loginAccount != payload.password
+          && payload.loginAccount.indexOf(payload.password) == -1;
+        setCookie("passwordUsable", passwordUsable ? 'Y' : 'N', 1);
+        yield put(routerRedux.replace('/'));
       } else {
         yield put({
           type: 'changeLoginStatus',
@@ -170,6 +169,18 @@ export default {
       });
       if (callback) { callback(response); }
     },
+    *modifyNewPassword({ payload, callback }, { call, put }) {
+      yield put({
+        type: 'changeSubmitting',
+        payload: true,
+      });
+      const response = yield call(modifyNewPassword, payload);
+      yield put({
+        type: 'changeSubmitting',
+        payload: false,
+      });
+      if (callback) { callback(response); }
+    },
 
     *switchOrg({ payload, callback }, { call, put }) {
       yield put({
@@ -209,7 +220,7 @@ export default {
     *resetPassword({ payload, callback }, { call, put }) {
       const response = yield call(resetPassword, payload);
       if (callback) { callback(response); }
-    }
+    },
   },
 
   reducers: {

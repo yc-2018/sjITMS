@@ -68,6 +68,6 @@ node {
             remote.password = "${password}"
         }
         
-        sshCommand remote: remote, command: "sh -x /app_data/iwms/iwms_deploy.sh ${harbor_url} ${project_name}"
+        sshCommand remote: remote, command: "sh -x /app_data/iwms/iwms_deploy.sh ${harbor_url} ${project_name} ${version_tag}"
 	}
 }

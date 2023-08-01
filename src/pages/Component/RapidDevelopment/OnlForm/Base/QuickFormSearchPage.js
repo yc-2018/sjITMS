@@ -725,7 +725,7 @@ export default class QuickFormSearchPage extends SearchPage {
       pageSize,
       page: 1,
       quickuuid,
-      order: defaultSort,
+      order: this.state.pageFilters?.order ? this.state.pageFilters?.order : defaultSort,
       superQuery: {
         matchType: 'and',
         queryParams: [...isOrgQuery, ...queryParams, ...params],
@@ -829,7 +829,7 @@ export default class QuickFormSearchPage extends SearchPage {
     return (
       <div>
         <Button
-          // hidden={!havePermission(this.state.authority + '.create')}
+          hidden={!havePermission(this.state.authority + '.create')}
           onClick={this.onCreate}
           type="primary"
           icon="plus"
@@ -837,28 +837,28 @@ export default class QuickFormSearchPage extends SearchPage {
           新建
         </Button>
         <Button
-          // hidden={!havePermission(this.state.authority + '.edit')}
+          hidden={!havePermission(this.state.authority + '.edit')}
           onClick={this.onUpdate}
           type="primary"
         >
           编辑
         </Button>
         <Button
-          // hidden={!havePermission(this.state.authority + '.view')}
+          hidden={!havePermission(this.state.authority + '.view')}
           onClick={this.onView}
           type="primary"
         >
           查看
         </Button>
         <Button
-          // hidden={!havePermission(this.state.authority + '.port')}
+          hidden={!havePermission(this.state.authority + '.port')}
           onClick={this.port}
           type="primary"
         >
           导出
         </Button>
         <Button
-          // hidden={!havePermission(this.state.authority + '.import')}
+          hidden={!havePermission(this.state.authority + '.import')}
           type="primary"
           onClick={this.onUpload}
         >
@@ -882,11 +882,7 @@ export default class QuickFormSearchPage extends SearchPage {
           okText="确定"
           cancelText="取消"
         >
-          <Button
-          // hidden={!havePermission(this.state.authority + '.delete')}
-          >
-            删除
-          </Button>
+          <Button hidden={!havePermission(this.state.authority + '.delete')}>删除</Button>
         </Popconfirm>
         <AdvanceQuery
           searchFields={this.state.advancedFields}

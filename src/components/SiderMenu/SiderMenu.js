@@ -118,9 +118,9 @@ export default class SiderMenu extends PureComponent {
         }}
       >
         <div className={styles.logo} id="logo">
-          <Link to="/bigData/zs/count" className={styles.linkStyle}>
+          <Link to="/bigData/count" className={styles.linkStyle}>
             <img src={logo} style={{ width: collapsed ? '20px' : '' }} alt="logo" />
-            <h1> {API_ENV == 'test' ? '时捷TMS(测试)' : '时捷TMS'}</h1>
+            <h1> {configs[API_ENV].PRO_ENV == 1 ? '时捷TMS' : '时捷TMS(测试)'}</h1>
           </Link>
         </div>
         <BaseMenu
