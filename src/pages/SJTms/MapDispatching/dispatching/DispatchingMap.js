@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-23 10:38:17
+ * @LastEditTime: 2023-07-27 17:43:20
  * @Description: 地图排车
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -229,10 +229,10 @@ export default class DispatchMap extends Component {
         let isSelectOrdersArea =
           this.isSelectOrders && this.isSelectOrders.length > 0
             ? uniqBy(
-                this.isSelectOrders.map(e => {
-                  return e.shipAreaName;
-                })
-              )
+              this.isSelectOrders.map(e => {
+                return e.shipAreaName;
+              })
+            )
             : [];
 
         orderMarkers.map(e => {
@@ -399,9 +399,9 @@ export default class DispatchMap extends Component {
             shadow={true}
             onMouseover={() => this.setState({ windowInfo: { point, order } })}
             onMouseout={() => this.setState({ windowInfo: undefined })}
-            // onClick={event => {
-            //   that.onChangeSelect(!order.isSelect, order);
-            // }}
+          // onClick={event => {
+          //   that.onChangeSelect(!order.isSelect, order);
+          // }}
           />
         );
       });
@@ -497,8 +497,8 @@ export default class DispatchMap extends Component {
       pointArr[pointArr.length - 1],
       waypoints.join('|')
     );
-    if (response.success && response.data.status == 0) {
-      const routePaths = response.data.result.routes[0].steps.map(x => x.path);
+    if (response.success) {
+      const routePaths = response.result.routes[0].steps.map(x => x.path);
       let pts = new Array();
       routePaths.forEach(path => {
         const points = path.split(';');
@@ -589,16 +589,14 @@ export default class DispatchMap extends Component {
             message.error('请选择导航起点门店和终点门店！');
             return;
           }
-          let url = `http://api.map.baidu.com/direction?origin=latlng:${selectPoints[0].latitude},${
-            selectPoints[0].longitude
-          }|name:${selectPoints[0].name.replace(/\([^\)]*\)/g, '')}&destination=${
-            selectPoints[selectPoints.length - 1].latitude
-          },${selectPoints[selectPoints.length - 1].longitude}|name:${selectPoints[
-            selectPoints.length - 1
-          ].name.replace(
-            /\([^\)]*\)/g,
-            ''
-          )}&mode=driving&region=东莞市&output=html&src=webapp.companyName.appName&coord_type=bd09ll`;
+          let url = `http://api.map.baidu.com/direction?origin=latlng:${selectPoints[0].latitude},${selectPoints[0].longitude
+            }|name:${selectPoints[0].name.replace(/\([^\)]*\)/g, '')}&destination=${selectPoints[selectPoints.length - 1].latitude
+            },${selectPoints[selectPoints.length - 1].longitude}|name:${selectPoints[
+              selectPoints.length - 1
+            ].name.replace(
+              /\([^\)]*\)/g,
+              ''
+            )}&mode=driving&region=东莞市&output=html&src=webapp.companyName.appName&coord_type=bd09ll`;
           window.open(url, '_blank');
         },
       },
@@ -863,9 +861,9 @@ export default class DispatchMap extends Component {
           shadow={true}
           onMouseover={() => this.setState({ windowInfo: { point, order } })}
           onMouseout={() => this.setState({ windowInfo: undefined })}
-          // onClick={event => {
-          //   that.onChangeSelect(!order.isSelect, order);
-          // }}
+        // onClick={event => {
+        //   that.onChangeSelect(!order.isSelect, order);
+        // }}
         />
       );
     });

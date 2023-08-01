@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-07-25 13:07:12
+ * @LastEditTime: 2023-08-01 14:28:55
  * @Description: 配送进度
  */
 import React, { Component } from 'react';
@@ -13,9 +13,10 @@ import {
   GetHistoryLocation,
   GetTrunkData,
   GetScheduleEvent,
-  GetStopEvent
+  GetStopEvent,
+  GetScheduleDelivery,
+  RefreshDelivery
 } from '@/services/sjitms/ScheduleBill';
-import { getAddressByUuids } from '@/services/sjitms/StoreTeam';
 import ShopsIcon from '@/assets/common/shops.png';
 import myjPointNormal from '@/assets/common/myjPoint_normal.svg';
 import myjPointClick from '@/assets/common/myjPoint_click.svg';
@@ -88,55 +89,60 @@ export default class DispatchMap extends Component {
 
   //初始化
   initialize = async (schedule) => {
-    const response = await getDetailByBillUuids([schedule.UUID]);
+    const billUuid = schedule.UUID;
+    const billNumber = schedule.BILLNUMBER;
+    const platenumber = schedule.VEHICLEPLATENUMBER;
+    const returntime = schedule.RETURNTIME;
+    const dispatchtime = schedule.DISPATCHTIME;
+    const response = await getDetailByBillUuids([billUuid]);
     if (response.success) {
       let orders = response.data || [];
-      let points = await this.initPoints(schedule.BILLNUMBER, orders);
-      points = await this.stopEvent(points, schedule.BILLNUMBER);
-      const platenumber = schedule.VEHICLEPLATENUMBER;
-      const dispatchtime = schedule.DISPATCHTIME;
-      const returntime = schedule.RETURNTIME;
+      const points = await this.initPoints(billNumber, billUuid, orders);
       let firstTime = moment().format("YYYY-MM-DD HH:mm:ss");
       this.setState({
         startMarker: undefined,
         currentMarker: undefined,
         lastPoints: [],
-        orders, points, schedule, firstTime
+        orders,
+        points,
+        schedule,
+        firstTime
       });
-      console.log(points);
       //初始化车辆历史轨迹
-      setTimeout(() => {
+      setTimeout(async () => {
         this.map?.clearOverlays();
         const hours = Math.ceil(moment(returntime || moment()).diff(dispatchtime, "minute") / 60);
-        if (hours > 2) {
+        if (hours > 1) {
           for (let i = 0; i < Math.ceil(hours / 2); i++) {
             const from = moment(dispatchtime).add(i * 2, "hours").format("YYYY-MM-DD HH:mm:ss");
             if (moment().isAfter(from)) {
               let to = moment(dispatchtime).add((i + 1) * 2, "hours").format("YYYY-MM-DD HH:mm:ss");
               to = moment().isAfter(to) ? to : firstTime;
-              this.getHistoryLocation(platenumber, from, to, []);
+              await this.getHistoryLocation(platenumber, from, to, []);
             }
           }
         } else {
-          this.getHistoryLocation(platenumber, dispatchtime, returntime || firstTime, []);
+          await this.getHistoryLocation(platenumber, dispatchtime, returntime || firstTime, []);
         }
         //初始化车辆当前位置
         this.getTrunkLocation(platenumber);
         //初始化门店marker
         this.drawMarker(points);
         this.autoViewPort(points);
-        this.autoFresh(platenumber, returntime);
+        this.autoFresh(billNumber, billUuid, platenumber, returntime, orders);
       }, 500);
     }
   };
 
   //定时刷新
-  autoFresh = (platenumber, returntime) => {
-    const timer = setInterval(() => {
+  autoFresh = async (billNumber, billUuid, platenumber, returntime, orders) => {
+    const timer = setInterval(async () => {
+      const { lastTime, lastPoints } = this.state;
       //历史轨迹
       if (returntime == undefined) {
-        const { lastTime, lastPoints } = this.state;
         this.getHistoryLocation(platenumber, lastTime, moment().format("YYYY-MM-DD HH:mm:ss"), lastPoints);
+        const points = await this.initPoints(billNumber, billUuid, orders);
+        this.setState({ points });
       }
       //当前位置
       this.getTrunkLocation(platenumber);
@@ -145,31 +151,32 @@ export default class DispatchMap extends Component {
   }
 
   //初始化门店
-  initPoints = async (billNumber, orders) => {
+  initPoints = async (billNumber, billUuid, orders) => {
     const pointUuids = uniqBy(orders.map(x => x.deliveryPoint), x => x.uuid).map(x => x.uuid);
     if (pointUuids.length == 0) { return []; }
-    const storeRespones = await getAddressByUuids(pointUuids);
-    const stores = await storeRespones.success ? storeRespones.data || [] : [];
     const response = await GetScheduleEvent(billNumber);
-    let shipedPoints = response.success ? response.data || [] : []
-    if (shipedPoints.length > 0) {
-      shipedPoints = shipedPoints.map(x => x.pointcode);
-    }
+    let shipedPoints = response.success ? response.data || [] : [];
+    const deliveryResponse = await GetScheduleDelivery(billUuid);
+    const deliverys = deliveryResponse.success ? deliveryResponse.data || [] : [];
     orders = this.groupData(orders);
     orders = orders.map(order => {
-      const store = stores?.find(point => point.uuid == order.deliveryPoint.uuid);
-      const shipedPoint = shipedPoints?.find(x => x.pointcode);
+      const shipedPoint = shipedPoints?.find(x => x.pointcode == order.deliveryPoint.code);
+      const delivery = deliverys?.find(x => x.pointUuid == order.deliveryPoint.uuid);
       return {
         ...order,
-        complete: shipedPoint || false,
-        startTime: shipedPoint?.intime || "---",
-        endTime: shipedPoint?.outtime || "---",
-        longitude: store?.longitude || 113.809388,
-        latitude: store?.latitude || 23.067107
+        complete: shipedPoint?.outtime ? true : false,
+        shipStat: delivery?.stat || "",
+        preReachTime: delivery?.preReachTime,
+        preDeliveryTime: delivery?.preDeliveryTime,
+        relReachTime: delivery?.relReachTime || shipedPoint?.intime,
+        relDeliveryTime: delivery?.relDeliveryTime || shipedPoint?.outtime
       };
     });
+    orders = await this.stopEvent(orders, billNumber);
+    orders = orderBy(orders, ['relReachTime', 'deliveryNumber'], ['asc', 'asc']);
     return orders;
   }
+
   //计算停留事件
   stopEvent = async (points, billNumber) => {
     const resStopEvent = await GetStopEvent(billNumber);
@@ -183,8 +190,8 @@ export default class DispatchMap extends Component {
         if (distance <= 100) {
           const index = points.findIndex(pt => pt.deliveryPoint.code == x.deliveryPoint.code);
           x.complete = true;
-          x.startTime = event.starttime || "---";
-          x.endTime = event.endtime || "---";
+          x.relReachTime = event?.starttime;
+          x.relDeliveryTime = event?.endtime;
           points[index] = x;
         }
       })
@@ -240,9 +247,9 @@ export default class DispatchMap extends Component {
       marker.addEventListener('mouseout', () => {
         this.setState({ windowInfo: undefined });
       });
-      const label = new BMapGL.Label(pt.deliveryPoint.code, {
+      const label = new BMapGL.Label(pt.deliveryNumber + "  |    " + pt.deliveryPoint.code, {
         position: point,
-        offset: new BMapGL.Size(-25, -50)
+        offset: new BMapGL.Size(-35, -50)
       })
       label.setStyle({
         padding: "0.3rem 0.6rem",
@@ -330,17 +337,27 @@ export default class DispatchMap extends Component {
     }
   }
 
+  //刷新实际送达时间
+  refreshDelivery = async () => {
+    const { points, schedule } = this.state;
+    const params = points.map(point => {
+      return {
+        billUuid: schedule.UUID,
+        pointUuid: point.deliveryPoint.uuid,
+        relReachTime: point.relReachTime,
+        relDeliveryTime: point.relDeliveryTime
+      }
+    });
+    const response = await RefreshDelivery(params);
+    console.log(response);
+  }
+
   render() {
     const { visible, windowInfo, orders, points, timer } = this.state;
-    let completePoints = [], currentPoint = undefined;
+    let completePoints = [];
     if (points.length > 0) {
       completePoints = points.filter(x => x.complete == true);
-      const currentPoints = orderBy(points.filter(x => x.complete == false), x => x.deliveryNumber);
-      if (currentPoints.length > 0) {
-        currentPoint = currentPoints[0].deliveryPoint;
-      }
     }
-
     return (
       <Modal
         style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
@@ -363,9 +380,6 @@ export default class DispatchMap extends Component {
                   <span className={styles.titleCount}></span>
                   未送达：{points.length - completePoints.length}
                 </Col>
-                {
-                  currentPoint ? <Col span={10}>当前配送门店：{`[${currentPoint.code}]${currentPoint.name}`}</Col> : <></>
-                }
               </Row>
             </Col>
             <Col span={1}>
@@ -377,46 +391,86 @@ export default class DispatchMap extends Component {
         destroyOnClose={true}
       >
         {orders.length > 0 ? (
-          <Map
-            center={{ lng: 113.809388, lat: 23.067107 }}
-            zoom={10}
-            minZoom={6}
-            enableScrollWheelZoom
-            enableRotate={false}
-            enableTilt={false}
-            ref={ref => (this.map = ref?.map)}
-            style={{ height: '100%' }}
-          >
-            {windowInfo ? (
-              <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(0, -20)}>
-                <div className={styles.orderInfo}>
-                  <div className={styles.orderInfoTitle}>
-                    {`[${windowInfo.order.deliveryPoint.code}]` +
-                      windowInfo.order.deliveryPoint.name}
+          <div className={styles.mapCell}>
+            <Map
+              center={{ lng: 113.809388, lat: 23.067107 }}
+              zoom={10}
+              minZoom={6}
+              enableScrollWheelZoom
+              enableRotate={false}
+              enableTilt={false}
+              ref={ref => (this.map = ref?.map)}
+              style={{ height: '100%' }}
+            >
+              {windowInfo ? (
+                <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(0, -20)}>
+                  <div className={styles.orderInfo}>
+                    <div className={styles.orderInfoTitle}>
+                      {`[${windowInfo.order.deliveryPoint.code}]` +
+                        windowInfo.order.deliveryPoint.name}
+                    </div>
+                    <Divider style={{ margin: 0, marginTop: 5 }} />
+                    <div>
+                      线路：
+                      {windowInfo.order.archLine?.code}
+                    </div>
+                    <div style={{ display: 'flex', marginTop: 5 }}>
+                      <div style={{ flex: 1 }}>整件数</div>
+                      <div style={{ flex: 1 }}>周转箱数</div>
+                      <div style={{ flex: 1 }}>体积</div>
+                      <div style={{ flex: 1 }}>重量</div>
+                    </div>
+                    <div style={{ display: 'flex' }}>
+                      <div style={{ flex: 1 }}>{windowInfo.order.cartonCount}</div>
+                      <div style={{ flex: 1 }}>{windowInfo.order.containerCount}</div>
+                      <div style={{ flex: 1 }}>{windowInfo.order.volume}</div>
+                      <div style={{ flex: 1 }}>{(windowInfo.order.weight / 1000).toFixed(3)}</div>
+                    </div>
                   </div>
+                </CustomOverlay>
+              ) : (
+                <></>
+              )}
+            </Map>
+            <div className={styles.pointInfoCell}>
+              {/* <Button onClick={() => this.refreshDelivery()}>刷新</Button> */}
+              {points.map(point => {
+                return <>
+                  <Row type="flex" justify="space-between" className={styles.pointInfoItemCell}>
+                    <Col span={20}>
+                      <span className={styles.numberCircle}>{point.deliveryNumber}</span>
+                      <span className={styles.storeName}>{`[${point.deliveryPoint.code}]` + point.deliveryPoint.name}</span>
+                    </Col>
+                    <Col span={4}>
+                      {
+                        point.complete == 1 || point.shipStat == "已送达" ?
+                          <span className={styles.deliveryStat} style={{ color: "#248232", backgroundColor: "#2482324D" }}>已送达</span>
+                          :
+                          <span className={styles.deliveryStat} style={{ color: "#C31B1F", backgroundColor: "#C31B1F4D" }}>未送达</span>
+                      }
+                    </Col>
+                    <Col span={12}>
+                      预计到达：
+                      {point.preReachTime ? moment(point.preReachTime).format("MM月DD日 HH:mm") : "---"}
+                    </Col>
+                    <Col span={12}>
+                      实际到达：
+                      {point.relReachTime ? moment(point.relReachTime).format("M月DD日 HH:mm") : "---"}
+                    </Col>
+                    <Col span={12}>
+                      预计离开：
+                      {point.preDeliveryTime ? moment(point.preDeliveryTime).format("M月DD日 HH:mm") : "---"}
+                    </Col>
+                    <Col span={12}>
+                      实际离开：
+                      {point.relDeliveryTime ? moment(point.relDeliveryTime).format("M月DD日 HH:mm") : "---"}
+                    </Col>
+                  </Row>
                   <Divider style={{ margin: 0, marginTop: 5 }} />
-                  <div>
-                    线路：
-                    {windowInfo.order.archLine?.code}
-                  </div>
-                  <div style={{ display: 'flex', marginTop: 5 }}>
-                    <div style={{ flex: 1 }}>整件数</div>
-                    <div style={{ flex: 1 }}>周转箱数</div>
-                    <div style={{ flex: 1 }}>体积</div>
-                    <div style={{ flex: 1 }}>重量</div>
-                  </div>
-                  <div style={{ display: 'flex' }}>
-                    <div style={{ flex: 1 }}>{windowInfo.order.cartonCount}</div>
-                    <div style={{ flex: 1 }}>{windowInfo.order.containerCount}</div>
-                    <div style={{ flex: 1 }}>{windowInfo.order.volume}</div>
-                    <div style={{ flex: 1 }}>{(windowInfo.order.weight / 1000).toFixed(3)}</div>
-                  </div>
-                </div>
-              </CustomOverlay>
-            ) : (
-              <></>
-            )}
-          </Map>
+                </>
+              })}
+            </div>
+          </div>
         ) : (
           <Map
             center={{ lng: 113.809388, lat: 23.067107 }}

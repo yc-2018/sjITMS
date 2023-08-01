@@ -207,7 +207,7 @@ export default class StoresMap extends Component {
       }
     }
     let b = 0;
-    setTimeout(function() {
+    setTimeout(function () {
       if (b == 0) {
         if (a == 1) {
           //单击事件
@@ -424,8 +424,8 @@ export default class StoresMap extends Component {
       pointArr[pointArr.length - 1],
       waypoints.join('|')
     );
-    if (response.success && response.data.status == 0) {
-      const routePaths = response.data.result.routes[0].steps.map(x => x.path);
+    if (response.success) {
+      const routePaths = response.result.routes[0].steps.map(x => x.path);
       let pts = new Array();
       routePaths.forEach(path => {
         const points = path.split(';');
@@ -465,19 +465,19 @@ export default class StoresMap extends Component {
   drawMenu = () => {
     let canDragMenu = this.state.canDrag
       ? {
-          text: '关闭拖拽门店',
-          callback: () => {
-            this.canDragBefore = this.state.canDrag;
-            this.setState({ canDrag: !this.state.canDrag });
-          },
-        }
+        text: '关闭拖拽门店',
+        callback: () => {
+          this.canDragBefore = this.state.canDrag;
+          this.setState({ canDrag: !this.state.canDrag });
+        },
+      }
       : {
-          text: '开启拖拽门店',
-          callback: () => {
-            this.canDragBefore = this.state.canDrag;
-            this.setState({ canDrag: !this.state.canDrag });
-          },
-        };
+        text: '开启拖拽门店',
+        callback: () => {
+          this.canDragBefore = this.state.canDrag;
+          this.setState({ canDrag: !this.state.canDrag });
+        },
+      };
     const menuItems = [
       {
         text: '今日配送门店',
@@ -574,16 +574,16 @@ export default class StoresMap extends Component {
             // }]${'\r\r'}[纬度:${point.point.lat}]`;
             point.address = point.address
               ? point.address +
-                '<br/>经度:[' +
-                point.point.lng +
-                ']<br/>纬度:[' +
-                point.point.lat +
-                ']'
+              '<br/>经度:[' +
+              point.point.lng +
+              ']<br/>纬度:[' +
+              point.point.lat +
+              ']'
               : '' + ']<br/>经度:[' + point.point.lng + ']<br/>纬度:[' + point.point.lat + ']';
           });
         });
 
-        local.setMarkersSetCallback(function(pois) {
+        local.setMarkersSetCallback(function (pois) {
           if (that.markerArr.length > 0) {
             for (var i = 0; i < that.markerArr.length; i++) {
               that.map?.removeOverlay(that.markerArr[i]);
@@ -730,7 +730,7 @@ export default class StoresMap extends Component {
           (fileList[0].name.substring(fileList[0].name.lastIndexOf('.') + 1).toLowerCase() !=
             'xlsx' &&
             fileList[0].name.substring(fileList[0].name.lastIndexOf('.') + 1).toLowerCase() !=
-              'xls')
+            'xls')
         ) {
           message.error('请检查文件是否为excel文件！');
           return;
@@ -738,7 +738,7 @@ export default class StoresMap extends Component {
         var rABS = true;
         const f = fileList[0];
         var reader = new FileReader();
-        reader.onload = async function(e) {
+        reader.onload = async function (e) {
           var data = e.target.result;
           if (!rABS) data = new Uint8Array(data);
           var workbook = XLSX.read(data, {
@@ -773,9 +773,9 @@ export default class StoresMap extends Component {
                 otherData: res.data ? res.data?.records : [],
                 orders: res.data
                   ? res.data?.otherRecords.filter(
-                      // item => item.uuid != res.data.records[0].uuid
-                      item => recordsUuids.indexOf(item.uuid) == -1
-                    )
+                    // item => item.uuid != res.data.records[0].uuid
+                    item => recordsUuids.indexOf(item.uuid) == -1
+                  )
                   : [],
                 pageFilter: [],
                 isOrder: false,
