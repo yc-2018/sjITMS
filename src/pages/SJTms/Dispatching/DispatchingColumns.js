@@ -218,6 +218,12 @@ export const OrderCollectColumns = [
     width: 100,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
+  {
+    title: '配送备注',
+    dataIndex: 'tmsNote',
+    width: 80,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  }
 ];
 export const OrderDetailColumns = [
   {
@@ -303,6 +309,12 @@ export const OrderDetailColumns = [
     width: 100,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
+  {
+    title: '配送备注',
+    dataIndex: 'tmsNote',
+    width: 80,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  }
 ];
 
 export const VehicleColumns = [
@@ -832,6 +844,13 @@ export const ScheduleDetailCollectColumns = [
     sorter: true,
     width: 80,
     render: val => (val ? <span>{(val / 1000).toFixed(3)}</span> : <Empty />),
+  },
+  {
+    title: '配送区域',
+    dataIndex: 'shipAreaName',
+    width: 80,
+    sorter: true,
+    render: val => (val ? <span>{val}</span> : <Empty />),
   },
 ];
 
