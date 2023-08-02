@@ -49,7 +49,7 @@ export default {
         }
         const passwordUsable = payload.loginAccount != payload.password
           && payload.loginAccount.indexOf(payload.password) == -1;
-        setCookie("passwordUsable", passwordUsable ? 1 : 0, 1);
+        setCookie("passwordUsable", passwordUsable ? 'Y' : 'N', 1);
         yield put(routerRedux.replace('/'));
       } else {
         yield put({

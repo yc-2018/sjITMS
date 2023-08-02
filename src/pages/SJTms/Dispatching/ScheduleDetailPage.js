@@ -88,6 +88,7 @@ export default class ScheduleDetailPage extends Component {
         volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
         weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
         warning: orders.findIndex(x => x.isSplit) >= 0,
+        shipAreaName: orders[0].shipAreaName
       };
     });
     deliveryPointGroupArr.forEach(data => {

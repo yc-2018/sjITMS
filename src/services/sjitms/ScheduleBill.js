@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-07-25 09:58:24
+ * @LastEditTime: 2023-08-01 12:01:48
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -267,4 +267,15 @@ export async function GetScheduleEvent(billNumber) {
 
 export async function GetStopEvent(billNumber) {
   return request(`/itms-schedule/itms-schedule/sj/bill/scheduleEvent/getStopEvent?billNumber=${billNumber}`);
+}
+
+export async function GetScheduleDelivery(billUuid) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/scheduleEvent/getScheduleDelivery?billUuid=${billUuid}`);
+}
+
+export async function RefreshDelivery(params) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/scheduleEvent/refreshDelivery`, {
+    method: 'POST',
+    body: params
+  });
 }

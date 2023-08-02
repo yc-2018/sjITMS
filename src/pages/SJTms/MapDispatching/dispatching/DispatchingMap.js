@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-23 10:38:17
+ * @LastEditTime: 2023-07-27 17:43:20
  * @Description: 地图排车
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -34,7 +34,7 @@ import {
   queryDriverRoutes,
   queryAuditedOrderByParams,
 } from '@/services/sjitms/OrderBill';
-import { queryDict, queryData } from '@/services/quick/Quick';
+import { queryDict, queryData,dynamicQuery } from '@/services/quick/Quick';
 
 import ShopIcon from '@/assets/common/22.png';
 import ShopClickIcon from '@/assets/common/23.png';
@@ -86,6 +86,16 @@ export default class DispatchMap extends Component {
     closeLeft: false,
     checkSchedules: [],
     checkScheduleOrders: [],
+     totals : {
+      cartonCount: 0, //整件数
+      scatteredCount: 0, //散件数
+      containerCount: 0, //周转箱
+      volume: 0, //体积
+      weight: 0, //重量,
+      totalCount: 0, //总件数
+      BEARWEIGHT:0,
+      volumet:0
+    }
   };
 
   colors = [
@@ -497,8 +507,8 @@ export default class DispatchMap extends Component {
       pointArr[pointArr.length - 1],
       waypoints.join('|')
     );
-    if (response.success && response.data.status == 0) {
-      const routePaths = response.data.result.routes[0].steps.map(x => x.path);
+    if (response.success) {
+      const routePaths = response.result.routes[0].steps.map(x => x.path);
       let pts = new Array();
       routePaths.forEach(path => {
         const points = path.split(';');
@@ -589,16 +599,14 @@ export default class DispatchMap extends Component {
             message.error('请选择导航起点门店和终点门店！');
             return;
           }
-          let url = `http://api.map.baidu.com/direction?origin=latlng:${selectPoints[0].latitude},${
-            selectPoints[0].longitude
-          }|name:${selectPoints[0].name.replace(/\([^\)]*\)/g, '')}&destination=${
-            selectPoints[selectPoints.length - 1].latitude
-          },${selectPoints[selectPoints.length - 1].longitude}|name:${selectPoints[
-            selectPoints.length - 1
-          ].name.replace(
-            /\([^\)]*\)/g,
-            ''
-          )}&mode=driving&region=东莞市&output=html&src=webapp.companyName.appName&coord_type=bd09ll`;
+          let url = `http://api.map.baidu.com/direction?origin=latlng:${selectPoints[0].latitude},${selectPoints[0].longitude
+            }|name:${selectPoints[0].name.replace(/\([^\)]*\)/g, '')}&destination=${selectPoints[selectPoints.length - 1].latitude
+            },${selectPoints[selectPoints.length - 1].longitude}|name:${selectPoints[
+              selectPoints.length - 1
+            ].name.replace(
+              /\([^\)]*\)/g,
+              ''
+            )}&mode=driving&region=东莞市&output=html&src=webapp.companyName.appName&coord_type=bd09ll`;
           window.open(url, '_blank');
         },
       },
@@ -724,7 +732,7 @@ export default class DispatchMap extends Component {
     return totals;
   };
 
-  getTotals = selectOrder => {
+  getTotals = async selectOrder => {
     let selectOrderStoreCodes = selectOrder.map(e => e.deliveryPoint.code);
     const { orders } = this.state;
     let allSelectOrders = orders.filter(
@@ -738,7 +746,25 @@ export default class DispatchMap extends Component {
       volume: 0, //体积
       weight: 0, //重量,
       totalCount: 0, //总件数
+      BEARWEIGHT:0,
+      volumet:0
     };
+    if(allSelectOrders[0]?.billUuid){
+      const scheule = await getSchedule(allSelectOrders[0]?.billUuid);
+      if(scheule.success){
+        const param = {
+          tableName: 'SJ_ITMS_VEHICLE',
+          condition: {
+            params: [{ field: 'uuid', rule: 'eq', val: [scheule.data.vehicle.uuid] }],
+          },
+        };
+       const vehicle = await dynamicQuery(param);
+      if(vehicle.success){
+        totals.BEARWEIGHT = vehicle.result.records[0].BEARWEIGHT
+        totals.volumet = vehicle.result.records[0].LENGTH*vehicle.result.records[0].HEIGHT*vehicle.result.records[0].WIDTH
+      }
+    } 
+    }
     allSelectOrders.map(e => {
       totals.cartonCount += e.cartonCount;
       totals.scatteredCount += e.scatteredCount;
@@ -804,10 +830,13 @@ export default class DispatchMap extends Component {
           orders.push(e);
         }
       });
+      const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
+     let totals = await this.getTotals(selectOrder);
       this.setState(
         {
           orderMarkers,
           orders,
+          totals,
           isEdit: true,
           schdule: schdule,
           checkScheduleOrders: [],
@@ -899,11 +928,13 @@ export default class DispatchMap extends Component {
       closeLeft,
       checkScheduleOrders,
       checkSchedules,
+      totals
     } = this.state;
     const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
-    let totals = this.getTotals(selectOrder);
-
+   // let totals = this.getTotals(selectOrder);
+    
+    
     let windowsInfoTotals = {};
     if (windowInfo) {
       windowsInfoTotals = this.getOrderTotal(windowInfo.order.deliveryPoint.code);
@@ -964,6 +995,16 @@ export default class DispatchMap extends Component {
                   重量:
                   {/* {totals.weight} */}
                   {(totals.weight / 1000).toFixed(3)}
+                </div>
+                <div style={{ flex: 1, fontWeight: 'bold' }}>
+                车辆承重(T):
+                  {/* {totals.weight} */}
+                  {(totals.BEARWEIGHT/1000).toFixed(3)}
+                </div>
+                <div style={{ flex: 1, fontWeight: 'bold' }}>
+                  车辆体积(m3):
+                  {/* {totals.weight} */}
+                  {(totals.volumet/1000000).toFixed(3)}
                 </div>
               </div>
             </Row>

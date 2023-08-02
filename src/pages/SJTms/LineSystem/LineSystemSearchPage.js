@@ -365,7 +365,7 @@ export default class LineSystemSearchPage extends Component {
       const { lineTreeData, lineData } = this.state;
       let sdf = await this.pdChildren(lineTreeData, selectedKeys[0]);
       if (selectedKeys.length == 1 && selectedKeys[0] == undefined) {
-        this.setState({ rightContent: <></>, selectLineUuid: undefined });
+        this.setState({ rightContent: <></>, selectLineUuid: undefined,... treedata});
         return;
       }
       const systemuuid = treedata.lineTreeData.find(x => x.key == selectedKeys[0]);

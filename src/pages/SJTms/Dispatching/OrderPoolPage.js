@@ -225,7 +225,8 @@ export default class OrderPoolPage extends Component {
         realContainerCount: Math.round(sumBy(orders, 'realContainerCount') * 1000) / 1000,
         volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
         weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
-        shipAreaName: orders[0].shipAreaName
+        shipAreaName: orders[0].shipAreaName,
+        tmsNote:orders[0].tmsNote
       };
     });
     deliveryPointGroupArr.forEach(data => {
