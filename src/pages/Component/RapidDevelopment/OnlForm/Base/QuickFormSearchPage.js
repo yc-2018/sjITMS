@@ -1025,11 +1025,7 @@ export default class QuickFormSearchPage extends SearchPage {
           okText="确定"
           cancelText="取消"
         >
-          <Button
-          // hidden={!havePermission(this.state.authority + '.delete')}
-          >
-            删除
-          </Button>
+          <Button hidden={!havePermission(this.state.authority + '.delete')}>删除</Button>
         </Popconfirm>
         <AdvanceQuery
           searchFields={this.state.advancedFields}

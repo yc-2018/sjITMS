@@ -398,6 +398,7 @@ class StandardTable extends Component {
       return {
         selectedRowKeys: [],
         needTotalList,
+        selectedAllRows: [],
       };
     }
     return null;
