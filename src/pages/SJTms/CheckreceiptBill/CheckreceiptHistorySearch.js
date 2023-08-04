@@ -34,6 +34,13 @@ export default class CheckreceiptHistorySearch extends QuickFormSearchPage {
 
   onSearch = () => {
     const { record } = this.props;
+    let billnumbers = [];
+    if (record.detail) {
+      record.detail.map(e => {
+        billnumbers.push(e.ORDERBILLNUMBER);
+      });
+    }
+    billnumbers.push(record.ORDERBILLNUMBER);
     const pageFilters = {
       ...this.state.pageFilters,
       superQuery: {
@@ -42,8 +49,8 @@ export default class CheckreceiptHistorySearch extends QuickFormSearchPage {
           {
             field: 'ORDERBILLNUMBER',
             type: 'VarChar',
-            rule: 'eq',
-            val: record.ORDERBILLNUMBER,
+            rule: 'in',
+            val: billnumbers.join('||'),
           },
         ],
       },

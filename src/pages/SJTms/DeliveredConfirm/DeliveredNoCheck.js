@@ -23,7 +23,7 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     deliveredDutyMdodalVisible: false,
     nocheckInfoVisible: false,
     checkRejectionResendMdodalVisible: false,
-    batchLoading:false
+    batchLoading: false,
   };
 
   exSearchFilter = () => {
@@ -73,7 +73,11 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
       e.component = component;
     }
   };
-
+  changeState = () => {
+    this.setState({
+      isMerge: this.props.isMerge,
+    });
+  };
   //该方法会覆盖所有的上层按钮
   drawActionButton = () => {
     return (
@@ -107,7 +111,7 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
           cancelText="取消"
           style={{ marginLeft: 10 }}
         >
-          <Button loading = {this.state.batchLoading} type={'primary'} style={{ marginLeft: 10 }}>
+          <Button loading={this.state.batchLoading} type={'primary'} style={{ marginLeft: 10 }}>
             批量保存
           </Button>
         </Popconfirm>
@@ -149,7 +153,6 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
   };
   //批量保存
   checkSave = async () => {
-   
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
       message.warn('请选择记录');
@@ -157,12 +160,12 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     if (this.checkValue(selectedRows)) {
       return false;
     }
-    this.setState({batchLoading:true})
+    this.setState({ batchLoading: true });
     this.props.dispatch({
       type: 'deliveredConfirm1/updateNoDelivered',
       payload: selectedRows,
       callback: response => {
-        this.setState({batchLoading:false})
+        this.setState({ batchLoading: false });
         if (response && response.success) {
           this.refreshTable();
           message.success('更新成功');
@@ -198,6 +201,13 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     return flag;
   };
   deliveredChage = (records, colum, e) => {
+    if (this.state.isMerge) {
+      if (records.detail) {
+        records.detail.map(x => {
+          x[colum.fieldName] = e.value;
+        });
+      }
+    }
     records[colum.fieldName] = e.value;
   };
 
