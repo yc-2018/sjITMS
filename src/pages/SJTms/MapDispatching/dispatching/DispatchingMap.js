@@ -45,6 +45,7 @@ import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { sumBy, uniqBy } from 'lodash';
 import truck from '@/assets/common/truck.svg';
 import ShopsIcons from '@/assets/common/shops.png';
+import { log } from 'lodash-decorators/utils';
 
 const { Search } = Input;
 
@@ -732,39 +733,12 @@ export default class DispatchMap extends Component {
     return totals;
   };
 
-  getTotals = async selectOrder => {
+  getTotals = selectOrder => {
     let selectOrderStoreCodes = selectOrder.map(e => e.deliveryPoint.code);
-    const { orders } = this.state;
+    const { orders,totals} = this.state;
     let allSelectOrders = orders.filter(
       e => selectOrderStoreCodes.indexOf(e.deliveryPoint?.code) != -1
     );
-
-    let totals = {
-      cartonCount: 0, //整件数
-      scatteredCount: 0, //散件数
-      containerCount: 0, //周转箱
-      volume: 0, //体积
-      weight: 0, //重量,
-      totalCount: 0, //总件数
-      BEARWEIGHT:0,
-      volumet:0
-    };
-    if(allSelectOrders[0]?.billUuid){
-      const scheule = await getSchedule(allSelectOrders[0]?.billUuid);
-      if(scheule.success){
-        const param = {
-          tableName: 'SJ_ITMS_VEHICLE',
-          condition: {
-            params: [{ field: 'uuid', rule: 'eq', val: [scheule.data.vehicle.uuid] }],
-          },
-        };
-       const vehicle = await dynamicQuery(param);
-      if(vehicle.success){
-        totals.BEARWEIGHT = vehicle.result.records[0].BEARWEIGHT
-        totals.volumet = vehicle.result.records[0].LENGTH*vehicle.result.records[0].HEIGHT*vehicle.result.records[0].WIDTH
-      }
-    } 
-    }
     allSelectOrders.map(e => {
       totals.cartonCount += e.cartonCount;
       totals.scatteredCount += e.scatteredCount;
@@ -811,7 +785,7 @@ export default class DispatchMap extends Component {
 
   clickSchdule = async schdule => {
     this.setState({ loading: true });
-    let { orderMarkers, orders } = this.state;
+    let { orderMarkers, orders, totals} = this.state;
     const response = await getDetailByBillUuids([schdule.UUID]);
     if (response.success) {
       let details = response.data;
@@ -830,8 +804,23 @@ export default class DispatchMap extends Component {
           orders.push(e);
         }
       });
-      const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
-     let totals = await this.getTotals(selectOrder);
+    //   const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
+    //  let totals = await this.getTotals(selectOrder);
+      const scheule = await getSchedule(schdule.UUID);
+      if(scheule.success){
+        const param = {
+          tableName: 'SJ_ITMS_VEHICLE',
+          condition: {
+            params: [{ field: 'uuid', rule: 'eq', val: [scheule.data.vehicle.uuid] }],
+          },
+        };
+       const vehicle = await dynamicQuery(param);
+      if(vehicle.success){
+        totals.BEARWEIGHT = vehicle.result.records[0].BEARWEIGHT
+        totals.volumet = vehicle.result.records[0].LENGTH*vehicle.result.records[0].HEIGHT*vehicle.result.records[0].WIDTH
+      }
+    } 
+    
       this.setState(
         {
           orderMarkers,
@@ -928,12 +917,10 @@ export default class DispatchMap extends Component {
       closeLeft,
       checkScheduleOrders,
       checkSchedules,
-      totals
     } = this.state;
     const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
-   // let totals = this.getTotals(selectOrder);
-    
+    let totals =  this.getTotals(selectOrder);
     
     let windowsInfoTotals = {};
     if (windowInfo) {
