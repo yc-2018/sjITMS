@@ -29,4 +29,5 @@ export const roleLocale = {
   carrirTabPermissionInfoTitle: '承运商权限信息',
   dispatchCenterTabPermissionInfoTitle: '调度中心权限信息',
   ownerTabPermissionInfoTitle: '货主权限信息',
+  bmsTabPermissionInfoTitle: 'BMS权限信息',
 };

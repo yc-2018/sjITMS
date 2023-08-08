@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-06-28 14:49:26
+ * @LastEditTime: 2023-06-29 11:26:27
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -25,6 +25,7 @@ export default class BasicSourceSearchPage extends Component {
   constructor(props) {
     super(props);
     this.state = {
+      allData: '',
       treeData: '',
       sourceData: [],
       selectedKeys: '',
@@ -39,7 +40,7 @@ export default class BasicSourceSearchPage extends Component {
   queryTree = async () => {
     await findSourceTree().then(response => {
       if (response && response.success) {
-        this.setState({ treeData: response.data.tree });
+        this.setState({ treeData: response.data.tree, allData: response.data.all });
       }
     });
   };
@@ -57,7 +58,7 @@ export default class BasicSourceSearchPage extends Component {
           item.title = (
             <div>
               <span>{item.title}</span>
-              {item.parentUuid == undefined || item.key != selectedKeys ? (
+              {item.type == undefined || item.key != selectedKeys ? (
                 <span />
               ) : (
                 <span>
@@ -137,70 +138,72 @@ export default class BasicSourceSearchPage extends Component {
   };
 
   onSelect = (selectedKeys, event) => {
-    const { treeData, tabsKey } = this.state;
-    const system = treeData.find(x => x.uuid == selectedKeys[0]);
+    const { allData } = this.state;
+    const system = allData.find(x => x.uuid == selectedKeys[0]);
     if (selectedKeys.length == 1) {
       this.setState({
-        rightContent: system ? (
-          <div>
-            <div className={sourceStyle.navigatorPanelWrapper}>
-              <span className={sourceStyle.sidertitle}>
-                {event.selectedNodes[0].props.dataRef.tableNameCN}
-              </span>
-              <div className={sourceStyle.action}>
-                <Button type="primary" onClick={e => this.basicHeadCreatPage.onSave(e)}>
-                  保存
-                </Button>
-              </div>
-            </div>
-            <BasicHeadCreatPage
-              key={selectedKeys[0]}
-              quickuuid="cost_form_head"
-              showPageNow="update"
-              noBorder={true}
-              noCategory={true}
-              params={{ entityUuid: selectedKeys[0] }}
-              onRef={node => (this.basicHeadCreatPage = node)}
-              refresh={this.queryTree.bind()}
-            />
-          </div>
-        ) : (
-          <Tabs defaultActiveKey="data">
-            <TabPane tab={'表结构'} key="structure">
-              <FormFieldSearchPage
-                key={`Line${selectedKeys[0]}`}
-                quickuuid={'cost_form_field'}
-                selectedRows={selectedKeys[0]}
-                selectedNodes={event.selectedNodes[0]}
-              />
-            </TabPane>
-            <TabPane tab={'表数据'} key="data">
-              <BasicSourceDataSearchPage
-                expanded={event.selectedNodes[0].props.dataRef.expanded}
-                title={event.selectedNodes[0].props.dataRef.tableNameCN}
-                tableName={event.selectedNodes[0].props.dataRef.tableName}
-                key={`Line${selectedKeys[0]}`}
-                selectedRows={selectedKeys[0]}
-              />
-            </TabPane>
-            {event.selectedNodes[0].props.dataRef.expanded == '1' ? (
-              <TabPane tab={'导入'} key="import">
-                <div style={{ marginTop: '20px' }}>
-                  <ExcelImport
-                    title={event.selectedNodes[0].props.dataRef.tableNameCN}
-                    templateType="BASICSOURCE"
-                    dispatch={this.props.dispatch}
-                    uploadType="basicSource/batchImport"
-                    uploadParams={{ sourceUuid: selectedKeys[0] }}
-                    cancelCallback={() => {}}
-                  />
+        rightContent:
+          system.type == undefined ? (
+            <div>
+              <div className={sourceStyle.navigatorPanelWrapper}>
+                <span className={sourceStyle.sidertitle}>
+                  {event.selectedNodes[0].props.dataRef.tableNameCN}
+                </span>
+                <div className={sourceStyle.action}>
+                  <Button type="primary" onClick={e => this.basicHeadCreatPage.onSave(e)}>
+                    保存
+                  </Button>
                 </div>
+              </div>
+              <BasicHeadCreatPage
+                key={selectedKeys[0]}
+                quickuuid="cost_form_head"
+                showPageNow="update"
+                noBorder={true}
+                noCategory={true}
+                params={{ entityUuid: selectedKeys[0] }}
+                onRef={node => (this.basicHeadCreatPage = node)}
+                refresh={this.queryTree.bind()}
+              />
+            </div>
+          ) : (
+            <Tabs defaultActiveKey="data">
+              <TabPane tab={'表结构'} key="structure">
+                <FormFieldSearchPage
+                  key={`Line${selectedKeys[0]}`}
+                  quickuuid={'cost_form_field'}
+                  selectedRows={selectedKeys[0]}
+                  selectedNodes={event.selectedNodes[0]}
+                  system={system}
+                />
               </TabPane>
-            ) : (
-              ''
-            )}
-          </Tabs>
-        ),
+              <TabPane tab={'表数据'} key="data">
+                <BasicSourceDataSearchPage
+                  expanded={event.selectedNodes[0].props.dataRef.expanded}
+                  title={event.selectedNodes[0].props.dataRef.tableNameCN}
+                  system={system}
+                  key={`Line${selectedKeys[0]}`}
+                  selectedRows={selectedKeys[0]}
+                />
+              </TabPane>
+              {event.selectedNodes[0].props.dataRef.expanded == '1' ? (
+                <TabPane tab={'导入'} key="import">
+                  <div style={{ marginTop: '20px' }}>
+                    <ExcelImport
+                      title={event.selectedNodes[0].props.dataRef.tableNameCN}
+                      templateType="BASICSOURCE"
+                      dispatch={this.props.dispatch}
+                      uploadType="basicSource/batchImport"
+                      uploadParams={{ sourceUuid: selectedKeys[0] }}
+                      cancelCallback={() => {}}
+                    />
+                  </div>
+                </TabPane>
+              ) : (
+                ''
+              )}
+            </Tabs>
+          ),
         selectedKeys: selectedKeys[0],
       });
     }
