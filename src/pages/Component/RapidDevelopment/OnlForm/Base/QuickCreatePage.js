@@ -21,6 +21,7 @@ import {
   saveOrUpdateEntities,
   updateEntity,
 } from '@/services/quick/Quick';
+import { getConfigDataByParams } from '@/services/sjconfigcenter/ConfigCenter';
 
 /**
  * 新增编辑界面
@@ -150,6 +151,7 @@ export default class QuickCreatePage extends CreatePage {
       categories: [],
       runTimeProps: {},
       dbSource: 'init',
+      wmsSource: '',
     };
   }
 
@@ -167,6 +169,11 @@ export default class QuickCreatePage extends CreatePage {
           onlFormInfos: response.result,
         });
       }
+    }
+    //获取配置
+    const config = await getConfigDataByParams('omsDbSource', loginOrg().uuid, 'DataSource');
+    if (config.success && config.data) {
+      this.setState({ wmsSource: config.data[0].DataSource });
     }
     await this.initEntity();
     this.initForm();
@@ -458,7 +465,7 @@ export default class QuickCreatePage extends CreatePage {
    * 初始化字段控件
    */
   initFormItems = () => {
-    const { onlFormInfos, dbSource } = this.state;
+    const { onlFormInfos, dbSource, wmsSource } = this.state;
     let formItems = {};
     let tableItems = {};
     // 根据查询出来的配置渲染表单新增页面
@@ -481,6 +488,8 @@ export default class QuickCreatePage extends CreatePage {
         if (typeof fieldExtendJson.queryParams == 'string') {
           fieldExtendJson.queryParams = JSON.parse(fieldExtendJson.queryParams);
         }
+        // console.log('fieldExtendJson', fieldExtendJson);
+        let DataSource = fieldExtendJson.wmsSource ? wmsSource : dbSource;
         const commonPropertis = {
           disabled: this.isReadOnly(field.isReadOnly),
           style: {
@@ -495,7 +504,7 @@ export default class QuickCreatePage extends CreatePage {
           label: field.dbFieldTxt,
           rules: rules,
           component: this.getComponent(field),
-          props: { ...commonPropertis, ...fieldExtendJson, placeholder, dbSource: dbSource },
+          props: { ...commonPropertis, ...fieldExtendJson, placeholder, dbSource: DataSource },
           tableName,
           fieldName: field.dbFieldName,
           fieldShowType: field.fieldShowType,
@@ -652,8 +661,8 @@ export default class QuickCreatePage extends CreatePage {
         }
         this.propsSpecialTreatment(e);
         this.drawcell(e);
-
         let initialValue = this.entity[tableName][0] && this.entity[tableName][0][fieldName]; // 初始值
+        // console.log('key', e.props);
         cols.push(
           <CFormItem key={key} label={e.label}>
             {getFieldDecorator(key, {

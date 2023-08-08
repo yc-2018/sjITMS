@@ -1736,7 +1736,7 @@ class StandardTable extends Component {
               footer={() => {
                 return (
                   <Table
-                    id={'happy' + this.state.key}
+                    id={'happy'}
                     columns={footerColumns}
                     scroll={{ x: scroll.x, y: false }}
                     rowKey={() => Math.random()}

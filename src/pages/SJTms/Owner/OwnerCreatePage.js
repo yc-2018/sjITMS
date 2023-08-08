@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-04-20 17:40:07
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-04-21 16:03:19
+ * @LastEditTime: 2023-07-31 10:17:39
  * @version: 1.0
  */
 
@@ -19,7 +19,7 @@ import { createOrg } from '@/services/sjitms/Owenr';
 export default class OwnerCreatePage extends QuickCreatePage {
   afterSave = async data => {
     const { entity } = this;
-    if (data) {
+    if (data && entity.SJ_ITMS_OWNER[0].OMSCONTROL == 1) {
       await createOrg(entity.SJ_ITMS_OWNER[0].UUID);
     }
   };

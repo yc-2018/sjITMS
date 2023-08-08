@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-25 10:17:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-07-29 16:23:57
+ * @LastEditTime: 2023-07-29 16:52:26
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -106,6 +106,7 @@ export default class HighWagAreaCreatePage extends QuickCreatePage {
       let currentTableName;
       for (const tableItemKey in tableItems) {
         const tableItem = tableItems[tableItemKey];
+        // console.log('tableItem', tableItem, tableItems);
         const { categoryName, key, tableName, fieldName, label, onlFormField } = tableItem;
         if (categoryName != categoryItem.category) {
           continue;
