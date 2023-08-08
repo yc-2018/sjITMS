@@ -87,16 +87,9 @@ export default class DispatchMap extends Component {
     closeLeft: false,
     checkSchedules: [],
     checkScheduleOrders: [],
-     totals : {
-      cartonCount: 0, //整件数
-      scatteredCount: 0, //散件数
-      containerCount: 0, //周转箱
-      volume: 0, //体积
-      weight: 0, //重量,
-      totalCount: 0, //总件数
-      BEARWEIGHT:0,
-      volumet:0
-    }
+    bearweight:0,
+    volumet:0
+     
   };
 
   colors = [
@@ -735,10 +728,19 @@ export default class DispatchMap extends Component {
 
   getTotals = selectOrder => {
     let selectOrderStoreCodes = selectOrder.map(e => e.deliveryPoint.code);
-    const { orders,totals} = this.state;
+    const { orders,bearweight,volumet} = this.state;
     let allSelectOrders = orders.filter(
       e => selectOrderStoreCodes.indexOf(e.deliveryPoint?.code) != -1
     );
+   let  totals  = {
+      cartonCount: 0, //整件数
+      scatteredCount: 0, //散件数
+      containerCount: 0, //周转箱
+      volume: 0, //体积
+      weight: 0, //重量,
+      totalCount: 0, //总件数
+     
+    }
     allSelectOrders.map(e => {
       totals.cartonCount += e.cartonCount;
       totals.scatteredCount += e.scatteredCount;
@@ -747,6 +749,7 @@ export default class DispatchMap extends Component {
       totals.weight = this.accAdd(totals.weight, e.weight);
     });
     totals.totalCount = totals.cartonCount + totals.scatteredCount + totals.containerCount * 2;
+    totals = {...totals,bearweight,volumet};
     return totals;
   };
 
@@ -785,7 +788,7 @@ export default class DispatchMap extends Component {
 
   clickSchdule = async schdule => {
     this.setState({ loading: true });
-    let { orderMarkers, orders, totals} = this.state;
+    let { orderMarkers, orders} = this.state;
     const response = await getDetailByBillUuids([schdule.UUID]);
     if (response.success) {
       let details = response.data;
@@ -816,8 +819,11 @@ export default class DispatchMap extends Component {
         };
        const vehicle = await dynamicQuery(param);
       if(vehicle.success){
-        totals.BEARWEIGHT = vehicle.result.records[0].BEARWEIGHT
-        totals.volumet = vehicle.result.records[0].LENGTH*vehicle.result.records[0].HEIGHT*vehicle.result.records[0].WIDTH
+        this.setState(
+          {
+            volumet:vehicle.result.records[0].LENGTH*vehicle.result.records[0].HEIGHT*vehicle.result.records[0].WIDTH,
+            bearweight:vehicle.result.records[0].BEARWEIGHT
+          })
       }
     } 
     
@@ -825,7 +831,6 @@ export default class DispatchMap extends Component {
         {
           orderMarkers,
           orders,
-          totals,
           isEdit: true,
           schdule: schdule,
           checkScheduleOrders: [],
@@ -986,12 +991,12 @@ export default class DispatchMap extends Component {
                 <div style={{ flex: 1, fontWeight: 'bold' }}>
                 车辆承重(T):
                   {/* {totals.weight} */}
-                  {(totals.BEARWEIGHT/1000).toFixed(3)}
+                  {(totals?.bearweight/1000).toFixed(3)}
                 </div>
                 <div style={{ flex: 1, fontWeight: 'bold' }}>
                   车辆体积(m3):
                   {/* {totals.weight} */}
-                  {(totals.volumet/1000000).toFixed(3)}
+                  {(totals?.volumet/1000000).toFixed(3)}
                 </div>
               </div>
             </Row>
