@@ -76,8 +76,80 @@ export default class IssueconSearch extends QuickFormSearchPage {
    
     return defaultSearch;
   };
- 
+  audits = async () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.error('请选中一条记录');
+      return;
+    }
+    const reslut = await audits(selectedRows.map(e => e.UUID));
+    if (reslut.success) {
+      message.success('发放成功！');
+   
+      this.onSearch();
+    }
+  };
 
+  //作废
+  cancellation = async () => {
+    const { selectedRows} = this.state;
+    if (selectedRows.length == 0) {
+      message.error('请选中一条记录');
+      return;
+    }
+    const result = await cancellation(selectedRows.map(e => e.UUID));
+    if (result.success) {
+      message.success('作废成功！');
+      this.onSearch();
+    }
+  };
+
+  recycle = async () => {
+      const { selectedRows} = this.state;
+      if (selectedRows.length == 0) {
+        message.error('请选中一条记录');
+        return;
+      }
+      const result = await recycle(selectedRows.map(e => e.UUID));
+      if (result.success) {
+        message.success('回收成功！');
+        this.onSearch();
+      }
+    };
+  drawToolsButton = () => {
+    return (
+      <>
+        <Popconfirm
+          placement="top"
+          title={'确认发放？'}
+          onConfirm={() => this.audits()}
+          okText="是"
+          cancelText="否"
+        >
+          <Button type="primary">发放</Button>
+        </Popconfirm>
+        <Popconfirm
+          placement="top"
+          title={'确认作废？'}
+          onConfirm={() => this.cancellation()}
+          okText="是"
+          cancelText="否"
+        >
+          <Button type="primary">作废</Button>
+        </Popconfirm>
+        <Popconfirm
+          placement="top"
+          title={'确认回收？'}
+          onConfirm={() => this.recycle()}
+          okText="是"
+          cancelText="否"
+        >
+          <Button type="primary">回收</Button>
+        </Popconfirm>
+       
+      </>
+    );
+  };
   /**
    * 编辑界面
    */

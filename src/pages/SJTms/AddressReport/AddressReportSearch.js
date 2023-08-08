@@ -112,7 +112,7 @@ export default class AddressReportSearch extends QuickFormSearchPage {
       <>
         <Popconfirm
           placement="top"
-          title={'确认发放？'}
+          title={'确认审核？'}
           onConfirm={() => this.audits()}
           okText="是"
           cancelText="否"
