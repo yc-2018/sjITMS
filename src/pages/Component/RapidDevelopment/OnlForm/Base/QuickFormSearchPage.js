@@ -438,7 +438,10 @@ export default class QuickFormSearchPage extends SearchPage {
       queryConfigColumns: queryConfig.columns,
       tableName,
       queryConfig: queryConfig,
-      isMerge: queryConfig.reportHead.isMerge && queryConfig.reportHead.isMerge == 1 ? true : false,
+      isMerge:
+        queryConfig.reportHead?.isMerge && queryConfig.reportHead.isMerge == 1
+          ? true
+          : false,
     });
   };
 
