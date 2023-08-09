@@ -19,7 +19,22 @@ import {
 import { queryColumns } from '@/services/quick/Quick';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import moment from 'moment';
+import { getInitDataByQuick } from '@/services/quick/Quick';
 
+function isJSON(str) {
+  if (typeof str == 'string') {
+    try {
+      var obj = JSON.parse(str);
+      if (typeof obj == 'object' && obj) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+}
 const { RangePicker } = DatePicker;
 const isOrgQuery = [
   { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
@@ -52,6 +67,23 @@ export default class SearchForm extends Component {
           selectFields = response.result.columns.filter(
             data => search.searchFields.indexOf(data.fieldName) != -1
           );
+        }
+      }
+      for (let item of selectFields) {
+        if (item.searchDefVal) {
+          if (isJSON(item.searchDefVal)) {
+            let initJson = JSON.parse(item.searchDefVal);
+            let res = await getInitDataByQuick(initJson);
+            if (res?.success) {
+              item.searchDefVal = res?.data ? res.data : '';
+              if (item.searchCondition == 'in' || item.searchCondition == 'notIn') {
+                item.searchDefVal = [item.searchDefVal];
+              }
+              let initForm = form.getFieldsValue();
+              initForm[item.fieldName] = item.searchDefVal;
+              form.setFieldsValue({ initForm });
+            }
+          }
         }
       }
       this.setState(
@@ -240,9 +272,9 @@ export default class SearchForm extends Component {
           .format('YYYY-MM-DD');
         item.searchDefVal = `${startDate}||${endDate}`;
       }
-      if (item.fieldName == 'WAVENUM') {
-        item.searchDefVal = [moment(new Date()).format('YYMMDD') + '0001'];
-      }
+      // if (item.fieldName == 'WAVENUM') {
+      //   item.searchDefVal = [moment(new Date()).format('YYMMDD') + '0001'];
+      // }
       return item;
     });
     return (

@@ -104,3 +104,10 @@ export async function updateEntity(payload, dbSource) {
     body: payload,
   });
 }
+
+export async function getInitDataByQuick(payload) {
+  return request(`/itms-schedule/itms-schedule/dev/getInitDataByQuick`, {
+    method: 'POST',
+    body: payload,
+  });
+}

@@ -21,6 +21,22 @@ import { queryColumns } from '@/services/quick/Quick';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import { loginCompany, loginOrg, loginUser } from '@/utils/LoginContext';
 import moment from 'moment';
+import { getInitDataByQuick } from '@/services/quick/Quick';
+
+function isJSON(str) {
+  if (typeof str == 'string') {
+    try {
+      var obj = JSON.parse(str);
+      if (typeof obj == 'object' && obj) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+}
 
 const { RangePicker } = DatePicker;
 const isOrgQuery = [
@@ -44,7 +60,7 @@ export default class SearchForm extends Component {
   async componentDidMount() {
     this.setState({ loading: true });
     const response = await queryColumns({ reportCode: this.props.quickuuid, sysCode: 'tms' });
-    const { form } = this.props;
+    let { form } = this.props;
     if (response.success) {
       let selectFields = response.result.columns.filter(data => data.isSearch);
       if (this.props.dispatchcenterSearch) {
@@ -58,6 +74,23 @@ export default class SearchForm extends Component {
             selectFields = response.result.columns.filter(
               data => search.searchFields.indexOf(data.fieldName) != -1
             );
+          }
+        }
+      }
+      for (let item of selectFields) {
+        if (item.searchDefVal) {
+          if (isJSON(item.searchDefVal)) {
+            let initJson = JSON.parse(item.searchDefVal);
+            let res = await getInitDataByQuick(initJson);
+            if (res?.success) {
+              item.searchDefVal = res?.data ? res.data : '';
+              if (item.searchCondition == 'in' || item.searchCondition == 'notIn') {
+                item.searchDefVal = [item.searchDefVal];
+              }
+              let initForm = form.getFieldsValue();
+              initForm[item.fieldName] = item.searchDefVal;
+              form.setFieldsValue({ initForm });
+            }
           }
         }
       }
@@ -89,7 +122,7 @@ export default class SearchForm extends Component {
     for (let param in searchParam) {
       const field = selectFields.find(x => x.fieldName == param);
       let val = searchParam[param];
-      if (val == null || val == undefined) {
+      if (val == null || val == undefined || isJSON(val)) {
         continue;
       }
       if (field.searchShowtype == 'datetime' && val instanceof Array) {
@@ -295,9 +328,9 @@ export default class SearchForm extends Component {
           .format('YYYY-MM-DD');
         item.searchDefVal = `${startDate}||${endDate}`;
       }
-      if (item.fieldName == 'WAVENUM') {
-        item.searchDefVal = [moment(new Date()).format('YYMMDD') + '0001'];
-      }
+      // if (item.fieldName == 'WAVENUM') {
+      //   item.searchDefVal = [moment(new Date()).format('YYMMDD') + '0001'];
+      // }
       if (item.fieldName == 'CREATORID') {
         item.searchDefVal = loginUser().uuid;
       }

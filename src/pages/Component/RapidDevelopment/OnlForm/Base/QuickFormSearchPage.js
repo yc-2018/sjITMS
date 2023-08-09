@@ -46,7 +46,7 @@ export default class QuickFormSearchPage extends SearchPage {
   exSearchFilter = () => {}; //扩展查询
   drawRightClickMenus = () => {}; //右键菜单
 
-  defaultSearch = () => {
+  defaultSearch = async () => {
     //默认查询
     let ex = this.state.queryConfigColumns.filter(item => {
       return item.searchDefVal != null && item.searchDefVal != '';
@@ -81,16 +81,31 @@ export default class QuickFormSearchPage extends SearchPage {
           val: `${startDate}||${endDate}`,
         };
       } else {
-        exSearchFilter = {
-          field: item.fieldName,
-          type: item.fieldType,
-          rule: item.searchCondition,
-          val: item.searchDefVal,
-        };
+        //适配动态默认值
+        if (isJSON(item.searchDefVal)) {
+          let initJson = JSON.parse(item.searchDefVal);
+          let res = await getInitDataByQuick(initJson);
+          if (res?.success) {
+            exSearchFilter = {
+              field: item.fieldName,
+              type: item.fieldType,
+              rule: item.searchCondition,
+              val: res?.data ? res.data : '',
+            };
+          }
+        } else {
+          exSearchFilter = {
+            field: item.fieldName,
+            type: item.fieldType,
+            rule: item.searchCondition,
+            val: item.searchDefVal,
+          };
+        }
       }
-      defaultSearch.push(exSearchFilter);
+      if (exSearchFilter.val) {
+        defaultSearch.push(exSearchFilter);
+      }
     }
-
     return defaultSearch;
   };
 
@@ -439,9 +454,7 @@ export default class QuickFormSearchPage extends SearchPage {
       tableName,
       queryConfig: queryConfig,
       isMerge:
-        queryConfig.reportHead?.isMerge && queryConfig.reportHead.isMerge == 1
-          ? true
-          : false,
+        queryConfig.reportHead?.isMerge && queryConfig.reportHead.isMerge == 1 ? true : false,
     });
   };
 
@@ -828,7 +841,7 @@ export default class QuickFormSearchPage extends SearchPage {
       },
     };
     this.setState({ pageFilters, superParams: [] });
-    this.getData(pageFilters);
+    // this.getData(pageFilters);
   };
 
   //查询
