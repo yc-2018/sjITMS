@@ -93,58 +93,58 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     }
   }
 
-  defaultSearch = () => {
-    //默认查询
-    let ex = this.state.queryConfigColumns.filter(item => {
-      return item.searchDefVal != null && item.searchDefVal != '';
-    });
-    let defaultSearch = [];
-    let exSearchFilter;
-    for (const item of ex) {
-      if (item.fieldType == 'Date') {
-        let days = parseInt(item.searchDefVal);
-        if (days != days) days = 0;
-        let endDate = moment(new Date()).format('YYYY-MM-DD');
-        let startDate = moment(new Date())
-          .add(-item.searchDefVal, 'days')
-          .format('YYYY-MM-DD');
-        exSearchFilter = {
-          field: item.fieldName,
-          type: item.fieldType,
-          rule: item.searchCondition,
-          val: `${startDate}||${endDate}`,
-        };
-      } else if (item.fieldType == 'DateTime') {
-        let days = parseInt(item.searchDefVal);
-        if (days != days) days = 0;
-        let endDate = moment(new Date()).format('YYYY-MM-DD 23:59:59');
-        let startDate = moment(new Date())
-          .add(-item.searchDefVal, 'days')
-          .format('YYYY-MM-DD 00:00:00');
-        exSearchFilter = {
-          field: item.fieldName,
-          type: item.fieldType,
-          rule: item.searchCondition,
-          val: `${startDate}||${endDate}`,
-        };
-      } else {
-        exSearchFilter = {
-          field: item.fieldName,
-          type: item.fieldType,
-          rule: item.searchCondition,
-          val: item.searchDefVal,
-        };
-      }
-      defaultSearch.push(exSearchFilter);
-    }
-    defaultSearch.push({
-      field: 'WAVENUM',
-      type: 'VARCHAR',
-      rule: 'in',
-      val: moment(new Date()).format('YYMMDD') + '0001',
-    });
-    return defaultSearch;
-  };
+  // defaultSearch = () => {
+  //   //默认查询
+  //   let ex = this.state.queryConfigColumns.filter(item => {
+  //     return item.searchDefVal != null && item.searchDefVal != '';
+  //   });
+  //   let defaultSearch = [];
+  //   let exSearchFilter;
+  //   for (const item of ex) {
+  //     if (item.fieldType == 'Date') {
+  //       let days = parseInt(item.searchDefVal);
+  //       if (days != days) days = 0;
+  //       let endDate = moment(new Date()).format('YYYY-MM-DD');
+  //       let startDate = moment(new Date())
+  //         .add(-item.searchDefVal, 'days')
+  //         .format('YYYY-MM-DD');
+  //       exSearchFilter = {
+  //         field: item.fieldName,
+  //         type: item.fieldType,
+  //         rule: item.searchCondition,
+  //         val: `${startDate}||${endDate}`,
+  //       };
+  //     } else if (item.fieldType == 'DateTime') {
+  //       let days = parseInt(item.searchDefVal);
+  //       if (days != days) days = 0;
+  //       let endDate = moment(new Date()).format('YYYY-MM-DD 23:59:59');
+  //       let startDate = moment(new Date())
+  //         .add(-item.searchDefVal, 'days')
+  //         .format('YYYY-MM-DD 00:00:00');
+  //       exSearchFilter = {
+  //         field: item.fieldName,
+  //         type: item.fieldType,
+  //         rule: item.searchCondition,
+  //         val: `${startDate}||${endDate}`,
+  //       };
+  //     } else {
+  //       exSearchFilter = {
+  //         field: item.fieldName,
+  //         type: item.fieldType,
+  //         rule: item.searchCondition,
+  //         val: item.searchDefVal,
+  //       };
+  //     }
+  //     defaultSearch.push(exSearchFilter);
+  //   }
+  //   defaultSearch.push({
+  //     field: 'WAVENUM',
+  //     type: 'VARCHAR',
+  //     rule: 'in',
+  //     val: moment(new Date()).format('YYMMDD') + '0001',
+  //   });
+  //   return defaultSearch;
+  // };
 
   goG7 = async apiName => {
     const { selectedRows } = this.state;
@@ -202,8 +202,9 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     );
     let queryParams = [...newFilters.superQuery.queryParams];
     if (deliverypointCode) {
-      newFilters.applySql = ` uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${deliverypointCode.val
-        }')`;
+      newFilters.applySql = ` uuid in (select billuuid from sj_itms_schedule_order where deliverypointcode='${
+        deliverypointCode.val
+      }')`;
       queryParams = newFilters.superQuery.queryParams.filter(x => x.field != 'DELIVERYPOINTCODE');
     }
     dispatch({
@@ -610,7 +611,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
           <Button
             // onClick={() => this.handlePrint()}
             icon="printer"
-          // hidden={!havePermission(this.state.authority + '.print')}
+            // hidden={!havePermission(this.state.authority + '.print')}
           >
             打印 <Icon type="down" />
           </Button>
@@ -756,11 +757,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     selectedRows.length == 1
       ? this.setState({ showRollBackPop: true })
       : this.batchProcessConfirmRef.show(
-        '取消批准',
-        selectedRows,
-        this.onRollBack,
-        this.queryCoulumns
-      );
+          '取消批准',
+          selectedRows,
+          this.onRollBack,
+          this.queryCoulumns
+        );
   };
 
   //刷新ETC资料
@@ -773,11 +774,11 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     selectedRows.length == 1
       ? this.setState({ showRefreshPop: true })
       : this.batchProcessConfirmRef.show(
-        'ETC资料刷新',
-        selectedRows,
-        this.onRefresh,
-        this.queryCoulumns
-      );
+          'ETC资料刷新',
+          selectedRows,
+          this.onRefresh,
+          this.queryCoulumns
+        );
   };
 
   //批量作废
@@ -1169,7 +1170,6 @@ const drawScheduleBillPage = (schedule, scheduleDetails, memberWage) => {
 
 //装车单
 const drawPrintPage = async (schedule, scheduleDetails, dc) => {
-
   if (schedule.TASKTYPESEARCH == 'TakeDelivery') {
     const param = {
       tableName: 'SJ_ITMS_ORDER_ARTICLE',
@@ -1184,12 +1184,14 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
       },
     };
     const response = await dynamicQuery(param);
-    const article = response.success && Array.isArray(response.result.records) ? response.result.records : [];
+    const article =
+      response.success && Array.isArray(response.result.records) ? response.result.records : [];
     article.forEach(e => {
       e.QTYSTR = parseFloat(e.QTYSTR);
-    })
+    });
     const responseOrder = await dynamicQuery(paramOrder);
-    const orders = responseOrder.success && responseOrder.result.records ? responseOrder.result.records : [];
+    const orders =
+      responseOrder.success && responseOrder.result.records ? responseOrder.result.records : [];
     return (
       <div>
         <table
@@ -1208,15 +1210,23 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
             <tr style={{ height: 30 }}>
               <th colspan={10} style={{ border: 0, height: 30 }}>
                 <div>
-                  <div style={{ height: 30, width: '30%', float: 'left', textAlign: 'left' }} ><img style={{ height: 30, width: 120 }} src={scher} /></div>
-                  <div style={{ width: '40%', fontSize: 17, float: 'left', textAlign: 'center' }}>东莞市时捷物流有限公司提货计划表</div>
+                  <div style={{ height: 30, width: '30%', float: 'left', textAlign: 'left' }}>
+                    <img style={{ height: 30, width: 120 }} src={scher} />
+                  </div>
+                  <div style={{ width: '40%', fontSize: 17, float: 'left', textAlign: 'center' }}>
+                    东莞市时捷物流有限公司提货计划表
+                  </div>
                   <div style={{ fontSize: 12, float: 'left', textAlign: 'center', width: '30%' }}>
                     <span>第</span>
                     <font tdata="PageNO" color="blue">
                       ##
                     </font>
                     <span>页/共</span>
-                    <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
+                    <font
+                      color="blue"
+                      style={{ textDecoration: 'underline blue' }}
+                      tdata="PageCount"
+                    >
                       ##
                     </font>
                     <span>页</span>
@@ -1250,7 +1260,10 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   </div>
                   <div style={{ float: 'left', width: '40%', fontWeight: 'normal' }}>
                     供应商：
-                    {'[' + scheduleDetails[0].DELIVERYPOINTCODE + "]" + scheduleDetails[0].DELIVERYPOINTNAME}
+                    {'[' +
+                      scheduleDetails[0].DELIVERYPOINTCODE +
+                      ']' +
+                      scheduleDetails[0].DELIVERYPOINTNAME}
                   </div>
                 </div>
               </th>
@@ -1294,19 +1307,17 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
               article.map((item, index) => {
                 return (
                   <tr style={{ textAlign: 'center', height: 30 }}>
-                    <td >{item.ARTICLECODE}</td>
+                    <td>{item.ARTICLECODE}</td>
                     <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                       {item.BARCODE}
                     </td>
-                    <td >
-                      {item.ARTICLENAME}
-                    </td>
-                    <td >{item.FREIGHTSPACE}</td>
-                    <td >{item.FPAQSTANDARD}</td>
-                    <td >{item.AMOUNT.toFixed(2)}</td>
-                    <td >{item.QTYSTR}</td>
-                    <td >{(item.WEIGHT / 1000).toFixed(2)}</td>
-                    <td >{item.VOLUME.toFixed(3)}</td>
+                    <td>{item.ARTICLENAME}</td>
+                    <td>{item.FREIGHTSPACE}</td>
+                    <td>{item.FPAQSTANDARD}</td>
+                    <td>{item.AMOUNT.toFixed(2)}</td>
+                    <td>{item.QTYSTR}</td>
+                    <td>{(item.WEIGHT / 1000).toFixed(2)}</td>
+                    <td>{item.VOLUME.toFixed(3)}</td>
                     <td>{orders.find(e => e.UUID == item.BILLUUID).SOURCENUM}</td>
                   </tr>
                 );
@@ -1316,31 +1327,34 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
             )}
             {
               <tr>
-                <td style={{ textAlign: 'center', }}>合计</td>
-                <td style={{ textAlign: 'center', }}>{article.length}</td>
-                <td style={{ textAlign: 'center', }}>{ }</td>
-                <td style={{ textAlign: 'center', }}>{ }</td>
-                <td style={{ textAlign: 'center', }}>{ }</td>
-                <td style={{ textAlign: 'center', }}>{ }</td>
-                <td style={{ textAlign: 'center', }}>{sumBy(article, 'QTYSTR')}</td>
-                <td style={{ textAlign: 'center', }}>{(sumBy(article, 'WEIGHT') / 1000).toFixed(2)}</td>
-                <td style={{ textAlign: 'center', }}>{sumBy(article, 'VOLUME').toFixed(2)}</td>
-                <td style={{ textAlign: 'center', }}>{ }</td>
+                <td style={{ textAlign: 'center' }}>合计</td>
+                <td style={{ textAlign: 'center' }}>{article.length}</td>
+                <td style={{ textAlign: 'center' }}>{}</td>
+                <td style={{ textAlign: 'center' }}>{}</td>
+                <td style={{ textAlign: 'center' }}>{}</td>
+                <td style={{ textAlign: 'center' }}>{}</td>
+                <td style={{ textAlign: 'center' }}>{sumBy(article, 'QTYSTR')}</td>
+                <td style={{ textAlign: 'center' }}>
+                  {(sumBy(article, 'WEIGHT') / 1000).toFixed(2)}
+                </td>
+                <td style={{ textAlign: 'center' }}>{sumBy(article, 'VOLUME').toFixed(2)}</td>
+                <td style={{ textAlign: 'center' }}>{}</td>
               </tr>
             }
           </tbody>
           <tfoot border={0}>
-            <tr style={{ height: 20, border: 0, }} border={0}>
+            <tr style={{ height: 20, border: 0 }} border={0}>
               <td style={{ border: 0, paddingTop: 10 }} colSpan={2}>
-                <div style={{ fontWeight: 'normal' }}>
-                  调度签名(盖章)： { }
-                </div>
+                <div style={{ fontWeight: 'normal' }}>调度签名(盖章)： {}</div>
               </td>
               <td
                 style={{ border: 0, textAlign: 'left', paddingTop: 10, fontWeight: 'normal' }}
                 colSpan={3}
               >
-                <div>打印日期:{convertDateToTime(new Date())}</div>
+                <div>
+                  打印日期:
+                  {convertDateToTime(new Date())}
+                </div>
               </td>
               <td style={{ border: 0, fontWeight: 'normal', paddingTop: 10 }} colspan={5}>
                 (白联：时捷收货部，红联：供应商，黄联：驾驶员)
@@ -1348,13 +1362,16 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
             </tr>
             <tr style={{ border: 0, height: 20 }}>
               <td style={{ border: 0, fontWeight: 'normal' }} colspan={2}>
-                制单人：{loginUser().name}
+                制单人：
+                {loginUser().name}
               </td>
               <td style={{ border: 0, fontWeight: 'normal' }} colspan={3}>
-                驾驶员签名：{ }
+                驾驶员签名：
+                {}
               </td>
               <td style={{ border: 0, fontWeight: 'normal' }} colspan={3}>
-                时捷收货签名：{ }
+                时捷收货签名：
+                {}
               </td>
               {/* <td style={{ border: 0 }} colspan={6}>
                 收退货签字：
@@ -1515,8 +1532,8 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   <div style={{ float: 'left', width: '80%' }}>
                     {schedule.USEETC == '是'
                       ? '粤通卡信息：请到调度窗口领取粤通卡，按规定行驶，该次费用为' +
-                      schedule.ETCAMOUNT +
-                      '元'
+                        schedule.ETCAMOUNT +
+                        '元'
                       : '粤通卡信息：'}
                     <br />
                     [线路]去程入口:
@@ -1587,8 +1604,8 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                     <td width={50}>{item.REALCONTAINERCOUNT}</td>
                     <td width={50}>{item.OWECARTONCOUNT}</td>
                     <td width={50}>{item.REALCONTAINERCOUNT + item.OWECARTONCOUNT}</td>
-                    <td width={50}>{ }</td>
-                    <td width={50}>{ }</td>
+                    <td width={50}>{}</td>
+                    <td width={50}>{}</td>
                     {/* <td width={80}>{}</td>
                     <td width={80}>{}</td>
                     <td width={80}>{}</td>
@@ -1621,14 +1638,14 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 <td width={50}>{scheduleDetailSum.REALCONTAINERCOUNT}</td>
                 <td width={50}>{scheduleDetailSum.OWECARTONCOUNT}</td>
                 <td width={50}>{scheduleDetailSum.CONTAINERSum}</td>
-                <td width={50}>{ }</td>
-                <td width={50}>{ }</td>
+                <td width={50}>{}</td>
+                <td width={50}>{}</td>
                 {/* <td width={80}>{}</td>
             <td width={80}>{}</td>
             <td width={80}>{}</td>
             <td width={80}>{}</td> */}
                 <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
-                  { }
+                  {}
                 </td>
                 <td width={50} />
               </tr>
@@ -1849,8 +1866,8 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   <div style={{ float: 'left', width: '80%' }}>
                     {schedule.USEETC == '是'
                       ? 'ETC信息：请到调度窗口领取ETC卡，按规定行驶，该次费用为' +
-                      schedule.ETCAMOUNT +
-                      '元'
+                        schedule.ETCAMOUNT +
+                        '元'
                       : 'ETC信息：'}
                     <br />
                     [线路]去程入口:
@@ -1942,14 +1959,14 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
 
                     {/* <td width={50}>{0}</td>
                       <td width={50}>{0}</td> */}
-                    <td width={50}>{ }</td>
+                    <td width={50}>{}</td>
                     <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
                       {item.COLLECTBIN}
                     </td>
                     {/* <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                       {item.SCATTEREDCOLLECTBIN}
                     </td> */}
-                    <td width={50}>{ }</td>
+                    <td width={50}>{}</td>
                   </tr>
                 );
               })
@@ -1961,7 +1978,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 <td width={80} colSpan={2}>
                   {'合计'}
                 </td>
-                <td style={{ textAlign: 'center' }}></td>
+                <td style={{ textAlign: 'center' }} />
                 <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                   {scheduleDetailSum.StoreSum}
                 </td>
@@ -1974,16 +1991,16 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 <td width={50}>{scheduleDetailSum.REALCOLDCONTAINERCOUNT}</td>
                 <td width={50}>{scheduleDetailSum.REALFREEZECONTAINERCOUNT}</td>
                 <td width={50}>{scheduleDetailSum.cartonCounts}</td>
-                <td width={50}>{ }</td>
+                <td width={50}>{}</td>
 
                 {/* <td width={50}>{ }</td>
                   <td  width={50}>
                     { }
                   </td> */}
-                <td width={50}>{ }</td>
-                <td width={120}>{ }</td>
+                <td width={50}>{}</td>
+                <td width={120}>{}</td>
                 {/* <td width={120}>{}</td> */}
-                <td width={50}>{ }</td>
+                <td width={50}>{}</td>
               </tr>
             ) : (
               <></>
@@ -2000,7 +2017,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}
                 >
                   最远市区:
-                  { }
+                  {}
                 </td>
                 <td width={50} colSpan={3}>
                   满载率:
