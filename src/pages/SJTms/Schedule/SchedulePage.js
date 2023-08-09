@@ -18,7 +18,7 @@ import ScheduleDetailSearchPage from './ScheduleDetailSearchPage';
 import ScheduleDeliveryPage from './ScheduleDeliveryPage';
 import EntityLogTab from '@/pages/Component/Page/inner/EntityLogTab';
 import emptySvg from '@/assets/common/img_empoty.svg';
-import { getByDispatchcenterUuid } from '@/services/tms/DispatcherConfig';
+import { getByDispatchcenterUuid } from '@/services/sjtms/DispatcherConfig';
 import { loginOrg } from '@/utils/LoginContext';
 const { Content } = Layout;
 const TabPane = Tabs.TabPane;
@@ -87,8 +87,8 @@ export default class SchedulePage extends PureComponent {
                       authority={this.props.route?.authority ? this.props.route.authority : null}
                       selectedRows={selectedRows.UUID}
                     />
-                    </TabPane>
-                    <TabPane tab="配送进度" key="delivery">
+                  </TabPane>
+                  <TabPane tab="配送进度" key="delivery">
                     <ScheduleDeliveryPage
                       quickuuid="sj_itms_schedule_delivery"
                       authority={this.props.route?.authority ? this.props.route.authority : null}
