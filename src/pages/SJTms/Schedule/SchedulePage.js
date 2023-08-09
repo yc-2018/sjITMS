@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-06-29 16:01:35
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-08-09 14:42:20
+ * @LastEditTime: 2023-08-09 16:38:22
  * @Description: 排车单
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\SchedulePage.js
  */
@@ -15,6 +15,7 @@ import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCre
 import ScheduleCreatePage from './ScheduleCreatePage';
 import RemoveCarCreatePage from './RemoveCarCreatePage';
 import ScheduleDetailSearchPage from './ScheduleDetailSearchPage';
+import ScheduleDeliveryPage from './ScheduleDeliveryPage';
 import EntityLogTab from '@/pages/Component/Page/inner/EntityLogTab';
 import emptySvg from '@/assets/common/img_empoty.svg';
 import { getByDispatchcenterUuid } from '@/services/tms/DispatcherConfig';
@@ -88,7 +89,7 @@ export default class SchedulePage extends PureComponent {
                     />
                     </TabPane>
                     <TabPane tab="配送进度" key="delivery">
-                    <ScheduleDetailSearchPage
+                    <ScheduleDeliveryPage
                       quickuuid="sj_itms_schedule_delivery"
                       authority={this.props.route?.authority ? this.props.route.authority : null}
                       selectedRows={selectedRows.UUID}
