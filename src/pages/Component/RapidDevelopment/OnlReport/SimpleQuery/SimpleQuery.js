@@ -309,9 +309,17 @@ export default class SimpleQuery extends SearchForm {
     const { form, filterValue, selectFields } = this.props;
     const { getFieldDecorator } = form;
     const { toggle } = this.state;
-    const showSelectFields = toggle ? selectFields : selectFields.slice(0, 3);
+    // const showSelectFields = toggle ? selectFields : selectFields.slice(0, 3);
+    const showSelectFields = selectFields.map((item, index) => {
+      if (toggle || index < 4) {
+        item.isNotDisPlay = false;
+      } else {
+        item.isNotDisPlay = true;
+      }
+      return item;
+    });
     let cols = new Array();
-    showSelectFields.forEach(searchField => {
+    showSelectFields.forEach((searchField, index) => {
       //select多选默认值
       if (
         (searchField.searchShowtype == 'list' ||
@@ -324,7 +332,11 @@ export default class SimpleQuery extends SearchForm {
         }
       }
       cols.push(
-        <SFormItem key={searchField.id} label={searchField.fieldTxt}>
+        <SFormItem
+          key={searchField.id}
+          label={searchField.fieldTxt}
+          isNotDisPlay={searchField.isNotDisPlay}
+        >
           {getFieldDecorator(searchField.fieldName, {
             initialValue: filterValue ? filterValue[searchField.fieldName] : undefined,
             rules: [
