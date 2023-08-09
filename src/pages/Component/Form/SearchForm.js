@@ -12,7 +12,7 @@ import { PRETYPE } from '@/utils/constants';
 
 /**
  * 搜索表单面板基类
- * 
+ *
  * 如需收缩和展开功能，在子类state中定义toggle
  * 子类提供onReset方法，当表单重置时会调用该方法刷新搜索结果
  * 子类提供onSearch方法，当表单提交时会调用该方法重新搜索结果
@@ -20,34 +20,41 @@ import { PRETYPE } from '@/utils/constants';
 export default class SearchForm extends Component {
   componentDidUpdate() {
     if (this.drawRows()) {
-
       let id = this.drawRows()[0].props.children[0].key;
 
-      if (document.getElementById(id) != null && (document.activeElement.tagName == 'A' ||
-        document.activeElement.tagName == 'BODY' || document.activeElement.id == id)) {
+      if (
+        document.getElementById(id) != null &&
+        (document.activeElement.tagName == 'A' ||
+          document.activeElement.tagName == 'BODY' ||
+          document.activeElement.id == id)
+      ) {
         document.getElementById(id).focus();
 
         if (document.getElementById(id).firstChild != null) {
-          if (document.querySelector('.ant-select-selection') === document.getElementById(id).firstChild) {
+          if (
+            document.querySelector('.ant-select-selection') ===
+            document.getElementById(id).firstChild
+          ) {
             document.querySelector('.ant-select-selection').focus();
           }
         }
       }
-
-
     }
   }
 
   /**展开或者收缩面板 */
   toggleForm = () => {
     const { toggle } = this.state;
-    this.setState({
-      toggle: !toggle,
-    }, () => {
-      if (this.props.toggleCallback) {
-        this.props.toggleCallback();
+    this.setState(
+      {
+        toggle: !toggle,
+      },
+      () => {
+        if (this.props.toggleCallback) {
+          this.props.toggleCallback();
+        }
       }
-    });
+    );
   };
 
   /**重置搜索条件 */
@@ -64,12 +71,15 @@ export default class SearchForm extends Component {
   };
 
   /**搜索 */
-  handlerSearch = (e) => {
+  handlerSearch = e => {
     const { form } = this.props;
 
     e.preventDefault();
     form.validateFields((err, fieldsValue) => {
-      if (err) return;
+      if (err) {
+        this.setState({ toggle: true });
+        return;
+      }
 
       const data = {
         ...fieldsValue,
@@ -96,7 +106,10 @@ export default class SearchForm extends Component {
   /**重置按钮 */
   drawResetButton = () => {
     return (
-      <Button style={{ marginLeft: 10, background: '#516173', color: '#FFFFFF' }} onClick={this.reset}>
+      <Button
+        style={{ marginLeft: 10, background: '#516173', color: '#FFFFFF' }}
+        onClick={this.reset}
+      >
         {formatMessage({ id: 'company.index.search.button.reset' })}
       </Button>
     );
@@ -106,7 +119,7 @@ export default class SearchForm extends Component {
   drawToggle = () => {
     return (
       <a style={{ marginRight: '10px' }} onClick={this.toggleForm}>
-        收起 <IconFont style={{ margin: '0px 0px 0px 0px' }} type="icon-line_up"/>
+        收起 <IconFont style={{ margin: '0px 0px 0px 0px' }} type="icon-line_up" />
       </a>
     );
   };
@@ -115,7 +128,7 @@ export default class SearchForm extends Component {
   drawNormal = () => {
     return (
       <a style={{ marginRight: '10px' }} onClick={this.toggleForm}>
-        展开 <IconFont style={{ margin: '0px 0px 0px 0px' }} type="icon-line_down"/>
+        展开 <IconFont style={{ margin: '0px 0px 0px 0px' }} type="icon-line_down" />
       </a>
     );
   };
@@ -124,7 +137,7 @@ export default class SearchForm extends Component {
   drawButtonGroup = () => {
     const toggle = this.state ? this.state.toggle : undefined;
     return (
-      <Col span={6} key='btnGroup' style={{ float: 'right' }}>
+      <Col span={6} key="btnGroup" style={{ float: 'right' }}>
         <div style={{ float: 'right' }}>
           {toggle == undefined && ''}
           {toggle != undefined && toggle && this.drawToggle()}
@@ -156,18 +169,17 @@ export default class SearchForm extends Component {
     let fourLabelLength = 2;
     if (this.state && this.state.showLimitDays && this.state.showLimitDays == true)
       cols.push(
-        <SFormItem key="days" label={"最近天数"}>
+        <SFormItem key="days" label={'最近天数'}>
           {getFieldDecorator('days', {
-            initialValue: filterValue && filterValue.days ? filterValue.days : getQueryBillDays() ? getQueryBillDays() : ''
-          })(
-            <PreTypeSelect
-              hasAll
-              preType={PRETYPE.dateLimit}
-              orgUuid={loginOrg().uuid}
-            />
-          )}
+            initialValue:
+              filterValue && filterValue.days
+                ? filterValue.days
+                : getQueryBillDays()
+                  ? getQueryBillDays()
+                  : '',
+          })(<PreTypeSelect hasAll preType={PRETYPE.dateLimit} orgUuid={loginOrg().uuid} />)}
         </SFormItem>
-      )
+      );
     for (let i = 0; i < cols.length; i = i + 4) {
       if (!cols[i].props.label) {
         continue;
@@ -178,11 +190,11 @@ export default class SearchForm extends Component {
       }
     }
     if (firstLabelLength === 3) {
-      firstColLabelSpan = firstColLabelSpan + addedSpan*3;
+      firstColLabelSpan = firstColLabelSpan + addedSpan * 3;
     }
 
     if (firstLabelLength === 4) {
-      firstColLabelSpan = firstColLabelSpan + addedSpan*3;
+      firstColLabelSpan = firstColLabelSpan + addedSpan * 3;
     }
 
     for (let i = 1; i < cols.length; i = i + 4) {
@@ -255,11 +267,15 @@ export default class SearchForm extends Component {
       // TODO 扩展 SForm 自定义
       const colSpan = cols[i].props.span ? cols[i].props.span : 6;
       formItems.push(
-        <Col key={cols[i].props.label} span={colSpan}>
+        <Col
+          key={cols[i].props.label}
+          span={colSpan}
+          style={{ display: cols[i].props.isNotDisPlay ? 'none' : '' }}
+        >
           <Form.Item {...formItemLayout} labelAlign="left" label={cols[i].props.label}>
             {cols[i]}
           </Form.Item>
-        </Col>,
+        </Col>
       );
     }
     return formItems;
@@ -271,13 +287,16 @@ export default class SearchForm extends Component {
     let currentRowCols = [];
     let cols = this.buildFormItems();
 
-
     for (let i = 0; i < cols.length; i++) {
       let col = cols[i];
       if (currentRowCols.length < 4) {
         currentRowCols.push(col);
       } else {
-        rows.push(<Row key={rows.length} gutter={16}>{currentRowCols}</Row>);
+        rows.push(
+          <Row key={rows.length} gutter={16}>
+            {currentRowCols}
+          </Row>
+        );
         currentRowCols = [];
         currentRowCols.push(col);
       }
@@ -285,12 +304,24 @@ export default class SearchForm extends Component {
       if (i === cols.length - 1) {
         if (currentRowCols.length < 4) {
           currentRowCols.push(this.drawButtonGroup());
-          rows.push(<Row key={rows.length} gutter={16}>{currentRowCols}</Row>);
+          rows.push(
+            <Row key={rows.length} gutter={16}>
+              {currentRowCols}
+            </Row>
+          );
         } else {
-          rows.push(<Row key={rows.length} gutter={16}>{currentRowCols}</Row>);
+          rows.push(
+            <Row key={rows.length} gutter={16}>
+              {currentRowCols}
+            </Row>
+          );
           const buttonRowCols = [];
           buttonRowCols.push(this.drawButtonGroup());
-          rows.push(<Row key={rows.length} gutter={16}>{buttonRowCols}</Row>);
+          rows.push(
+            <Row key={rows.length} gutter={16}>
+              {buttonRowCols}
+            </Row>
+          );
         }
       }
     }
