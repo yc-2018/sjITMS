@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-06-29 16:01:35
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-04-17 16:17:39
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-08-09 14:42:20
  * @Description: 排车单
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\SchedulePage.js
  */
@@ -80,9 +80,16 @@ export default class SchedulePage extends PureComponent {
                 <Empty image={emptySvg} description={<span>暂无数据,请先选择排车单</span>} />
               ) : (
                 <Tabs defaultActiveKey="detail" onChange={this.changeTabs}>
-                  <TabPane tab="排车单明细" key="detail">
+                  <TabPane tab="订单明细" key="detail">
                     <ScheduleDetailSearchPage
                       quickuuid="sj_itms_schedule_order"
+                      authority={this.props.route?.authority ? this.props.route.authority : null}
+                      selectedRows={selectedRows.UUID}
+                    />
+                    </TabPane>
+                    <TabPane tab="配送进度" key="delivery">
+                    <ScheduleDetailSearchPage
+                      quickuuid="sj_itms_schedule_delivery"
                       authority={this.props.route?.authority ? this.props.route.authority : null}
                       selectedRows={selectedRows.UUID}
                     />
