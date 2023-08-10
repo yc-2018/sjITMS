@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-22 09:17:40
+ * @LastEditTime: 2023-08-10 12:13:08
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -144,11 +144,9 @@ export default class OrderPoolPage extends Component {
         pageFilter = params;
       }
     }
-    if (sorter && sorter.column)
-      filter.order =
-        (sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey) +
-        ',' +
-        sorter.order;
+    if (sorter && sorter.column) {
+      filter.order =(sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey) +      ',' +      sorter.order;
+    }
     if (pages) {
       filter.page = pages.current;
       filter.pageSize = pages.pageSize;
@@ -189,7 +187,7 @@ export default class OrderPoolPage extends Component {
         this.setState({
           searchPagination,
           auditedData: data,
-          auditedCollectData: this.groupData(data),
+          auditedCollectData: this.groupData(data,sorter),
           auditedParentRowKeys: [],
           auditedRowKeys: [],
           vehicleRowKeys: [],
@@ -203,7 +201,7 @@ export default class OrderPoolPage extends Component {
   };
 
   //按送货点汇总运输订单
-  groupData = data => {
+  groupData = (data, sorter) => {
     let output = groupBy(data, x => x.deliveryPoint.code);
     let deliveryPointGroupArr = Object.keys(output).map(pointCode => {
       const orders = output[pointCode];
@@ -211,8 +209,11 @@ export default class OrderPoolPage extends Component {
         pointCode,
         uuid: orders[0].uuid,
         deliveryPoint: orders[0].deliveryPoint,
+        deliveryPointCode: orders[0].deliveryPoint?.code,
         archLine: orders[0].archLine,
+        archLineCode: orders[0].archLine?.code,
         owner: orders[0].owner,
+        ownerCode: orders[0].owner?.code,
         address: orders[0].deliveryPoint.address,
         stillCartonCount: Math.round(sumBy(orders, 'stillCartonCount') * 1000) / 1000,
         stillScatteredCount: Math.round(sumBy(orders, 'stillScatteredCount') * 1000) / 1000,
@@ -226,13 +227,19 @@ export default class OrderPoolPage extends Component {
         volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
         weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
         shipAreaName: orders[0].shipAreaName,
-        tmsNote:orders[0].tmsNote
+        tmsNote: orders[0].tmsNote
       };
     });
     deliveryPointGroupArr.forEach(data => {
       data.details = output[data.pointCode];
     });
-    return orderBy(deliveryPointGroupArr,"shipAreaName");
+    deliveryPointGroupArr = orderBy(deliveryPointGroupArr, "shipAreaName");
+    if (sorter && sorter.column) {
+      deliveryPointGroupArr = orderBy(deliveryPointGroupArr,
+        [sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey],
+        [sorter.order.replace("end", "")]);
+    }
+    return deliveryPointGroupArr;
   };
 
   //标签页切换事件
