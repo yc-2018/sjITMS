@@ -643,6 +643,13 @@ export const ScheduleColumns = [
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
+    title: '配送区域',
+    dataIndex: 'AREANAME',
+    sorter: true,
+    width: 100,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
     title: '创建人',
     dataIndex: 'CREATORNAME',
     sorter: true,
