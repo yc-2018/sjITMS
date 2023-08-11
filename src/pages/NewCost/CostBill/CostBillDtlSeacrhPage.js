@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-08 12:32:04
+ * @LastEditTime: 2023-08-09 10:40:25
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -35,11 +35,8 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
 
   componentDidMount() {
     this.handleOnSertch();
-    // this.getCostFormFields();
   }
-  // componentWillReceiveProps(){
-  //   this.handleOnSertch();
-  // }
+
   getCostFormFields = () => {
     findCostFormFieldByPlanUuid(this.props.params.entityUuid).then(result => {
       this.setState({ subjectFields: result.data });
@@ -52,7 +49,7 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
   handleOnSertch = async data => {
     const { PLAN_UUID, BILL_MONTH } = this.props;
     let values = { dateString: BILL_MONTH };
-    // this.setState({ searchLoading: true });
+    this.setState({ searchLoading: true });
     let params = {};
     if (data) {
       data.searchKeyValues = { ...values, ...data.searchKeyValues };
@@ -147,11 +144,28 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
       // e,
     });
   };
-  drawTopButton = () => {
-    //   return <>
-    //   <Button onClick={()=>this.showVilew()}>查看</Button>
-    // </>
-  }; //扩展最上层按钮
+
+  drawActionButton = () => {
+    //额外的菜单选项
+    const menus = [];
+    menus.push({
+      // disabled: !havePermission(STORE_RES.CREATE), //权限认证
+      name: '测试', //功能名称
+      onClick: this.test, //功能实现
+    });
+    return (
+      <div>
+        <Button
+          // hidden={!havePermission(this.state.authority + '.port')}
+          onClick={this.port}
+          type="primary"
+        >
+          导出
+        </Button>
+      </div>
+    );
+  };
+
   changeState = () => {
     this.setState({ title: this.props.params.TITLE });
   };

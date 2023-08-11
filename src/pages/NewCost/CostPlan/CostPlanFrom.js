@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-06-26 14:41:13
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-08 17:12:36
+ * @LastEditTime: 2023-08-09 14:08:27
  * @version: 1.0
  */
 import React from 'react';
@@ -65,6 +65,7 @@ export default class CostPlanFrom extends QuickForm {
       e.component = component;
     }
     if (e.showPageNow == 'queryBill') {
+    // if (e.showPageNow == 'query') {
       e.props.quickuuid = 'v_cost_bill';
       const component = <CostBillSearchPage {...e.props} />;
       e.component = component;

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-06-29 11:26:27
+ * @LastEditTime: 2023-08-10 17:09:45
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -16,6 +16,8 @@ import BasicHeadCreatPage from './BasicHeadCreatPage';
 import BasicDtlCreatPage from './BasicDtlCreatPage';
 import { findSourceTree, deleteSourceTree } from '@/services/cost/BasicSource';
 import BasicSourceDataSearchPage from './BasicSourceDataSearchPage';
+import { havePermission } from '@/utils/authority';
+import BasicSourceOperateLogSearchPage from './BasicSourceOperateLogSearchPage';
 
 const { Content, Sider } = Layout;
 const { TreeNode } = Tree;
@@ -30,6 +32,7 @@ export default class BasicSourceSearchPage extends Component {
       sourceData: [],
       selectedKeys: '',
       rightContent: '',
+      authority: props.route?.authority ? props.route.authority[0] : null,
     };
   }
 
@@ -109,7 +112,8 @@ export default class BasicSourceSearchPage extends Component {
   };
 
   createHeadOnClick = () => {
-    this.headModalRef.show();
+    console.log('ccc', this.props);
+    // this.headModalRef.show();
   };
 
   createDtlOnClick = () => {
@@ -140,6 +144,7 @@ export default class BasicSourceSearchPage extends Component {
   onSelect = (selectedKeys, event) => {
     const { allData } = this.state;
     const system = allData.find(x => x.uuid == selectedKeys[0]);
+    console.log('ccccccc', havePermission(this.state.authority + '.structure'));
     if (selectedKeys.length == 1) {
       this.setState({
         rightContent:
@@ -168,20 +173,38 @@ export default class BasicSourceSearchPage extends Component {
             </div>
           ) : (
             <Tabs defaultActiveKey="data">
-              <TabPane tab={'表结构'} key="structure">
-                <FormFieldSearchPage
-                  key={`Line${selectedKeys[0]}`}
-                  quickuuid={'cost_form_field'}
-                  selectedRows={selectedKeys[0]}
-                  selectedNodes={event.selectedNodes[0]}
-                  system={system}
-                />
-              </TabPane>
+              {havePermission(this.state.authority + '.structure') ? (
+                <TabPane tab={'表结构'} key="structure">
+                  <FormFieldSearchPage
+                    key={`Line${selectedKeys[0]}`}
+                    quickuuid={'cost_form_field'}
+                    selectedRows={selectedKeys[0]}
+                    selectedNodes={event.selectedNodes[0]}
+                    system={system}
+                  />
+                </TabPane>
+              ) : (
+                ''
+              )}
+              {havePermission(this.state.authority + '.manage') ? (
+                <TabPane tab={'管理'} key="manage">
+                  aaaa
+                </TabPane>
+              ) : (
+                ''
+              )}
               <TabPane tab={'表数据'} key="data">
                 <BasicSourceDataSearchPage
                   expanded={event.selectedNodes[0].props.dataRef.expanded}
                   title={event.selectedNodes[0].props.dataRef.tableNameCN}
                   system={system}
+                  key={`Line${selectedKeys[0]}`}
+                  selectedRows={selectedKeys[0]}
+                />
+              </TabPane>
+              <TabPane tab={'操作日志'} key="operate">
+                <BasicSourceOperateLogSearchPage
+                  quickuuid={'cost_sourcedata_log'}
                   key={`Line${selectedKeys[0]}`}
                   selectedRows={selectedKeys[0]}
                 />
