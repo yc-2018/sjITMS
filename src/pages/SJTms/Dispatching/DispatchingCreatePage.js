@@ -81,6 +81,7 @@ export default class DispatchingCreatePage extends Component {
     carSort: [1, 2, 3],
     carKey: 'init',
     carSearchSort: [1, 2, 3],
+    carrieruuids: [],
   };
 
   componentDidMount = () => {
@@ -126,7 +127,7 @@ export default class DispatchingCreatePage extends Component {
     }
     //组装推荐人员车辆接口入参;
     let params = {
-      storeCodes: record.map((item) => {
+      storeCodes: record.map(item => {
         return item.deliveryPoint.code;
       }),
       companyUuid: loginCompany().uuid,
@@ -152,10 +153,10 @@ export default class DispatchingCreatePage extends Component {
   //初始化数据
   initData = async (isEdit, record, orders) => {
     // console.log('isEdit', isEdit, record, orders);
-    let { vehicles, employees } = this.state;
+    let { vehicles, employees, carrieruuids } = this.state;
     // 查询字典
     queryDictByCode(['vehicleOwner', 'employeeType', 'relation']).then(
-      (res) => (this.dict = res.data)
+      res => (this.dict = res.data)
     );
 
     //获取车辆
@@ -172,6 +173,8 @@ export default class DispatchingCreatePage extends Component {
     const vehiclesData = await dynamicQuery(param);
     if (vehiclesData.success && vehiclesData.result.records != 'false') {
       vehicles = vehiclesData.result.records;
+      //承运商集合
+      carrieruuids = uniq(vehicles.map(e => e.CARRIERUUID));
     }
     //获取人员
     let queryParams = [
@@ -185,7 +188,7 @@ export default class DispatchingCreatePage extends Component {
     });
     employees = employeesData.data.records;
 
-    let details = orderBy(record, (x) => x.archLine);
+    let details = orderBy(record, x => x.archLine);
     let schedule = undefined;
     let selectEmployees = [];
     let selectVehicle = undefined;
@@ -197,7 +200,7 @@ export default class DispatchingCreatePage extends Component {
         schedule = response.data;
         if (!orders) {
           details = schedule.details
-            ? schedule.details.map((item) => {
+            ? schedule.details.map(item => {
                 return {
                   ...item,
                   billNumber: item.orderNumber,
@@ -209,10 +212,10 @@ export default class DispatchingCreatePage extends Component {
             : [];
         } else {
           // details = orderBy(orders, x => x.archLine);
-          let oldDetails = orders.filter((x) => x.billUuid == schedule.uuid);
-          let newDetails = orders.filter((x) => x.billUuid != schedule.uuid);
+          let oldDetails = orders.filter(x => x.billUuid == schedule.uuid);
+          let newDetails = orders.filter(x => x.billUuid != schedule.uuid);
           details = oldDetails
-            .map((item) => {
+            .map(item => {
               return {
                 ...item,
                 billNumber: item.orderNumber,
@@ -231,7 +234,7 @@ export default class DispatchingCreatePage extends Component {
     // vehicles = await this.getRecommendByOrders(details, vehicles);
     if (schedule) {
       //将选中车辆放到第一位
-      selectVehicle = vehicles.find((x) => x.UUID == schedule.vehicle.uuid);
+      selectVehicle = vehicles.find(x => x.UUID == schedule.vehicle.uuid);
       if (selectVehicle) {
         vehicles.unshift(selectVehicle);
       }
@@ -239,8 +242,8 @@ export default class DispatchingCreatePage extends Component {
       //选中的人放到第一位
       const memberList = schedule.memberDetails;
       if (memberList) {
-        memberList.forEach((item) => {
-          let emp = employees.find((x) => x.UUID == item.member.uuid);
+        memberList.forEach(item => {
+          let emp = employees.find(x => x.UUID == item.member.uuid);
           if (emp) {
             selectEmployees.push({
               ...emp,
@@ -264,6 +267,7 @@ export default class DispatchingCreatePage extends Component {
         employees,
         orders: details,
         loading: false,
+        carrieruuids,
       },
       () => {
         //itemConfig
@@ -312,7 +316,7 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //选车
-  handleVehicle = async (vehicle) => {
+  handleVehicle = async vehicle => {
     if (vehicle.JOBSTATE != 'Used') {
       message.error(vehicle.PLATENUMBER + '不是正常状态，不能选择！');
       return;
@@ -329,7 +333,7 @@ export default class DispatchingCreatePage extends Component {
     const response = await dynamicQuery(param);
     let vehicleEmployees = [];
     if (response.success && response.result.records != 'false') {
-      vehicleEmployees = uniqBy(response.result.records, 'CODE').map((item) => {
+      vehicleEmployees = uniqBy(response.result.records, 'CODE').map(item => {
         return {
           ...item,
           memberType: item.ROLE_TYPE,
@@ -347,16 +351,21 @@ export default class DispatchingCreatePage extends Component {
     vehicleParam[key] = value;
     if (vehicleParam.searchKey) {
       serachVeh = serachVeh.filter(
-        (item) =>
+        item =>
           item.CODE.search(vehicleParam.searchKey) != -1 ||
           item.PLATENUMBER.search(vehicleParam.searchKey) != -1
       );
     }
     if (vehicleParam.vehicleOwner) {
-      serachVeh = serachVeh.filter((x) => x.OWNER == vehicleParam.vehicleOwner);
+      serachVeh = serachVeh.filter(x => x.OWNER == vehicleParam.vehicleOwner);
+    }
+    if (vehicleParam.carrier) {
+      serachVeh = serachVeh.filter(x => x.CARRIERUUID == vehicleParam.carrier);
     }
     if (key == 'vehicleOwner') {
       this.setState({ carEmpSearch: { ...this.state.carEmpSearch, vehicleOwner: value } });
+    } else if (key == 'carrier') {
+      this.setState({ carEmpSearch: { ...this.state.carEmpSearch, carrier: value } });
     } else {
       this.setState({ carEmpSearch: { ...this.state.carEmpSearch, vehicleCode: value } });
     }
@@ -366,15 +375,15 @@ export default class DispatchingCreatePage extends Component {
     }
   };
   //选人
-  handleEmployee = (emp) => {
+  handleEmployee = emp => {
     const { selectEmployees } = this.state;
     let employees = [...selectEmployees];
-    const index = selectEmployees.findIndex((x) => x.UUID == emp.UUID);
+    const index = selectEmployees.findIndex(x => x.UUID == emp.UUID);
     emp.memberType = emp.ROLE_TYPE;
     emp.memberUuid = guid();
     index == -1
       ? employees.push(emp)
-      : (employees = employees.filter((x) => x.memberUuid != emp.memberUuid));
+      : (employees = employees.filter(x => x.memberUuid != emp.memberUuid));
     // if (employees.filter(item => item.memberType == 'Driver').length >= 2) {
     //   message.error('只允许一位驾驶员！');
     //   return;
@@ -388,15 +397,15 @@ export default class DispatchingCreatePage extends Component {
     empParams[key] = value;
     if (empParams.searchKey) {
       searchEmp = searchEmp.filter(
-        (item) =>
+        item =>
           item.CODE.search(empParams.searchKey) != -1 || item.NAME.search(empParams.searchKey) != -1
       );
     }
     if (empParams.employeeType) {
-      searchEmp = searchEmp.filter((x) => x.ROLE_TYPE == empParams.employeeType);
+      searchEmp = searchEmp.filter(x => x.ROLE_TYPE == empParams.employeeType);
     }
     if (empParams.relation) {
-      searchEmp = searchEmp.filter((x) => x.HIRED_TYPE == empParams.relation);
+      searchEmp = searchEmp.filter(x => x.HIRED_TYPE == empParams.relation);
     }
     if (key == 'relation') {
       this.setState({ carEmpSearch: { ...this.state.carEmpSearch, empOwner: value } });
@@ -413,7 +422,7 @@ export default class DispatchingCreatePage extends Component {
     const { selectEmployees } = this.state;
     employee.memberType = val;
     selectEmployees.splice(
-      selectEmployees.findIndex((x) => x.memberUuid == employee.memberUuid),
+      selectEmployees.findIndex(x => x.memberUuid == employee.memberUuid),
       1,
       employee
     );
@@ -421,7 +430,7 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //添加工种
-  addWorkType = (emp) => {
+  addWorkType = emp => {
     const { selectEmployees } = this.state;
     let employee = { ...emp };
     employee.memberUuid = guid();
@@ -431,24 +440,21 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //移除明细
-  removeDetail = async (record) => {
+  removeDetail = async record => {
     const { orders } = this.state;
-    orders.splice(
-      orders.findIndex((x) => x.uuid == record.uuid),
-      1
-    );
+    orders.splice(orders.findIndex(x => x.uuid == record.uuid), 1);
     let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
     this.setState({ orders, vehicles });
   };
-  removeDetails = async (records) => {
+  removeDetails = async records => {
     let { orders } = this.state;
-    const uuids = records.map((x) => x.uuid);
-    orders = orders.filter((x) => uuids.indexOf(x.uuid) == -1);
+    const uuids = records.map(x => x.uuid);
+    orders = orders.filter(x => uuids.indexOf(x.uuid) == -1);
     let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
     this.setState({ orders, vehicles });
   };
 
-  onConfirm = (content) => {
+  onConfirm = content => {
     Modal.confirm({
       title: '提示',
       content: content,
@@ -461,11 +467,11 @@ export default class DispatchingCreatePage extends Component {
   onSave = async () => {
     this.setState({ loading: true });
     const { isEdit, orders, schedule, selectVehicle, selectEmployees, note } = this.state;
-    const orderType = uniqBy(orders.map((x) => x.orderType)).shift();
+    const orderType = uniqBy(orders.map(x => x.orderType)).shift();
     const orderTypeArr = ['TakeDelivery', 'AdjustWarehouse', 'DeliveryThird'];
     const type = orderTypeArr.includes(orderType) ? 'Task' : 'Job';
-    const driver = selectEmployees.find((x) => x.memberType == 'Driver');
-    const details = orders.map((item) => {
+    const driver = selectEmployees.find(x => x.memberType == 'Driver');
+    const details = orders.map(item => {
       if (!item.isSplit) {
         item.isSplit = item.cartonCount == item.stillCartonCount ? 0 : 1;
       }
@@ -562,13 +568,13 @@ export default class DispatchingCreatePage extends Component {
     //   return;
     // }
     let selectEmpLength = [];
-    selectEmployees.forEach((item) => {
+    selectEmployees.forEach(item => {
       let length = selectEmployees.filter(
-        (x) => x.UUID == item.UUID && x.memberType == item.memberType
+        x => x.UUID == item.UUID && x.memberType == item.memberType
       ).length;
       selectEmpLength.push({ length: length });
     });
-    let checkRepeat = selectEmpLength.find((x) => x.length > 1);
+    let checkRepeat = selectEmpLength.find(x => x.length > 1);
     if (checkRepeat != undefined) {
       message.error('排车随车人员存在相同人员重复职位，请检查后重试！');
       return;
@@ -603,27 +609,27 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //汇总
-  groupByOrder = (data) => {
-    const deliveryPointCount = data ? uniq(data.map((x) => x.deliveryPoint.code)).length : 0;
-    const pickupPointCount = data ? uniq(data.map((x) => x.pickUpPoint.code)).length : 0;
-    data = data.filter((x) => x.orderType !== 'OnlyBill');
+  groupByOrder = data => {
+    const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0;
+    const pickupPointCount = data ? uniq(data.map(x => x.pickUpPoint.code)).length : 0;
+    data = data.filter(x => x.orderType !== 'OnlyBill');
     return {
       orderCount: data ? data.length : 0,
-      cartonCount: data ? sumBy(data.map((x) => x.stillCartonCount)) : 0,
-      scatteredCount: data ? sumBy(data.map((x) => x.stillScatteredCount)) : 0,
-      containerCount: data ? sumBy(data.map((x) => x.stillContainerCount)) : 0,
-      realCartonCount: data ? sumBy(data.map((x) => x.realCartonCount)) : 0,
-      realScatteredCount: data ? sumBy(data.map((x) => x.realScatteredCount)) : 0,
-      realContainerCount: data ? sumBy(data.map((x) => x.realContainerCount)) : 0,
-      stillCartonCount: data ? sumBy(data.map((x) => x.stillCartonCount)) : 0,
-      stillScatteredCount: data ? sumBy(data.map((x) => x.stillScatteredCount)) : 0,
-      stillContainerCount: data ? sumBy(data.map((x) => x.stillContainerCount)) : 0,
-      weight: data ? sumBy(data.map((x) => Number(x.weight))) : 0,
-      volume: data ? sumBy(data.map((x) => Number(x.volume))) : 0,
-      totalAmount: data ? sumBy(data.map((x) => Number(x.amount))) : 0,
+      cartonCount: data ? sumBy(data.map(x => x.stillCartonCount)) : 0,
+      scatteredCount: data ? sumBy(data.map(x => x.stillScatteredCount)) : 0,
+      containerCount: data ? sumBy(data.map(x => x.stillContainerCount)) : 0,
+      realCartonCount: data ? sumBy(data.map(x => x.realCartonCount)) : 0,
+      realScatteredCount: data ? sumBy(data.map(x => x.realScatteredCount)) : 0,
+      realContainerCount: data ? sumBy(data.map(x => x.realContainerCount)) : 0,
+      stillCartonCount: data ? sumBy(data.map(x => x.stillCartonCount)) : 0,
+      stillScatteredCount: data ? sumBy(data.map(x => x.stillScatteredCount)) : 0,
+      stillContainerCount: data ? sumBy(data.map(x => x.stillContainerCount)) : 0,
+      weight: data ? sumBy(data.map(x => Number(x.weight))) : 0,
+      volume: data ? sumBy(data.map(x => Number(x.volume))) : 0,
+      totalAmount: data ? sumBy(data.map(x => Number(x.amount))) : 0,
       deliveryPointCount,
       pickupPointCount,
-      ownerCount: data ? uniq(data.map((x) => x.owner.code)).length : 0,
+      ownerCount: data ? uniq(data.map(x => x.owner.code)).length : 0,
     };
   };
 
@@ -661,35 +667,31 @@ export default class DispatchingCreatePage extends Component {
             </Select> */}
             <Select
               placeholder="员工归属"
-              onChange={(value) => this.employeeFilter('relation', value)}
+              onChange={value => this.employeeFilter('relation', value)}
               allowClear={true}
               style={{ width: 100 }}
               value={this.state.carEmpSearch.empOwner}
             >
-              {this.dict
-                .filter((x) => x.dictCode == 'relation')
-                .map((d) => (
-                  <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
-                ))}
+              {this.dict.filter(x => x.dictCode == 'relation').map(d => (
+                <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
+              ))}
             </Select>
             <Select
               placeholder="工种"
-              onChange={(value) => this.employeeFilter('employeeType', value)}
+              onChange={value => this.employeeFilter('employeeType', value)}
               allowClear={true}
               style={{ width: 100, marginLeft: 5 }}
               value={this.state.carEmpSearch.empType}
             >
-              {this.dict
-                .filter((x) => x.dictCode == 'employeeType')
-                .map((d) => (
-                  <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
-                ))}
+              {this.dict.filter(x => x.dictCode == 'employeeType').map(d => (
+                <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
+              ))}
             </Select>
 
             <Search
               placeholder="请输入工号/姓名"
               allowClear
-              onChange={(event) => this.employeeFilter('searchKey', event.target.value)}
+              onChange={event => this.employeeFilter('searchKey', event.target.value)}
               style={{ width: 150, marginLeft: 5 }}
               value={this.state.carEmpSearch.empInfo}
             />
@@ -698,7 +700,7 @@ export default class DispatchingCreatePage extends Component {
       >
         {isEmptyObj(sliceEmployees)
           ? null
-          : sliceEmployees.map((employee) => {
+          : sliceEmployees.map(employee => {
               return (
                 <Tooltip
                   placement="top"
@@ -716,7 +718,7 @@ export default class DispatchingCreatePage extends Component {
                     <a
                       href="#"
                       className={`${disStyle.panel} ${
-                        selectEmployees.find((x) => x.UUID == employee.UUID)
+                        selectEmployees.find(x => x.UUID == employee.UUID)
                           ? disStyle.panelSelect
                           : ''
                       }`}
@@ -745,13 +747,13 @@ export default class DispatchingCreatePage extends Component {
     );
   };
 
-  changeCarKey = async (key) => {
+  changeCarKey = async key => {
     const { orders, isEdit } = this.state;
     if (key == 'recommend') {
       //熟练度
       let vehiclesByRecom = await this.getRecommendByOrders(orders, this.basicVehicle);
       if (vehiclesByRecom) {
-        vehiclesByRecom = vehiclesByRecom.filter((item) => {
+        vehiclesByRecom = vehiclesByRecom.filter(item => {
           return item.pro && item.pro != 0;
         });
         this.setState({ vehicles: vehiclesByRecom });
@@ -763,12 +765,12 @@ export default class DispatchingCreatePage extends Component {
       this.setState({ vehicles: this.basicVehicle });
     } else {
       //区域匹配
-      let orderShipAre = uniqBy(orders.map((x) => x.shipAreaName));
-      let vehicleAre = this.basicVehicle.filter((e) => {
+      let orderShipAre = uniqBy(orders.map(x => x.shipAreaName));
+      let vehicleAre = this.basicVehicle.filter(e => {
         let x = e.SHIPAREANAME?.split(',');
         return (
           e.SHIPAREANAME != undefined &&
-          orderShipAre.filter((item) => x?.indexOf(item) != -1).length > 0
+          orderShipAre.filter(item => x?.indexOf(item) != -1).length > 0
         );
       });
       this.setState({ vehicles: vehicleAre });
@@ -777,13 +779,13 @@ export default class DispatchingCreatePage extends Component {
   };
 
   buildSelectVehicleCard = () => {
-    const { vehicles, selectVehicle, carKey, carSort, carSearchSort } = this.state;
+    const { vehicles, selectVehicle, carKey, carSort, carSearchSort, carrieruuids } = this.state;
     let sliceVehicles =
       this.state.carEmpNums == 'all' ? vehicles : vehicles.slice(0, this.state.carEmpNums);
 
     let carTabList;
     try {
-      carTabList = carSort.map((e) => {
+      carTabList = carSort.map(e => {
         return this.VehicleCardConfig[parseInt(e) - 1];
       });
     } catch (error) {
@@ -794,12 +796,11 @@ export default class DispatchingCreatePage extends Component {
     }
 
     let carCard = undefined;
-
     switch (carKey) {
       case 'recommend':
         carCard =
           sliceVehicles.length > 0 ? (
-            sliceVehicles?.map((vehicle) => {
+            sliceVehicles?.map(vehicle => {
               return (
                 <Tooltip
                   placement="top"
@@ -840,8 +841,8 @@ export default class DispatchingCreatePage extends Component {
                                 vehicle.pro >= 40
                                   ? '#52c41a'
                                   : vehicle.pro >= 20
-                                  ? 'orange'
-                                  : 'red',
+                                    ? 'orange'
+                                    : 'red',
                               marginTop: '-40px',
                             }}
                             count={vehicle.pro.toFixed(0) + '%'}
@@ -861,39 +862,46 @@ export default class DispatchingCreatePage extends Component {
           );
         break;
       default:
-        carCard = sliceVehicles?.map((vehicle) => {
-          return (
-            <Tooltip
-              placement="top"
-              title={
-                vehicle.BILLNUMBERS
-                  ? vehicle.PLATENUMBER + '在' + vehicle.BILLNUMBERS + '排车单中有未完成的任务'
-                  : ''
-              }
-            >
-              <Badge count={vehicle.BILLCOUNTS} style={{ backgroundColor: 'orange' }}>
-                <a
-                  href="#"
-                  className={`${disStyle.panel} ${
-                    vehicle.UUID == selectVehicle.UUID ? disStyle.panelSelect : ''
-                  }`}
-                  onClick={() => this.handleVehicle(vehicle)}
+        carCard = (
+          <div>
+            {/* <Button type="primary" ghost style={{ width: '100%' }}>
+              2222
+            </Button> */}
+            {sliceVehicles?.map(vehicle => {
+              return (
+                <Tooltip
+                  placement="top"
+                  title={
+                    vehicle.BILLNUMBERS
+                      ? vehicle.PLATENUMBER + '在' + vehicle.BILLNUMBERS + '排车单中有未完成的任务'
+                      : ''
+                  }
                 >
-                  <Row justify="space-between" style={{ height: '100%' }}>
-                    <Col span={8} className={disStyle.employeeCardContent}>
-                      <Icon type="car" style={{ fontSize: 28 }} />
-                    </Col>
-                    <Col span={16} className={disStyle.employeeCardContent}>
-                      <div className={disStyle.employeeName}>
-                        <div>{vehicle.PLATENUMBER}</div>
-                        {vehicle.DRIVERNAME ? (
-                          <div>{vehicle.DRIVERNAME.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')}</div>
-                        ) : (
-                          <></>
-                        )}
-                      </div>
-                    </Col>
-                    {/* {vehicle.pro > 0 ? (
+                  <Badge count={vehicle.BILLCOUNTS} style={{ backgroundColor: 'orange' }}>
+                    <a
+                      href="#"
+                      className={`${disStyle.panel} ${
+                        vehicle.UUID == selectVehicle.UUID ? disStyle.panelSelect : ''
+                      }`}
+                      onClick={() => this.handleVehicle(vehicle)}
+                    >
+                      <Row justify="space-between" style={{ height: '100%' }}>
+                        <Col span={8} className={disStyle.employeeCardContent}>
+                          <Icon type="car" style={{ fontSize: 28 }} />
+                        </Col>
+                        <Col span={16} className={disStyle.employeeCardContent}>
+                          <div className={disStyle.employeeName}>
+                            <div>{vehicle.PLATENUMBER}</div>
+                            {vehicle.DRIVERNAME ? (
+                              <div>
+                                {vehicle.DRIVERNAME.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')}
+                              </div>
+                            ) : (
+                              <></>
+                            )}
+                          </div>
+                        </Col>
+                        {/* {vehicle.pro > 0 ? (
                       <Badge
                         style={{
                           backgroundColor:
@@ -905,19 +913,21 @@ export default class DispatchingCreatePage extends Component {
                     ) : (
                       <></>
                     )} */}
-                  </Row>
-                </a>
-              </Badge>
-            </Tooltip>
-          );
-        });
+                      </Row>
+                    </a>
+                  </Badge>
+                </Tooltip>
+              );
+            })}
+          </div>
+        );
     }
 
     //sort
     let carSearchSortConfig = {
       1: (
         <Select
-          onChange={(e) => this.setState({ carEmpNums: e })}
+          onChange={e => this.setState({ carEmpNums: e })}
           value={this.state.carEmpNums}
           style={{ width: 55, marginRight: 2.5, marginLeft: 2.5 }}
         >
@@ -930,26 +940,41 @@ export default class DispatchingCreatePage extends Component {
       2: (
         <Select
           placeholder="车辆归属"
-          onChange={(value) => this.vehicleFilter('vehicleOwner', value)}
+          onChange={value => this.vehicleFilter('vehicleOwner', value)}
           allowClear={true}
           style={{ width: 100, marginRight: 2.5, marginLeft: 2.5 }}
           value={this.state.carEmpSearch.vehicleOwner}
         >
-          {this.dict
-            .filter((x) => x.dictCode == 'vehicleOwner')
-            .map((d) => (
-              <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
-            ))}
+          {this.dict.filter(x => x.dictCode == 'vehicleOwner').map(d => (
+            <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
+          ))}
         </Select>
       ),
       3: (
         <Search
           placeholder="请输入车牌号/编号"
-          onChange={(event) => this.vehicleFilter('searchKey', event.target.value)}
+          onChange={event => this.vehicleFilter('searchKey', event.target.value)}
           style={{ width: 150, marginLeft: 2.5, marginRight: 2.5 }}
           value={this.state.carEmpSearch.vehicleCode}
-          ref={(e) => (this.carSearchInput = e)}
+          ref={e => (this.carSearchInput = e)}
         />
+      ),
+      4: (
+        <Select
+          placeholder="承运商"
+          onChange={value => this.vehicleFilter('carrier', value)}
+          allowClear={true}
+          style={{ width: 100, marginRight: 2.5, marginLeft: 2.5 }}
+          value={this.state.carEmpSearch.carrier}
+        >
+          {carrieruuids.map(e => {
+            return (
+              <Select.Option key={e} title={e}>
+                {e}
+              </Select.Option>
+            );
+          })}
+        </Select>
       ),
     };
 
@@ -958,14 +983,14 @@ export default class DispatchingCreatePage extends Component {
         // loading={this.state.carLoading}
         title="车辆"
         tabList={carTabList}
-        onTabChange={(key) => {
+        onTabChange={key => {
           this.changeCarKey(key);
         }}
         activeTabKey={carKey}
         bodyStyle={{ padding: 0, paddingTop: 8, height: '26vh', overflowY: 'auto' }}
         extra={
           <div>
-            {carSearchSort.map((e) => {
+            {carSearchSort.map(e => {
               return carSearchSortConfig[e];
             })}
           </div>
@@ -977,11 +1002,11 @@ export default class DispatchingCreatePage extends Component {
   };
 
   //拆单
-  editSource = (record) => {
+  editSource = record => {
     this.setState({ editPageVisible: true, currentOrder: record });
   };
   //更新state订单整件排车件数
-  updateCartonCount = (result) => {
+  updateCartonCount = result => {
     const { orders, isEdit } = this.state;
     const totalData = this.groupByOrder(orders);
     const that = this;
@@ -992,9 +1017,11 @@ export default class DispatchingCreatePage extends Component {
       Number(totalData.stillContainerCount) * 2;
     confirm({
       title: '提示',
-      content: `拆单后排车单总件数为：${stillSum}，体积为：${result.volume}m³，重量为：${result.weight}t ，是否确定拆单？`,
+      content: `拆单后排车单总件数为：${stillSum}，体积为：${result.volume}m³，重量为：${
+        result.weight
+      }t ，是否确定拆单？`,
       onOk() {
-        const index = orders.findIndex((x) => x.billNumber == result.billNumber);
+        const index = orders.findIndex(x => x.billNumber == result.billNumber);
         let record = { ...orders[index] };
         record.volume = Number(result.remVolume);
         record.weight = Number(result.remWeight);
@@ -1066,7 +1093,7 @@ export default class DispatchingCreatePage extends Component {
       >
         <EditContainerNumberPageF
           modal={{ title: '拆单' }}
-          updateCartonCount={(e) => this.updateCartonCount(e)}
+          updateCartonCount={e => this.updateCartonCount(e)}
           visible={editPageVisible}
           order={currentOrder}
           totalData={totalData}
@@ -1084,7 +1111,7 @@ export default class DispatchingCreatePage extends Component {
                   <Menu>
                     <Menu.Item
                       onClick={() => {
-                        const records = orders.filter((x) => rowKeys.indexOf(x.uuid) != -1);
+                        const records = orders.filter(x => rowKeys.indexOf(x.uuid) != -1);
                         if (records.length != 1) {
                           message.error('请选择一张运输订单！');
                           return;
@@ -1097,7 +1124,7 @@ export default class DispatchingCreatePage extends Component {
                     </Menu.Item>
                     <Menu.Item
                       onClick={() => {
-                        const records = orders.filter((x) => rowKeys.indexOf(x.uuid) != -1);
+                        const records = orders.filter(x => rowKeys.indexOf(x.uuid) != -1);
                         if (records.length == 0) {
                           message.error('请选择需要移除的运输订单！');
                           return;
@@ -1129,10 +1156,10 @@ export default class DispatchingCreatePage extends Component {
                     className={disStyle.dispatchingTable}
                     columns={CreatePageOrderColumns}
                     dataSource={orders}
-                    refreshDataSource={(orders) => {
+                    refreshDataSource={orders => {
                       this.setState({ orders });
                     }}
-                    changeSelectRows={(selectedRowKeys) =>
+                    changeSelectRows={selectedRowKeys =>
                       this.setState({ rowKeys: selectedRowKeys })
                     }
                     selectedRowKeys={rowKeys}
@@ -1328,7 +1355,7 @@ export default class DispatchingCreatePage extends Component {
                 style={{ marginTop: 5 }}
                 bodyStyle={{ height: '30vh', padding: 10, overflowY: 'auto' }}
               >
-                {selectEmployees.map((employee) => {
+                {selectEmployees.map(employee => {
                   return (
                     <Row gutter={[5, 5]} style={{ fontWeight: 'bold', lineHeight: '30px' }}>
                       <Col
@@ -1355,18 +1382,16 @@ export default class DispatchingCreatePage extends Component {
                       <Col span={8}>
                         <Select
                           placeholder="请选择员工类型"
-                          onChange={(val) => this.handleEmployeeTypeChange(employee, val)}
+                          onChange={val => this.handleEmployeeTypeChange(employee, val)}
                           style={{ width: '100%' }}
                           disabled={
                             dispatchConfig?.isStuckEmpType == 0 && employee.HIRED_TYPE == '承运商'
                           }
                           value={employee.memberType}
                         >
-                          {this.dict
-                            .filter((x) => x.dictCode == 'employeeType')
-                            .map((d) => (
-                              <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
-                            ))}
+                          {this.dict.filter(x => x.dictCode == 'employeeType').map(d => (
+                            <Select.Option key={d.itemValue}>{d.itemText}</Select.Option>
+                          ))}
                         </Select>
                       </Col>
                       <Col span={6} offset={1}>
@@ -1405,7 +1430,7 @@ export default class DispatchingCreatePage extends Component {
                   <Input
                     placeholder="请输入备注"
                     defaultValue={note}
-                    onChange={(event) => this.setState({ note: event.target.value })}
+                    onChange={event => this.setState({ note: event.target.value })}
                   />
                 </Col>
               </Row>
