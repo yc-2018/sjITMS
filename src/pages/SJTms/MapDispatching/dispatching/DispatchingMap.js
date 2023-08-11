@@ -34,7 +34,7 @@ import {
   queryDriverRoutes,
   queryAuditedOrderByParams,
 } from '@/services/sjitms/OrderBill';
-import { queryDict, queryData,dynamicQuery } from '@/services/quick/Quick';
+import { queryDict, queryData, dynamicQuery } from '@/services/quick/Quick';
 
 import ShopIcon from '@/assets/common/22.png';
 import ShopClickIcon from '@/assets/common/23.png';
@@ -87,9 +87,8 @@ export default class DispatchMap extends Component {
     closeLeft: false,
     checkSchedules: [],
     checkScheduleOrders: [],
-    bearweight:0,
-    volumet:0
-     
+    bearweight: 0,
+    volumet: 0,
   };
 
   colors = [
@@ -593,14 +592,16 @@ export default class DispatchMap extends Component {
             message.error('请选择导航起点门店和终点门店！');
             return;
           }
-          let url = `http://api.map.baidu.com/direction?origin=latlng:${selectPoints[0].latitude},${selectPoints[0].longitude
-            }|name:${selectPoints[0].name.replace(/\([^\)]*\)/g, '')}&destination=${selectPoints[selectPoints.length - 1].latitude
-            },${selectPoints[selectPoints.length - 1].longitude}|name:${selectPoints[
-              selectPoints.length - 1
-            ].name.replace(
-              /\([^\)]*\)/g,
-              ''
-            )}&mode=driving&region=东莞市&output=html&src=webapp.companyName.appName&coord_type=bd09ll`;
+          let url = `http://api.map.baidu.com/direction?origin=latlng:${selectPoints[0].latitude},${
+            selectPoints[0].longitude
+          }|name:${selectPoints[0].name.replace(/\([^\)]*\)/g, '')}&destination=${
+            selectPoints[selectPoints.length - 1].latitude
+          },${selectPoints[selectPoints.length - 1].longitude}|name:${selectPoints[
+            selectPoints.length - 1
+          ].name.replace(
+            /\([^\)]*\)/g,
+            ''
+          )}&mode=driving&region=东莞市&output=html&src=webapp.companyName.appName&coord_type=bd09ll`;
           window.open(url, '_blank');
         },
       },
@@ -728,19 +729,18 @@ export default class DispatchMap extends Component {
 
   getTotals = selectOrder => {
     let selectOrderStoreCodes = selectOrder.map(e => e.deliveryPoint.code);
-    const { orders,bearweight,volumet} = this.state;
+    const { orders, bearweight, volumet } = this.state;
     let allSelectOrders = orders.filter(
       e => selectOrderStoreCodes.indexOf(e.deliveryPoint?.code) != -1
     );
-   let  totals  = {
+    let totals = {
       cartonCount: 0, //整件数
       scatteredCount: 0, //散件数
       containerCount: 0, //周转箱
       volume: 0, //体积
       weight: 0, //重量,
       totalCount: 0, //总件数
-     
-    }
+    };
     allSelectOrders.map(e => {
       totals.cartonCount += e.cartonCount;
       totals.scatteredCount += e.scatteredCount;
@@ -749,7 +749,7 @@ export default class DispatchMap extends Component {
       totals.weight = this.accAdd(totals.weight, e.weight);
     });
     totals.totalCount = totals.cartonCount + totals.scatteredCount + totals.containerCount * 2;
-    totals = {...totals,bearweight,volumet};
+    totals = { ...totals, bearweight, volumet };
     return totals;
   };
 
@@ -788,7 +788,7 @@ export default class DispatchMap extends Component {
 
   clickSchdule = async schdule => {
     this.setState({ loading: true });
-    let { orderMarkers, orders} = this.state;
+    let { orderMarkers, orders } = this.state;
     const response = await getDetailByBillUuids([schdule.UUID]);
     if (response.success) {
       let details = response.data;
@@ -807,26 +807,28 @@ export default class DispatchMap extends Component {
           orders.push(e);
         }
       });
-    //   const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
-    //  let totals = await this.getTotals(selectOrder);
+      //   const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
+      //  let totals = await this.getTotals(selectOrder);
       const scheule = await getSchedule(schdule.UUID);
-      if(scheule.success){
+      if (scheule.success) {
         const param = {
           tableName: 'SJ_ITMS_VEHICLE',
           condition: {
             params: [{ field: 'uuid', rule: 'eq', val: [scheule.data.vehicle.uuid] }],
           },
         };
-       const vehicle = await dynamicQuery(param);
-      if(vehicle.success){
-        this.setState(
-          {
-            volumet:vehicle.result.records[0].LENGTH*vehicle.result.records[0].HEIGHT*vehicle.result.records[0].WIDTH,
-            bearweight:vehicle.result.records[0].BEARWEIGHT
-          })
+        const vehicle = await dynamicQuery(param);
+        if (vehicle.success) {
+          this.setState({
+            volumet:
+              vehicle.result.records[0].LENGTH *
+              vehicle.result.records[0].HEIGHT *
+              vehicle.result.records[0].WIDTH,
+            bearweight: vehicle.result.records[0].BEARWEIGHT,
+          });
+        }
       }
-    } 
-    
+
       this.setState(
         {
           orderMarkers,
@@ -925,8 +927,8 @@ export default class DispatchMap extends Component {
     } = this.state;
     const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
-    let totals =  this.getTotals(selectOrder);
-    
+    let totals = this.getTotals(selectOrder);
+
     let windowsInfoTotals = {};
     if (windowInfo) {
       windowsInfoTotals = this.getOrderTotal(windowInfo.order.deliveryPoint.code);
@@ -989,14 +991,14 @@ export default class DispatchMap extends Component {
                   {(totals.weight / 1000).toFixed(3)}
                 </div>
                 <div style={{ flex: 1, fontWeight: 'bold' }}>
-                车辆承重(T):
+                  车辆承重(T):
                   {/* {totals.weight} */}
-                  {(totals?.bearweight/1000).toFixed(3)}
+                  {(totals?.bearweight / 1000).toFixed(3)}
                 </div>
                 <div style={{ flex: 1, fontWeight: 'bold' }}>
                   车辆体积(m3):
                   {/* {totals.weight} */}
-                  {(totals?.volumet/1000000).toFixed(3)}
+                  {(totals?.volumet / 1000000).toFixed(3)}
                 </div>
               </div>
             </Row>
@@ -1217,7 +1219,7 @@ export default class DispatchMap extends Component {
 
                   {windowInfo ? (
                     <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
-                      <div style={{ width: 280, height: 100, padding: 5, background: '#FFF' }}>
+                      <div style={{ width: 280, height: 110, padding: 5, background: '#FFF' }}>
                         <div
                           style={{ fontWeight: 'bold', overflow: 'hidden', whiteSpace: 'nowrap' }}
                         >
@@ -1233,6 +1235,10 @@ export default class DispatchMap extends Component {
                             备注：
                             {windowInfo.order?.lineNote}
                           </div>
+                        </div>
+                        <div>
+                          配送区域：
+                          {windowInfo.order?.shipAreaName}
                         </div>
                         <Divider style={{ margin: 0, marginTop: 5 }} />
                         <div style={{ display: 'flex', marginTop: 5 }}>
