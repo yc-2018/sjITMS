@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-08-10 12:13:08
+ * @LastEditTime: 2023-08-11 14:13:28
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -233,7 +233,7 @@ export default class OrderPoolPage extends Component {
     deliveryPointGroupArr.forEach(data => {
       data.details = output[data.pointCode];
     });
-    deliveryPointGroupArr = orderBy(deliveryPointGroupArr, "shipAreaName");
+    deliveryPointGroupArr = orderBy(deliveryPointGroupArr, "archLineCode");
     if (sorter && sorter.column) {
       deliveryPointGroupArr = orderBy(deliveryPointGroupArr,
         [sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey],
