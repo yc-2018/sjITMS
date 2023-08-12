@@ -241,6 +241,7 @@ export default class RyzeSearchPage extends Component {
             expandRowByClick={this.state.expandRowByClick}
             isMerge={this.state.isMerge}
             handleChildRowSelectChange={this.handleChildRowSelectChange}
+            parentRows={this.state.parentRows}
           />
         ) : null}
         {this.drawOtherCom && this.drawOtherCom()}

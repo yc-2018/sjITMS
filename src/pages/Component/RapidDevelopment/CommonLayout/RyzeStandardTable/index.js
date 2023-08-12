@@ -596,7 +596,7 @@ class StandardTable extends Component {
       ...item,
       total: selectedRows.reduce((sum, val) => sum + parseFloat(val[item.dataIndex], 10), 0),
     }));
-    const { onSelectRow, isMerge } = this.props;
+    const { onSelectRow, isMerge, parentRows } = this.props;
     let selectedRowArr = [];
     if (selectedRows.length == selectedRowKeys.length) {
       //只操作一页数据
@@ -662,7 +662,7 @@ class StandardTable extends Component {
     if (onSelectRow) {
       //合并的selectRows排除单头
       let rows = selectedRowArr;
-      if (isMerge) {
+      if (isMerge && !parentRows) {
         rows = selectedRowArr.filter(e => !e.isHeader);
       }
       onSelectRow(rows, selectedRowKeysAll);

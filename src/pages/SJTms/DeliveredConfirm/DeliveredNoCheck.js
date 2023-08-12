@@ -24,6 +24,8 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     nocheckInfoVisible: false,
     checkRejectionResendMdodalVisible: false,
     batchLoading: false,
+    //selectRows中是否包含父类 默认falst
+    parentRows: true,
   };
 
   exSearchFilter = () => {
@@ -160,10 +162,12 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
     if (this.checkValue(selectedRows)) {
       return false;
     }
+    //排除父类 不参与接口请求
+    let params = selectedRows.filter(e => !e.isHeader);
     this.setState({ batchLoading: true });
     this.props.dispatch({
       type: 'deliveredConfirm1/updateNoDelivered',
-      payload: selectedRows,
+      payload: params,
       callback: response => {
         this.setState({ batchLoading: false });
         if (response && response.success) {
@@ -429,7 +433,9 @@ export default class DeliveredNoCheck extends QuickFormSearchPage {
       e.companyUuid = loginCompany().uuid;
       e.dispatchCenterUuid = loginOrg().uuid;
     });
-    await confirmOrder(selectedRows).then(result => {
+    //排除父类 不参与接口请求
+    let params = selectedRows.filter(e => !e.isHeader);
+    await confirmOrder(params).then(result => {
       if (result && result.success) {
         this.refreshTable();
         message.success('保存成功');

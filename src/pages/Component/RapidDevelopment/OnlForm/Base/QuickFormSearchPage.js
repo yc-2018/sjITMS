@@ -133,6 +133,8 @@ export default class QuickFormSearchPage extends SearchPage {
       isMerge: false,
       childSelectedRows: [],
       selectRowKeys: [],
+      //合并规则下 selectRows中是否包含父类 默认falst
+      parentRows: false,
     };
   }
 
@@ -551,7 +553,7 @@ export default class QuickFormSearchPage extends SearchPage {
     if (data?.records && data.records.length > 0 && !data.records[0].uuid) {
       data.records.forEach(row => (row.uuid = guid()));
     }
-    //根据配置规则 合并数据
+    //根据配置规则 分组数据
     const { isMerge, queryConfig } = this.state;
     let records = data.records;
     if (isMerge && data.records) {
@@ -564,7 +566,7 @@ export default class QuickFormSearchPage extends SearchPage {
           return e[x];
         });
       });
-
+      //合并数据
       newList = Object.keys(listGroup).map(e => {
         const list = listGroup[e];
         let newRecord = {};
@@ -572,9 +574,12 @@ export default class QuickFormSearchPage extends SearchPage {
           newRecord[c.fieldName] = this.getDataByMergeRule(c.mergeRule, list, c.fieldName);
         }
         newRecord['uuid'] = this.getDataByMergeRule(1, list, 'uuid') + ',header';
+        for (let d of list) {
+          d.puuid = newRecord['uuid'];
+        }
         return newRecord;
       });
-
+      //将子类写入父类
       newList.forEach(n => {
         let code = mergeRule.map(x => {
           return n[x];
@@ -584,6 +589,7 @@ export default class QuickFormSearchPage extends SearchPage {
       });
       records = newList;
     }
+    console.log('records', records);
     let colTotal = data.columnTotal;
     var data = {
       list: records,
