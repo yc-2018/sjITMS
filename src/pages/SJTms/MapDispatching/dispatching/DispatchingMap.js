@@ -176,7 +176,14 @@ export default class DispatchMap extends Component {
   };
   //隐藏modal
   hide = () => {
-    this.setState({ visible: false, isEdit: false, checkScheduleOrders: [], checkSchedules: [] });
+    this.setState({
+        visible: false,
+        isEdit: false,
+        checkScheduleOrders: [],
+        checkSchedules: [],
+        bearweight:0,
+        volumet:0
+    });
     this.clusterLayer = undefined;
     this.contextMenu = undefined;
     this.isSelectOrders = [];
@@ -1023,7 +1030,7 @@ export default class DispatchMap extends Component {
                   <Button
                     style={{ float: 'left' }}
                     onClick={() => {
-                      this.setState({ isEdit: false });
+                      this.setState({ isEdit: false,bearweight:0,volumet:0});
                       this.isSelectOrders = [];
                       this.searchFormRef?.onSubmit();
                     }}
