@@ -6,14 +6,17 @@
  * @version: 1.0
  */
 import React from 'react';
-import { Button, Popconfirm, message, Modal, Form } from 'antd';
+import { Button, Popconfirm, message, Modal, Form,Menu } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { cancellation, audits } from '@/services/sjitms/AddressReport';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
 import { loginOrg, loginUser, loginCompany } from '@/utils/LoginContext';
-
+import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchForm';
+import { log } from 'lodash-decorators/utils';
+import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
+//import whitestyle from '../static/whitestyle'
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -23,6 +26,7 @@ import { loginOrg, loginUser, loginCompany } from '@/utils/LoginContext';
 export default class AddressReportSearch extends QuickFormSearchPage {
   state = {
     ...this.state,
+    Mapvisible:false
   };
 
   onUpload = () => {
@@ -87,6 +91,7 @@ export default class AddressReportSearch extends QuickFormSearchPage {
     const reslut = await audits(selectedRows.map(e => e.UUID));
     if (reslut.success) {
       message.success('审核成功！');
+      this.setState({Mapvisible:false});
    
       this.onSearch();
     }
@@ -105,9 +110,72 @@ export default class AddressReportSearch extends QuickFormSearchPage {
       this.onSearch();
     }
   };
+  showMap = ()=>{
+   const{selectedRows} = this.state;
+   if (selectedRows.length == 0 || selectedRows.length > 1 ) {
+    message.error('请选中一条记录');
+    return;
+  }
+  this.setState({Mapvisible:true});
 
-  
+  }
+  drawRightClickMenus = () => {
+    return (
+      <Menu>
+        <Menu.Item key="1" onClick={() => this.showMap()}>
+          地图审核
+        </Menu.Item>
+      </Menu>
+    );
+  }; //右键菜单
+  handleOk =()=>{
+   
+     Modal.confirm({
+            title:"确定审核？",
+            onOk:()=> this.audits
+          })
+    
+  }
   drawToolsButton = () => {
+    var style_map =[{
+      // 地图背景
+            "featureType": "land",
+            "elementType": "all",
+            "stylers": {
+                  "color": "#dee8da",
+                  "lightness": -1
+            }
+        },  {
+        // 水路背景
+            "featureType": "water",
+            "elementType": "all",
+            "stylers": {
+                  "color": "#a2c4c9ff",
+                  "lightness": -1
+            }
+        }, {
+        // 绿地背景
+            "featureType": "green",
+            "elementType": "all",
+            "stylers": {
+                  "color": "#ffffccff",
+                  "lightness": -1
+            }
+        },{
+        // 教育地区
+            "featureType": "education",
+            "elementType": "all",
+            "stylers": {
+                  "color": "#d5a6bdff",
+                  "lightness": -1
+            }
+        } ]
+        //将样式加载到地图中
+       // map.setMapStyleV2({styleJson:eval("style_map")}); 
+    const{selectedRows} = this.state;
+    console.log(selectedRows[0]);
+    const LONGITUDE = selectedRows[0]?.LONGITUDE;
+    const LATITUDE = selectedRows[0]?.LATITUDE;
     return (
       <>
         <Popconfirm
@@ -128,6 +196,46 @@ export default class AddressReportSearch extends QuickFormSearchPage {
         >
           <Button type="primary">作废</Button>
         </Popconfirm>
+        <Modal
+          title="地图审核"
+          visible={this.state.Mapvisible}
+          onOk={this.handleOk}
+          width={'80%'}
+          height={'80%'}
+          onCancel={()=>this.setState({Mapvisible:false})}
+          okText = {"审核"}
+        >
+          <Map
+              center={(selectedRows && selectedRows.length > 0) ? new BMapGL.Point (selectedRows[0].LONGITUDE, selectedRows[0].LATITUDE):new BMapGL.Point(113.809388,23.067107)}
+              zoom={12}
+              enableScrollWheelZoom
+             // enableAutoResize
+              enableRotate={false}
+              enableTilt={false}
+              style={{ height: 450 }}
+              tilt={30}
+              mapStyleV2={{styleJson: eval(style_map)}}
+           >{
+            (selectedRows && selectedRows.length > 0 ) && 
+            selectedRows.map(e=>{
+              return (<Marker
+              position={new BMapGL.Point(e.LONGITUDE, e.LATITUDE)}
+              enableDragging
+          />)
+            })
+          
+           }
+           </Map>
+           {/* <Map
+        style={{ height: 450 }}
+        center={new BMapGL.Point(116.404449, 39.914889)}
+        zoom={12}
+        heading={0}
+        tilt={40}
+        onClick={e => console.log(e)}
+        enableScrollWheelZoom
+      /> */}
+        </Modal>
        
       </>
     );
