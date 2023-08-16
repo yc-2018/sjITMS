@@ -57,6 +57,7 @@ export default class UserCreatePage extends CreatePage {
       dcResourceTree: [],
       dispatchCenterResourceTree: [],
       ownerResourceTree: [],
+      bmsResourceTree: [],
 
       tempRoleResourceMap: new Map(),
       dcTempRoleResourceMap: new Map(),
@@ -118,6 +119,7 @@ export default class UserCreatePage extends CreatePage {
               ? res[orgType.dispatchCenter.name]
               : [],
             ownerResourceTree: res[orgType.owner.name] ? res[orgType.owner.name] : [],
+            bmsResourceTree: res[orgType.bms.name] ? res[orgType.bms.name] : [],
           });
         }
       },
@@ -419,6 +421,7 @@ export default class UserCreatePage extends CreatePage {
       callback: response => {
         if (response && response.success) {
           let result = response.data;
+          console.log('result', result);
           const {
             checkedResourceKeys,
             dcCheckedResourceKeys,
@@ -441,6 +444,7 @@ export default class UserCreatePage extends CreatePage {
           let carrierResource = [];
           let dispatchCenterResource = [];
           let ownerResource = [];
+          let bmsResource = [];
 
           if (result) {
             if (result[orgType.company.name]) resource = result[orgType.company.name];
@@ -451,6 +455,7 @@ export default class UserCreatePage extends CreatePage {
             if (result[orgType.dispatchCenter.name])
               dispatchCenterResource = result[orgType.dispatchCenter.name];
             if (result[orgType.owner.name]) ownerResource = result[orgType.owner.name];
+            if (result[orgType.bms.name]) bmsResource = result[orgType.bms.name];
           }
 
           // 暂存角色资源
@@ -461,11 +466,11 @@ export default class UserCreatePage extends CreatePage {
           carrierTempRoleResourceMap.set(role.uuid, carrierResource);
           dispatchCenterTempRoleResourceMap.set(role.uuid, dispatchCenterResource);
 
-          console.log('result', result);
-
           if (result && !orgTypeRoles[role.uuid]) {
             orgTypeRoles[role.uuid] = Object.keys(result);
           }
+
+          console.log('orgTypeRoles', orgTypeRoles);
 
           let orgs = [];
           for (let key of Object.keys(orgTypeRoles)) {

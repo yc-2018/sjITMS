@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, message, Popconfirm, Switch, Badge } from 'antd';
+import { Button, message, Popconfirm, Switch, Badge, Table } from 'antd';
 import { havePermission } from '@/utils/authority';
 import SearchPage from '../../CommonLayout/RyzeSearchPage';
 import { colWidth } from '@/utils/ColWidth';
@@ -10,9 +10,27 @@ import { routerRedux } from 'dva/router';
 import { loginCompany, loginOrg, getTableColumns, cacheTableColumns } from '@/utils/LoginContext';
 import { guid } from '@/utils/utils';
 import moment from 'moment';
+import styles from './index.less';
+import StandardTable from '../../CommonLayout/RyzeStandardTable';
+import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
+import { groupBy, sumBy, uniqBy, orderBy } from 'lodash';
 
-import { updateEntity } from '@/services/quick/Quick';
+import { updateEntity, getInitDataByQuick } from '@/services/quick/Quick';
 
+function isJSON(str) {
+  if (typeof str == 'string') {
+    try {
+      var obj = JSON.parse(str);
+      if (typeof obj == 'object' && obj) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
+  }
+}
 /**
  * 查询界面
  */
@@ -28,7 +46,7 @@ export default class QuickFormSearchPage extends SearchPage {
   exSearchFilter = () => {}; //扩展查询
   drawRightClickMenus = () => {}; //右键菜单
 
-  defaultSearch = () => {
+  defaultSearch = async () => {
     //默认查询
     let ex = this.state.queryConfigColumns.filter(item => {
       return item.searchDefVal != null && item.searchDefVal != '';
@@ -63,16 +81,31 @@ export default class QuickFormSearchPage extends SearchPage {
           val: `${startDate}||${endDate}`,
         };
       } else {
-        exSearchFilter = {
-          field: item.fieldName,
-          type: item.fieldType,
-          rule: item.searchCondition,
-          val: item.searchDefVal,
-        };
+        //适配动态默认值
+        if (isJSON(item.searchDefVal)) {
+          let initJson = JSON.parse(item.searchDefVal);
+          let res = await getInitDataByQuick(initJson);
+          if (res?.success) {
+            exSearchFilter = {
+              field: item.fieldName,
+              type: item.fieldType,
+              rule: item.searchCondition,
+              val: res?.data ? res.data : '',
+            };
+          }
+        } else {
+          exSearchFilter = {
+            field: item.fieldName,
+            type: item.fieldType,
+            rule: item.searchCondition,
+            val: item.searchDefVal,
+          };
+        }
       }
-      defaultSearch.push(exSearchFilter);
+      if (exSearchFilter.val) {
+        defaultSearch.push(exSearchFilter);
+      }
     }
-
     return defaultSearch;
   };
 
@@ -97,6 +130,11 @@ export default class QuickFormSearchPage extends SearchPage {
       linkQuery: 0,
       authority: props.route?.authority ? props.route.authority[0] : null,
       queryConfig: {},
+      isMerge: false,
+      childSelectedRows: [],
+      selectRowKeys: [],
+      //合并规则下 selectRows中是否包含父类 默认falst
+      parentRows: false,
     };
   }
 
@@ -163,7 +201,6 @@ export default class QuickFormSearchPage extends SearchPage {
               },
             ];
           }
-          console.log(companyuuid, org);
           if (org) {
             this.setState({
               isOrgQuery: queryConfig.reportHead.organizationQuery
@@ -215,6 +252,79 @@ export default class QuickFormSearchPage extends SearchPage {
       return;
     };
   }
+
+  handleChildRowSelectChange = (selectedRowKeys, b) => {
+    this.setState({ childSelectedRows: selectedRowKeys });
+  };
+
+  //子列表
+  expandedRowRender = (record, index) => {
+    const { selectedRows, key, childSelectedRows } = this.state;
+    return (
+      <div className={styles.standardTable}>
+        <StandardTable
+          settingClass={{
+            display: 'flex',
+            justifyContent: 'flex-end',
+            width: '10%',
+            marginTop: '0',
+            marginBottom: '5px',
+            marginLeft: '90%',
+          }}
+          selectRowKeys={childSelectedRows}
+          handleRowSelectChange={this.handleChildRowSelectChange}
+          handleChildRowSelectChange={this.handleChildRowSelectChange}
+          onView={this.onView}
+          rowSelection={this.state.rowSelection}
+          quickuuid={this.props.quickuuid + 'ex'}
+          minHeight={this.state.minHeight}
+          colTotal={[]}
+          unShowRow={this.state.unShowRow ? this.state.unShowRow : false}
+          onRow={this.handleOnRow}
+          rowKey={record => record.uuid}
+          hasSettingColumns={
+            this.state.hasSettingColumns == undefined ? true : this.state.hasSettingColumns
+          }
+          selectedRows={selectedRows}
+          // loading={tableLoading}
+          tableHeight={this.state.tableHeight}
+          data={record.detail ? record.detail : []}
+          columns={this.state.columns}
+          noPagination={true}
+          newScroll={{ x: false, y: false }}
+          onSelectRow={this.handleSelectRows}
+          onChange={this.handleStandardTableChange}
+          comId={key + 'ex'}
+          rest={this.state.rest}
+          rowClassName={(record, index) => {
+            if (record.clicked) {
+              return styles.clickedStyle;
+            }
+            if (record.errorStyle) {
+              return styles.errorStyle;
+            }
+            if (this.setrowClassName(record, index)) {
+              return this.setrowClassName(record, index);
+            }
+            if (index % 2 === 0) {
+              return styles.lightRow;
+            }
+          }}
+          noActionCol={this.state.noActionCol}
+          canDrag={this.state.canDragTable}
+          // pageSize={sessionStorage.getItem('searchPageLine')}
+          noToolbarPanel={
+            !this.state.noToolbar && this.drawToolbarPanel && this.drawToolbarPanel() ? false : true
+          }
+          drapTableChange={this.drapTableChange}
+          handleRowClick={this.handleRowClick}
+          isRadio={this.state.isRadio}
+          RightClickMenu={this.drawRightClickMenus()}
+          isMerge={false}
+        />
+      </div>
+    );
+  };
 
   //数据转换
   convertData = (data, preview, record) => {
@@ -284,7 +394,6 @@ export default class QuickFormSearchPage extends SearchPage {
   initConfig = queryConfig => {
     const columns = queryConfig.columns;
     let quickColumns = new Array();
-
     //增加序号
     const c = {
       title: '行号 ', //加个空格防止重名
@@ -346,6 +455,8 @@ export default class QuickFormSearchPage extends SearchPage {
       queryConfigColumns: queryConfig.columns,
       tableName,
       queryConfig: queryConfig,
+      isMerge:
+        queryConfig.reportHead?.isMerge && queryConfig.reportHead.isMerge == 1 ? true : false,
     });
   };
 
@@ -418,15 +529,70 @@ export default class QuickFormSearchPage extends SearchPage {
     return this.customize(record, this.convertData(val, column.preview, record), component, column);
   };
 
+  //根据规则合并数据
+  getDataByMergeRule = (mergeRule, list, fieldName) => {
+    if (mergeRule == 0) {
+      return list[0][fieldName];
+    } else if (mergeRule == 1) {
+      let result = list.filter(xx => xx[fieldName]).map(x => {
+        return x[fieldName];
+      });
+      if (result.length == 0) {
+        return '<空>';
+      } else return result.join(',');
+    } else if (mergeRule == 2) {
+      return sumBy(list, fieldName);
+    } else {
+      return list[0][fieldName];
+    }
+  };
+
   //初始化数据
   initData = data => {
     // 海鼎底层需要uuid作为StandardTable的rowkey
     if (data?.records && data.records.length > 0 && !data.records[0].uuid) {
       data.records.forEach(row => (row.uuid = guid()));
     }
+    //根据配置规则 分组数据
+    const { isMerge, queryConfig } = this.state;
+    let records = data.records;
+    if (isMerge && data.records) {
+      const { columns, reportHead } = queryConfig;
+      let list = data.records;
+      let newList = [];
+      let mergeRule = reportHead.mergeRule?.split(',');
+      let listGroup = groupBy(list, e => {
+        return mergeRule.map(x => {
+          return e[x];
+        });
+      });
+      //合并数据
+      newList = Object.keys(listGroup).map(e => {
+        const list = listGroup[e];
+        let newRecord = {};
+        for (let c of columns) {
+          newRecord[c.fieldName] = this.getDataByMergeRule(c.mergeRule, list, c.fieldName);
+        }
+        newRecord['uuid'] = this.getDataByMergeRule(1, list, 'uuid') + ',header';
+        for (let d of list) {
+          d.puuid = newRecord['uuid'];
+        }
+        return newRecord;
+      });
+      //将子类写入父类
+      newList.forEach(n => {
+        let code = mergeRule.map(x => {
+          return n[x];
+        });
+        n.detail = listGroup[code];
+        n.isHeader = true;
+      });
+      records = newList;
+    }
+    console.log('records', records);
     let colTotal = data.columnTotal;
     var data = {
-      list: data.records,
+      list: records,
       pagination: {
         total: data.paging.recordCount,
         pageSize: data.paging.pageSize,
@@ -494,7 +660,6 @@ export default class QuickFormSearchPage extends SearchPage {
     if (column.jumpPath) {
       jumpPaths = column.jumpPath.split(',');
     }
-    console.log(column, 'jumpPaths', jumpPaths);
     if (!jumpPaths || jumpPaths.length != 2) {
       message.error('配置为空或配置错误，请检查点击事件配置！');
       return;
@@ -682,14 +847,14 @@ export default class QuickFormSearchPage extends SearchPage {
       },
     };
     this.setState({ pageFilters, superParams: [] });
-    this.getData(pageFilters);
+    // this.getData(pageFilters);
   };
 
   //查询
-  onSearch = (filter, isNotFirstSearch) => {
+  onSearch = async (filter, isNotFirstSearch) => {
     let exSearchFilter = this.exSearchFilter();
     if (!exSearchFilter) exSearchFilter = [];
-    let defaultSearch = this.defaultSearch();
+    let defaultSearch = await this.defaultSearch();
     if (!defaultSearch) defaultSearch = [];
     const { quickuuid } = this.props;
     //增加查询页数从缓存中读取

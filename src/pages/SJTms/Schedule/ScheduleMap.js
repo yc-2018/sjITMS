@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-08-01 14:28:55
+ * @LastEditTime: 2023-08-03 16:53:47
  * @Description: 配送进度
  */
 import React, { Component } from 'react';
@@ -100,6 +100,7 @@ export default class DispatchMap extends Component {
       const points = await this.initPoints(billNumber, billUuid, orders);
       let firstTime = moment().format("YYYY-MM-DD HH:mm:ss");
       this.setState({
+        timer: undefined,
         startMarker: undefined,
         currentMarker: undefined,
         lastPoints: [],
@@ -164,7 +165,7 @@ export default class DispatchMap extends Component {
       const delivery = deliverys?.find(x => x.pointUuid == order.deliveryPoint.uuid);
       return {
         ...order,
-        complete: shipedPoint?.outtime ? true : false,
+        complete: shipedPoint?.outtime || delivery?.relDeliveryTime ? true : false,
         shipStat: delivery?.stat || "",
         preReachTime: delivery?.preReachTime,
         preDeliveryTime: delivery?.preDeliveryTime,
@@ -291,7 +292,7 @@ export default class DispatchMap extends Component {
   getHistoryLocation = async (platenumber, from, to, lastPoints) => {
     const params = { plate_num: "粤" + platenumber, from, to, timeInterval: "10", map: "baidu" }
     const response = await GetHistoryLocation(params);
-    if (response.data.code == 0) {
+    if (response.success && response.data.data) {
       let { startMarker } = this.state;
       let pts = [...lastPoints];
       const historys = response.data.data || [];
@@ -323,7 +324,7 @@ export default class DispatchMap extends Component {
       map: "baidu"
     }
     const response = await GetTrunkData(params);
-    if (response.data.code == 0 && response.data.data) {
+    if (response.success && response.data.data) {
       let { currentMarker } = this.state;
       const point = response.data.data || {};
       const rotaition = point.loc.course;

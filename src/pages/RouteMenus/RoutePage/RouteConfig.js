@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-04-12 17:53:06
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-04-21 14:53:32
+ * @LastEditTime: 2023-06-23 15:39:40
  * @version: 1.0
  */
 const org = [
@@ -15,6 +15,7 @@ const org = [
   { key: 'CARRIER', value: '承运商' },
   { key: 'VENDOR', value: '供应商' },
   { key: 'OWNER', value: '货主' },
+  { key: 'BMS', value: '费用中心' },
 ];
 
 export { org };

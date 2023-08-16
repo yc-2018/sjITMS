@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-13 17:38:17
+ * @LastEditTime: 2023-06-28 14:49:26
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -39,7 +39,7 @@ export default class BasicSourceSearchPage extends Component {
   queryTree = async () => {
     await findSourceTree().then(response => {
       if (response && response.success) {
-        this.setState({ treeData: response.data });
+        this.setState({ treeData: response.data.tree });
       }
     });
   };

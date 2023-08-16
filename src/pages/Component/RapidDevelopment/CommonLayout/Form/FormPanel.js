@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-12-14 16:59:01
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-12-24 11:21:22
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-07-27 17:53:18
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\Component\RapidDevelopment\CommonLayout\Form\FormPanel.js
  */
@@ -30,13 +30,14 @@ export default class FormPanel extends PureComponent {
     cols = cols.filter(val => val.type === CFormItem && !isEmpty(val.props));
     return cols.map(col => {
       let colSpan = col.props?.children.props?.span;
+      let secondColSpan = col.props?.children.props?.children?.props?.span;
       const formItemLayout =
-        colSpan == 24
+        colSpan == 24 || secondColSpan == 24
           ? { labelCol: { span: 2 }, wrapperCol: { span: 22 } }
           : { labelCol: { span: 7 }, wrapperCol: { span: 17 } };
       return (
         <Form.Item {...formItemLayout} labelAlign="left" label={col.props.label}>
-          {col}
+          {secondColSpan == 24 ? col.props.children : col}
         </Form.Item>
       );
     });

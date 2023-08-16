@@ -31,6 +31,10 @@ export const orgType = {
     name: 'OWNER',
     caption: '货主',
   },
+  bms: {
+    name: 'BMS',
+    caption: '费用中心',
+  },
 };
 
 export function getOrgCaption(name) {

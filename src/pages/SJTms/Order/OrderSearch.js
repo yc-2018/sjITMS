@@ -11,11 +11,17 @@ import { connect } from 'dva';
 import { havePermission } from '@/utils/authority';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
-import { batchAudit, audit, cancel, removeOrder,updateOrderWavenum } from '@/services/sjitms/OrderBill';
+import {
+  batchAudit,
+  audit,
+  cancel,
+  removeOrder,
+  updateOrderWavenum,
+} from '@/services/sjitms/OrderBill';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
 import { log } from 'lodash-decorators/utils';
-import { loginOrg, loginUser,loginCompany } from '@/utils/LoginContext';
+import { loginOrg, loginUser, loginCompany } from '@/utils/LoginContext';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -31,66 +37,66 @@ export default class OrderSearch extends QuickFormSearchPage {
     uploadModal: false,
     showRemovePop: false,
     dispatchCenter: '',
-    showUpdateWaven:false
+    showUpdateWaven: false,
   };
 
   onUpload = () => {
     this.props.switchTab('import');
   };
 
-  defaultSearch = () => {
-    //默认查询
-    let ex = this.state.queryConfigColumns.filter(item => {
-      return item.searchDefVal != null && item.searchDefVal != '';
-    });
-    let defaultSearch = [];
-    let exSearchFilter;
-    for (const item of ex) {
-      if (item.fieldType == 'Date') {
-        let days = parseInt(item.searchDefVal);
-        if (days != days) days = 0;
-        let endDate = moment(new Date()).format('YYYY-MM-DD');
-        let startDate = moment(new Date())
-          .add(-item.searchDefVal, 'days')
-          .format('YYYY-MM-DD');
-        exSearchFilter = {
-          field: item.fieldName,
-          type: item.fieldType,
-          rule: item.searchCondition,
-          val: `${startDate}||${endDate}`,
-        };
-      } else if (item.fieldType == 'DateTime') {
-        let days = parseInt(item.searchDefVal);
-        if (days != days) days = 0;
-        let endDate = moment(new Date()).format('YYYY-MM-DD 23:59:59');
-        let startDate = moment(new Date())
-          .add(-item.searchDefVal, 'days')
-          .format('YYYY-MM-DD 00:00:00');
-        exSearchFilter = {
-          field: item.fieldName,
-          type: item.fieldType,
-          rule: item.searchCondition,
-          val: `${startDate}||${endDate}`,
-        };
-      } else {
-        exSearchFilter = {
-          field: item.fieldName,
-          type: item.fieldType,
-          rule: item.searchCondition,
-          val: item.searchDefVal,
-        };
-      }
-      defaultSearch.push(exSearchFilter);
-    }
-    //暂时通过这种方式赋予默认值
-    defaultSearch.push({
-      field: 'WAVENUM',
-      type: 'VARCHAR',
-      rule: 'in',
-      val: moment(new Date()).format('YYMMDD') + '0001',
-    });
-    return defaultSearch;
-  };
+  // defaultSearch = () => {
+  //   //默认查询
+  //   let ex = this.state.queryConfigColumns.filter(item => {
+  //     return item.searchDefVal != null && item.searchDefVal != '';
+  //   });
+  //   let defaultSearch = [];
+  //   let exSearchFilter;
+  //   for (const item of ex) {
+  //     if (item.fieldType == 'Date') {
+  //       let days = parseInt(item.searchDefVal);
+  //       if (days != days) days = 0;
+  //       let endDate = moment(new Date()).format('YYYY-MM-DD');
+  //       let startDate = moment(new Date())
+  //         .add(-item.searchDefVal, 'days')
+  //         .format('YYYY-MM-DD');
+  //       exSearchFilter = {
+  //         field: item.fieldName,
+  //         type: item.fieldType,
+  //         rule: item.searchCondition,
+  //         val: `${startDate}||${endDate}`,
+  //       };
+  //     } else if (item.fieldType == 'DateTime') {
+  //       let days = parseInt(item.searchDefVal);
+  //       if (days != days) days = 0;
+  //       let endDate = moment(new Date()).format('YYYY-MM-DD 23:59:59');
+  //       let startDate = moment(new Date())
+  //         .add(-item.searchDefVal, 'days')
+  //         .format('YYYY-MM-DD 00:00:00');
+  //       exSearchFilter = {
+  //         field: item.fieldName,
+  //         type: item.fieldType,
+  //         rule: item.searchCondition,
+  //         val: `${startDate}||${endDate}`,
+  //       };
+  //     } else {
+  //       exSearchFilter = {
+  //         field: item.fieldName,
+  //         type: item.fieldType,
+  //         rule: item.searchCondition,
+  //         val: item.searchDefVal,
+  //       };
+  //     }
+  //     defaultSearch.push(exSearchFilter);
+  //   }
+  //   //暂时通过这种方式赋予默认值
+  //   defaultSearch.push({
+  //     field: 'WAVENUM',
+  //     type: 'VARCHAR',
+  //     rule: 'in',
+  //     val: moment(new Date()).format('YYMMDD') + '0001',
+  //   });
+  //   return defaultSearch;
+  // };
 
   handleRemove = () => {
     const { selectedRows } = this.state;
@@ -139,24 +145,23 @@ export default class OrderSearch extends QuickFormSearchPage {
       this.setState({ showRemovePop: false });
     }
   };
-  showUpdateWavenHandleOk =async ()=>{
-    const { selectedRows,WAVENUM } = this.state;
-    if(selectedRows.length ==0 ){
+  showUpdateWavenHandleOk = async () => {
+    const { selectedRows, WAVENUM } = this.state;
+    if (selectedRows.length == 0) {
       message.error('至少选择一条数据');
       return;
     }
-    if(!WAVENUM){
-      message.error('请填写作业号'); 
+    if (!WAVENUM) {
+      message.error('请填写作业号');
       return;
     }
-     const response = await updateOrderWavenum (selectedRows.map(e=>e.UUID),WAVENUM);
-     if(response && response.success){
-      message.success("修改成功");
-      this.setState({showUpdateWaven:false})
+    const response = await updateOrderWavenum(selectedRows.map(e => e.UUID), WAVENUM);
+    if (response && response.success) {
+      message.success('修改成功');
+      this.setState({ showUpdateWaven: false });
       this.onSearch();
-     }
-    
-  }
+    }
+  };
 
   remove = async record => {
     const { dispatchCenter } = this.state;
@@ -164,8 +169,15 @@ export default class OrderSearch extends QuickFormSearchPage {
   };
 
   drawToolsButton = () => {
-    const{getFieldDecorator} =  this.props.form;
-    const { showAuditPop, showCancelPop, selectedRows, dispatchCenter, showRemovePop,showUpdateWaven } = this.state;
+    const { getFieldDecorator } = this.props.form;
+    const {
+      showAuditPop,
+      showCancelPop,
+      selectedRows,
+      dispatchCenter,
+      showRemovePop,
+      showUpdateWaven,
+    } = this.state;
     return (
       <>
         <Popconfirm
@@ -226,7 +238,7 @@ export default class OrderSearch extends QuickFormSearchPage {
         </Button>
         <Button
           hidden={!havePermission(this.state.authority + '.updateWaven')}
-          onClick={() =>this.handleUpdate()}
+          onClick={() => this.handleUpdate()}
         >
           添加作业号
         </Button>
@@ -273,33 +285,33 @@ export default class OrderSearch extends QuickFormSearchPage {
                   this.setState({ WAVENUM: e.target.value })
                 } }
               /> */}
-                {getFieldDecorator('WAVENUM', {
-                        rules: [{ required: true, message: '请选择作业号' }],
-                      })(
-                        <SimpleAutoComplete
-                        autoComplete
-                          showSearch
-                          placeholder=""
-                          textField="WAVENUM"
-                          valueField="WAVENUM"
-                          searchField="WAVENUM"
-                          //value={this.state.lineSystemValue}
-                          queryParams={{
-                            tableName: 'V_SJ_ITMS_ORDER_WAVENUM',
-                            isCache: 'false',
-                            condition: {
-                              params: [
-                                { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
-                                { field: 'DISPATCHCENTERUUID', rule: 'eq', val: [loginOrg().uuid] },
-                              ],
-                            },
-                          }}
-                          onChange={e => this.setState({ WAVENUM: e })}
-                          noRecord
-                          style={{ width: 200 }}
-                          allowClear={true}
-                        />
-                      )}
+              {getFieldDecorator('WAVENUM', {
+                rules: [{ required: true, message: '请选择作业号' }],
+              })(
+                <SimpleAutoComplete
+                  autoComplete
+                  showSearch
+                  placeholder=""
+                  textField="WAVENUM"
+                  valueField="WAVENUM"
+                  searchField="WAVENUM"
+                  //value={this.state.lineSystemValue}
+                  queryParams={{
+                    tableName: 'V_SJ_ITMS_ORDER_WAVENUM',
+                    isCache: 'false',
+                    condition: {
+                      params: [
+                        { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+                        { field: 'DISPATCHCENTERUUID', rule: 'eq', val: [loginOrg().uuid] },
+                      ],
+                    },
+                  }}
+                  onChange={e => this.setState({ WAVENUM: e })}
+                  noRecord
+                  style={{ width: 200 }}
+                  allowClear={true}
+                />
+              )}
             </Form.Item>
           </Form>
         </Modal>

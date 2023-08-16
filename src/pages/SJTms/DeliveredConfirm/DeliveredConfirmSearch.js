@@ -5,6 +5,7 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import DeliveredNoCheck from './DeliveredNoCheck';
 import { loginOrg, loginCompany } from '@/utils/LoginContext';
 import { havePermission } from '@/utils/authority';
+import { getConfigDataByParams } from '@/services/sjconfigcenter/ConfigCenter';
 
 @connect(({ quick, deliveredConfirm, loading }) => ({
   quick,
@@ -40,6 +41,7 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
           <DeliveredNoCheck
             quickuuid="sj_schedule_order_no_check"
             pageFilters={this.props.pageFilters}
+            isMerge={this.state.isMerge}
             // scroll={{
             //   x: 4000,
             //   y: 'calc(80vh)',
@@ -161,8 +163,11 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
   showNoDelivered = () => {
     this.setState({ isShowStandardTable: true });
   };
-  changeState = () => {
-    this.setState({ title: '' });
+  changeState = async () => {
+    //增加是否合并配置
+    let res = await getConfigDataByParams('DeliveredConfirm', loginOrg().uuid, 'isMerge');
+    let isMerge = res.data[0].isMerge == 1 ? true : false;
+    this.setState({ title: '', isMerge });
   }; //扩展state
   drawActionButton = () => {
     return (

@@ -475,7 +475,6 @@ export default class ItemEditTable extends PureComponent {
       this.props.totalDatas && this.props.totalDatas.length == '0'
         ? { display: 'none' }
         : { display: 'block' };
-    console.log('ncolumns', ncolumns, totalsCols);
     return (
       <div id="editTable" className={style.itemEditTable}>
         {showToolbar && (

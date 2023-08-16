@@ -2,23 +2,36 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-10 11:29:27
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-17 17:44:53
+ * @LastEditTime: 2023-07-24 09:24:10
  * @version: 1.0
  */
 import { func } from 'prop-types';
 import request from '@/utils/request';
-import { loginOrg, loginCompany } from '@/utils/LoginContext';
+import { loginOrg, loginCompany,loginUser } from '@/utils/LoginContext';
 
 export async function calculatePlan(payload) {
   return request(
     `/itms-cost/itms-cost/costbill/calculatePlan?planUuid=${payload.planUuid}&month=${
       payload.month
-    }`,
+    }&code=${loginUser().code}`,
     {
       method: 'POST',
     }
   );
 }
+
+//新费用计算过程
+export async function newCalculatePlan(payload) {
+  return request(
+    `/itms-cost/itms-cost/newCostBill/calculatePlan?planUuid=${payload.planUuid}&month=${
+      payload.month
+    }&code=${loginUser().code}`,
+    {
+      method: 'POST',
+    }
+  );
+}
+
 
 export async function calculateMemberWage(payload) {
   return request(
@@ -68,7 +81,7 @@ export async function isLock(planUuid, month) {
 }
 
 export async function haveCheck(Uuid) {
-  return request(`/itms-cost/itms-cost/costbill/haveCheck?Uuid=${Uuid}`, {
+  return request(`/itms-cost/itms-cost/costbill/haveCheck?Uuid=${Uuid}&operatorcode=${loginUser().code}`, {
     method: 'GET',
   });
 }

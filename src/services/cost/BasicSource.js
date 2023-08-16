@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-01 16:01:34
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-11-30 15:31:04
+ * @LastEditTime: 2023-06-29 11:39:23
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -32,9 +32,29 @@ export async function getTableInfo(tablename) {
   });
 }
 
+export async function getTableInfoNew(tableName, database) {
+  return request(
+    `/itms-schedule/itms-schedule/dev/parseSql?tableName=${tableName}&database=${database}`,
+    {
+      method: 'POST',
+    }
+  );
+}
+
 export async function getUnAddInfo(payload) {
   return request(
     `/itms-cost/itms-cost/source/getUnAddInfo/${payload.tableName}/${payload.formUuid}`,
+    {
+      method: 'GET',
+    }
+  );
+}
+
+export async function getNewUnAddInfo(payload) {
+  return request(
+    `/itms-cost/itms-cost/newSource/getUnAddInfo/${payload.tableName}/${payload.database}/${
+      payload.formUuid
+    }`,
     {
       method: 'GET',
     }
@@ -75,6 +95,13 @@ export async function onSaveSourceData(payload) {
 
 export async function deleteSourceData(payload) {
   return request(`/itms-cost/itms-cost/source/deleteSourceData`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function sourceConfirm(payload) {
+  return request(`/itms-cost/itms-cost/newSource/sourceConfirm`, {
     method: 'POST',
     body: payload,
   });

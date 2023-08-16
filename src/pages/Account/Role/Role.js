@@ -2,7 +2,14 @@
  * @Author: Liaorongchang
  * @Date: 2023-03-27 17:04:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-04-21 15:11:04
+ * @LastEditTime: 2023-06-23 15:32:18
+ * @version: 1.0
+ */
+/*
+ * @Author: Liaorongchang
+ * @Date: 2023-03-27 17:04:08
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-06-21 15:44:32
  * @version: 1.0
  */
 import React from 'react';
@@ -86,6 +93,8 @@ export default class Role extends SiderPage {
       dispatchCenterCheckedResourceKeys: [],
       ownerCheckedResourceTree: [],
       ownerCheckedResourceKeys: [],
+      bmsCheckedResourceTree: [],
+      bmsCheckedResourceKeys: [],
       contentStyle: {
         marginTop: 0,
       },
@@ -158,6 +167,7 @@ export default class Role extends SiderPage {
               ? res[orgType.dispatchCenter.name]
               : [],
             ownerCheckedResourceTree: res[orgType.owner.name] ? res[orgType.owner.name] : [],
+            bmsCheckedResourceTree: res[orgType.bms.name] ? res[orgType.bms.name] : [],
           });
         }
       },
@@ -296,6 +306,7 @@ export default class Role extends SiderPage {
               ? res[orgType.dispatchCenter.name]
               : [],
             ownerCheckedResourceKeys: res[orgType.owner.name] ? res[orgType.owner.name] : [],
+            bmsCheckedResourceKeys: res[orgType.bms.name] ? res[orgType.bms.name] : [],
           });
         }
       },
@@ -998,8 +1009,8 @@ export default class Role extends SiderPage {
       carrierResourceTree,
       dispatchCenterResourceTree,
       ownerCheckedResourceTree,
+      bmsCheckedResourceTree,
     } = this.state;
-    console.log('state', this.state);
     const tabPanes = [];
     let i = 2;
     let height = 'calc(100vh - 240px)';
@@ -1103,6 +1114,21 @@ export default class Role extends SiderPage {
             handleAuthorize={this.handleAuthorize}
             loading={this.props.loading}
             orgType={orgType.owner.name}
+          />
+        </TabPane>
+      );
+      i = i + 1;
+    }
+    if (bmsCheckedResourceTree && bmsCheckedResourceTree.length > 0) {
+      tabPanes.push(
+        <TabPane tab={roleLocale.bmsTabPermissionInfoTitle} key={i}>
+          <RolePermissionInfo
+            data={bmsCheckedResourceTree}
+            checkedKeys={this.state.bmsCheckedResourceKeys}
+            height={height}
+            handleAuthorize={this.handleAuthorize}
+            loading={this.props.loading}
+            orgType={orgType.bms.name}
           />
         </TabPane>
       );
