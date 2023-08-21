@@ -2093,7 +2093,9 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
         },
       };
       let returnOrder = await dynamicQuery(param);
-      returnOrders = [...returnOrders,...returnOrder.result.records];
+      if(returnOrder.success && returnOrder.result?.records!='false'){
+        returnOrders = [...returnOrders,...returnOrder.result.records];
+      }
     }
     let scheduleDetailSum = {};
     let REALCARTONCOUNT = 0;
@@ -2213,7 +2215,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
               <th colspan={14} style={{ border: 0, height: 27 }}>
                 <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                    装车单号： {schedule.SHIPBILLNUMBER}
+                    装车单号： {schedule.SHIPBILLNUMBER?.replace("SBE",'01')}
                   </div>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
                     车牌号： {schedule.VEHICLECODE}
@@ -2429,7 +2431,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
               </tr>
             }
             {  
-              (returnOrders&&returnOrders.length> 0)&&(
+              (returnOrders&&returnOrders.length> 0)?(
                 <>
                 <tr  style={{ textAlign: 'center' }}>
                 <td colSpan={2}>类型</td>
@@ -2449,7 +2451,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   )
                 })
                 }
-              </>)
+              </>):<></>
             }
           </tbody>
           <tfoot border={0}>
