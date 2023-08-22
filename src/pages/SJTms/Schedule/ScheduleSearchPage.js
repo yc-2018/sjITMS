@@ -2112,7 +2112,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
       REALCARTONCOUNT += item.REALCARTONCOUNT;
       REALSCATTEREDCOUNT += item.REALSCATTEREDCOUNT;
       REALCONTAINERCOUNT += item.REALCONTAINERCOUNT;
-      OWECARTONCOUNT += item.OWECARTONCOUNT;
+      //OWECARTONCOUNT += item.OWECARTONCOUNT;
       REALCOLDCONTAINERCOUNT += !item.REALCOLDCONTAINERCOUNT ? 0 : item.REALCOLDCONTAINERCOUNT;
       REALFREEZECONTAINERCOUNT += !item.REALFREEZECONTAINERCOUNT
         ? 0
@@ -2154,6 +2154,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
         fs.OWECARTONCOUNT = e.OWECARTONCOUNT;
         cartonCounts+=(!e.OWECARTONCOUNT ? 0 : e.OWECARTONCOUNT); 
         CONTAINERSum+=e.OWECARTONCOUNT;
+        OWECARTONCOUNT+=e.OWECARTONCOUNT;
         sds.push(fs);
       }
     });
