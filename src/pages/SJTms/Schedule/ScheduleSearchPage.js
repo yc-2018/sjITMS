@@ -2117,12 +2117,12 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
       REALFREEZECONTAINERCOUNT += !item.REALFREEZECONTAINERCOUNT
         ? 0
         : item.REALFREEZECONTAINERCOUNT;
-      CONTAINERSum += item.REALCONTAINERCOUNT + item.OWECARTONCOUNT;
+      CONTAINERSum += item.REALCONTAINERCOUNT;
       cartonCounts +=
         (!item.REALCONTAINERCOUNT ? 0 : item.REALCONTAINERCOUNT) +
         (!item.REALCOLDCONTAINERCOUNT ? 0 : item.REALCOLDCONTAINERCOUNT) +
-        (!item.REALFREEZECONTAINERCOUNT ? 0 : item.REALFREEZECONTAINERCOUNT)+
-        (!item.OWECARTONCOUNT ? 0 : item.OWECARTONCOUNT);
+        (!item.REALFREEZECONTAINERCOUNT ? 0 : item.REALFREEZECONTAINERCOUNT);
+       
     });
     let sds = [];
     scheduleDetails.forEach(e => {
@@ -2151,6 +2151,9 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
         fs.ISHAVEREFRIGERATION = e.ISHAVEREFRIGERATION;
         fs.ARCHLINECODE = e.ARCHLINECODE;
         fs.CONTAINERSUM = e.CONTAINERSUM;
+        fs.OWECARTONCOUNT = e.OWECARTONCOUNT;
+        cartonCounts+=(!e.OWECARTONCOUNT ? 0 : e.OWECARTONCOUNT); 
+        CONTAINERSum+=e.OWECARTONCOUNT;
         sds.push(fs);
       }
     });
@@ -2356,7 +2359,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                     <td width={50}>
                       {item.OWECARTONCOUNT || 0}
                     </td>
-                    <td width={50}>{item.CONTAINERSUM}</td>
+                    <td width={50}>{item.REALCONTAINERCOUNT+item.OWECARTONCOUNT}</td>
 
                     {/* <td width={50}>{0}</td>
                       <td width={50}>{0}</td> */}
