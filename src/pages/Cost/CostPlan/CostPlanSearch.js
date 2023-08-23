@@ -53,9 +53,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
   };
 
   componentWillReceiveProps(nextProps) {
-    console.log('next', nextProps);
     if (this.props.param?.code !== nextProps.param?.code) {
-      console.log('next');
       this.handleOks(nextProps.param.code);
     }
   }
