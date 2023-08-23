@@ -2,7 +2,7 @@ import React, { useDebugValue } from 'react';
 import { connect } from 'dva';
 import { Form, Upload, Button, Icon, message, Layout } from 'antd';
 import { savePlan, addHistory } from '@/services/cost/Cost';
-import { makeFormData } from '@/pages/Cost/CostProject/CostProjectCreate';
+import { makeFormData } from '@/pages/NewCost/CostProject/CostProjectCreate';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import CostPlanSearch from './CostPlanSearch';
 const { Footer, Content } = Layout;
@@ -18,25 +18,7 @@ export default class CostPlanDefCreate extends QuickCreatePage {
     isNotHd: true,
     filelist: [],
   };
-  //继承QuickForm 重写drawTab方法 该方法用于重写跳转的界面
-  /**
-   * 
-   * e的对象格式为{
-      component: component,
-      showPageNow: showPageNow,
-      props: props,
-   * }
-   * props为{
-   *  showPageNow: showPageNow,
-      quickuuid: quickuuid,
-      onlFormField: onlFormField,
-      switchTab: (tab, param) => this.switchTab(tab, param),
-      onlFormField: onlFormField,
-      params: params,
-      tableName: tableName,
-      pathname: location.pathname,
-   * }
-   */
+
   constructor(props) {
     super(props);
     props.onRef && props.onRef(this);
@@ -80,6 +62,7 @@ export default class CostPlanDefCreate extends QuickCreatePage {
     }
   };
   onSave = async e => {
+    const { onlFormFields } = this.state.onlFormInfos[0];
     e.preventDefault();
     this.props.form.validateFields(async (err, values) => {
       if (!err) {
@@ -100,6 +83,16 @@ export default class CostPlanDefCreate extends QuickCreatePage {
           formDatas.append('costPlans', JSON.stringify(paramList));
         }
 
+        var columns = {};
+        if (onlFormFields != undefined && onlFormFields.length > 0) {
+          onlFormFields.map(item => {
+            if (item.dbFieldName.toLowerCase() != 'stat') {
+              let dbFieldName = item.dbFieldName.toLowerCase();
+              columns[dbFieldName] = item.dbFieldTxt;
+            }
+          });
+          formDatas.append('columns', JSON.stringify(columns));
+        }
         this.state.filelist.forEach(element => {
           if (!element.isSaved) {
             formDatas.append('files', element.originFileObj);

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-06-26 14:41:13
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-07 17:31:53
+ * @LastEditTime: 2023-08-17 12:03:21
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -15,7 +15,7 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import CostPlanCard from './CostPlanCard';
 import { getPlanInfo } from '@/services/cost/CostPlan';
-
+import { queryDictByCode } from '@/services/quick/Quick';
 
 const { Header, Footer, Content } = Layout;
 
@@ -35,13 +35,19 @@ export default class CostPlanIndex extends PureComponent {
     tableName: 'COST_PLAN',
     current: 0,
     loading: false,
+    costPlanStat: [],
   };
   componentDidMount() {
     //查询方案内容
     this.handleSarch();
+    queryDictByCode(['costPlanStat']).then(res => this.setState({ costPlanStat: res.data }));
   }
   onClickPlan = e => {
     this.props.switchTab('update', { entityUuid: e });
+  };
+
+  onClickDefView = e => {
+    this.props.switchTab('defView', { entityUuid: e });
   };
 
   onClickCalculation = e => {
@@ -59,10 +65,14 @@ export default class CostPlanIndex extends PureComponent {
         children={records.data.map(e => {
           return (
             <CostPlanCard
+              costPlanStat={this.state.costPlanStat}
               e={e}
               handleSarch={this.handleSarch.bind()}
               onClickPlan={e => {
                 this.onClickPlan(e);
+              }}
+              onClickDefView={e => {
+                this.onClickDefView(e);
               }}
               onClickCalculation={e => {
                 this.onClickCalculation(e);

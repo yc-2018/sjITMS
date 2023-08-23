@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-10 17:09:45
+ * @LastEditTime: 2023-08-15 08:54:18
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -18,6 +18,7 @@ import { findSourceTree, deleteSourceTree } from '@/services/cost/BasicSource';
 import BasicSourceDataSearchPage from './BasicSourceDataSearchPage';
 import { havePermission } from '@/utils/authority';
 import BasicSourceOperateLogSearchPage from './BasicSourceOperateLogSearchPage';
+import BasicConfigCreatePage from './BasicConfigCreatePage';
 
 const { Content, Sider } = Layout;
 const { TreeNode } = Tree;
@@ -144,7 +145,6 @@ export default class BasicSourceSearchPage extends Component {
   onSelect = (selectedKeys, event) => {
     const { allData } = this.state;
     const system = allData.find(x => x.uuid == selectedKeys[0]);
-    console.log('ccccccc', havePermission(this.state.authority + '.structure'));
     if (selectedKeys.length == 1) {
       this.setState({
         rightContent:
@@ -172,7 +172,7 @@ export default class BasicSourceSearchPage extends Component {
               />
             </div>
           ) : (
-            <Tabs defaultActiveKey="data">
+            <Tabs defaultActiveKey="manage">
               {havePermission(this.state.authority + '.structure') ? (
                 <TabPane tab={'表结构'} key="structure">
                   <FormFieldSearchPage
@@ -186,9 +186,27 @@ export default class BasicSourceSearchPage extends Component {
               ) : (
                 ''
               )}
-              {havePermission(this.state.authority + '.manage') ? (
+              {havePermission(this.state.authority + '.manage') &&
+              event.selectedNodes[0].props.dataRef.expanded == '1' ? (
                 <TabPane tab={'管理'} key="manage">
-                  aaaa
+                  <div>
+                    <BasicConfigCreatePage
+                      key={selectedKeys[0]}
+                      quickuuid="cost_sourcedata_config"
+                      showPageNow="update"
+                      noBorder={true}
+                      noCategory={true}
+                      params={{ entityUuid: selectedKeys[0] }}
+                      onRef={node => (this.configCreatPage = node)}
+                      uuid={selectedKeys[0]}
+                      // refresh={this.queryTree.bind()}
+                    />
+                  </div>
+                  <div className={sourceStyle.config}>
+                    <Button type="primary" onClick={e => this.configCreatPage.onSave(e)}>
+                      保存
+                    </Button>
+                  </div>
                 </TabPane>
               ) : (
                 ''

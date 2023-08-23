@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-07-22 15:30:26
+ * @LastEditTime: 2023-08-23 15:32:59
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -295,7 +295,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       sourcename: system.title,
       month: confirmMonth.toString(),
       operatorcode: loginUser().code,
-      type:"DataSource"
+      type: 'DataSource',
     };
     const response = await sourceConfirm(entity);
     if (response.success) {
@@ -334,6 +334,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         >
           确认
         </Button>
+        <Button type="primary">备份</Button>
         {expanded == '1' ? <Button onClick={this.onSave}>保存</Button> : ''}
         {expanded == '1' ? <Button onClick={this.delete}>删除</Button> : ''}
         <Modal

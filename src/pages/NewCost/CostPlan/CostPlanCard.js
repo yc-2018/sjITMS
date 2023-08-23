@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-14 15:44:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-07 11:27:22
+ * @LastEditTime: 2023-08-23 15:28:40
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -15,27 +15,34 @@ import {
   Row,
   List,
   Tag,
-  Switch,
   Dropdown,
   Icon,
   Menu,
   Empty,
   Descriptions,
+  Modal,
+  Form,
+  Input,
 } from 'antd';
 import { copyPlan } from '@/services/cost/Cost';
+import { apply } from '@/services/cost/CostPlan';
 import { updateEntity } from '@/services/quick/Quick';
+import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 
 const { Step } = Steps;
-
+const { confirm } = Modal;
+@Form.create()
 export default class CostPlanCard extends Component {
   state = {
     current: this.props.e.current,
+    isModalOpen: false,
+    changeStat: '',
+    reason: '',
   };
 
   drawBody = costPlan => {
     const { current } = this.state;
     let status = this.props.e.current;
-    console.log('e', this.props.e);
     const stepStyle = {
       marginBottom: 15,
       boxShadow: '0px -1px 0 0 #e8e8e8 inset',
@@ -74,7 +81,6 @@ export default class CostPlanCard extends Component {
   drawDtl = () => {
     const { current } = this.state;
     const { sourceConfirmData, costCalculation, costConfirm, costConsumed } = this.props.e;
-    console.log('ccc', costCalculation, costConfirm, costConsumed);
     if (current == 0) {
       return (
         <div
@@ -120,7 +126,6 @@ export default class CostPlanCard extends Component {
   };
 
   drawCardBody = cost => {
-    console.log('cost', cost);
     return (
       <Descriptions style={{ width: '100%' }} layout="vertical" bordered>
         <Descriptions.Item label="所属月份">{cost.month}</Descriptions.Item>
@@ -136,14 +141,22 @@ export default class CostPlanCard extends Component {
         <Button
           style={{ marginRight: '10px' }}
           onClick={() => {
+            if (e.stat != 'Use') {
+              message.error('方案当前状态不可计算');
+              return;
+            }
             this.props.onClickCalculation(e);
           }}
         >
           计算
         </Button>
-        <Button onClick={() => {
+        <Button
+          onClick={() => {
             this.props.onClickSelectBill(e);
-          }}>查看台账</Button>
+          }}
+        >
+          查看台账
+        </Button>
       </div>
     );
   };
@@ -152,8 +165,9 @@ export default class CostPlanCard extends Component {
     this.setState({ current });
   };
 
-  copyPlan = data => {
+  copyPlan = (data, resolve) => {
     copyPlan(data.uuid).then(e => {
+      resolve();
       if (e.success) {
         this.props.handleSarch();
         message.success('复制成功');
@@ -186,25 +200,69 @@ export default class CostPlanCard extends Component {
 
   menuClick = (val, costPlan) => {
     if (val.key == '1') {
+      this.props.onClickDefView(costPlan.uuid);
+    } else if (val.key == '2') {
+      if (costPlan.stat == 'Use') {
+        message.error('方案当前状态不可编辑');
+        return;
+      }
       this.props.onClickPlan(costPlan.uuid);
-    } else {
-      this.copyPlan(costPlan);
+    } else if (val.key == '3') {
+      this.showConfirm(costPlan);
+    } else if (val.key == '4') {
+      this.setState({ isModalOpen: true });
     }
   };
 
+  showConfirm = costPlan => {
+    const _this = this;
+    confirm({
+      title: costPlan.schemeName,
+      content: '是否确定复制该方案？',
+      okText: '确认',
+      cancelText: '取消',
+      onOk() {
+        return new Promise((resolve, reject) => {
+          const res = _this.copyPlan(costPlan, resolve);
+          return res;
+        }).catch(() => console.log('出错!'));
+      },
+      onCancel() {},
+    });
+  };
+
+  //保存申请条件
+  handleApply = costPlanUuid => {
+    this.props.form.validateFieldsAndScroll(async (err, values) => {
+      if (!err) {
+        await apply(costPlanUuid, values).then(response => {
+          if (response.success) {
+            this.setState({ isModalOpen: false });
+            message.success('申请成功');
+          }
+        });
+      }
+    });
+  };
+
   render() {
-    const { costPlan } = this.props.e;
+    const { e, costPlanStat } = this.props;
+    const { costPlan } = e;
+    const { isModalOpen, changeStat, reason } = this.state;
+    const { getFieldDecorator } = this.props.form;
+    let stat = costPlanStat.filter(x => x.itemValue == costPlan.stat);
     const menu = (
       <Menu
         onClick={val => {
           this.menuClick(val, costPlan);
         }}
       >
-        <Menu.Item key="1">编辑</Menu.Item>
-        <Menu.Item key="2">复制</Menu.Item>
+        <Menu.Item key="1">查看</Menu.Item>
+        <Menu.Item key="2">编辑</Menu.Item>
+        <Menu.Item key="3">复制</Menu.Item>
+        <Menu.Item key="4">申请</Menu.Item>
       </Menu>
     );
-
     return (
       <Col style={{ paddingBottom: 20 }} span={8}>
         <Card
@@ -219,13 +277,7 @@ export default class CostPlanCard extends Component {
           extra={
             <Row type="flex" justify="space-around" align="middle">
               <Col>
-                <Switch
-                  checkedChildren="启用"
-                  unCheckedChildren="禁用"
-                  defaultChecked={!costPlan.notEnable}
-                  style={{ marginRight: '0.3rem' }}
-                  onChange={() => this.isEnable(costPlan)}
-                />
+                <Tag color={stat[0].textColor}>{stat[0].itemText}</Tag>
               </Col>
               <Col>
                 <Dropdown overlay={menu}>
@@ -243,6 +295,42 @@ export default class CostPlanCard extends Component {
           {this.drawBody(costPlan)}
           {this.drawButton(costPlan)}
         </Card>
+        <Modal
+          visible={isModalOpen}
+          title={costPlan.schemeName || '申请'}
+          onOk={() => {
+            this.handleApply(costPlan.uuid);
+            // this.setState({ isModalOpen: false });
+          }}
+          onCancel={() => {
+            this.setState({ isModalOpen: false });
+          }}
+        >
+          <Form>
+            <Form.Item label="当前状态" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              <span style={{ color: stat[0].textColor }}>{stat[0].itemText}</span>
+            </Form.Item>
+            <Form.Item label="目标状态" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              {getFieldDecorator('costPlanStat', {
+                rules: [{ required: true, message: '目标状态不能为空' }],
+              })(
+                <SimpleAutoComplete
+                  placeholder={'请选择目标状态'}
+                  dictCode="costPlanStat"
+                  value={changeStat}
+                  onChange={e => {
+                    this.setState({ changeStat: e });
+                  }}
+                  allowClear
+                  noRecord
+                />
+              )}
+            </Form.Item>
+            <Form.Item label="申请原因" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              {getFieldDecorator('applyReason')(<Input placeholder="请输入申请原因" />)}
+            </Form.Item>
+          </Form>
+        </Modal>
       </Col>
     );
   }
