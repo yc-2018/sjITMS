@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-14 15:44:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-23 15:28:40
+ * @LastEditTime: 2023-08-23 18:42:56
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -23,6 +23,7 @@ import {
   Modal,
   Form,
   Input,
+  Divider,
 } from 'antd';
 import { copyPlan } from '@/services/cost/Cost';
 import { apply } from '@/services/cost/CostPlan';
@@ -141,10 +142,10 @@ export default class CostPlanCard extends Component {
         <Button
           style={{ marginRight: '10px' }}
           onClick={() => {
-            if (e.stat != 'Use') {
-              message.error('方案当前状态不可计算');
-              return;
-            }
+            // if (e.stat != 'Use') {
+            //   message.error('方案当前状态不可计算');
+            //   return;
+            // }
             this.props.onClickCalculation(e);
           }}
         >
@@ -202,10 +203,10 @@ export default class CostPlanCard extends Component {
     if (val.key == '1') {
       this.props.onClickDefView(costPlan.uuid);
     } else if (val.key == '2') {
-      if (costPlan.stat == 'Use') {
-        message.error('方案当前状态不可编辑');
-        return;
-      }
+      // if (costPlan.stat == 'Use') {
+      //   message.error('方案当前状态不可编辑');
+      //   return;
+      // }
       this.props.onClickPlan(costPlan.uuid);
     } else if (val.key == '3') {
       this.showConfirm(costPlan);
@@ -274,22 +275,51 @@ export default class CostPlanCard extends Component {
             padding: '0 10px',
           }}
           bodyStyle={{ padding: '10px 10px 10px' }}
-          extra={
-            <Row type="flex" justify="space-around" align="middle">
-              <Col>
-                <Tag color={stat[0].textColor}>{stat[0].itemText}</Tag>
-              </Col>
-              <Col>
-                <Dropdown overlay={menu}>
-                  <Button type="link">
-                    更多
-                    <Icon type="down" />
-                  </Button>
-                </Dropdown>
-              </Col>
-            </Row>
+          title={
+            <div>
+              <Row type="flex" justify="space-around" align="middle">
+                <Col span={18}>{costPlan.schemeName}</Col>
+                <Col span={6}>
+                  <Tag color={stat[0].textColor} style={{ marginRight: '-0.3rem' }}>
+                    {stat[0].itemText}
+                  </Tag>
+                  <Dropdown overlay={menu}>
+                    <Button type="link">
+                      更多
+                      <Icon type="down" />
+                    </Button>
+                  </Dropdown>
+                </Col>
+              </Row>
+              {/* <Divider /> */}
+              <Row
+                type="flex"
+                justify="start"
+                align="middle"
+                style={{ fontSize: '0.5rem', fontWeight: 'normal', marginTop: '1rem' }}
+              >
+                <Col span={3} style={{ textAlign: 'right' }}>
+                  所属组织：
+                </Col>
+                <Col span={8}>{costPlan.organizationname}</Col>
+                <Col span={3} style={{ textAlign: 'right' }}>
+                  到效期：
+                </Col>
+                <Col span={8}>{costPlan.expiringdate}</Col>
+              </Row>
+              <Row
+                type="flex"
+                justify="start"
+                align="middle"
+                style={{ fontSize: '0.5rem', fontWeight: 'normal' }}
+              >
+                <Col span={3} style={{ textAlign: 'right' }}>
+                  备注：
+                </Col>
+                <Col span={8}>{costPlan.note}</Col>
+              </Row>
+            </div>
           }
-          title={costPlan.schemeName}
           style={{ width: '95%', border: '0.5px solid #3B77E3' }}
         >
           {this.drawBody(costPlan)}
