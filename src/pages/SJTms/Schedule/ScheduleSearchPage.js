@@ -45,6 +45,9 @@ import scher from '@/assets/common/scher.jpg';
 import { havePermission } from '@/utils/authority';
 import moment from 'moment';
 import { dynamicQuery } from '@/services/quick/Quick';
+import DispatchMapT from '@/pages/SJTms/MapDispatching/schedule/ScheduleMap';
+import mapIcon from '@/assets/common/map.svg';
+
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -178,6 +181,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   };
 
   drawRightClickMenus = () => {
+    const { selectedRows } = this.state;
+    let selectKeys = selectedRows.map(e => e.UUID);
     return (
       <Menu>
         <Menu.Item key="1" onClick={() => this.goG7('truck.webapi.newFollow')}>
@@ -188,6 +193,14 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         </Menu.Item>
         <Menu.Item key="3" onClick={() => this.goG7('truck.webapi.newMonitor')}>
           车辆实时位置(G7)
+        </Menu.Item>
+        <Menu.Item
+          onClick={() => {
+            this.dispatchMapRef.show(selectKeys);
+          }}
+        >
+          <img src={mapIcon} style={{ width: 20, height: 20 }} />
+          排车单地图
         </Menu.Item>
       </Menu>
     );
@@ -272,6 +285,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
             </Form.Item>
           </Form>
         </Modal>
+        <DispatchMapT onRef={node => (this.dispatchMapRef = node)} />
       </>
     );
   };
@@ -932,9 +946,9 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       if (
         dc.find(x => x == loginOrg().uuid) != undefined ||
         loginOrg().uuid == '000000750000008' ||
-        loginOrg().uuid == '000008150000005'
-        ||  loginOrg().uuid == '000008150000006'
-        || loginOrg().uuid == '000000750000010'
+        loginOrg().uuid == '000008150000005' ||
+        loginOrg().uuid == '000008150000006' ||
+        loginOrg().uuid == '000000750000010'
       ) {
         LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
       } else {
@@ -2079,22 +2093,22 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
         </table>
       </div>
     );
-  }else if(loginOrg().uuid == '000000750000010' || loginOrg().uuid == '000008150000006'){
-    const storeMap = groupBy(scheduleDetails,x=>x.DELIVERYPOINTCODE);
+  } else if (loginOrg().uuid == '000000750000010' || loginOrg().uuid == '000008150000006') {
+    const storeMap = groupBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
     let returnOrders = [];
-    for(const data in storeMap){
+    for (const data in storeMap) {
       const param = {
         tableName: 'SJ_ITMS_RETURN_ORDER',
         condition: {
           params: [
-          { field: 'TCREATED', rule: 'eq', val:[storeMap[data][0].ORDERCREATED]},
-          {field: 'STORECODE', rule: 'eq', val: [data]}
-        ],
+            { field: 'TCREATED', rule: 'eq', val: [storeMap[data][0].ORDERCREATED] },
+            { field: 'STORECODE', rule: 'eq', val: [data] },
+          ],
         },
       };
       let returnOrder = await dynamicQuery(param);
-      if(returnOrder.success && returnOrder.result?.records!='false'){
-        returnOrders = [...returnOrders,...returnOrder.result.records];
+      if (returnOrder.success && returnOrder.result?.records != 'false') {
+        returnOrders = [...returnOrders, ...returnOrder.result.records];
       }
     }
     let scheduleDetailSum = {};
@@ -2122,7 +2136,6 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
         (!item.REALCONTAINERCOUNT ? 0 : item.REALCONTAINERCOUNT) +
         (!item.REALCOLDCONTAINERCOUNT ? 0 : item.REALCOLDCONTAINERCOUNT) +
         (!item.REALFREEZECONTAINERCOUNT ? 0 : item.REALFREEZECONTAINERCOUNT);
-       
     });
     let sds = [];
     scheduleDetails.forEach(e => {
@@ -2133,7 +2146,8 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
         data.REALCONTAINERCOUNT = data.REALCONTAINERCOUNT + e.REALCONTAINERCOUNT;
         data.REALCOLDCONTAINERCOUNT = data.REALCOLDCONTAINERCOUNT + e.REALCOLDCONTAINERCOUNT;
         data.REALFREEZECONTAINERCOUNT = data.REALFREEZECONTAINERCOUNT + e.REALFREEZECONTAINERCOUNT;
-        data.ISHAVEREFRIGERATION = data.ISHAVEREFRIGERATION==0?e.ISHAVEREFRIGERATION:data.ISHAVEREFRIGERATION;
+        data.ISHAVEREFRIGERATION =
+          data.ISHAVEREFRIGERATION == 0 ? e.ISHAVEREFRIGERATION : data.ISHAVEREFRIGERATION;
         const index = sds.map(g => g.DELIVERYPOINTCODE).indexOf(e.DELIVERYPOINTCODE);
         sds.splice(index, 1, data);
       } else {
@@ -2152,9 +2166,9 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
         fs.ARCHLINECODE = e.ARCHLINECODE;
         fs.CONTAINERSUM = e.CONTAINERSUM;
         fs.OWECARTONCOUNT = e.OWECARTONCOUNT;
-        cartonCounts+=(!e.OWECARTONCOUNT ? 0 : e.OWECARTONCOUNT); 
-        CONTAINERSum+=e.OWECARTONCOUNT;
-        OWECARTONCOUNT+=e.OWECARTONCOUNT;
+        cartonCounts += !e.OWECARTONCOUNT ? 0 : e.OWECARTONCOUNT;
+        CONTAINERSum += e.OWECARTONCOUNT;
+        OWECARTONCOUNT += e.OWECARTONCOUNT;
         sds.push(fs);
       }
     });
@@ -2219,7 +2233,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
               <th colspan={14} style={{ border: 0, height: 27 }}>
                 <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                    装车单号： {schedule.SHIPBILLNUMBER?.replace("SBE",'01')}
+                    装车单号： {schedule.SHIPBILLNUMBER?.replace('SBE', '01')}
                   </div>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
                     车牌号： {schedule.VEHICLECODE}
@@ -2230,23 +2244,22 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                   <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
                     驾驶员： {schedule.DRIVER}
                   </div>
-                 
                 </div>
                 <div style={{ textAlign: 'left', fontWeight: 'normal', marginTop: '2' }}>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                      排车单:
-                      {schedule.BILLNUMBER}
+                    排车单:
+                    {schedule.BILLNUMBER}
                   </div>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                      送货员:
-                      {schedule.DELIVERYMAN}
+                    送货员:
+                    {schedule.DELIVERYMAN}
                   </div>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                      操作员： {loginUser().name}
+                    操作员： {loginUser().name}
                   </div>
                   <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
-                      打印时间：
-                      {convertDateToTime(new Date())}
+                    打印时间：
+                    {convertDateToTime(new Date())}
                   </div>
                   {/* <div style={{ float: 'left', width: '50%', fontWeight: 'normal' }}>
                       注：周转箱:蓝色,冷藏箱:绿色,冷冻箱:灰色
@@ -2310,7 +2323,6 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
               {/* <th width={120} rowSpan={2}>
                 板位
               </th> */}
-             
             </tr>
             <tr style={{ height: 25 }}>
               <th>整件</th>
@@ -2336,11 +2348,11 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 return (
                   <tr style={{ textAlign: 'center', height: 33 }}>
                     <td width={30}>{index + 1}</td>
-                    <td width={80}>{item.SHIPAREANAME+item.ARCHLINECODE}</td>
+                    <td width={80}>{item.SHIPAREANAME + item.ARCHLINECODE}</td>
                     {/* <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
                       {item.SHIPAREANAME}
                     </td> */}
-                      <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
+                    <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
                       {item.COLLECTBIN}
                     </td>
                     <td>{}</td>
@@ -2356,11 +2368,9 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                     <td width={50}>
                       {!item.REALFREEZECONTAINERCOUNT ? 0 : item.REALFREEZECONTAINERCOUNT}
                     </td> */}
-                     <td width={50}>{item.ISHAVEREFRIGERATION==1?'是':""}</td>
-                    <td width={50}>
-                      {item.OWECARTONCOUNT || 0}
-                    </td>
-                    <td width={50}>{item.REALCONTAINERCOUNT+item.OWECARTONCOUNT}</td>
+                    <td width={50}>{item.ISHAVEREFRIGERATION == 1 ? '是' : ''}</td>
+                    <td width={50}>{item.OWECARTONCOUNT || 0}</td>
+                    <td width={50}>{item.REALCONTAINERCOUNT + item.OWECARTONCOUNT}</td>
 
                     {/* <td width={50}>{0}</td>
                       <td width={50}>{0}</td> */}
@@ -2397,66 +2407,67 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 <td width={50}>{}</td>
                 <td width={50}>{scheduleDetailSum.OWECARTONCOUNT || 0}</td>
                 <td width={50}>{scheduleDetailSum.cartonCounts}</td>
-                <td width={50}></td>
+                <td width={50} />
               </tr>
             ) : (
               <></>
             )}
             {
-              <tr style={{ textAlign: 'left', height: 25, border: 0}}>
-                <td colSpan={2} width={80} style={{border: 0}}>
+              <tr style={{ textAlign: 'left', height: 25, border: 0 }}>
+                <td colSpan={2} width={80} style={{ border: 0 }}>
                   总体积(方)：
                   {schedule.VOLUME}
                 </td>
-                <td width={50} colSpan={2} style={{border: 0}}>
+                <td width={50} colSpan={2} style={{ border: 0 }}>
                   重量:
                   {schedule.WEIGHT}
                 </td>
                 <td
                   width={80}
                   colSpan={2}
-                  style={{ wordWrap: 'break-word', wordBreak: 'break-all',border: 0 }}
+                  style={{ wordWrap: 'break-word', wordBreak: 'break-all', border: 0 }}
                 >
                   总店数:
                   {schedule.STORECOUNT}
                 </td>
-                <td width={50} colSpan={3} style={{border: 0}}>
+                <td width={50} colSpan={3} style={{ border: 0 }}>
                   总件数:
-                  {scheduleDetailSum.REALCARTONCOUNT+scheduleDetailSum.REALSCATTEREDCOUNT}
+                  {scheduleDetailSum.REALCARTONCOUNT + scheduleDetailSum.REALSCATTEREDCOUNT}
                 </td>
                 {/* <td width={50} colSpan={3}>
                   {' '}
                   体积(方):
                   {schedule.VOLUME}
                 </td> */}
-                <td width={50} colSpan={3} style={{border: 0}}>
+                <td width={50} colSpan={3} style={{ border: 0 }}>
                   脏筐数：___________
                 </td>
               </tr>
             }
-            {  
-              (returnOrders&&returnOrders.length> 0)?(
-                <>
-                <tr  style={{ textAlign: 'center' }}>
-                <td colSpan={2}>类型</td>
-                <td colSpan={2}>彩华单号</td>
-                <td colSpan={2}>客户</td>
-                <td colSpan={3}>数量</td>
-                <td colSpan={3}>金额</td>
-              </tr>
-              {returnOrders.map(r=>{
-                return (<tr style={{ textAlign: 'center' }}>
-                     <td  colSpan={2}>{r.ORDERTYPE}</td>
-                    <td  colSpan={2}>{r.SOURCENUM}</td>
-                    <td  colSpan={2}>{r.STORECODE+r.STORENAME}</td>
-                    <td  colSpan={3}>{r.QUANTITY}</td>
-                    <td  colSpan={3}>{r.PRICE}</td>
-                  </tr>
-                  )
-                })
-                }
-              </>):<></>
-            }
+            {returnOrders && returnOrders.length > 0 ? (
+              <>
+                <tr style={{ textAlign: 'center' }}>
+                  <td colSpan={2}>类型</td>
+                  <td colSpan={2}>彩华单号</td>
+                  <td colSpan={2}>客户</td>
+                  <td colSpan={3}>数量</td>
+                  <td colSpan={3}>金额</td>
+                </tr>
+                {returnOrders.map(r => {
+                  return (
+                    <tr style={{ textAlign: 'center' }}>
+                      <td colSpan={2}>{r.ORDERTYPE}</td>
+                      <td colSpan={2}>{r.SOURCENUM}</td>
+                      <td colSpan={2}>{r.STORECODE + r.STORENAME}</td>
+                      <td colSpan={3}>{r.QUANTITY}</td>
+                      <td colSpan={3}>{r.PRICE}</td>
+                    </tr>
+                  );
+                })}
+              </>
+            ) : (
+              <></>
+            )}
           </tbody>
           <tfoot border={0}>
             <tr style={{ border: 0, height: 20 }}>
@@ -2466,7 +2477,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
             </tr>
             <tr>
               <td style={{ border: 0, fontWeight: 'normal' }} colspan={12}>
-              驾驶/配送员签字：：
+                驾驶/配送员签字：：
                 {}
               </td>
             </tr>
