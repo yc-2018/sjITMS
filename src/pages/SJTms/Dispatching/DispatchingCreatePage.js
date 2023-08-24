@@ -964,7 +964,7 @@ export default class DispatchingCreatePage extends Component {
           placeholder="承运商"
           onChange={value => this.vehicleFilter('carrier', value)}
           allowClear={true}
-          style={{ width: 100, marginRight: 2.5, marginLeft: 2.5 }}
+          style={{ width: 150, marginRight: 2.5, marginLeft: 2.5 }}
           value={this.state.carEmpSearch.carrier}
         >
           {carrieruuids.map(e => {
