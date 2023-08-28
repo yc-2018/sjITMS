@@ -246,7 +246,6 @@ export default class OtherFeeModal extends Component {
   modify = () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 1) {
-      console.log('selectedRows', selectedRows);
       this.setState({
         defaultActiveKey: '2',
         feeType: selectedRows[0].feetype,
@@ -338,9 +337,10 @@ export default class OtherFeeModal extends Component {
               <><Button type="primary" onClick={() => this.modify()}>
                 编辑
               </Button>
-              <Button  type="danger" style={{marginLeft:3}} onClick={() => this.delete()}>
+              {/* <Button  type="danger" style={{marginLeft:3}} onClick={() => this.delete()}>
                 删除
-            </Button></>
+            </Button> */}
+            </>
             ) : (
               <Button type="primary" onClick={() => this.handleSave(false)}>
                 保存
