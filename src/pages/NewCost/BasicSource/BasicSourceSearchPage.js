@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-15 08:54:18
+ * @LastEditTime: 2023-08-25 09:01:24
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -113,8 +113,8 @@ export default class BasicSourceSearchPage extends Component {
   };
 
   createHeadOnClick = () => {
-    console.log('ccc', this.props);
-    // this.headModalRef.show();
+    // console.log('ccc', this.props);
+    this.headModalRef.show();
   };
 
   createDtlOnClick = () => {
@@ -172,7 +172,7 @@ export default class BasicSourceSearchPage extends Component {
               />
             </div>
           ) : (
-            <Tabs defaultActiveKey="manage">
+            <Tabs defaultActiveKey="data">
               {havePermission(this.state.authority + '.structure') ? (
                 <TabPane tab={'表结构'} key="structure">
                   <FormFieldSearchPage

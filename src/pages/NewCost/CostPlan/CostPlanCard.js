@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-14 15:44:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-23 18:42:56
+ * @LastEditTime: 2023-08-25 11:19:08
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -109,7 +109,7 @@ export default class CostPlanCard extends Component {
                       </Tag>
                     </a>
                   }
-                  description="cc"
+                  description={item.confirmer}
                 />
                 {item.state != '已确认' ? <div style={{ color: 'blue' }}>提醒</div> : ''}
               </List.Item>
