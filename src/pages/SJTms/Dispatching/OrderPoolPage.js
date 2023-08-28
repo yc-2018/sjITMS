@@ -776,12 +776,12 @@ export default class OrderPoolPage extends Component {
           重量:
           <span style={totalTextStyle}>{orders.weight}</span>
         </div>
-        {footer ? null : (
+        {!footer ? null : (
           <div style={{ ...columnStyle, flex: 1 }}>
             门店:
             <span style={totalTextStyle}>{orders.totalStores}</span>
-          </div>
-        )}
+          </div> )
+       }
       </div>
     );
   };
