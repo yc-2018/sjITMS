@@ -177,12 +177,12 @@ export default class DispatchMap extends Component {
   //隐藏modal
   hide = () => {
     this.setState({
-        visible: false,
-        isEdit: false,
-        checkScheduleOrders: [],
-        checkSchedules: [],
-        bearweight:0,
-        volumet:0
+      visible: false,
+      isEdit: false,
+      checkScheduleOrders: [],
+      checkSchedules: [],
+      bearweight: 0,
+      volumet: 0,
     });
     this.clusterLayer = undefined;
     this.contextMenu = undefined;
@@ -550,6 +550,7 @@ export default class DispatchMap extends Component {
     let allSelectOrders = orders.filter(
       e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
     );
+    console.log('allSelectOrders', allSelectOrders, orders, this.basicOrders);
     // console.log('22', selectOrderStoreCodes, allSelectOrders);
     // const selectPoints = orders.filter(x => x.isSelect);
     if (allSelectOrders.length === 0) {
@@ -811,8 +812,8 @@ export default class DispatchMap extends Component {
           e.isSelect = true;
           e.sort = index + 1;
           orderMarkers.push(e);
-          orders.push(e);
         }
+        orders.push(e);
       });
       //   const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
       //  let totals = await this.getTotals(selectOrder);
@@ -1030,7 +1031,7 @@ export default class DispatchMap extends Component {
                   <Button
                     style={{ float: 'left' }}
                     onClick={() => {
-                      this.setState({ isEdit: false,bearweight:0,volumet:0});
+                      this.setState({ isEdit: false, bearweight: 0, volumet: 0 });
                       this.isSelectOrders = [];
                       this.searchFormRef?.onSubmit();
                     }}

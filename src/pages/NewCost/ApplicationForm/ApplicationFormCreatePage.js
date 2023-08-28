@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-18 14:30:35
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-07-21 09:23:57
+ * @LastEditTime: 2023-08-15 08:40:06
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -33,7 +33,6 @@ export default class ApplicationFormCreatePage extends QuickCreatePage {
 
   applicantSelectComponent = props => {
     const { applicantSelect } = this.state;
-    console.log("applicantSelect",applicantSelect);
     return (
       <Select {...props} showSearch allowClear>
         {applicantSelect.map(item => {

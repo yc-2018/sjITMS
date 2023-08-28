@@ -174,7 +174,7 @@ export default class DispatchingCreatePage extends Component {
     if (vehiclesData.success && vehiclesData.result.records != 'false') {
       vehicles = vehiclesData.result.records;
       //承运商集合
-      carrieruuids = uniq(vehicles.map(e => e.CARRIERUUID));
+      carrieruuids = uniq(vehicles.filter(e => e.CARRIERUUID).map(e => e.CARRIERUUID));
     }
     //获取人员
     let queryParams = [
@@ -922,7 +922,6 @@ export default class DispatchingCreatePage extends Component {
           </div>
         );
     }
-
     //sort
     let carSearchSortConfig = {
       1: (
@@ -964,7 +963,7 @@ export default class DispatchingCreatePage extends Component {
           placeholder="承运商"
           onChange={value => this.vehicleFilter('carrier', value)}
           allowClear={true}
-          style={{ width: 100, marginRight: 2.5, marginLeft: 2.5 }}
+          style={{ width: 150, marginRight: 2.5, marginLeft: 2.5 }}
           value={this.state.carEmpSearch.carrier}
         >
           {carrieruuids.map(e => {

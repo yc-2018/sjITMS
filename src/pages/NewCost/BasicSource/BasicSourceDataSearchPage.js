@@ -2,12 +2,12 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-07-22 15:30:26
+ * @LastEditTime: 2023-08-26 17:20:25
  * @version: 1.0
  */
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { Button, Form, Input, message, Modal, Spin, DatePicker } from 'antd';
+import { Button, Form, Input, message, Modal, Spin, DatePicker, InputNumber } from 'antd';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import SearchPage from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSearchPage';
 import { dynamicQuery } from '@/services/quick/Quick';
@@ -46,6 +46,8 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       confirmMonth: moment(new Date())
         .add(-1, 'months')
         .format('YYYY-MM'),
+      updateModal: false,
+      sucomIdspendLoading: true,
     };
   }
 
@@ -68,7 +70,6 @@ export default class BasicSourceDataSearchPage extends SearchPage {
     if (columnsData && columnsData.success) {
       this.initConfig(columnsData.result.records);
       this.initConfig(columnsData.result.records);
-
       //配置查询成功后再去查询数据
       this.onSearch();
     }
@@ -85,6 +86,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         sorter: true,
         width: colWidth.codeColWidth,
         fieldType: data.DB_TYPE,
+        allowUpdate: data.ALLOWUPDATE,
         render: (val, record) => this.getRender(val, data, record),
       };
       quickColumns.push(qiuckcolumn);
@@ -111,23 +113,22 @@ export default class BasicSourceDataSearchPage extends SearchPage {
   };
 
   getRender = (val, column, record) => {
-    const { expanded } = this.props;
-    if (expanded == '1') {
-      return (
-        <Input defaultValue={val} onChange={v => (record[column.DB_FIELD_NAME] = v.target.value)} />
-      );
-    } else {
-      return val;
-    }
+    return val;
+    // const { expanded } = this.props;
+    // if (expanded == '1') {
+    //   return (
+    //     <Input defaultValue={val} onChange={v => (record[column.DB_FIELD_NAME] = v.target.value)} />
+    //   );
+    // } else {
+    //   return val;
+    // }
   };
 
   getData = async (pageFilters, system) => {
-    this.setState({ searchLoading: true });
     this.state.pageFilters = pageFilters;
     const result = await dynamicQuery(pageFilters, system);
     if (result && result.result && result.result.records != 'false') {
       this.initData(result.result);
-      this.setState({ searchLoading: false });
     } else {
       message.error('查无数据');
       this.setState({ searchLoading: false });
@@ -137,6 +138,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
 
   onSearch = async filter => {
     const { system } = this.state;
+    this.setState({ searchLoading: true });
     let param;
     if (filter == undefined) {
       param = {
@@ -187,7 +189,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         showTotal: total => `共 ${total} 条`,
       },
     };
-    this.setState({ data, selectedRows: [] });
+    this.setState({ data, selectedRows: [], searchLoading: false });
   };
 
   refreshTable = filter => {
@@ -253,21 +255,14 @@ export default class BasicSourceDataSearchPage extends SearchPage {
     }
   };
 
-  onSave = async () => {
+  update = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length == 0) {
-      message.error('请至少选中一条数据！');
+    if (selectedRows.length != 1) {
+      message.error('请选中一条数据！');
       return;
     }
-    let param = {
-      uuid: this.props.selectedRows,
-      rows: selectedRows,
-    };
-    const response = await onSaveSourceData(param);
-    if (response && response.success) {
-      message.success('保存成功');
-      this.onSearch();
-    }
+
+    this.setState({ updateModal: true });
   };
 
   delete = async () => {
@@ -295,7 +290,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       sourcename: system.title,
       month: confirmMonth.toString(),
       operatorcode: loginUser().code,
-      type:"DataSource"
+      type: 'DataSource',
     };
     const response = await sourceConfirm(entity);
     if (response.success) {
@@ -306,13 +301,41 @@ export default class BasicSourceDataSearchPage extends SearchPage {
     this.setState({ showDataConfirmModal: false, searchLoading: false });
   };
 
+  handleSave = e => {
+    const { selectedRows } = this.state;
+    if (e) {
+      e.preventDefault();
+    }
+    this.setState({ loading: true });
+    this.props.form.validateFields(async (err, values) => {
+      if (!err) {
+        let selectedRow = selectedRows;
+        Object.keys(values).map(key => {
+          selectedRow[0][key] = values[key];
+        });
+        let param = {
+          uuid: this.props.selectedRows,
+          rows: selectedRow,
+        };
+        const response = await onSaveSourceData(param);
+        if (response && response.success) {
+          message.success('保存成功');
+          this.setState({updateModal:false})
+          this.onSearch();
+        }
+      }
+    });
+    this.setState({ loading: false });
+  };
+
   /**
    * 绘制批量工具栏
    */
   drawToolbarPanel = () => {
-    const { expanded } = this.props;
-    const { showDataConfirmModal, system, confirmMonth } = this.state;
+    const { showDataConfirmModal, system, confirmMonth, updateModal, selectedRows } = this.state;
+    const { getFieldDecorator } = this.props.form;
     const monthFormat = 'YYYY-MM';
+    const allowUpdateColumns = this.columns.filter(x => x.allowUpdate == 1);
     return (
       <div style={{ marginTop: '10px' }}>
         <AdvanceQuery
@@ -334,8 +357,10 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         >
           确认
         </Button>
-        {expanded == '1' ? <Button onClick={this.onSave}>保存</Button> : ''}
-        {expanded == '1' ? <Button onClick={this.delete}>删除</Button> : ''}
+        <Button type="primary" onClick={this.update}>
+          编辑
+        </Button>
+        <Button onClick={this.delete}>删除</Button>
         <Modal
           title="数据确认"
           visible={showDataConfirmModal}
@@ -362,8 +387,77 @@ export default class BasicSourceDataSearchPage extends SearchPage {
             </Form.Item>
           </Form>
         </Modal>
+        <Modal
+          title="编辑"
+          visible={updateModal}
+          footer={null}
+          onCancel={() => {
+            this.setState({ updateModal: false });
+          }}
+        >
+          <Form onSubmit={this.handleSave}>
+            {allowUpdateColumns.map(column => {
+              let val;
+              if (updateModal) {
+                val = selectedRows[0][column.key];
+              }
+              const a = { component: this.getComponent(column.fieldType) };
+              return (
+                <Form.Item label={column.title} labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+                  {getFieldDecorator(column.key, {
+                    initialValue: this.convertInitialValue(val, column.fieldType),
+                  })(
+                    <a.component
+                      style={{ width: '100%' }}
+                    />
+                  )}
+                </Form.Item>
+              );
+            })}
+            <Form.Item>
+              <Button type="primary" htmlType="submit" style={{float:"right",marginTop:"1rem"}}>
+                保存
+              </Button>
+            </Form.Item>
+          </Form>
+        </Modal>
       </div>
     );
+  };
+
+  getComponent = dbType => {
+    if (dbType == 'DATE') {
+      return DatePicker;
+    } else if (dbType == 'DATETIME') {
+      return DatePicker;
+    } else if (dbType == 'NUMBER') {
+      return InputNumber;
+    } else {
+      return Input;
+    }
+  };
+
+  /**
+   * 转换初始值
+   * @param {*} value 值
+   * @param {string} fieldShowType 类型
+   * @returns
+   */
+  convertInitialValue = (value, dbType) => {
+    if (value == undefined || value == null) {
+      return value;
+    }
+    if (dbType == 'DATE') {
+      return moment(value, 'YYYY/MM/DD');
+    } else if (dbType == 'DATETIME') {
+      return moment(value, 'YYYY/MM/DD HH:mm:ss');
+    } else if (dbType == 'INTEGER') {
+      return parseInt(value);
+    } else if (dbType == 'NUMBER') {
+      return parseFloat(value);
+    } else {
+      return value;
+    }
   };
 
   render() {
