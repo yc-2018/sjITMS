@@ -46,7 +46,7 @@ import {
   checkAreaSchedule,
   checkOrderInSchedule,
 } from '@/services/sjitms/ScheduleBill';
-import { groupBy, sumBy, uniqBy,orderBy } from 'lodash';
+import { groupBy, sumBy, uniqBy, orderBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
 import VehiclePoolPage from './VehiclePoolPage';
@@ -145,7 +145,10 @@ export default class OrderPoolPage extends Component {
       }
     }
     if (sorter && sorter.column) {
-      filter.order =(sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey) +      ',' +      sorter.order;
+      filter.order =
+        (sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey) +
+        ',' +
+        sorter.order;
     }
     if (pages) {
       filter.page = pages.current;
@@ -187,7 +190,7 @@ export default class OrderPoolPage extends Component {
         this.setState({
           searchPagination,
           auditedData: data,
-          auditedCollectData: this.groupData(data,sorter),
+          auditedCollectData: this.groupData(data, sorter),
           auditedParentRowKeys: [],
           auditedRowKeys: [],
           vehicleRowKeys: [],
@@ -227,17 +230,19 @@ export default class OrderPoolPage extends Component {
         volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
         weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
         shipAreaName: orders[0].shipAreaName,
-        tmsNote: orders[0].tmsNote
+        tmsNote: orders[0].tmsNote,
       };
     });
     deliveryPointGroupArr.forEach(data => {
       data.details = output[data.pointCode];
     });
-    deliveryPointGroupArr = orderBy(deliveryPointGroupArr, "archLineCode");
+    deliveryPointGroupArr = orderBy(deliveryPointGroupArr, 'archLineCode');
     if (sorter && sorter.column) {
-      deliveryPointGroupArr = orderBy(deliveryPointGroupArr,
+      deliveryPointGroupArr = orderBy(
+        deliveryPointGroupArr,
         [sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey],
-        [sorter.order.replace("end", "")]);
+        [sorter.order.replace('end', '')]
+      );
     }
     return deliveryPointGroupArr;
   };
@@ -776,12 +781,10 @@ export default class OrderPoolPage extends Component {
           重量:
           <span style={totalTextStyle}>{orders.weight}</span>
         </div>
-        {!footer ? null : (
-          <div style={{ ...columnStyle, flex: 1 }}>
-            门店:
-            <span style={totalTextStyle}>{orders.totalStores}</span>
-          </div> )
-       }
+        <div style={{ ...columnStyle, flex: 1 }}>
+          门店:
+          <span style={totalTextStyle}>{orders.totalStores}</span>
+        </div>
       </div>
     );
   };
