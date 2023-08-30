@@ -31,6 +31,7 @@ import * as XLSX from 'xlsx';
 import otherIcon from '@/assets/common/otherMyj.png';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 // import Select from '@/components/ExcelImport/Select';
+import copy from 'copy-to-clipboard';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -211,6 +212,12 @@ export default class StoresMap extends Component {
       if (b == 0) {
         if (a == 1) {
           //单击事件
+          if (order?.address) {
+            copy(order.address);
+            message.success('复制门店地址成功');
+          } else {
+            message.error('门店地址复制失败，检查该门店是否维护了地址！！');
+          }
           b = 1;
         }
       }
