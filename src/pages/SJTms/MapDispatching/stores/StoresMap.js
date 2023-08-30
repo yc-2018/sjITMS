@@ -909,12 +909,12 @@ export default class StoresMap extends Component {
                       {windowInfo ? (
                         <CustomOverlay
                           position={windowInfo.point}
-                          offset={new BMapGL.Size(15, -15)}
+                          offset={new BMapGL.Size(10, -15)}
                         >
                           <div
                             style={{
                               width: 280,
-                              height: windowInfo.order.cartonCount ? 100 : 50,
+                              height: windowInfo.order.cartonCount ? 100 : 80,
                               padding: 5,
                               background: '#FFF',
                             }}
@@ -944,6 +944,10 @@ export default class StoresMap extends Component {
                                   : '<空> '}
                               所属区域：
                               {windowInfo.order.shipareaname}
+                            </div>
+                            <div>
+                              门店地址：
+                              {windowInfo.order.address}
                             </div>
                             {windowInfo.order.cartonCount ? (
                               <div>

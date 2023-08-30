@@ -1227,7 +1227,7 @@ export default class DispatchMap extends Component {
 
                   {windowInfo ? (
                     <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
-                      <div style={{ width: 280, height: 110, padding: 5, background: '#FFF' }}>
+                      <div style={{ width: 280, height: 150, padding: 5, background: '#FFF' }}>
                         <div
                           style={{ fontWeight: 'bold', overflow: 'hidden', whiteSpace: 'nowrap' }}
                         >
@@ -1247,6 +1247,10 @@ export default class DispatchMap extends Component {
                         <div>
                           配送区域：
                           {windowInfo.order?.shipAreaName}
+                        </div>
+                        <div>
+                          门店地址：
+                          {windowInfo.order?.deliveryPoint?.address}
                         </div>
                         <Divider style={{ margin: 0, marginTop: 5 }} />
                         <div style={{ display: 'flex', marginTop: 5 }}>
