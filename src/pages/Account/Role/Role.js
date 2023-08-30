@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-03-27 17:04:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-06-23 15:32:18
+ * @LastEditTime: 2023-08-29 11:54:43
  * @version: 1.0
  */
 /*
@@ -34,6 +34,7 @@ import { commonLocale } from '@/utils/CommonLocale';
 import { roleLocale } from './RoleLocale';
 import { orgType } from '@/utils/OrgType';
 import siderStyle from '@/pages/Component/Page/inner/SiderPage.less';
+import BMSAuthorizeCom from '@/pages/Component/BMSAuthorize/BMSAuthorizeCom';
 const { SubMenu } = Menu;
 
 const TabPane = Tabs.TabPane;
@@ -1122,14 +1123,24 @@ export default class Role extends SiderPage {
     if (bmsCheckedResourceTree && bmsCheckedResourceTree.length > 0) {
       tabPanes.push(
         <TabPane tab={roleLocale.bmsTabPermissionInfoTitle} key={i}>
-          <RolePermissionInfo
-            data={bmsCheckedResourceTree}
-            checkedKeys={this.state.bmsCheckedResourceKeys}
-            height={height}
-            handleAuthorize={this.handleAuthorize}
-            loading={this.props.loading}
-            orgType={orgType.bms.name}
-          />
+          <Tabs>
+            <TabPane tab={roleLocale.bmsTabPermissionInfoTitle} key="1">
+              <RolePermissionInfo
+                data={bmsCheckedResourceTree}
+                checkedKeys={this.state.bmsCheckedResourceKeys}
+                height={'calc(100vh - 300px)'}
+                handleAuthorize={this.handleAuthorize}
+                loading={this.props.loading}
+                orgType={orgType.bms.name}
+              />
+            </TabPane>
+            <TabPane tab={roleLocale.bmsDataSourceInfoTitle} key="2">
+              <BMSAuthorizeCom type="DataSource" selectedRole={this.state.selectedRole} />
+            </TabPane>
+            <TabPane tab={roleLocale.bmsPlanTabPermissionInfoTitle} key="3">
+              <BMSAuthorizeCom type="CostPlan" selectedRole={this.state.selectedRole} />
+            </TabPane>
+          </Tabs>
         </TabPane>
       );
       i = i + 1;

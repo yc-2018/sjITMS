@@ -1,3 +1,10 @@
+/*
+ * @Author: Liaorongchang
+ * @Date: 2021-12-22 14:41:54
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-08-29 16:49:20
+ * @version: 1.0
+ */
 import { stringify } from 'qs';
 import request from '@/utils/request';
 import { loginOrg } from '@/utils/LoginContext';
@@ -42,10 +49,13 @@ export async function disable(payload) {
 }
 
 export async function authorize(payload) {
-  return request(`/iwms-account/account/role/${payload.uuid}/authorize?orgType=${payload.orgType}`, {
-    method: 'POST',
-    body: payload.resourceKeys
-  });
+  return request(
+    `/iwms-account/account/role/${payload.uuid}/authorize?orgType=${payload.orgType}`,
+    {
+      method: 'POST',
+      body: payload.resourceKeys,
+    }
+  );
 }
 
 export async function getResources(uuid) {
@@ -63,11 +73,11 @@ export async function get(uuid) {
 export async function addUser(payload) {
   return request(`/iwms-account/account/role/${payload.uuid}/user?userUuids=${payload.userUuids}`, {
     method: 'POST',
-  })
+  });
 }
 
 export async function removeUser(payload) {
   return request(`/iwms-account/account/role/${payload.uuid}/user/${payload.userUuid}`, {
     method: 'POST',
-  })
+  });
 }

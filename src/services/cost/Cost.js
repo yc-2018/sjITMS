@@ -104,3 +104,9 @@ export async function addHistory(uuid) {
     method: 'GET',
   });
 }
+
+export async function getPlanTree() {
+  return request(`/itms-cost/itms-cost/costplan/getPlanTree`, {
+    method: 'GET',
+  });
+}
