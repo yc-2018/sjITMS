@@ -348,7 +348,6 @@ export default class DispatchingCreatePage extends Component {
   vehicleFilter = (key, value) => {
     const { vehicleParam } = this.state;
     let serachVeh = [...this.basicVehicle];
-    console.log('serachVeh', serachVeh);
     vehicleParam[key] = value;
     if (vehicleParam.searchKey) {
       serachVeh = serachVeh.filter(
