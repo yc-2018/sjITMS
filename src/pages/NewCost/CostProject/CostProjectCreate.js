@@ -294,7 +294,15 @@ export default class CostProjectCreate extends QuickCreatePage {
         }
       }
     } else if (FORMULA_TYPE == '4') {
-      null;
+      for (const formItemKey in formItems) {
+        const formItem = formItems[formItemKey];
+        if (
+          formItem.categoryName == '公式设定' &&
+          (formItem.fieldName == 'DATASOURCE' || formItem.fieldName == 'CYCLE_BODY_FIELD')
+        ) {
+          formItem.categoryName = 'hidden';
+        }
+      }
     }
   };
 
@@ -348,10 +356,13 @@ export default class CostProjectCreate extends QuickCreatePage {
         this.getDataSelect(true);
         for (const formItemKey in formItems) {
           const formItem = formItems[formItemKey];
-          if (formItem.categoryName == 'hidden' && formItem.fieldName != 'CYCLE_BODY_FIELD') {
+          if (
+            formItem.categoryName == 'hidden' &&
+            (formItem.fieldName != 'CYCLE_BODY_FIELD' || formItem.fieldName != 'DATASOURCE')
+          ) {
             formItem.categoryName = '公式设定';
           }
-          if (formItem.fieldName == 'CYCLE_BODY_FIELD') {
+          if (formItem.fieldName == 'CYCLE_BODY_FIELD' || formItem.fieldName == 'DATASOURCE') {
             formItem.categoryName = 'hidden';
           }
         }
