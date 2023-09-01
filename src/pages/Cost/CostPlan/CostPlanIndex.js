@@ -200,17 +200,6 @@ export default class CostPlanIndex extends PureComponent {
               />
             )}
           </Form.Item>
-          {/* <Form.Item labelCol={{span:8}} wrapperCol={{span:8,offset:5}} label="Nickname">
-          {getFieldDecorator('nickname', {
-            rules: [
-              {
-                required: this.state.checkNick,
-                message: 'Please input your nickname',
-              },
-            ],
-          })(<Input placeholder="Please input your nickname" />)}
-        </Form.Item> */}
-
           <Form.Item>
             <Button type="primary" htmlType="submit">
               搜索

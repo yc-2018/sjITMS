@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-14 15:44:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-25 11:19:08
+ * @LastEditTime: 2023-08-31 18:08:40
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -23,10 +23,11 @@ import {
   Modal,
   Form,
   Input,
-  Divider,
+  Popconfirm,
 } from 'antd';
 import { copyPlan } from '@/services/cost/Cost';
 import { apply } from '@/services/cost/CostPlan';
+import { sourceAbnormal, remind } from '@/services/cost/BasicSource';
 import { updateEntity } from '@/services/quick/Quick';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 
@@ -96,22 +97,42 @@ export default class CostPlanCard extends Component {
             bordered
             dataSource={sourceConfirmData}
             renderItem={item => (
-              <List.Item>
+              <List.Item style={{ padding: '5px 20px' }}>
                 <List.Item.Meta
                   title={
-                    <a>
+                    <span>
                       {item.sourceName}
+                      <span style={{ color: 'rgba(0, 0, 0, 0.45)', marginLeft: '0.5rem' }}>
+                        {item.confirmer}
+                      </span>
                       <Tag
-                        color={item.state == '已确认' ? 'green' : 'red'}
+                        color={
+                          item.state == '已确认' ? 'green' : item.state == '未确认' ? 'red' : 'gold'
+                        }
                         style={{ marginLeft: '0.5rem' }}
                       >
                         {item.state}
                       </Tag>
-                    </a>
+                    </span>
                   }
-                  description={item.confirmer}
                 />
-                {item.state != '已确认' ? <div style={{ color: 'blue' }}>提醒</div> : ''}
+                {item.state == '已确认' ? (
+                  <a
+                    onClick={() => {
+                      this.showAbnormalConfirm(item);
+                    }}
+                  >
+                    异常
+                  </a>
+                ) : (
+                  <a
+                    onClick={() => {
+                      this.remind(item);
+                    }}
+                  >
+                    提醒
+                  </a>
+                )}
               </List.Item>
             )}
           />
@@ -124,6 +145,39 @@ export default class CostPlanCard extends Component {
     } else if (current == 3) {
       return costConsumed != undefined ? this.drawCardBody(costConsumed) : <Empty />;
     }
+  };
+
+  showAbnormalConfirm = item => {
+    console.log('item', item);
+    const _this = this;
+    confirm({
+      title: item.sourceName,
+      content: '确定当前数据源异常？',
+      okText: '确认',
+      cancelText: '取消',
+      onOk() {
+        return new Promise((resolve, reject) => {
+          const res = _this.abnormal(item, resolve);
+          return res;
+        }).catch(() => console.log('出错!'));
+      },
+      onCancel() {},
+    });
+  };
+
+  abnormal = (data, resolve) => {
+    sourceAbnormal(data.sourceUuid).then(e => {
+      resolve();
+      if (e.success) {
+        this.props.handleSarch();
+        message.success('操作成功');
+      }
+    });
+  };
+
+  remind = async item => {
+    await remind(item.sourceUuid);
+    message.success('提醒成功!');
   };
 
   drawCardBody = cost => {
@@ -142,10 +196,6 @@ export default class CostPlanCard extends Component {
         <Button
           style={{ marginRight: '10px' }}
           onClick={() => {
-            // if (e.stat != 'Use') {
-            //   message.error('方案当前状态不可计算');
-            //   return;
-            // }
             this.props.onClickCalculation(e);
           }}
         >
