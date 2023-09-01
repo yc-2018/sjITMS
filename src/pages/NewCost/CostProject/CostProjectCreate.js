@@ -298,7 +298,7 @@ export default class CostProjectCreate extends QuickCreatePage {
         const formItem = formItems[formItemKey];
         if (
           formItem.categoryName == '公式设定' &&
-          (formItem.fieldName == 'DATASOURCE' || formItem.fieldName == 'CYCLE_BODY_FIELD')
+          (formItem.fieldName == 'DATASOURCE_UUID2' || formItem.fieldName == 'CYCLE_BODY_FIELD')
         ) {
           formItem.categoryName = 'hidden';
         }
@@ -358,11 +358,14 @@ export default class CostProjectCreate extends QuickCreatePage {
           const formItem = formItems[formItemKey];
           if (
             formItem.categoryName == 'hidden' &&
-            (formItem.fieldName != 'CYCLE_BODY_FIELD' || formItem.fieldName != 'DATASOURCE')
+            (formItem.fieldName != 'CYCLE_BODY_FIELD' || formItem.fieldName != 'DATASOURCE_UUID2')
           ) {
             formItem.categoryName = '公式设定';
           }
-          if (formItem.fieldName == 'CYCLE_BODY_FIELD' || formItem.fieldName == 'DATASOURCE') {
+          if (
+            formItem.fieldName == 'CYCLE_BODY_FIELD' ||
+            formItem.fieldName == 'DATASOURCE_UUID2'
+          ) {
             formItem.categoryName = 'hidden';
           }
         }
@@ -478,6 +481,8 @@ export default class CostProjectCreate extends QuickCreatePage {
     this.onSaved(this.entity.COST_PROJECT[0]);
     if (success) {
       message.success('保存成功！');
+    } else {
+      message.error('保存失败!');
     }
   };
 }
