@@ -46,10 +46,11 @@ import {
   checkAreaSchedule,
   checkOrderInSchedule,
 } from '@/services/sjitms/ScheduleBill';
-import { groupBy, sumBy, uniqBy, orderBy } from 'lodash';
+import { groupBy, sumBy, uniqBy,orderBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
 import VehiclePoolPage from './VehiclePoolPage';
+import { log } from 'lodash-decorators/utils';
 
 const { TabPane } = Tabs;
 export default class OrderPoolPage extends Component {
@@ -701,6 +702,7 @@ export default class OrderPoolPage extends Component {
     if (!dispatchConfig?.isShowSum && footer) {
       return;
     }
+    const splitSta =  dispatchConfig?.orderPoolStatistics?.split(',');
     const totalTextStyle = footer
       ? {}
       : { fontSize: 16, fontWeight: 700, marginLeft: 2, color: '#333' };
@@ -761,30 +763,71 @@ export default class OrderPoolPage extends Component {
             </div>
           </Tooltip>
         ) : null}
-        <div style={{ ...columnStyle, flex: 1 }}>
+        {splitSta?.includes('1')&&
+        <Tooltip title ={orders.realCartonCount}>
+           <div style={{ ...columnStyle, flex: 1 }}>
           整件:
           <span style={totalTextStyle}>{orders.realCartonCount}</span>
         </div>
-        <div style={{ ...columnStyle, flex: 1 }}>
-          散件:
-          <span style={totalTextStyle}>{orders.realScatteredCount}</span>
-        </div>
-        <div style={{ ...columnStyle, flex: 1.2 }}>
-          周转筐:
+        </Tooltip>
+         
+        }
+        {splitSta?.includes('2')&&
+         <Tooltip title ={orders.realScatteredCount}>
+            <div style={{ ...columnStyle, flex: 1 }}>
+           散件:
+           <span style={totalTextStyle}>{orders.realScatteredCount}</span>
+         </div>
+         </Tooltip>
+        
+        }
+        {splitSta?.includes('3')&&
+        <Tooltip title ={orders.realContainerCount}>
+           <div style={{ ...columnStyle, flex: 1.2 }}>
+            周转筐:
           <span style={totalTextStyle}>{orders.realContainerCount}</span>
         </div>
-        <div style={{ ...columnStyle, flex: 1.2 }}>
-          体积:
-          <span style={totalTextStyle}>{orders.volume}</span>
+        </Tooltip>
+       
+        }
+        {splitSta?.includes('4')&&
+         <Tooltip title ={orders.realColdContainerCount || 0}>
+          <div style={{ ...columnStyle, flex: 1.2 }}>
+            保温箱:
+          <span style={totalTextStyle}>{orders.realColdContainerCount || 0}</span>
         </div>
-        <div style={{ ...columnStyle, flex: 1.2 }}>
-          重量:
-          <span style={totalTextStyle}>{orders.weight}</span>
-        </div>
-        <div style={{ ...columnStyle, flex: 1 }}>
-          门店:
-          <span style={totalTextStyle}>{orders.totalStores}</span>
-        </div>
+         </Tooltip>
+        
+        }
+        {splitSta?.includes('5')&&
+         <Tooltip title ={orders.volume}>
+          <div style={{ ...columnStyle, flex: 1.2 }}>
+           体积:
+           <span style={totalTextStyle}>{orders.volume}</span>
+           </div>
+         </Tooltip>
+         
+        }
+       {splitSta?.includes('6')&&
+        <Tooltip title ={orders.weight}>
+          <div style={{ ...columnStyle, flex: 1.2 }}>
+         重量:
+         <span style={totalTextStyle}>{orders.weight}</span>
+          </div>
+        </Tooltip>
+        
+       }
+       
+      {splitSta?.includes('7')&& 
+         <Tooltip title ={orders.totalStores}>
+          <div style={{ ...columnStyle, flex: 1 }}>
+            门店:
+            <span style={totalTextStyle}>{orders.totalStores}</span>
+          </div> 
+          </Tooltip>
+      }
+       
+     
       </div>
     );
   };
@@ -817,6 +860,7 @@ export default class OrderPoolPage extends Component {
       realCartonCount: Math.round(sumBy(data.map(x => x.stillCartonCount)) * 100) / 100,
       realScatteredCount: Math.round(sumBy(data.map(x => x.stillScatteredCount)) * 100) / 100,
       realContainerCount: Math.round(sumBy(data.map(x => x.stillContainerCount)) * 100) / 100,
+      realColdContainerCount:Math.round(sumBy(data.map(x => x.realColdContainerCount))),
       weight: Math.round(sumBy(data.map(x => Number(x.weight)))) / 1000,
       volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
       totalStores: totalStores.length,
