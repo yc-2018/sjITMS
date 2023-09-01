@@ -337,7 +337,10 @@ export default class CostProjectCreate extends QuickCreatePage {
       } else if (e.valueEvent.record.VALUE == '0') {
         for (const formItemKey in formItems) {
           const formItem = formItems[formItemKey];
-          if (formItem.categoryName == '公式设定' && formItem.fieldName == 'DATASOURCE_UUID') {
+          if (formItem.categoryName != '基本设定' && formItem.fieldName != 'DATASOURCE_UUID') {
+            formItem.categoryName = '公式设定';
+          }
+          if (formItem.fieldName == 'DATASOURCE_UUID') {
             formItem.categoryName = 'hidden';
           }
         }
@@ -345,8 +348,11 @@ export default class CostProjectCreate extends QuickCreatePage {
         this.getDataSelect(true);
         for (const formItemKey in formItems) {
           const formItem = formItems[formItemKey];
-          if (formItem.categoryName == 'hidden') {
+          if (formItem.categoryName == 'hidden' && formItem.fieldName != 'CYCLE_BODY_FIELD') {
             formItem.categoryName = '公式设定';
+          }
+          if (formItem.fieldName == 'CYCLE_BODY_FIELD') {
+            formItem.categoryName = 'hidden';
           }
         }
       }
