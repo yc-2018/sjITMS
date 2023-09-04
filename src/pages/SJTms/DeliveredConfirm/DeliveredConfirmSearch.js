@@ -3,9 +3,11 @@ import { Button, message, Modal, Tag, Popconfirm } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import DeliveredNoCheck from './DeliveredNoCheck';
+import DeliveredNoSchedule  from './DeliveredNoSchedule'
 import { loginOrg, loginCompany } from '@/utils/LoginContext';
 import { havePermission } from '@/utils/authority';
 import { getConfigDataByParams } from '@/services/sjconfigcenter/ConfigCenter';
+import { log } from 'lodash-decorators/utils';
 
 @connect(({ quick, deliveredConfirm, loading }) => ({
   quick,
@@ -20,6 +22,8 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
     isShowStandardTable: false,
     isNotHd: true,
     authority: this.props.authority,
+    statistics:0,
+    isShowScheduleInfo:false
   };
   drawTopButton = () => {};
   drawToolsButton = () => {};
@@ -46,6 +50,23 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
             //   x: 4000,
             //   y: 'calc(80vh)',
             // }}
+          />
+        </Modal>
+
+        <Modal
+          visible={this.state.isShowScheduleInfo}
+          onOk={this.handleCancel}
+          onCancel={this.handleCancel}
+          centered
+          width={'90%'}
+          // bodyStyle={{ margin: -12 }}
+          bodyStyle={{ height: 'calc(80vh)', overflowY: 'auto' }}
+          footer={
+            <Button onClick={() => this.setState({ isShowScheduleInfo: false })}>取消</Button>
+          }
+        >
+          <DeliveredNoSchedule
+            quickuuid="v_sj_itms_not_ship_billnumber"
           />
         </Modal>
 
@@ -89,6 +110,7 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
   componentWillReceiveProps(nextProps) {
     if (nextProps.pageFilters != this.props.pageFilters) {
       this.onSearch(nextProps.pageFilters);
+      this.getStatistics();
     }
   }
 
@@ -157,20 +179,43 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
 
   //取消
   handleCancel = () => {
-    this.setState({ isShowStandardTable: false });
+    this.setState({ isShowStandardTable: false ,isShowScheduleInfo:false});
   };
   //显示回车未送达确认弹出框
   showNoDelivered = () => {
     this.setState({ isShowStandardTable: true });
+  };
+  showNoDeliveredSchedule = () => {
+    this.setState({ isShowScheduleInfo: true });
   };
   changeState = async () => {
     //增加是否合并配置
     let res = await getConfigDataByParams('DeliveredConfirm', loginOrg().uuid, 'isMerge');
     let isMerge = res.data[0].isMerge == 1 ? true : false;
     this.setState({ title: '', isMerge });
+    this.getStatistics();
   }; //扩展state
+  getStatistics =()=>{
+     this.props.dispatch({
+      type: 'deliveredConfirm1/pendingStatistics',
+      payload: {
+          companyUuid: loginCompany().uuid,
+          dispatchCenterUuid: loginOrg().uuid
+        },
+      callback: response => {
+        this.setState({statistics:response?.data})
+      },
+    })
+  }
   drawActionButton = () => {
     return (
+      <>
+      <span style={{fontSize:14,color:'#0000ff'}}>待处理排车单数：</span><a 
+      style={{fontSize:19,color:'#e33b3b',fontWeight:'bold'}}
+      onClick={()=>this.showNoDeliveredSchedule()}
+      >{
+      this.state.statistics
+      }</a>
       <Button
         type="primary"
         onClick={this.showNoDelivered}
@@ -178,6 +223,8 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
       >
         回车未送达确认
       </Button>
+      </>
     );
+    
   };
 }
