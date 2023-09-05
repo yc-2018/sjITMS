@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-06-26 14:41:13
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-23 10:35:42
+ * @LastEditTime: 2023-09-04 11:39:05
  * @version: 1.0
  */
 /*
@@ -19,6 +19,7 @@ import CostPlanView from './CostPlanView';
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
 import CostPlanIndex from './CostPlanIndex';
 import CostCalculationSearchPage from '@/pages/NewCost/CostCalculation/CostCalculationSearch';
+import CostBillEditView from '@/pages/NewCost/CostCalculation/CostBillEditView';
 import Create from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageDefault';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickFormSearchPageDefault';
 import QuickViewPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickViewPageDefault';
@@ -84,6 +85,9 @@ export default class CostPlanFrom extends QuickForm {
     if (e.showPageNow == 'defView') {
       //方案详细查看界面
       const component = <CostPlanDefView {...e.props} />;
+      e.component = component;
+    } else if (e.showPageNow == 'checkView') {
+      const component = <CostBillEditView {...e.props} />;
       e.component = component;
     }
   };
@@ -159,6 +163,15 @@ export default class CostPlanFrom extends QuickForm {
         this.drawTab(e);
         return e.component;
       case 'defView':
+        component = <QuickViewPage {...props} />;
+        e = {
+          component: component,
+          showPageNow: showPageNow,
+          props: props,
+        };
+        this.drawTab(e);
+        return e.component;
+      case 'checkView':
         component = <QuickViewPage {...props} />;
         e = {
           component: component,

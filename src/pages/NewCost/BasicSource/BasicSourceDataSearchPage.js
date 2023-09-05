@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-26 17:20:25
+ * @LastEditTime: 2023-09-01 16:36:35
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -256,12 +256,17 @@ export default class BasicSourceDataSearchPage extends SearchPage {
   };
 
   update = () => {
-    const { selectedRows } = this.state;
+    const { selectedRows, columns } = this.state;
     if (selectedRows.length != 1) {
       message.error('请选中一条数据！');
       return;
     }
 
+    const allow = columns.findIndex(x => x.allowUpdate == 1);
+    if (allow < 0) {
+      message.error('该数据源无可编辑数据，请确认或刷新后再操作！');
+      return;
+    }
     this.setState({ updateModal: true });
   };
 
@@ -320,7 +325,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         const response = await onSaveSourceData(param);
         if (response && response.success) {
           message.success('保存成功');
-          this.setState({updateModal:false})
+          this.setState({ updateModal: false });
           this.onSearch();
         }
       }
@@ -406,16 +411,16 @@ export default class BasicSourceDataSearchPage extends SearchPage {
                 <Form.Item label={column.title} labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
                   {getFieldDecorator(column.key, {
                     initialValue: this.convertInitialValue(val, column.fieldType),
-                  })(
-                    <a.component
-                      style={{ width: '100%' }}
-                    />
-                  )}
+                  })(<a.component style={{ width: '100%' }} />)}
                 </Form.Item>
               );
             })}
             <Form.Item>
-              <Button type="primary" htmlType="submit" style={{float:"right",marginTop:"1rem"}}>
+              <Button
+                type="primary"
+                htmlType="submit"
+                style={{ float: 'right', marginTop: '1rem' }}
+              >
                 保存
               </Button>
             </Form.Item>

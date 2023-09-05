@@ -1,28 +1,10 @@
 import React, { PureComponent } from 'react';
-import {
-  Table,
-  Form,
-  Button,
-  Input,
-  Col,
-  Select,
-  Icon,
-  Row,
-  Modal,
-  Popconfirm,
-  message,
-  Checkbox,
-} from 'antd';
-import { colWidth } from '@/utils/ColWidth';
+import { Form, Button, Modal, message } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { loginOrg, loginCompany, loginUser } from '@/utils/LoginContext';
-import StandardTable from '@/components/StandardTable';
-import { commonLocale, placeholderLocale, placeholderChooseLocale } from '@/utils/CommonLocale';
-import { TITLE_SEPARATION } from '@/utils/constants';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { dynamicQuery } from '@/services/quick/Quick';
-import { routerRedux } from 'dva/router';
 import CostProjectCreate from '../CostProject/CostProjectCreate';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 @connect(({ quick, deliveredConfirm, loading }) => ({

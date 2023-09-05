@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-06-26 14:41:13
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-24 16:38:04
+ * @LastEditTime: 2023-09-04 11:54:46
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -43,9 +43,9 @@ export default class CostPlanIndex extends PureComponent {
     organization: '',
   };
   componentDidMount() {
+    queryDictByCode(['costPlanStat']).then(res => this.setState({ costPlanStat: res.data }));
     //查询方案内容
     this.handleSarch();
-    queryDictByCode(['costPlanStat']).then(res => this.setState({ costPlanStat: res.data }));
   }
   onClickPlan = e => {
     this.props.switchTab('update', { entityUuid: e });
