@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-06-27 09:00:19
+ * @LastEditTime: 2023-09-06 11:04:53
  * @version: 1.0
  */
 import React from 'react';
@@ -10,11 +10,7 @@ import { Button, Popconfirm, message, Modal, Form,Menu } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { cancellation, audits } from '@/services/sjitms/AddressReport';
-import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
-import { loginOrg, loginUser, loginCompany } from '@/utils/LoginContext';
-import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchForm';
-import { log } from 'lodash-decorators/utils';
 import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
 //import whitestyle from '../static/whitestyle'
 @connect(({ quick, loading }) => ({
