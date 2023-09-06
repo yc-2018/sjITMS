@@ -11,6 +11,8 @@ import {
   Select,
   Upload,
   Icon,
+  Modal,
+  Drawer,
 } from 'antd';
 import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
 import style from './DispatchingMap.less';
@@ -32,6 +34,9 @@ import otherIcon from '@/assets/common/otherMyj.png';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 // import Select from '@/components/ExcelImport/Select';
 import copy from 'copy-to-clipboard';
+import AddressReportForm from '../../AddressReport/AddressReportForm';
+import QuickFormModal from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormModal';
+import { shencopy } from '@/utils/SomeUtil';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -43,7 +48,7 @@ export default class StoresMap extends Component {
   canDragBefore = true;
   state = {
     visible: true,
-    loading: true,
+    // loading: true,
     windowInfo: undefined,
     loading: false,
     startPoint: '',
@@ -59,6 +64,7 @@ export default class StoresMap extends Component {
     storeParams: [],
     canDrag: false,
     file: '',
+    reviewVisible: false,
   };
 
   componentDidMount = () => {
@@ -487,6 +493,13 @@ export default class StoresMap extends Component {
         };
     const menuItems = [
       {
+        text: '门店审核',
+        callback: () => {
+          // this.storeReview.show();
+          this.setState({ reviewVisible: true });
+        },
+      },
+      {
         text: '今日配送门店',
         callback: () => {
           let endDate = moment(new Date()).format('YYYY-MM-DD 23:59:59');
@@ -708,6 +721,41 @@ export default class StoresMap extends Component {
     } else return [];
   };
 
+  showStoreByReview = async e => {
+    // console.log('e', e);
+    this.setState({ loading: true });
+    let params = {
+      DELIVERYPOINTCODE: e.DELIVERYPOINTCODE,
+    };
+    let store = await this.getStoreMaps('20', params);
+    let reviewStore = [];
+    if (store && store.length > 0) {
+      let review = shencopy(store[0]);
+      store[0].code = '(旧)' + store[0].code;
+      review.latitude = e.LATITUDE;
+      review.longitude = e.LONGITUDE;
+      review.code = '(新)' + review.code;
+      reviewStore.push(review);
+    }
+    // console.log('res', store, reviewStore);
+    this.setState(
+      {
+        orders: store,
+        otherData: reviewStore,
+        pageFilter: [],
+        isOrder: false,
+        loading: false,
+        // storeParams: storeParamsp,
+      },
+      () => {
+        setTimeout(() => {
+          // this.drawMenu();
+          this.autoViewPort([...store, ...reviewStore]);
+        }, 500);
+      }
+    );
+  };
+
   tansfomer = arraylist => {
     let attributeList = arraylist[0];
     let tempdata = [];
@@ -901,6 +949,25 @@ export default class StoresMap extends Component {
                   {this.state.isSearch ? <div id="r-result" style={{ width: '90%' }} /> : null}
                 </Col>
                 <Col span={18}>
+                  <Drawer
+                    getContainer={false}
+                    title="门店审核"
+                    placement="right"
+                    closable={true}
+                    onClose={() => this.setState({ reviewVisible: false })}
+                    visible={this.state.reviewVisible}
+                    mask={false}
+                    maskClosable={false}
+                    // height={300}
+                    width={400}
+                    style={{ position: 'absolute' }}
+                  >
+                    <AddressReportForm
+                      location={{ pathname: window.location.pathname }}
+                      quickuuid="v_itms_store_address_report_t"
+                      showStoreByReview={this.showStoreByReview}
+                    />
+                  </Drawer>
                   {orders.length > 0 || otherData.length > 0 ? (
                     <Map
                       center={{ lng: 113.809388, lat: 23.067107 }}

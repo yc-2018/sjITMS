@@ -1,17 +1,11 @@
-/*
- * @Author: Liaorongchang
- * @Date: 2022-03-10 11:29:17
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-06 11:04:53
- * @version: 1.0
- */
 import React from 'react';
-import { Button, Popconfirm, message, Modal, Form,Menu } from 'antd';
+import { Button, Popconfirm, message, Modal, Form } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { cancellation, audits } from '@/services/sjitms/AddressReport';
 import moment from 'moment';
-import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
+import { Map, Marker } from 'react-bmapgl';
+import QuickFormModal from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormModal';
 //import whitestyle from '../static/whitestyle'
 @connect(({ quick, loading }) => ({
   quick,
@@ -22,14 +16,45 @@ import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl'
 export default class AddressReportSearch extends QuickFormSearchPage {
   state = {
     ...this.state,
-    Mapvisible:false
+    Mapvisible: false,
+    isNotHd: true,
+    isRadio: true,
+  };
+
+  handleRowClick = e => {
+    this.props.showStoreByReview(e);
   };
 
   onUpload = () => {
     this.props.switchTab('import');
   };
 
-  defaultSearchs= () => {
+  drawSearchPanel = () => {};
+
+  drawExColumns = e => {
+    if (e.column.fieldName == 'STATNAME') {
+      return {
+        title: '地图', //加个空格防止重名
+        dataIndex: 'mapShow',
+        key: 'mapShow',
+        sorter: false,
+        width: 120,
+        render: (val, record, index) => {
+          return (
+            <Button
+              onClick={() => {
+                console.log('222', record);
+              }}
+            >
+              地图显示
+            </Button>
+          );
+        },
+      };
+    }
+  };
+
+  defaultSearchs = () => {
     //默认查询
     let ex = this.state.queryConfigColumns.filter(item => {
       return item.searchDefVal != null && item.searchDefVal != '';
@@ -73,10 +98,9 @@ export default class AddressReportSearch extends QuickFormSearchPage {
       }
       defaultSearch.push(exSearchFilter);
     }
-    
+
     return defaultSearch;
   };
-  
 
   audits = async () => {
     const { selectedRows } = this.state;
@@ -87,15 +111,15 @@ export default class AddressReportSearch extends QuickFormSearchPage {
     const reslut = await audits(selectedRows.map(e => e.UUID));
     if (reslut.success) {
       message.success('审核成功！');
-      this.setState({Mapvisible:false});
-   
+      this.setState({ Mapvisible: false });
+
       this.onSearch();
     }
   };
 
   //作废
   cancellation = async () => {
-    const { selectedRows} = this.state;
+    const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
       message.error('请选中一条记录');
       return;
@@ -106,69 +130,71 @@ export default class AddressReportSearch extends QuickFormSearchPage {
       this.onSearch();
     }
   };
-  showMap = ()=>{
-   const{selectedRows} = this.state;
-   if (selectedRows.length == 0 || selectedRows.length > 1 ) {
-    message.error('请选中一条记录');
-    return;
-  }
-  this.setState({Mapvisible:true});
-
-  }
-  drawRightClickMenus = () => {
-    return (
-      <Menu>
-        <Menu.Item key="1" onClick={() => this.showMap()}>
-          地图审核
-        </Menu.Item>
-      </Menu>
-    );
-  }; //右键菜单
-  handleOk =()=>{
-   
-     Modal.confirm({
-            title:"确定审核？",
-            onOk:()=> this.audits
-          })
-    
-  }
-  drawToolsButton = () => {
-    var style_map =[{
-      // 地图背景
-            "featureType": "land",
-            "elementType": "all",
-            "stylers": {
-                  "color": "#dee8da",
-                  "lightness": -1
-            }
-        },  {
+  showMap = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0 || selectedRows.length > 1) {
+      message.error('请选中一条记录');
+      return;
+    }
+    this.setState({ Mapvisible: true });
+  };
+  // drawRightClickMenus = () => {
+  //   return (
+  //     <Menu>
+  //       <Menu.Item key="1" onClick={() => this.showMap()}>
+  //         地图审核
+  //       </Menu.Item>
+  //     </Menu>
+  //   );
+  // }; //右键菜单
+  handleOk = () => {
+    Modal.confirm({
+      title: '确定审核？',
+      onOk: () => this.audits,
+    });
+  };
+  drawToolbarPanel = () => {
+    var style_map = [
+      {
+        // 地图背景
+        featureType: 'land',
+        elementType: 'all',
+        stylers: {
+          color: '#dee8da',
+          lightness: -1,
+        },
+      },
+      {
         // 水路背景
-            "featureType": "water",
-            "elementType": "all",
-            "stylers": {
-                  "color": "#a2c4c9ff",
-                  "lightness": -1
-            }
-        }, {
+        featureType: 'water',
+        elementType: 'all',
+        stylers: {
+          color: '#a2c4c9ff',
+          lightness: -1,
+        },
+      },
+      {
         // 绿地背景
-            "featureType": "green",
-            "elementType": "all",
-            "stylers": {
-                  "color": "#ffffccff",
-                  "lightness": -1
-            }
-        },{
+        featureType: 'green',
+        elementType: 'all',
+        stylers: {
+          color: '#ffffccff',
+          lightness: -1,
+        },
+      },
+      {
         // 教育地区
-            "featureType": "education",
-            "elementType": "all",
-            "stylers": {
-                  "color": "#d5a6bdff",
-                  "lightness": -1
-            }
-        } ]
-        //将样式加载到地图中
-       // map.setMapStyleV2({styleJson:eval("style_map")}); 
-    const{selectedRows} = this.state;
+        featureType: 'education',
+        elementType: 'all',
+        stylers: {
+          color: '#d5a6bdff',
+          lightness: -1,
+        },
+      },
+    ];
+    //将样式加载到地图中
+    // map.setMapStyleV2({styleJson:eval("style_map")});
+    const { selectedRows } = this.state;
     console.log(selectedRows[0]);
     const LONGITUDE = selectedRows[0]?.LONGITUDE;
     const LATITUDE = selectedRows[0]?.LATITUDE;
@@ -190,39 +216,51 @@ export default class AddressReportSearch extends QuickFormSearchPage {
           okText="是"
           cancelText="否"
         >
-          <Button type="primary">作废</Button>
+          <Button type="danger">作废</Button>
         </Popconfirm>
+        <Button type="primary" onClick={() => this.historyRef.show()}>
+          历史记录
+        </Button>
+        <Button type="primary" onClick={() => this.refreshTable()}>
+          刷新
+        </Button>
+        <QuickFormModal
+          quickuuid={'v_itms_store_address_report'}
+          onRef={e => (this.historyRef = e)}
+        />
         <Modal
           title="地图审核"
           visible={this.state.Mapvisible}
           onOk={this.handleOk}
           width={'80%'}
           height={'80%'}
-          onCancel={()=>this.setState({Mapvisible:false})}
-          okText = {"审核"}
+          onCancel={() => this.setState({ Mapvisible: false })}
+          okText={'审核'}
         >
           <Map
-              center={(selectedRows && selectedRows.length > 0) ? new BMapGL.Point (selectedRows[0].LONGITUDE, selectedRows[0].LATITUDE):new BMapGL.Point(113.809388,23.067107)}
-              zoom={12}
-              enableScrollWheelZoom
-             // enableAutoResize
-              enableRotate={false}
-              enableTilt={false}
-              style={{ height: 450 }}
-              tilt={30}
-              mapStyleV2={{styleJson: eval(style_map)}}
-           >{
-            (selectedRows && selectedRows.length > 0 ) && 
-            selectedRows.map(e=>{
-              return (<Marker
-              position={new BMapGL.Point(e.LONGITUDE, e.LATITUDE)}
-              enableDragging
-          />)
-            })
-          
-           }
-           </Map>
-           {/* <Map
+            center={
+              selectedRows && selectedRows.length > 0
+                ? new BMapGL.Point(selectedRows[0].LONGITUDE, selectedRows[0].LATITUDE)
+                : new BMapGL.Point(113.809388, 23.067107)
+            }
+            zoom={12}
+            enableScrollWheelZoom
+            // enableAutoResize
+            enableRotate={false}
+            enableTilt={false}
+            style={{ height: 450 }}
+            tilt={30}
+            mapStyleV2={{ styleJson: eval(style_map) }}
+          >
+            {selectedRows &&
+              selectedRows.length > 0 &&
+              selectedRows.map(e => {
+                return (
+                  <Marker position={new BMapGL.Point(e.LONGITUDE, e.LATITUDE)} enableDragging />
+                );
+              })}
+          </Map>
+          {/* <Map
         style={{ height: 450 }}
         center={new BMapGL.Point(116.404449, 39.914889)}
         zoom={12}
@@ -232,7 +270,6 @@ export default class AddressReportSearch extends QuickFormSearchPage {
         enableScrollWheelZoom
       /> */}
         </Modal>
-       
       </>
     );
   };
