@@ -81,8 +81,7 @@ export default class SimpleAutoComplete extends Component {
   }
 
   componentDidMount() {
-    if(this.props.wmsSource){
-
+    if (this.props.wmsSource) {
     }
     // 非搜索直接进来就加载数据
     if (!this.props.sourceData) {
@@ -206,18 +205,16 @@ export default class SimpleAutoComplete extends Component {
     if (isOrgSearch) {
       let loginOrgType = loginOrg().type.replace('_', '');
       let searchCondition = [];
-      if(isOrgSearch.includes(",")){
-        searchCondition = {
-        params: [
-          { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
-          { field: loginOrgType + 'UUID', rule: 'like', val: [loginOrg().uuid] },
-        ],
-      };
-      }else{
+      if (isOrgSearch.includes(',')) {
         searchCondition = {
           params: [
             { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+            { field: loginOrgType + 'UUID', rule: 'like', val: [loginOrg().uuid] },
           ],
+        };
+      } else {
+        searchCondition = {
+          params: [{ field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] }],
         };
       }
       addCondition(queryParams, searchCondition);
@@ -297,8 +294,8 @@ export default class SimpleAutoComplete extends Component {
   };
 
   loadData = async queryParams => {
-    const { DataSource,dbSource } = this.props
-    let source = DataSource != undefined ? DataSource:dbSource;
+    const { DataSource, dbSource } = this.props;
+    let source = DataSource != undefined ? DataSource : dbSource;
     const response = await memoizeDynamicQuery(queryParams, source);
     if (!response || !response.success || !Array.isArray(response.result.records)) {
       this.setSourceData([]);

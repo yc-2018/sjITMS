@@ -1,16 +1,10 @@
-import React, { PureComponent, Component } from 'react';
-import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import Page from '@/pages/Component/Page/inner/Page';
-import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
+import React, { Component } from 'react';
 import ConfirmProgress from '@/pages/Component/Progress/ConfirmProgress';
 import StandardTable from './StandardTable';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
-import ToolbarPanel from '@/pages/Component/Page/inner/ToolbarPanel';
 import { message } from 'antd';
 import { formatMessage } from 'umi/locale';
 import { getActiveKey } from '@/utils/LoginContext';
-import { routerRedux } from 'dva/router';
-import styles from '@/pages/Tms/DispatchCenterShipPlanBill/Search.less';
 
 /**
  * 搜索界面基类<br>

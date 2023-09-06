@@ -122,6 +122,7 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
   };
   onCheckreceiptSave = async () => {
     const { selectedRows } = this.state;
+    console.log('selectedRows', selectedRows);
     if (selectedRows.length !== 0) {
       let list = [];
       let msg = true;
@@ -357,7 +358,7 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
         >
           <Button
             onClick={v => {
-              v.preventDefault();
+              // v.preventDefault();
               e.record.RECEIPTED = e.record.RECEIPTED == 1 ? 0 : 1;
               if (this.state.isMerge && e.record.detail) {
                 e.record.detail.map(d => {

@@ -47,6 +47,7 @@
     "bizcharts": "^3.2.2",
     "bizcharts-plugin-slider": "^2.0.3",
     "classnames": "^2.2.6",
+    "copy-to-clipboard": "^3.3.3",
     "dva": "^2.4.0",
     "enquire-js": "^0.2.1",
     "hacktimer": "^1.1.3",

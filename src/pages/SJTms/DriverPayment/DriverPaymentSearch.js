@@ -6,16 +6,16 @@
  * @version: 1.0
  */
 import React from 'react';
-import { Button, Popconfirm, message, Modal, Form,Menu } from 'antd';
+import { Button, Popconfirm, message, Modal, Form, Menu } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { cancellation, audits } from '@/services/sjitms/AddressReport';
-import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
+// import { cancellation, audits } from '@/services/sjitms/AddressReport';
+// import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
-import { loginOrg, loginUser, loginCompany } from '@/utils/LoginContext';
-import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchForm';
-import { log } from 'lodash-decorators/utils';
-import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
+// import { loginOrg, loginUser, loginCompany } from '@/utils/LoginContext';
+// import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchForm';
+// import { log } from 'lodash-decorators/utils';
+// import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
 //import whitestyle from '../static/whitestyle'
 @connect(({ quick, loading }) => ({
   quick,
@@ -26,14 +26,14 @@ import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl'
 export default class DriverPaymentSearch extends QuickFormSearchPage {
   state = {
     ...this.state,
-    Mapvisible:false
+    Mapvisible: false,
   };
 
   onUpload = () => {
     this.props.switchTab('import');
   };
 
-  defaultSearchs= () => {
+  defaultSearchs = () => {
     //默认查询
     let ex = this.state.queryConfigColumns.filter(item => {
       return item.searchDefVal != null && item.searchDefVal != '';
@@ -77,10 +77,10 @@ export default class DriverPaymentSearch extends QuickFormSearchPage {
       }
       defaultSearch.push(exSearchFilter);
     }
-    
+
     return defaultSearch;
   };
-  
+
   /**
    * 编辑界面
    */

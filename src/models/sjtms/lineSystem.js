@@ -6,7 +6,7 @@
  * @Description: file content
  * @FilePath: \iwms-web\src\models\tms\lineSystem.js
  */
-import { query, getLinesByArchUuid } from '@/services/tms/DispatchSerialArch';
+import { query, getLinesByArchUuid } from '@/services/sjtms/DispatchSerialArch';
 export default {
   namespace: 'lineSystem',
   state: { showPage: 'query' },

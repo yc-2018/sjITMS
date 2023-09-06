@@ -1,47 +1,48 @@
-import { PureComponent } from "react";
+import { PureComponent } from 'react';
 import { Select } from 'antd';
-import { waveWeeksType } from '@/pages/Out/Wave/waveWeeksContants';
+import { waveWeeksType } from './waveWeeksContants';
 
 export default class WaveWeeksSelect extends PureComponent {
   constructor(props) {
     super(props);
 
     this.state = {
-      value: props.value
-    }
+      value: props.value,
+    };
   }
 
   componentWillReceiveProps(nextProps) {
     this.setState({
-      value: nextProps.value
+      value: nextProps.value,
     });
   }
 
   getWeekOptions = () => {
     const options = [];
     // options.push(<Select.Option key='' value=''>全部</Select.Option>);
-    Object.keys(waveWeeksType).forEach(function (key) {
+    Object.keys(waveWeeksType).forEach(function(key) {
       options.push(
-        <Select.Option key={waveWeeksType[key].name} value={waveWeeksType[key].name}>{waveWeeksType[key].caption}</Select.Option>
+        <Select.Option key={waveWeeksType[key].name} value={waveWeeksType[key].name}>
+          {waveWeeksType[key].caption}
+        </Select.Option>
       );
     });
     return options;
-  }
+  };
 
-  onChange = (value) => {
+  onChange = value => {
     this.setState({ value: value });
 
     // 用于form表单获取控件值
-    if (this.props.onChange)
-      this.props.onChange(value);
-  }
+    if (this.props.onChange) this.props.onChange(value);
+  };
 
   render() {
     const waveWeeksSelectProps = {
       placeholder: this.props.placeholder,
       mode: this.props.mode,
       onChange: this.onChange,
-      value :this.state.value
+      value: this.state.value,
     };
     return (
       <Select {...this.props} {...waveWeeksSelectProps}>
