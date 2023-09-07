@@ -12,7 +12,6 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import CostBillViewForm from '@/pages/NewCost/CostBill/CostBillViewForm';
 import StandardTable from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeStandardTable/index';
 import { createChildBill } from '@/services/cost/CostBill';
-import styles from './index.less';
 ///CommonLayout/RyzeStandardTable
 @connect(({ quick, deliveredConfirm, loading }) => ({
   quick,
