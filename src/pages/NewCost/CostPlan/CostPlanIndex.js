@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-06-26 14:41:13
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-04 11:54:46
+ * @LastEditTime: 2023-09-06 14:42:16
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -60,7 +60,7 @@ export default class CostPlanIndex extends PureComponent {
   };
 
   onClickSelectBill = e => {
-    this.props.switchTab('queryBill', { e });
+    this.props.switchTab('queryBill', { entityUuid: e.uuid,e });
   };
 
   drowe = () => {

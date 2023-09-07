@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-09 10:40:25
+ * @LastEditTime: 2023-09-07 11:47:05
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -47,7 +47,7 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
    * 查询处理
    */
   handleOnSertch = async data => {
-    const { PLAN_UUID, BILL_MONTH } = this.props;
+    const { PLAN_UUID, BILL_MONTH } = this.props.record;
     let values = { dateString: BILL_MONTH };
     this.setState({ searchLoading: true });
     let params = {};

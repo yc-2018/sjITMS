@@ -2,23 +2,18 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-09 14:08:13
+ * @LastEditTime: 2023-09-07 18:08:31
  * @version: 1.0
  */
 import React from 'react';
-import { Form, Button, Layout, Empty, Row, Col, Card, Icon, Modal } from 'antd';
+import { Form, Button, Modal, Popconfirm, Table, Badge } from 'antd';
 import { connect } from 'dva';
-import Page from '@/pages/Component/Page/inner/Page';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
-import { DndProvider } from 'react-dnd';
-import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
-import { dynamicQuery } from '@/services/quick/Quick';
 import CostBillViewForm from '@/pages/NewCost/CostBill/CostBillViewForm';
-
-const { Header, Footer, Content } = Layout;
-
+import StandardTable from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeStandardTable/index';
+import { createChildBill } from '@/services/cost/CostBill';
+import styles from './index.less';
+///CommonLayout/RyzeStandardTable
 @connect(({ quick, deliveredConfirm, loading }) => ({
   quick,
   deliveredConfirm,
@@ -32,135 +27,71 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     selectCords: [],
     billState: [],
     e: {},
-    isModalVisible: false,
-    accessoryModal: false,
+    showCreate: false,
+    isExMerge: true,
   };
 
-  changeState = () => {
-    this.searchDict();
-  };
+  onView = record => {};
 
-  searchDict = async () => {
-    const queryData = {
-      tableName: 'V_SYS_DICT_ITEM',
-      condition: { params: [{ field: 'DICT_CODE', rule: 'eq', val: ['costState'] }] },
-    };
-    await dynamicQuery(queryData).then(e => {
-      this.setState({ billState: e.result.records });
-    });
-  };
-
-  //绘制上方按钮
-  drawActionButton = () => {
+  drawToolsButton = () => {
+    const { showCreate, selectedRows } = this.state;
     return (
-      <>
-        <Button
-          onClick={() => {
-            this.props.switchTab('query');
-          }}
-        >
-          返回
+      <Popconfirm
+        title="确定要生成所选账单的子帐单吗?"
+        visible={showCreate}
+        onVisibleChange={visible => {
+          if (!visible) this.setState({ showCreate: visible });
+        }}
+        onCancel={() => {
+          this.setState({ showCreate: false });
+        }}
+        onConfirm={() => {
+          this.setState({ showCreate: false });
+          createChildBill(selectedRows[0].UUID);
+          // this.handleCancelIssue(selectedRows[0]).then(response => {
+          //   if (response.success) {
+          //     message.success('取消成功！');
+          //     this.onSearch();
+          //   }
+          // });
+        }}
+      >
+        <Button type="primary" onClick={() => this.handleChildBill()}>
+          子帐单生成
         </Button>
-      </>
+      </Popconfirm>
     );
   };
 
-  drowe = () => {
-    const { selectCords, data } = this.state;
-    return data.length != 0 && data?.list.length > 0 ? (
-      <div>
-        <Row
-          children={data.list.map(e => {
-            let color = selectCords?.includes(e.UUID) ? 'skyblue' : '';
-            return (
-              <Col style={{ paddingBottom: 15 }} span={6}>
-                <Card
-                  hoverable
-                  key={e.UUID}
-                  bodyStyle={{ padding: '15px 10px 10px', backgroundColor: color }}
-                  style={{ width: '90%', border: '0.5px solid #3B77E3' }}
-                  onClick={() => {
-                    if (selectCords.includes(e.UUID)) {
-                      let selectCord = selectCords.filter(x => x != e.UUID);
-                      this.setState({ selectCords: selectCord });
-                    } else {
-                      let selectCord = [...selectCords];
-                      selectCord.push(e.UUID);
-                      this.setState({ selectCords: selectCord });
-                    }
-                  }}
-                >
-                  {this.drawBody(e)}
-                </Card>
-              </Col>
-            );
-          })}
-        />
-        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
-      </div>
-    ) : (
-      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-    );
+  handleChildBill = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.warn('请选中一条数据！');
+      return;
+    }
+    this.setState({ showCreate: true });
   };
 
-  drawBody = e => {
-    const { billState } = this.state;
-    const stateDict = billState.find(x => x.VALUE == e.STATE);
-    return (
-      <div>
-        <Row style={{ height: '30px' }} align="bottom">
-          <Col
-            span={20}
-            style={{
-              fontWeight: 'bolder',
-              fontSize: '18px',
-            }}
-          >
-            {e.TITLE}
-          </Col>
-          <Col
-            span={4}
-            style={{
-              width: '60px',
-              height: '60px',
-              transform: 'rotate(0.1turn)',
-              border: 'solid 2px' || stateDict?.TEXT_COLOR,
-              borderRadius: '100%',
-              textAlign: 'center',
-              color: stateDict?.TEXT_COLOR,
-              fontSize: '16px',
-              fontWeight: 'bold',
-              lineHeight: '30px',
-              right: '10px',
-              bottom: '-20px',
-              position: 'absolute',
-            }}
-          >
-            <Col style={{ bottom: '-10px' }}>{e.STATE_CN}</Col>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            单号：
-            {e.BILL_NUMBER}
-          </Col>
-        </Row>
-        <Row style={{ float: 'right', marginTop: '20px' }}>
-          <Button onClick={() => this.checkDtl(e)} style={{ margin: '0px 10px' }}>
-            查看台账
-          </Button>
+  exSearchFilter = () => {
+    return [
+      {
+        field: 'PLAN_UUID',
+        type: 'VarChar',
+        rule: 'eq',
+        val: this.props.params.entityUuid,
+      },
+    ];
+  };
 
-          <Button onClick={() => this.accessoryModalShow(true, e)}>
-            <Icon type="upload" />
-            附件
-          </Button>
-        </Row>
-      </div>
-    );
+  drawcell = e => {
+    //找到fieldName为CODE这一列 更改它的component
+    if (e.column.fieldName == 'BILL_NUMBER') {
+      const component = <a onClick={() => this.checkDtl(e)}>{e.record.BILL_NUMBER}</a>;
+      e.component = component;
+    }
   };
 
   checkDtl = e => {
-    // console.log('this.state', this.state);
     this.setState({ isModalVisible: true, e });
   };
 
@@ -172,50 +103,119 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     this.setState({ isModalVisible: false });
   };
 
-  accessoryModalShow = (isShow, e) => {
-    if (e != 'false' && e.ACCESSORY_NAME) {
-      let downloadsName = e.ACCESSORY_NAME.split(',');
-      let downloads = [];
-      downloadsName.map(c => {
-        let param = {
-          download: c,
-          uuid: e.UUID,
-        };
-        downloads.push(param);
-      });
-      // this.setState({ downloads: downloads });
-      this.setState({ accessoryModal: isShow, uploadUuid: e.UUID, downloads });
-    } else {
-      // this.setState({ downloads: [] });
-      this.setState({ accessoryModal: isShow, uploadUuid: e.UUID, downloads: [] });
-    }
-  };
+  //绘制子表格
+  expandedRowRender = (record, index) => {
+    const { selectedRows, key, childSelectedRows } = this.state;
+    const columns = [
+      { title: 'Date', dataIndex: 'date', key: 'date' },
+      { title: 'Name', dataIndex: 'name', key: 'name' },
+      {
+        title: 'Status',
+        key: 'state',
+        dataIndex: 'state',
+      },
+      { title: 'Upgrade Status', dataIndex: 'upgradeNum', key: 'upgradeNum' },
+      { title: 'Cc', dataIndex: 'cc', key: 'cc' },
+    ];
 
-  drawPage = () => {
-    const { e, isModalVisible } = this.state;
-    const layout = {
-      width: '100%',
-      height: '90%',
-      backgroundColor: '#ffffff',
-    };
+    const data = [];
+    for (let i = 0; i < 50; ++i) {
+      data.push({
+        key: i,
+        date: '2014-12-24 23:12:00',
+        name: 'This is production name',
+        state: 'finish',
+        upgradeNum: 'Upgraded: 56',
+        cc: '1',
+      });
+    }
     return (
       <div>
-        <NavigatorPanel title={this.state.title} action={this.drawActionButton()} />
-        <Layout style={layout}>
-          <Header style={{ backgroundColor: '#ffffff', height: '10%', marginTop: '1%' }}>
-            {this.drawSearchPanel ? this.drawSearchPanel() : ''}
-          </Header>
-          <Content style={{ overflow: 'auto', height: '20%' }}>{this.drowe()}</Content>
-        </Layout>
+        <StandardTable
+          // settingClass={{
+          //   display: 'flex',
+          //   justifyContent: 'flex-end',
+          //   width: '10%',
+          //   marginTop: '0',
+          //   marginBottom: '5px',
+          //   marginLeft: '90%',
+          // }}
+          selectRowKeys={childSelectedRows}
+          handleRowSelectChange={this.handleChildRowSelectChange}
+          handleChildRowSelectChange={this.handleChildRowSelectChange}
+          // onView={this.onView}
+          rowSelection={this.state.rowSelection}
+          quickuuid={this.props.quickuuid + 'ex'}
+          minHeight={this.state.minHeight}
+          colTotal={[]}
+          unShowRow={this.state.unShowRow ? this.state.unShowRow : false}
+          onRow={this.handleOnRow}
+          rowKey={record => record.uuid}
+          hasSettingColumns={
+            this.state.hasSettingColumns == undefined ? true : this.state.hasSettingColumns
+          }
+          selectedRows={selectedRows}
+          // loading={tableLoading}
+          tableHeight={this.state.tableHeight}
+          data={data}
+          columns={columns}
+          noPagination={false}
+          newScroll={{ x: false, y: false }}
+          onSelectRow={this.handleSelectRows}
+          onChange={this.handleStandardTableChange}
+          comId={key + 'ex'}
+          rest={this.state.rest}
+          // rowClassName={(record, index) => {
+          //   if (record.clicked) {
+          //     return styles.clickedStyle;
+          //   }
+          //   if (record.errorStyle) {
+          //     return styles.errorStyle;
+          //   }
+          //   if (this.setrowClassName(record, index)) {
+          //     return this.setrowClassName(record, index);
+          //   }
+          //   if (index % 2 === 0) {
+          //     return styles.lightRow;
+          //   }
+          // }}
+          noActionCol={this.state.noActionCol}
+          canDrag={this.state.canDragTable}
+          pageSize={sessionStorage.getItem('searchPageLine')}
+          noToolbarPanel={
+            !this.state.noToolbar && this.drawToolbarPanel && this.drawToolbarPanel() ? false : true
+          }
+          drapTableChange={this.drapTableChange}
+          handleRowClick={this.handleRowClick}
+          isRadio={this.state.isRadio}
+          RightClickMenu={this.drawRightClickMenus()}
+          isMerge={false}
+        />
+      </div>
+    );
+  };
+
+  // //绘制上方按钮
+  drawActionButton = () => {
+    const { isModalVisible, e } = this.state;
+    return (
+      <>
+        <Button
+          onClick={() => {
+            this.props.switchTab('query');
+          }}
+        >
+          返回
+        </Button>
         <Modal
           visible={isModalVisible}
           onOk={this.handleOk.bind()}
           onCancel={this.handleCancel.bind()}
-          width={'80%'}
-          bodyStyle={{ height: 'calc(70vh)', overflowY: 'auto' }}
+          width={'90%'}
+          bodyStyle={{ height: 'calc(82vh)', overflowY: 'auto' }}
         >
           <CostBillViewForm
-            key={e.UUID}
+            key={e.val}
             showPageNow="query"
             quickuuid="123"
             {...e}
@@ -223,20 +223,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
             location={{ pathname: '1' }}
           />
         </Modal>
-      </div>
+      </>
     );
   };
-
-  render() {
-    let ret = (
-      <PageHeaderWrapper>
-        <Page withCollect={true}>{this.drawPage()}</Page>
-      </PageHeaderWrapper>
-    );
-    if (this.state.isDrag) {
-      return <DndProvider backend={HTML5Backend}>{ret}</DndProvider>;
-    } else {
-      return ret;
-    }
-  }
 }

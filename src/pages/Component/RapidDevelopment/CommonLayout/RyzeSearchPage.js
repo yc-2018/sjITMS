@@ -240,6 +240,7 @@ export default class RyzeSearchPage extends Component {
             expandedRowRender={this.expandedRowRender}
             expandRowByClick={this.state.expandRowByClick}
             isMerge={this.state.isMerge}
+            isExMerge={this.state.isExMerge}
             handleChildRowSelectChange={this.handleChildRowSelectChange}
             parentRows={this.state.parentRows}
           />

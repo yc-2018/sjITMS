@@ -131,6 +131,7 @@ export default class QuickFormSearchPage extends SearchPage {
       authority: props.route?.authority ? props.route.authority[0] : null,
       queryConfig: {},
       isMerge: false,
+      isExMerge: false,
       childSelectedRows: [],
       selectRowKeys: [],
       //合并规则下 selectRows中是否包含父类 默认falst
