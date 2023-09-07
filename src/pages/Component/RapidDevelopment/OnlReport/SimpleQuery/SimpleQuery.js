@@ -26,7 +26,7 @@ const { RangePicker } = DatePicker;
 export default class SimpleQuery extends SearchForm {
   constructor(props) {
     super(props);
-    this.state = { toggle: undefined, runTimeProps: {} };
+    this.state = { toggle: props.toggle, runTimeProps: {} };
   }
 
   componentWillReceiveProps(props) {

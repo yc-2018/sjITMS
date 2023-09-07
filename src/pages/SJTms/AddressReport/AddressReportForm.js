@@ -9,7 +9,6 @@ import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import QuickFormSearchPage from './AddressReportSearch';
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
-import { log } from 'lodash-decorators/utils';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -22,9 +21,10 @@ export default class AddressReportForm extends QuickForm {
 
   drawTab = e => {
     if (e.showPageNow == 'query') {
-      
-      const component = <QuickFormSearchPage {...e.props} />;
+      const component = (
+        <QuickFormSearchPage {...e.props} showStoreByReview={this.props.showStoreByReview} />
+      );
       e.component = component;
-    } 
+    }
   };
 }

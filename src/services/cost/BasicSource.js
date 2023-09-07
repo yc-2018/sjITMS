@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-01 16:01:34
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-06-29 11:39:23
+ * @LastEditTime: 2023-08-31 18:07:56
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -18,6 +18,12 @@ export async function findSourceTree() {
       method: 'GET',
     }
   );
+}
+
+export async function getSourceTree() {
+  return request(`/itms-cost/itms-cost/source/getSourceTree?bmsUuid=${loginOrg().uuid}`, {
+    method: 'GET',
+  });
 }
 
 export async function deleteSourceTree(uuid) {
@@ -104,5 +110,17 @@ export async function sourceConfirm(payload) {
   return request(`/itms-cost/itms-cost/newSource/sourceConfirm`, {
     method: 'POST',
     body: payload,
+  });
+}
+
+export async function sourceAbnormal(sourceUuid) {
+  return request(`/itms-cost/itms-cost/newSource/sourceAbnormal/${sourceUuid}`, {
+    method: 'POST',
+  });
+}
+
+export async function remind(sourceUuid) {
+  return request(`/itms-cost/itms-cost/newSource/remind/${sourceUuid}`, {
+    method: 'GET',
   });
 }

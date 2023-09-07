@@ -8,11 +8,10 @@ import {
   getPlanParticulars,
   exportPlan,
 } from '@/services/cost/CostCalculation';
-import { Form, Input, InputNumber, message, Tooltip, Modal, Table, Button } from 'antd';
-import { throttleSetter } from 'lodash-decorators';
+import { Form, Input, InputNumber, message, Tooltip, Modal, Table, Button, Spin } from 'antd';
 import ExportJsonExcel from 'js-export-excel';
 import StandardTable from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeStandardTable/index';
-import styles from '@/pages/Tms/TransportOrder/transportOrder.less';
+import styles from '@/pages/Component/RapidDevelopment/CommonLayout/transportOrder.less';
 const costTypes = [
   { DICT_CODE: 'costType', SORT_ORDER: 1, VALUE: '0', NAME: '税前加项' },
   { DICT_CODE: 'costType', SORT_ORDER: 2, VALUE: '1', NAME: '税前减项' },
@@ -28,6 +27,7 @@ export default class CostBillEditView extends CreatePage {
   state = {
     title: '查看',
     isModalVisible: false,
+    loading: false,
   };
   entity = {};
 
@@ -103,6 +103,7 @@ export default class CostBillEditView extends CreatePage {
     });
   };
   showView = async projectCode => {
+    this.setState({ loading: true });
     await getPlanParticulars(this.state.subjectUuid, this.state.billUuid, projectCode).then(e => {
       if (e && e.success && e.data) {
         const col = [];
@@ -114,12 +115,10 @@ export default class CostBillEditView extends CreatePage {
           };
           col.push(ss);
         }
-        this.setState({ dataSource: e.data, col });
+        this.setState({ dataSource: e.data, col, loading: false });
         this.setState({ isModalVisible: true, projectCode });
       }
     });
-
-    //this.createPageModalRef.show();
   };
   onCancel = () => {
     const { dateString, e, view } = this.props.params;
@@ -259,9 +258,20 @@ export default class CostBillEditView extends CreatePage {
             }
             return name;
           }}
-          width="800"
+          // width="800"
         />
       </Modal>
     );
   };
+
+  render() {
+    const { loading } = this.state;
+    const { noBorder } = this.props;
+    const Wrapper = noBorder ? this.NoBorderWrapper : this.PanelWrapper;
+    return (
+      <Spin spinning={loading}>
+        <Wrapper>{this.drawForm()}</Wrapper>
+      </Spin>
+    );
+  }
 }

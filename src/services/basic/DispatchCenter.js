@@ -24,15 +24,21 @@ export async function modify(payload) {
 }
 
 export async function enable(payload) {
-  return request(`/iwms-basic/basic/dispatchcenter/${payload.uuid}/enable?version=${payload.version}`, {
-    method: 'POST',
-  });
+  return request(
+    `/iwms-basic/basic/dispatchcenter/${payload.uuid}/enable?version=${payload.version}`,
+    {
+      method: 'POST',
+    }
+  );
 }
 
 export async function disable(payload) {
-  return request(`/iwms-basic/basic/dispatchcenter/${payload.uuid}/disable?version=${payload.version}`, {
-    method: 'POST',
-  });
+  return request(
+    `/iwms-basic/basic/dispatchcenter/${payload.uuid}/disable?version=${payload.version}`,
+    {
+      method: 'POST',
+    }
+  );
 }
 
 export async function get(payload) {
@@ -41,7 +47,9 @@ export async function get(payload) {
 
 export async function getbycode(payload) {
   const companyUuid = loginCompany().uuid;
-  return request(`/iwms-basic/basic/dispatchcenter/getbycode?code=${payload.code}&companyUuid=${companyUuid}`);
+  return request(
+    `/iwms-basic/basic/dispatchcenter/getbycode?code=${payload.code}&companyUuid=${companyUuid}`
+  );
 }
 
 export async function getByDcUuid(payload) {

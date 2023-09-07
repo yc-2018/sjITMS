@@ -45,6 +45,9 @@ import scher from '@/assets/common/scher.jpg';
 import { havePermission } from '@/utils/authority';
 import moment from 'moment';
 import { dynamicQuery } from '@/services/quick/Quick';
+import DispatchMapT from '@/pages/SJTms/MapDispatching/schedule/ScheduleMap';
+import mapIcon from '@/assets/common/map.svg';
+
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -178,6 +181,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   };
 
   drawRightClickMenus = () => {
+    const { selectedRows } = this.state;
+    let selectKeys = selectedRows.map(e => e.UUID);
     return (
       <Menu>
         <Menu.Item key="1" onClick={() => this.goG7('truck.webapi.newFollow')}>
@@ -188,6 +193,14 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         </Menu.Item>
         <Menu.Item key="3" onClick={() => this.goG7('truck.webapi.newMonitor')}>
           车辆实时位置(G7)
+        </Menu.Item>
+        <Menu.Item
+          onClick={() => {
+            this.dispatchMapRef.show(selectKeys);
+          }}
+        >
+          <img src={mapIcon} style={{ width: 20, height: 20 }} />
+          排车单地图
         </Menu.Item>
       </Menu>
     );
@@ -272,6 +285,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
             </Form.Item>
           </Form>
         </Modal>
+        <DispatchMapT onRef={node => (this.dispatchMapRef = node)} />
       </>
     );
   };
@@ -932,7 +946,9 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       if (
         dc.find(x => x == loginOrg().uuid) != undefined ||
         loginOrg().uuid == '000000750000008' ||
-        loginOrg().uuid == '000008150000005'
+        loginOrg().uuid == '000008150000005' ||
+        loginOrg().uuid == '000008150000006' ||
+        loginOrg().uuid == '000000750000010'
       ) {
         LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
       } else {
@@ -2060,6 +2076,413 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
                 收退货签字：
               </td> */}
               <td style={{ border: 0 }} colspan={5}>
+                <div border={0} style={{ fontSize: 14, textAlign: 'center', fontWeight: 'normal' }}>
+                  <span>第</span>
+                  <font tdata="PageNO" color="blue">
+                    ##
+                  </font>
+                  <span>页/共</span>
+                  <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
+                    ##
+                  </font>
+                  <span>页</span>
+                </div>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    );
+  } else if (loginOrg().uuid == '000000750000010' || loginOrg().uuid == '000008150000006') {
+    const storeMap = groupBy(scheduleDetails, x => x.DELIVERYPOINTCODE);
+    let returnOrders = [];
+    for (const data in storeMap) {
+      const param = {
+        tableName: 'SJ_ITMS_RETURN_ORDER',
+        condition: {
+          params: [
+            { field: 'TCREATED', rule: 'eq', val: [storeMap[data][0].ORDERCREATED] },
+            { field: 'STORECODE', rule: 'eq', val: [data] },
+          ],
+        },
+      };
+      let returnOrder = await dynamicQuery(param);
+      if (returnOrder.success && returnOrder.result?.records != 'false') {
+        returnOrders = [...returnOrders, ...returnOrder.result.records];
+      }
+    }
+    let scheduleDetailSum = {};
+    let REALCARTONCOUNT = 0;
+    let REALSCATTEREDCOUNT = 0;
+    let REALCONTAINERCOUNT = 0;
+    let OWECARTONCOUNT = 0;
+    let CONTAINERSum = 0;
+    let cartonCounts = 0;
+    let REALCOLDCONTAINERCOUNT = 0;
+    let REALFREEZECONTAINERCOUNT = 0;
+    //scheduleDetails =   sumBy(scheduleDetails,'DELIVERYPOINTCODE');
+    // console.log("scheduleDetails",scheduleDetails);
+    scheduleDetails.forEach(item => {
+      REALCARTONCOUNT += item.REALCARTONCOUNT;
+      REALSCATTEREDCOUNT += item.REALSCATTEREDCOUNT;
+      REALCONTAINERCOUNT += item.REALCONTAINERCOUNT;
+      //OWECARTONCOUNT += item.OWECARTONCOUNT;
+      REALCOLDCONTAINERCOUNT += !item.REALCOLDCONTAINERCOUNT ? 0 : item.REALCOLDCONTAINERCOUNT;
+      REALFREEZECONTAINERCOUNT += !item.REALFREEZECONTAINERCOUNT
+        ? 0
+        : item.REALFREEZECONTAINERCOUNT;
+      CONTAINERSum += item.REALCONTAINERCOUNT;
+      cartonCounts +=
+        (!item.REALCONTAINERCOUNT ? 0 : item.REALCONTAINERCOUNT) +
+        (!item.REALCOLDCONTAINERCOUNT ? 0 : item.REALCOLDCONTAINERCOUNT) +
+        (!item.REALFREEZECONTAINERCOUNT ? 0 : item.REALFREEZECONTAINERCOUNT);
+    });
+    let sds = [];
+    scheduleDetails.forEach(e => {
+      let data = sds.find(f => f.DELIVERYPOINTCODE == e.DELIVERYPOINTCODE);
+      if (data) {
+        data.REALCARTONCOUNT = data.REALCARTONCOUNT + e.REALCARTONCOUNT;
+        data.REALSCATTEREDCOUNT = data.REALSCATTEREDCOUNT + e.REALSCATTEREDCOUNT;
+        data.REALCONTAINERCOUNT = data.REALCONTAINERCOUNT + e.REALCONTAINERCOUNT;
+        data.REALCOLDCONTAINERCOUNT = data.REALCOLDCONTAINERCOUNT + e.REALCOLDCONTAINERCOUNT;
+        data.REALFREEZECONTAINERCOUNT = data.REALFREEZECONTAINERCOUNT + e.REALFREEZECONTAINERCOUNT;
+        data.ISHAVEREFRIGERATION =
+          data.ISHAVEREFRIGERATION == 0 ? e.ISHAVEREFRIGERATION : data.ISHAVEREFRIGERATION;
+        const index = sds.map(g => g.DELIVERYPOINTCODE).indexOf(e.DELIVERYPOINTCODE);
+        sds.splice(index, 1, data);
+      } else {
+        let fs = {};
+        fs.DELIVERYPOINTCODE = e.DELIVERYPOINTCODE;
+        fs.REALCARTONCOUNT = e.REALCARTONCOUNT;
+        fs.OWNERNAME = e.OWNERNAME;
+        fs.SHIPAREANAME = e.SHIPAREANAME;
+        fs.REALSCATTEREDCOUNT = e.REALSCATTEREDCOUNT;
+        fs.COLLECTBIN = e.COLLECTBIN;
+        fs.DELIVERYPOINTNAME = e.DELIVERYPOINTNAME;
+        fs.REALCONTAINERCOUNT = e.REALCONTAINERCOUNT;
+        fs.REALCOLDCONTAINERCOUNT = e.REALCOLDCONTAINERCOUNT;
+        fs.REALFREEZECONTAINERCOUNT = e.REALFREEZECONTAINERCOUNT;
+        fs.ISHAVEREFRIGERATION = e.ISHAVEREFRIGERATION;
+        fs.ARCHLINECODE = e.ARCHLINECODE;
+        fs.CONTAINERSUM = e.CONTAINERSUM;
+        fs.OWECARTONCOUNT = e.OWECARTONCOUNT;
+        cartonCounts += !e.OWECARTONCOUNT ? 0 : e.OWECARTONCOUNT;
+        CONTAINERSum += e.OWECARTONCOUNT;
+        OWECARTONCOUNT += e.OWECARTONCOUNT;
+        sds.push(fs);
+      }
+    });
+    scheduleDetailSum.REALCARTONCOUNT = REALCARTONCOUNT;
+    scheduleDetailSum.REALSCATTEREDCOUNT = REALSCATTEREDCOUNT;
+    scheduleDetailSum.REALCONTAINERCOUNT = REALCONTAINERCOUNT;
+    scheduleDetailSum.OWECARTONCOUNT = OWECARTONCOUNT;
+    scheduleDetailSum.CONTAINERSum = CONTAINERSum;
+    scheduleDetailSum.StoreSum = sds.length;
+    scheduleDetailSum.cartonCounts = cartonCounts;
+    scheduleDetailSum.REALCOLDCONTAINERCOUNT = REALCOLDCONTAINERCOUNT;
+    scheduleDetailSum.REALFREEZECONTAINERCOUNT = REALFREEZECONTAINERCOUNT;
+    return (
+      <div>
+        <table
+          style={{
+            width: '100%',
+            borderCollapse: 'collapse',
+            fontSize: 12,
+            border: 0,
+            fontWeight: 'normal',
+          }}
+          border={1}
+          cellPadding={0}
+          cellSpacing={0}
+        >
+          <thead>
+            <tr style={{ height: 50 }}>
+              <th colspan={2} style={{ border: 0 }}>
+                <img style={{ height: 30, width: 120 }} src={scher} />
+              </th>
+              <th colspan={8} style={{ border: 0 }}>
+                <div style={{ fontSize: 18, textAlign: 'center' }}>东莞彩华装车单</div>
+              </th>
+              <th colspan={4} style={{ border: 0 }}>
+                <div style={{ fontSize: 14, textAlign: 'center' }}>
+                  <span>第</span>
+                  <font tdata="PageNO" color="blue">
+                    ##
+                  </font>
+                  <span>页/共</span>
+                  <font color="blue" style={{ textDecoration: 'underline blue' }} tdata="PageCount">
+                    ##
+                  </font>
+                  <span>页</span>
+                </div>
+              </th>
+            </tr>
+            {/* <tr>
+                  <th colspan={8} style={{ border: 0, height: 20 }}>
+                    <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                      <div style={{ float: 'left', width: '25%' }}>调度签名：</div>
+                      <div style={{ float: 'left', width: '25%' }}>装车人签名：</div>
+                      <div style={{ float: 'left', width: '25%' }}>
+                        打印时间： {convertDateToTime(new Date())}
+                      </div>
+                      <div style={{ float: 'left', width: '22%' }}>制单人： {loginUser().name}</div>
+                    </div>
+                  </th>
+                </tr> */}
+            <tr>
+              <th colspan={14} style={{ border: 0, height: 27 }}>
+                <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
+                    装车单号： {schedule.SHIPBILLNUMBER?.replace('SBE', '01')}
+                  </div>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
+                    车牌号： {schedule.VEHICLECODE}
+                  </div>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
+                    信箱： {schedule.MAILNUMBER}
+                  </div>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
+                    驾驶员： {schedule.DRIVER}
+                  </div>
+                </div>
+                <div style={{ textAlign: 'left', fontWeight: 'normal', marginTop: '2' }}>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
+                    排车单:
+                    {schedule.BILLNUMBER}
+                  </div>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
+                    送货员:
+                    {schedule.DELIVERYMAN}
+                  </div>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
+                    操作员： {loginUser().name}
+                  </div>
+                  <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
+                    打印时间：
+                    {convertDateToTime(new Date())}
+                  </div>
+                  {/* <div style={{ float: 'left', width: '50%', fontWeight: 'normal' }}>
+                      注：周转箱:蓝色,冷藏箱:绿色,冷冻箱:灰色
+                  </div> */}
+                </div>
+              </th>
+            </tr>
+            {/* <tr>
+                <th colspan={16} style={{ border: 0, height: 20 }}>
+                  <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                    <div style={{ float: 'left', width: '25%' }}>副司机： {schedule.COPILOT}</div>
+                  </div>
+                </th>
+              </tr> */}
+            {/* <tr>
+              <th colspan={14} style={{ border: 0, height: 20 }}>
+                <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
+                  <div style={{ float: 'left', width: '80%' }}>
+                    {schedule.USEETC == '是'
+                      ? 'ETC信息：请到调度窗口领取ETC卡，按规定行驶，该次费用为' +
+                        schedule.ETCAMOUNT +
+                        '元'
+                      : 'ETC信息：'}
+                    <br />
+                    [线路]去程入口:
+                    {schedule.ETCROUTE}
+                    <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;回程出口:
+                    {schedule.ETCROUTERETURN}
+                    <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;途径高速:
+                    {schedule.ETCROUTEINFO}
+                    <br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;如有异常需超额使用ETC卡的，请致电（670607）
+                  </div>
+                </div>
+              </th>
+            </tr> */}
+            <tr style={{ height: 25 }}>
+              <th rowSpan={2} width={30}>
+                序号
+              </th>
+              <th width={80} rowSpan={2}>
+                线路
+              </th>
+              <th width={120} rowSpan={2}>
+                板位
+              </th>
+              <th width={80} rowSpan={2}>
+                配送排序
+              </th>
+              <th width={100} rowSpan={2}>
+                门店名称
+              </th>
+              <th width={170} colSpan={6}>
+                送出
+              </th>
+              <th width={50} colSpan={1}>
+                回收
+              </th>
+              {/* <th width={120} rowSpan={2}>
+                板位
+              </th> */}
+            </tr>
+            <tr style={{ height: 25 }}>
+              <th>整件</th>
+              <th>散件</th>
+              <th>周转箱</th>
+              <th>保温箱</th>
+              <th>欠筐数</th>
+              <th>箱总数</th>
+              <th>周转筐</th>
+              {/* <th>福袋数</th>
+                <th>深通卡</th>
+                <th>退货单</th>
+                <th>差异单</th> */}
+              {/* <th>周转</th>
+                <th>冷藏</th>
+                <th>冷冻</th> */}
+              {/* <th>箱总数</th> */}
+            </tr>
+          </thead>
+          <tbody>
+            {sds ? (
+              sds.map((item, index) => {
+                return (
+                  <tr style={{ textAlign: 'center', height: 33 }}>
+                    <td width={30}>{index + 1}</td>
+                    <td width={80}>{item.SHIPAREANAME + item.ARCHLINECODE}</td>
+                    {/* <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
+                      {item.SHIPAREANAME}
+                    </td> */}
+                    <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
+                      {item.COLLECTBIN}
+                    </td>
+                    <td>{}</td>
+                    <td width={130}>
+                      {'[' + item.DELIVERYPOINTCODE + ']' + item.DELIVERYPOINTNAME}
+                    </td>
+                    <td width={50}>{item.REALCARTONCOUNT}</td>
+                    <td width={50}>{item.REALSCATTEREDCOUNT}</td>
+                    <td width={50}>{item.REALCONTAINERCOUNT}</td>
+                    {/* <td width={50}>
+                      {!item.REALCOLDCONTAINERCOUNT ? 0 : item.REALCOLDCONTAINERCOUNT}
+                    </td>
+                    <td width={50}>
+                      {!item.REALFREEZECONTAINERCOUNT ? 0 : item.REALFREEZECONTAINERCOUNT}
+                    </td> */}
+                    <td width={50}>{item.ISHAVEREFRIGERATION == 1 ? '是' : ''}</td>
+                    <td width={50}>{item.OWECARTONCOUNT || 0}</td>
+                    <td width={50}>{item.REALCONTAINERCOUNT + item.OWECARTONCOUNT}</td>
+
+                    {/* <td width={50}>{0}</td>
+                      <td width={50}>{0}</td> */}
+                    <td width={50}>{}</td>
+                    {/* <td style={{ wordWrap: 'break-word', wordBreak: 'break-all' }} width={120}>
+                      {item.COLLECTBIN}
+                    </td> */}
+                    {/* <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
+                      {item.SCATTEREDCOLLECTBIN}
+                    </td> */}
+                    {/* <td width={50}>{}</td> */}
+                  </tr>
+                );
+              })
+            ) : (
+              <></>
+            )}
+            {scheduleDetails ? (
+              <tr style={{ textAlign: 'center', height: 25 }}>
+                <td width={80} colSpan={2}>
+                  {'合计'}
+                </td>
+                <td style={{ textAlign: 'center' }} />
+                <td style={{ textAlign: 'center' }} />
+                <td width={80} style={{ wordWrap: 'break-word', wordBreak: 'break-all' }}>
+                  {scheduleDetailSum.StoreSum}
+                </td>
+                {/* <td width={120}>
+                {scheduleDetailSum.StoreSum}
+              </td> */}
+                <td width={50}>{scheduleDetailSum.REALCARTONCOUNT}</td>
+                <td width={50}>{scheduleDetailSum.REALSCATTEREDCOUNT}</td>
+                <td width={50}>{scheduleDetailSum.REALCONTAINERCOUNT}</td>
+                <td width={50}>{}</td>
+                <td width={50}>{scheduleDetailSum.OWECARTONCOUNT || 0}</td>
+                <td width={50}>{scheduleDetailSum.cartonCounts}</td>
+                <td width={50} />
+              </tr>
+            ) : (
+              <></>
+            )}
+            {
+              <tr style={{ textAlign: 'left', height: 25, border: 0 }}>
+                <td colSpan={2} width={80} style={{ border: 0 }}>
+                  总体积(方)：
+                  {schedule.VOLUME}
+                </td>
+                <td width={50} colSpan={2} style={{ border: 0 }}>
+                  重量:
+                  {schedule.WEIGHT}
+                </td>
+                <td
+                  width={80}
+                  colSpan={2}
+                  style={{ wordWrap: 'break-word', wordBreak: 'break-all', border: 0 }}
+                >
+                  总店数:
+                  {schedule.STORECOUNT}
+                </td>
+                <td width={50} colSpan={3} style={{ border: 0 }}>
+                  总件数:
+                  {scheduleDetailSum.REALCARTONCOUNT + scheduleDetailSum.REALSCATTEREDCOUNT}
+                </td>
+                {/* <td width={50} colSpan={3}>
+                  {' '}
+                  体积(方):
+                  {schedule.VOLUME}
+                </td> */}
+                <td width={50} colSpan={3} style={{ border: 0 }}>
+                  脏筐数：___________
+                </td>
+              </tr>
+            }
+            {returnOrders && returnOrders.length > 0 ? (
+              <>
+                <tr style={{ textAlign: 'center' }}>
+                  <td colSpan={2}>类型</td>
+                  <td colSpan={2}>彩华单号</td>
+                  <td colSpan={2}>客户</td>
+                  <td colSpan={3}>数量</td>
+                  <td colSpan={3}>金额</td>
+                </tr>
+                {returnOrders.map(r => {
+                  return (
+                    <tr style={{ textAlign: 'center' }}>
+                      <td colSpan={2}>{r.ORDERTYPE}</td>
+                      <td colSpan={2}>{r.SOURCENUM}</td>
+                      <td colSpan={2}>{r.STORECODE + r.STORENAME}</td>
+                      <td colSpan={3}>{r.QUANTITY}</td>
+                      <td colSpan={3}>{r.PRICE}</td>
+                    </tr>
+                  );
+                })}
+              </>
+            ) : (
+              <></>
+            )}
+          </tbody>
+          <tfoot border={0}>
+            <tr style={{ border: 0, height: 20 }}>
+              <td style={{ border: 0, fontWeight: 'normal' }} colspan={12}>
+                单据备注: 白色~收据，红色~驾驶员、配送员，黄色~发货
+              </td>
+            </tr>
+            <tr>
+              <td style={{ border: 0, fontWeight: 'normal' }} colspan={12}>
+                驾驶/配送员签字：：
+                {}
+              </td>
+            </tr>
+            <tr>
+              <td style={{ border: 0 }} colspan={10}>
                 <div border={0} style={{ fontSize: 14, textAlign: 'center', fontWeight: 'normal' }}>
                   <span>第</span>
                   <font tdata="PageNO" color="blue">

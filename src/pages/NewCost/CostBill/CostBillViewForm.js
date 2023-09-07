@@ -11,7 +11,6 @@ import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm
 import CostBillSearchPage from './CostBillSearchPageC';
 import CostBillEditView from '../CostCalculation/CostBillEditView';
 import CostBillDtlSeacrhPage from './CostBillDtlSeacrhPage';
-import { queryIdleAndThisPostionUseing } from '@/services/facility/Container';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,

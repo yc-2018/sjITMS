@@ -35,6 +35,10 @@ export const orgType = {
     name: 'BMS',
     caption: '费用中心',
   },
+  queqiao: {
+    name: 'QUEQIAO',
+    caption:'鹊桥'
+  }
 };
 
 export function getOrgCaption(name) {

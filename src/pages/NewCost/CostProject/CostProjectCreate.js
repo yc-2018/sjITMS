@@ -257,15 +257,16 @@ export default class CostProjectCreate extends QuickCreatePage {
     formItems.COST_PROJECT_CYCLE_FIELD.component = this.selectComponent;
     formItems.COST_PROJECT_CYCLE_BODY_FIELD.component = this.selectComponent;
     formItems.COST_PROJECT_DATASOURCE_UUID.component = this.selectSourceComponent;
+    formItems.COST_PROJECT_BILLING_FIELD.component = this.selectComponent;
 
     this.getDataSelect(true);
 
     const tableName = onlFormInfos[0].onlFormHead.tableName;
     const FORMULA_TYPE = this.entity[tableName][0].FORMULA_TYPE;
-    if (FORMULA_TYPE == '3') {
+    if (FORMULA_TYPE == '0') {
       for (const formItemKey in formItems) {
         const formItem = formItems[formItemKey];
-        if (formItem.categoryName == '公式设定' && formItem.fieldName != 'FORMULA_TYPE') {
+        if (formItem.categoryName != '基本设定' && formItem.fieldName == 'DATASOURCE_UUID') {
           formItem.categoryName = 'hidden';
         }
       }
@@ -285,6 +286,23 @@ export default class CostProjectCreate extends QuickCreatePage {
         }
       }
       formItems['COST_PROJECT_SQL'].categoryName = '公式设定';
+    } else if (FORMULA_TYPE == '3') {
+      for (const formItemKey in formItems) {
+        const formItem = formItems[formItemKey];
+        if (formItem.categoryName == '公式设定' && formItem.fieldName != 'FORMULA_TYPE') {
+          formItem.categoryName = 'hidden';
+        }
+      }
+    } else if (FORMULA_TYPE == '4') {
+      for (const formItemKey in formItems) {
+        const formItem = formItems[formItemKey];
+        if (
+          formItem.categoryName == '公式设定' &&
+          (formItem.fieldName == 'DATASOURCE_UUID2' || formItem.fieldName == 'CYCLE_BODY_FIELD')
+        ) {
+          formItem.categoryName = 'hidden';
+        }
+      }
     }
   };
 
@@ -324,17 +342,35 @@ export default class CostProjectCreate extends QuickCreatePage {
           }
         }
         formItems['COST_PROJECT_SQL'].categoryName = '公式设定';
+      } else if (e.valueEvent.record.VALUE == '0') {
+        for (const formItemKey in formItems) {
+          const formItem = formItems[formItemKey];
+          if (formItem.categoryName != '基本设定' && formItem.fieldName != 'DATASOURCE_UUID') {
+            formItem.categoryName = '公式设定';
+          }
+          if (formItem.fieldName == 'DATASOURCE_UUID') {
+            formItem.categoryName = 'hidden';
+          }
+        }
       } else {
         this.getDataSelect(true);
         for (const formItemKey in formItems) {
           const formItem = formItems[formItemKey];
-          if (formItem.categoryName == 'hidden') {
+          if (
+            formItem.categoryName == 'hidden' &&
+            (formItem.fieldName != 'CYCLE_BODY_FIELD' || formItem.fieldName != 'DATASOURCE_UUID2')
+          ) {
             formItem.categoryName = '公式设定';
+          }
+          if (
+            formItem.fieldName == 'CYCLE_BODY_FIELD' ||
+            formItem.fieldName == 'DATASOURCE_UUID2'
+          ) {
+            formItem.categoryName = 'hidden';
           }
         }
       }
     } else if (e.fieldName == 'DATASOURCE_UUID') {
-      console.log('eee', this.entity);
       if (
         e.valueEvent != undefined &&
         (this.entity['COST_PROJECT'][0]['FORMULA_TYPE'] == '0' ||
@@ -445,6 +481,8 @@ export default class CostProjectCreate extends QuickCreatePage {
     this.onSaved(this.entity.COST_PROJECT[0]);
     if (success) {
       message.success('保存成功！');
+    } else {
+      message.error('保存失败!');
     }
   };
 }

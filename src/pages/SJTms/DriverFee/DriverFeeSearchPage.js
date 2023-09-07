@@ -27,12 +27,16 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
     operation: '',
   };
 
-  handleBill = async (data, fieldsValue) => {
+  handleBill = async (data, fieldsValue, operationByparam) => {
     if (fieldsValue == undefined) {
       fieldsValue = '';
     }
     const { operation } = this.state;
-    return await handleBill(data, operation, fieldsValue.note);
+    if (operationByparam) {
+      return await handleBill(data, operationByparam, fieldsValue.note);
+    } else {
+      return await handleBill(data, operation, fieldsValue.note);
+    }
   };
 
   handleConfirm = async data => {
@@ -62,11 +66,11 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
             this.setState({ showCheckPop: false });
           }}
           onConfirm={() => {
-            this.setState({ showCheckPop: false, operation: 'Checked' });
-            this.handleBill(selectedRows[0], '').then(response => {
+            this.setState({ showCheckPop: false });
+            this.handleBill(selectedRows[0], '', 'Checked').then(response => {
               if (response.success) {
                 message.success('核对成功！');
-                this.setState({ operation: '' });
+                // this.setState({ operation: '' });
                 this.onSearch();
               }
             });
@@ -90,11 +94,11 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
             this.setState({ showAuditPop: false });
           }}
           onConfirm={() => {
-            this.setState({ showAuditPop: false, operation: 'Approved' });
-            this.handleBill(selectedRows[0], '').then(response => {
+            this.setState({ showAuditPop: false });
+            this.handleBill(selectedRows[0], '', 'Approved').then(response => {
               if (response.success) {
                 message.success('审核成功！');
-                this.setState({ operation: '' });
+                // this.setState({ operation: '' });
                 this.onSearch();
               }
             });
@@ -128,7 +132,7 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
             this.handleConfirm(selectedRows[0]).then(response => {
               if (response.success) {
                 message.success('确认成功！');
-                this.setState({ operation: '' });
+                // this.setState({ operation: '' });
                 this.onSearch();
               }
             });

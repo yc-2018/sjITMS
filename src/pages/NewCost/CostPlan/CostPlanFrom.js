@@ -2,7 +2,14 @@
  * @Author: Liaorongchang
  * @Date: 2023-06-26 14:41:13
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-09 14:08:27
+ * @LastEditTime: 2023-09-04 11:39:05
+ * @version: 1.0
+ */
+/*
+ * @Author: Liaorongchang
+ * @Date: 2023-06-26 14:41:13
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-08-17 08:53:50
  * @version: 1.0
  */
 import React from 'react';
@@ -12,11 +19,13 @@ import CostPlanView from './CostPlanView';
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
 import CostPlanIndex from './CostPlanIndex';
 import CostCalculationSearchPage from '@/pages/NewCost/CostCalculation/CostCalculationSearch';
+import CostBillEditView from '@/pages/NewCost/CostCalculation/CostBillEditView';
 import Create from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageDefault';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickFormSearchPageDefault';
 import QuickViewPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickViewPageDefault';
 import ExcelImport from '@/components/ExcelImport';
 import CostBillSearchPage from './CostBillSearchPage';
+import CostPlanDefView from './CostPlanDefView';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -44,6 +53,7 @@ export default class CostPlanFrom extends QuickForm {
    */
   drawTab = e => {
     if (e.showPageNow == 'query') {
+      //首页
       const component = <CostPlanIndex {...e.props} />;
       e.component = component;
     }
@@ -52,6 +62,7 @@ export default class CostPlanFrom extends QuickForm {
       e.component = component;
     }
     if (e.showPageNow == 'update') {
+      //编辑方案界面
       const component = <CostPlanDefCreate {...e.props} />;
       e.component = component;
     }
@@ -60,14 +71,23 @@ export default class CostPlanFrom extends QuickForm {
       e.component = component;
     }
     if (e.showPageNow == 'import') {
+      //计算页面
       e.props.quickuuid = 'cost_calculation';
       const component = <CostCalculationSearchPage {...e.props} />;
       e.component = component;
     }
     if (e.showPageNow == 'queryBill') {
-    // if (e.showPageNow == 'query') {
+      //台账界面
       e.props.quickuuid = 'v_cost_bill';
       const component = <CostBillSearchPage {...e.props} />;
+      e.component = component;
+    }
+    if (e.showPageNow == 'defView') {
+      //方案详细查看界面
+      const component = <CostPlanDefView {...e.props} />;
+      e.component = component;
+    } else if (e.showPageNow == 'checkView') {
+      const component = <CostBillEditView {...e.props} />;
       e.component = component;
     }
   };
@@ -135,6 +155,24 @@ export default class CostPlanFrom extends QuickForm {
         return e.component;
       case 'queryBill':
         component = <QuickFormSearchPage {...props} />;
+        e = {
+          component: component,
+          showPageNow: showPageNow,
+          props: props,
+        };
+        this.drawTab(e);
+        return e.component;
+      case 'defView':
+        component = <QuickViewPage {...props} />;
+        e = {
+          component: component,
+          showPageNow: showPageNow,
+          props: props,
+        };
+        this.drawTab(e);
+        return e.component;
+      case 'checkView':
+        component = <QuickViewPage {...props} />;
         e = {
           component: component,
           showPageNow: showPageNow,

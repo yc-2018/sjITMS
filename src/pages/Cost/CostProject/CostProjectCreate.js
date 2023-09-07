@@ -164,8 +164,8 @@ export default class CostProjectCreate extends QuickCreatePage {
     formItems.COST_PROJECT_ACCESSORY.component = this.uploadComponent;
     formItems.COST_PROJECT_CYCLE_FIELD.component = this.selectComponent;
     formItems.COST_PROJECT_CYCLE_BODY_FIELD.component = this.selectComponent;
-    formItems.COST_PROJECT_BILLING_FIELD.component = this.selectComponent;
-
+    // formItems.COST_PROJECT_BILLING_FIELD.component = this.selectComponent;
+    console.log('formItems', formItems);
     const tableName = onlFormInfos[0].onlFormHead.tableName;
     const FORMULA_TYPE = this.entity[tableName][0].FORMULA_TYPE;
     if (FORMULA_TYPE == '3') {

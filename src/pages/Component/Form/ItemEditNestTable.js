@@ -4,7 +4,7 @@ import FormTitle from '@/pages/Component/Form/FormTitle';
 import ToolbarPanel from '@/pages/Component/Page/inner/ToolbarPanel';
 import { itemColWidth } from '@/utils/ColWidth';
 import { placeholderLocale, commonLocale } from '@/utils/CommonLocale';
-import NestTable from '@/pages/In/Preview/NestTable';
+// import NestTable from '@/pages/In/Preview/NestTable';
 import style from './ItemEditTable.less';
 
 /**
@@ -15,7 +15,6 @@ import style from './ItemEditTable.less';
  * 调入者传入 notNote 则不显示备注列
  */
 export default class ItemEditNestTable extends PureComponent {
-
   constructor(props) {
     super(props);
 
@@ -29,7 +28,7 @@ export default class ItemEditNestTable extends PureComponent {
       data: props.data,
       infinityData: [],
       index: 0,
-      selectedRowForNest:{}
+      selectedRowForNest: {},
     };
   }
 
@@ -37,7 +36,10 @@ export default class ItemEditNestTable extends PureComponent {
     this.setState({
       data: nextProps.data,
     });
-    if (nextProps.selectedRows && (nextProps.selectedRows.length == 0 && this.state.selectedRows.length != 0)) {
+    if (
+      nextProps.selectedRows &&
+      (nextProps.selectedRows.length == 0 && this.state.selectedRows.length != 0)
+    ) {
       this.setState({
         selectedRows: nextProps.selectedRows ? nextProps.selectedRows : [],
         selectedRowKeys: nextProps.selectedRowKeys ? nextProps.selectedRowKeys : [],
@@ -45,26 +47,26 @@ export default class ItemEditNestTable extends PureComponent {
     }
   }
 
-  onSelectRowForNest = (rows,keys,mainRecord)=>{
+  onSelectRowForNest = (rows, keys, mainRecord) => {
     let groupbyName = this.props.nestGroupbyName;
     const { selectedRowForNest } = this.state;
-    if(rows.length!=0){
-        selectedRowForNest[rows[0][groupbyName]] = rows;
-    }else{
-        delete selectedRowForNest[mainRecord.orderBillNumber]
+    if (rows.length != 0) {
+      selectedRowForNest[rows[0][groupbyName]] = rows;
+    } else {
+      delete selectedRowForNest[mainRecord.orderBillNumber];
     }
 
     this.setState({
-        selectedRowForNest:selectedRowForNest,
+      selectedRowForNest: selectedRowForNest,
     });
-    this.props.onSelectRowForNest&&this.props.onSelectRowForNest(selectedRowForNest)
-  }
+    this.props.onSelectRowForNest && this.props.onSelectRowForNest(selectedRowForNest);
+  };
 
   batchAdd = () => {
     this.props.handlebatchAddVisible();
   };
 
-  getTotalWidth = (columns) => {
+  getTotalWidth = columns => {
     let totalWidth = 0;
     columns.forEach(e => {
       if (e.key !== 'action' && e.width) {
@@ -75,7 +77,7 @@ export default class ItemEditNestTable extends PureComponent {
     return totalWidth;
   };
 
-  refreshColumns = (columns) => {
+  refreshColumns = columns => {
     columns.forEach(e => {
       if (e.width) {
         e.onCell = () => {
@@ -109,19 +111,24 @@ export default class ItemEditNestTable extends PureComponent {
       pageSize: pageSize,
       current: page + 1,
       showTotal: total => `共 ${total} 条`,
-    }
+    };
     return {
       list: pageData,
-      pagination: this.props.noPagination ? null : pagination
+      pagination: this.props.noPagination ? null : pagination,
     };
-  }
+  };
 
   render() {
-    const { data, columns, nestColumns,selectedRowKeys,selectedRows } = this.state;
+    const { data, columns, nestColumns, selectedRowKeys, selectedRows } = this.state;
 
     let rMargin = 100 + parseInt(data.length / 10) * 24 + 'px';
-    let waveTotal = <div
-      style={{ float: 'right', marginTop: '-40px', marginRight: rMargin }}>共&nbsp;&nbsp;{data.length}&nbsp;&nbsp;条</div>;
+    let waveTotal = (
+      <div style={{ float: 'right', marginTop: '-40px', marginRight: rMargin }}>
+        共&nbsp;&nbsp;
+        {data.length}
+        &nbsp;&nbsp;条
+      </div>
+    );
 
     const tableElement = document.getElementById('editTable');
     let totalWidth = this.getTotalWidth(columns);
@@ -132,23 +139,25 @@ export default class ItemEditNestTable extends PureComponent {
       noteWidth = itemColWidth.noteEditColWidth;
     }
     let scroll;
-    if (totalWidth > tableWidth || (totalWidth + noteWidth) > tableWidth) {
-      scroll = { x: (totalWidth + noteWidth) };
+    if (totalWidth > tableWidth || totalWidth + noteWidth > tableWidth) {
+      scroll = { x: totalWidth + noteWidth };
     }
     this.refreshColumns(columns);
     return (
       <div id="editTable" className={style.itemEditTable}>
-        {this.props.title && <FormTitle title={this.props.title}/>}
-        {(!this.props.noAddandDelete || this.props.batchAdd || this.props.drawBatchButton || this.props.drawTotalInfo) &&
-        <ToolbarPanel>
-          <div style={{ float: 'left' }}>
-            {this.props.drawBatchButton && this.props.drawBatchButton(this.state.selectedRowKeys)}
-          </div>
-
-          &nbsp;
-        </ToolbarPanel>
-        }
-        <NestTable
+        {this.props.title && <FormTitle title={this.props.title} />}
+        {(!this.props.noAddandDelete ||
+          this.props.batchAdd ||
+          this.props.drawBatchButton ||
+          this.props.drawTotalInfo) && (
+          <ToolbarPanel>
+            <div style={{ float: 'left' }}>
+              {this.props.drawBatchButton && this.props.drawBatchButton(this.state.selectedRowKeys)}
+            </div>
+            &nbsp;
+          </ToolbarPanel>
+        )}
+        {/* <NestTable
           nestRowSelect={this.props.nestRowSelect}
           rowKey={record => record.uuid ?  record.uuid : record.line}
           unShowRow={true}
@@ -160,15 +169,16 @@ export default class ItemEditNestTable extends PureComponent {
           noPagination
           scroll={this.props.scroll ? this.props.scroll : scroll}
           size='middle'
-        />
+        /> */}
         {/* } */}
-        {
-          this.props.batchAdd ? null : (this.props.noAddandDelete ? null : this.props.noAddButton ? null :
-            button)
-        }
-        {
-          this.props.batchAdd ? waveTotal : null
-        }
+        {this.props.batchAdd
+          ? null
+          : this.props.noAddandDelete
+            ? null
+            : this.props.noAddButton
+              ? null
+              : button}
+        {this.props.batchAdd ? waveTotal : null}
       </div>
     );
   }

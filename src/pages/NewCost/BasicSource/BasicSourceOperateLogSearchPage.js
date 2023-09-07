@@ -1,3 +1,10 @@
+/*
+ * @Author: Liaorongchang
+ * @Date: 2023-08-10 14:48:59
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-08-11 17:15:08
+ * @version: 1.0
+ */
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
@@ -45,7 +52,6 @@ export default class BasicSourceOperateLogSearchPage extends QuickFormSearchPage
     }
     const { pageFilters, isOrgQuery, defaultSort, superParams, linkQuery } = this.state;
     let simpleParams = [...exSearchFilter];
-    console.log('pageFilters', pageFilters);
     if (filter?.queryParams) {
       //点击查询
       simpleParams = simpleParams.concat(filter.queryParams);

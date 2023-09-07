@@ -72,6 +72,7 @@ export default class QuickForm extends PureComponent {
       pathname: location.pathname,
       ...this.fixedProps,
       route: this.props.route,
+      isNotHd: this.props.isModal ? this.props.isModal : false,
     };
     let component;
     let e;

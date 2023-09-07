@@ -9,9 +9,8 @@ import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
 import CostBillSearchPage from './CostBillSearchPage';
-import CostBillEditView from '../CostCalculation/CostBillEditView'
+import CostBillEditView from '../CostCalculation/CostBillEditView';
 import CostBillDtlSeacrhPage from './CostBillDtlSeacrhPage';
-import { queryIdleAndThisPostionUseing } from '@/services/facility/Container';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -21,11 +20,11 @@ export default class CostBillViewForm extends QuickForm {
     if (e.showPageNow == 'create') {
       const component = <CostBillSearchPage {...e.props} />;
       e.component = component;
-    }else if(e.showPageNow =='view'){
-      const component = <CostBillEditView {...e.props}/>
+    } else if (e.showPageNow == 'view') {
+      const component = <CostBillEditView {...e.props} />;
       e.component = component;
-    }else if(e.showPageNow =='query'){
-      const component = <CostBillDtlSeacrhPage {...e.props} {...this.props}/>
+    } else if (e.showPageNow == 'query') {
+      const component = <CostBillDtlSeacrhPage {...e.props} {...this.props} />;
       e.component = component;
     }
   };

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-08 08:45:02
+ * @LastEditTime: 2023-09-04 11:36:41
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -456,14 +456,14 @@ export default class CostCalculationSearch extends QuickFormSearchPage {
     } = this.state;
     // 拿到主键
     const subjectUuid = selectedRows[0][subjectKeyField];
-    this.props.switchTab('import', {
+    this.props.switchTab('checkView', {
       billUuid,
       subjectUuid,
       dateString,
       entityUuid: this.props.params.entityUuid,
       e,
     });
-    //this.props.switchTab('billView');
+    // this.props.switchTab('billView');
   };
   drawSearchPanel = () => {
     const { getFieldDecorator } = this.props.form;

@@ -11,6 +11,8 @@ import {
   Select,
   Upload,
   Icon,
+  Modal,
+  Drawer,
 } from 'antd';
 import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
 import style from './DispatchingMap.less';
@@ -31,6 +33,10 @@ import * as XLSX from 'xlsx';
 import otherIcon from '@/assets/common/otherMyj.png';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 // import Select from '@/components/ExcelImport/Select';
+import copy from 'copy-to-clipboard';
+import AddressReportForm from '../../AddressReport/AddressReportForm';
+import QuickFormModal from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormModal';
+import { shencopy } from '@/utils/SomeUtil';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -42,7 +48,7 @@ export default class StoresMap extends Component {
   canDragBefore = true;
   state = {
     visible: true,
-    loading: true,
+    // loading: true,
     windowInfo: undefined,
     loading: false,
     startPoint: '',
@@ -58,6 +64,7 @@ export default class StoresMap extends Component {
     storeParams: [],
     canDrag: false,
     file: '',
+    reviewVisible: false,
   };
 
   componentDidMount = () => {
@@ -207,10 +214,16 @@ export default class StoresMap extends Component {
       }
     }
     let b = 0;
-    setTimeout(function () {
+    setTimeout(function() {
       if (b == 0) {
         if (a == 1) {
           //单击事件
+          if (order?.address) {
+            copy(order.address);
+            message.success('复制门店地址成功');
+          } else {
+            message.error('门店地址复制失败，检查该门店是否维护了地址！！');
+          }
           b = 1;
         }
       }
@@ -465,20 +478,27 @@ export default class StoresMap extends Component {
   drawMenu = () => {
     let canDragMenu = this.state.canDrag
       ? {
-        text: '关闭拖拽门店',
-        callback: () => {
-          this.canDragBefore = this.state.canDrag;
-          this.setState({ canDrag: !this.state.canDrag });
-        },
-      }
+          text: '关闭拖拽门店',
+          callback: () => {
+            this.canDragBefore = this.state.canDrag;
+            this.setState({ canDrag: !this.state.canDrag });
+          },
+        }
       : {
-        text: '开启拖拽门店',
-        callback: () => {
-          this.canDragBefore = this.state.canDrag;
-          this.setState({ canDrag: !this.state.canDrag });
-        },
-      };
+          text: '开启拖拽门店',
+          callback: () => {
+            this.canDragBefore = this.state.canDrag;
+            this.setState({ canDrag: !this.state.canDrag });
+          },
+        };
     const menuItems = [
+      {
+        text: '门店审核',
+        callback: () => {
+          // this.storeReview.show();
+          this.setState({ reviewVisible: true });
+        },
+      },
       {
         text: '今日配送门店',
         callback: () => {
@@ -574,16 +594,16 @@ export default class StoresMap extends Component {
             // }]${'\r\r'}[纬度:${point.point.lat}]`;
             point.address = point.address
               ? point.address +
-              '<br/>经度:[' +
-              point.point.lng +
-              ']<br/>纬度:[' +
-              point.point.lat +
-              ']'
+                '<br/>经度:[' +
+                point.point.lng +
+                ']<br/>纬度:[' +
+                point.point.lat +
+                ']'
               : '' + ']<br/>经度:[' + point.point.lng + ']<br/>纬度:[' + point.point.lat + ']';
           });
         });
 
-        local.setMarkersSetCallback(function (pois) {
+        local.setMarkersSetCallback(function(pois) {
           if (that.markerArr.length > 0) {
             for (var i = 0; i < that.markerArr.length; i++) {
               that.map?.removeOverlay(that.markerArr[i]);
@@ -631,7 +651,9 @@ export default class StoresMap extends Component {
             {
               // orders: resAll.data.records,
               otherData: res.data.records,
-              orders: res.data.otherRecords.filter(item => item.uuid != res.data.records[0].uuid),
+              orders: res.data.otherRecords
+                ? res.data.otherRecords.filter(item => item.uuid != res.data.records[0].uuid)
+                : [],
               pageFilter: [],
               isOrder: false,
               loading: false,
@@ -699,6 +721,41 @@ export default class StoresMap extends Component {
     } else return [];
   };
 
+  showStoreByReview = async e => {
+    // console.log('e', e);
+    this.setState({ loading: true });
+    let params = {
+      DELIVERYPOINTCODE: e.DELIVERYPOINTCODE,
+    };
+    let store = await this.getStoreMaps('20', params);
+    let reviewStore = [];
+    if (store && store.length > 0) {
+      let review = shencopy(store[0]);
+      store[0].code = '(旧)' + store[0].code;
+      review.latitude = e.LATITUDE;
+      review.longitude = e.LONGITUDE;
+      review.code = '(新)' + review.code;
+      reviewStore.push(review);
+    }
+    // console.log('res', store, reviewStore);
+    this.setState(
+      {
+        orders: store,
+        otherData: reviewStore,
+        pageFilter: [],
+        isOrder: false,
+        loading: false,
+        // storeParams: storeParamsp,
+      },
+      () => {
+        setTimeout(() => {
+          // this.drawMenu();
+          this.autoViewPort([...store, ...reviewStore]);
+        }, 500);
+      }
+    );
+  };
+
   tansfomer = arraylist => {
     let attributeList = arraylist[0];
     let tempdata = [];
@@ -715,7 +772,7 @@ export default class StoresMap extends Component {
 
   render() {
     let that = this;
-    const { visible, loading, windowInfo, orders, isOrder } = this.state;
+    const { visible, loading, windowInfo, orders, isOrder, otherData } = this.state;
     const uploadProps = {
       name: 'file',
       // action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
@@ -730,7 +787,7 @@ export default class StoresMap extends Component {
           (fileList[0].name.substring(fileList[0].name.lastIndexOf('.') + 1).toLowerCase() !=
             'xlsx' &&
             fileList[0].name.substring(fileList[0].name.lastIndexOf('.') + 1).toLowerCase() !=
-            'xls')
+              'xls')
         ) {
           message.error('请检查文件是否为excel文件！');
           return;
@@ -738,7 +795,7 @@ export default class StoresMap extends Component {
         var rABS = true;
         const f = fileList[0];
         var reader = new FileReader();
-        reader.onload = async function (e) {
+        reader.onload = async function(e) {
           var data = e.target.result;
           if (!rABS) data = new Uint8Array(data);
           var workbook = XLSX.read(data, {
@@ -773,9 +830,9 @@ export default class StoresMap extends Component {
                 otherData: res.data ? res.data?.records : [],
                 orders: res.data
                   ? res.data?.otherRecords.filter(
-                    // item => item.uuid != res.data.records[0].uuid
-                    item => recordsUuids.indexOf(item.uuid) == -1
-                  )
+                      // item => item.uuid != res.data.records[0].uuid
+                      item => recordsUuids.indexOf(item.uuid) == -1
+                    )
                   : [],
                 pageFilter: [],
                 isOrder: false,
@@ -892,7 +949,26 @@ export default class StoresMap extends Component {
                   {this.state.isSearch ? <div id="r-result" style={{ width: '90%' }} /> : null}
                 </Col>
                 <Col span={18}>
-                  {orders.length > 0 ? (
+                  <Drawer
+                    getContainer={false}
+                    title="门店审核"
+                    placement="right"
+                    closable={true}
+                    onClose={() => this.setState({ reviewVisible: false })}
+                    visible={this.state.reviewVisible}
+                    mask={false}
+                    maskClosable={false}
+                    // height={300}
+                    width={400}
+                    style={{ position: 'absolute' }}
+                  >
+                    <AddressReportForm
+                      location={{ pathname: window.location.pathname }}
+                      quickuuid="v_itms_store_address_report_t"
+                      showStoreByReview={this.showStoreByReview}
+                    />
+                  </Drawer>
+                  {orders.length > 0 || otherData.length > 0 ? (
                     <Map
                       center={{ lng: 113.809388, lat: 23.067107 }}
                       zoom={10}
@@ -907,12 +983,12 @@ export default class StoresMap extends Component {
                       {windowInfo ? (
                         <CustomOverlay
                           position={windowInfo.point}
-                          offset={new BMapGL.Size(15, -15)}
+                          offset={new BMapGL.Size(10, -15)}
                         >
                           <div
                             style={{
                               width: 280,
-                              height: windowInfo.order.cartonCount ? 100 : 50,
+                              height: windowInfo.order.cartonCount ? 100 : 80,
                               padding: 5,
                               background: '#FFF',
                             }}
@@ -942,6 +1018,10 @@ export default class StoresMap extends Component {
                                   : '<空> '}
                               所属区域：
                               {windowInfo.order.shipareaname}
+                            </div>
+                            <div>
+                              门店地址：
+                              {windowInfo.order.address}
                             </div>
                             {windowInfo.order.cartonCount ? (
                               <div>

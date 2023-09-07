@@ -67,6 +67,7 @@ export default class DispatchMap extends Component {
       volume: 0, //体积
       weight: 0, //重量,
       totalCount: 0, //总件数
+      stores: 0, //总门店数
     },
     visible: false,
     // loading: true,
@@ -177,12 +178,12 @@ export default class DispatchMap extends Component {
   //隐藏modal
   hide = () => {
     this.setState({
-        visible: false,
-        isEdit: false,
-        checkScheduleOrders: [],
-        checkSchedules: [],
-        bearweight:0,
-        volumet:0
+      visible: false,
+      isEdit: false,
+      checkScheduleOrders: [],
+      checkSchedules: [],
+      bearweight: 0,
+      volumet: 0,
     });
     this.clusterLayer = undefined;
     this.contextMenu = undefined;
@@ -218,7 +219,7 @@ export default class DispatchMap extends Component {
         let result = response.data?.records ? response.data.records : [];
         let data = result.filter(x => x.longitude && x.latitude);
         //计算所有
-        let allTotals = this.getAllTotals(data);
+        let allTotals = this.getAllTotals(data.filter(e => e.stat != 'Scheduled'));
 
         //去重
         var obj = {};
@@ -550,6 +551,7 @@ export default class DispatchMap extends Component {
     let allSelectOrders = orders.filter(
       e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
     );
+    console.log('allSelectOrders', allSelectOrders, orders, this.basicOrders);
     // console.log('22', selectOrderStoreCodes, allSelectOrders);
     // const selectPoints = orders.filter(x => x.isSelect);
     if (allSelectOrders.length === 0) {
@@ -722,14 +724,20 @@ export default class DispatchMap extends Component {
       volume: 0, //体积
       weight: 0, //重量,
       totalCount: 0, //总件数
+      stores: 0, //总门店数
     };
+    let totalStores = [];
     orders.map(e => {
       totals.cartonCount += e.cartonCount;
       totals.scatteredCount += e.scatteredCount;
       totals.containerCount += e.containerCount;
       totals.volume = this.accAdd(totals.volume, e.volume);
       totals.weight = this.accAdd(totals.weight, e.weight);
+      if (totalStores.indexOf(e.deliveryPoint.code) == -1) {
+        totalStores.push(e.deliveryPoint.code);
+      }
     });
+    totals.stores = totalStores.length;
     totals.totalCount = totals.cartonCount + totals.scatteredCount + totals.containerCount * 2;
     return totals;
   };
@@ -747,6 +755,7 @@ export default class DispatchMap extends Component {
       volume: 0, //体积
       weight: 0, //重量,
       totalCount: 0, //总件数
+      stores: selectOrderStoreCodes.length,
     };
     allSelectOrders.map(e => {
       totals.cartonCount += e.cartonCount;
@@ -811,8 +820,8 @@ export default class DispatchMap extends Component {
           e.isSelect = true;
           e.sort = index + 1;
           orderMarkers.push(e);
-          orders.push(e);
         }
+        orders.push(e);
       });
       //   const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
       //  let totals = await this.getTotals(selectOrder);
@@ -1007,6 +1016,10 @@ export default class DispatchMap extends Component {
                   {/* {totals.weight} */}
                   {(totals?.volumet / 1000000).toFixed(3)}
                 </div>
+                <div style={{ flex: 1, fontWeight: 'bold' }}>
+                  门店:
+                  {totals.stores}
+                </div>
               </div>
             </Row>
           </div>
@@ -1030,7 +1043,7 @@ export default class DispatchMap extends Component {
                   <Button
                     style={{ float: 'left' }}
                     onClick={() => {
-                      this.setState({ isEdit: false,bearweight:0,volumet:0});
+                      this.setState({ isEdit: false, bearweight: 0, volumet: 0 });
                       this.isSelectOrders = [];
                       this.searchFormRef?.onSubmit();
                     }}
@@ -1226,7 +1239,7 @@ export default class DispatchMap extends Component {
 
                   {windowInfo ? (
                     <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
-                      <div style={{ width: 280, height: 110, padding: 5, background: '#FFF' }}>
+                      <div style={{ width: 280, height: 150, padding: 5, background: '#FFF' }}>
                         <div
                           style={{ fontWeight: 'bold', overflow: 'hidden', whiteSpace: 'nowrap' }}
                         >
@@ -1246,6 +1259,10 @@ export default class DispatchMap extends Component {
                         <div>
                           配送区域：
                           {windowInfo.order?.shipAreaName}
+                        </div>
+                        <div>
+                          门店地址：
+                          {windowInfo.order?.deliveryPoint?.address}
                         </div>
                         <Divider style={{ margin: 0, marginTop: 5 }} />
                         <div style={{ display: 'flex', marginTop: 5 }}>
@@ -1317,6 +1334,11 @@ export default class DispatchMap extends Component {
                 总重量:
                 {/* {totals.weight} */}
                 {(allTotals.weight / 1000).toFixed(3)}
+              </div>
+              <div style={{ flex: 1, fontWeight: 'bold' }}>
+                总门店数:
+                {/* {totals.weight} */}
+                {allTotals.stores}
               </div>
             </div>
           </Row>

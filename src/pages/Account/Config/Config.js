@@ -2,19 +2,9 @@ import SiderPage from '@/pages/Component/Page/SiderPage';
 import { configLocale } from './ConfigLocale';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { Menu, Icon } from 'antd';
-import InterfaceConfig from '@/pages/Facility/Config/InterfaceConfig/InterfaceConfig';
-import BillConfig from './BillDailyKnotsConfig/BillConfig';
-import DailyKnotsConfig from './BillDailyKnotsConfig/DailyKnotsConfig';
-import DispatcherConfig from './DispatcherConfig/DispatcherConfig';
-import ShipPlanDispatchConfig from './ShipPlanDispatchConfig/ShipPlanDispatchConfig';
-import ReturnDistributionTypeConfig from './ReturnDistributionTypeConfig/ReturnDistributionTypeConfig';
-import NoticeConfig from './NoticeConfig/NoticeConfig';
-import StockBatchConfig from './StockBatchConfig/StockBatchConfig';
-import TimeIntervalConfig from './TimeIntervalConfig/TimeIntervalConfig';
 import { roleLocale } from '../Role/RoleLocale';
 import siderStyle from '@/pages/Component/Page/inner/SiderPage.less';
 import styles from './Config.less';
-import QueryBillDateConfig from '@/pages/Facility/Config/QueryBillDateConfig/QueryBillDateConfig';
 import PlanConfig from './PlanConfig/PlanConfig';
 import DispatchingConfig from './DispatchingConfig/DispatchingConfig';
 import DingTaskConfigPage from './DingTaskConfig/DingTaskConfigPage';
@@ -216,27 +206,7 @@ export default class Config extends SiderPage {
     const { selectedKeys } = this.state;
 
     let currentSelectedKey = selectedKeys[0];
-    if (currentSelectedKey === configLocale.billDailyKnotsConfig.billConfig.key) {
-      return <BillConfig />;
-    } else if (currentSelectedKey === configLocale.interfaceConfig.interfaceConfig.key) {
-      return <InterfaceConfig />;
-    } else if (currentSelectedKey === configLocale.billDailyKnotsConfig.dailyKnotsConfig.key) {
-      return <DailyKnotsConfig />;
-    } else if (currentSelectedKey === configLocale.tmsConfig.dispatcherConfig.key) {
-      return <DispatcherConfig />;
-    } else if (currentSelectedKey === configLocale.tmsConfig.shipplandispatchconfig.key) {
-      return <ShipPlanDispatchConfig />;
-    } else if (currentSelectedKey === configLocale.tmsConfig.returndistributiontypeconfig.key) {
-      return <ReturnDistributionTypeConfig />;
-    } else if (currentSelectedKey === configLocale.sccConfig.noticeConfig.key) {
-      return <NoticeConfig />;
-    } else if (currentSelectedKey === configLocale.stockBatchConfig.stockBatchConfig.key) {
-      return <StockBatchConfig />;
-    } else if (currentSelectedKey === configLocale.timeIntervalConfig.timeIntervalConfig.key) {
-      return <TimeIntervalConfig />;
-    } else if (currentSelectedKey === configLocale.innerConfig.queryBillDateConfig.key) {
-      return <QueryBillDateConfig />;
-    } else if (currentSelectedKey === 'dispatchConfig') {
+    if (currentSelectedKey === 'dispatchConfig') {
       return <DispatchingConfig />;
     } else if (currentSelectedKey === 'pcdpz') {
       return <PlanConfig />;

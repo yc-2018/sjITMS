@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 17:46:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-06-29 11:28:28
+ * @LastEditTime: 2023-08-25 16:16:31
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -139,6 +139,16 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
         />
       );
       e.component = component;
+    } else if (e.column.fieldName == 'ALLOWUPDATE') {
+      const component = (
+        <Checkbox
+          defaultChecked={e.val == 1 ? true : false}
+          onChange={v => {
+            e.record.ALLOWUPDATE = v.target.checked ? 1 : 0;
+          }}
+        />
+      );
+      e.component = component;
     } else if (e.column.fieldName != 'LINE') {
       const component = (
         <Input
@@ -196,7 +206,7 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
     let payload = {
       tableName: this.props.selectedNodes.props.dataRef.tableName,
       formUuid: this.props.selectedNodes.key,
-      database:this.props.system.system
+      database: this.props.system.system,
     };
     await getNewUnAddInfo(payload).then(response => {
       if (response.success && response.data) {

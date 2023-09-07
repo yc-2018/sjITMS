@@ -19,10 +19,14 @@ import {
 import { loginOrg, loginCompany } from '@/utils/LoginContext';
 import { convertCodeName } from '@/utils/utils';
 import Empty from '@/pages/Component/Form/Empty';
-import { accAdd } from '@/utils/QpcStrUtil';
-import { modify, query, getFeeType, saveOrUpdateFee,deleteFee } from '@/services/sjtms/OtherFeeService';
+import {
+  modify,
+  query,
+  getFeeType,
+  saveOrUpdateFee,
+  deleteFee,
+} from '@/services/sjtms/OtherFeeService';
 import { dispatchReturnLocale } from './DispatchReturnLocale';
-import { alterBinType } from '@/services/facility/Bin';
 import {
   SimpleTreeSelect,
   SimpleSelect,
@@ -217,7 +221,7 @@ export default class OtherFeeModal extends Component {
   };
 
   handleSave = async confirm => {
-    const { amount, feeType, feeName, feeUuid, scheduleBillTmsUuid,billcount } = this.state;
+    const { amount, feeType, feeName, feeUuid, scheduleBillTmsUuid, billcount } = this.state;
     const params = {
       uuid: feeUuid,
       amount: amount,
@@ -227,7 +231,7 @@ export default class OtherFeeModal extends Component {
       companyuuid: loginCompany().uuid,
       dispatchcenteruuid: loginOrg().uuid,
       confirm: confirm,
-      billcount:billcount
+      billcount: billcount,
     };
     this.save(params);
   };
@@ -239,20 +243,18 @@ export default class OtherFeeModal extends Component {
       this.callback(1);
     } else if (response && response.data?.indexOf('确认保存') > 0) {
       this.setState({ confirmModal: true, confirmMessage: response.data });
-    } 
-    
+    }
   };
 
   modify = () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 1) {
-      console.log('selectedRows', selectedRows);
       this.setState({
         defaultActiveKey: '2',
         feeType: selectedRows[0].feetype,
         feeName: selectedRows[0].feename,
         amount: selectedRows[0].amount,
-        billcount:selectedRows[0].billcount,
+        billcount: selectedRows[0].billcount,
         isView: false,
         feeUuid: selectedRows[0].uuid,
       });
@@ -262,22 +264,21 @@ export default class OtherFeeModal extends Component {
       message.info('请选取一条记录');
     }
   };
-  delete = async()=>{
+  delete = async () => {
     Modal.confirm({
-      title:"确定删除吗?",
-      onOk:async ()=>{
+      title: '确定删除吗?',
+      onOk: async () => {
         const { selectedRows } = this.state;
         const response = await deleteFee(selectedRows);
-        if(response && response.success){
-          message.success("删除成功")
+        if (response && response.success) {
+          message.success('删除成功');
           this.refresh();
-        }else{
-          message.error(response.message)
+        } else {
+          message.error(response.message);
         }
-      }
-    })
-   
-  }
+      },
+    });
+  };
   columns = [
     {
       title: '排车单号',
@@ -317,7 +318,7 @@ export default class OtherFeeModal extends Component {
     },
   ];
   render() {
-    console.log("asda",this.state);
+    console.log('asda', this.state);
     const { getFieldDecorator } = this.props.form;
     const { selectedRows, visible, data, isView, confirmModal, confirmMessage } = this.state;
 
@@ -335,12 +336,14 @@ export default class OtherFeeModal extends Component {
         >
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             {isView ? (
-              <><Button type="primary" onClick={() => this.modify()}>
-                编辑
-              </Button>
-              <Button  type="danger" style={{marginLeft:3}} onClick={() => this.delete()}>
+              <>
+                <Button type="primary" onClick={() => this.modify()}>
+                  编辑
+                </Button>
+                {/* <Button  type="danger" style={{marginLeft:3}} onClick={() => this.delete()}>
                 删除
-            </Button></>
+            </Button> */}
+              </>
             ) : (
               <Button type="primary" onClick={() => this.handleSave(false)}>
                 保存

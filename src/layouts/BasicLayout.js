@@ -601,8 +601,8 @@ class BasicLayout extends React.Component {
 export default connect(({ global, setting, report, unRead }) => ({
   collapsed: global.collapsed,
   reportMenu: report.data,
-  replitions: unRead.replitions,
-  notices: unRead.notices,
+  replitions: unRead?.replitions,
+  notices: unRead?.notices,
   layout: setting.layout,
   ...setting,
 }))(BasicLayout);

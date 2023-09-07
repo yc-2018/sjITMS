@@ -30,4 +30,6 @@ export const roleLocale = {
   dispatchCenterTabPermissionInfoTitle: '调度中心权限信息',
   ownerTabPermissionInfoTitle: '货主权限信息',
   bmsTabPermissionInfoTitle: 'BMS权限信息',
+  bmsDataSourceInfoTitle: 'BMS数据源信息',
+  bmsPlanTabPermissionInfoTitle: 'BMS计算方案信息',
 };

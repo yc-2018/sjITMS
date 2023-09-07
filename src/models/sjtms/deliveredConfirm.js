@@ -8,7 +8,8 @@ import {
   confirmOrderUndelivered,
   deliveredConfirmSchedule,
   unDeliveredConfirmSchedule,
-  updateNoDelivered
+  updateNoDelivered,
+  pendingStatistics
 } from '@/services/sjtms/DeliveredConfirm';
 
 export default {
@@ -158,6 +159,10 @@ export default {
         },
         *unDeliveredConfirmSchedule({ payload,callback }, { call, put }) {
             const response = yield call(unDeliveredConfirmSchedule, payload);
+            if (callback) callback(response);
+        },
+        *pendingStatistics({ payload,callback }, { call, put }) {
+            const response = yield call(pendingStatistics, payload);
             if (callback) callback(response);
         },
 

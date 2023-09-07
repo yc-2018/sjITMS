@@ -135,6 +135,7 @@ export default class QuickFormSearchPage extends SearchPage {
       selectRowKeys: [],
       //合并规则下 selectRows中是否包含父类 默认falst
       parentRows: false,
+      isNotHd: props.isNotHd ? props.isNotHd : false,
     };
   }
 
