@@ -170,9 +170,21 @@ export default class DispatchMap extends Component {
   //显示线路
   showLine = () => {
     const { rowKeys, orders } = this.state;
+    //根据门店去重
+    var obj = {};
+    let disOrder = orders.reduce((cur, next) => {
+      obj[next.deliveryPoint.code] ? '' : (obj[next.deliveryPoint.code] = true && cur.push(next));
+      return cur;
+    }, []);
     rowKeys.forEach(async key => {
-      const points = orders.filter(res => res.billUuid == key);
-      await this.searchRoute(points);
+      const points = disOrder.filter(res => res.billUuid == key);
+      //每18个分隔一次
+      for (let i = 0; i < points.length; i += 18) {
+        let chunk = disOrder.slice(i == 0 ? i : i - 1, i + 18);
+        // 在这里处理 chunk，例如打印或存储
+        await this.searchRoute(chunk);
+      }
+      //await this.searchRoute(points);
     });
   };
   //隐藏线路
