@@ -12,8 +12,7 @@ import { guid } from '@/utils/utils';
 import moment from 'moment';
 import styles from './index.less';
 import StandardTable from '../../CommonLayout/RyzeStandardTable';
-import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
-import { groupBy, sumBy, uniqBy, orderBy } from 'lodash';
+import { groupBy, sumBy } from 'lodash';
 
 import { updateEntity, getInitDataByQuick } from '@/services/quick/Quick';
 
@@ -591,7 +590,6 @@ export default class QuickFormSearchPage extends SearchPage {
       });
       records = newList;
     }
-    console.log('records', records);
     let colTotal = data.columnTotal;
     var data = {
       list: records,

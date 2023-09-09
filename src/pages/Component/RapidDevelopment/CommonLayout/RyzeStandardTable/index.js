@@ -591,7 +591,7 @@ class StandardTable extends Component {
   };
 
   handleRowSelectChange = (selectedRowKeys, selectedRows) => {
-    let { needTotalList, selectedAllRows } = this.state;
+    let { needTotalList, selectedAllRows, list } = this.state;
     needTotalList = needTotalList.map(item => ({
       ...item,
       total: selectedRows.reduce((sum, val) => sum + parseFloat(val[item.dataIndex], 10), 0),
@@ -621,7 +621,7 @@ class StandardTable extends Component {
     let selectedRowKeysAll = selectedRowKeys;
     if (this.props.handleChildRowSelectChange) {
       let headerRows = selectedRows.filter(e => e.isHeader);
-      if (isMerge || isExMerge) {
+      if (isMerge) {
         selectedRowKeysAll = [...headerRows.map(e => e.uuid)];
         selectedRowArr = [...headerRows];
         if (headerRows.length <= 0) {
@@ -1230,7 +1230,7 @@ class StandardTable extends Component {
     if (idx > -1) {
       selectedRowKeys.splice(idx, 1);
       selectedAllRows.splice(idx, 1);
-      if (isMerge || isExMerge) {
+      if (isMerge) {
         for (const d of record.detail) {
           let detailRowKey = key && typeof key === 'function' ? key(d) : key;
           let idxDetail = selectedRowKeys.indexOf(detailRowKey);

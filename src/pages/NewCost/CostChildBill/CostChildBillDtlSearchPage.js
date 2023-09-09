@@ -1,10 +1,3 @@
-/*
- * @Author: Liaorongchang
- * @Date: 2022-06-08 10:39:18
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-09 15:55:45
- * @version: 1.0
- */
 import React, { PureComponent } from 'react';
 import { Button, Input, Col, Row, message, Modal, DatePicker, Spin, Form, Collapse } from 'antd';
 import { connect } from 'dva';
@@ -90,8 +83,8 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
         key: this.props.quickuuid + new Date(),
         data: datas,
         searchLoading: false,
-        // bill,
-        // plan,
+        bill,
+        plan,
       });
       this.initConfig({
         columns: newColumns,
@@ -100,7 +93,7 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
       });
     } else {
       message.error('当前查询无数据,请计算后再操作');
-      this.setState({ data: [], searchLoading: false });
+      this.setState({ data: [], searchLoading: false, bill: null });
     }
   };
 
@@ -127,22 +120,22 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
     // </>
   };
   onView = () => {
-    // if (this.state.selectedRows.length == 0) {
-    //   message.info('请选择一条记录');
-    //   return;
-    // }
-    // const {
-    //   plan: { subjectKeyField },
-    //   bill: { uuid: billUuid },
-    // } = this.state;
-    // const subjectUuid = this.state.selectedRows[0][subjectKeyField];
-    // this.props.switchTab('view', {
-    //   billUuid,
-    //   subjectUuid,
-    //   view: 'query',
-    //   // entityUuid: this.props.params.entityUuid,
-    //   // e,
-    // });
+    if (this.state.selectedRows.length == 0) {
+      message.info('请选择一条记录');
+      return;
+    }
+    const {
+      plan: { subjectKeyField },
+      bill: { uuid: billUuid },
+    } = this.state;
+    const subjectUuid = this.state.selectedRows[0][subjectKeyField];
+    this.props.switchTab('view', {
+      billUuid,
+      subjectUuid,
+      view: 'query',
+      // entityUuid: this.props.params.entityUuid,
+      // e,
+    });
   };
 
   drawActionButton = () => {
