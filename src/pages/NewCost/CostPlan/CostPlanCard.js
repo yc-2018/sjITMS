@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-14 15:44:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-31 18:08:40
+ * @LastEditTime: 2023-09-12 15:09:36
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -23,7 +23,7 @@ import {
   Modal,
   Form,
   Input,
-  Popconfirm,
+  Spin,
 } from 'antd';
 import { copyPlan } from '@/services/cost/Cost';
 import { apply } from '@/services/cost/CostPlan';
@@ -253,10 +253,10 @@ export default class CostPlanCard extends Component {
     if (val.key == '1') {
       this.props.onClickDefView(costPlan.uuid);
     } else if (val.key == '2') {
-      // if (costPlan.stat == 'Use') {
-      //   message.error('方案当前状态不可编辑');
-      //   return;
-      // }
+      if (costPlan.stat == 'Use') {
+        message.error('方案当前状态不可编辑');
+        return;
+      }
       this.props.onClickPlan(costPlan.uuid);
     } else if (val.key == '3') {
       this.showConfirm(costPlan);
@@ -299,7 +299,7 @@ export default class CostPlanCard extends Component {
   render() {
     const { e, costPlanStat } = this.props;
     const { costPlan } = e;
-    const { isModalOpen, changeStat, reason } = this.state;
+    const { isModalOpen, changeStat } = this.state;
     const { getFieldDecorator } = this.props.form;
     let stat = costPlanStat.filter(x => x.itemValue == costPlan.stat);
     const menu = (
@@ -380,7 +380,6 @@ export default class CostPlanCard extends Component {
           title={costPlan.schemeName || '申请'}
           onOk={() => {
             this.handleApply(costPlan.uuid);
-            // this.setState({ isModalOpen: false });
           }}
           onCancel={() => {
             this.setState({ isModalOpen: false });

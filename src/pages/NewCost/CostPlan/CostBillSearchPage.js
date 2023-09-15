@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-09 15:08:59
+ * @LastEditTime: 2023-09-15 16:01:08
  * @version: 1.0
  */
 import React from 'react';
@@ -18,6 +18,7 @@ import {
   verification,
   payment,
   completed,
+  checklistConfirm,
 } from '@/services/cost/CostBill';
 import CostChildBillSearchPage from '@/pages/NewCost/CostChildBill/CostChildBillSearchPage';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
@@ -77,6 +78,13 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     const { showCreate, selectedRows } = this.state;
     return (
       <span>
+        <Button
+          onClick={() => {
+            this.handleChecklistConfirm();
+          }}
+        >
+          清单确认
+        </Button>
         <Popconfirm
           title="确定要生成所选账单的子帐单吗?"
           visible={showCreate}
@@ -170,6 +178,19 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     return true;
   };
 
+  handleChecklistConfirm = async () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.warn('请选中一条数据！');
+      return;
+    }
+    const response = await checklistConfirm(selectedRows[0].UUID);
+    if (response.success) {
+      message.success('确认成功！');
+      this.onSearch();
+    }
+  };
+
   //账单确认
   handleBillConfirm = () => {
     const { selectedRows } = this.state;
@@ -186,8 +207,6 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         if (response.success) {
           message.success('确定成功！');
           this.onSearch();
-        } else {
-          message.error(response.message);
         }
       });
     } else {
@@ -235,8 +254,6 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         if (response.success) {
           message.success('确认成功！');
           this.onSearch();
-        } else {
-          message.error(response.message);
         }
       });
     } else {
@@ -284,8 +301,6 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         if (response.success) {
           message.success('确认成功！');
           this.onSearch();
-        } else {
-          message.error(response.message);
         }
       });
     } else {
@@ -333,8 +348,6 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         if (response.success) {
           message.success('核销成功！');
           this.onSearch();
-        } else {
-          message.error(response.message);
         }
       });
     } else {
@@ -382,8 +395,6 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         if (response.success) {
           message.success('核销成功！');
           this.onSearch();
-        } else {
-          message.error(response.message);
         }
       });
     } else {
@@ -431,8 +442,6 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         if (response.success) {
           message.success('归档成功！');
           this.onSearch();
-        } else {
-          message.error(response.message);
         }
       });
     } else {

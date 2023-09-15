@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-09 16:45:18
+ * @LastEditTime: 2023-09-11 14:48:48
  * @version: 1.0
  */
 import { Form, Modal, Button, Icon, Row, Col, Upload, List, message } from 'antd';
@@ -74,7 +74,6 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
   };
 
   checkDtl = e => {
-    console.log('没跑吗？');
     this.setState({ isModalVisible: true, e });
   };
 

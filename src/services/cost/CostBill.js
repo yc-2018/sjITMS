@@ -2,13 +2,20 @@
  * @Author: Liaorongchang
  * @Date: 2023-09-07 11:24:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-09 16:46:05
+ * @LastEditTime: 2023-09-15 10:37:50
  * @version: 1.0
  */
 import request from '@/utils/request';
 import axios from 'axios';
 import configs from '@/utils/config';
 import { cacheLoginKey, loginKey } from '@/utils/LoginContext';
+
+//清单确认
+export async function checklistConfirm(uuid) {
+  return request(`/itms-cost/itms-cost/newCostBill/checklistConfirm?uuid=${uuid}`, {
+    method: 'POST',
+  });
+}
 
 //创建子帐单
 export async function createChildBill(billUuid, payload) {

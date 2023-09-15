@@ -1,3 +1,10 @@
+/*
+ * @Author: Liaorongchang
+ * @Date: 2021-12-22 14:41:54
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-09-14 10:06:34
+ * @version: 1.0
+ */
 export const roleLocale = {
   title: '角色',
   createBtn: '新建',
@@ -31,5 +38,5 @@ export const roleLocale = {
   ownerTabPermissionInfoTitle: '货主权限信息',
   bmsTabPermissionInfoTitle: 'BMS权限信息',
   bmsDataSourceInfoTitle: 'BMS数据源信息',
-  bmsPlanTabPermissionInfoTitle: 'BMS计算方案信息',
+  bmsPlanTabPermissionInfoTitle: 'BMS计费方案信息',
 };
