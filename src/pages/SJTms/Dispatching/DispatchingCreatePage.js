@@ -558,6 +558,7 @@ export default class DispatchingCreatePage extends Component {
   //保存数据校验
   handleSave = async () => {
     const { orders, selectVehicle, selectEmployees } = this.state;
+    const {dispatchConfig} = this.props;
     const orderSummary = this.groupByOrder(orders);
     // //校验订单
     // if (orderSummary.orderCount == 0) {
@@ -617,9 +618,41 @@ export default class DispatchingCreatePage extends Component {
       this.onConfirm('排车体积超' + exceedVolume.toFixed(2) + 'm³,确定继续吗?');
       return;
     }
-    this.onSave();
+    //校验随车人员
+    if(dispatchConfig.checkVehicleFollower==1 || dispatchConfig.checkVehicleFollower==2){
+      const includes = await this.checkVehicleFollower(selectVehicle,selectEmployees);
+      if(!includes && dispatchConfig.checkVehicleFollower==1){
+        Modal.confirm({
+          title:"车辆与人员不匹配，确定生成排车单吗？",
+          onOk:()=>this.onSave()
+        })
+        return;
+      }
+      if(!includes && dispatchConfig.checkVehicleFollower==2){
+        message.error("车辆与人员不匹配");
+        return;
+      }
+      this.onSave();
+      return;
+    }else{
+      this.onSave();
+    }
   };
-
+  //查随车人员
+  checkVehicleFollower = async(selectVehicle,selectEmployees) =>{
+    let param = {
+      tableName: 'SJ_ITMS_VEHICLE_EMPLOYEE',
+      condition: {
+      params: [{ field: 'VEHICLEUUID', rule: 'eq', val: [selectVehicle.UUID] }],
+      },
+    };
+    const response = await dynamicQuery(param);
+    if(response.success && response.result.records!='false'){
+      const includes = selectEmployees.map(f=>f.CODE).every((a)=>response.result.records.map(e=>e.EMPCODE).includes(a))
+      return includes;
+    }
+    return true;
+  }
   //汇总
   groupByOrder = data => {
     const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0;
