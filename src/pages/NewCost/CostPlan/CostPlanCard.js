@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-14 15:44:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-12 15:09:36
+ * @LastEditTime: 2023-09-15 16:30:30
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -286,6 +286,10 @@ export default class CostPlanCard extends Component {
   handleApply = costPlanUuid => {
     this.props.form.validateFieldsAndScroll(async (err, values) => {
       if (!err) {
+        if (values.costPlanStat == 'Expired') {
+          message.error('目标状态不可为：过期！');
+          return;
+        }
         await apply(costPlanUuid, values).then(response => {
           if (response.success) {
             this.setState({ isModalOpen: false });
