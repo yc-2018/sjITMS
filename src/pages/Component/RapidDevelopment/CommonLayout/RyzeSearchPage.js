@@ -240,7 +240,9 @@ export default class RyzeSearchPage extends Component {
             expandedRowRender={this.expandedRowRender}
             expandRowByClick={this.state.expandRowByClick}
             isMerge={this.state.isMerge}
+            isExMerge={this.state.isExMerge}
             handleChildRowSelectChange={this.handleChildRowSelectChange}
+            handleRowSelectChange={this.handleRowSelectChange}
             parentRows={this.state.parentRows}
           />
         ) : null}
@@ -250,10 +252,11 @@ export default class RyzeSearchPage extends Component {
   };
 
   render() {
+    const { divstyle } = this.state;
     let ret = this.state.canFullScreen ? (
       <FreshPageHeaderWrapper>{this.drawPage()}</FreshPageHeaderWrapper>
     ) : this.state.isNotHd ? (
-      <div>{this.drawPage()}</div>
+      <div style={{ ...divstyle }}>{this.drawPage()}</div>
     ) : (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.pathname}>

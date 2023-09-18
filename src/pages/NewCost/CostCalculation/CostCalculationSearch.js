@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-04 11:36:41
+ * @LastEditTime: 2023-09-11 14:30:40
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -70,11 +70,11 @@ export default class CostCalculationSearch extends QuickFormSearchPage {
     });
   };
 
-  getLockStatus = date => {
-    isLock(this.props.params.entityUuid, date == undefined ? this.month : date).then(result => {
-      this.setState({ isLock: result.data });
-    });
-  };
+  // getLockStatus = date => {
+  //   isLock(this.props.params.entityUuid, date == undefined ? this.month : date).then(result => {
+  //     this.setState({ isLock: result.data });
+  //   });
+  // };
 
   comeBack = () => {
     this.props.switchTab('query');
@@ -193,7 +193,7 @@ export default class CostCalculationSearch extends QuickFormSearchPage {
         reportHeadName: this.props.params.e.SCHEME_NAME,
       });
 
-      this.getLockStatus(dateString);
+      // this.getLockStatus(dateString);
     } else {
       message.error('当前查询无数据,请计算后再操作');
       this.setState({ data: [], searchLoading: false, bill: null });
@@ -383,14 +383,14 @@ export default class CostCalculationSearch extends QuickFormSearchPage {
   /**
    * 版本锁定
    */
-  onLock = async () => {
-    await onLock(this.props.params.entityUuid, this.state.dateString).then(e => {
-      if (e.data) {
-        this.setState({ isLock: e.data });
-        message.success('操作成功');
-      }
-    });
-  };
+  // onLock = async () => {
+  //   await onLock(this.props.params.entityUuid, this.state.dateString).then(e => {
+  //     if (e.data) {
+  //       this.setState({ isLock: e.data });
+  //       message.success('操作成功');
+  //     }
+  //   });
+  // };
 
   //该方法会覆盖所有的中间功能按钮
   drawToolbarPanel = () => {
@@ -400,13 +400,13 @@ export default class CostCalculationSearch extends QuickFormSearchPage {
         <Button onClick={this.calculate.bind()}>计算</Button>
         <Button onClick={this.checkData.bind()}>检查数据</Button>
         <Button onClick={this.onSaveNote.bind()}>保存</Button>
-        <Button
+        {/* <Button
           disabled={!(isLock == 'Saved' || isLock == 'Approved')}
           type={isLock != 'Saved' ? 'danger' : ''}
           onClick={() => this.onLock()}
         >
           {isLock == 'Approved' ? '取消批准' : '批准'}
-        </Button>
+        </Button> */}
         <Button hidden={!this.state.bill} onClick={this.getcalcLog}>
           结果日志
         </Button>

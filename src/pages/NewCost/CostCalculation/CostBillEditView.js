@@ -122,7 +122,7 @@ export default class CostBillEditView extends CreatePage {
   };
   onCancel = () => {
     const { dateString, e, view } = this.props.params;
-    this.props.switchTab(view ? view : 'view', {
+    this.props.switchTab(view ? view : 'import', {
       entityUuid: this.props.params.entityUuid,
       dateString,
       e,

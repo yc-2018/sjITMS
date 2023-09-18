@@ -1,10 +1,11 @@
 import React, { Component } from 'react';
-import { Spin, Layout, Tree, message, Empty } from 'antd';
+import { Spin, Layout, Tree, message, Empty, Table, Input, Checkbox, InputNumber } from 'antd';
 import styles from './BMSAuthorizeCom.less';
 import ViewTabPanel from '@/pages/Component/Page/inner/ViewTabPanel';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import { findSourceTree, getSourceTree } from '@/services/cost/BasicSource';
 import { costAuthorize, getCostRoleResource } from '@/services/cost/RoleResource';
+import { getConfigInfo, updateConfigInfo } from '@/services/cost/CostPlan';
 import { getPlanTree } from '@/services/cost/Cost';
 
 const { Content, Sider } = Layout;
@@ -14,6 +15,8 @@ export default class BMSAuthorizeCom extends Component {
   state = {
     treeData: '',
     checkedKeys: [],
+    configInfo: [],
+    selectedKeys: '',
   };
 
   componentDidMount = () => {
@@ -54,8 +57,6 @@ export default class BMSAuthorizeCom extends Component {
       treeDatas = JSON.parse(JSON.stringify(treeData));
     }
 
-    console.log('treeDatas', treeData, treeDatas);
-
     const renderTreeNode = data => {
       if (data != '' && data != undefined) {
         let nodeArr = data.map(item => {
@@ -74,11 +75,84 @@ export default class BMSAuthorizeCom extends Component {
 
     return (
       <div>
-        <Tree checkable showIcon={true} selectable onCheck={this.onCheck} checkedKeys={checkedKeys}>
+        <Tree
+          checkable
+          showIcon={true}
+          selectable
+          onCheck={this.onCheck}
+          onSelect={this.onSelect}
+          checkedKeys={checkedKeys}
+        >
           {renderTreeNode(treeDatas)}
         </Tree>
       </div>
     );
+  };
+
+  drawContent = () => {
+    const { type } = this.props;
+    if (type == 'CostPlan') {
+      return this.drawConfigTable();
+    } else {
+      return <Empty />;
+    }
+  };
+
+  drawConfigTable = () => {
+    const { configInfo } = this.state;
+
+    const columns = [
+      {
+        title: '节点',
+        dataIndex: 'typeName',
+        key: 'typeName',
+      },
+      {
+        title: '跳过',
+        dataIndex: 'skip',
+        key: 'skip',
+        render: (text, record) => {
+          return (
+            <Checkbox
+              defaultChecked={text}
+              onChange={e => {
+                this.saveConfig(record, 'skip', e.target.checked);
+              }}
+            />
+          );
+        },
+      },
+      {
+        title: '操作人',
+        dataIndex: 'operator',
+        key: 'operator',
+        render: (text, record) => {
+          return (
+            <Input
+              defaultValue={text}
+              onBlur={e => this.saveConfig(record, 'operator', e.target.value)}
+            />
+          );
+        },
+      },
+      {
+        title: '每月提醒时间',
+        dataIndex: 'warnTime',
+        key: 'warnTime',
+        render: (text, record) => {
+          return (
+            <InputNumber
+              min={0}
+              max={31}
+              defaultValue={text}
+              onBlur={e => this.saveConfig(record, 'warnTime', e.target.value)}
+            />
+          );
+        },
+      },
+    ];
+
+    return <Table dataSource={configInfo} columns={columns} />;
   };
 
   onCheck = async checkedKeys => {
@@ -90,8 +164,30 @@ export default class BMSAuthorizeCom extends Component {
     }
   };
 
+  onSelect = (selectedKeys, e) => {
+    const { type } = this.props;
+    this.setState({ selectedKeys: selectedKeys });
+    if (type == 'CostPlan') {
+      getConfigInfo(selectedKeys).then(response => {
+        if (response.success && response.data) {
+          this.setState({ configInfo: response.data });
+        } else {
+          this.setState({ configInfo: [] });
+        }
+      });
+    }
+  };
+
+  saveConfig = async (record, column, value) => {
+    const { selectedKeys } = this.state;
+    record[column] = value;
+    const response = await updateConfigInfo(record);
+    if (response && response.success) {
+      message.success('修改成功');
+    }
+  };
+
   render() {
-    const { loading } = this.props;
     const style = {
       // 'marginTop': '12px',
       overflow: 'hidden',
@@ -111,9 +207,7 @@ export default class BMSAuthorizeCom extends Component {
                 <Sider width={240} className={styles.leftWrapper}>
                   {this.drawSider()}
                 </Sider>
-                <Content className={styles.rightWrapper}>
-                  <Empty />
-                </Content>
+                <Content className={styles.rightWrapper}>{this.drawContent()}</Content>
               </Layout>
             </Content>
           </div>

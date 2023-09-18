@@ -8,9 +8,10 @@
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { Button, Popconfirm, message, Modal, Form, Input } from 'antd';
-import { handleBill, handleConfirm } from '@/services/sjitms/TollFee';
+import { handleBill, handleConfirm,updateFeeNote } from '@/services/sjitms/TollFee';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { havePermission } from '@/utils/authority';
+import { updateFee } from '@/services/sjtms/OtherFeeService';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -25,6 +26,7 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
     showCheckPop: false,
     showConfirmPop: false,
     operation: '',
+    updateFeeNotes: false
   };
 
   handleBill = async (data, fieldsValue, operationByparam) => {
@@ -42,7 +44,7 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
   handleConfirm = async data => {
     return await handleConfirm(data);
   };
-
+ 
   //该方法用于写中间的功能按钮 多个按钮用<span>包裹
   drawToolsButton = () => {
     const {
@@ -51,9 +53,9 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
       selectedRows,
       showRejectedModal,
       showConfirmPop,
+      updateFeeNotes
     } = this.state;
     const { getFieldDecorator } = this.props.form;
-
     return (
       <span>
         <Popconfirm
@@ -95,7 +97,7 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
           }}
           onConfirm={() => {
             this.setState({ showAuditPop: false });
-            this.handleBill(selectedRows[0], '', 'Approved').then(response => {
+            this.handleBill(selectedRows[0], '', 'DispatcherApproved').then(response => {
               if (response.success) {
                 message.success('审核成功！');
                 // this.setState({ operation: '' });
@@ -144,7 +146,14 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
           >
             确认
           </Button>
+       
         </Popconfirm>
+        <Button
+            hidden={!havePermission(this.state.authority + '.audits')}
+            onClick={() => this.updateFeeNote()}
+          >
+            修改超额说明
+          </Button>
 
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
         <Modal
@@ -156,7 +165,7 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
               if (err) {
                 return;
               }
-              this.handleBill(selectedRows[0], fieldsValue).then(response => {
+               this.handleBill(selectedRows[0], fieldsValue,"DispatcherRejected").then(response => {
                 if (response.success) {
                   message.success('驳回成功！');
                   this.setState({ operation: '', showRejectedModal: false });
@@ -169,11 +178,33 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
             this.setState({ showRejectedModal: false });
           }}
         >
-          <Form>
-            <Form.Item labelCol={{ span: 6 }} wrapperCol={{ span: 15 }} label="驳回原因">
+        </Modal>
+        <Modal
+          title="修改超额说明"
+          visible={updateFeeNotes}
+          onOk={() => {
+            this.props.form.validateFields((err, fieldsValue) => {
+              if (err) {
+                return;
+              }
+              updateFeeNote(selectedRows.map(e=>e.UUID),fieldsValue.note).then(response => {
+                if (response.success) {
+                  message.success('修改成功！');
+                  this.setState({updateFeeNotes: false });
+                  this.onSearch();
+                }
+              });
+            });
+          }}
+          onCancel={() => {
+            this.setState({ updateFeeNotes: false });
+          }}
+        >
+         <Form>
+            <Form.Item labelCol={{ span: 6 }} wrapperCol={{ span: 15 }} label="超额说明">
               {getFieldDecorator('note', {})(<Input />)}
             </Form.Item>
-          </Form>
+          </Form> 
         </Modal>
       </span>
     );
@@ -208,7 +239,7 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
       message.warn('请选中一条数据！');
       return;
     }
-    this.setState({ operation: 'Approved' });
+    this.setState({ operation: 'DispatcherApproved' });
     selectedRows.length == 1
       ? this.setState({ showAuditPop: true })
       : this.batchProcessConfirmRef.show('审核', selectedRows, this.handleBill, this.onSearch);
@@ -226,7 +257,15 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
     }
     this.setState({ showRejectedModal: true });
   };
-
+  //修改超额说明
+  updateFeeNote =()=>{
+    const{selectedRows} = this.state;
+    if (selectedRows.length == 0) {
+      message.warn('请选中一条数据！');
+      return;
+    }
+    this.setState({updateFeeNotes:true});
+  }
   drawcell = row => {
     if (row.column.fieldName == 'PARKINGFEE') {
       const params = {

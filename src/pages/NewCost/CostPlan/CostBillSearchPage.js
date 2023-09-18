@@ -2,23 +2,28 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-09 14:08:13
+ * @LastEditTime: 2023-09-15 16:01:08
  * @version: 1.0
  */
 import React from 'react';
-import { Form, Button, Layout, Empty, Row, Col, Card, Icon, Modal } from 'antd';
+import { Form, Button, Modal, Popconfirm, message } from 'antd';
 import { connect } from 'dva';
-import Page from '@/pages/Component/Page/inner/Page';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
-import { DndProvider } from 'react-dnd';
-import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
-import { dynamicQuery } from '@/services/quick/Quick';
 import CostBillViewForm from '@/pages/NewCost/CostBill/CostBillViewForm';
+import {
+  createChildBill,
+  billConfirm,
+  reconciliation,
+  invoice,
+  verification,
+  payment,
+  completed,
+  checklistConfirm,
+} from '@/services/cost/CostBill';
+import CostChildBillSearchPage from '@/pages/NewCost/CostChildBill/CostChildBillSearchPage';
+import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
 
-const { Header, Footer, Content } = Layout;
-
+///CommonLayout/RyzeStandardTable
 @connect(({ quick, deliveredConfirm, loading }) => ({
   quick,
   deliveredConfirm,
@@ -32,135 +37,32 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     selectCords: [],
     billState: [],
     e: {},
-    isModalVisible: false,
-    accessoryModal: false,
+    showCreate: false,
+    isExMerge: true,
   };
 
-  changeState = () => {
-    this.searchDict();
+  onView = record => {};
+
+  exSearchFilter = () => {
+    return [
+      {
+        field: 'PLAN_UUID',
+        type: 'VarChar',
+        rule: 'eq',
+        val: this.props.params.entityUuid,
+      },
+    ];
   };
 
-  searchDict = async () => {
-    const queryData = {
-      tableName: 'V_SYS_DICT_ITEM',
-      condition: { params: [{ field: 'DICT_CODE', rule: 'eq', val: ['costState'] }] },
-    };
-    await dynamicQuery(queryData).then(e => {
-      this.setState({ billState: e.result.records });
-    });
-  };
-
-  //绘制上方按钮
-  drawActionButton = () => {
-    return (
-      <>
-        <Button
-          onClick={() => {
-            this.props.switchTab('query');
-          }}
-        >
-          返回
-        </Button>
-      </>
-    );
-  };
-
-  drowe = () => {
-    const { selectCords, data } = this.state;
-    return data.length != 0 && data?.list.length > 0 ? (
-      <div>
-        <Row
-          children={data.list.map(e => {
-            let color = selectCords?.includes(e.UUID) ? 'skyblue' : '';
-            return (
-              <Col style={{ paddingBottom: 15 }} span={6}>
-                <Card
-                  hoverable
-                  key={e.UUID}
-                  bodyStyle={{ padding: '15px 10px 10px', backgroundColor: color }}
-                  style={{ width: '90%', border: '0.5px solid #3B77E3' }}
-                  onClick={() => {
-                    if (selectCords.includes(e.UUID)) {
-                      let selectCord = selectCords.filter(x => x != e.UUID);
-                      this.setState({ selectCords: selectCord });
-                    } else {
-                      let selectCord = [...selectCords];
-                      selectCord.push(e.UUID);
-                      this.setState({ selectCords: selectCord });
-                    }
-                  }}
-                >
-                  {this.drawBody(e)}
-                </Card>
-              </Col>
-            );
-          })}
-        />
-        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
-      </div>
-    ) : (
-      <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
-    );
-  };
-
-  drawBody = e => {
-    const { billState } = this.state;
-    const stateDict = billState.find(x => x.VALUE == e.STATE);
-    return (
-      <div>
-        <Row style={{ height: '30px' }} align="bottom">
-          <Col
-            span={20}
-            style={{
-              fontWeight: 'bolder',
-              fontSize: '18px',
-            }}
-          >
-            {e.TITLE}
-          </Col>
-          <Col
-            span={4}
-            style={{
-              width: '60px',
-              height: '60px',
-              transform: 'rotate(0.1turn)',
-              border: 'solid 2px' || stateDict?.TEXT_COLOR,
-              borderRadius: '100%',
-              textAlign: 'center',
-              color: stateDict?.TEXT_COLOR,
-              fontSize: '16px',
-              fontWeight: 'bold',
-              lineHeight: '30px',
-              right: '10px',
-              bottom: '-20px',
-              position: 'absolute',
-            }}
-          >
-            <Col style={{ bottom: '-10px' }}>{e.STATE_CN}</Col>
-          </Col>
-        </Row>
-        <Row>
-          <Col>
-            单号：
-            {e.BILL_NUMBER}
-          </Col>
-        </Row>
-        <Row style={{ float: 'right', marginTop: '20px' }}>
-          <Button onClick={() => this.checkDtl(e)} style={{ margin: '0px 10px' }}>
-            查看台账
-          </Button>
-
-          <Button onClick={() => this.accessoryModalShow(true, e)}>
-            <Icon type="upload" />
-            附件
-          </Button>
-        </Row>
-      </div>
-    );
+  drawcell = e => {
+    //找到fieldName为CODE这一列 更改它的component
+    if (e.column.fieldName == 'BILL_NUMBER') {
+      const component = <a onClick={() => this.checkDtl(e)}>{e.record.BILL_NUMBER}</a>;
+      e.component = component;
+    }
   };
 
   checkDtl = e => {
-    // console.log('this.state', this.state);
     this.setState({ isModalVisible: true, e });
   };
 
@@ -172,50 +74,446 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     this.setState({ isModalVisible: false });
   };
 
-  accessoryModalShow = (isShow, e) => {
-    if (e != 'false' && e.ACCESSORY_NAME) {
-      let downloadsName = e.ACCESSORY_NAME.split(',');
-      let downloads = [];
-      downloadsName.map(c => {
-        let param = {
-          download: c,
-          uuid: e.UUID,
-        };
-        downloads.push(param);
-      });
-      // this.setState({ downloads: downloads });
-      this.setState({ accessoryModal: isShow, uploadUuid: e.UUID, downloads });
-    } else {
-      // this.setState({ downloads: [] });
-      this.setState({ accessoryModal: isShow, uploadUuid: e.UUID, downloads: [] });
+  drawToolsButton = () => {
+    const { showCreate, selectedRows } = this.state;
+    return (
+      <span>
+        <Button
+          onClick={() => {
+            this.handleChecklistConfirm();
+          }}
+        >
+          清单确认
+        </Button>
+        <Popconfirm
+          title="确定要生成所选账单的子帐单吗?"
+          visible={showCreate}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showCreate: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showCreate: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showCreate: false });
+            createChildBill(selectedRows[0].UUID).then(response => {
+              if (response.success) {
+                message.success('生成成功！');
+                this.onSearch();
+              }
+            });
+          }}
+        >
+          <Button type="primary" onClick={() => this.handleChildBill()}>
+            子帐单生成
+          </Button>
+        </Popconfirm>
+        <Button
+          onClick={() => {
+            this.handleBillConfirm();
+          }}
+        >
+          账单确认
+        </Button>
+        <Button
+          onClick={() => {
+            this.handleReconciliation();
+          }}
+        >
+          对账完成
+        </Button>
+        <Button
+          onClick={() => {
+            this.handleInvoiceConfirm();
+          }}
+        >
+          票据确认
+        </Button>
+        <Button
+          onClick={() => {
+            this.handleVerification();
+          }}
+        >
+          核销
+        </Button>
+        <Button
+          onClick={() => {
+            this.handlePayment();
+          }}
+        >
+          付款
+        </Button>
+        <Button
+          onClick={() => {
+            this.handleCompleted();
+          }}
+        >
+          归档
+        </Button>
+        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
+      </span>
+    );
+  };
+
+  //生成子帐单
+  handleChildBill = () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.warn('请选中一条数据！');
+      return;
+    }
+    this.setState({ showCreate: true });
+  };
+
+  //校验
+  billVerify = (selectedRows, childSelectRows) => {
+    if (selectedRows.length == 0 && (childSelectRows == undefined || childSelectRows.length == 0)) {
+      message.error('请至少选择一条记录');
+      return false;
+    }
+    if (selectedRows.length > 0 && childSelectRows != undefined && childSelectRows.length > 0) {
+      message.error('总账单与子帐单不可同时进行操作，请分开操作');
+      return false;
+    }
+    return true;
+  };
+
+  handleChecklistConfirm = async () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length == 0) {
+      message.warn('请选中一条数据！');
+      return;
+    }
+    const response = await checklistConfirm(selectedRows[0].UUID);
+    if (response.success) {
+      message.success('确认成功！');
+      this.onSearch();
     }
   };
 
-  drawPage = () => {
-    const { e, isModalVisible } = this.state;
-    const layout = {
-      width: '100%',
-      height: '90%',
-      backgroundColor: '#ffffff',
-    };
+  //账单确认
+  handleBillConfirm = () => {
+    const { selectedRows } = this.state;
+    const childSelectRows = this.childRef?.state.selectedRows;
+    const verify = this.billVerify(selectedRows, childSelectRows);
+    if (!verify) return;
+
+    if (selectedRows.length > 0) {
+      if (selectedRows.length > 1) {
+        message.error('总账单操作只能操作单条记录！');
+        return;
+      }
+      this.confirmBill(selectedRows[0].UUID).then(response => {
+        if (response.success) {
+          message.success('确定成功！');
+          this.onSearch();
+        }
+      });
+    } else {
+      if (childSelectRows.length == 1) {
+        this.confirmChildBill(childSelectRows[0]).then(response => {
+          if (response.success) {
+            message.success('确定成功！');
+            this.onSearch;
+          } else {
+            message.error(response.message);
+          }
+        });
+      } else {
+        this.batchProcessConfirmRef.show(
+          '子账单确认',
+          childSelectRows,
+          this.confirmChildBill,
+          this.onSearch
+        );
+      }
+    }
+  };
+
+  confirmBill = async uuid => {
+    return await billConfirm('parent', uuid);
+  };
+
+  confirmChildBill = async child => {
+    return await billConfirm('child', child.UUID);
+  };
+
+  //对账确认
+  handleReconciliation = () => {
+    const { selectedRows } = this.state;
+    const childSelectRows = this.childRef?.state.selectedRows;
+    const verify = this.billVerify(selectedRows, childSelectRows);
+    if (!verify) return;
+
+    if (selectedRows.length > 0) {
+      if (selectedRows.length > 1) {
+        message.error('总账单操作只能操作单条记录！');
+        return;
+      }
+      this.reconciliationBill(selectedRows[0].UUID).then(response => {
+        if (response.success) {
+          message.success('确认成功！');
+          this.onSearch();
+        }
+      });
+    } else {
+      if (childSelectRows.length == 1) {
+        this.reconciliationChildBill(childSelectRows[0]).then(response => {
+          if (response.success) {
+            message.success('确认成功！');
+            this.onSearch();
+          } else {
+            message.error(response.message);
+          }
+        });
+      } else {
+        this.batchProcessConfirmRef.show(
+          '子账单对账确认',
+          childSelectRows,
+          this.reconciliationChildBill,
+          this.onSearch
+        );
+      }
+    }
+  };
+
+  reconciliationBill = async uuid => {
+    return await reconciliation('parent', uuid);
+  };
+
+  reconciliationChildBill = async child => {
+    return await reconciliation('child', child.UUID);
+  };
+
+  //票据确认
+  handleInvoiceConfirm = () => {
+    const { selectedRows } = this.state;
+    const childSelectRows = this.childRef?.state.selectedRows;
+    const verify = this.billVerify(selectedRows, childSelectRows);
+    if (!verify) return;
+
+    if (selectedRows.length > 0) {
+      if (selectedRows.length > 1) {
+        message.error('总账单操作只能操作单条记录！');
+        return;
+      }
+      this.invoiceConfirm(selectedRows[0].UUID).then(response => {
+        if (response.success) {
+          message.success('确认成功！');
+          this.onSearch();
+        }
+      });
+    } else {
+      if (childSelectRows.length == 1) {
+        this.invoiceConfirmChild(childSelectRows[0]).then(response => {
+          if (response.success) {
+            message.success('确认成功！');
+            this.onSearch();
+          } else {
+            message.error(response.message);
+          }
+        });
+      } else {
+        this.batchProcessConfirmRef.show(
+          '子账单对账确认',
+          childSelectRows,
+          this.invoiceConfirmChild,
+          this.onSearch
+        );
+      }
+    }
+  };
+
+  invoiceConfirm = async uuid => {
+    return await invoice('parent', uuid);
+  };
+
+  invoiceConfirmChild = async child => {
+    return await invoice('child', child.UUID);
+  };
+
+  //核销
+  handleVerification = () => {
+    const { selectedRows } = this.state;
+    const childSelectRows = this.childRef?.state.selectedRows;
+    const verify = this.billVerify(selectedRows, childSelectRows);
+    if (!verify) return;
+
+    if (selectedRows.length > 0) {
+      if (selectedRows.length > 1) {
+        message.error('总账单操作只能操作单条记录！');
+        return;
+      }
+      this.verification(selectedRows[0].UUID).then(response => {
+        if (response.success) {
+          message.success('核销成功！');
+          this.onSearch();
+        }
+      });
+    } else {
+      if (childSelectRows.length == 1) {
+        this.verificationChild(childSelectRows[0]).then(response => {
+          if (response.success) {
+            message.success('核销成功！');
+            this.onSearch();
+          } else {
+            message.error(response.message);
+          }
+        });
+      } else {
+        this.batchProcessConfirmRef.show(
+          '子账单核销',
+          childSelectRows,
+          this.verificationChild,
+          this.onSearch
+        );
+      }
+    }
+  };
+
+  verification = async uuid => {
+    return await verification('parent', uuid);
+  };
+
+  verificationChild = async child => {
+    return await verification('child', child.UUID);
+  };
+
+  //付款
+  handlePayment = () => {
+    const { selectedRows } = this.state;
+    const childSelectRows = this.childRef?.state.selectedRows;
+    const verify = this.billVerify(selectedRows, childSelectRows);
+    if (!verify) return;
+
+    if (selectedRows.length > 0) {
+      if (selectedRows.length > 1) {
+        message.error('总账单操作只能操作单条记录！');
+        return;
+      }
+      this.payment(selectedRows[0].UUID).then(response => {
+        if (response.success) {
+          message.success('核销成功！');
+          this.onSearch();
+        }
+      });
+    } else {
+      if (childSelectRows.length == 1) {
+        this.paymentChild(childSelectRows[0]).then(response => {
+          if (response.success) {
+            message.success('核销成功！');
+            this.onSearch();
+          } else {
+            message.error(response.message);
+          }
+        });
+      } else {
+        this.batchProcessConfirmRef.show(
+          '子账单付款',
+          childSelectRows,
+          this.paymentChild,
+          this.onSearch
+        );
+      }
+    }
+  };
+
+  payment = async uuid => {
+    return await payment('parent', uuid);
+  };
+
+  paymentChild = async child => {
+    return await payment('child', child.UUID);
+  };
+
+  //归档
+  handleCompleted = () => {
+    const { selectedRows } = this.state;
+    const childSelectRows = this.childRef?.state.selectedRows;
+    const verify = this.billVerify(selectedRows, childSelectRows);
+    if (!verify) return;
+
+    if (selectedRows.length > 0) {
+      if (selectedRows.length > 1) {
+        message.error('总账单操作只能操作单条记录！');
+        return;
+      }
+      this.completed(selectedRows[0].UUID).then(response => {
+        if (response.success) {
+          message.success('归档成功！');
+          this.onSearch();
+        }
+      });
+    } else {
+      if (childSelectRows.length == 1) {
+        this.completedChild(childSelectRows[0]).then(response => {
+          if (response.success) {
+            message.success('归档成功！');
+            this.onSearch();
+          } else {
+            message.error(response.message);
+          }
+        });
+      } else {
+        this.batchProcessConfirmRef.show(
+          '子账单归档',
+          childSelectRows,
+          this.completedChild,
+          this.onSearch
+        );
+      }
+    }
+  };
+
+  completed = async uuid => {
+    return await completed('parent', uuid);
+  };
+
+  completedChild = async child => {
+    return await completed('child', child.UUID);
+  };
+
+  expandedRowRender = (record, index) => {
     return (
-      <div>
-        <NavigatorPanel title={this.state.title} action={this.drawActionButton()} />
-        <Layout style={layout}>
-          <Header style={{ backgroundColor: '#ffffff', height: '10%', marginTop: '1%' }}>
-            {this.drawSearchPanel ? this.drawSearchPanel() : ''}
-          </Header>
-          <Content style={{ overflow: 'auto', height: '20%' }}>{this.drowe()}</Content>
-        </Layout>
+      <div
+        style={{
+          maxHeight: 'calc(50vh)',
+          maxWidth: 'calc(160vh)',
+          overflowY: 'auto',
+        }}
+      >
+        <CostChildBillSearchPage
+          key={record.UUID}
+          quickuuid="cost_child_bill"
+          isNotHd={true}
+          billUuid={record.UUID}
+          onRef={r => (this.childRef = r)}
+        />
+      </div>
+    );
+  };
+
+  // //绘制上方按钮
+  drawActionButton = () => {
+    const { isModalVisible, e } = this.state;
+    return (
+      <>
+        <Button
+          onClick={() => {
+            this.props.switchTab('query');
+          }}
+        >
+          返回
+        </Button>
         <Modal
           visible={isModalVisible}
           onOk={this.handleOk.bind()}
           onCancel={this.handleCancel.bind()}
-          width={'80%'}
-          bodyStyle={{ height: 'calc(70vh)', overflowY: 'auto' }}
+          width={'90%'}
+          bodyStyle={{ height: 'calc(82vh)', overflowY: 'auto' }}
         >
           <CostBillViewForm
-            key={e.UUID}
+            key={e.val}
             showPageNow="query"
             quickuuid="123"
             {...e}
@@ -223,20 +521,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
             location={{ pathname: '1' }}
           />
         </Modal>
-      </div>
+      </>
     );
   };
-
-  render() {
-    let ret = (
-      <PageHeaderWrapper>
-        <Page withCollect={true}>{this.drawPage()}</Page>
-      </PageHeaderWrapper>
-    );
-    if (this.state.isDrag) {
-      return <DndProvider backend={HTML5Backend}>{ret}</DndProvider>;
-    } else {
-      return ret;
-    }
-  }
 }

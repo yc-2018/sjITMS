@@ -591,12 +591,12 @@ class StandardTable extends Component {
   };
 
   handleRowSelectChange = (selectedRowKeys, selectedRows) => {
-    let { needTotalList, selectedAllRows } = this.state;
+    let { needTotalList, selectedAllRows, list } = this.state;
     needTotalList = needTotalList.map(item => ({
       ...item,
       total: selectedRows.reduce((sum, val) => sum + parseFloat(val[item.dataIndex], 10), 0),
     }));
-    const { onSelectRow, isMerge, parentRows } = this.props;
+    const { onSelectRow, isMerge, parentRows, isExMerge } = this.props;
     let selectedRowArr = [];
     if (selectedRows.length == selectedRowKeys.length) {
       //只操作一页数据
@@ -662,7 +662,7 @@ class StandardTable extends Component {
     if (onSelectRow) {
       //合并的selectRows排除单头
       let rows = selectedRowArr;
-      if (isMerge && !parentRows) {
+      if ((isMerge || isExMerge) && !parentRows) {
         rows = selectedRowArr.filter(e => !e.isHeader);
       }
       onSelectRow(rows, selectedRowKeysAll);
@@ -1206,7 +1206,7 @@ class StandardTable extends Component {
 
   onClickRow = (record, key, e, index) => {
     let { selectedRowKeys, selectedAllRows, lastIndex } = this.state;
-    const { isMerge } = this.props;
+    const { isMerge, isExMerge } = this.props;
     if (!selectedRowKeys) {
       selectedRowKeys = [];
       selectedAllRows = [];
@@ -1490,7 +1490,15 @@ class StandardTable extends Component {
       settingModalVisible,
       oriColumnLen,
     } = this.state;
-    let { data, rowKey, noSettingColumns, rest, hasSettingColumns, isMerge } = this.props;
+    let {
+      data,
+      rowKey,
+      noSettingColumns,
+      rest,
+      hasSettingColumns,
+      isMerge,
+      isExMerge,
+    } = this.props;
     let list = data ? (data.list ? data.list : []) : [];
     let pagination = data ? (data.pagination ? data.pagination : {}) : {};
     let showList = isEmpty(this.state.list) ? list : this.state.list;
@@ -1554,7 +1562,7 @@ class StandardTable extends Component {
     }
     //默认第一列与最后一列操作列固定
     //TODO 跟子表格冲突 有bug
-    if (!isMerge) {
+    if (!isMerge && !isExMerge) {
       let firstCol = newColumns[0];
       newColumns[0] = {
         ...firstCol,
@@ -1717,6 +1725,7 @@ class StandardTable extends Component {
         : { display: 'block' };
     let menu = this.props.RightClickMenu;
     let userSelect = this.state.isUserSelect ? {} : { userSelect: 'none' };
+
     return (
       <Dropdown
         overlay={menu}
@@ -1802,7 +1811,9 @@ class StandardTable extends Component {
                       }
               }
               {...rest}
-              expandedRowRender={this.props.isMerge ? this.props.expandedRowRender : false}
+              expandedRowRender={
+                this.props.isMerge || this.props.isExMerge ? this.props.expandedRowRender : false
+              }
               expandRowByClick={this.props.expandRowByClick}
             />
           </DndProvider>

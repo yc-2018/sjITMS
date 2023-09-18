@@ -111,3 +111,10 @@ export async function getInitDataByQuick(payload) {
     body: payload,
   });
 }
+
+export async function saveUserLog(payload) {
+  return request(`/itms-schedule/itms-schedule/dev/saveUserLog`, {
+    method: 'POST',
+    body: payload,
+  });
+}

@@ -23,3 +23,10 @@ export async function handleConfirm(payload) {
     body: payload,
   });
 }
+
+export async function updateFeeNote(payload,fieldsValue) {
+  return request(`/itms-schedule/itms-schedule/sj/tollFee/updateFeeNote?note=${fieldsValue}`, {
+    method: 'POST',
+    body: payload,
+  });
+}

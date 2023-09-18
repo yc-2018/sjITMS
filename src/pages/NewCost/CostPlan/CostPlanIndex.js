@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-06-26 14:41:13
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-04 11:54:46
+ * @LastEditTime: 2023-09-12 15:00:08
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -60,8 +60,12 @@ export default class CostPlanIndex extends PureComponent {
   };
 
   onClickSelectBill = e => {
-    this.props.switchTab('queryBill', { e });
+    this.props.switchTab('queryBill', { entityUuid: e.uuid, e });
   };
+
+  // changeLoading = val => {
+  //   this.setState({ loading: val });
+  // };
 
   drowe = () => {
     const records = this.state.data;
@@ -85,6 +89,7 @@ export default class CostPlanIndex extends PureComponent {
               onClickSelectBill={e => {
                 this.onClickSelectBill(e);
               }}
+              // changeLoading={val => this.changeLoading(val)}
             />
           );
         })}
