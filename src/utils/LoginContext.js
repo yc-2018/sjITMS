@@ -2,6 +2,7 @@ import { setAuthority } from './authority';
 import jwtDecode from 'jwt-decode';
 import localforage from 'localforage';
 import { Modal } from 'antd';
+import { saveUserLog } from '@/services/quick/Quick';
 const { warning } = Modal;
 
 const cache = {}; // idb下所有的 存储信息
@@ -11,14 +12,14 @@ let loginOutTime = null; //定时器
 
 export function iterateAllData(callback) {
   localforage
-    .iterate(function (value, key, iterationNumber) {
+    .iterate(function(value, key, iterationNumber) {
       // 查询全部的存储信息 并赋值
       cache[key] = value;
     })
-    .then(function () {
+    .then(function() {
       if (callback) callback();
     })
-    .catch(function (err) {
+    .catch(function(err) {
       // 当出错时，此处代码运行
       console.log(err);
     });
@@ -61,7 +62,7 @@ export function cacheLogin(loginContext) {
       name: loginContext.userName,
       phone: loginContext.userPhone,
       avatar: loginContext.userAvatar,
-      resources: loginContext.resources
+      resources: loginContext.resources,
     })
   );
   localStorage.setItem(
@@ -162,7 +163,32 @@ export function cacheLoginKey(loginKey) {
       },
     });
   }, 3480000); //58min  3480000ms
+
+  setTimeout(() => {
+    let allBt = document.getElementsByClassName('ant-btn');
+    // console.log('allBt', allBt);
+    if (allBt && allBt.length > 0) {
+      for (let i = 0; i < allBt.length; i++) {
+        allBt[i].addEventListener('click', clickLog);
+      }
+    }
+  }, 1000);
   // console.log('in', new Date());
+}
+
+function clickLog(btn) {
+  let url = btn.target.baseURI;
+  var startIndex = url.indexOf('/', url.indexOf('/', url.indexOf('/') + 1) + 1) + 1;
+  var path = url.substr(startIndex - 1);
+  let param = {
+    userName: loginUser().name,
+    userCode: loginUser().code,
+    path: path,
+    clickEvent: btn.target.innerText,
+  };
+  if (loginUser().code) {
+    saveUserLog(param);
+  }
 }
 
 export function loginKey() {
