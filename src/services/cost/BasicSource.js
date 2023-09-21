@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-01 16:01:34
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-31 18:07:56
+ * @LastEditTime: 2023-09-21 11:43:59
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -94,6 +94,13 @@ export async function batchImport(payload) {
 
 export async function onSaveSourceData(payload) {
   return request(`/itms-cost/itms-cost/source/onSaveSourceData`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function newOnSave(payload, type) {
+  return request(`/itms-cost/itms-cost/newSource/onSaveSourceData/${type}`, {
     method: 'POST',
     body: payload,
   });

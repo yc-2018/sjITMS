@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-01 16:36:35
+ * @LastEditTime: 2023-09-21 11:46:22
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -11,7 +11,7 @@ import { Button, Form, Input, message, Modal, Spin, DatePicker, InputNumber } fr
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import SearchPage from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSearchPage';
 import { dynamicQuery } from '@/services/quick/Quick';
-import { onSaveSourceData, deleteSourceData, sourceConfirm } from '@/services/cost/BasicSource';
+import { newOnSave, deleteSourceData, sourceConfirm } from '@/services/cost/BasicSource';
 import { colWidth } from '@/utils/ColWidth';
 import { guid } from '@/utils/utils';
 import { loginUser } from '@/utils/LoginContext';
@@ -48,6 +48,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         .format('YYYY-MM'),
       updateModal: false,
       sucomIdspendLoading: true,
+      createInfo: false,
     };
   }
 
@@ -270,6 +271,10 @@ export default class BasicSourceDataSearchPage extends SearchPage {
     this.setState({ updateModal: true });
   };
 
+  create = () => {
+    this.setState({ updateModal: true, createInfo: true });
+  };
+
   delete = async () => {
     const { selectedRows } = this.state;
     if (selectedRows.length == 0) {
@@ -307,7 +312,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
   };
 
   handleSave = e => {
-    const { selectedRows } = this.state;
+    const { selectedRows, updateModal, createInfo } = this.state;
     if (e) {
       e.preventDefault();
     }
@@ -315,17 +320,19 @@ export default class BasicSourceDataSearchPage extends SearchPage {
     this.props.form.validateFields(async (err, values) => {
       if (!err) {
         let selectedRow = selectedRows;
-        Object.keys(values).map(key => {
-          selectedRow[0][key] = values[key];
-        });
+        if (updateModal && !createInfo) {
+          Object.keys(values).map(key => {
+            selectedRow[0][key] = values[key];
+          });
+        }
         let param = {
           uuid: this.props.selectedRows,
-          rows: selectedRow,
+          rows: createInfo ? [values] : selectedRow,
         };
-        const response = await onSaveSourceData(param);
+        const response = await newOnSave(param, createInfo ? 'create' : 'update');
         if (response && response.success) {
           message.success('保存成功');
-          this.setState({ updateModal: false });
+          this.setState({ updateModal: false, createInfo: false });
           this.onSearch();
         }
       }
@@ -337,10 +344,8 @@ export default class BasicSourceDataSearchPage extends SearchPage {
    * 绘制批量工具栏
    */
   drawToolbarPanel = () => {
-    const { showDataConfirmModal, system, confirmMonth, updateModal, selectedRows } = this.state;
-    const { getFieldDecorator } = this.props.form;
+    const { showDataConfirmModal, system, confirmMonth, updateModal } = this.state;
     const monthFormat = 'YYYY-MM';
-    const allowUpdateColumns = this.columns.filter(x => x.allowUpdate == 1);
     return (
       <div style={{ marginTop: '10px' }}>
         <AdvanceQuery
@@ -365,6 +370,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         <Button type="primary" onClick={this.update}>
           编辑
         </Button>
+        <Button onClick={this.create}>新增</Button>
         <Button onClick={this.delete}>删除</Button>
         <Modal
           title="数据确认"
@@ -382,7 +388,6 @@ export default class BasicSourceDataSearchPage extends SearchPage {
             </Form.Item>
             <Form.Item label="所属月份" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
               <MonthPicker
-                // defaultValue={moment('2023-07', monthFormat)}
                 defaultValue={moment(confirmMonth, monthFormat)}
                 format={monthFormat}
                 onChange={date => {
@@ -397,24 +402,11 @@ export default class BasicSourceDataSearchPage extends SearchPage {
           visible={updateModal}
           footer={null}
           onCancel={() => {
-            this.setState({ updateModal: false });
+            this.setState({ updateModal: false, createInfo: false });
           }}
         >
-          <Form onSubmit={this.handleSave}>
-            {allowUpdateColumns.map(column => {
-              let val;
-              if (updateModal) {
-                val = selectedRows[0][column.key];
-              }
-              const a = { component: this.getComponent(column.fieldType) };
-              return (
-                <Form.Item label={column.title} labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
-                  {getFieldDecorator(column.key, {
-                    initialValue: this.convertInitialValue(val, column.fieldType),
-                  })(<a.component style={{ width: '100%' }} />)}
-                </Form.Item>
-              );
-            })}
+          <Form key={new Date()} onSubmit={this.handleSave}>
+            {this.drawFormItem()}
             <Form.Item>
               <Button
                 type="primary"
@@ -428,6 +420,28 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         </Modal>
       </div>
     );
+  };
+
+  drawFormItem = () => {
+    const { getFieldDecorator } = this.props.form;
+    const { updateModal, selectedRows, createInfo } = this.state;
+    const allowUpdateColumns = createInfo
+      ? this.columns
+      : this.columns.filter(x => x.allowUpdate == 1);
+    return allowUpdateColumns.map(column => {
+      let val;
+      if (updateModal && !createInfo) {
+        val = selectedRows[0][column.key];
+      }
+      const a = { component: this.getComponent(column.fieldType) };
+      return (
+        <Form.Item label={column.title} labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+          {getFieldDecorator(column.key, {
+            initialValue: this.convertInitialValue(val, column.fieldType),
+          })(<a.component style={{ width: '100%' }} />)}
+        </Form.Item>
+      );
+    });
   };
 
   getComponent = dbType => {
