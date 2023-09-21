@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-21 11:46:22
+ * @LastEditTime: 2023-09-21 15:12:18
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -353,7 +353,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
           fieldInfos={this.columns}
           filterValue={this.state.pageFilter.searchKeyValues}
           refresh={this.onSearch}
-          reportCode={this.state.tableName}
+          reportCode={system.tableName}
           // isOrgQuery={this.state.isOrgQuery}
         />
         <Button onClick={this.port} type="primary">
