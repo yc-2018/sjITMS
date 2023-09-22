@@ -478,7 +478,14 @@ export default class DispatchingCreatePage extends Component {
   //保存
   onSave = async () => {
     this.setState({ loading: true });
+
     const { isEdit, orders, schedule, selectVehicle, selectEmployees, note } = this.state;
+    //禁止整车为转运单 针对福建仓
+    if (orders.filter(e => e.orderType == 'Transshipment').length == orders.length) {
+      message.error('禁止整车为转运单排车！');
+      this.setState({ loading: false });
+      return;
+    }
     const orderType = uniqBy(orders.map(x => x.orderType)).shift();
     const orderTypeArr = ['TakeDelivery', 'AdjustWarehouse', 'DeliveryThird'];
     const type = orderTypeArr.includes(orderType) ? 'Task' : 'Job';
@@ -558,7 +565,7 @@ export default class DispatchingCreatePage extends Component {
   //保存数据校验
   handleSave = async () => {
     const { orders, selectVehicle, selectEmployees } = this.state;
-    const {dispatchConfig} = this.props;
+    const { dispatchConfig } = this.props;
     const orderSummary = this.groupByOrder(orders);
     // //校验订单
     // if (orderSummary.orderCount == 0) {
@@ -619,40 +626,42 @@ export default class DispatchingCreatePage extends Component {
       return;
     }
     //校验随车人员
-    if(dispatchConfig.checkVehicleFollower==1 || dispatchConfig.checkVehicleFollower==2){
-      const includes = await this.checkVehicleFollower(selectVehicle,selectEmployees);
-      if(!includes && dispatchConfig.checkVehicleFollower==1){
+    if (dispatchConfig.checkVehicleFollower == 1 || dispatchConfig.checkVehicleFollower == 2) {
+      const includes = await this.checkVehicleFollower(selectVehicle, selectEmployees);
+      if (!includes && dispatchConfig.checkVehicleFollower == 1) {
         Modal.confirm({
-          title:"车辆与人员不匹配，确定生成排车单吗？",
-          onOk:()=>this.onSave()
-        })
+          title: '车辆与人员不匹配，确定生成排车单吗？',
+          onOk: () => this.onSave(),
+        });
         return;
       }
-      if(!includes && dispatchConfig.checkVehicleFollower==2){
-        message.error("车辆与人员不匹配");
+      if (!includes && dispatchConfig.checkVehicleFollower == 2) {
+        message.error('车辆与人员不匹配');
         return;
       }
       this.onSave();
       return;
-    }else{
+    } else {
       this.onSave();
     }
   };
   //查随车人员
-  checkVehicleFollower = async(selectVehicle,selectEmployees) =>{
+  checkVehicleFollower = async (selectVehicle, selectEmployees) => {
     let param = {
       tableName: 'SJ_ITMS_VEHICLE_EMPLOYEE',
       condition: {
-      params: [{ field: 'VEHICLEUUID', rule: 'eq', val: [selectVehicle.UUID] }],
+        params: [{ field: 'VEHICLEUUID', rule: 'eq', val: [selectVehicle.UUID] }],
       },
     };
     const response = await dynamicQuery(param);
-    if(response.success && response.result.records!='false'){
-      const includes = selectEmployees.map(f=>f.CODE).every((a)=>response.result.records.map(e=>e.EMPCODE).includes(a))
+    if (response.success && response.result.records != 'false') {
+      const includes = selectEmployees
+        .map(f => f.CODE)
+        .every(a => response.result.records.map(e => e.EMPCODE).includes(a));
       return includes;
     }
     return true;
-  }
+  };
   //汇总
   groupByOrder = data => {
     const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0;
