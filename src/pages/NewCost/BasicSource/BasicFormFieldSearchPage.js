@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 17:46:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-22 16:08:11
+ * @LastEditTime: 2023-09-23 14:22:58
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -152,7 +152,6 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
       );
       e.component = component;
     } else if (e.column.fieldName == 'VERIFYCONFIG') {
-      console.log('VERIFYCONFIG', e);
       const component = (
         <Cascader
           defaultValue={e.val.split(',')}
