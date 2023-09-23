@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-01 16:01:34
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-21 11:43:59
+ * @LastEditTime: 2023-09-22 15:40:07
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -128,6 +128,12 @@ export async function sourceAbnormal(sourceUuid) {
 
 export async function remind(sourceUuid) {
   return request(`/itms-cost/itms-cost/newSource/remind/${sourceUuid}`, {
+    method: 'GET',
+  });
+}
+
+export async function getDataColumns() {
+  return request(`/itms-cost/itms-cost/newSource/getDataColumns`, {
     method: 'GET',
   });
 }

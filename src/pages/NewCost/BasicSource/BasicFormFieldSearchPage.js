@@ -2,15 +2,15 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 17:46:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-25 16:16:31
+ * @LastEditTime: 2023-09-22 16:08:11
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { Button, Popconfirm, message, Modal, Table, Input, Checkbox } from 'antd';
+import { Button, Popconfirm, message, Modal, Table, Input, Checkbox, Cascader } from 'antd';
 import { dynamicDelete } from '@/services/quick/Quick';
-import { addDtl, getUnAddInfo, updateDtl, getNewUnAddInfo } from '@/services/cost/BasicSource';
+import { addDtl, updateDtl, getNewUnAddInfo, getDataColumns } from '@/services/cost/BasicSource';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -26,6 +26,7 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
     selectedRowKeys: [],
     dataSource: [],
     newColumn: [],
+    options: [],
   };
 
   drawActionButton = () => {};
@@ -93,6 +94,7 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
   };
 
   drawcell = e => {
+    const { options } = this.state;
     if (e.column.fieldName == 'SHOW') {
       const component = (
         <Checkbox
@@ -146,6 +148,19 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
           onChange={v => {
             e.record.ALLOWUPDATE = v.target.checked ? 1 : 0;
           }}
+        />
+      );
+      e.component = component;
+    } else if (e.column.fieldName == 'VERIFYCONFIG') {
+      console.log('VERIFYCONFIG', e);
+      const component = (
+        <Cascader
+          defaultValue={e.val.split(',')}
+          options={options}
+          onChange={value => {
+            e.record.VERIFYCONFIG = value.toString();
+          }}
+          placeholder="请选择表/字段"
         />
       );
       e.component = component;
@@ -250,6 +265,7 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
 
   onSearch = data => {
     const { selectedRows } = this.props;
+    this.searchVerifyConfig();
     let UUID = typeof data == 'undefined' || data == 'first' ? selectedRows : data;
     const pageFilters = {
       ...this.state.pageFilters,
@@ -267,6 +283,13 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
     };
     this.state.pageFilters = pageFilters;
     this.refreshTable();
+  };
+
+  searchVerifyConfig = async () => {
+    const response = await getDataColumns();
+    if (response.success && response.data) {
+      this.setState({ options: response.data });
+    }
   };
 
   drapTableChange = list => {
