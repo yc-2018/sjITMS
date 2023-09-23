@@ -175,12 +175,11 @@ export default class CostPlanDefCreate extends QuickCreatePage {
             返回
           </Button>
         </div>
-        <Content style={{ marginLeft: '4.6%' }}>{this.drawForm()}</Content>
+        {/* <Content style={{ marginLeft: '4.6%' }}>{this.drawForm()}</Content> */}
         <Footer style={{ backgroundColor: 'white' }}>
-          {' '}
           <CostPlanSearch
             quickuuid="cost_plan_item"
-            PLAN_UUID={this.props?.params?.entityUuid}
+            planUuid={this.props?.params?.entityUuid}
             onRef={c => (this.setting = c)}
           />
         </Footer>
