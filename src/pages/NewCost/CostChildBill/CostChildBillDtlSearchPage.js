@@ -1,8 +1,9 @@
 import React, { PureComponent } from 'react';
-import { Button, Input, Col, Row, message, Modal, DatePicker, Spin, Form, Collapse } from 'antd';
+import { Button, message, Spin, Form } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { getBill, findCostFormFieldByPlanUuid } from '@/services/cost/CostCalculation';
+import { getChildBillInfo } from '@/services/cost/CostBill';
+
 import moment from 'moment';
 
 @connect(({ quick, loading }) => ({
@@ -17,7 +18,6 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
     ...this.state,
     searchLoading: false,
     calculateLoading: false,
-    plan: null,
     bill: null,
     isShowLogs: false,
     billLogs: [],
@@ -30,35 +30,29 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
     this.handleOnSertch();
   }
 
-  getCostFormFields = () => {
-    findCostFormFieldByPlanUuid(this.props.params.entityUuid).then(result => {
-      this.setState({ subjectFields: result.data });
-    });
-  };
-
   /**
    * 查询处理
    */
   handleOnSertch = async data => {
-    const { PLAN_UUID, BILL_MONTH } = this.props.record;
-    let values = { dateString: BILL_MONTH };
+    const { UUID } = this.props.record;
+    // let values = { dateString: BILL_MONTH };
     this.setState({ searchLoading: true });
     let params = {};
     if (data) {
-      data.searchKeyValues = { ...values, ...data.searchKeyValues };
+      data.searchKeyValues = { ...data.searchKeyValues };
       params = data;
     } else {
       params = {
         page: 1,
         pageSize: 20,
         sortFields: {},
-        searchKeyValues: { ...values },
+        searchKeyValues: {},
         likeKeyValues: {},
       };
     }
-    const response = await getBill(PLAN_UUID, params);
+    const response = await getChildBillInfo(UUID, params);
     if (response.data && response.success) {
-      const { structs, data, plan, bill } = response.data.records[0];
+      const { structs, data, bill } = response.data.records[0];
       let newColumns = [];
       structs.forEach(struct => {
         newColumns.push({
@@ -84,12 +78,12 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
         data: datas,
         searchLoading: false,
         bill,
-        plan,
+        // plan,
       });
       this.initConfig({
         columns: newColumns,
         sql: ' ccc',
-        reportHeadName: this.props.TITLE, //this.props.params.TITLE,
+        reportHeadName: this.props.TITLE,
       });
     } else {
       message.error('当前查询无数据,请计算后再操作');
@@ -125,7 +119,7 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
       return;
     }
     const {
-      plan: { subjectKeyField },
+      // plan: { subjectKeyField },
       bill: { uuid: billUuid },
     } = this.state;
     const subjectUuid = this.state.selectedRows[0][subjectKeyField];
