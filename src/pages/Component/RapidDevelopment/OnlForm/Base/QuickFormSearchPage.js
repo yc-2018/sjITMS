@@ -883,14 +883,15 @@ export default class QuickFormSearchPage extends SearchPage {
     let queryParams = [...simpleParams];
     queryParams = queryParams.filter(item => {
       const ex = exSearchFilter.find(x => x.field == item.field);
+      const exField = ex == undefined ? true : item.field != ex.field;
       return (
         item.field != 'dispatchCenterUuid' &&
         item.field != 'dcUuid' &&
         item.field != 'companyuuid' &&
-        (ex != null && item.field != ex.field)
+        exField
       );
     });
-    queryParams = [...exSearchFilter];
+    queryParams = [...queryParams, ...exSearchFilter];
     const params = linkQuery == 1 && superParams ? superParams : [];
     const newPageFilters = {
       pageSize,
