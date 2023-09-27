@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 17:46:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-23 14:22:58
+ * @LastEditTime: 2023-09-27 10:06:41
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -152,6 +152,11 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
       );
       e.component = component;
     } else if (e.column.fieldName == 'VERIFYCONFIG') {
+      const filter = (inputValue, path) => {
+        return path.some(
+          option => (option.label == undefined ? null : option.label.indexOf(inputValue) > -1)
+        );
+      };
       const component = (
         <Cascader
           defaultValue={e.val.split(',')}
@@ -159,7 +164,9 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
           onChange={value => {
             e.record.VERIFYCONFIG = value.toString();
           }}
+          showSearch={{ filter }}
           placeholder="请选择表/字段"
+          style={{ width: '100%' }}
         />
       );
       e.component = component;

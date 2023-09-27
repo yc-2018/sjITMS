@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-09-07 11:24:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-15 10:37:50
+ * @LastEditTime: 2023-09-26 17:22:23
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -105,5 +105,13 @@ export function childDownload(param) {
     link.setAttribute('download', param.fileName);
     document.body.appendChild(link);
     link.click();
+  });
+}
+
+//获取子帐单明细
+export async function getChildBillInfo(uuid, payload) {
+  return request(`/itms-cost/itms-cost/newCostBill/getChildBillInfo/${uuid}`, {
+    method: 'POST',
+    body: payload,
   });
 }
