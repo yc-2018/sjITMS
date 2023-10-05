@@ -52,43 +52,81 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
     }
     const response = await getChildBillInfo(UUID, params);
     if (response.data && response.success) {
-      const { structs, data, bill } = response.data.records[0];
-      let newColumns = [];
-      structs.forEach(struct => {
-        newColumns.push({
-          fieldName: struct.fieldName,
-          fieldTxt: struct.fieldTxt,
-          fieldType: 'VarChar',
-          fieldWidth: 100,
-          isSearch: false,
-          isShow: true,
-        });
-      });
-      var datas = {
-        list: data,
-        pagination: {
-          total: response.data.pageCount,
-          pageSize: response.data.pageSize,
-          current: response.data.page,
-          showTotal: total => `共 ${total} 条`,
-        },
-      };
-      this.setState({
-        key: this.props.quickuuid + new Date(),
-        data: datas,
-        searchLoading: false,
-        bill,
-        // plan,
-      });
-      this.initConfig({
-        columns: newColumns,
-        sql: ' ccc',
-        reportHeadName: this.props.TITLE,
-      });
+      this.init(response);
+      this.init(response);
+      // const { structs, data, bill } = response.data.records[0];
+      // let newColumns = [];
+      // structs.forEach(struct => {
+      //   newColumns.push({
+      //     fieldName: struct.fieldName,
+      //     fieldTxt: struct.fieldTxt,
+      //     fieldType: 'VarChar',
+      //     fieldWidth: 100,
+      //     isSearch: false,
+      //     isShow: true,
+      //   });
+      // });
+      // var datas = {
+      //   list: data,
+      //   pagination: {
+      //     total: response.data.pageCount,
+      //     pageSize: response.data.pageSize,
+      //     current: response.data.page,
+      //     showTotal: total => `共 ${total} 条`,
+      //   },
+      // };
+      // this.setState({
+      //   key: this.props.quickuuid + new Date(),
+      //   data: datas,
+      //   searchLoading: false,
+      //   bill,
+      //   // plan,
+      // });
+      // this.initConfig({
+      //   columns: newColumns,
+      //   sql: ' ccc',
+      //   reportHeadName: this.props.TITLE,
+      // });
     } else {
       message.error('当前查询无数据,请计算后再操作');
       this.setState({ data: [], searchLoading: false, bill: null });
     }
+  };
+
+  init = response => {
+    const { structs, data } = response.data.records[0];
+    let newColumns = [];
+    structs.forEach(struct => {
+      newColumns.push({
+        fieldName: struct.fieldName,
+        fieldTxt: struct.fieldTxt,
+        fieldType: 'VarChar',
+        fieldWidth: 100,
+        isSearch: false,
+        isShow: true,
+      });
+    });
+    var datas = {
+      list: data,
+      pagination: {
+        total: response.data.pageCount,
+        pageSize: response.data.pageSize,
+        current: response.data.page,
+        showTotal: total => `共 ${total} 条`,
+      },
+    };
+    this.setState({
+      key: this.props.quickuuid + new Date(),
+      data: datas,
+      searchLoading: false,
+      // bill,
+      // plan,
+    });
+    this.initConfig({
+      columns: newColumns,
+      sql: ' ccc',
+      reportHeadName: this.props.TITLE, //this.props.params.TITLE,
+    });
   };
 
   refreshTable = data => {
