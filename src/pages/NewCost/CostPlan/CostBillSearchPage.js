@@ -2,11 +2,11 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-15 16:01:08
+ * @LastEditTime: 2023-10-05 17:01:09
  * @version: 1.0
  */
 import React from 'react';
-import { Form, Button, Modal, Popconfirm, message } from 'antd';
+import { Form, Button, Modal, Popconfirm, message, Spin } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import CostBillViewForm from '@/pages/NewCost/CostBill/CostBillViewForm';
@@ -19,9 +19,13 @@ import {
   payment,
   completed,
   checklistConfirm,
+  portChildBill,
 } from '@/services/cost/CostBill';
 import CostChildBillSearchPage from '@/pages/NewCost/CostChildBill/CostChildBillSearchPage';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
+import PageHeaderWrapper from '@/components/PageHeaderWrapper';
+import Page from '@/pages/Component/Page/inner/Page';
+import { DndProvider } from 'react-dnd';
 
 ///CommonLayout/RyzeStandardTable
 @connect(({ quick, deliveredConfirm, loading }) => ({
@@ -493,11 +497,34 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     );
   };
 
+  portBill = async () => {
+    const { selectedRows } = this.state;
+    const childSelectRows = this.childRef?.state.selectedRows;
+    const verify = this.billVerify(selectedRows, childSelectRows);
+    if (!verify) {
+      return;
+    }
+    if (selectedRows.length > 0) {
+      message.warn('总账单导出正在加速开发中');
+    } else {
+      childSelectRows.forEach(row => {
+        portChildBill(row.UUID);
+      });
+    }
+  };
+
   // //绘制上方按钮
   drawActionButton = () => {
     const { isModalVisible, e } = this.state;
     return (
       <>
+        <Button
+          onClick={() => {
+            this.portBill();
+          }}
+        >
+          导出
+        </Button>
         <Button
           onClick={() => {
             this.props.switchTab('query');

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-09 15:55:45
+ * @LastEditTime: 2023-09-27 16:39:29
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -146,24 +146,24 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
   };
 
   drawActionButton = () => {
-    //额外的菜单选项
-    const menus = [];
-    menus.push({
-      // disabled: !havePermission(STORE_RES.CREATE), //权限认证
-      name: '测试', //功能名称
-      onClick: this.test, //功能实现
-    });
-    return (
-      <div>
-        <Button
-          // hidden={!havePermission(this.state.authority + '.port')}
-          onClick={this.port}
-          type="primary"
-        >
-          导出
-        </Button>
-      </div>
-    );
+    // //额外的菜单选项
+    // const menus = [];
+    // menus.push({
+    //   // disabled: !havePermission(STORE_RES.CREATE), //权限认证
+    //   name: '测试', //功能名称
+    //   onClick: this.test, //功能实现
+    // });
+    // return (
+    //   <div>
+    //     <Button
+    //       // hidden={!havePermission(this.state.authority + '.port')}
+    //       onClick={this.port}
+    //       type="primary"
+    //     >
+    //       导出
+    //     </Button>
+    //   </div>
+    // );
   };
 
   changeState = () => {

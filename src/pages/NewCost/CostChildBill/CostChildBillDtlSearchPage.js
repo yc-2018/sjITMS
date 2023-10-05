@@ -133,24 +133,24 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
   };
 
   drawActionButton = () => {
-    //额外的菜单选项
-    const menus = [];
-    menus.push({
-      // disabled: !havePermission(STORE_RES.CREATE), //权限认证
-      name: '测试', //功能名称
-      onClick: this.test, //功能实现
-    });
-    return (
-      <div>
-        <Button
-          // hidden={!havePermission(this.state.authority + '.port')}
-          onClick={this.port}
-          type="primary"
-        >
-          导出
-        </Button>
-      </div>
-    );
+    // //额外的菜单选项
+    // const menus = [];
+    // menus.push({
+    //   // disabled: !havePermission(STORE_RES.CREATE), //权限认证
+    //   name: '测试', //功能名称
+    //   onClick: this.test, //功能实现
+    // });
+    // return (
+    //   <div>
+    //     <Button
+    //       // hidden={!havePermission(this.state.authority + '.port')}
+    //       onClick={this.port}
+    //       type="primary"
+    //     >
+    //       导出
+    //     </Button>
+    //   </div>
+    // );
   };
 
   changeState = () => {
