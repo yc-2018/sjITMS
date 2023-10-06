@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-01 16:01:34
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-22 15:40:07
+ * @LastEditTime: 2023-10-06 14:54:03
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -85,7 +85,7 @@ export async function batchImport(payload) {
   return request(
     `/itms-cost/itms-cost/source/batchImport?sourceUuid=${payload.sourceUuid}&fileKey=${
       payload.fileKey
-    }`,
+    }&importType=${payload.importType}`,
     {
       method: 'POST',
     }

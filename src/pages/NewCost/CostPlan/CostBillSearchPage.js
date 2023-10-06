@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-05 17:55:37
+ * @LastEditTime: 2023-10-06 09:37:53
  * @version: 1.0
  */
 import React from 'react';
@@ -545,19 +545,6 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
       let sheetheader = []; //对应key值的表头，即excel表头
       option.fileName = bill.title; //导出的Excel文件名
       columns.map(a => {
-        // let excelColumn = '';
-        // if (a.preview != 'N') {
-        //   excelColumn = a.preview;
-        // } else {
-        //   excelColumn = a.key;
-        // }
-        // if (columnsList.length <= 0) {
-        //   sheetfilter.push(excelColumn);
-        //   sheetheader.push(a.title);
-        // } else if (columnsList.indexOf(a.title) != -1) {
-        //   sheetfilter.push(excelColumn);
-        //   sheetheader.push(a.title);
-        // }
         sheetfilter.push(a.fieldName);
         sheetheader.push(a.fieldTxt);
       });

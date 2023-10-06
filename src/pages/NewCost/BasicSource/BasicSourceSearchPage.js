@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-25 09:01:24
+ * @LastEditTime: 2023-10-06 09:40:00
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -11,7 +11,7 @@ import Page from '@/pages/Component/Page/inner/NewStylePage';
 import sourceStyle from './BasicSource.less';
 import FormFieldSearchPage from './BasicFormFieldSearchPage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
-import ExcelImport from '@/components/ExcelImport';
+import ExcelImport from '@/pages/NewCost/ExcelImport/index';
 import BasicHeadCreatPage from './BasicHeadCreatPage';
 import BasicDtlCreatPage from './BasicDtlCreatPage';
 import { findSourceTree, deleteSourceTree } from '@/services/cost/BasicSource';
