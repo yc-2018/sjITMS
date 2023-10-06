@@ -183,7 +183,10 @@ class ExcelImport extends PureComponent {
             title="导入选项"
             visible={isModalOpen}
             onOk={() => {
-              console.log('resultProps', resultProps);
+              if (importType.importType == '2') {
+                message.error('该选项正在开发中。。。');
+                return;
+              }
               const current = this.state.current + 1;
               this.setState({ current, isModalOpen: false });
             }}
