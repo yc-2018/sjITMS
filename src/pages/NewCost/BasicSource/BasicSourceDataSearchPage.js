@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-09 15:12:25
+ * @LastEditTime: 2023-10-09 15:23:16
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -407,7 +407,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
           destroyOnClose
         >
           <Form onSubmit={this.handleSave}>
-            {this.drawFormItem()}
+            <div style={{ height: '400px', overflowY: 'scroll' }}>{this.drawFormItem()}</div>
             <Form.Item>
               <Button
                 type="primary"
