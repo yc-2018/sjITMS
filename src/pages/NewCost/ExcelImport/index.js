@@ -195,14 +195,16 @@ class ExcelImport extends PureComponent {
             }}
           >
             <Select
+              defaultValue={'0'}
               style={{ width: '80%' }}
               placeholder="请选择导入类型"
               onChange={value => {
                 this.setState({ importType: { importType: value } });
               }}
             >
+              <Option value="0">全量导入</Option>
               <Option value="1">导入时全表删除</Option>
-              <Option value="2">根据主键进行覆盖</Option>
+              {/* <Option value="2">根据主键进行覆盖</Option> */}
             </Select>
           </Modal>
           <PageDetail {...pageDetailProps}>
