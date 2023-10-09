@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-21 15:12:18
+ * @LastEditTime: 2023-10-09 15:12:25
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -404,8 +404,9 @@ export default class BasicSourceDataSearchPage extends SearchPage {
           onCancel={() => {
             this.setState({ updateModal: false, createInfo: false });
           }}
+          destroyOnClose
         >
-          <Form key={new Date()} onSubmit={this.handleSave}>
+          <Form onSubmit={this.handleSave}>
             {this.drawFormItem()}
             <Form.Item>
               <Button
