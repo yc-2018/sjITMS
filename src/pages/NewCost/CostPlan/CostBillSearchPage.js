@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-11 15:38:38
+ * @LastEditTime: 2023-10-11 17:24:17
  * @version: 1.0
  */
 import React from 'react';
@@ -21,11 +21,8 @@ import {
   checklistConfirm,
   portChildBill,
 } from '@/services/cost/CostBill';
-import { getBill } from '@/services/cost/CostCalculation';
 import CostChildBillSearchPage from '@/pages/NewCost/CostChildBill/CostChildBillSearchPage';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
-import { colWidth } from '@/utils/ColWidth';
-import ExportJsonExcel from 'js-export-excel';
 
 ///CommonLayout/RyzeStandardTable
 @connect(({ quick, deliveredConfirm, loading }) => ({
@@ -500,7 +497,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     );
   };
 
-  portBill = async () => {
+  portBill = () => {
     const { selectedRows } = this.state;
     const childSelectRows = this.childRef?.state.selectedRows;
     const verify = this.billVerify(selectedRows, childSelectRows);
@@ -509,61 +506,12 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     }
     if (selectedRows.length > 0) {
       selectedRows.forEach(row => {
-        this.port(row);
+        portChildBill(row.UUID, 'parent');
       });
     } else {
       childSelectRows.forEach(row => {
-        portChildBill(row.UUID);
+        portChildBill(row.UUID, 'child');
       });
-    }
-  };
-
-  port = async row => {
-    const values = {
-      dateString: row.BILL_MONTH,
-    };
-    let params = {
-      page: 1,
-      pageSize: 1000000,
-      sortFields: {},
-      searchKeyValues: { ...values },
-      likeKeyValues: {},
-    };
-    const response = await getBill(row.PLAN_UUID, params);
-    if (response.data && response.success) {
-      const { data, bill, structs } = response.data.records[0];
-      let columns = [];
-      structs.forEach(struct => {
-        columns.push({
-          fieldName: struct.fieldName,
-          fieldTxt: struct.fieldTxt,
-          fieldType: 'VarChar',
-          fieldWidth: colWidth.dateColWidth,
-          isSearch: false,
-          isShow: true,
-        });
-      });
-      var option = [];
-      let sheetfilter = []; //对应列表数据中的key值数组，就是上面resdata中的 name，address
-      let sheetheader = []; //对应key值的表头，即excel表头
-      option.fileName = bill.title; //导出的Excel文件名
-      columns.map(a => {
-        sheetfilter.push(a.fieldName);
-        sheetheader.push(a.fieldTxt);
-      });
-      option.datas = [
-        {
-          sheetData: data,
-          sheetName: bill.title, //工作表的名字
-          sheetFilter: sheetfilter,
-          sheetHeader: sheetheader,
-        },
-      ];
-      var toExcel = new ExportJsonExcel(option);
-      toExcel.saveExcel();
-    } else {
-      message.error('当前查询无数据,请计算后再操作');
-      this.setState({ data: [], searchLoading: false, bill: null });
     }
   };
 

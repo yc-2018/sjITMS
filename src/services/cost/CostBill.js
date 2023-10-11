@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-09-07 11:24:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-05 09:28:43
+ * @LastEditTime: 2023-10-11 15:44:59
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -117,27 +117,20 @@ export async function getChildBillInfo(uuid, payload) {
 }
 
 //导出子帐单
-export async function portChildBill(uuid) {
-  axios(
-    configs[API_ENV].API_SERVER +
-      `/itms-cost/itms-cost/newCostBill/portChildBill/${uuid}`,
-    {
-      method: 'post',
-      responseType: 'blob',
-      headers: {
-        iwmsJwt: loginKey(),
-        'Content-Type': 'application/json; charset=utf-8',
-        Accept: '*/*',
-      },
-    }
-  ).then(res => {
+export async function portChildBill(uuid, type) {
+  axios(configs[API_ENV].API_SERVER + `/itms-cost/itms-cost/newCostBill/portChildBill/${uuid}/${type}`, {
+    method: 'post',
+    responseType: 'blob',
+    headers: {
+      iwmsJwt: loginKey(),
+      'Content-Type': 'application/json; charset=utf-8',
+      Accept: '*/*',
+    },
+  }).then(res => {
     const url = window.URL.createObjectURL(new Blob([res.data]));
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute(
-      'download',
-      decodeURI(res.headers['content-disposition'].split('=')[1])
-    );
+    link.setAttribute('download', decodeURI(res.headers['content-disposition'].split('=')[1]));
     document.body.appendChild(link);
     link.click();
   });
