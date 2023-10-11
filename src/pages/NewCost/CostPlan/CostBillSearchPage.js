@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-06 09:37:53
+ * @LastEditTime: 2023-10-11 15:38:38
  * @version: 1.0
  */
 import React from 'react';
@@ -218,7 +218,8 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.confirmChildBill(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('确定成功！');
-            this.onSearch;
+            this.childRef.onSearch();
+            // this.onSearch;
           } else {
             message.error(response.message);
           }
@@ -228,7 +229,8 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单确认',
           childSelectRows,
           this.confirmChildBill,
-          this.onSearch
+          // this.onSearch
+          this.childRef.onSearch()
         );
       }
     }
@@ -265,7 +267,8 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.reconciliationChildBill(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('确认成功！');
-            this.onSearch();
+            // this.onSearch();
+            this.childRef.onSearch();
           } else {
             message.error(response.message);
           }
@@ -275,7 +278,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单对账确认',
           childSelectRows,
           this.reconciliationChildBill,
-          this.onSearch
+          this.childRef.onSearch()
         );
       }
     }
@@ -312,7 +315,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.invoiceConfirmChild(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('确认成功！');
-            this.onSearch();
+            this.childRef.onSearch();
           } else {
             message.error(response.message);
           }
@@ -322,7 +325,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单对账确认',
           childSelectRows,
           this.invoiceConfirmChild,
-          this.onSearch
+          this.childRef.onSearch()
         );
       }
     }
@@ -359,7 +362,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.verificationChild(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('核销成功！');
-            this.onSearch();
+            this.childRef.onSearch();
           } else {
             message.error(response.message);
           }
@@ -369,7 +372,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单核销',
           childSelectRows,
           this.verificationChild,
-          this.onSearch
+          this.childRef.onSearch()
         );
       }
     }
@@ -406,7 +409,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.paymentChild(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('核销成功！');
-            this.onSearch();
+            this.childRef.onSearch();
           } else {
             message.error(response.message);
           }
@@ -416,7 +419,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单付款',
           childSelectRows,
           this.paymentChild,
-          this.onSearch
+          this.childRef.onSearch()
         );
       }
     }
@@ -453,7 +456,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.completedChild(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('归档成功！');
-            this.onSearch();
+            this.childRef.onSearch();
           } else {
             message.error(response.message);
           }
@@ -463,7 +466,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单归档',
           childSelectRows,
           this.completedChild,
-          this.onSearch
+          this.childRef.onSearch()
         );
       }
     }
@@ -477,7 +480,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     return await completed('child', child.UUID);
   };
 
-  expandedRowRender = (record, index) => {
+  expandedRowRender = record => {
     return (
       <div
         style={{
