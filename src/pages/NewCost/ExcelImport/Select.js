@@ -33,10 +33,10 @@ class Select extends PureComponent {
     if (!isExcel) {
       message.error(formatMessage({ id: 'common.excelImport.select.excelLimit' }));
     }
-    const isLt2M = file.size / 1024 / 1024 < 2;
-    if (!isLt2M) {
-      message.error(formatMessage({ id: 'common.excelImport.select.fileSizeLimit' }));
-    }
+    const isLt2M = file.size / 1024 / 1024 < 5;
+    // if (!isLt2M) {
+    //   message.error(formatMessage({ id: 'common.excelImport.select.fileSizeLimit' }));
+    // }
     return isExcel && isLt2M;
   };
 

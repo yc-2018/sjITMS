@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-01 16:01:34
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-06 14:54:03
+ * @LastEditTime: 2023-10-10 17:43:19
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -135,5 +135,12 @@ export async function remind(sourceUuid) {
 export async function getDataColumns() {
   return request(`/itms-cost/itms-cost/newSource/getDataColumns`, {
     method: 'GET',
+  });
+}
+
+export async function sortDateSourceTree(payload) {
+  return request(`/itms-cost/itms-cost/newSource/sortDateSourceTree`, {
+    method: 'POST',
+    body: payload,
   });
 }

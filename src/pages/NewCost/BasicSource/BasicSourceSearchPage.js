@@ -2,11 +2,11 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-06 09:40:00
+ * @LastEditTime: 2023-10-11 11:14:27
  * @version: 1.0
  */
 import React, { Component } from 'react';
-import { Layout, Button, Tree, message, Modal, Empty, Tabs } from 'antd';
+import { Layout, Button, Tree, message, Modal, Icon, Tabs } from 'antd';
 import Page from '@/pages/Component/Page/inner/NewStylePage';
 import sourceStyle from './BasicSource.less';
 import FormFieldSearchPage from './BasicFormFieldSearchPage';
@@ -14,7 +14,7 @@ import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCre
 import ExcelImport from '@/pages/NewCost/ExcelImport/index';
 import BasicHeadCreatPage from './BasicHeadCreatPage';
 import BasicDtlCreatPage from './BasicDtlCreatPage';
-import { findSourceTree, deleteSourceTree } from '@/services/cost/BasicSource';
+import { findSourceTree, deleteSourceTree, sortDateSourceTree } from '@/services/cost/BasicSource';
 import BasicSourceDataSearchPage from './BasicSourceDataSearchPage';
 import { havePermission } from '@/utils/authority';
 import BasicSourceOperateLogSearchPage from './BasicSourceOperateLogSearchPage';
@@ -60,8 +60,15 @@ export default class BasicSourceSearchPage extends Component {
       if (data != '' && data != undefined) {
         let nodeArr = data.map(item => {
           item.title = (
-            <div>
-              <span>{item.title}</span>
+            <div style={{ height: '24px', lineHeight: '24px' }}>
+              <span>
+                <Icon
+                  type={item.type == undefined ? 'folder-open' : 'file-text'}
+                  style={{ marginRight: '2px' }}
+                />
+                {item.title}
+                {/* {item.uuid} */}
+              </span>
               {item.type == undefined || item.key != selectedKeys ? (
                 <span />
               ) : (
@@ -100,9 +107,10 @@ export default class BasicSourceSearchPage extends Component {
           </div>
         </div>
         <Tree
-          showLine
-          showIcon={true}
           selectable
+          draggable
+          blockNode
+          onDrop={this.onDrop}
           selectedKeys={[selectedKeys]}
           onSelect={this.onSelect}
         >
@@ -110,6 +118,24 @@ export default class BasicSourceSearchPage extends Component {
         </Tree>
       </div>
     );
+  };
+
+  onDrop = async info => {
+    const dropKey = info.node.props.eventKey;
+    const dragKey = info.dragNode.props.eventKey;
+    const dropToGap = info.dropToGap;
+    const dropPos = info.node.props.pos.split('-');
+    const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
+    const payload = {
+      dropKey: dropKey,
+      dragKey: dragKey,
+      dropToGap: dropToGap,
+      dropPosition: dropPosition,
+    };
+    const response = await sortDateSourceTree(payload);
+    if (response && response.success) {
+      this.queryTree();
+    }
   };
 
   createHeadOnClick = () => {
