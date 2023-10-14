@@ -14,6 +14,13 @@ export async function split(gpsNos) {
     });
 }
 
+export async function switchDevice(gpsNos) {
+  return request(`/itms-schedule/itms-schedule/g7/deivce/switchDevice?gpsNos=${gpsNos}`,
+    {
+      method: 'POST'
+    });
+}
+
 export async function saveServiceDate(gpsNos, type, serviceDate) {
   return request(`/itms-schedule/itms-schedule/g7/deivce/saveServiceDate?gpsNos=${gpsNos}&type=${type}&serviceDate=${serviceDate}`,
     {

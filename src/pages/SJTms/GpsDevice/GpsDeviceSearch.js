@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2023-09-26 14:30:27
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-10-10 11:58:46
+ * @LastEditTime: 2023-10-12 14:19:38
  * @Description: G7设备管理
  * @FilePath: \iwms-web\src\pages\SJTms\GpsDevice\GpsDeviceSearch.js
  */
@@ -13,7 +13,7 @@ import { havePermission } from '@/utils/authority';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { formatMessage } from 'umi/locale';
-import { shift, split, saveServiceDate } from '@/services/sjitms/GpsDevice';
+import { shift, split, switchDevice, saveServiceDate } from '@/services/sjitms/GpsDevice';
 import moment from 'moment';
 @connect(({ quick, loading }) => ({
   quick,
@@ -98,6 +98,12 @@ export default class GpsDeviceSearch extends QuickFormSearchPage {
       >
         移装
       </Button>
+      <Button
+        hidden={!havePermission(this.state.authority + '.switchDevice')}
+        onClick={() => this.onSwitchDevice()}
+      >
+        主从机更换
+      </Button>
       <Modal
         title="移装"
         visible={shiftMofal}
@@ -159,6 +165,10 @@ export default class GpsDeviceSearch extends QuickFormSearchPage {
   //拆除
   onSplit = () => {
 
+  }
+
+  onSwitchDevice = () => {
+    
   }
 
   //移装
