@@ -866,7 +866,8 @@ export default class QuickFormSearchPage extends SearchPage {
       return;
     }
     const { pageFilters, isOrgQuery, defaultSort, superParams, linkQuery } = this.state;
-    let simpleParams = [...exSearchFilter];
+    // let simpleParams = [...exSearchFilter];
+    let simpleParams = [];
     if (filter?.queryParams) {
       //点击查询
       simpleParams = simpleParams.concat(filter.queryParams);
@@ -881,10 +882,16 @@ export default class QuickFormSearchPage extends SearchPage {
     }
     let queryParams = [...simpleParams];
     queryParams = queryParams.filter(item => {
+      const ex = exSearchFilter.find(x => x.field == item.field);
+      const exField = ex == undefined ? true : item.field != ex.field;
       return (
-        item.field != 'dispatchCenterUuid' && item.field != 'dcUuid' && item.field != 'companyuuid'
+        item.field != 'dispatchCenterUuid' &&
+        item.field != 'dcUuid' &&
+        item.field != 'companyuuid' &&
+        exField
       );
     });
+    queryParams = [...queryParams, ...exSearchFilter];
     const params = linkQuery == 1 && superParams ? superParams : [];
     const newPageFilters = {
       pageSize,

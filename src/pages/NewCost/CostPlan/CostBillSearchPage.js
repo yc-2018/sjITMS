@@ -2,11 +2,11 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-15 16:01:08
+ * @LastEditTime: 2023-10-11 17:24:17
  * @version: 1.0
  */
 import React from 'react';
-import { Form, Button, Modal, Popconfirm, message } from 'antd';
+import { Form, Button, Modal, Popconfirm, message, Spin } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import CostBillViewForm from '@/pages/NewCost/CostBill/CostBillViewForm';
@@ -19,6 +19,7 @@ import {
   payment,
   completed,
   checklistConfirm,
+  portChildBill,
 } from '@/services/cost/CostBill';
 import CostChildBillSearchPage from '@/pages/NewCost/CostChildBill/CostChildBillSearchPage';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
@@ -214,7 +215,8 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.confirmChildBill(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('确定成功！');
-            this.onSearch;
+            this.childRef.onSearch();
+            // this.onSearch;
           } else {
             message.error(response.message);
           }
@@ -224,7 +226,8 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单确认',
           childSelectRows,
           this.confirmChildBill,
-          this.onSearch
+          // this.onSearch
+          this.childRef.onSearch()
         );
       }
     }
@@ -261,7 +264,8 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.reconciliationChildBill(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('确认成功！');
-            this.onSearch();
+            // this.onSearch();
+            this.childRef.onSearch();
           } else {
             message.error(response.message);
           }
@@ -271,7 +275,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单对账确认',
           childSelectRows,
           this.reconciliationChildBill,
-          this.onSearch
+          this.childRef.onSearch()
         );
       }
     }
@@ -308,7 +312,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.invoiceConfirmChild(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('确认成功！');
-            this.onSearch();
+            this.childRef.onSearch();
           } else {
             message.error(response.message);
           }
@@ -318,7 +322,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单对账确认',
           childSelectRows,
           this.invoiceConfirmChild,
-          this.onSearch
+          this.childRef.onSearch()
         );
       }
     }
@@ -355,7 +359,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.verificationChild(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('核销成功！');
-            this.onSearch();
+            this.childRef.onSearch();
           } else {
             message.error(response.message);
           }
@@ -365,7 +369,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单核销',
           childSelectRows,
           this.verificationChild,
-          this.onSearch
+          this.childRef.onSearch()
         );
       }
     }
@@ -402,7 +406,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.paymentChild(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('核销成功！');
-            this.onSearch();
+            this.childRef.onSearch();
           } else {
             message.error(response.message);
           }
@@ -412,7 +416,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单付款',
           childSelectRows,
           this.paymentChild,
-          this.onSearch
+          this.childRef.onSearch()
         );
       }
     }
@@ -449,7 +453,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.completedChild(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('归档成功！');
-            this.onSearch();
+            this.childRef.onSearch();
           } else {
             message.error(response.message);
           }
@@ -459,7 +463,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单归档',
           childSelectRows,
           this.completedChild,
-          this.onSearch
+          this.childRef.onSearch()
         );
       }
     }
@@ -473,7 +477,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     return await completed('child', child.UUID);
   };
 
-  expandedRowRender = (record, index) => {
+  expandedRowRender = record => {
     return (
       <div
         style={{
@@ -493,11 +497,36 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     );
   };
 
+  portBill = () => {
+    const { selectedRows } = this.state;
+    const childSelectRows = this.childRef?.state.selectedRows;
+    const verify = this.billVerify(selectedRows, childSelectRows);
+    if (!verify) {
+      return;
+    }
+    if (selectedRows.length > 0) {
+      selectedRows.forEach(row => {
+        portChildBill(row.UUID, 'parent');
+      });
+    } else {
+      childSelectRows.forEach(row => {
+        portChildBill(row.UUID, 'child');
+      });
+    }
+  };
+
   // //绘制上方按钮
   drawActionButton = () => {
     const { isModalVisible, e } = this.state;
     return (
       <>
+        <Button
+          onClick={() => {
+            this.portBill();
+          }}
+        >
+          导出
+        </Button>
         <Button
           onClick={() => {
             this.props.switchTab('query');

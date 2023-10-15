@@ -4,6 +4,7 @@ import RightContent from '../GlobalHeader/RightContent';
 import BaseMenu from '../SiderMenu/BaseMenu';
 import configs from '@/utils/config';
 import styles from './index.less';
+import { loginOrg } from '@/utils/LoginContext';
 
 export default class TopNavHeader extends PureComponent {
   state = {
@@ -60,7 +61,15 @@ export default class TopNavHeader extends PureComponent {
             <div className={styles.logo} key="logo" id="logo">
               <Link to="/bigData/count" className={styles.linkStyle}>
                 <img src={logo} alt="logo" />
-                <h1> {configs[API_ENV].PRO_ENV == 1 ? '时捷TMS' : '时捷TMS(测试)'}</h1>
+                <h1>
+                  {configs[API_ENV].PRO_ENV == 1
+                    ? loginOrg()?.name
+                      ? loginOrg().name
+                      : '时捷'
+                    : loginOrg()?.name
+                      ? loginOrg().name
+                      : '时捷(测试)'}
+                </h1>
               </Link>
             </div>
             <div

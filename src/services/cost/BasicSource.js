@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-01 16:01:34
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-21 11:43:59
+ * @LastEditTime: 2023-10-10 17:43:19
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -85,7 +85,7 @@ export async function batchImport(payload) {
   return request(
     `/itms-cost/itms-cost/source/batchImport?sourceUuid=${payload.sourceUuid}&fileKey=${
       payload.fileKey
-    }`,
+    }&importType=${payload.importType}`,
     {
       method: 'POST',
     }
@@ -129,5 +129,18 @@ export async function sourceAbnormal(sourceUuid) {
 export async function remind(sourceUuid) {
   return request(`/itms-cost/itms-cost/newSource/remind/${sourceUuid}`, {
     method: 'GET',
+  });
+}
+
+export async function getDataColumns() {
+  return request(`/itms-cost/itms-cost/newSource/getDataColumns`, {
+    method: 'GET',
+  });
+}
+
+export async function sortDateSourceTree(payload) {
+  return request(`/itms-cost/itms-cost/newSource/sortDateSourceTree`, {
+    method: 'POST',
+    body: payload,
   });
 }
