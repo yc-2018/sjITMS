@@ -78,7 +78,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
     pagination :  {
       showSizeChanger: true,
       pageSize: 1000,
-      pageSizeOptions: ['20', '50', '100', '200','1000'], //500
+      pageSizeOptions: ['1000'], //500
     },
     notshowChanger:true,
     rest: { className: LineSystem.contentWrapglobal },
@@ -1034,7 +1034,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
   //拖拽排序
   drapTableChange = list => {
     const { data,pageFilters } = this.state;
-    if(pageFilters.page !== 1){
+    if(pageFilters?.page !== 1 && pageFilters?.page!=undefined){
       message.error("只能在第一页使用推拽");
       return;
     }
