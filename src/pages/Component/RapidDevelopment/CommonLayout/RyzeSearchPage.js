@@ -156,9 +156,12 @@ export default class RyzeSearchPage extends Component {
   };
 
   drawPage = () => {
-    const { selectedRows, data, scroll, key, unSaveFilter } = this.state;
+    const { selectedRows, data, scroll, key, unSaveFilter,pagination ,notshowChanger} = this.state;
     const { loading } = this.props;
-
+    const paginationProps = {
+      ...data.pagination,
+      ...pagination,
+    };
     let tableFilter = {
       selectedRows: this.state.selectedRows,
       pageFilter: this.state.pageFilter,
@@ -209,8 +212,8 @@ export default class RyzeSearchPage extends Component {
             newScroll={scroll ? scroll : undefined}
             onSelectRow={this.handleSelectRows}
             onChange={this.handleStandardTableChange}
-            pagination = {this.state.pagination}
-            notshowChanger ={this.state.notshowChanger}
+            pagination = {paginationProps}
+            notshowChanger ={notshowChanger}
             comId={key}
             rest={this.state.rest}
             rowClassName={(record, index) => {

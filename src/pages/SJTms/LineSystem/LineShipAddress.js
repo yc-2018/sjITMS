@@ -77,8 +77,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
     canDragTable: true,
     pagination :  {
       showSizeChanger: true,
-      pageSize: 1000,
-      pageSizeOptions: ['1000'], //500
+      pageSizeOptions: ['20', '50', '100', '200','500','1000']
     },
     notshowChanger:true,
     rest: { className: LineSystem.contentWrapglobal },
