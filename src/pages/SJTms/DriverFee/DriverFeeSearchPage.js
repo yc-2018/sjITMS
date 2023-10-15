@@ -178,6 +178,11 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
             this.setState({ showRejectedModal: false });
           }}
         >
+             <Form>
+            <Form.Item labelCol={{ span: 6 }} wrapperCol={{ span: 15 }} label="驳回申请">
+              {getFieldDecorator('note', {})(<Input />)}
+            </Form.Item>
+          </Form> 
         </Modal>
         <Modal
           title="修改超额说明"

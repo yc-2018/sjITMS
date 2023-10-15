@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-09 15:55:45
+ * @LastEditTime: 2023-10-05 17:19:06
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -65,43 +65,48 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
     }
     const response = await getBill(PLAN_UUID, params);
     if (response.data && response.success) {
-      const { structs, data, plan, bill } = response.data.records[0];
-      let newColumns = [];
-      structs.forEach(struct => {
-        newColumns.push({
-          fieldName: struct.fieldName,
-          fieldTxt: struct.fieldTxt,
-          fieldType: 'VarChar',
-          fieldWidth: 100,
-          isSearch: false,
-          isShow: true,
-        });
-      });
-      var datas = {
-        list: data,
-        pagination: {
-          total: response.data.pageCount,
-          pageSize: response.data.pageSize,
-          current: response.data.page,
-          showTotal: total => `共 ${total} 条`,
-        },
-      };
-      this.setState({
-        key: this.props.quickuuid + new Date(),
-        data: datas,
-        searchLoading: false,
-        // bill,
-        // plan,
-      });
-      this.initConfig({
-        columns: newColumns,
-        sql: ' ccc',
-        reportHeadName: this.props.TITLE, //this.props.params.TITLE,
-      });
+      this.init(response);
+      this.init(response);
     } else {
       message.error('当前查询无数据,请计算后再操作');
       this.setState({ data: [], searchLoading: false });
     }
+  };
+
+  init = response => {
+    const { structs, data } = response.data.records[0];
+    let newColumns = [];
+    structs.forEach(struct => {
+      newColumns.push({
+        fieldName: struct.fieldName,
+        fieldTxt: struct.fieldTxt,
+        fieldType: 'VarChar',
+        fieldWidth: 100,
+        isSearch: false,
+        isShow: true,
+      });
+    });
+    var datas = {
+      list: data,
+      pagination: {
+        total: response.data.pageCount,
+        pageSize: response.data.pageSize,
+        current: response.data.page,
+        showTotal: total => `共 ${total} 条`,
+      },
+    };
+    this.setState({
+      key: this.props.quickuuid + new Date(),
+      data: datas,
+      searchLoading: false,
+      // bill,
+      // plan,
+    });
+    this.initConfig({
+      columns: newColumns,
+      sql: ' ccc',
+      reportHeadName: this.props.TITLE, //this.props.params.TITLE,
+    });
   };
 
   refreshTable = data => {
@@ -146,24 +151,24 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
   };
 
   drawActionButton = () => {
-    //额外的菜单选项
-    const menus = [];
-    menus.push({
-      // disabled: !havePermission(STORE_RES.CREATE), //权限认证
-      name: '测试', //功能名称
-      onClick: this.test, //功能实现
-    });
-    return (
-      <div>
-        <Button
-          // hidden={!havePermission(this.state.authority + '.port')}
-          onClick={this.port}
-          type="primary"
-        >
-          导出
-        </Button>
-      </div>
-    );
+    // //额外的菜单选项
+    // const menus = [];
+    // menus.push({
+    //   // disabled: !havePermission(STORE_RES.CREATE), //权限认证
+    //   name: '测试', //功能名称
+    //   onClick: this.test, //功能实现
+    // });
+    // return (
+    //   <div>
+    //     <Button
+    //       // hidden={!havePermission(this.state.authority + '.port')}
+    //       onClick={this.port}
+    //       type="primary"
+    //     >
+    //       导出
+    //     </Button>
+    //   </div>
+    // );
   };
 
   changeState = () => {

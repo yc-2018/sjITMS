@@ -72,8 +72,15 @@ export default class LineShipAddress extends QuickFormSearchPage {
     lineValue: undefined,
     isModalVisible: false,
     noSettingColumns: true,
+    noPagination:false,
     //hasSettingColumns: false,
     canDragTable: true,
+    pagination :  {
+      showSizeChanger: true,
+      pageSize: 1000,
+      pageSizeOptions: ['20', '50', '100', '200','1000'], //500
+    },
+    notshowChanger:true,
     rest: { className: LineSystem.contentWrapglobal },
   };
   constructor(props) {
@@ -1026,7 +1033,11 @@ export default class LineShipAddress extends QuickFormSearchPage {
 
   //拖拽排序
   drapTableChange = list => {
-    const { data } = this.state;
+    const { data,pageFilters } = this.state;
+    if(pageFilters.page !== 1){
+      message.error("只能在第一页使用推拽");
+      return;
+    }
     data.list = list.map((record, index) => {
       record.ORDERNUM = index + 1;
       let linecode = record.LINECODE;

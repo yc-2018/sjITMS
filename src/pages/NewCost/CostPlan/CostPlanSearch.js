@@ -39,6 +39,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
       this.handleOks(nextProps.param.code);
     }
   }
+
   delItem = () => {
     const { selectedRows, data } = this.state;
     if (selectedRows.length == 0) {
@@ -57,6 +58,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     });
     this.setState({ data });
   };
+
   addItem = data => {
     const param = {
       quickuuid: 'COST_PROJECT',
@@ -66,6 +68,12 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     this.setState({ param });
     this.createPageModalRef.show();
   };
+
+  saveItem = data => {
+    this.handleOks(data.CODE);
+    this.createPageModalRef.hide();
+  };
+
   drawcell = e => {
     //找到fieldName为CODE这一列 更改它的component
     if (e.column.fieldName == 'ITEM_NAME') {
@@ -73,13 +81,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
       e.component = component;
     }
   };
-  saveItem = data => {
-    this.handleOks(data.CODE);
-    this.createPageModalRef.hide();
-  };
-  drawTopButton = () => {
-    return <></>;
-  };
+
   handleOks = async code => {
     const params = {
       tableName: 'COST_PROJECT',
@@ -123,6 +125,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     this.setState({ data, visible: false });
   };
 
+  //拖拽
   drapTableChange = e => {
     let { data } = this.state;
     let i = 1;
@@ -213,18 +216,19 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     );
   };
 
-  该方法会覆盖所有的搜索查询;
-  drawSearchPanel = () => {
-    return <></>;
-  };
+  // 该方法会覆盖所有的搜索查询;
+  drawSearchPanel = () => {};
+
+  drawTopButton = () => {};
 
   exSearchFilter = () => {
+    const { planUuid } = this.props;
     return [
       {
         field: 'PLAN_UUID',
         type: 'VarChar',
         rule: 'eq',
-        val: this.props.PLAN_UUID,
+        val: planUuid,
       },
     ];
   };

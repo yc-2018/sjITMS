@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-11 14:48:48
+ * @LastEditTime: 2023-09-26 18:02:18
  * @version: 1.0
  */
 import { Form, Modal, Button, Icon, Row, Col, Upload, List, message } from 'antd';
@@ -10,6 +10,7 @@ import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 // import { haveCheck, consumed, uploadFile, deleteFile } from '@/services/cost/CostCalculation';
 import { childUploadFile, deleteChildFile, childDownload } from '@/services/cost/CostBill';
+import CostChildBillDtlSearchPage from './CostChildBillDtlSearchPage';
 
 @connect(({ quick, deliveredConfirm, loading }) => ({
   quick,
@@ -143,7 +144,13 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
           width={'90%'}
           bodyStyle={{ height: 'calc(82vh)', overflowY: 'auto' }}
         >
-          <span>aaaaa</span>
+          <CostChildBillDtlSearchPage
+            key={e == undefined ? new Date() : e.val}
+            quickuuid="123"
+            {...e}
+            {...this.props}
+            location={{ pathname: '1' }}
+          />
         </Modal>
 
         <Modal

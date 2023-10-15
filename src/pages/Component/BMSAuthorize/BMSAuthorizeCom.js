@@ -7,6 +7,7 @@ import { findSourceTree, getSourceTree } from '@/services/cost/BasicSource';
 import { costAuthorize, getCostRoleResource } from '@/services/cost/RoleResource';
 import { getConfigInfo, updateConfigInfo } from '@/services/cost/CostPlan';
 import { getPlanTree } from '@/services/cost/Cost';
+import ConfigTable from './ConfigTable';
 
 const { Content, Sider } = Layout;
 const { TreeNode } = Tree;
@@ -91,8 +92,9 @@ export default class BMSAuthorizeCom extends Component {
 
   drawContent = () => {
     const { type } = this.props;
+    const { selectedKeys } = this.state;
     if (type == 'CostPlan') {
-      return this.drawConfigTable();
+      return <ConfigTable key={selectedKeys} selectedKeys={selectedKeys} />;
     } else {
       return <Empty />;
     }
@@ -100,7 +102,6 @@ export default class BMSAuthorizeCom extends Component {
 
   drawConfigTable = () => {
     const { configInfo } = this.state;
-
     const columns = [
       {
         title: '节点',
@@ -164,11 +165,11 @@ export default class BMSAuthorizeCom extends Component {
     }
   };
 
-  onSelect = (selectedKeys, e) => {
+  onSelect = async (selectedKeys, e) => {
     const { type } = this.props;
     this.setState({ selectedKeys: selectedKeys });
     if (type == 'CostPlan') {
-      getConfigInfo(selectedKeys).then(response => {
+      await getConfigInfo(selectedKeys).then(response => {
         if (response.success && response.data) {
           this.setState({ configInfo: response.data });
         } else {

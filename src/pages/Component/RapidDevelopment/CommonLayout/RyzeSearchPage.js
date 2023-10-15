@@ -209,6 +209,8 @@ export default class RyzeSearchPage extends Component {
             newScroll={scroll ? scroll : undefined}
             onSelectRow={this.handleSelectRows}
             onChange={this.handleStandardTableChange}
+            pagination = {this.state.pagination}
+            notshowChanger ={this.state.notshowChanger}
             comId={key}
             rest={this.state.rest}
             rowClassName={(record, index) => {
