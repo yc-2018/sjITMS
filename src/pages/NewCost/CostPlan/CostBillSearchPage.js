@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-11 17:24:17
+ * @LastEditTime: 2023-10-13 17:56:31
  * @version: 1.0
  */
 import React from 'react';
@@ -20,6 +20,7 @@ import {
   completed,
   checklistConfirm,
   portChildBill,
+  pushBill,
 } from '@/services/cost/CostBill';
 import CostChildBillSearchPage from '@/pages/NewCost/CostChildBill/CostChildBillSearchPage';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
@@ -109,6 +110,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
             子帐单生成
           </Button>
         </Popconfirm>
+
         <Button
           onClick={() => {
             this.handleBillConfirm();
@@ -116,6 +118,15 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         >
           账单确认
         </Button>
+
+        <Button
+          onClick={() => {
+            this.handlePushBill();
+          }}
+        >
+          子账单推送
+        </Button>
+
         <Button
           onClick={() => {
             this.handleReconciliation();
@@ -192,6 +203,30 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     }
   };
 
+  handlePushBill = () => {
+    const childSelectRows = this.childRef?.state.selectedRows;
+    if (childSelectRows.length == 0) {
+      message.error('请选择需要推送的子帐单！');
+      return;
+    }
+    if (childSelectRows.length == 1) {
+      this.pushBill(childSelectRows[0]).then(response => {
+        if (response.success) {
+          message.success('推送成功！');
+        } else {
+          message.error(response.message);
+        }
+      });
+    } else {
+      this.batchProcessConfirmRef.show(
+        '子账单推送',
+        childSelectRows,
+        this.pushBill,
+        this.childRef.onSearch()
+      );
+    }
+  };
+
   //账单确认
   handleBillConfirm = () => {
     const { selectedRows } = this.state;
@@ -231,6 +266,10 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         );
       }
     }
+  };
+
+  pushBill = async child => {
+    return await pushBill(child.UUID);
   };
 
   confirmBill = async uuid => {

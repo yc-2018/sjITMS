@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-09-07 11:24:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-11 15:44:59
+ * @LastEditTime: 2023-10-12 16:31:36
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -24,6 +24,14 @@ export async function createChildBill(billUuid, payload) {
     body: payload,
   });
 }
+
+//子帐单推送
+export async function pushBill(billUuid) {
+  return request(`/itms-cost/itms-cost/newCostBill/pushBill/${billUuid}`, {
+    method: 'GET',
+  });
+}
+
 //账单确认
 export async function billConfirm(type, billUuid) {
   return request(`/itms-cost/itms-cost/newCostBill/billConfirm?type=${type}&billUuid=${billUuid}`, {
