@@ -61,7 +61,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
 
   addItem = data => {
     const param = {
-      quickuuid: 'COST_PROJECT',
+      quickuuid: 'cost_project',
       params: data ? { entityUuid: data.record.UUID } : {},
       showPageNow: data ? 'update' : 'create',
     };

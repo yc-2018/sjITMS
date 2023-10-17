@@ -97,10 +97,10 @@ export default class CostProjectCreate extends QuickCreatePage {
 
   initFile = () => {
     let savedList = [];
-    if (this.entity.COST_PROJECT[0]?.ACCESSORY_NAME) {
-      let entity = this.entity.COST_PROJECT[0];
-      let entitys = this.entity.COST_PROJECT[0].ACCESSORY_NAME.split(',');
-      let filePaths = this.entity.COST_PROJECT[0].ACCESSORY.split(',');
+    if (this.entity.cost_project[0]?.ACCESSORY_NAME) {
+      let entity = this.entity.cost_project[0];
+      let entitys = this.entity.cost_project[0].ACCESSORY_NAME.split(',');
+      let filePaths = this.entity.cost_project[0].ACCESSORY.split(',');
       entitys.forEach((item, index) => {
         let file = {
           UUID: entity.UUID,
@@ -118,7 +118,7 @@ export default class CostProjectCreate extends QuickCreatePage {
   };
 
   parseSql = async () => {
-    let sql = this.entity.COST_PROJECT[0].SQL;
+    let sql = this.entity.cost_project[0].SQL;
     let param = {
       sql: sql,
     };
@@ -129,7 +129,7 @@ export default class CostProjectCreate extends QuickCreatePage {
   };
 
   sqlComponent = props => {
-    return this.entity['COST_PROJECT'][0]?.FORMULA_TYPE == 0 ? (
+    return this.entity['cost_project'][0]?.FORMULA_TYPE == 0 ? (
       <div style={{ textAlign: 'center' }}>
         <Input.TextArea {...props} style={{ width: '100%', height: '200px' }} />
         <Button type="primary" onClick={this.parseSql}>
@@ -144,7 +144,7 @@ export default class CostProjectCreate extends QuickCreatePage {
           <Input.TextArea
             {...props}
             style={{ width: '100%', height: '100px' }}
-            value={this.entity['COST_PROJECT'][0]?.SQL}
+            value={this.entity['cost_project'][0]?.SQL}
           />
         </div>
       </div>
@@ -186,10 +186,10 @@ export default class CostProjectCreate extends QuickCreatePage {
 
   spliceSql = option => {
     const sql =
-      (this.entity['COST_PROJECT'][0]?.SQL == undefined
+      (this.entity['cost_project'][0]?.SQL == undefined
         ? ''
-        : this.entity['COST_PROJECT'][0]?.SQL) + option;
-    this.setFieldsValue('COST_PROJECT', 'SQL', sql, 0);
+        : this.entity['cost_project'][0]?.SQL) + option;
+    this.setFieldsValue('cost_project', 'SQL', sql, 0);
   };
 
   selectComponent = props => {
@@ -252,12 +252,12 @@ export default class CostProjectCreate extends QuickCreatePage {
   formLoaded = () => {
     const { formItems, onlFormInfos } = this.state;
 
-    formItems.COST_PROJECT_ACCESSORY.component = this.uploadComponent;
-    formItems.COST_PROJECT_SQL.component = this.sqlComponent;
-    formItems.COST_PROJECT_CYCLE_FIELD.component = this.selectComponent;
-    formItems.COST_PROJECT_CYCLE_BODY_FIELD.component = this.selectComponent;
-    formItems.COST_PROJECT_DATASOURCE_UUID.component = this.selectSourceComponent;
-    formItems.COST_PROJECT_BILLING_FIELD.component = this.selectComponent;
+    formItems.cost_project_ACCESSORY.component = this.uploadComponent;
+    formItems.cost_project_SQL.component = this.sqlComponent;
+    formItems.cost_project_CYCLE_FIELD.component = this.selectComponent;
+    formItems.cost_project_CYCLE_BODY_FIELD.component = this.selectComponent;
+    formItems.cost_project_DATASOURCE_UUID.component = this.selectSourceComponent;
+    formItems.cost_project_BILLING_FIELD.component = this.selectComponent;
 
     this.getDataSelect(true);
 
@@ -277,7 +277,7 @@ export default class CostProjectCreate extends QuickCreatePage {
           formItem.categoryName = 'hidden';
         }
       }
-      formItems['COST_PROJECT_SQL'].categoryName = '公式设定';
+      formItems['cost_project_SQL'].categoryName = '公式设定';
     } else if (FORMULA_TYPE == '2') {
       for (const formItemKey in formItems) {
         const formItem = formItems[formItemKey];
@@ -285,7 +285,7 @@ export default class CostProjectCreate extends QuickCreatePage {
           formItem.categoryName = 'hidden';
         }
       }
-      formItems['COST_PROJECT_SQL'].categoryName = '公式设定';
+      formItems['cost_project_SQL'].categoryName = '公式设定';
     } else if (FORMULA_TYPE == '3') {
       for (const formItemKey in formItems) {
         const formItem = formItems[formItemKey];
@@ -332,8 +332,8 @@ export default class CostProjectCreate extends QuickCreatePage {
             formItem.categoryName = 'hidden';
           }
         }
-        formItems['COST_PROJECT_SQL'].categoryName = '公式设定';
-        formItems['COST_PROJECT_DATASOURCE_UUID'].categoryName = '公式设定';
+        formItems['cost_project_SQL'].categoryName = '公式设定';
+        formItems['cost_project_DATASOURCE_UUID'].categoryName = '公式设定';
       } else if (e.valueEvent.record.VALUE == '2') {
         for (const formItemKey in formItems) {
           const formItem = formItems[formItemKey];
@@ -341,7 +341,7 @@ export default class CostProjectCreate extends QuickCreatePage {
             formItem.categoryName = 'hidden';
           }
         }
-        formItems['COST_PROJECT_SQL'].categoryName = '公式设定';
+        formItems['cost_project_SQL'].categoryName = '公式设定';
       } else if (e.valueEvent.record.VALUE == '0') {
         for (const formItemKey in formItems) {
           const formItem = formItems[formItemKey];
@@ -373,13 +373,13 @@ export default class CostProjectCreate extends QuickCreatePage {
     } else if (e.fieldName == 'DATASOURCE_UUID') {
       if (
         e.valueEvent != undefined &&
-        (this.entity['COST_PROJECT'][0]['FORMULA_TYPE'] == '0' ||
-          this.entity['COST_PROJECT'][0]['FORMULA_TYPE'] == '4')
+        (this.entity['cost_project'][0]['FORMULA_TYPE'] == '0' ||
+          this.entity['cost_project'][0]['FORMULA_TYPE'] == '4')
       ) {
         this.getDataSource(e.valueEvent, 'source');
       } else if (
         e.valueEvent != undefined &&
-        this.entity['COST_PROJECT'][0]['FORMULA_TYPE'] == '1'
+        this.entity['cost_project'][0]['FORMULA_TYPE'] == '1'
       ) {
         this.getDataSource(e.valueEvent, 'plan');
       } else {
@@ -469,7 +469,7 @@ export default class CostProjectCreate extends QuickCreatePage {
 
   onSave = async e => {
     var formDatas = new FormData();
-    makeFormData(this.entity.COST_PROJECT[0], formDatas);
+    makeFormData(this.entity.cost_project[0], formDatas);
     this.state.filelist.forEach(element => {
       if (!element.isSaved) {
         formDatas.append('files', element.originFileObj);
@@ -478,7 +478,7 @@ export default class CostProjectCreate extends QuickCreatePage {
     let res = await save(formDatas);
     const success = res.data.success == true;
     this.afterSave(success);
-    this.onSaved(this.entity.COST_PROJECT[0]);
+    this.onSaved(this.entity.cost_project[0]);
     if (success) {
       message.success('保存成功！');
     } else {
