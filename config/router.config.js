@@ -9,6 +9,14 @@ export default [
     ],
   },
   {
+    path: '/bms',
+    component: '../layouts/UserLayout',
+    routes: [
+      { path: '/bms', redirect: '/bms/login' },
+      { path: '/bms/login', component: './SJTms/Login/BmsLogin' },
+    ],
+  },
+  {
     path: '/driver',
     component: '../layouts/DriverLayout',
     routes: [
