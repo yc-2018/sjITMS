@@ -112,11 +112,15 @@ export default class CostBillEditView extends CreatePage {
           let ss = {
             title: s,
             dataIndex: s,
+            width: 100,
           };
           col.push(ss);
         }
         this.setState({ dataSource: e.data, col, loading: false });
         this.setState({ isModalVisible: true, projectCode });
+      } else {
+        message.error('查询失败，请稍后再试');
+        this.setState({ loading: false });
       }
     });
   };
@@ -240,26 +244,28 @@ export default class CostBillEditView extends CreatePage {
     return (
       <Modal
         visible={this.state.isModalVisible}
-        //onOk={this.handleOk.bind()}
         onCancel={() => this.setState({ isModalVisible: false })}
         width={'80%'}
         bodyStyle={{ height: 'calc(75vh)', overflowY: 'auto' }} //calc(80vh)
       >
-        <StandardTable
-          dataSource={this.state.dataSource}
-          columns={this.state.col}
-          // noPagination
-          size="middle"
-          colTotal={[]}
-          rowClassName={(record, index) => {
-            let name = '';
-            if (index % 2 === 0) {
-              name = styles.lightRow;
-            }
-            return name;
-          }}
-          // width="800"
-        />
+        <div style={{ marginTop: '1rem' }}>
+          <StandardTable
+            dataSource={this.state.dataSource}
+            columns={this.state.col}
+            // noPagination
+            size="middle"
+            colTotal={[]}
+            rowClassName={(record, index) => {
+              let name = '';
+              if (index % 2 === 0) {
+                name = styles.lightRow;
+              }
+              return name;
+            }}
+            styles
+            // width="800"
+          />
+        </div>
       </Modal>
     );
   };

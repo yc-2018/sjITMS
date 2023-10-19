@@ -25,6 +25,14 @@ export default class BMSAuthorizeCom extends Component {
     this.queryResource();
   };
 
+  componentWillReceiveProps = newProps => {
+    const { selectedRole } = this.props;
+    if (newProps.uuid != selectedRole.uuid) {
+      this.queryTree();
+      this.queryResource();
+    }
+  };
+
   queryTree = async () => {
     const { type } = this.props;
     if (type == 'DataSource') {
