@@ -6,6 +6,7 @@ export default [
     routes: [
       { path: '/user', redirect: '/user/login' },
       { path: '/user/login', component: './SJTms/Login/Login' },
+      { path: '/user/dinglogin', component: './SJTms/Login/DingTalkLogin' },
     ],
   },
   {
