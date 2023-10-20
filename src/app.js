@@ -10,7 +10,7 @@ export function patchRoutes(routes) {
     // console.log('routes', routes);
 
     mergeRoutes(normalizedRoutes, routes).map(item => {
-      routes[2].routes.unshift(item);
+      routes[3].routes.unshift(item);
     });
     // console.log('routes', routes);
   }

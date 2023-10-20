@@ -1117,6 +1117,7 @@ export default class QuickFormSearchPage extends SearchPage {
           reportCode={this.state.reportCode}
           isOrgQuery={this.state.isOrgQuery}
           dbSource={this.state.queryConfig?.reportHead?.dbSource}
+          toggle={true} //查询条件默认展开
         />
       </div>
     );
