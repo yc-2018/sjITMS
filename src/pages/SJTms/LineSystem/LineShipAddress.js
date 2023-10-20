@@ -37,7 +37,9 @@ import {
   getMatchLine,
   updateNote,
   updateIsNewStore,
+  updateLineOrder
 } from '@/services/sjtms/LineSystemHis';
+import {SimpleAutoComplete} from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { updateStoreAddressList, checkShipArea } from '@/services/sjtms/LineSystemHis';
 import { dynamicqueryById, dynamicDelete, dynamicQuery } from '@/services/quick/Quick';
 import { commonLocale } from '@/utils/CommonLocale';
@@ -54,6 +56,7 @@ import { log } from 'lodash-decorators/utils';
   quick,
   loading: loading.models.quick,
 }))
+@Form.create()
 export default class LineShipAddress extends QuickFormSearchPage {
   state = {
     ...this.state,
@@ -79,6 +82,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
       showSizeChanger: true,
       pageSizeOptions: ['20', '50', '100', '200','500','1000']
     },
+    updateLineOrderVisible:false,
     notshowChanger:true,
     rest: { className: LineSystem.contentWrapglobal },
   };
@@ -531,7 +535,6 @@ export default class LineShipAddress extends QuickFormSearchPage {
       }
     });
   };
-
   //添加门店
   handleAddStore = () => {
     this.setState({
@@ -629,6 +632,22 @@ export default class LineShipAddress extends QuickFormSearchPage {
       },
     });
   };
+  updateLineOrder = async () => {
+    const { GOALADDRESSCODE, ADDRESSCODE, pageFilters,orientation,selectedRows,lineuuid} = this.state;
+    await updateLineOrder(
+      {
+        goaladdresscode:GOALADDRESSCODE,
+        addresscode:ADDRESSCODE,
+        orientation:orientation,
+        lineuuid:lineuuid
+      }).then(result => {
+      if (result.success) {
+        message.success('修改成功');
+        this.getData(pageFilters);
+        this.setState({ updateLineOrderVisible: false });
+      }
+    });
+  };
   onTransferChange = targetKeys => {
     this.setState({ targetKeys });
   };
@@ -643,6 +662,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
     this.onSearch();
   };
   drawActionButton = () => {
+    const { getFieldDecorator } = this.props.form;
     // const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = this.props;
     const {
       modalVisible,
@@ -656,6 +676,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
       systemData,
       updateNoteVisible,
       ischeckArea,
+      updateLineOrderVisible
     } = this.state;
     const options = lineData.map(a => {
       return <Select.Option key={a.uuid}>{a.name}</Select.Option>;
@@ -748,6 +769,104 @@ export default class LineShipAddress extends QuickFormSearchPage {
                       defaultValue={this.state.note}
                       onChange={e => this.setState({ note: e.target.value })}
                     />
+                  </Col>
+                </Row>
+              </Form>
+            </Col>
+          </Row>
+        </Modal>
+        <Modal
+          title={"线路排序"}
+          width={800}
+          visible={updateLineOrderVisible}
+          onOk={this.updateLineOrder}
+          confirmLoading={false}
+          onCancel={() => this.setState({ updateLineOrderVisible: false })}
+          destroyOnClose={true}
+        >
+          <Row>
+            <Col>
+              <Form ref="updateNote">
+                <Row>
+                   <Col span={8}>
+                  源门店代码：
+                  {getFieldDecorator('ADDRESSCODE', {
+         initialValue: this.state.ADDRESSCODE,
+          rules: [{ required: true, message: '请输入门店代码!' }],
+        })(
+          <SimpleAutoComplete
+            style={{ width: 200 }}
+            placeholder="请输入门店代码"
+            textField="[%CODE%]%NAME%"
+            valueField="CODE"
+            searchField="CODE"
+            queryParams={{
+              tableName: 'SJ_ITMS_SHIP_ADDRESS',
+              condition: {
+                params: [
+                  {
+                    field: 'COMPANYUUID',
+                    rule: 'eq',
+                    val: [loginCompany().uuid],
+                  },
+                  {
+                    field: 'DISPATCHCENTERUUID',
+                    rule: 'eq',
+                    val: [loginOrg().uuid],
+                  },
+                ],
+              },
+            }}
+            noRecord
+            autoComplete
+            allowClear={true}
+            onChange={e => this.setState({ ADDRESSCODE: e })}
+          />
+        )}
+                  </Col>
+                  
+                  <Col span={8}>
+                  目标门店代码：
+                       {getFieldDecorator('GOALADDRESSCODE', {
+          rules: [{ required: true, message: '目标门店代码：!' }],
+          initialValue: this.state.GOALADDRESSCODE,
+        })(
+          <SimpleAutoComplete
+            style={{ width: 200 }}
+            placeholder="目标门店代码："
+            textField="[%CODE%]%NAME%"
+            valueField="CODE"
+            searchField="CODE"
+            queryParams={{
+              tableName: 'SJ_ITMS_SHIP_ADDRESS',
+              condition: {
+                params: [
+                  {
+                    field: 'COMPANYUUID',
+                    rule: 'eq',
+                    val: [loginCompany().uuid],
+                  },
+                  {
+                    field: 'DISPATCHCENTERUUID',
+                    rule: 'eq',
+                    val: [loginOrg().uuid],
+                  },
+                ],
+              },
+            }}
+            noRecord
+            autoComplete
+            allowClear={true}
+            onChange={e => this.setState({ GOALADDRESSCODE: e })}
+          />
+        )}
+                  </Col>
+                  <Col span={8}>
+                    <span>位置：</span>
+                    <Select onChange={e=>this.setState({orientation:e})}>
+                      <Option value ='before'>前</Option>
+                      <Option value ='after'>后</Option>
+                    </Select>
                   </Col>
                 </Row>
               </Form>
@@ -1013,6 +1132,11 @@ export default class LineShipAddress extends QuickFormSearchPage {
             >
               移入到新线路
             </Button>
+            <Button
+            onClick={() => {this.setState({ updateLineOrderVisible: true})}}
+            >
+              线路排序
+           </Button>
           </>
         )}
         <Button
