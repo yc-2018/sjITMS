@@ -11,6 +11,8 @@ import {
   modifyNewPassword,
   switchOrg,
   resetPassword,
+  dingLogin,
+  dingLogin1
 } from '@/services/account/Login';
 import { reloadAuthorized } from '@/utils/Authorized';
 import { SingletonBloomFilter } from '@/utils/authority';
@@ -109,6 +111,84 @@ export default {
         type: 'changeSubmitting',
         payload: false,
       });
+    },
+    *dingLogin({ payload, callback }, { call, put }) {
+      yield put({ type: 'changeSubmitting', payload: true, });
+      const response = yield call(dingLogin, payload);
+      if (response && response.success) {
+        cacheLogin(response.data);
+        reloadAuthorized();
+        sessionStorage.clear();
+        const urlParams = new URL(window.location.href);
+        const params = getPageQuery();
+        let { redirect } = params;
+        if (redirect) {
+          const redirectUrlParams = new URL(redirect);
+          if (redirectUrlParams.origin === urlParams.origin) {
+            redirect = redirect.substr(urlParams.origin.length);
+            if (redirect.match(/^\/.*#/)) {
+              redirect = redirect.substr(redirect.indexOf('#') + 1);
+            }
+          } else {
+            window.location.href = redirect;
+            yield put({
+              type: 'changeSubmitting',
+              payload: false,
+            });
+            return;
+          }
+        }
+        yield put(routerRedux.replace('/'));
+      } else {
+        yield put({
+          type: 'changeLoginStatus',
+          payload: {
+            status: 'error',
+            message: response.message,
+          },
+        });
+      }
+      yield put({ type: 'changeSubmitting', payload: false });
+      if (callback) callback(response);
+    },
+    *dingLogin1({ payload, callback }, { call, put }) {
+      yield put({ type: 'changeSubmitting', payload: true, });
+      const response = yield call(dingLogin1, payload);
+      if (response && response.success) {
+        cacheLogin(response.data);
+        reloadAuthorized();
+        sessionStorage.clear();
+        const urlParams = new URL(window.location.href);
+        const params = getPageQuery();
+        let { redirect } = params;
+        if (redirect) {
+          const redirectUrlParams = new URL(redirect);
+          if (redirectUrlParams.origin === urlParams.origin) {
+            redirect = redirect.substr(urlParams.origin.length);
+            if (redirect.match(/^\/.*#/)) {
+              redirect = redirect.substr(redirect.indexOf('#') + 1);
+            }
+          } else {
+            window.location.href = redirect;
+            yield put({
+              type: 'changeSubmitting',
+              payload: false,
+            });
+            return;
+          }
+        }
+        yield put(routerRedux.replace('/'));
+      } else {
+        yield put({
+          type: 'changeLoginStatus',
+          payload: {
+            status: 'error',
+            message: response.message,
+          },
+        });
+      }
+      yield put({ type: 'changeSubmitting', payload: false });
+      if (callback) callback(response);
     },
 
     *logout(_, { put }) {

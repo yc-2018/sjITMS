@@ -203,4 +203,10 @@ export async function checkShipArea(payload) {
     method: 'POST',
     body: payload.addressIds,
   });
+};
+export async function updateLineOrder(payload) {
+  return request(`/itms-schedule/itms-schedule/lineShipAddress/updateLineOrder`, {
+    method: 'POST',
+    body: payload,
+  });
 }

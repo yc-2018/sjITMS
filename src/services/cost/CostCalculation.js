@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-10 11:29:27
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-07-24 09:24:10
+ * @LastEditTime: 2023-10-19 17:06:12
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -94,11 +94,10 @@ export async function consumed(Uuid) {
 
 export async function getSubjectBill(payload) {
   return request(
-    `/itms-cost/itms-cost/costbill/getSubjectBill?billUuid=${payload.billUuid}&subjectUuid=${
-      payload.subjectUuid
-    }`,
+    `/itms-cost/itms-cost/costbill/getSubjectBill?billUuid=${payload.billUuid}`,
     {
-      method: 'GET',
+      method: 'POST',
+      body:payload.subjectUuid
     }
   );
 }
@@ -137,9 +136,10 @@ export async function getCompareBill(billNumber, bakBillNumber, payload) {
 }
 export async function getPlanParticulars(subjectUuid, billuuid, name) {
   return request(
-    `/itms-cost/itms-cost/costbill/getPlanParticulars/${subjectUuid}/${billuuid}/${name}`,
+    `/itms-cost/itms-cost/costbill/getPlanParticulars/${billuuid}/${name}`,
     {
       method: 'POST',
+      body:subjectUuid
     }
   );
 }

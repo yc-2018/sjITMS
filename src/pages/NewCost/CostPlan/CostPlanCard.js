@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-14 15:44:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-15 16:30:30
+ * @LastEditTime: 2023-10-19 23:18:56
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -350,7 +350,7 @@ export default class CostPlanCard extends Component {
                 type="flex"
                 justify="start"
                 align="middle"
-                style={{ fontSize: '0.5rem', fontWeight: 'normal', marginTop: '1rem' }}
+                style={{ fontSize: '0.8rem', fontWeight: 'normal', marginTop: '1rem' }}
               >
                 <Col span={3} style={{ textAlign: 'right' }}>
                   所属组织：
@@ -365,7 +365,7 @@ export default class CostPlanCard extends Component {
                 type="flex"
                 justify="start"
                 align="middle"
-                style={{ fontSize: '0.5rem', fontWeight: 'normal' }}
+                style={{ fontSize: '0.8rem', fontWeight: 'normal' }}
               >
                 <Col span={3} style={{ textAlign: 'right' }}>
                   备注：
