@@ -50,9 +50,9 @@ export default class DayAreabb extends QuickFormSearchPage {
           records = newList;
         }
         let colTotal = data.columnTotal;
-        colTotal[0].均件重 = colTotal[0].均件重/data.records?.length
-        colTotal[0].均店整件= colTotal[0].均店整件/data.records?.length
-        colTotal[0].均店重= colTotal[0].均店重/data.records?.length
+        colTotal[0].均件重 = (colTotal[0].均件重/data.records?.length).toFixed(5)
+        colTotal[0].均店整件= (colTotal[0].均店整件/data.records?.length).toFixed(5)
+        colTotal[0].均店重= (colTotal[0].均店重/data.records?.length).toFixed(5)
         var data = {
           list: records,
           pagination: {
