@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-17 11:28:38
+ * @LastEditTime: 2023-10-23 14:48:09
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -14,7 +14,7 @@ import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCre
 import ExcelImport from '@/pages/NewCost/ExcelImport/index';
 import BasicHeadCreatPage from './BasicHeadCreatPage';
 import BasicDtlCreatPage from './BasicDtlCreatPage';
-import { findSourceTree, deleteSourceTree, sortDateSourceTree } from '@/services/cost/BasicSource';
+import { getAllSource, deleteSourceTree, sortDateSourceTree } from '@/services/cost/BasicSource';
 import BasicSourceDataSearchPage from './BasicSourceDataSearchPage';
 import { havePermission } from '@/utils/authority';
 import BasicSourceOperateLogSearchPage from './BasicSourceOperateLogSearchPage';
@@ -42,7 +42,7 @@ export default class BasicSourceSearchPage extends Component {
   };
 
   queryTree = async () => {
-    await findSourceTree().then(response => {
+    await getAllSource().then(response => {
       if (response && response.success) {
         this.setState({ treeData: response.data?.tree, allData: response.data?.all });
       }

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-26 18:02:18
+ * @LastEditTime: 2023-10-23 17:01:07
  * @version: 1.0
  */
 import { Form, Modal, Button, Icon, Row, Col, Upload, List, message } from 'antd';
@@ -64,10 +64,12 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
       e.component = component;
     }
     if (e.column.fieldName == 'ACCESSORY') {
+      let count = e.val == '<空>' ? 0 : e.val.split(',').length;
       const component = (
         <Button onClick={() => this.accessoryModalShow(true, e.record)}>
           <Icon type="upload" />
-          附件
+          附件（
+          {count}）
         </Button>
       );
       e.component = component;
