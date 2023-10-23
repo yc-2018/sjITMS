@@ -7,8 +7,8 @@ import { getLocale } from 'umi/locale';
 import { decode } from 'jsonwebtoken';
 import configs from './config';
 import { setAuthority } from './authority';
-import {cacheLoginKey, loginKey} from './LoginContext';
-import {LOGIN_JWT_KEY} from './constants';
+import { cacheLoginKey, loginKey } from './LoginContext';
+import { LOGIN_JWT_KEY } from './constants';
 
 const codeMessage = {
   200: '服务器成功返回请求的数据。',
@@ -46,7 +46,6 @@ const checkStatus = response => {
 };
 
 function cacheLogin(response) {
-
   const authorization = response.headers.get(LOGIN_JWT_KEY);
   if (!authorization || authorization === loginKey()) {
     return response;
@@ -83,7 +82,7 @@ const cachedSave = (response, hashcode) => {
  * @param {object} ingoreTimeOut 是否忽略超时比较 传值则忽略
  * @return {object}       An object containing either "data" or "err"
  */
-export default function request(url, option,ingoreTimeOut) {
+export default function request(url, option, ingoreTimeOut) {
   url = configs[API_ENV].API_SERVER + url;
   if (url.indexOf('?') > -1) url = url + '&lang=' + localMap[getLocale()];
   else url = url + '?lang=' + localMap[getLocale()];
@@ -149,67 +148,77 @@ export default function request(url, option,ingoreTimeOut) {
       sessionStorage.removeItem(`${hashcode}:timestamp`);
     }
   }
-  const controller = new AbortController()
-  const signal = controller.signal
+  const controller = new AbortController();
+  const signal = controller.signal;
 
-  if(!navigator.onLine){
+  if (!navigator.onLine) {
     message.error('当前网络不可用');
     controller.abort();
     return {
-      'error':'no network'
+      error: 'no network',
     };
   }
-  
+
   return Promise.race([
-    fetch(url, newOptions,{ signal })
-    .then(checkStatus)
-    .then(cacheLogin)
-    .then(response => cachedSave(response, hashcode)),
-      
-      new Promise(function(resolve,reject){  //60秒后执行，如果后端接口没有返回，则直接返回timeout
-        if(!ingoreTimeOut && url.indexOf('iwms-report') < 0){
-          setTimeout(()=> reject('timeout'),60000)
+    fetch(url, newOptions, { signal })
+      .then(checkStatus)
+      .then(cacheLogin)
+      .then(response => cachedSave(response, hashcode)),
+
+    new Promise(function(resolve, reject) {
+      //60秒后执行，如果后端接口没有返回，则直接返回timeout
+      if (!ingoreTimeOut && url.indexOf('iwms-report') < 0) {
+        setTimeout(() => reject('timeout'), 60000);
+      }
+    }),
+  ])
+    .then(response => {
+      const res = response.json();
+      res.then(body => {
+        if (
+          body &&
+          !body.success
+          //暂时去除禁用全局消息
+          // &&
+          // (!localStorage.getItem('showMessage') || localStorage.getItem('showMessage') === '1')
+        ) {
+          message.error(body.message);
         }
-      })
-  ]).then(response => {
-    const res = response.json();
-    res.then(body => {
-      if (body && !body.success && (!localStorage.getItem("showMessage") || localStorage.getItem("showMessage") === '1')) {
-        message.error(body.message);
-      }
-    });
-    return res;
-  })
-  .catch(e => {
-    if(!navigator.onLine){
-      message.error('当前网络不可用')
-      controller.abort();
-      return {
-        'error':'no network'
-      };
-    }
-    if(e =='timeout'){
-      message.error('请求超时')
-      controller.abort();
-      return {
-        'error':'timeout'
-      };
-    }else{
-      const status = e.name;
-      if (status === 401) {
-        window.g_app._store.dispatch({
-          type: 'login/logout',
-        });
-        message.error("登录信息失效，请重新登录！");
-        return e.response.json();
-      }
-      const res = e.response.json();
-      res.then(result => {
-          if (!localStorage.getItem("showMessage") || localStorage.getItem("showMessage") === '1') {
-            message.error(result.message);
-          }
       });
       return res;
-    }
-  });
+    })
+    .catch(e => {
+      if (!navigator.onLine) {
+        message.error('当前网络不可用');
+        controller.abort();
+        return {
+          error: 'no network',
+        };
+      }
+      if (e == 'timeout') {
+        message.error('请求超时');
+        controller.abort();
+        return {
+          error: 'timeout',
+        };
+      } else {
+        const status = e.name;
+        if (status === 401) {
+          window.g_app._store.dispatch({
+            type: 'login/logout',
+          });
+          message.error('登录信息失效，请重新登录！');
+          return e.response.json();
+        }
+        const res = e.response.json();
+        res.then(result => {
+          //暂时去除禁用全局消息
+          // if (!localStorage.getItem('showMessage') || localStorage.getItem('showMessage') === '1') {
+          //   message.error(result.message);
+          // }
+          message.error(result.message);
+        });
+        return res;
+      }
+    });
 }

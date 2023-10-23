@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-17 16:25:57
+ * @LastEditTime: 2023-10-23 17:09:04
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -68,7 +68,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       },
     };
     //TODO 多数据源系统区分
-    const columnsData = await dynamicQuery(param,'tsbms');
+    const columnsData = await dynamicQuery(param, 'tsbms');
     if (columnsData && columnsData.success && columnsData.result.records.length > 0) {
       this.initConfig(columnsData.result.records);
       this.initConfig(columnsData.result.records);
@@ -233,7 +233,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       tableName: pageFilters.tableName,
       condition: pageFilters.condition,
     };
-    const result = await dynamicQuery(pageFilter);
+    const result = await dynamicQuery(pageFilter,this.props.system.system);
     if (result && result.success) {
       let columns = this.state.columns;
       var option = [];
