@@ -12,7 +12,7 @@ import { Row, Col, Form, Icon, Input, Button, Tabs, Checkbox } from 'antd';
 import { formatMessage, FormattedMessage } from 'umi/locale';
 import login from '@/assets/login/login.png';
 import { setCookie, clearCookie, getCookie } from '@/utils/Cookies';
-import DingTalkRqCodeLogin from './DingTalkRqCodeLogin'
+import DingTalkRqCodeLogin from './DingTalkRqCodeLogin';
 import styles from './Login.less';
 
 const { TabPane } = Tabs;
@@ -153,7 +153,7 @@ export default class LoginPage extends PureComponent {
             <div className={styles.loginHeaderCn}>时捷运输管理系统</div>
             <div className={styles.loginHeaderUs}>Transport Management System</div>
           </div>
-          <Tabs defaultActiveKey="1">
+          <Tabs defaultActiveKey="2">
             <TabPane tab="账号登录" key="1">
               <Form onSubmit={this.handleSubmit} className={styles.loginForm}>
                 <Form.Item>
