@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-01 16:01:34
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-10 17:43:19
+ * @LastEditTime: 2023-10-23 11:16:58
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -14,6 +14,15 @@ export async function findSourceTree() {
     `/itms-cost/itms-cost/source/findAllSource?companyUuid=${loginCompany().uuid}&&dcUuid=${
       loginOrg().uuid
     }`,
+    {
+      method: 'GET',
+    }
+  );
+}
+
+export async function getAllSource() {
+  return request(
+    `/itms-cost/itms-cost/newSource/getAllSource}`,
     {
       method: 'GET',
     }
