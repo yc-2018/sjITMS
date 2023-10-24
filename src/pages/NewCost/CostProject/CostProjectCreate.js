@@ -82,6 +82,8 @@ export default class CostProjectCreate extends QuickCreatePage {
         data.isReadOnly = 0;
       });
     }
+    let dbSource = onlFormInfos?.find(e => e.onlFormHead.tableType != 2)?.onlFormHead?.dbSource;
+    this.setState({ dbSource: dbSource });
 
     //初始化entity
     onlFormInfos.forEach(item => {
@@ -262,7 +264,7 @@ export default class CostProjectCreate extends QuickCreatePage {
     this.getDataSelect(true);
 
     const tableName = onlFormInfos[0].onlFormHead.tableName;
-    const FORMULA_TYPE = this.entity[tableName][0].FORMULA_TYPE;
+    const FORMULA_TYPE = this.entity[tableName][0]?.FORMULA_TYPE;
     if (FORMULA_TYPE == '0') {
       for (const formItemKey in formItems) {
         const formItem = formItems[formItemKey];
@@ -306,13 +308,7 @@ export default class CostProjectCreate extends QuickCreatePage {
     }
   };
 
-  drawcell = e => {
-    // if (e.fieldName == 'CYCLE_FIELD') {
-    //   const component = this.selectComponent;
-    //   e.component = component;
-    //   e.props = { ...e.props, style: { width: '100%', height: '200px' } };
-    // }
-  };
+  drawcell = e => {};
 
   exHandleChange = e => {
     let { formItems, categories } = this.state;
@@ -415,7 +411,8 @@ export default class CostProjectCreate extends QuickCreatePage {
         },
       };
     }
-    const response = await dynamicQuery(param, 'init');
+    //TODO 多数据源配置
+    const response = await dynamicQuery(param, 'tsbms');
     if (
       response.success &&
       response.result.records != 'false' &&
@@ -454,7 +451,8 @@ export default class CostProjectCreate extends QuickCreatePage {
         },
       };
     }
-    const columnsData = await dynamicQuery(param);
+    //TODO 多数据源配置
+    const columnsData = await dynamicQuery(param, 'tsbms');
     if (columnsData.success && columnsData.result.records.length > 0) {
       columnsData.result.records.map(record => {
         columnsDatas.push({
