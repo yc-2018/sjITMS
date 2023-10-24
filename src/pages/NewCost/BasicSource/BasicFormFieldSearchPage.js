@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 17:46:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-27 10:06:41
+ * @LastEditTime: 2023-10-23 19:03:00
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -170,6 +170,16 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
         />
       );
       e.component = component;
+    } else if (e.column.fieldName == 'UNSHOW_IN_BILL') {
+      const component = (
+        <Checkbox
+          defaultChecked={e.val == 1 ? true : false}
+          onChange={v => {
+            e.record.UNSHOW_IN_BILL = v.target.checked ? 1 : 0;
+          }}
+        />
+      );
+      e.component = component;
     } else if (e.column.fieldName != 'LINE') {
       const component = (
         <Input
@@ -260,7 +270,6 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
    */
   deleteById = (record, paramsData) => {
     var val = record['UUID'];
-
     var params = {
       tableName: 'cost_form_field',
       condition: { params: [{ field: 'UUID', rule: 'eq', val: [val] }] },

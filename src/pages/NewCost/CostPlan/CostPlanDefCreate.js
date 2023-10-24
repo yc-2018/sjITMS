@@ -77,6 +77,7 @@ export default class CostPlanDefCreate extends QuickCreatePage {
               planUuid: item.PLAN_UUID,
               projectUuid: item.UUID,
               calcSort: item.CALC_SORT,
+              unshowInBill: item.UNSHOW_IN_BILL,
             };
             paramList.push(param);
           });

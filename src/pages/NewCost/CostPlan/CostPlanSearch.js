@@ -1,8 +1,8 @@
 import React, { PureComponent } from 'react';
-import { Form, Button, Modal, message } from 'antd';
+import { Form, Button, Modal, message, Checkbox } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { loginOrg, loginCompany, loginUser } from '@/utils/LoginContext';
+import { loginOrg, loginCompany } from '@/utils/LoginContext';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { dynamicQuery } from '@/services/quick/Quick';
 import CostProjectCreate from '../CostProject/CostProjectCreate';
@@ -78,6 +78,17 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     //找到fieldName为CODE这一列 更改它的component
     if (e.column.fieldName == 'ITEM_NAME') {
       const component = <a onClick={() => this.addItem(e)}>{e.record.ITEM_NAME}</a>;
+      e.component = component;
+    }
+    if (e.column.fieldName == 'UNSHOW_IN_BILL') {
+      const component = (
+        <Checkbox
+          defaultChecked={e.val}
+          onChange={v => {
+            e.record.UNSHOW_IN_BILL = v.target.checked ? 1 : 0;
+          }}
+        />
+      );
       e.component = component;
     }
   };
