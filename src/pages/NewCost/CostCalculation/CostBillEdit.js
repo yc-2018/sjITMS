@@ -29,6 +29,7 @@ export default class CostBillEdit extends CreatePage {
       billInfo.projects.map(project => {
         const planItem = billInfo.planItems.find(planItem => planItem.projectUuid == project.uuid);
         project.calcSort = planItem.calcSort;
+        project.allowUpdate = planItem.allowUpdate;
       });
       this.setState({ loading: false, billInfo, billUuid, subjectUuid });
       // 初始化费用
@@ -111,7 +112,7 @@ export default class CostBillEdit extends CreatePage {
         <CFormItem key={subject.fieldName} label={subject.fieldTxt}>
           {getFieldDecorator(subject.fieldName, {
             initialValue: subject.fieldValue,
-          })(<Input readOnly />)}
+          })(<Input disabled />)}
         </CFormItem>
       );
     }
@@ -135,7 +136,7 @@ export default class CostBillEdit extends CreatePage {
                 rules: [{ required: true, message: `字段不能为空` }],
               })(
                 <InputNumber
-                  readOnly
+                  disabled={project.allowUpdate == 1 ? false : true}
                   onChange={value => this.handleChange(detail.projectCode, value)}
                 />
               )}
@@ -145,7 +146,12 @@ export default class CostBillEdit extends CreatePage {
           calcComponent = getFieldDecorator(detail.projectCode, {
             initialValue: detail.amount,
             rules: [{ required: true, message: `字段不能为空` }],
-          })(<InputNumber onChange={value => this.handleChange(detail.projectCode, value)} />);
+          })(
+            <InputNumber
+              disabled={project.allowUpdate == 1 ? false : true}
+              onChange={value => this.handleChange(detail.projectCode, value)}
+            />
+          );
         }
         calcCols.push(
           <CFormItem key={detail.projectCode} label={detail.projectName}>
