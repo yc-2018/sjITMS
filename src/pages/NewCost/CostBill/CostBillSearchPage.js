@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-06 16:31:01
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-08 17:21:50
+ * @LastEditTime: 2023-10-25 16:09:44
  * @version: 1.0
  */
 
@@ -50,7 +50,7 @@ const { RangePicker } = DatePicker;
   loading: loading.models.quick,
 }))
 @Form.create()
-export default class CostBillSearchPageC extends PureComponent {
+export default class CostBillSearchPage extends PureComponent {
   //需要操作列的显示 将noActionCol设置为false
   state = {
     ...this.state,
