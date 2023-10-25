@@ -28,16 +28,19 @@ export default class CostPlanDefCreate extends QuickCreatePage {
    */
   initEntity = async () => {
     const { onlFormInfos } = this.state;
-    //初始化entity
-    onlFormInfos.forEach(item => {
-      this.entity[item.onlFormHead.tableName] = [];
+    let dbSource = onlFormInfos?.find(e => e.onlFormHead.tableType != 2)?.onlFormHead?.dbSource;
+    this.setState({ dbSource: dbSource }, async () => {
+      //初始化entity
+      onlFormInfos.forEach(item => {
+        this.entity[item.onlFormHead.tableName] = [];
+      });
+      if (this.props.showPageNow == 'update') {
+        await this.initUpdateEntity(onlFormInfos);
+        this.initFile();
+      } else {
+        this.initCreateEntity(onlFormInfos);
+      }
     });
-    if (this.props.showPageNow == 'update') {
-      await this.initUpdateEntity(onlFormInfos);
-      this.initFile();
-    } else {
-      this.initCreateEntity(onlFormInfos);
-    }
   };
 
   initFile = () => {

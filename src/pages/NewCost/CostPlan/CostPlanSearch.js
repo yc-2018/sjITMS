@@ -83,7 +83,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     if (e.column.fieldName == 'UNSHOW_IN_BILL') {
       const component = (
         <Checkbox
-          defaultChecked={e.val}
+          defaultChecked={e.val == '<空>' ? false : e.val}
           onChange={v => {
             e.record.UNSHOW_IN_BILL = v.target.checked ? 1 : 0;
           }}
@@ -94,7 +94,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     if (e.column.fieldName == 'ALLOW_UPDATE') {
       const component = (
         <Checkbox
-          defaultChecked={e.val}
+          defaultChecked={e.val == '<空>' ? false : e.val}
           onChange={v => {
             e.record.ALLOW_UPDATE = v.target.checked ? 1 : 0;
           }}
@@ -114,7 +114,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     if (code) {
       params.condition.params[0] = { field: 'CODE', rule: 'eq', val: [code] };
     }
-    let result = await dynamicQuery(params);
+    let result = await dynamicQuery(params, 'tsbms');
     let { data } = this.state;
     result = result.result?.records;
     for (const e of result) {
@@ -190,6 +190,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
                   valueField="UUID"
                   searchField="ITEM_NAME"
                   mode="multiple"
+                  DataSource="tsbms"
                   queryParams={{
                     tableName: 'COST_PROJECT',
                     condition: {
