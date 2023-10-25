@@ -91,6 +91,17 @@ export default class CostPlanSearch extends QuickFormSearchPage {
       );
       e.component = component;
     }
+    if (e.column.fieldName == 'ALLOW_UPDATE') {
+      const component = (
+        <Checkbox
+          defaultChecked={e.val}
+          onChange={v => {
+            e.record.ALLOW_UPDATE = v.target.checked ? 1 : 0;
+          }}
+        />
+      );
+      e.component = component;
+    }
   };
 
   handleOks = async code => {

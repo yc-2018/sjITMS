@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-06-26 14:41:13
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-23 17:11:24
+ * @LastEditTime: 2023-10-24 17:06:35
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -58,7 +58,7 @@ export default class CostPlanIndex extends PureComponent {
   };
 
   onClickCalculation = e => {
-    this.props.switchTab('import', { entityUuid: e.uuid, e });
+    this.props.switchTab('calculation', { entityUuid: e.uuid, e });
   };
 
   onClickSelectBill = e => {

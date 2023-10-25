@@ -19,6 +19,7 @@ import CostPlanView from './CostPlanView';
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
 import CostPlanIndex from './CostPlanIndex';
 import CostCalculationSearchPage from '@/pages/NewCost/CostCalculation/CostCalculationSearch';
+import CostBillEdit from '@/pages/NewCost/CostCalculation/CostBillEdit';
 import CostBillEditView from '@/pages/NewCost/CostCalculation/CostBillEditView';
 import Create from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageDefault';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickFormSearchPageDefault';
@@ -70,10 +71,15 @@ export default class CostPlanFrom extends QuickForm {
       const component = <CostPlanView {...e.props} />;
       e.component = component;
     }
-    if (e.showPageNow == 'import') {
+    if (e.showPageNow == 'calculation') {
       //计算页面
       e.props.quickuuid = 'cost_calculation';
       const component = <CostCalculationSearchPage {...e.props} />;
+      e.component = component;
+    }
+    if (e.showPageNow == 'updateBill') {
+      //计费结果编辑页面
+      const component = <CostBillEdit {...e.props} />;
       e.component = component;
     }
     if (e.showPageNow == 'queryBill') {
@@ -172,6 +178,24 @@ export default class CostPlanFrom extends QuickForm {
         this.drawTab(e);
         return e.component;
       case 'checkView':
+        component = <QuickViewPage {...props} />;
+        e = {
+          component: component,
+          showPageNow: showPageNow,
+          props: props,
+        };
+        this.drawTab(e);
+        return e.component;
+      case 'calculation':
+        component = <QuickViewPage {...props} />;
+        e = {
+          component: component,
+          showPageNow: showPageNow,
+          props: props,
+        };
+        this.drawTab(e);
+        return e.component;
+      case 'updateBill':
         component = <QuickViewPage {...props} />;
         e = {
           component: component,
