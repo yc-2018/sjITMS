@@ -2,15 +2,20 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-23 17:01:07
+ * @LastEditTime: 2023-10-26 10:57:35
  * @version: 1.0
  */
-import { Form, Modal, Button, Icon, Row, Col, Upload, List, message } from 'antd';
+import { Form, Modal, Button, Icon, Row, Col, Upload, List, message, Spin } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-// import { haveCheck, consumed, uploadFile, deleteFile } from '@/services/cost/CostCalculation';
-import { childUploadFile, deleteChildFile, childDownload } from '@/services/cost/CostBill';
+import {
+  childUploadFile,
+  deleteChildFile,
+  childDownload,
+  getUploadFile,
+} from '@/services/cost/CostBill';
 import CostChildBillDtlSearchPage from './CostChildBillDtlSearchPage';
+import FileViewer from 'react-file-viewer';
 
 @connect(({ quick, deliveredConfirm, loading }) => ({
   quick,
@@ -28,6 +33,9 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
     divstyle: { marginRight: '10px' },
     isModalVisible: false,
     accessoryModal: false,
+    showViewer: false,
+    fileType: '',
+    filePath: '',
   };
 
   componentDidMount() {
@@ -91,10 +99,12 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
   accessoryModalShow = (isShow, e) => {
     if (e != 'false' && e.ACCESSORY_NAME) {
       let downloadsName = e.ACCESSORY_NAME.split(',');
+      let accessory = e.ACCESSORY.split(',');
       let downloads = [];
-      downloadsName.map(c => {
+      downloadsName.map((data, index) => {
         let param = {
-          download: c,
+          download: data,
+          accessory: accessory[index],
           uuid: e.UUID,
         };
         downloads.push(param);
@@ -116,7 +126,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
       this.onSearch();
     }
   };
-
+  //下载附件
   download = (item, index) => {
     let parma = {
       uuid: item.uuid,
@@ -125,7 +135,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
     };
     childDownload(parma);
   };
-
+  //删除附件
   delete = async (item, index) => {
     const response = await deleteChildFile(item.uuid, item.download, index);
     if (response && response.success) {
@@ -134,9 +144,28 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
       this.onSearch();
     }
   };
+  //预览附件
+  preview = async item => {
+    this.setState({ showViewer: true });
+    const type = item.accessory.split('.')[item.accessory.split('.').length - 1];
+    getUploadFile(item.accessory).then(res => {
+      this.setState({
+        filePath: res,
+        fileType: type,
+      });
+    });
+  };
 
   drawOtherCom = () => {
-    const { isModalVisible, accessoryModal, downloads, e } = this.state;
+    const {
+      isModalVisible,
+      accessoryModal,
+      downloads,
+      e,
+      filePath,
+      fileType,
+      showViewer,
+    } = this.state;
     return (
       <>
         <Modal
@@ -188,6 +217,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
               renderItem={(item, index) => (
                 <List.Item
                   actions={[
+                    <a onClick={() => this.preview(item)}>预览</a>,
                     <a onClick={() => this.download(item, index)} key="list-loadmore-edit">
                       下载
                     </a>,
@@ -201,6 +231,28 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
               )}
             />
           </div>
+        </Modal>
+        <Modal
+          title="附件预览"
+          visible={showViewer}
+          footer={null}
+          onCancel={() => {
+            this.setState({ showViewer: false });
+          }}
+          centered={true}
+          width={'80%'}
+          bodyStyle={{ height: 'calc(84vh)', overflowY: 'auto' }}
+        >
+          {filePath == '' ? (
+            <Spin/>
+          ) : (
+            <FileViewer
+              fileType={fileType}
+              filePath={filePath}
+              errorComponent={''}
+              onError={err => console.log(err)}
+            />
+          )}
         </Modal>
       </>
     );

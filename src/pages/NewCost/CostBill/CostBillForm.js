@@ -8,7 +8,7 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
 import QuickForm from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickForm';
-import CostBillSearchPage from './CostBillSearchPageC';
+import CostBillSearchPage from './CostBillSearchPage';
 import CostBillEditView from '../CostCalculation/CostBillEditView';
 import CostBillDtlSeacrhPage from './CostBillDtlSeacrhPage';
 @connect(({ quick, loading }) => ({

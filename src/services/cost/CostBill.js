@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-09-07 11:24:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-12 16:31:36
+ * @LastEditTime: 2023-10-26 10:59:09
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -106,7 +106,6 @@ export function childDownload(param) {
       },
     }
   ).then(res => {
-    console.log(res);
     const url = window.URL.createObjectURL(new Blob([res.data]));
     const link = document.createElement('a');
     link.href = url;
@@ -114,6 +113,24 @@ export function childDownload(param) {
     document.body.appendChild(link);
     link.click();
   });
+}
+
+export async function getUploadFile(accessory) {
+  const res = await axios(
+    configs[API_ENV].API_SERVER + `/itms-cost/itms-cost/newCostBill/getUploadFile`,
+    {
+      method: 'post',
+      responseType: 'blob',
+      headers: {
+        iwmsJwt: loginKey(),
+        'Content-Type': 'application/json;charset=utf-8',
+        Accept: '*/*',
+      },
+      data: accessory,
+    }
+  );
+  const url_1 = window.URL.createObjectURL(new Blob([res.data]));
+  return url_1;
 }
 
 //获取子帐单明细
@@ -126,15 +143,18 @@ export async function getChildBillInfo(uuid, payload) {
 
 //导出子帐单
 export async function portChildBill(uuid, type) {
-  axios(configs[API_ENV].API_SERVER + `/itms-cost/itms-cost/newCostBill/portChildBill/${uuid}/${type}`, {
-    method: 'post',
-    responseType: 'blob',
-    headers: {
-      iwmsJwt: loginKey(),
-      'Content-Type': 'application/json; charset=utf-8',
-      Accept: '*/*',
-    },
-  }).then(res => {
+  axios(
+    configs[API_ENV].API_SERVER + `/itms-cost/itms-cost/newCostBill/portChildBill/${uuid}/${type}`,
+    {
+      method: 'post',
+      responseType: 'blob',
+      headers: {
+        iwmsJwt: loginKey(),
+        'Content-Type': 'application/json; charset=utf-8',
+        Accept: '*/*',
+      },
+    }
+  ).then(res => {
     const url = window.URL.createObjectURL(new Blob([res.data]));
     const link = document.createElement('a');
     link.href = url;

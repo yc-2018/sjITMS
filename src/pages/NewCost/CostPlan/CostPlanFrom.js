@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-06-26 14:41:13
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-04 11:39:05
+ * @LastEditTime: 2023-10-25 16:12:16
  * @version: 1.0
  */
 /*
@@ -59,6 +59,7 @@ export default class CostPlanFrom extends QuickForm {
       e.component = component;
     }
     if (e.showPageNow == 'create') {
+      //编辑方案界面
       const component = <CostPlanDefCreate {...e.props} />;
       e.component = component;
     }
