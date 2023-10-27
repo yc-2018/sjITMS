@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 17:46:43
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-23 19:03:00
+ * @LastEditTime: 2023-10-27 10:19:20
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -11,6 +11,7 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import { Button, Popconfirm, message, Modal, Table, Input, Checkbox, Cascader } from 'antd';
 import { dynamicDelete } from '@/services/quick/Quick';
 import { addDtl, updateDtl, getNewUnAddInfo, getDataColumns } from '@/services/cost/BasicSource';
+import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -177,6 +178,21 @@ export default class FormFieldSearchPage extends QuickFormSearchPage {
           onChange={v => {
             e.record.UNSHOW_IN_BILL = v.target.checked ? 1 : 0;
           }}
+        />
+      );
+      e.component = component;
+    } else if (e.column.fieldName == 'AGGREGATE_TYPE') {
+      const component = (
+        <SimpleAutoComplete
+          placeholder={'请选择聚合类型'}
+          dictCode="aggregateType"
+          value={e.val}
+          onChange={v => {
+            e.record.AGGREGATE_TYPE = v;
+          }}
+          style={{ width: '6rem' }}
+          allowClear
+          noRecord
         />
       );
       e.component = component;
