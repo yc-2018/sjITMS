@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-27 11:17:11
+ * @LastEditTime: 2023-10-27 11:28:47
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -86,7 +86,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         dataIndex: data.DB_FIELD_NAME,
         key: data.DB_FIELD_NAME,
         sorter: true,
-        width: colWidth.codeColWidth,
+        width: data.DB_LENGTH,
         fieldType: data.DB_TYPE,
         allowUpdate: data.ALLOWUPDATE,
         render: (val, record) => this.getRender(val, data, record),
