@@ -252,6 +252,7 @@ export default class CostProjectCreate extends QuickCreatePage {
   };
 
   formLoaded = () => {
+    console.log('this', this);
     const { formItems, onlFormInfos } = this.state;
 
     formItems.cost_project_ACCESSORY.component = this.uploadComponent;
@@ -412,7 +413,7 @@ export default class CostProjectCreate extends QuickCreatePage {
       };
     }
     //TODO 多数据源配置
-    const response = await dynamicQuery(param, 'tsbms');
+    const response = await dynamicQuery(param, this.state.dbSource);
     if (
       response.success &&
       response.result.records != 'false' &&
@@ -452,7 +453,7 @@ export default class CostProjectCreate extends QuickCreatePage {
       };
     }
     //TODO 多数据源配置
-    const columnsData = await dynamicQuery(param, 'tsbms');
+    const columnsData = await dynamicQuery(param, param, this.state.dbSource);
     if (columnsData.success && columnsData.result.records.length > 0) {
       columnsData.result.records.map(record => {
         columnsDatas.push({

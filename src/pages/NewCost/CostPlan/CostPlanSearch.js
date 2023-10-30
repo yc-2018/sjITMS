@@ -114,7 +114,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     if (code) {
       params.condition.params[0] = { field: 'CODE', rule: 'eq', val: [code] };
     }
-    let result = await dynamicQuery(params, 'tsbms');
+    let result = await dynamicQuery(params, this.state.queryConfig.reportHead?.dbSource);
     let { data } = this.state;
     result = result.result?.records;
     for (const e of result) {
@@ -190,7 +190,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
                   valueField="UUID"
                   searchField="ITEM_NAME"
                   mode="multiple"
-                  DataSource="tsbms"
+                  DataSource={this.state.queryConfig.reportHead?.dbSource}
                   queryParams={{
                     tableName: 'COST_PROJECT',
                     condition: {

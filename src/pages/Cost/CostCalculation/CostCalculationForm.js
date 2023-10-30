@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:38:44
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-06-10 15:15:22
+ * @LastEditTime: 2023-10-27 15:53:01
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -49,7 +49,7 @@ export default class CostProjectForm extends QuickForm {
       const component = <CostCalculationSearchPage {...e.props} />;
       e.component = component;
     } else if (e.showPageNow == 'update') {
-      e.props.quickuuid = 'cost_plan';
+      e.props.quickuuid = 'COST_PLAN';
       const component = <CostPlanDefView {...e.props} />;
       e.component = component;
     } else if (e.showPageNow == 'create') {
