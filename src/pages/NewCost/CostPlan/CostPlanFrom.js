@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-06-26 14:41:13
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-25 16:12:16
+ * @LastEditTime: 2023-10-30 17:53:01
  * @version: 1.0
  */
 /*
@@ -25,7 +25,7 @@ import Create from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageDe
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickFormSearchPageDefault';
 import QuickViewPage from '@/pages/Component/RapidDevelopment/OnlForm/QuickViewPageDefault';
 import ExcelImport from '@/components/ExcelImport';
-import CostBillSearchPage from './CostBillSearchPage';
+import CostBillSearchPage from '../CostBill/CostBillSearchPage';
 import CostPlanDefView from './CostPlanDefView';
 
 @connect(({ quick, loading }) => ({
