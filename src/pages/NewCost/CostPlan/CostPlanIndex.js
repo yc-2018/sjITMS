@@ -14,7 +14,7 @@ import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import CostPlanCard from './CostPlanCard';
-import { getPlanInfo } from '@/services/cost/CostPlan';
+import { getPlanInfo } from '@/services/bms/CostPlan';
 import { queryDictByCode } from '@/services/quick/Quick';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';

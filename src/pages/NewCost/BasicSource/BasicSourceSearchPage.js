@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-23 14:48:09
+ * @LastEditTime: 2023-10-31 09:12:30
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -14,7 +14,7 @@ import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCre
 import ExcelImport from '@/pages/NewCost/ExcelImport/index';
 import BasicHeadCreatPage from './BasicHeadCreatPage';
 import BasicDtlCreatPage from './BasicDtlCreatPage';
-import { getAllSource, deleteSourceTree, sortDateSourceTree } from '@/services/cost/BasicSource';
+import { getAllSource, deleteSourceTree, sortDateSourceTree } from '@/services/bms/BasicSource';
 import BasicSourceDataSearchPage from './BasicSourceDataSearchPage';
 import { havePermission } from '@/utils/authority';
 import BasicSourceOperateLogSearchPage from './BasicSourceOperateLogSearchPage';

@@ -21,7 +21,7 @@ import {
   checklistConfirm,
   portChildBill,
   pushBill,
-} from '@/services/cost/CostBill';
+} from '@/services/bms/CostBill';
 import CostChildBillSearchPage from '@/pages/NewCost/CostChildBill/CostChildBillSearchPage';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
 

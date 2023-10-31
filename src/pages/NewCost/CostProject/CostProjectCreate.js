@@ -1,7 +1,7 @@
 import { connect } from 'dva';
 import { Form, Input, Upload, Button, Icon, message, Select } from 'antd';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
-import { save, deleteFile, analysisSql } from '@/services/cost/Cost';
+import { save, deleteFile, analysisSql } from '@/services/bms/Cost';
 import { dynamicQuery } from '@/services/quick/Quick';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 

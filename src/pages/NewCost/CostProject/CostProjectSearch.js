@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { Button, Modal, List } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { getFile } from '@/services/cost/Cost';
+import { getFile } from '@/services/bms/Cost';
 
 @connect(({ quick, loading }) => ({
   quick,

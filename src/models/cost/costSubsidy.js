@@ -5,7 +5,7 @@
  * @LastEditTime: 2023-09-13 17:35:45
  * @version: 1.0
  */
-import { batchImport } from '@/services/cost/CostExProject';
+import { batchImport } from '@/services/bms/CostExProject';
 
 export default {
   namespace: 'costSubsidy',

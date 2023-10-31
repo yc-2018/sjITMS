@@ -2,7 +2,7 @@ import CreatePage from '@/pages/Component/RapidDevelopment/CommonLayout/CreatePa
 import FormPanel from '@/pages/Component/RapidDevelopment/CommonLayout/Form/FormPanel';
 import CFormItem from '@/pages/Component/RapidDevelopment/CommonLayout/Form/CFormItem';
 import React, { Component } from 'react';
-import { getSubjectBill, updateSubjectBill } from '@/services/cost/CostCalculation';
+import { getSubjectBill, updateSubjectBill } from '@/services/bms/CostCalculation';
 import { Form, Input, InputNumber, message, Tooltip } from 'antd';
 
 const costTypes = [

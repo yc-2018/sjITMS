@@ -2,18 +2,19 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-26 14:59:58
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-14 17:45:18
+ * @LastEditTime: 2023-10-31 09:06:13
  * @version: 1.0
  */
 import request from '@/utils/request';
 
+//新
 export async function getPlanInfo(uuid, payload) {
   return request(`/itms-cost/itms-cost/costplan/getPlanInfo/${uuid}`, {
     method: 'POST',
     body: payload,
   });
 }
-
+//新
 export async function updateNote(uuid, note) {
   const payload = {
     note: note,

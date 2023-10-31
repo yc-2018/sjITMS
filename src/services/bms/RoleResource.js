@@ -15,10 +15,7 @@ export async function costAuthorize(uuid, ftype, payload) {
 }
 
 export async function getCostRoleResource(uuid, ftype) {
-  return request(
-    `/iwms-account/account/role/${uuid}/getCostRoleResource?ftype=${ftype}`,
-    {
-      method: 'GET',
-    }
-  );
+  return request(`/iwms-account/account/role/${uuid}/getCostRoleResource?ftype=${ftype}`, {
+    method: 'GET',
+  });
 }

@@ -2,7 +2,7 @@ import request from '@/utils/request';
 import axios from 'axios';
 import configs from '@/utils/config';
 import { cacheLoginKey, loginKey } from '@/utils/LoginContext';
-
+//混
 export function getFile(param) {
   axios(
     configs[API_ENV].API_SERVER +
@@ -26,7 +26,7 @@ export function getFile(param) {
     link.click();
   });
 }
-
+//混
 export function getPlanFile(param) {
   axios(
     configs[API_ENV].API_SERVER +
@@ -51,7 +51,7 @@ export function getPlanFile(param) {
     link.click();
   });
 }
-
+//混
 export async function save(payload) {
   return axios(configs[API_ENV].API_SERVER + `/itms-cost/itms-cost/costProject/onSave`, {
     method: 'post',
@@ -65,21 +65,21 @@ export async function save(payload) {
     return e;
   });
 }
-
+//混
 export async function deleteFile(payload) {
   return request(`/itms-cost/itms-cost/costProject/deleteFile`, {
     method: 'POST',
     body: payload,
   });
 }
-
+//混
 export async function analysisSql(payload) {
   return request(`/itms-cost/itms-cost/costProject/analysisSql`, {
     method: 'POST',
     body: payload,
   });
 }
-
+//混
 export async function savePlan(payload) {
   return axios(configs[API_ENV].API_SERVER + `/itms-cost/itms-cost/costplan/onSave`, {
     method: 'post',
@@ -93,15 +93,21 @@ export async function savePlan(payload) {
     return e;
   });
 }
-
+//混
 export async function copyPlan(uuid) {
   return request(`/itms-cost/itms-cost/costplan/copyPlan/${uuid}`, {
     method: 'GET',
   });
 }
-
+//混
 export async function addHistory(uuid) {
   return request(`/itms-cost/itms-cost/costplan/addHistory/${uuid}`, {
+    method: 'GET',
+  });
+}
+//新
+export async function getPlanTree() {
+  return request(`/itms-cost/itms-cost/costplan/getPlanTree`, {
     method: 'GET',
   });
 }

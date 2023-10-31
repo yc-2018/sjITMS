@@ -13,7 +13,7 @@ import {
   deleteChildFile,
   childDownload,
   getUploadFile,
-} from '@/services/cost/CostBill';
+} from '@/services/bms/CostBill';
 import CostChildBillDtlSearchPage from './CostChildBillDtlSearchPage';
 import FileViewer from 'react-file-viewer';
 
@@ -244,7 +244,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
           bodyStyle={{ height: 'calc(84vh)', overflowY: 'auto' }}
         >
           {filePath == '' ? (
-            <Spin/>
+            <Spin />
           ) : (
             <FileViewer
               fileType={fileType}

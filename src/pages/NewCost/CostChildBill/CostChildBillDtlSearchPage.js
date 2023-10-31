@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react';
 import { Button, message, Spin, Form } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { getChildBillInfo } from '@/services/cost/CostBill';
+import { getChildBillInfo } from '@/services/bms/CostBill';
 
 import moment from 'moment';
 
