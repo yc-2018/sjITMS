@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-14 15:44:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-19 23:18:56
+ * @LastEditTime: 2023-10-31 09:17:16
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -25,9 +25,9 @@ import {
   Input,
   Spin,
 } from 'antd';
-import { copyPlan } from '@/services/cost/Cost';
-import { apply } from '@/services/cost/CostPlan';
-import { sourceAbnormal, remind } from '@/services/cost/BasicSource';
+import { copyPlan } from '@/services/bms/Cost';
+import { apply } from '@/services/bms/CostPlan';
+import { sourceAbnormal, remind } from '@/services/bms/BasicSource';
 import { updateEntity } from '@/services/quick/Quick';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 
