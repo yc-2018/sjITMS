@@ -8,25 +8,25 @@
 import request from '@/utils/request';
 
 export async function batchImport(payload) {
-  return request(`/itms-cost/itms-cost/costSubsidy/batchImport?fileKey=${payload.fileKey}`, {
+  return request(`/bms-cost/bms-cost/costSubsidy/batchImport?fileKey=${payload.fileKey}`, {
     method: 'POST',
   });
 }
 
 export async function audit(uuid) {
-  return request(`/itms-cost/itms-cost/costSubsidy/audit?uuid=${uuid}`, {
+  return request(`/bms-cost/bms-cost/costSubsidy/audit?uuid=${uuid}`, {
     method: 'POST',
   });
 }
 
 export async function invalid(uuid) {
-  return request(`/itms-cost/itms-cost/costSubsidy/invalid?uuid=${uuid}`, {
+  return request(`/bms-cost/bms-cost/costSubsidy/invalid?uuid=${uuid}`, {
     method: 'POST',
   });
 }
 
 export async function cancel(uuid) {
-  return request(`/itms-cost/itms-cost/costSubsidy/cancel?uuid=${uuid}`, {
+  return request(`/bms-cost/bms-cost/costSubsidy/cancel?uuid=${uuid}`, {
     method: 'POST',
   });
 }

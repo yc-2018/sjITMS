@@ -11,20 +11,20 @@ import { loginOrg, loginCompany } from '@/utils/LoginContext';
 
 //新
 export async function getAllSource() {
-  return request(`/itms-cost/itms-cost/newSource/getAllSource?dcUuid=${loginOrg().uuid}`, {
+  return request(`/bms-cost/bms-cost/newSource/getAllSource?dcUuid=${loginOrg().uuid}`, {
     method: 'GET',
   });
 }
 //新
 export async function getSourceTree() {
-  return request(`/itms-cost/itms-cost/source/getSourceTree?bmsUuid=${loginOrg().uuid}`, {
+  return request(`/bms-cost/bms-cost/source/getSourceTree?bmsUuid=${loginOrg().uuid}`, {
     method: 'GET',
   });
 }
 
 //混
 export async function deleteSourceTree(uuid) {
-  return request(`/itms-cost/itms-cost/source/deleteSourceTree/${uuid}`, {
+  return request(`/bms-cost/bms-cost/source/deleteSourceTree/${uuid}`, {
     method: 'POST',
   });
 }
@@ -42,7 +42,7 @@ export async function getTableInfoNew(tableName, database) {
 //新
 export async function getNewUnAddInfo(payload) {
   return request(
-    `/itms-cost/itms-cost/newSource/getUnAddInfo/${payload.tableName}/${payload.database}/${
+    `/bms-cost/bms-cost/newSource/getUnAddInfo/${payload.tableName}/${payload.database}/${
       payload.formUuid
     }`,
     {
@@ -53,7 +53,7 @@ export async function getNewUnAddInfo(payload) {
 
 //混
 export async function updateDtl(payload) {
-  return request(`/itms-cost/itms-cost/source/updateDtl`, {
+  return request(`/bms-cost/bms-cost/source/updateDtl`, {
     method: 'POST',
     body: payload,
   });
@@ -61,53 +61,53 @@ export async function updateDtl(payload) {
 
 //新
 export async function newOnSave(payload, type) {
-  return request(`/itms-cost/itms-cost/newSource/onSaveSourceData/${type}`, {
+  return request(`/bms-cost/bms-cost/newSource/onSaveSourceData/${type}`, {
     method: 'POST',
     body: payload,
   });
 }
 //混
 export async function deleteSourceData(payload) {
-  return request(`/itms-cost/itms-cost/source/deleteSourceData`, {
+  return request(`/bms-cost/bms-cost/source/deleteSourceData`, {
     method: 'POST',
     body: payload,
   });
 }
 //新
 export async function sourceConfirm(payload) {
-  return request(`/itms-cost/itms-cost/newSource/sourceConfirm`, {
+  return request(`/bms-cost/bms-cost/newSource/sourceConfirm`, {
     method: 'POST',
     body: payload,
   });
 }
 //新
 export async function sourceAbnormal(sourceUuid) {
-  return request(`/itms-cost/itms-cost/newSource/sourceAbnormal/${sourceUuid}`, {
+  return request(`/bms-cost/bms-cost/newSource/sourceAbnormal/${sourceUuid}`, {
     method: 'POST',
   });
 }
 //新
 export async function remind(sourceUuid) {
-  return request(`/itms-cost/itms-cost/newSource/remind/${sourceUuid}`, {
+  return request(`/bms-cost/bms-cost/newSource/remind/${sourceUuid}`, {
     method: 'GET',
   });
 }
 //新
 export async function getDataColumns() {
-  return request(`/itms-cost/itms-cost/newSource/getDataColumns`, {
+  return request(`/bms-cost/bms-cost/newSource/getDataColumns`, {
     method: 'GET',
   });
 }
 //新
 export async function sortDateSourceTree(payload) {
-  return request(`/itms-cost/itms-cost/newSource/sortDateSourceTree`, {
+  return request(`/bms-cost/bms-cost/newSource/sortDateSourceTree`, {
     method: 'POST',
     body: payload,
   });
 }
 //新
 export async function queryData(payload, sourceUuid) {
-  return request(`/itms-cost/itms-cost/newSource/queryData/${sourceUuid}`, {
+  return request(`/bms-cost/bms-cost/newSource/queryData/${sourceUuid}`, {
     method: 'POST',
     body: payload,
   });
