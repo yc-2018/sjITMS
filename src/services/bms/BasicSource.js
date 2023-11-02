@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-01 16:01:34
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-31 09:13:40
+ * @LastEditTime: 2023-11-02 12:54:10
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -20,6 +20,17 @@ export async function getSourceTree() {
   return request(`/bms-cost/bms-cost/source/getSourceTree?bmsUuid=${loginOrg().uuid}`, {
     method: 'GET',
   });
+}
+
+export async function newBatchImport(payload) {
+  return request(
+    `/bms-cost/bms-cost/source/batchImport?sourceUuid=${payload.sourceUuid}&fileKey=${
+      payload.fileKey
+    }&importType=${payload.importType}`,
+    {
+      method: 'POST',
+    }
+  );
 }
 
 //混

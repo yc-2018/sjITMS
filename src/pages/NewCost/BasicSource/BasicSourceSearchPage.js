@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-31 09:12:30
+ * @LastEditTime: 2023-11-02 12:55:22
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -260,7 +260,7 @@ export default class BasicSourceSearchPage extends Component {
                       title={event.selectedNodes[0].props.dataRef.tableNameCN}
                       templateType="BASICSOURCE"
                       dispatch={this.props.dispatch}
-                      uploadType="basicSource/batchImport"
+                      uploadType="basicSource/newBatchImport"
                       uploadParams={{ sourceUuid: selectedKeys[0] }}
                       cancelCallback={() => {}}
                     />
