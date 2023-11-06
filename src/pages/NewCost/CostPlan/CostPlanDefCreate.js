@@ -1,7 +1,7 @@
 import React, { useDebugValue } from 'react';
 import { connect } from 'dva';
 import { Form, Upload, Button, Icon, message, Layout } from 'antd';
-import { savePlan, addHistory } from '@/services/cost/Cost';
+import { savePlan, addHistory } from '@/services/bms/Cost';
 import { makeFormData } from '@/pages/NewCost/CostProject/CostProjectCreate';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import CostPlanSearch from './CostPlanSearch';
@@ -28,16 +28,19 @@ export default class CostPlanDefCreate extends QuickCreatePage {
    */
   initEntity = async () => {
     const { onlFormInfos } = this.state;
-    //初始化entity
-    onlFormInfos.forEach(item => {
-      this.entity[item.onlFormHead.tableName] = [];
+    let dbSource = onlFormInfos?.find(e => e.onlFormHead.tableType != 2)?.onlFormHead?.dbSource;
+    this.setState({ dbSource: dbSource }, async () => {
+      //初始化entity
+      onlFormInfos.forEach(item => {
+        this.entity[item.onlFormHead.tableName] = [];
+      });
+      if (this.props.showPageNow == 'update') {
+        await this.initUpdateEntity(onlFormInfos);
+        this.initFile();
+      } else {
+        this.initCreateEntity(onlFormInfos);
+      }
     });
-    if (this.props.showPageNow == 'update') {
-      await this.initUpdateEntity(onlFormInfos);
-      this.initFile();
-    } else {
-      this.initCreateEntity(onlFormInfos);
-    }
   };
 
   initFile = () => {
@@ -77,6 +80,8 @@ export default class CostPlanDefCreate extends QuickCreatePage {
               planUuid: item.PLAN_UUID,
               projectUuid: item.UUID,
               calcSort: item.CALC_SORT,
+              unshowInBill: item.UNSHOW_IN_BILL,
+              allowUpdate: item.ALLOW_UPDATE,
             };
             paramList.push(param);
           });

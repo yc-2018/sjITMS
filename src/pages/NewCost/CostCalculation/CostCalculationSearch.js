@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-11 14:30:40
+ * @LastEditTime: 2023-10-31 09:18:09
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -16,11 +16,9 @@ import {
   getBill,
   findCostFormFieldByPlanUuid,
   getBillLogs,
-  onLock,
-  isLock,
   calculateMemberWage,
   UpdateDtlNote,
-} from '@/services/cost/CostCalculation';
+} from '@/services/bms/CostCalculation';
 import { colWidth } from '@/utils/ColWidth';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
 import moment from 'moment';
@@ -112,7 +110,7 @@ export default class CostCalculationSearch extends QuickFormSearchPage {
     } = this.state;
     // 拿到主键
     const subjectUuid = selectedRows[0][subjectKeyField];
-    this.props.switchTab('create', {
+    this.props.switchTab('updateBill', {
       billUuid,
       subjectUuid,
       dateString,

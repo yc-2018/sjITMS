@@ -3,10 +3,10 @@ import { Spin, Layout, Tree, message, Empty, Table, Input, Checkbox, InputNumber
 import styles from './BMSAuthorizeCom.less';
 import ViewTabPanel from '@/pages/Component/Page/inner/ViewTabPanel';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
-import { findSourceTree, getSourceTree } from '@/services/cost/BasicSource';
-import { costAuthorize, getCostRoleResource } from '@/services/cost/RoleResource';
-import { getConfigInfo, updateConfigInfo } from '@/services/cost/CostPlan';
-import { getPlanTree } from '@/services/cost/Cost';
+import { getSourceTree } from '@/services/bms/BasicSource';
+import { costAuthorize, getCostRoleResource } from '@/services/bms/RoleResource';
+import { getConfigInfo, updateConfigInfo } from '@/services/bms/CostPlan';
+import { getPlanTree } from '@/services/bms/Cost';
 import ConfigTable from './ConfigTable';
 
 const { Content, Sider } = Layout;
@@ -18,23 +18,28 @@ export default class BMSAuthorizeCom extends Component {
     checkedKeys: [],
     configInfo: [],
     selectedKeys: '',
+    typeState: this.props.type,
   };
 
   componentDidMount = () => {
-    this.queryTree();
-    this.queryResource();
+    const { selectedRole, type } = this.props;
+    this.queryTree(type);
+    this.queryResource(selectedRole, type);
   };
 
   componentWillReceiveProps = newProps => {
-    const { selectedRole } = this.props;
-    if (newProps.uuid != selectedRole.uuid) {
-      this.queryTree();
-      this.queryResource();
+    const { selectedRole, type } = this.props;
+    const { typeState } = this.state;
+    if (newProps.selectedRole != selectedRole) {
+      this.queryTree(newProps.type == undefined ? typeState : newProps.type);
+      this.queryResource(
+        newProps.selectedRole,
+        newProps.type == undefined ? typeState : newProps.type
+      );
     }
   };
 
-  queryTree = async () => {
-    const { type } = this.props;
+  queryTree = async type => {
     if (type == 'DataSource') {
       await getSourceTree().then(response => {
         if (response && response.success) {
@@ -50,8 +55,7 @@ export default class BMSAuthorizeCom extends Component {
     }
   };
 
-  queryResource = async () => {
-    const { selectedRole, type } = this.props;
+  queryResource = async (selectedRole, type) => {
     await getCostRoleResource(selectedRole.uuid, type).then(response => {
       if (response && response.success) {
         this.setState({ checkedKeys: response.data });
@@ -169,7 +173,7 @@ export default class BMSAuthorizeCom extends Component {
     const response = await costAuthorize(selectedRole.uuid, type, checkedKeys);
     if (response && response.success) {
       message.success('赋权成功！');
-      this.queryResource();
+      this.queryResource(selectedRole, type);
     }
   };
 

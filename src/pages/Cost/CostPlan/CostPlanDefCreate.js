@@ -60,10 +60,10 @@ export default class CostPlanDefCreate extends QuickCreatePage {
 
   initFile = () => {
     let savedList = [];
-    if (this.entity.cost_plan[0]?.ACCESSORY_NAME) {
-      let entity = this.entity.cost_plan[0];
-      let entitys = this.entity.cost_plan[0].ACCESSORY_NAME.split(',');
-      let filePaths = this.entity.cost_plan[0].ACCESSORY.split(',');
+    if (this.entity.COST_PLAN[0]?.ACCESSORY_NAME) {
+      let entity = this.entity.COST_PLAN[0];
+      let entitys = this.entity.COST_PLAN[0].ACCESSORY_NAME.split(',');
+      let filePaths = this.entity.COST_PLAN[0].ACCESSORY.split(',');
       entitys.forEach((item, index) => {
         let file = {
           UUID: entity.UUID,
@@ -85,7 +85,7 @@ export default class CostPlanDefCreate extends QuickCreatePage {
       if (!err) {
         const { list } = this.setting.state.data;
         var formDatas = new FormData();
-        makeFormData(this.entity.cost_plan[0], formDatas);
+        makeFormData(this.entity.COST_PLAN[0], formDatas);
         if (list != undefined && list.length > 0) {
           let paramList = [];
           list.map(item => {
@@ -124,7 +124,7 @@ export default class CostPlanDefCreate extends QuickCreatePage {
   };
   formLoaded = () => {
     const { formItems } = this.state;
-    formItems.cost_plan_ACCESSORY.component = this.uploadComponent;
+    formItems.COST_PLAN.component = this.uploadComponent;
     this.setState({});
   };
   uploadComponent = props => {
@@ -186,7 +186,7 @@ export default class CostPlanDefCreate extends QuickCreatePage {
         <Footer style={{ backgroundColor: 'white' }}>
           {' '}
           <CostPlanSearch
-            quickuuid="cost_plan_item"
+            quickuuid="COST_PLAN_ITEM"
             PLAN_UUID={this.props?.params?.entityUuid}
             onRef={c => (this.setting = c)}
           />

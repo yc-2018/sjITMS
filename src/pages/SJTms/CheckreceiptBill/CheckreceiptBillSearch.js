@@ -260,6 +260,13 @@ export default class CheckreceiptBillSearch extends QuickFormSearchPage {
           }}
           onRef={node => (this.updateDtlModalRef = node)}
         />
+        <Button
+          // hidden={!havePermission(this.state.authority + '.port')}
+          onClick={this.port}
+          type="primary"
+        >
+          导出
+        </Button>
       </div>
     );
   };

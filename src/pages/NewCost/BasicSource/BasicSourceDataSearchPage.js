@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-17 16:25:57
+ * @LastEditTime: 2023-10-27 11:28:47
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -11,7 +11,7 @@ import { Button, Form, Input, message, Modal, Spin, DatePicker, InputNumber } fr
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import SearchPage from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSearchPage';
 import { dynamicQuery } from '@/services/quick/Quick';
-import { newOnSave, deleteSourceData, sourceConfirm } from '@/services/cost/BasicSource';
+import { newOnSave, deleteSourceData, sourceConfirm, queryData } from '@/services/bms/BasicSource';
 import { colWidth } from '@/utils/ColWidth';
 import { guid } from '@/utils/utils';
 import { loginUser } from '@/utils/LoginContext';
@@ -60,6 +60,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
 
   //获取列配置
   queryColumns = async () => {
+    const { system } = this.state;
     let param = {
       tableName: 'cost_form_field',
       orderBy: ['LINE+'],
@@ -67,8 +68,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         params: [{ field: 'FORMUUID', rule: 'eq', val: [this.props.selectedRows] }],
       },
     };
-    //TODO 多数据源系统区分
-    const columnsData = await dynamicQuery(param,'tsbms');
+    const columnsData = await dynamicQuery(param, system.system);
     if (columnsData && columnsData.success && columnsData.result.records.length > 0) {
       this.initConfig(columnsData.result.records);
       this.initConfig(columnsData.result.records);
@@ -86,7 +86,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         dataIndex: data.DB_FIELD_NAME,
         key: data.DB_FIELD_NAME,
         sorter: true,
-        width: colWidth.codeColWidth,
+        width: data.DB_LENGTH,
         fieldType: data.DB_TYPE,
         allowUpdate: data.ALLOWUPDATE,
         render: (val, record) => this.getRender(val, data, record),
@@ -116,21 +116,14 @@ export default class BasicSourceDataSearchPage extends SearchPage {
 
   getRender = (val, column, record) => {
     return val;
-    // const { expanded } = this.props;
-    // if (expanded == '1') {
-    //   return (
-    //     <Input defaultValue={val} onChange={v => (record[column.DB_FIELD_NAME] = v.target.value)} />
-    //   );
-    // } else {
-    //   return val;
-    // }
   };
 
-  getData = async (pageFilters, system) => {
+  getData = async pageFilters => {
     this.state.pageFilters = pageFilters;
-    const result = await dynamicQuery(pageFilters, system);
-    if (result && result.result && result.result.records != 'false') {
-      this.initData(result.result);
+    // const result = await dynamicQuery(pageFilters, system);
+    const result = await queryData(pageFilters, this.props.selectedRows);
+    if (result && result.data && result.data.data.records != 'false') {
+      this.initData(result.data.data);
     } else {
       message.error('查无数据');
       this.setState({ searchLoading: false });
@@ -173,25 +166,31 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       };
       this.setState({ queryParams: queryParams(filter.queryParams) });
     }
-    this.getData(param, system.system);
+    this.getData(param);
   };
 
   //初始化数据
-  initData = data => {
+  initData = datas => {
     // 海鼎底层需要uuid作为StandardTable的rowkey
-    if (data?.records && data.records.length > 0 && !data.records[0].uuid) {
-      data.records.forEach(row => (row.uuid = guid()));
+    if (datas?.records && datas.records.length > 0 && !datas.records[0].uuid) {
+      datas.records.forEach(row => (row.uuid = guid()));
     }
     var data = {
-      list: data.records,
+      list: datas.records,
       pagination: {
-        total: data.total,
-        pageSize: data.pageSize,
-        current: data.pageNo,
+        total: datas.total,
+        pageSize: datas.pageSize,
+        current: datas.pageNo,
         showTotal: total => `共 ${total} 条`,
       },
     };
-    this.setState({ data, selectedRows: [], searchLoading: false });
+    console.log('data.record?.columnTotal', datas);
+    this.setState({
+      data,
+      colTotal: datas?.columnTotal,
+      selectedRows: [],
+      searchLoading: false,
+    });
   };
 
   refreshTable = filter => {
@@ -214,7 +213,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         },
       };
     }
-    this.getData(queryFilter, system.system);
+    this.getData(queryFilter);
   };
 
   columns = [
@@ -233,7 +232,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       tableName: pageFilters.tableName,
       condition: pageFilters.condition,
     };
-    const result = await dynamicQuery(pageFilter);
+    const result = await dynamicQuery(pageFilter, this.props.system.system);
     if (result && result.success) {
       let columns = this.state.columns;
       var option = [];

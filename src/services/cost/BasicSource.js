@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-01 16:01:34
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-10 17:43:19
+ * @LastEditTime: 2023-10-31 09:15:38
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -20,12 +20,6 @@ export async function findSourceTree() {
   );
 }
 
-export async function getSourceTree() {
-  return request(`/itms-cost/itms-cost/source/getSourceTree?bmsUuid=${loginOrg().uuid}`, {
-    method: 'GET',
-  });
-}
-
 export async function deleteSourceTree(uuid) {
   return request(`/itms-cost/itms-cost/source/deleteSourceTree/${uuid}`, {
     method: 'POST',
@@ -38,29 +32,9 @@ export async function getTableInfo(tablename) {
   });
 }
 
-export async function getTableInfoNew(tableName, database) {
-  return request(
-    `/itms-schedule/itms-schedule/dev/parseSql?tableName=${tableName}&database=${database}`,
-    {
-      method: 'POST',
-    }
-  );
-}
-
 export async function getUnAddInfo(payload) {
   return request(
     `/itms-cost/itms-cost/source/getUnAddInfo/${payload.tableName}/${payload.formUuid}`,
-    {
-      method: 'GET',
-    }
-  );
-}
-
-export async function getNewUnAddInfo(payload) {
-  return request(
-    `/itms-cost/itms-cost/newSource/getUnAddInfo/${payload.tableName}/${payload.database}/${
-      payload.formUuid
-    }`,
     {
       method: 'GET',
     }
@@ -99,47 +73,8 @@ export async function onSaveSourceData(payload) {
   });
 }
 
-export async function newOnSave(payload, type) {
-  return request(`/itms-cost/itms-cost/newSource/onSaveSourceData/${type}`, {
-    method: 'POST',
-    body: payload,
-  });
-}
-
 export async function deleteSourceData(payload) {
   return request(`/itms-cost/itms-cost/source/deleteSourceData`, {
-    method: 'POST',
-    body: payload,
-  });
-}
-
-export async function sourceConfirm(payload) {
-  return request(`/itms-cost/itms-cost/newSource/sourceConfirm`, {
-    method: 'POST',
-    body: payload,
-  });
-}
-
-export async function sourceAbnormal(sourceUuid) {
-  return request(`/itms-cost/itms-cost/newSource/sourceAbnormal/${sourceUuid}`, {
-    method: 'POST',
-  });
-}
-
-export async function remind(sourceUuid) {
-  return request(`/itms-cost/itms-cost/newSource/remind/${sourceUuid}`, {
-    method: 'GET',
-  });
-}
-
-export async function getDataColumns() {
-  return request(`/itms-cost/itms-cost/newSource/getDataColumns`, {
-    method: 'GET',
-  });
-}
-
-export async function sortDateSourceTree(payload) {
-  return request(`/itms-cost/itms-cost/newSource/sortDateSourceTree`, {
     method: 'POST',
     body: payload,
   });

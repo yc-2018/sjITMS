@@ -4,7 +4,7 @@ import { Table, Modal, List, Button } from 'antd';
 import moment from 'moment';
 import { Route, Switch } from 'react-router-dom';
 import QuickViewPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickViewPage';
-import { getPlanFile } from '@/services/cost/Cost';
+import { getPlanFile } from '@/services/bms/Cost';
 
 @connect(({ quick, loading }) => ({
   quick,

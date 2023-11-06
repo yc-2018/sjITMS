@@ -11,7 +11,7 @@ import { connect } from 'dva';
 import { Button, Input, Modal, message } from 'antd';
 import { Fragment } from 'react';
 import QuickViewPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickViewPage';
-import { updateNote } from '@/services/cost/CostPlan';
+import { updateNote } from '@/services/bms/CostPlan';
 
 const { TextArea } = Input;
 

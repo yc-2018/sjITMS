@@ -13,23 +13,9 @@ import moment from 'moment';
 import styles from './index.less';
 import StandardTable from '../../CommonLayout/RyzeStandardTable';
 import { groupBy, sumBy } from 'lodash';
-
+import { isJSON } from '@/utils/SomeUtil';
 import { updateEntity, getInitDataByQuick } from '@/services/quick/Quick';
 
-function isJSON(str) {
-  if (typeof str == 'string') {
-    try {
-      var obj = JSON.parse(str);
-      if (typeof obj == 'object' && obj) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (e) {
-      return false;
-    }
-  }
-}
 /**
  * 查询界面
  */
@@ -555,40 +541,40 @@ export default class QuickFormSearchPage extends SearchPage {
       data.records.forEach(row => (row.uuid = guid()));
     }
     //根据配置规则 分组数据
-    const { isMerge, queryConfig } = this.state;
+    const { isMerge } = this.state;
     let records = data.records;
     if (isMerge && data.records) {
-      const { columns, reportHead } = queryConfig;
-      let list = data.records;
-      let newList = [];
-      let mergeRule = reportHead.mergeRule?.split(',');
-      let listGroup = groupBy(list, e => {
-        return mergeRule.map(x => {
-          return e[x];
-        });
-      });
-      //合并数据
-      newList = Object.keys(listGroup).map(e => {
-        const list = listGroup[e];
-        let newRecord = {};
-        for (let c of columns) {
-          newRecord[c.fieldName] = this.getDataByMergeRule(c.mergeRule, list, c.fieldName);
-        }
-        newRecord['uuid'] = this.getDataByMergeRule(1, list, 'uuid') + ',header';
-        for (let d of list) {
-          d.puuid = newRecord['uuid'];
-        }
-        return newRecord;
-      });
-      //将子类写入父类
-      newList.forEach(n => {
-        let code = mergeRule.map(x => {
-          return n[x];
-        });
-        n.detail = listGroup[code];
-        n.isHeader = true;
-      });
-      records = newList;
+      // const { columns, reportHead } = queryConfig;
+      // let list = data.records;
+      // let newList = [];
+      // let mergeRule = reportHead.mergeRule?.split(',');
+      // let listGroup = groupBy(list, e => {
+      //   return mergeRule.map(x => {
+      //     return e[x];
+      //   });
+      // });
+      // //合并数据
+      // newList = Object.keys(listGroup).map(e => {
+      //   const list = listGroup[e];
+      //   let newRecord = {};
+      //   for (let c of columns) {
+      //     newRecord[c.fieldName] = this.getDataByMergeRule(c.mergeRule, list, c.fieldName);
+      //   }
+      //   newRecord['uuid'] = this.getDataByMergeRule(1, list, 'uuid') + ',header';
+      //   for (let d of list) {
+      //     d.puuid = newRecord['uuid'];
+      //   }
+      //   return newRecord;
+      // });
+      // //将子类写入父类
+      // newList.forEach(n => {
+      //   let code = mergeRule.map(x => {
+      //     return n[x];
+      //   });
+      //   n.detail = listGroup[code];
+      //   n.isHeader = true;
+      // });
+      records = this.mergeData(data);
     }
     let colTotal = data.columnTotal;
     var data = {
@@ -601,6 +587,44 @@ export default class QuickFormSearchPage extends SearchPage {
       },
     };
     this.setState({ data, selectedRows: [], colTotal });
+  };
+
+  /**
+   * 合并数据
+   */
+  mergeData = data => {
+    const { queryConfig } = this.state;
+    const { columns, reportHead } = queryConfig;
+    let list = data.records;
+    let newList = [];
+    let mergeRule = reportHead.mergeRule?.split(',');
+    let listGroup = groupBy(list, e => {
+      return mergeRule.map(x => {
+        return e[x];
+      });
+    });
+    //合并数据
+    newList = Object.keys(listGroup).map(e => {
+      const list = listGroup[e];
+      let newRecord = {};
+      for (let c of columns) {
+        newRecord[c.fieldName] = this.getDataByMergeRule(c.mergeRule, list, c.fieldName);
+      }
+      newRecord['uuid'] = this.getDataByMergeRule(1, list, 'uuid') + ',header';
+      for (let d of list) {
+        d.puuid = newRecord['uuid'];
+      }
+      return newRecord;
+    });
+    //将子类写入父类
+    newList.forEach(n => {
+      let code = mergeRule.map(x => {
+        return n[x];
+      });
+      n.detail = listGroup[code];
+      n.isHeader = true;
+    });
+    return newList;
   };
 
   /**
@@ -744,7 +768,7 @@ export default class QuickFormSearchPage extends SearchPage {
 
   //导出
   port = () => {
-    const { key, selectedRows } = this.state;
+    const { key, selectedRows, isMerge } = this.state;
     let defaultCache =
       getTableColumns(key + 'columnInfo') && typeof getTableColumns(key + 'columnInfo') != 'object'
         ? JSON.parse(getTableColumns(key + 'columnInfo'))
@@ -814,9 +838,13 @@ export default class QuickFormSearchPage extends SearchPage {
         callback: response => {
           if (response && response.success) {
             // response.data.records.map(item => {});
+            let records = response.data.records;
+            if (isMerge && response.data.records) {
+              records = this.mergeData(response.data);
+            }
             option.datas = [
               {
-                sheetData: response.data.records,
+                sheetData: records,
                 sheetName: this.state.title, //工作表的名字
                 sheetFilter: sheetfilter,
                 sheetHeader: sheetheader,

@@ -1,8 +1,8 @@
 import React, { PureComponent } from 'react';
-import { Form, Button, Modal, message } from 'antd';
+import { Form, Button, Modal, message, Checkbox } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { loginOrg, loginCompany, loginUser } from '@/utils/LoginContext';
+import { loginOrg, loginCompany } from '@/utils/LoginContext';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { dynamicQuery } from '@/services/quick/Quick';
 import CostProjectCreate from '../CostProject/CostProjectCreate';
@@ -80,6 +80,28 @@ export default class CostPlanSearch extends QuickFormSearchPage {
       const component = <a onClick={() => this.addItem(e)}>{e.record.ITEM_NAME}</a>;
       e.component = component;
     }
+    if (e.column.fieldName == 'UNSHOW_IN_BILL') {
+      const component = (
+        <Checkbox
+          defaultChecked={e.val == '<空>' ? false : e.val}
+          onChange={v => {
+            e.record.UNSHOW_IN_BILL = v.target.checked ? 1 : 0;
+          }}
+        />
+      );
+      e.component = component;
+    }
+    if (e.column.fieldName == 'ALLOW_UPDATE') {
+      const component = (
+        <Checkbox
+          defaultChecked={e.val == '<空>' ? false : e.val}
+          onChange={v => {
+            e.record.ALLOW_UPDATE = v.target.checked ? 1 : 0;
+          }}
+        />
+      );
+      e.component = component;
+    }
   };
 
   handleOks = async code => {
@@ -92,7 +114,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
     if (code) {
       params.condition.params[0] = { field: 'CODE', rule: 'eq', val: [code] };
     }
-    let result = await dynamicQuery(params);
+    let result = await dynamicQuery(params, this.state.queryConfig.reportHead?.dbSource);
     let { data } = this.state;
     result = result.result?.records;
     for (const e of result) {
@@ -168,6 +190,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
                   valueField="UUID"
                   searchField="ITEM_NAME"
                   mode="multiple"
+                  DataSource={this.state.queryConfig.reportHead?.dbSource}
                   queryParams={{
                     tableName: 'COST_PROJECT',
                     condition: {
