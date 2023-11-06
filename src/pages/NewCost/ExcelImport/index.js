@@ -204,7 +204,6 @@ class ExcelImport extends PureComponent {
             >
               <Option value="0">全量导入</Option>
               <Option value="1">导入时全表删除</Option>
-              {/* <Option value="2">根据主键进行覆盖</Option> */}
             </Select>
           </Modal>
           <PageDetail {...pageDetailProps}>
