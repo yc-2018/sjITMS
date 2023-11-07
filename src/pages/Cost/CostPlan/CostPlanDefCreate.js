@@ -124,7 +124,7 @@ export default class CostPlanDefCreate extends QuickCreatePage {
   };
   formLoaded = () => {
     const { formItems } = this.state;
-    formItems.COST_PLAN.component = this.uploadComponent;
+    formItems.COST_PLAN_ACCESSORY.component = this.uploadComponent;
     this.setState({});
   };
   uploadComponent = props => {
