@@ -525,7 +525,7 @@ export default class LineSystemSearchPage extends Component {
         sheetData: [],
         sheetName: '线路', //工作表的名字
         sheetFilter: [],
-        sheetHeader: ['门店号', '班组', '门店名称', '调整后线路', '备注'],
+        sheetHeader: ['门店号', '班组', '门店名称', '调整后线路','货主代码','备注'],
       },
     ];
     var toExcel = new ExportJsonExcel(option);
