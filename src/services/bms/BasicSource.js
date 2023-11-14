@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-01 16:01:34
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-11-02 12:54:10
+ * @LastEditTime: 2023-11-14 15:15:38
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -15,6 +15,14 @@ export async function getAllSource() {
     method: 'GET',
   });
 }
+
+export async function addDtl(payload) {
+  return request(`/bms-cost/bms-cost/source/addDtl/${payload.formUuid}`, {
+    method: 'POST',
+    body: payload.params,
+  });
+}
+
 //新
 export async function getSourceTree() {
   return request(`/bms-cost/bms-cost/source/getSourceTree?bmsUuid=${loginOrg().uuid}`, {

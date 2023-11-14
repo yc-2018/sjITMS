@@ -47,7 +47,7 @@ export default class CostBillEditView extends CreatePage {
   drawCreateButtons = () => {
     return (
       <Fragment>
-        <Button key="cancel" onClick={this.handleCancel}>
+        <Button key="cancel" onClick={this.callBack}>
           返回
         </Button>
         <Button
@@ -67,6 +67,11 @@ export default class CostBillEditView extends CreatePage {
     }
     this.entity[key] = value;
     this.linkCalculate(key);
+  };
+
+  callBack = () => {
+    const { e, dateString } = this.props.params;
+    this.props.switchTab('calculation', { entityUuid: e.uuid, e, dateString });
   };
 
   handleexportPlan = async () => {

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-08 10:39:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-31 09:18:09
+ * @LastEditTime: 2023-11-14 10:27:41
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -364,31 +364,7 @@ export default class CostCalculationSearch extends QuickFormSearchPage {
   monthChange = (date, dateString) => {
     this.month = dateString;
     this.setState({ dateString });
-    // this.isLock(dateString);
   };
-
-  // drawcell = e => {
-  //   if (e.column.fieldName == 'modified') {
-  //     e.val = e.val ? '是' : '否';
-  //   }
-  //   if (e.record.modified) {
-  //     e.component = (
-  //       <p3 style={{ color: 'red' }}>{this.convertData(e.val, e.column.preview, e.record)}</p3>
-  //     );
-  //   }
-  // };
-
-  /**
-   * 版本锁定
-   */
-  // onLock = async () => {
-  //   await onLock(this.props.params.entityUuid, this.state.dateString).then(e => {
-  //     if (e.data) {
-  //       this.setState({ isLock: e.data });
-  //       message.success('操作成功');
-  //     }
-  //   });
-  // };
 
   //该方法会覆盖所有的中间功能按钮
   drawToolbarPanel = () => {
@@ -398,13 +374,6 @@ export default class CostCalculationSearch extends QuickFormSearchPage {
         <Button onClick={this.calculate.bind()}>计算</Button>
         <Button onClick={this.checkData.bind()}>检查数据</Button>
         <Button onClick={this.onSaveNote.bind()}>保存</Button>
-        {/* <Button
-          disabled={!(isLock == 'Saved' || isLock == 'Approved')}
-          type={isLock != 'Saved' ? 'danger' : ''}
-          onClick={() => this.onLock()}
-        >
-          {isLock == 'Approved' ? '取消批准' : '批准'}
-        </Button> */}
         <Button hidden={!this.state.bill} onClick={this.getcalcLog}>
           结果日志
         </Button>
