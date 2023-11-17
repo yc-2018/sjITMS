@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-11-02 12:55:22
+ * @LastEditTime: 2023-11-16 11:12:26
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -139,7 +139,6 @@ export default class BasicSourceSearchPage extends Component {
   };
 
   createHeadOnClick = () => {
-    // console.log('ccc', this.props);
     this.headModalRef.show();
   };
 
@@ -212,8 +211,7 @@ export default class BasicSourceSearchPage extends Component {
               ) : (
                 ''
               )}
-              {havePermission(this.state.authority + '.manage') &&
-              event.selectedNodes[0].props.dataRef.expanded == '1' ? (
+              {havePermission(this.state.authority + '.manage') ? (
                 <TabPane tab={'管理'} key="manage">
                   <div>
                     <BasicConfigCreatePage
@@ -225,7 +223,6 @@ export default class BasicSourceSearchPage extends Component {
                       params={{ entityUuid: selectedKeys[0] }}
                       onRef={node => (this.configCreatPage = node)}
                       uuid={selectedKeys[0]}
-                      // refresh={this.queryTree.bind()}
                     />
                   </div>
                   <div className={sourceStyle.config}>
