@@ -323,10 +323,13 @@ class BasicLayout extends React.Component {
 
   getPageTitle = pathname => {
     const currRouterData = this.matchParamsPath(pathname);
+    console.log('currRouterData', currRouterData, loginOrg());
 
     if (!currRouterData) {
-      window.parent && window.parent.changeTitle && window.parent.changeTitle('TimeExpress TMS');
-      return 'TimeExpress TMS';
+      window.parent &&
+        window.parent.changeTitle &&
+        window.parent.changeTitle(loginOrg().type == 'BMS' ? 'TimeExpress BMS' : 'TimeExpress TMS');
+      return loginOrg().type == 'BMS' ? 'TimeExpress BMS' : 'TimeExpress TMS';
     }
     const message = formatMessage({
       id: currRouterData.locale || currRouterData.name,
@@ -334,8 +337,10 @@ class BasicLayout extends React.Component {
     });
     window.parent &&
       window.parent.changeTitle &&
-      window.parent.changeTitle(`${message} - TimeExpress TMS`);
-    return `${message} - TimeExpress TMS`;
+      window.parent.changeTitle(
+        `${message} - ${loginOrg().type == 'BMS' ? 'TimeExpress BMS' : 'TimeExpress TMS'}`
+      );
+    return `${message} - ${loginOrg().type == 'BMS' ? 'TimeExpress BMS' : 'TimeExpress TMS'}`;
   };
 
   getLayoutStyle = () => {
