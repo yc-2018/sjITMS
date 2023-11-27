@@ -1755,6 +1755,7 @@ class StandardTable extends Component {
                     size={this.props.size ? this.props.size : 'middle'}
                     components={this.components}
                     style={status}
+                    bodyStyle={{ backgroundColor: '#b5f5ec', fontWeight: 'bold' }}
                   />
                 );
               }}

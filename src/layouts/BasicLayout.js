@@ -323,7 +323,6 @@ class BasicLayout extends React.Component {
 
   getPageTitle = pathname => {
     const currRouterData = this.matchParamsPath(pathname);
-    console.log('currRouterData', currRouterData, loginOrg());
 
     if (!currRouterData) {
       window.parent &&
