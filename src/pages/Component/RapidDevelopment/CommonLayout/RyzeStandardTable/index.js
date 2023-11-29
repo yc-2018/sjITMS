@@ -1705,7 +1705,7 @@ class StandardTable extends Component {
         sorter: item.sorter,
         width: item.width,
         render: (val, record) => {
-          return val ? val : '<空>';
+          return val ? val : '';
         },
       });
     }
@@ -1720,11 +1720,15 @@ class StandardTable extends Component {
       </div>
     );
     let status =
-      this.props.colTotal && this.props.colTotal.length == '0'
+      (this.props.colTotal && this.props.colTotal.length == '0') || showList.length == 0
         ? { display: 'none' }
         : { display: 'block' };
     let menu = this.props.RightClickMenu;
     let userSelect = this.state.isUserSelect ? {} : { userSelect: 'none' };
+    if (!((this.props.colTotal && this.props.colTotal.length == '0') || showList.length == 0)) {
+      console.log('1', footerColumns, this.props.colTotal);
+      this.props.colTotal[0].line_show = '合计';
+    }
 
     return (
       <Dropdown
@@ -1755,7 +1759,7 @@ class StandardTable extends Component {
                     size={this.props.size ? this.props.size : 'middle'}
                     components={this.components}
                     style={status}
-                    bodyStyle={{ backgroundColor: '#b5f5ec', fontWeight: 'bold' }}
+                    bodyStyle={{ fontWeight: 'bold' }}
                   />
                 );
               }}
@@ -1781,7 +1785,7 @@ class StandardTable extends Component {
               components={this.components}
               loading={this.props.loading}
               columns={showColumns}
-              bordered={bordered}
+              bordered={true}
               scroll={this.props.newScroll ? this.props.newScroll : scroll}
               onRow={
                 this.props.onRow
