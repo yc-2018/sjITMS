@@ -28,6 +28,22 @@
 
 .standardTable {
   :global {
+    //排序小箭头颜色
+    .ant-table-thead
+      > tr
+      > th
+      .ant-table-column-sorter
+      .ant-table-column-sorter-inner
+      .ant-table-column-sorter-up.on,
+    .ant-table-thead
+      > tr
+      > th
+      .ant-table-column-sorter
+      .ant-table-column-sorter-inner
+      .ant-table-column-sorter-down.on {
+      color: red;
+    }
+
     .ant-table-header {
       background-color: rgba(255, 255, 255, 0) !important;
     }
