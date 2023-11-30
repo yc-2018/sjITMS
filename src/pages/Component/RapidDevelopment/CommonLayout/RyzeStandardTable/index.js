@@ -1697,6 +1697,18 @@ class StandardTable extends Component {
     });
     showColumns = this.adjustColumns(showColumns);
     let footerColumns = [];
+    //合并时填充合并按钮宽度
+    if (isMerge) {
+      footerColumns.push({
+        title: '合并',
+        dataIndex: 'isMerge',
+        key: 'isMergefooter',
+        width: '50px',
+        render: (val, record) => {
+          return val ? val : '';
+        },
+      });
+    }
     for (const item of showColumns) {
       footerColumns.push({
         title: item.title,
@@ -1726,7 +1738,6 @@ class StandardTable extends Component {
     let menu = this.props.RightClickMenu;
     let userSelect = this.state.isUserSelect ? {} : { userSelect: 'none' };
     if (!((this.props.colTotal && this.props.colTotal.length == '0') || showList.length == 0)) {
-      console.log('1', footerColumns, this.props.colTotal);
       this.props.colTotal[0].line_show = '合计';
     }
 
