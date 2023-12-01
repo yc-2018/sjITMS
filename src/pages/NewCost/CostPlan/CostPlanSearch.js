@@ -57,6 +57,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
       });
     });
     this.setState({ data });
+    this.props.refreshForm();
   };
 
   addItem = data => {
@@ -145,6 +146,7 @@ export default class CostPlanSearch extends QuickFormSearchPage {
       }
     });
     this.setState({ data, visible: false });
+    this.props.refreshForm();
   };
 
   //拖拽

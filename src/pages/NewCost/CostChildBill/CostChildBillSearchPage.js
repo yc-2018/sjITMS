@@ -2,10 +2,10 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-26 10:57:35
+ * @LastEditTime: 2023-11-29 16:52:28
  * @version: 1.0
  */
-import { Form, Modal, Button, Icon, Row, Col, Upload, List, message, Spin } from 'antd';
+import { Form, Modal, Button, Icon, Row, Col, Upload, List, message, Spin, Divider } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import {
@@ -36,6 +36,8 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
     showViewer: false,
     fileType: '',
     filePath: '',
+    billDownloads: [],
+    downloads: [],
   };
 
   componentDidMount() {
@@ -66,13 +68,15 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
   drawToolbarPanel = () => {};
 
   drawcell = e => {
-    //找到fieldName为CODE这一列 更改它的component
     if (e.column.fieldName == 'BILL_NUMBER') {
       const component = <a onClick={() => this.checkDtl(e)}>{e.record.BILL_NUMBER}</a>;
       e.component = component;
     }
     if (e.column.fieldName == 'ACCESSORY') {
-      let count = e.val == '<空>' ? 0 : e.val.split(',').length;
+      let accessory = e.val == '<空>' ? 0 : e.val.split(',').length;
+      let billAccessory =
+        e.record.BILL_ACCESSORY != undefined ? e.record.BILL_ACCESSORY.split(',').length : 0;
+      let count = accessory + billAccessory;
       const component = (
         <Button onClick={() => this.accessoryModalShow(true, e.record)}>
           <Icon type="upload" />
@@ -109,10 +113,23 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
         };
         downloads.push(param);
       });
-      this.setState({ accessoryModal: isShow, uploadUuid: e.UUID, downloads });
-    } else {
-      this.setState({ accessoryModal: isShow, uploadUuid: e.UUID, downloads: [] });
+      this.setState({ downloads });
     }
+    if (e != 'false' && e.BILL_ACCESSORY_NAME) {
+      let downloadsName = e.BILL_ACCESSORY_NAME.split(',');
+      let accessory = e.BILL_ACCESSORY.split(',');
+      let billDownloads = [];
+      downloadsName.map((data, index) => {
+        let param = {
+          download: data,
+          accessory: accessory[index],
+          uuid: e.UUID,
+        };
+        billDownloads.push(param);
+      });
+      this.setState({ billDownloads });
+    }
+    this.setState({ accessoryModal: isShow, uploadUuid: e.UUID });
   };
 
   uploadFile = async (file, fileList) => {
@@ -127,17 +144,18 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
     }
   };
   //下载附件
-  download = (item, index) => {
+  download = (item, index, type) => {
     let parma = {
       uuid: item.uuid,
       index: index,
       fileName: item.download,
+      type: type,
     };
     childDownload(parma);
   };
   //删除附件
-  delete = async (item, index) => {
-    const response = await deleteChildFile(item.uuid, item.download, index);
+  delete = async (item, index, type) => {
+    const response = await deleteChildFile(item.uuid, item.download, index, type);
     if (response && response.success) {
       message.success('删除成功');
       this.setState({ accessoryModal: false });
@@ -146,13 +164,18 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
   };
   //预览附件
   preview = async item => {
-    this.setState({ showViewer: true });
+    // this.setState({ showViewer: true });
     const type = item.accessory.split('.')[item.accessory.split('.').length - 1];
     getUploadFile(item.accessory).then(res => {
-      this.setState({
-        filePath: res,
-        fileType: type,
-      });
+      if (res.type == 'application/pdf') {
+        window.open(URL.createObjectURL(res));
+      } else {
+        this.setState({
+          showViewer: true,
+          filePath: window.URL.createObjectURL(new Blob([res])),
+          fileType: type,
+        });
+      }
     });
   };
 
@@ -161,6 +184,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
       isModalVisible,
       accessoryModal,
       downloads,
+      billDownloads,
       e,
       filePath,
       fileType,
@@ -210,6 +234,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
             </Row>,
           ]}
         >
+          <div>发票</div>
           <div style={{ overflow: 'auto' }}>
             <List
               bordered
@@ -218,10 +243,39 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
                 <List.Item
                   actions={[
                     <a onClick={() => this.preview(item)}>预览</a>,
-                    <a onClick={() => this.download(item, index)} key="list-loadmore-edit">
+                    <a
+                      onClick={() => this.download(item, index, 'invoice')}
+                      key="list-loadmore-edit"
+                    >
                       下载
                     </a>,
-                    <a onClick={() => this.delete(item, index)} key="list-loadmore-delete">
+                    <a
+                      onClick={() => this.delete(item, index, 'invoice')}
+                      key="list-loadmore-delete"
+                    >
+                      删除
+                    </a>,
+                  ]}
+                >
+                  {item.download}
+                </List.Item>
+              )}
+            />
+          </div>
+          <Divider />
+          <div>账单</div>
+          <div style={{ overflow: 'auto' }}>
+            <List
+              bordered
+              dataSource={billDownloads}
+              renderItem={(item, index) => (
+                <List.Item
+                  actions={[
+                    <a onClick={() => this.preview(item)}>预览</a>,
+                    <a onClick={() => this.download(item, index, 'bill')} key="list-loadmore-edit">
+                      下载
+                    </a>,
+                    <a onClick={() => this.delete(item, index, 'bill')} key="list-loadmore-delete">
                       删除
                     </a>,
                   ]}

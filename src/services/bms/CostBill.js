@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-09-07 11:24:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-31 09:02:43
+ * @LastEditTime: 2023-11-29 16:42:15
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -80,9 +80,9 @@ export async function childUploadFile(file, uuid) {
   });
 }
 
-export async function deleteChildFile(uuid, download, index) {
+export async function deleteChildFile(uuid, download, index, type) {
   return request(
-    `/bms-cost/bms-cost/newCostBill/deleteChildFile?uuid=${uuid}&download=${download}&index=${index}`,
+    `/bms-cost/bms-cost/newCostBill/deleteChildFile?uuid=${uuid}&download=${download}&index=${index}&type=${type}`,
     {
       method: 'POST',
     }
@@ -92,7 +92,7 @@ export async function deleteChildFile(uuid, download, index) {
 export function childDownload(param) {
   axios(
     configs[API_ENV].API_SERVER +
-      `/bms-cost/bms-cost/newCostBill/childDownload/${param.uuid}/${param.index}`,
+      `/bms-cost/bms-cost/newCostBill/childDownload/${param.uuid}/${param.index}/${param.type}`,
     {
       method: 'post',
       responseType: 'blob', //data: payload,
@@ -126,8 +126,9 @@ export async function getUploadFile(accessory) {
       data: accessory,
     }
   );
-  const url_1 = window.URL.createObjectURL(new Blob([res.data]));
-  return url_1;
+  // const url_1 = window.URL.createObjectURL(new Blob([res.data]));
+  // return url_1;
+  return res.data;
 }
 
 //获取子帐单明细
