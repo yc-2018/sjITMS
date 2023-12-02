@@ -254,12 +254,14 @@ export default class BasicSourceSearchPage extends Component {
                 <TabPane tab={'导入'} key="import">
                   <div style={{ marginTop: '20px' }}>
                     <ExcelImport
+                      key={ selectedKeys[0]}
                       title={event.selectedNodes[0].props.dataRef.tableNameCN}
                       templateType="BASICSOURCE"
                       dispatch={this.props.dispatch}
                       uploadType="basicSource/newBatchImport"
                       uploadParams={{ sourceUuid: selectedKeys[0] }}
                       cancelCallback={() => {}}
+                      costForm={system}
                     />
                   </div>
                 </TabPane>
