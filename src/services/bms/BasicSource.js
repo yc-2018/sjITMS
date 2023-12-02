@@ -34,7 +34,7 @@ export async function newBatchImport(payload) {
   return request(
     `/bms-cost/bms-cost/source/batchImport?sourceUuid=${payload.sourceUuid}&fileKey=${
       payload.fileKey
-    }&importType=${payload.importType}`,
+    }&importType=${payload.importType}&importMonth=${payload.importMonth}`,
     {
       method: 'POST',
     }
