@@ -245,7 +245,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       option.fileName = title; //导出的Excel文件名
       option.datas = [
         {
-          sheetData: result.result.records,
+          sheetData: result.result.records==='false'?[]:result.result.records,
           sheetName: title, //工作表的名字
           sheetFilter: sheetfilter,
           sheetHeader: sheetheader,
