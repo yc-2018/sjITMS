@@ -115,10 +115,13 @@ export default class ColsAdvanced extends Component {
             data.val = val[index].join('||');
           }
           //日期格式化
+          if (searchField.searchShowtype == 'datemonth' && val instanceof Array) {
+            data.val = val[index].map(x => x.format('YYYY-MM')).join('||');
+          }
           if (searchField.searchShowtype == 'datetime' && val instanceof Array) {
             data.val = val[index].map(x => x.format('YYYY-MM-DD HH:mm:ss')).join('||');
           }
-          if (searchField.searchShowtype == 'date' || searchField.searchShowtype == 'datemonth' && val instanceof Array) {
+          if (searchField.searchShowtype == 'date' && val instanceof Array) {
             data.val = val[index].map(x => x.format('YYYY-MM-DD')).join('||');
           }
 

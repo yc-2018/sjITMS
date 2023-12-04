@@ -43,6 +43,7 @@ export default class ControlledRangePicker extends React.Component {
           moment().date(1).startOf('month'),
           moment().date(1).endOf('month'),
         ]}
+        style={{ width: '100%' }}
         onChange={this.handleChange}
         onPanelChange={this.handlePanelChange}
         ranges={{
