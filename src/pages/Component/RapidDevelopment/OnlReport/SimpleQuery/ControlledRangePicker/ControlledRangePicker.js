@@ -13,17 +13,21 @@ export default class ControlledRangePicker extends React.Component {
 
   handlePanelChange = (value, mode) => {
     const newValue = value.map(date => moment(date).date(1)); // 将日期设置为1号
+    const endValue = moment(newValue[1]).endOf('month'); // 将结束日期设置为下个月的最后一天
+    // 将结束日期设置为下个月的第一天再减去一天
     this.setState({
-      value:newValue,
+      value:[newValue[0], endValue],
       mode: [mode[0] === 'date' ? 'month' : mode[0], mode[1] === 'date' ? 'month' : mode[1]],
     });
-    this.props.onChange(newValue);
+    this.props.onChange(value);
   };
 
   handleChange = value => {
     const newValue = value.map(date => moment(date).date(1)); // 将日期设置为1号
-    this.setState({ value:newValue });
-    this.props.onChange(newValue);
+    const endValue = moment(newValue[1]).endOf('month'); // 将结束日期设置为下个月的最后一天
+    // 将结束日期设置为下个月的第一天再减去一天
+    this.setState({ value:[newValue[0], endValue] });
+    this.props.onChange(value);
   };
 
   render() {
@@ -45,35 +49,34 @@ export default class ControlledRangePicker extends React.Component {
           近一月: [
             moment()
               .startOf('month')
-              .subtract(1, 'month'),
-            moment(),
+              .subtract(1, 'month').date(1),
+            moment().endOf('month').subtract(1, 'month'),
           ],
           近两月: [
             moment()
               .startOf('month')
-              .subtract(2, 'month'),
-            moment(),
+              .subtract(2, 'month').date(1),
+            moment().endOf('month').subtract(1, 'month'),
           ],
           近三月: [
             moment()
               .startOf('month')
-              .subtract(3, 'month'),
-            moment(),
+              .subtract(3, 'month').date(1),
+            moment().endOf('month').subtract(1, 'month'),
           ],
           近半年: [
             moment()
               .startOf('day')
-              .subtract(6, 'month'),
-            moment(),
+              .subtract(6, 'month').date(1),
+            moment().endOf('month').subtract(1, 'month'),
           ],
           近一年: [
             moment()
               .startOf('day')
-              .subtract(1, 'year'),
-            moment(),
+              .subtract(1, 'year').date(1),
+            moment().endOf('month').subtract(1, 'month'),
           ],
         }}
-
       />
     );
   }
