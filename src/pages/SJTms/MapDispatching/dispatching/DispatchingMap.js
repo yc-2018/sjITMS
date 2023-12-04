@@ -32,6 +32,7 @@ import {
   queryAuditedOrderByStoreMap,
   queryAuditedOrder,
   queryDriverRoutes,
+  queryDriverRoutes2,
   queryAuditedOrderByParams,
 } from '@/services/sjitms/OrderBill';
 import { queryDict, queryData, dynamicQuery } from '@/services/quick/Quick';
@@ -534,6 +535,55 @@ export default class DispatchMap extends Component {
       map.setViewport(pts);
     }
   };
+
+  //路线规划
+  searchRoute2 = async selectPoints => {
+    // this.clusterSetData([]);
+    const map = this.map;
+    const { startPoint } = this.state;
+    const pointArr = selectPoints.map(order => {
+      return (order.latitude + ',' + order.longitude).trim();
+    });
+    const waypoints = pointArr.filter((_, index) => index < pointArr.length - 1);
+    let params = {
+      origin: startPoint,
+      destination: pointArr[pointArr.length - 1],
+      waypoints: waypoints.join('|'),
+      height: '2',
+      width: '2',
+      weight: '5',
+      length: '4',
+      is_trailer: '0',
+      plate_color: '0',
+    };
+    const response = await queryDriverRoutes2(params);
+    if (response.success) {
+      const routePaths = response.result.routes[0].steps.map(x => x.path);
+      let pts = new Array();
+      routePaths.forEach(path => {
+        const points = path.split(';');
+        points.forEach(point => {
+          pts.push(new BMapGL.Point(point.split(',')[0], point.split(',')[1]));
+        });
+      });
+      var polyline = new BMapGL.Polyline(pts, {
+        strokeColor: '#00bd01',
+        strokeWeight: 6,
+        strokeOpacity: 1,
+      });
+      map.addOverlay(polyline);
+      map.addOverlay(
+        this.drawRouteMaker(startPoint.split(',')[1], startPoint.split(',')[0], 50, 80, 400, 278)
+      );
+      selectPoints.forEach((point, index) => {
+        index == selectPoints.length - 1
+          ? map.addOverlay(this.drawRouteMaker(point.longitude, point.latitude, 50, 80, 450, 278))
+          : map.addOverlay(this.drawRouteMaker(point.longitude, point.latitude, 70, 80, 530, 420));
+      });
+      map.setViewport(pts);
+    }
+  };
+
   //路线规划标注
   drawRouteMaker = (lng, lat, width, hieght, x, y) => {
     const iconUrl = '//webmap1.bdimg.com/wolfman/static/common/images/markers_new2x_2960fb4.png';
@@ -951,6 +1001,7 @@ export default class DispatchMap extends Component {
     }
     return (
       <Modal
+        // zIndex={999}
         style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
         width="100vw"
         className={style.dispatchingMap}

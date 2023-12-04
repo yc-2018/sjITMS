@@ -3,10 +3,10 @@ import { Spin, Layout, Tree, message, Empty, Table, Input, Checkbox, InputNumber
 import styles from './BMSAuthorizeCom.less';
 import ViewTabPanel from '@/pages/Component/Page/inner/ViewTabPanel';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
-import { getSourceTree } from '@/services/cost/BasicSource';
-import { costAuthorize, getCostRoleResource } from '@/services/cost/RoleResource';
-import { getConfigInfo, updateConfigInfo } from '@/services/cost/CostPlan';
-import { getPlanTree } from '@/services/cost/Cost';
+import { getSourceTree } from '@/services/bms/BasicSource';
+import { costAuthorize, getCostRoleResource } from '@/services/bms/RoleResource';
+import { getConfigInfo, updateConfigInfo } from '@/services/bms/CostPlan';
+import { getPlanTree } from '@/services/bms/Cost';
 import ConfigTable from './ConfigTable';
 
 const { Content, Sider } = Layout;

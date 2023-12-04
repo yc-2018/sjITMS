@@ -2,15 +2,20 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-23 17:01:07
+ * @LastEditTime: 2023-11-29 16:52:28
  * @version: 1.0
  */
-import { Form, Modal, Button, Icon, Row, Col, Upload, List, message } from 'antd';
+import { Form, Modal, Button, Icon, Row, Col, Upload, List, message, Spin, Divider } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-// import { haveCheck, consumed, uploadFile, deleteFile } from '@/services/cost/CostCalculation';
-import { childUploadFile, deleteChildFile, childDownload } from '@/services/cost/CostBill';
+import {
+  childUploadFile,
+  deleteChildFile,
+  childDownload,
+  getUploadFile,
+} from '@/services/bms/CostBill';
 import CostChildBillDtlSearchPage from './CostChildBillDtlSearchPage';
+import FileViewer from 'react-file-viewer';
 
 @connect(({ quick, deliveredConfirm, loading }) => ({
   quick,
@@ -28,6 +33,11 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
     divstyle: { marginRight: '10px' },
     isModalVisible: false,
     accessoryModal: false,
+    showViewer: false,
+    fileType: '',
+    filePath: '',
+    billDownloads: [],
+    downloads: [],
   };
 
   componentDidMount() {
@@ -58,13 +68,15 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
   drawToolbarPanel = () => {};
 
   drawcell = e => {
-    //找到fieldName为CODE这一列 更改它的component
     if (e.column.fieldName == 'BILL_NUMBER') {
       const component = <a onClick={() => this.checkDtl(e)}>{e.record.BILL_NUMBER}</a>;
       e.component = component;
     }
     if (e.column.fieldName == 'ACCESSORY') {
-      let count = e.val == '<空>' ? 0 : e.val.split(',').length;
+      let accessory = e.val == '<空>' ? 0 : e.val.split(',').length;
+      let billAccessory =
+        e.record.BILL_ACCESSORY != undefined ? e.record.BILL_ACCESSORY.split(',').length : 0;
+      let count = accessory + billAccessory;
       const component = (
         <Button onClick={() => this.accessoryModalShow(true, e.record)}>
           <Icon type="upload" />
@@ -91,18 +103,33 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
   accessoryModalShow = (isShow, e) => {
     if (e != 'false' && e.ACCESSORY_NAME) {
       let downloadsName = e.ACCESSORY_NAME.split(',');
+      let accessory = e.ACCESSORY.split(',');
       let downloads = [];
-      downloadsName.map(c => {
+      downloadsName.map((data, index) => {
         let param = {
-          download: c,
+          download: data,
+          accessory: accessory[index],
           uuid: e.UUID,
         };
         downloads.push(param);
       });
-      this.setState({ accessoryModal: isShow, uploadUuid: e.UUID, downloads });
-    } else {
-      this.setState({ accessoryModal: isShow, uploadUuid: e.UUID, downloads: [] });
+      this.setState({ downloads });
     }
+    if (e != 'false' && e.BILL_ACCESSORY_NAME) {
+      let downloadsName = e.BILL_ACCESSORY_NAME.split(',');
+      let accessory = e.BILL_ACCESSORY.split(',');
+      let billDownloads = [];
+      downloadsName.map((data, index) => {
+        let param = {
+          download: data,
+          accessory: accessory[index],
+          uuid: e.UUID,
+        };
+        billDownloads.push(param);
+      });
+      this.setState({ billDownloads });
+    }
+    this.setState({ accessoryModal: isShow, uploadUuid: e.UUID });
   };
 
   uploadFile = async (file, fileList) => {
@@ -116,27 +143,53 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
       this.onSearch();
     }
   };
-
-  download = (item, index) => {
+  //下载附件
+  download = (item, index, type) => {
     let parma = {
       uuid: item.uuid,
       index: index,
       fileName: item.download,
+      type: type,
     };
     childDownload(parma);
   };
-
-  delete = async (item, index) => {
-    const response = await deleteChildFile(item.uuid, item.download, index);
+  //删除附件
+  delete = async (item, index, type) => {
+    const response = await deleteChildFile(item.uuid, item.download, index, type);
     if (response && response.success) {
       message.success('删除成功');
       this.setState({ accessoryModal: false });
       this.onSearch();
     }
   };
+  //预览附件
+  preview = async item => {
+    // this.setState({ showViewer: true });
+    const type = item.accessory.split('.')[item.accessory.split('.').length - 1];
+    getUploadFile(item.accessory).then(res => {
+      if (res.type == 'application/pdf') {
+        window.open(URL.createObjectURL(res));
+      } else {
+        this.setState({
+          showViewer: true,
+          filePath: window.URL.createObjectURL(new Blob([res])),
+          fileType: type,
+        });
+      }
+    });
+  };
 
   drawOtherCom = () => {
-    const { isModalVisible, accessoryModal, downloads, e } = this.state;
+    const {
+      isModalVisible,
+      accessoryModal,
+      downloads,
+      billDownloads,
+      e,
+      filePath,
+      fileType,
+      showViewer,
+    } = this.state;
     return (
       <>
         <Modal
@@ -181,6 +234,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
             </Row>,
           ]}
         >
+          <div>发票</div>
           <div style={{ overflow: 'auto' }}>
             <List
               bordered
@@ -188,10 +242,17 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
               renderItem={(item, index) => (
                 <List.Item
                   actions={[
-                    <a onClick={() => this.download(item, index)} key="list-loadmore-edit">
+                    <a onClick={() => this.preview(item)}>预览</a>,
+                    <a
+                      onClick={() => this.download(item, index, 'invoice')}
+                      key="list-loadmore-edit"
+                    >
                       下载
                     </a>,
-                    <a onClick={() => this.delete(item, index)} key="list-loadmore-delete">
+                    <a
+                      onClick={() => this.delete(item, index, 'invoice')}
+                      key="list-loadmore-delete"
+                    >
                       删除
                     </a>,
                   ]}
@@ -201,6 +262,51 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
               )}
             />
           </div>
+          <Divider />
+          <div>账单</div>
+          <div style={{ overflow: 'auto' }}>
+            <List
+              bordered
+              dataSource={billDownloads}
+              renderItem={(item, index) => (
+                <List.Item
+                  actions={[
+                    <a onClick={() => this.preview(item)}>预览</a>,
+                    <a onClick={() => this.download(item, index, 'bill')} key="list-loadmore-edit">
+                      下载
+                    </a>,
+                    <a onClick={() => this.delete(item, index, 'bill')} key="list-loadmore-delete">
+                      删除
+                    </a>,
+                  ]}
+                >
+                  {item.download}
+                </List.Item>
+              )}
+            />
+          </div>
+        </Modal>
+        <Modal
+          title="附件预览"
+          visible={showViewer}
+          footer={null}
+          onCancel={() => {
+            this.setState({ showViewer: false });
+          }}
+          centered={true}
+          width={'80%'}
+          bodyStyle={{ height: 'calc(84vh)', overflowY: 'auto' }}
+        >
+          {filePath == '' ? (
+            <Spin />
+          ) : (
+            <FileViewer
+              fileType={fileType}
+              filePath={filePath}
+              errorComponent={''}
+              onError={err => console.log(err)}
+            />
+          )}
         </Modal>
       </>
     );

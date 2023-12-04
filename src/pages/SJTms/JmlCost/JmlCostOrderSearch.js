@@ -298,8 +298,9 @@ export default class JmlCostOrderSearch extends QuickFormSearchPage {
                   showSearch
                   placeholder=""
                   textField="[%CODE%]%NAME%"
-                  valueField="CODE"
+                  valueField="UUID"
                   searchField="CODE"
+                  //duplicate="CODE,NAME"
                   //value={this.state.lineSystemValue}
                   queryParams={{
                     tableName: 'SJ_ITMS_SHIP_ADDRESS',

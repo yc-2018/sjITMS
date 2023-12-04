@@ -2,13 +2,13 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-18 14:30:35
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-08-15 08:40:06
+ * @LastEditTime: 2023-10-30 18:01:45
  * @version: 1.0
  */
 import { connect } from 'dva';
 import { Form, DatePicker, Select } from 'antd';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
-import { getApplicationSelect } from '@/services/cost/ApplicationForm';
+import { getApplicationSelect } from '@/services/bms/ApplicationForm';
 import moment from 'moment';
 
 const { MonthPicker } = DatePicker;

@@ -1,7 +1,7 @@
 import { Form, Spin } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { getSource } from '@/services/cost/CostCalculation';
+import { getSource } from '@/services/bms/CostCalculation';
 
 @connect(({ quick, loading }) => ({
   quick,

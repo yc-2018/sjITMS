@@ -7,7 +7,7 @@
  */
 import React, { Component } from 'react';
 import { Table, Checkbox, Input, InputNumber, message } from 'antd';
-import { getConfigInfo, updateConfigInfo } from '@/services/cost/CostPlan';
+import { getConfigInfo, updateConfigInfo } from '@/services/bms/CostPlan';
 
 export default class ConfigTable extends Component {
   state = {

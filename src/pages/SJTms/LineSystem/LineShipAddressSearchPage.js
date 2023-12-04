@@ -270,13 +270,14 @@ export default class LineShipAddressSearchPage extends Component {
                   onClick={async () => {
                     const result = await exportLineSystem({ systemUUID: selectedKey });
                     if (result && result.success) {
-                      const sheetHeader = ['门店号', '班组', '门店名称', '调整后线路', '备注'];
+                      const sheetHeader = ['门店号', '班组', '门店名称', '调整后线路','货主代码' ,'备注'];
                       var option = [];
                       const sheetFilter = [
                         'storeCode',
                         'contact',
                         'storeName',
                         'lineCode',
+                        'ownerCode',
                         'remarks',
                       ];
                       option.fileName = result.data.tableName;

@@ -2,7 +2,7 @@ import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { Button, Popconfirm, message } from 'antd';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
-import { audit, aborted } from '@/services/cost/CostPlan';
+import { audit, aborted } from '@/services/bms/CostPlan';
 
 @connect(({ quick, loading }) => ({
   quick,

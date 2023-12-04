@@ -7,8 +7,8 @@ import {
   updateSubjectBill,
   getPlanParticulars,
   exportPlan,
-} from '@/services/cost/CostCalculation';
-import { Form, Input, InputNumber, message, Tooltip, Modal, Table, Button, Spin } from 'antd';
+} from '@/services/bms/CostCalculation';
+import { Form, message, Modal, Button, Spin } from 'antd';
 import ExportJsonExcel from 'js-export-excel';
 import StandardTable from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeStandardTable/index';
 import styles from '@/pages/Component/RapidDevelopment/CommonLayout/transportOrder.less';
@@ -47,7 +47,7 @@ export default class CostBillEditView extends CreatePage {
   drawCreateButtons = () => {
     return (
       <Fragment>
-        <Button key="cancel" onClick={this.handleCancel}>
+        <Button key="cancel" onClick={this.callBack}>
           返回
         </Button>
         <Button
@@ -67,6 +67,11 @@ export default class CostBillEditView extends CreatePage {
     }
     this.entity[key] = value;
     this.linkCalculate(key);
+  };
+
+  callBack = () => {
+    const { e, dateString } = this.props.params;
+    this.props.switchTab('calculation', { entityUuid: e.uuid, e, dateString });
   };
 
   handleexportPlan = async () => {

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-10 11:29:27
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-19 17:06:12
+ * @LastEditTime: 2023-10-31 09:20:26
  * @version: 1.0
  */
 import { func } from 'prop-types';
@@ -19,19 +19,6 @@ export async function calculatePlan(payload) {
     }
   );
 }
-
-//新费用计算过程
-export async function newCalculatePlan(payload) {
-  return request(
-    `/itms-cost/itms-cost/newCostBill/calculatePlan?planUuid=${payload.planUuid}&month=${
-      payload.month
-    }&code=${loginUser().code}`,
-    {
-      method: 'POST',
-    }
-  );
-}
-
 
 export async function calculateMemberWage(payload) {
   return request(
@@ -64,11 +51,13 @@ export async function getBillLogs(billUuid, payload) {
     body: payload,
   });
 }
+
 export async function findCostFormFieldByPlanUuid(planUuid) {
   return request(`/itms-cost/itms-cost/source/findCostFormFieldByPlanUuid?planUuid=${planUuid}`, {
     method: 'POST',
   });
 }
+
 export async function onLock(planUuid, month) {
   return request(`/itms-cost/itms-cost/costbill/onLock?planUuid=${planUuid}&dateString=${month}`, {
     method: 'GET',
@@ -134,6 +123,7 @@ export async function getCompareBill(billNumber, bakBillNumber, payload) {
     }
   );
 }
+
 export async function getPlanParticulars(subjectUuid, billuuid, name) {
   return request(
     `/itms-cost/itms-cost/costbill/getPlanParticulars/${billuuid}/${name}`,

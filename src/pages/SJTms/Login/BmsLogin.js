@@ -1,10 +1,13 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
-import { Row, Col, Form, Icon, Input, Button, Checkbox } from 'antd';
+import { Row, Col, Form, Icon, Input, Button, Checkbox, Tabs } from 'antd';
 import { formatMessage, FormattedMessage } from 'umi/locale';
 import login from '@/assets/login/bmsCalc.jpg';
 import { setCookie, clearCookie, getCookie } from '@/utils/Cookies';
-import './bmsLogin.less';
+import DingTalkRqCodeLogin from './DingTalkRqCodeLogin';
+import styles from './Login.less';
+
+const { TabPane } = Tabs;
 @connect(({ login }) => ({ login }))
 @Form.create()
 export default class LoginPage extends PureComponent {
@@ -128,162 +131,121 @@ export default class LoginPage extends PureComponent {
     const { getFieldDecorator } = this.props.form;
     return (
       <Row
+        className={styles.loginCell}
         style={{
-          height: 600,
           position: 'relative',
           background: `url(${login}) no-repeat `,
           backgroundSize: 'cover',
         }}
       >
+        <Col span={14} />
         <Col span={10} style={{ backgroundColor: 'rgba(255,255,255,0.9)', fontSize: 14 }}>
-          {/* <div
-            style={{
-              height: 100,
-              marginTop: 50,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              textAlign: 'center',
-            }}
-          >
-            111
-          </div> */}
-        </Col>
-        <Col span={4} />
-
-        <Col span={10} style={{ backgroundColor: 'rgba(255,255,255,0.9)', fontSize: 14 }}>
-          <div
-            style={{
-              height: 100,
-              marginTop: 50,
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              textAlign: 'center',
-            }}
-          >
-            <div
-              style={{
-                fontSize: 36,
-                fontFamily: '华文中宋,PingFang SC',
-                fontWeight: 'bold',
-              }}
-            >
-              时捷费用管理
-            </div>
-            <div
-              style={{
-                fontSize: 18,
-                userSelect: 'none',
-                backgroundImage: 'linear-gradient(to right,#2857bd,#f5222d)',
-                backgroundClip: 'text',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-              }}
-            >
-              Billing Management System
-            </div>
+          <div className={styles.loginHeaderCell}>
+            <div className={styles.loginHeaderCn}>时捷费用管理</div>
+            <div className={styles.loginHeaderUs}>Billing Management System</div>
           </div>
-          <Form onSubmit={this.handleSubmit} style={{ height: 360, margin: '40px 50px 0' }}>
-            <Form.Item>
-              {getFieldDecorator('loginAccount', {
-                rules: [
-                  {
-                    required: true,
-                    message: formatMessage({ id: 'validation.user.required' }),
-                  },
-                ],
-              })(
-                <Input
-                  prefix={<Icon type="user" style={{ marginLeft: -5 }} />}
-                  style={{ height: 40, fontSize: 18 }}
-                  size="large"
-                  placeholder={formatMessage({ id: 'app.login.user' })}
-                />
-              )}
-            </Form.Item>
-            <Form.Item style={{ marginTop: 10 }}>
-              {getFieldDecorator('password', {
-                rules: [
-                  {
-                    required: true,
-                    message: formatMessage({ id: 'validation.password.required' }),
-                  },
-                ],
-              })(
-                <Input.Password
-                  prefix={<Icon type="lock" style={{ marginLeft: -5 }} />}
-                  style={{ height: 40, fontSize: 18 }}
-                  size="large"
-                  password
-                  placeholder={formatMessage({ id: 'app.login.password' })}
-                />
-              )}
-            </Form.Item>
-            <Row gutter={10} style={{ marginTop: 10 }}>
-              <Col span={17}>
+          <Tabs defaultActiveKey="1">
+            <TabPane tab="账号登录" key="1">
+              <Form onSubmit={this.handleSubmit} className={styles.loginForm}>
                 <Form.Item>
-                  {getFieldDecorator('imageCaptcha', {
+                  {getFieldDecorator('loginAccount', {
                     rules: [
                       {
                         required: true,
-                        message: formatMessage({ id: 'validation.verification-code.required' }),
+                        message: formatMessage({ id: 'validation.user.required' }),
                       },
                     ],
                   })(
                     <Input
-                      prefix={<Icon type="safety-certificate" style={{ marginLeft: -5 }} />}
+                      prefix={<Icon type="user" style={{ marginLeft: -5 }} />}
                       style={{ height: 40, fontSize: 18 }}
                       size="large"
-                      password
-                      placeholder={formatMessage({ id: 'form.verification-code.placeholder' })}
+                      placeholder={formatMessage({ id: 'app.login.user' })}
                     />
                   )}
                 </Form.Item>
-              </Col>
-              <Col span={7}>{this.getCaptcha()}</Col>
-            </Row>
-
-            <Row type="flex" justify="space-between">
-              <Col span={8}>
-                <Form.Item>
-                  {getFieldDecorator('remember', {
-                    valuePropName: 'checked',
-                    initialValue: true,
+                <Form.Item style={{ marginTop: 10 }}>
+                  {getFieldDecorator('password', {
+                    rules: [
+                      {
+                        required: true,
+                        message: formatMessage({ id: 'validation.password.required' }),
+                      },
+                    ],
                   })(
-                    <Checkbox>
-                      <FormattedMessage id="app.login.remember-me" />
-                    </Checkbox>
+                    <Input.Password
+                      prefix={<Icon type="lock" style={{ marginLeft: -5 }} />}
+                      style={{ height: 40, fontSize: 18 }}
+                      size="large"
+                      password
+                      placeholder={formatMessage({ id: 'app.login.password' })}
+                    />
                   )}
                 </Form.Item>
-              </Col>
-              <Col span={8}>
-                {/* <a className="login-form-forgot" href="">
+                <Row gutter={10} style={{ marginTop: 10 }}>
+                  <Col span={17}>
+                    <Form.Item>
+                      {getFieldDecorator('imageCaptcha', {
+                        rules: [
+                          {
+                            required: true,
+                            message: formatMessage({ id: 'validation.verification-code.required' }),
+                          },
+                        ],
+                      })(
+                        <Input
+                          prefix={<Icon type="safety-certificate" style={{ marginLeft: -5 }} />}
+                          style={{ height: 40, fontSize: 18 }}
+                          size="large"
+                          password
+                          placeholder={formatMessage({ id: 'form.verification-code.placeholder' })}
+                        />
+                      )}
+                    </Form.Item>
+                  </Col>
+                  <Col span={7}>{this.getCaptcha()}</Col>
+                </Row>
+
+                <Row type="flex" justify="space-between">
+                  <Col span={8}>
+                    <Form.Item>
+                      {getFieldDecorator('remember', {
+                        valuePropName: 'checked',
+                        initialValue: true,
+                      })(
+                        <Checkbox>
+                          <FormattedMessage id="app.login.remember-me" />
+                        </Checkbox>
+                      )}
+                    </Form.Item>
+                  </Col>
+                  <Col span={8}>
+                    {/* <a className="login-form-forgot" href="">
                   <FormattedMessage id="app.login.forgot-password" />
                 </a> */}
-              </Col>
-            </Row>
-            <Button
-              type="primary"
-              htmlType="submit"
-              style={{
-                width: '100%',
-                height: 40,
-                marginTop: 10,
-                backgroundColor: '#FF9224',
-                borderColor: '#FF9224',
-              }}
-            >
-              <FormattedMessage id="app.login.login" />
-            </Button>
-          </Form>
-          <div
-            style={{ height: 50, display: 'flex', justifyContent: 'center', alignItems: 'center' }}
-          >
-            广东时捷物流有限公司 版权所有
-          </div>
+                  </Col>
+                </Row>
+                <Button
+                  type="primary"
+                  htmlType="submit"
+                  style={{
+                    width: '100%',
+                    height: 40,
+                    marginTop: 10,
+                    backgroundColor: '#FF9224',
+                    borderColor: '#FF9224',
+                  }}
+                >
+                  <FormattedMessage id="app.login.login" />
+                </Button>
+              </Form>
+            </TabPane>
+            <TabPane tab="钉钉登录" key="2">
+              {DingTalkRqCodeLogin(this.props.dispatch)}
+            </TabPane>
+          </Tabs>
+
+          <div className={styles.copyRight}>广东时捷物流有限公司 版权所有</div>
         </Col>
       </Row>
     );

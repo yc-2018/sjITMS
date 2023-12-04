@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-13 17:56:31
+ * @LastEditTime: 2023-11-16 12:04:31
  * @version: 1.0
  */
 import React from 'react';
@@ -21,7 +21,7 @@ import {
   checklistConfirm,
   portChildBill,
   pushBill,
-} from '@/services/cost/CostBill';
+} from '@/services/bms/CostBill';
 import CostChildBillSearchPage from '@/pages/NewCost/CostChildBill/CostChildBillSearchPage';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
 
@@ -41,6 +41,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     e: {},
     showCreate: false,
     isExMerge: true,
+    apLoading: false,
   };
 
   onView = record => {};
@@ -77,7 +78,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
   };
 
   drawToolsButton = () => {
-    const { showCreate, selectedRows } = this.state;
+    const { showCreate, selectedRows, apLoading } = this.state;
     return (
       <span>
         <Button
@@ -147,6 +148,15 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           }}
         >
           核销
+        </Button>
+        <Button
+          type="primary"
+          loading={apLoading}
+          onClick={() => {
+            this.applyPayment();
+          }}
+        >
+          申请付款
         </Button>
         <Button
           onClick={() => {
@@ -222,7 +232,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         '子账单推送',
         childSelectRows,
         this.pushBill,
-        this.childRef.onSearch()
+        this.childRef.refreshTable()
       );
     }
   };
@@ -250,7 +260,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.confirmChildBill(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('确定成功！');
-            this.childRef.onSearch();
+            this.childRef.refreshTable();
             // this.onSearch;
           } else {
             message.error(response.message);
@@ -262,7 +272,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           childSelectRows,
           this.confirmChildBill,
           // this.onSearch
-          this.childRef.onSearch()
+          this.childRef.refreshTable()
         );
       }
     }
@@ -304,7 +314,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           if (response.success) {
             message.success('确认成功！');
             // this.onSearch();
-            this.childRef.onSearch();
+            this.childRef.refreshTable();
           } else {
             message.error(response.message);
           }
@@ -314,7 +324,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单对账确认',
           childSelectRows,
           this.reconciliationChildBill,
-          this.childRef.onSearch()
+          this.childRef.refreshTable()
         );
       }
     }
@@ -351,7 +361,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.invoiceConfirmChild(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('确认成功！');
-            this.childRef.onSearch();
+            this.childRef.refreshTable();
           } else {
             message.error(response.message);
           }
@@ -361,7 +371,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单对账确认',
           childSelectRows,
           this.invoiceConfirmChild,
-          this.childRef.onSearch()
+          this.childRef.refreshTable()
         );
       }
     }
@@ -398,7 +408,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.verificationChild(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('核销成功！');
-            this.childRef.onSearch();
+            this.childRef.refreshTable();
           } else {
             message.error(response.message);
           }
@@ -408,7 +418,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单核销',
           childSelectRows,
           this.verificationChild,
-          this.childRef.onSearch()
+          this.childRef.refreshTable()
         );
       }
     }
@@ -420,6 +430,21 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
 
   verificationChild = async child => {
     return await verification('child', child.UUID);
+  };
+
+  //付款申请
+  applyPayment = () => {
+    this.setState({ apLoading: true });
+    const childSelectRows = this.childRef?.state.selectedRows;
+    if (childSelectRows.length == 0) {
+      message.error('请选择需要发起付款申请的子帐单！');
+      return;
+    }
+    let uuid = [];
+    childSelectRows.map(data => {
+      uuid.push(data.UUID);
+    });
+    console.log('uuid', uuid);
   };
 
   //付款
@@ -445,7 +470,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.paymentChild(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('核销成功！');
-            this.childRef.onSearch();
+            this.childRef.refreshTable();
           } else {
             message.error(response.message);
           }
@@ -455,7 +480,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单付款',
           childSelectRows,
           this.paymentChild,
-          this.childRef.onSearch()
+          this.childRef.refreshTable()
         );
       }
     }
@@ -492,7 +517,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         this.completedChild(childSelectRows[0]).then(response => {
           if (response.success) {
             message.success('归档成功！');
-            this.childRef.onSearch();
+            this.childRef.refreshTable();
           } else {
             message.error(response.message);
           }
@@ -502,7 +527,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           '子账单归档',
           childSelectRows,
           this.completedChild,
-          this.childRef.onSearch()
+          this.childRef.refreshTable()
         );
       }
     }

@@ -1,6 +1,6 @@
 import { routerRedux } from 'dva/router';
 import { getPageQuery } from '@/utils/utils';
-import { cacheLogin, clearLogin, loginKey } from '@/utils/LoginContext';
+import { cacheLogin, clearLogin, loginKey, loginOrg } from '@/utils/LoginContext';
 import { setCookie } from '@/utils/Cookies';
 import { stringify } from 'qs';
 import {
@@ -12,11 +12,18 @@ import {
   switchOrg,
   resetPassword,
   dingLogin,
-  dingLogin1
+  dingLogin1,
 } from '@/services/account/Login';
 import { reloadAuthorized } from '@/utils/Authorized';
 import { SingletonBloomFilter } from '@/utils/authority';
-import { getPrintRpl, getPrintLabel, getPrintElectronic, setPrintRpl, setPrintLabel, setPrintElectronic } from '@/utils/PrintTemplateStorage';
+import {
+  getPrintRpl,
+  getPrintLabel,
+  getPrintElectronic,
+  setPrintRpl,
+  setPrintLabel,
+  setPrintElectronic,
+} from '@/utils/PrintTemplateStorage';
 export default {
   namespace: 'login',
   state: {
@@ -24,7 +31,7 @@ export default {
   },
   effects: {
     *accountLogin({ payload, callback }, { call, put }) {
-      yield put({ type: 'changeSubmitting', payload: true, });
+      yield put({ type: 'changeSubmitting', payload: true });
       const response = yield call(accountLogin, payload);
       if (response && response.success) {
         cacheLogin(response.data);
@@ -49,9 +56,10 @@ export default {
             return;
           }
         }
-        const passwordUsable = payload.loginAccount != payload.password
-          && payload.loginAccount.indexOf(payload.password) == -1;
-        setCookie("passwordUsable", passwordUsable ? 'Y' : 'N', 1);
+        const passwordUsable =
+          payload.loginAccount != payload.password &&
+          payload.loginAccount.indexOf(payload.password) == -1;
+        setCookie('passwordUsable', passwordUsable ? 'Y' : 'N', 1);
         yield put(routerRedux.replace('/'));
       } else {
         yield put({
@@ -113,7 +121,7 @@ export default {
       });
     },
     *dingLogin({ payload, callback }, { call, put }) {
-      yield put({ type: 'changeSubmitting', payload: true, });
+      yield put({ type: 'changeSubmitting', payload: true });
       const response = yield call(dingLogin, payload);
       if (response && response.success) {
         cacheLogin(response.data);
@@ -152,7 +160,7 @@ export default {
       if (callback) callback(response);
     },
     *dingLogin1({ payload, callback }, { call, put }) {
-      yield put({ type: 'changeSubmitting', payload: true, });
+      yield put({ type: 'changeSubmitting', payload: true });
       const response = yield call(dingLogin1, payload);
       if (response && response.success) {
         cacheLogin(response.data);
@@ -203,6 +211,7 @@ export default {
       let printRpl = getPrintRpl();
       let printLabel = getPrintLabel();
       let printElectronic = getPrintElectronic();
+      let orgType = loginOrg().type;
       clearLogin();
       SingletonBloomFilter.destory();
       reloadAuthorized();
@@ -211,7 +220,7 @@ export default {
       setPrintElectronic(printElectronic);
       yield put(
         routerRedux.push({
-          pathname: '/user/login',
+          pathname: orgType == 'BMS' ? '/bms/login' : '/user/login',
         })
       );
     },
@@ -247,7 +256,9 @@ export default {
         type: 'changeSubmitting',
         payload: false,
       });
-      if (callback) { callback(response); }
+      if (callback) {
+        callback(response);
+      }
     },
     *modifyNewPassword({ payload, callback }, { call, put }) {
       yield put({
@@ -259,7 +270,9 @@ export default {
         type: 'changeSubmitting',
         payload: false,
       });
-      if (callback) { callback(response); }
+      if (callback) {
+        callback(response);
+      }
     },
 
     *switchOrg({ payload, callback }, { call, put }) {
@@ -281,7 +294,9 @@ export default {
         reloadAuthorized();
         yield put(routerRedux.push('/'));
       }
-      if (callback) { callback(response); }
+      if (callback) {
+        callback(response);
+      }
     },
 
     *forgetPassword({ payload, callback }, { call, put }) {
@@ -294,12 +309,16 @@ export default {
         type: 'changeSubmitting',
         payload: false,
       });
-      if (callback) { callback(response); }
+      if (callback) {
+        callback(response);
+      }
     },
 
     *resetPassword({ payload, callback }, { call, put }) {
       const response = yield call(resetPassword, payload);
-      if (callback) { callback(response); }
+      if (callback) {
+        callback(response);
+      }
     },
   },
 

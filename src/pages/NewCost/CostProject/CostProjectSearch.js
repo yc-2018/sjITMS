@@ -1,18 +1,8 @@
 import React, { PureComponent } from 'react';
-import { Table, Button, Input, Col, Row, Popconfirm, message, Modal, List, Badge } from 'antd';
-import { colWidth } from '@/utils/ColWidth';
-import OperateCol from '@/pages/Component/Form/OperateCol';
+import { Button, Modal, List } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import StandardTable from '@/components/StandardTable';
-import { DndProvider, DragSource, DropTarget } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
-// import FormPanel from '../Component/Form/FormPanel';
-import FormPanel from '@/pages/Component/Form/FormPanel';
-import CFormItem from '@/pages/Component/Form/CFormItem';
-// import CreatePageModal from '../Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
-// import QuickView from '../Component/RapidDevelopment/OnlForm/QuickViewPageDefault';
-import { getFile } from '@/services/cost/Cost';
+import { getFile } from '@/services/bms/Cost';
 
 @connect(({ quick, loading }) => ({
   quick,

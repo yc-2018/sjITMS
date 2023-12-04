@@ -54,7 +54,7 @@ export default class CostPlanView extends QuickViewPage {
    */
 
   isShow = item => {
-    item = this.entity.cost_plan[0];
+    item = this.entity.COST_PLAN[0];
     if (item != 'false' && item.ACCESSORY_NAME) {
       let downloadsName = item.ACCESSORY_NAME.split(',');
       let downloads = [];
@@ -85,7 +85,7 @@ export default class CostPlanView extends QuickViewPage {
   downloadC = e => {
     const { downloads } = this.state;
     let downloadsName = [];
-    let item = this.entity.cost_plan[0];
+    let item = this.entity.COST_PLAN[0];
     if (item != 'false' && item.ACCESSORY_NAME) {
       downloadsName = item.ACCESSORY_NAME.split(',');
     }

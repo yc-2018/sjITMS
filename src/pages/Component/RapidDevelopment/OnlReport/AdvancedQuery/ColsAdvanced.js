@@ -7,6 +7,8 @@ import {
   SimpleRadio,
   SimpleAutoComplete,
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
+import ControlledRangePicker
+  from "@/pages/Component/RapidDevelopment/OnlReport/SimpleQuery/ControlledRangePicker/ControlledRangePicker";
 
 const { RangePicker } = DatePicker;
 const { Option } = Select;
@@ -113,6 +115,9 @@ export default class ColsAdvanced extends Component {
             data.val = val[index].join('||');
           }
           //日期格式化
+          if (searchField.searchShowtype == 'datemonth' && val instanceof Array) {
+            data.val = val[index].map(x => x.format('YYYY-MM')).join('||');
+          }
           if (searchField.searchShowtype == 'datetime' && val instanceof Array) {
             data.val = val[index].map(x => x.format('YYYY-MM-DD HH:mm:ss')).join('||');
           }
@@ -171,6 +176,10 @@ export default class ColsAdvanced extends Component {
       : '';
     if (condition === 'like') return <Input placeholder={'请输入' + searchField.fieldTxt} />;
     switch (searchField.searchShowtype) {
+      case 'datemonth':
+        return (
+          <ControlledRangePicker
+          />);
       case 'date':
         return <RangePicker style={{ width: '100%' }} />;
       case 'datetime':

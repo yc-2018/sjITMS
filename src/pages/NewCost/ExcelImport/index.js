@@ -2,16 +2,21 @@ import React, { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { formatMessage } from 'umi/locale';
 import styles from './index.less';
-import { Steps, Icon, Button, message, Modal, Select } from 'antd';
-import { ExclamationCircleFilled } from '@ant-design/icons';
+import { Steps, Button, message, Modal, } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import NavigatorPanel from '@/components/MyComponent/NavigatorPanel';
 import PageDetail from '@/components/MyComponent/PageDetail';
 import SelectIndex from './Select';
 import Result from './Result';
+import { DatePicker  } from 'antd';
+import { Radio } from 'antd';
+import moment from 'moment';
+
+
 
 const Step = Steps.Step;
 const { confirm } = Modal;
+const {  MonthPicker } = DatePicker;
+const defaultMonth = moment().subtract(1, 'months')
 /**
  * title{string}:提供页眉标题
  * templateType{string}:提供下载模板
@@ -39,7 +44,11 @@ class ExcelImport extends PureComponent {
     fileKey: '',
     fileName: '',
     isModalOpen: false,
-    importType: '',
+    importType: '1',
+    //导入数据的月份
+    importMonth:defaultMonth,
+    //是否为周期计费表
+    disabledBoolean:this.props.costForm.datatype !== 'Periodicity'
   };
 
   /**
@@ -49,6 +58,11 @@ class ExcelImport extends PureComponent {
     this.setState({ isModalOpen: true });
     // const current = this.state.current + 1;
     // this.setState({ current });
+    this.setState({importType:'1'})
+    this.setState({importMonth:defaultMonth})
+    if(this.state.disabledBoolean){
+      this.setState({importMonth:null})
+    }
   };
 
   /**
@@ -71,40 +85,6 @@ class ExcelImport extends PureComponent {
     });
   };
 
-  // downloadFile = (sUrl) => {
-  //   // IOS devices do not support downloading. We have to inform user about this.
-  //   if (/(iP)/g.test(navigator.userAgent)) {
-  //     message.warn('Your device does not support files downloading. Please try again in desktop browser.');
-  //     return false;
-  //   }
-
-  //   let isChrome = navigator.userAgent.toLowerCase().indexOf('chrome') > -1;
-  //   let isSafari = navigator.userAgent.toLowerCase().indexOf('safari') > -1;
-  //   // If in Chrome or Safari - download via virtual link click
-  //   if (isChrome || isSafari) {
-  //     // Creating new link node.
-  //     var link = document.createElement('a');
-  //     link.href = sUrl;
-
-  //     if (link.download !== undefined) {
-  //       // Set HTML5 download attribute. This will prevent file from opening if supported.
-  //       var fileName = sUrl.substring(sUrl.lastIndexOf('/') + 1, sUrl.length);
-  //       link.download = fileName;
-  //     }
-
-  //     // Dispatching click event.
-  //     if (document.createEvent) {
-  //       var e = document.createEvent('MouseEvents');
-  //       e.initEvent('click', true, true);
-  //       link.dispatchEvent(e);
-  //       return true;
-  //     }
-  //   }
-
-  //   window.open(sUrl, '_self');
-  //   return true;
-  // }
-
   //适配后端 20230406
   downloadFile = (key, isDataBase) => {
     const { dispatch } = this.props;
@@ -123,10 +103,24 @@ class ExcelImport extends PureComponent {
     });
   };
 
-  render() {
-    const { title, uploadType, uploadParams, cancelCallback, dispatch, templateType } = this.props;
+  //禁止点击后面的月份
+  disabledFutureMonths = current => {
+    // 获取当前月的开始时间（1号的凌晨）
+    const currentMonthStart = new Date(current.year(), current.month(), 1);
+    // 获取当前时间
+    const currentDate = new Date();
 
-    const { current, fileKey, fileName, isModalOpen, importType } = this.state;
+    // 如果当前月的开始时间在当前时间之后，禁用该月
+    return currentMonthStart > currentDate;
+  };
+  selectMonth = (date,dateString)=>{
+    this.setState({importMonth:date})
+  }
+
+  render() {
+    const { title, uploadType, uploadParams, cancelCallback, dispatch, templateType} = this.props;
+
+    const { current, fileKey, fileName, isModalOpen, importType,importMonth,disabledBoolean} = this.state;
 
     const pageTitle = formatMessage({ id: 'common.excelImport.title' }) + title;
 
@@ -179,7 +173,7 @@ class ExcelImport extends PureComponent {
     } else {
       return (
         <PageHeaderWrapper>
-          <Modal
+            <Modal
             title="导入选项"
             visible={isModalOpen}
             onOk={() => {
@@ -194,18 +188,19 @@ class ExcelImport extends PureComponent {
               this.setState({ isModalOpen: false });
             }}
           >
-            <Select
-              defaultValue={'0'}
-              style={{ width: '80%' }}
-              placeholder="请选择导入类型"
-              onChange={value => {
-                this.setState({ importType: { importType: value } });
-              }}
-            >
-              <Option value="0">全量导入</Option>
-              <Option value="1">导入时全表删除</Option>
-              {/* <Option value="2">根据主键进行覆盖</Option> */}
-            </Select>
+                <Radio.Group  style={{marginLeft: 30}} value={importType} buttonStyle="solid" onChange={value => {this.setState({ importType:value.target.value})}}>
+                <Radio value="1">覆盖导入</Radio>
+                <Radio value="2">增量更新模式</Radio>
+              </Radio.Group>
+            <MonthPicker renderExtraFooter={() => '请选择月份'}
+                         value={importMonth}
+                         disabledDate={this.disabledFutureMonths}
+                         placeholder="请选择导入数据的月份"
+                         style={{marginLeft: 50}}
+                         onChange={this.selectMonth}
+                         allowClear={false}
+                         disabled={disabledBoolean}
+            />
           </Modal>
           <PageDetail {...pageDetailProps}>
             <div className={styles.excelImport}>
@@ -215,7 +210,7 @@ class ExcelImport extends PureComponent {
               </Steps>
               <div className="steps-content">
                 {current === 0 && <SelectIndex {...selectProps} />}
-                {current === 1 && <Result {...resultProps} importType={importType} />}
+                {current === 1 && <Result {...resultProps} importType={importType} importMonth={disabledBoolean? null : importMonth.format("YYYY-MM")} />}
               </div>
             </div>
           </PageDetail>

@@ -273,7 +273,7 @@ export default class SimpleAutoComplete extends Component {
   setSourceData = sourceData => {
     //多选保留已选中数据源
     const { value } = this.state;
-    const { multipleSplit, valueField, mode } = this.props;
+    const { multipleSplit, valueField, mode ,duplicate} = this.props;
     const oldData =
       this.state.sourceData && value && mode == 'multiple' && multipleSplit
         ? this.state.sourceData.filter(
@@ -281,16 +281,27 @@ export default class SimpleAutoComplete extends Component {
           )
         : [];
     sourceData = [...sourceData, ...oldData];
+   if(duplicate){
+    var dup = duplicate.split(",");
+    sourceData = uniqWith(sourceData,(arr,ot)=>{
+      if(isEqual(dup.reduce((a,cur,i)=>{a[cur] = arr[cur];return a;},{}),
+        dup.reduce((a,cur,i)=>{a[cur] = ot[cur];return a;},{}))){
+        return true;
+      }
+      return false;
+    });
+   }else{
     sourceData = uniqBy(sourceData, valueField);
-    sourceData = uniqWith(sourceData, isEqual);
-    this.setState({ sourceData: sourceData });
-    if (this.props.onSourceDataChange) {
-      this.props.onSourceDataChange(
-        sourceData,
-        this.getOptions().find(x => x.value == this.state.value)?.data
-      );
-      return;
-    }
+   }
+   sourceData = uniqWith(sourceData, isEqual);
+   this.setState({ sourceData: sourceData });
+   if (this.props.onSourceDataChange) {
+     this.props.onSourceDataChange(
+       sourceData,
+       this.getOptions().find(x => x.value == this.state.value)?.data
+     );
+     return;
+   }
   };
 
   loadData = async queryParams => {

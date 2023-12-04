@@ -128,4 +128,8 @@ export const ImportTemplateType = {
     name: 'COSTSUBSIDY',
     caption: '费用补贴项导入',
   },
+  DRIVERFEE: {
+    name: 'DRIVERFEE',
+    caption: '司机路桥费用导入',
+  },
 };

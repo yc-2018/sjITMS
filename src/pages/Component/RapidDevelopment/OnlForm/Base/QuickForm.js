@@ -114,7 +114,7 @@ export default class QuickForm extends PureComponent {
         this.drawTab(e);
         return e.component;
       case 'import':
-        component = <ExcelImport {...props} />;
+        component = <ExcelImport {...props} cancelCallback={() => this.switchTab('query')} />;
         e = {
           component: component,
           showPageNow: showPageNow,

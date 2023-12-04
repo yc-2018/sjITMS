@@ -20,6 +20,8 @@ import {
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
 import { loginOrg, loginCompany } from '@/utils/LoginContext';
+import ControlledRangePicker
+  from "@/pages/Component/RapidDevelopment/OnlReport/SimpleQuery/ControlledRangePicker/ControlledRangePicker";
 const { RangePicker } = DatePicker;
 
 @Form.create()
@@ -72,6 +74,9 @@ export default class SimpleQuery extends SearchForm {
       let val = searchParam[param];
       if (val == null || val == undefined) {
         continue;
+      }
+      if (field.searchShowtype == 'datemonth' && val instanceof Array) {
+        val = val.map(x => x.format('YYYY-MM')).join('||');
       }
       if (field.searchShowtype == 'datetime' && val instanceof Array) {
         val = val.map(x => x.format('YYYY-MM-DD HH:mm:ss')).join('||');
@@ -183,6 +188,11 @@ export default class SimpleQuery extends SearchForm {
       searchProperties.linkFilter = this.state.runTimeProps[searchField.fieldName];
     }
     switch (searchField.searchShowtype) {
+      case 'datemonth':
+        return (
+          <ControlledRangePicker
+          />
+        );
       case 'date':
         return <RangePicker showToday={true} style={{ width: '100%' }} />;
       case 'datetime':

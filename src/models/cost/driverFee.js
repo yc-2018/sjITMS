@@ -2,13 +2,13 @@
  * @Author: Liaorongchang
  * @Date: 2023-09-13 17:31:38
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-13 17:35:45
+ * @LastEditTime: 2023-11-01 16:11:07
  * @version: 1.0
  */
-import { batchImport } from '@/services/bms/CostExProject';
+import { batchImport } from '@/services/bms/DriverFee';
 
 export default {
-  namespace: 'costSubsidy',
+  namespace: 'driverFee',
   state: {},
   effects: {
     *batchImport({ payload, callback }, { call, put }) {

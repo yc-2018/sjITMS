@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-20 10:41:30
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-22 15:20:56
+ * @LastEditTime: 2023-10-27 15:51:32
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -33,12 +33,12 @@ export default class BasicDtlCreatPage extends QuickCreatePage {
       message.error('表不存在，请核实后再操作');
       return;
     }
-    if (this.entity['cost_form_field'] == undefined) {
-      this.entity['cost_form_field'] = [];
+    if (this.entity['COST_FORM_FIELD'] == undefined) {
+      this.entity['COST_FORM_FIELD'] = [];
     }
     let line = 1;
     response.data.map(data => {
-      this.entity['cost_form_field'].push({
+      this.entity['COST_FORM_FIELD'].push({
         LINE: line,
         DB_FIELD_NAME: data.columnName,
         DB_FIELD_TXT: data.comments,

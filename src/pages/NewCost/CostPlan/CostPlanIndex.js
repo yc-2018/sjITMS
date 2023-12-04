@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-06-26 14:41:13
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-09-23 17:11:24
+ * @LastEditTime: 2023-10-24 17:06:35
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -14,7 +14,7 @@ import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import CostPlanCard from './CostPlanCard';
-import { getPlanInfo } from '@/services/cost/CostPlan';
+import { getPlanInfo } from '@/services/bms/CostPlan';
 import { queryDictByCode } from '@/services/quick/Quick';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
@@ -58,7 +58,7 @@ export default class CostPlanIndex extends PureComponent {
   };
 
   onClickCalculation = e => {
-    this.props.switchTab('import', { entityUuid: e.uuid, e });
+    this.props.switchTab('calculation', { entityUuid: e.uuid, e });
   };
 
   onClickSelectBill = e => {
