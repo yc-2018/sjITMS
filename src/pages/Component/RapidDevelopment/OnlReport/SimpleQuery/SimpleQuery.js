@@ -75,10 +75,13 @@ export default class SimpleQuery extends SearchForm {
       if (val == null || val == undefined) {
         continue;
       }
+      if (field.searchShowtype == 'datemonth' && val instanceof Array) {
+        val = val.map(x => x.format('YYYY-MM')).join('||');
+      }
       if (field.searchShowtype == 'datetime' && val instanceof Array) {
         val = val.map(x => x.format('YYYY-MM-DD HH:mm:ss')).join('||');
       }
-      if (field.searchShowtype == 'date' || field.searchShowtype == 'datemonth' && val instanceof Array) {
+      if (field.searchShowtype == 'date' && val instanceof Array) {
         val = val.map(x => x.format('YYYY-MM-DD')).join('||');
       }
       if (field.searchShowtype == 'auto_complete' || field.searchShowtype == 'sel_tree') {
