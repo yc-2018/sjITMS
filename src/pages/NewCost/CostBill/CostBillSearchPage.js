@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-04 11:01:18
+ * @LastEditTime: 2023-12-05 10:49:10
  * @version: 1.0
  */
 import React from 'react';
@@ -22,6 +22,7 @@ import {
   portChildBill,
   pushBill,
   tmConfirm,
+  rejectInvoice
 } from '@/services/bms/CostBill';
 import CostChildBillSearchPage from '@/pages/NewCost/CostChildBill/CostChildBillSearchPage';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
@@ -436,12 +437,18 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
   };
 
   rejectInvoice = () => {
+    const childSelectRows = this.childRef?.state.selectedRows;
+    if(childSelectRows.length > 1 || childSelectRows.length == 0){
+      message.error('请仅选择一条需要驳回的子帐单记录！');
+      return;
+    }
     this.setState({ rejectModal: true });
   };
 
-  handleRejectInvoice = () => {
+  handleRejectInvoice = async () => {
     const { rejectMessage } = this.state;
-    console.log('rejectMessage', rejectMessage);
+    const childSelectRows = this.childRef?.state.selectedRows;
+    await rejectInvoice(childSelectRows[0].UUID,rejectMessage)
     this.setState({ rejectModal: false });
   };
 
@@ -692,8 +699,6 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
             this.handleRejectInvoice();
           }}
         >
-          {/* 驳回原因：
-          <Input placeholder={'驳回原因'} /> */}
           <Row justify="center" style={{ marginLeft: '2rem' }}>
             <Col span={5} style={{ fontSize: '1rem' }}>
               驳回原因：
