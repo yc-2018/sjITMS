@@ -2,11 +2,11 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-11-16 12:04:31
+ * @LastEditTime: 2023-12-04 11:01:18
  * @version: 1.0
  */
 import React from 'react';
-import { Form, Button, Modal, Popconfirm, message, Spin } from 'antd';
+import { Form, Button, Modal, Popconfirm, message, Spin, Input, Row, Col } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import CostBillViewForm from '@/pages/NewCost/CostBill/CostBillViewForm';
@@ -21,6 +21,7 @@ import {
   checklistConfirm,
   portChildBill,
   pushBill,
+  tmConfirm,
 } from '@/services/bms/CostBill';
 import CostChildBillSearchPage from '@/pages/NewCost/CostChildBill/CostChildBillSearchPage';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
@@ -42,6 +43,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     showCreate: false,
     isExMerge: true,
     apLoading: false,
+    rejectModal: false,
   };
 
   onView = record => {};
@@ -119,7 +121,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         >
           账单确认
         </Button>
-
+        <Button>运管审核</Button>
         <Button
           onClick={() => {
             this.handlePushBill();
@@ -127,7 +129,6 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         >
           子账单推送
         </Button>
-
         <Button
           onClick={() => {
             this.handleReconciliation();
@@ -141,6 +142,14 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           }}
         >
           票据确认
+        </Button>
+        <Button
+          type="danger"
+          onClick={() => {
+            this.rejectInvoice();
+          }}
+        >
+          票据驳回
         </Button>
         <Button
           onClick={() => {
@@ -278,6 +287,47 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     }
   };
 
+  //运管确认
+  handleTmConfirm = () => {
+    const { selectedRows } = this.state;
+    const childSelectRows = this.childRef?.state.selectedRows;
+    const verify = this.billVerify(selectedRows, childSelectRows);
+    if (!verify) return;
+
+    if (selectedRows.length > 0) {
+      if (selectedRows.length > 1) {
+        message.error('总账单操作只能操作单条记录！');
+        return;
+      }
+      this.tmConfirmBill(selectedRows[0].UUID).then(response => {
+        if (response.success) {
+          message.success('确定成功！');
+          this.onSearch();
+        }
+      });
+    } else {
+      if (childSelectRows.length == 1) {
+        this.tmConfirmChildBill(childSelectRows[0]).then(response => {
+          if (response.success) {
+            message.success('确定成功！');
+            this.childRef.refreshTable();
+            // this.onSearch;
+          } else {
+            message.error(response.message);
+          }
+        });
+      } else {
+        this.batchProcessConfirmRef.show(
+          '子账单确认',
+          childSelectRows,
+          this.tmConfirmChildBill,
+          // this.onSearch
+          this.childRef.refreshTable()
+        );
+      }
+    }
+  };
+
   pushBill = async child => {
     return await pushBill(child.UUID);
   };
@@ -288,6 +338,14 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
 
   confirmChildBill = async child => {
     return await billConfirm('child', child.UUID);
+  };
+
+  tmConfirmBill = async uuid => {
+    return await tmConfirm('parent', uuid);
+  };
+
+  tmConfirmChildBill = async child => {
+    return await tmConfirm('child', child.UUID);
   };
 
   //对账确认
@@ -375,6 +433,16 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         );
       }
     }
+  };
+
+  rejectInvoice = () => {
+    this.setState({ rejectModal: true });
+  };
+
+  handleRejectInvoice = () => {
+    const { rejectMessage } = this.state;
+    console.log('rejectMessage', rejectMessage);
+    this.setState({ rejectModal: false });
   };
 
   invoiceConfirm = async uuid => {
@@ -581,7 +649,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
 
   // //绘制上方按钮
   drawActionButton = () => {
-    const { isModalVisible, e } = this.state;
+    const { isModalVisible, e, rejectModal } = this.state;
     return (
       <>
         <Button
@@ -613,6 +681,32 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
             {...this.props}
             location={{ pathname: '1' }}
           />
+        </Modal>
+        <Modal
+          title={'驳回原因'}
+          visible={rejectModal}
+          onCancel={() => {
+            this.setState({ rejectModal: false });
+          }}
+          onOk={() => {
+            this.handleRejectInvoice();
+          }}
+        >
+          {/* 驳回原因：
+          <Input placeholder={'驳回原因'} /> */}
+          <Row justify="center" style={{ marginLeft: '2rem' }}>
+            <Col span={5} style={{ fontSize: '1rem' }}>
+              驳回原因：
+            </Col>
+            <Col span={16}>
+              <Input
+                placeholder={'驳回原因'}
+                onChange={val => {
+                  this.setState({ rejectMessage: val.target.value });
+                }}
+              />
+            </Col>
+          </Row>
         </Modal>
       </>
     );
