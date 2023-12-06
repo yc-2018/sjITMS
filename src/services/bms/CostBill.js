@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-09-07 11:24:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-11-29 16:42:15
+ * @LastEditTime: 2023-12-05 10:51:10
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -38,6 +38,14 @@ export async function billConfirm(type, billUuid) {
     method: 'POST',
   });
 }
+
+//账单确认
+export async function tmConfirm(type, billUuid) {
+  return request(`/bms-cost/bms-cost/newCostBill/tmConfirm?type=${type}&billUuid=${billUuid}`, {
+    method: 'POST',
+  });
+}
+
 //对账确认
 export async function reconciliation(type, billUuid) {
   return request(
@@ -50,6 +58,12 @@ export async function reconciliation(type, billUuid) {
 //票据确认
 export async function invoice(type, billUuid) {
   return request(`/bms-cost/bms-cost/newCostBill/invoice?type=${type}&billUuid=${billUuid}`, {
+    method: 'POST',
+  });
+}
+//票据驳回
+export async function rejectInvoice(billUuid,rejectMessage) {
+  return request(`/bms-cost/bms-cost/newCostBill/rejectInvoice?billUuid=${billUuid}&rejectMessage=${rejectMessage}`, {
     method: 'POST',
   });
 }
