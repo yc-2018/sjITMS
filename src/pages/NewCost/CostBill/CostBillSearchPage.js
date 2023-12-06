@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-05 10:49:10
+ * @LastEditTime: 2023-12-06 18:30:25
  * @version: 1.0
  */
 import React from 'react';
@@ -22,7 +22,7 @@ import {
   portChildBill,
   pushBill,
   tmConfirm,
-  rejectInvoice
+  rejectInvoice,
 } from '@/services/bms/CostBill';
 import CostChildBillSearchPage from '@/pages/NewCost/CostChildBill/CostChildBillSearchPage';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
@@ -122,7 +122,13 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         >
           账单确认
         </Button>
-        <Button>运管审核</Button>
+        <Button
+          onClick={() => {
+            this.handleTmConfirm();
+          }}
+        >
+          运管审核
+        </Button>
         <Button
           onClick={() => {
             this.handlePushBill();
@@ -302,7 +308,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
       }
       this.tmConfirmBill(selectedRows[0].UUID).then(response => {
         if (response.success) {
-          message.success('确定成功！');
+          message.success('审核成功！');
           this.onSearch();
         }
       });
@@ -310,19 +316,17 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
       if (childSelectRows.length == 1) {
         this.tmConfirmChildBill(childSelectRows[0]).then(response => {
           if (response.success) {
-            message.success('确定成功！');
+            message.success('审核成功！');
             this.childRef.refreshTable();
-            // this.onSearch;
           } else {
             message.error(response.message);
           }
         });
       } else {
         this.batchProcessConfirmRef.show(
-          '子账单确认',
+          '运管审核',
           childSelectRows,
           this.tmConfirmChildBill,
-          // this.onSearch
           this.childRef.refreshTable()
         );
       }
@@ -438,7 +442,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
 
   rejectInvoice = () => {
     const childSelectRows = this.childRef?.state.selectedRows;
-    if(childSelectRows.length > 1 || childSelectRows.length == 0){
+    if (childSelectRows.length > 1 || childSelectRows.length == 0) {
       message.error('请仅选择一条需要驳回的子帐单记录！');
       return;
     }
@@ -448,7 +452,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
   handleRejectInvoice = async () => {
     const { rejectMessage } = this.state;
     const childSelectRows = this.childRef?.state.selectedRows;
-    await rejectInvoice(childSelectRows[0].UUID,rejectMessage)
+    await rejectInvoice(childSelectRows[0].UUID, rejectMessage);
     this.setState({ rejectModal: false });
   };
 
