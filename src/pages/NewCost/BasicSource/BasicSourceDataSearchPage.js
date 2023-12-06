@@ -56,6 +56,8 @@ export default class BasicSourceDataSearchPage extends SearchPage {
 
   componentDidMount() {
     this.queryColumns();
+    //组件熏染以后，将getData函数传给父组件
+    this.props.setFunc(this);
   }
 
   //获取列配置
