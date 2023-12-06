@@ -210,7 +210,7 @@ class ExcelImport extends PureComponent {
               </Steps>
               <div className="steps-content">
                 {current === 0 && <SelectIndex {...selectProps} />}
-                {current === 1 && <Result {...resultProps} importType={importType} importMonth={disabledBoolean? null : importMonth.format("YYYY-MM")} />}
+                {current === 1 && <Result {...resultProps} importType={importType} importMonth={disabledBoolean? null : importMonth.format("YYYY-MM")} getFunc={this.props.refDataSource}/>}
               </div>
             </div>
           </PageDetail>
