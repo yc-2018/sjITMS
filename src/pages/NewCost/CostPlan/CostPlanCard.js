@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-14 15:44:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-07 15:37:31
+ * @LastEditTime: 2023-12-07 15:48:36
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -357,11 +357,12 @@ export default class CostPlanCard extends Component {
             >
               {costPlan.schemeName}
               <Tag
-                color="#3B77E3"
+                // color="#3B77E3"
+                color="blue"
                 style={{
                   textAlign: 'right',
                   fontWeight: 'normal',
-                  fontSize: '0.7rem',
+                  fontSize: '0.8rem',
                   marginLeft: '0.3rem',
                 }}
               >
@@ -389,7 +390,7 @@ export default class CostPlanCard extends Component {
             <Col span={4} style={{ textAlign: 'right' }}>
               生效期：
             </Col>
-            <Col span={8}>{costPlan.organizationname}</Col>
+            <Col span={8}>{costPlan.effectivedate}</Col>
             <Col span={4} style={{ textAlign: 'right' }}>
               到效期：
             </Col>
