@@ -58,3 +58,10 @@ export async function updateConfigInfo(payload) {
     body: payload,
   });
 }
+
+//根据月份获取方案进度
+export async function getPlanOperateByMonth(uuid, month) {
+  return request(`/bms-cost/bms-cost/costplan/getPlanOperateByMonth?uuid=${uuid}&month=${month}`, {
+    method: 'GET',
+  });
+}

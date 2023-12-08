@@ -2,13 +2,13 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-14 15:44:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-07 15:48:36
+ * @LastEditTime: 2023-12-08 08:54:51
  * @version: 1.0
  */
 import React, { Component } from 'react';
 import {
   Button,
-  Card,
+  DatePicker,
   Col,
   Steps,
   message,
@@ -26,27 +26,32 @@ import {
   Divider,
 } from 'antd';
 import { copyPlan } from '@/services/bms/Cost';
-import { apply } from '@/services/bms/CostPlan';
+import { apply, getPlanOperateByMonth } from '@/services/bms/CostPlan';
 import { sourceAbnormal, remind } from '@/services/bms/BasicSource';
 import { updateEntity } from '@/services/quick/Quick';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import style from './CostPlanCard.less';
+import moment from 'moment';
 
 const { Step } = Steps;
 const { confirm } = Modal;
+const { MonthPicker } = DatePicker;
 @Form.create()
 export default class CostPlanCard extends Component {
   state = {
-    current: this.props.e.current,
+    // current: this.props.e.current,
+    // sourceConfirmData: this.props.e.sourceConfirmData,
+    // costPlan: this.props.e.costPlan,
+    e: this.props.e,
     isModalOpen: false,
     dataSourceModal: false,
     changeStat: '',
     reason: '',
+    month: new Date().getFullYear() + '-' + new Date().getMonth(),
   };
 
-  drawBody = costPlan => {
-    const { current } = this.state;
-    let status = this.props.e.current;
+  drawBody = (costPlan, current, month, e) => {
+    const monthFormat = 'YYYY-MM';
     const stepStyle = {
       // marginBottom: 15,
       boxShadow: '0px -1px 0 0 #e8e8e8 inset',
@@ -54,7 +59,17 @@ export default class CostPlanCard extends Component {
     };
     return (
       <div>
-        <div style={{ color: '#8c8c8c' }}>当前月流程：</div>
+        <div style={{ fontSize: '0.8rem' }}>
+          当前月流程：
+          <MonthPicker
+            size="small"
+            defaultValue={moment(month, monthFormat)}
+            format={monthFormat}
+            onChange={(date, dateString) => {
+              this.handleChangeMonth(costPlan.uuid, dateString);
+            }}
+          />
+        </div>
         <Steps
           type="navigation"
           current={current}
@@ -63,10 +78,19 @@ export default class CostPlanCard extends Component {
           size="small"
           key={costPlan.uuid}
         >
-          <Step status={status > 0 ? 'finish' : 'process'} title="数据确认" />
-          <Step status={status > 1 ? 'finish' : status < 1 ? 'wait' : 'process'} title="费用计算" />
-          <Step status={status > 2 ? 'finish' : status < 2 ? 'wait' : 'process'} title="费用对账" />
-          <Step status={status > 3 ? 'finish' : status < 3 ? 'wait' : 'process'} title="费用核销" />
+          <Step status={current > 0 ? 'finish' : 'process'} title="数据确认" />
+          <Step
+            status={current > 1 ? 'finish' : current < 1 ? 'wait' : 'process'}
+            title="费用计算"
+          />
+          <Step
+            status={current > 2 ? 'finish' : current < 2 ? 'wait' : 'process'}
+            title="费用对账"
+          />
+          <Step
+            status={current > 3 ? 'finish' : current < 3 ? 'wait' : 'process'}
+            title="费用核销"
+          />
         </Steps>
         <div
           style={{
@@ -74,15 +98,21 @@ export default class CostPlanCard extends Component {
             height: '7.7rem',
           }}
         >
-          {this.drawDtl()}
+          {this.drawDtl(e, current)}
         </div>
       </div>
     );
   };
 
-  drawDtl = () => {
-    const { current } = this.state;
-    const { sourceConfirmData, costCalculation, costConfirm, costConsumed } = this.props.e;
+  handleChangeMonth = async (uuid, dateString) => {
+    const response = await getPlanOperateByMonth(uuid, dateString);
+    if (response && response.success) {
+      this.setState({ e: response.data });
+    }
+  };
+
+  drawDtl = (data, current) => {
+    const { sourceConfirmData, costCalculation, costConfirm, costConsumed } = data;
     if (current == 0) {
       return (
         <div style={{ position: 'relative' }}>
@@ -238,7 +268,12 @@ export default class CostPlanCard extends Component {
   };
 
   onCurrentChange = current => {
-    this.setState({ current });
+    const { e } = this.state;
+    const newE = {
+      ...e,
+      current: current,
+    };
+    this.setState({ e: newE });
   };
 
   copyPlan = (data, resolve) => {
@@ -326,9 +361,18 @@ export default class CostPlanCard extends Component {
   };
 
   render() {
-    const { e, costPlanStat } = this.props;
-    const { costPlan, sourceConfirmData } = e;
-    const { isModalOpen, changeStat, dataSourceModal } = this.state;
+    const { costPlanStat } = this.props;
+    const {
+      isModalOpen,
+      changeStat,
+      dataSourceModal,
+      e,
+      month,
+      // current,
+      // costPlan,
+      // sourceConfirmData,
+    } = this.state;
+    const { current, costPlan, sourceConfirmData } = e;
     const { getFieldDecorator } = this.props.form;
     let stat = costPlanStat.filter(x => x.itemValue == costPlan.stat);
     const menu = (
@@ -410,7 +454,7 @@ export default class CostPlanCard extends Component {
           <Divider style={{ margin: '0.3rem 0' }} />
           {/* body */}
           <div>
-            {this.drawBody(costPlan)}
+            {this.drawBody(costPlan, current, month, e)}
             {this.drawButton(costPlan)}
           </div>
         </div>
