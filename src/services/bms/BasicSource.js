@@ -100,8 +100,8 @@ export async function sourceConfirm(payload) {
   });
 }
 //新
-export async function sourceAbnormal(sourceUuid) {
-  return request(`/bms-cost/bms-cost/newSource/sourceAbnormal/${sourceUuid}`, {
+export async function sourceAbnormal(sourceUuid, planUuid, month) {
+  return request(`/bms-cost/bms-cost/newSource/sourceAbnormal/${sourceUuid}/${planUuid}/${month}`, {
     method: 'POST',
   });
 }

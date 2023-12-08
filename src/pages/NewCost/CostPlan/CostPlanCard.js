@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-14 15:44:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-08 08:54:51
+ * @LastEditTime: 2023-12-08 17:16:18
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -39,9 +39,6 @@ const { MonthPicker } = DatePicker;
 @Form.create()
 export default class CostPlanCard extends Component {
   state = {
-    // current: this.props.e.current,
-    // sourceConfirmData: this.props.e.sourceConfirmData,
-    // costPlan: this.props.e.costPlan,
     e: this.props.e,
     isModalOpen: false,
     dataSourceModal: false,
@@ -105,6 +102,7 @@ export default class CostPlanCard extends Component {
   };
 
   handleChangeMonth = async (uuid, dateString) => {
+    this.setState({ month: dateString });
     const response = await getPlanOperateByMonth(uuid, dateString);
     if (response && response.success) {
       this.setState({ e: response.data });
@@ -221,10 +219,11 @@ export default class CostPlanCard extends Component {
   };
 
   abnormal = (data, resolve) => {
-    sourceAbnormal(data.sourceUuid).then(e => {
+    const { e, month } = this.state;
+    sourceAbnormal(data.sourceUuid, e.costPlan.uuid, month).then(response => {
       resolve();
-      if (e.success) {
-        this.props.handleSarch();
+      if (response.success) {
+        this.handleChangeMonth(e.costPlan.uuid, month);
         message.success('操作成功');
       }
     });
@@ -301,7 +300,7 @@ export default class CostPlanCard extends Component {
       },
       updateAll: false,
     };
-    const result = updateEntity(param).then(e => {
+    updateEntity(param).then(e => {
       if (e.result > 0) {
         this.props.handleSarch();
         message.success('操作成功！');
