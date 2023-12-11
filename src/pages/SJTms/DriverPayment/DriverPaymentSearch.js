@@ -17,6 +17,7 @@ import moment from 'moment';
 // import { log } from 'lodash-decorators/utils';
 // import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
 //import whitestyle from '../static/whitestyle'
+import { changeStatus } from '@/services/sjitms/ScheduleBill';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -97,5 +98,38 @@ export default class DriverPaymentSearch extends QuickFormSearchPage {
     }
   };
 
-  drawcell = e => {};
+  //往后端发请求，取消买单
+  changeStatus = async () => { 
+    const UUID = this.state.selectedRows
+                .filter(item => item.STAT !== '取消买单')
+                .map(item => item.UUID);
+    if(!UUID.length) {
+      message.error('请至少选中一条数据或该单据状态不是取消买单状态，不能取消买单');
+      return;
+    }
+    let response = await changeStatus(UUID);
+    if (response && response.success) {
+      message.success('取消买单成功');
+      this.onSearch();
+    } 
+  }
+
+  drawcell = e => { };
+
+  //该方法用于写中间的功能按钮 多个按钮用<span>包裹
+  drawToolsButton = () => {
+    return (
+      <span>
+        <Popconfirm
+          title="你确定要取消买单吗?"
+          onConfirm={() => this.changeStatus()}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Button>取消买单</Button>
+        </Popconfirm>
+      </span>
+    );
+  };
+
 }

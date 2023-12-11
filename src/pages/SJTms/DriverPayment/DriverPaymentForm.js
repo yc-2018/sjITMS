@@ -26,7 +26,7 @@ export default class DriverPaymentForm extends QuickForm {
       const component = <QuickFormSearchPage {...e.props} />;
       e.component = component;
     } else if (e.showPageNow == 'import') {
-      const component = (
+      const component = (           
         <ExcelImport
           title="司机买单导入"
           templateType="driverPay"

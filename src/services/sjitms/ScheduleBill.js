@@ -22,6 +22,16 @@ export async function getDetailByBillUuids(billUuids) {
   });
 }
 
+
+// 运输管理->司机买单导入->取消买单
+export async function changeStatus(billUuids) {
+  return request(`/itms-schedule/itms-schedule/driverPayInfo/changeStatus`, {
+    body: billUuids,
+    method: 'POST',
+  });
+}
+
+
 //获取排车单
 export async function querySchedule(searchKeyValues) {
   return request(
