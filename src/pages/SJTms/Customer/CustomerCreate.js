@@ -97,5 +97,9 @@ export default class CustomerCreate extends QuickCreatePage {
           .format('YYYY-MM-DD HH:mm:ss');
       }
     }
-  };
+    if (fieldName == 'CUSTOMERCODE' && valueEvent) {
+      this.entity[mainName][0]['CUSTOMERCODE'] = valueEvent.value?.split(']')[0].replaceAll('[',"");
+
+  }
+}
 }

@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-27 11:28:47
+ * @LastEditTime: 2023-12-07 16:30:41
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -186,7 +186,6 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         showTotal: total => `共 ${total} 条`,
       },
     };
-    console.log('data.record?.columnTotal', datas);
     this.setState({
       data,
       colTotal: datas?.columnTotal,

@@ -9,7 +9,8 @@ import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { Button, Popconfirm, message } from 'antd';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
-import { audit, invalid, cancel } from '@/services/bms/CostExProject';
+import { audit, invalid, cancel, batchAllAudit } from '@/services/bms/CostExProject';
+import React from 'react';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -75,6 +76,17 @@ export default class CostSubidyProjectSearchPage extends QuickFormSearchPage {
   cancel = async data => {
     return await cancel(data.UUID);
   };
+  //批量审核
+  //批量审核（查询结果）
+  batchAllAudit = async () => {
+    const response = await batchAllAudit(this.state.pageFilters);
+    if (response.success) {
+      message.success('审核成功!');
+      this.onSearch();
+    }else{
+      message.success('审核失败!确保所有审核数据符合审核要求');
+    }
+  };
 
   drawToolsButton = () => {
     const { showAudit, showInvalid, showCancel, selectedRows } = this.state;
@@ -107,7 +119,14 @@ export default class CostSubidyProjectSearchPage extends QuickFormSearchPage {
             审批
           </Button>
         </Popconfirm>
-
+        <Popconfirm
+          title="你确定要审全部的内容吗?"
+          onConfirm={() => this.batchAllAudit()}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Button>批量审核</Button>
+        </Popconfirm>
         <Popconfirm
           title="确定作废所选费用项吗?"
           visible={showInvalid}

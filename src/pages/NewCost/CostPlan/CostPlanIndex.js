@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-06-26 14:41:13
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-24 17:06:35
+ * @LastEditTime: 2023-12-07 15:21:30
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -39,7 +39,7 @@ export default class CostPlanIndex extends PureComponent {
     current: 0,
     loading: false,
     costPlanStat: [],
-    changeStat: '',
+    changeStat: 'Initial,Use',
     organization: '',
   };
   componentDidMount() {
@@ -95,7 +95,7 @@ export default class CostPlanIndex extends PureComponent {
             />
           );
         })}
-        style={{ paddingBottom: 20 }}
+        // style={{ padding: 3 }}
         gutter={3}
       />
     ) : (
@@ -142,15 +142,19 @@ export default class CostPlanIndex extends PureComponent {
             {getFieldDecorator('schemName')(<Input placeholder="请填写方案名称" allowClear />)}
           </Form.Item>
           <Form.Item label="状态">
-            {getFieldDecorator('stat')(
+            {getFieldDecorator('stat', {
+              initialValue: changeStat,
+            })(
               <SimpleAutoComplete
                 placeholder={'请选择状态'}
                 dictCode="costPlanStat"
                 value={changeStat}
                 onChange={e => {
+                  console.log('e', e);
                   this.setState({ changeStat: e });
                 }}
                 style={{ width: '10rem' }}
+                mode="multiple"
                 allowClear
                 noRecord
               />
@@ -207,7 +211,7 @@ export default class CostPlanIndex extends PureComponent {
           <Page withCollect={true}>
             <NavigatorPanel title={this.state.title} action={this.drawButtion()} />
             <Layout style={layout}>
-              <Header style={{ backgroundColor: '#ffffff', height: '10%', marginTop: '2%' }}>
+              <Header style={{ backgroundColor: '#ffffff', height: '7%', marginTop: '2%' }}>
                 {this.drawForm()}
               </Header>
               <Content style={{ overflow: 'auto', height: '20%' }}>{this.drowe()}</Content>

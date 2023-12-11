@@ -30,3 +30,10 @@ export async function cancel(uuid) {
     method: 'POST',
   });
 }
+
+export async function batchAllAudit(searchKeyValues) {
+  return request(`/bms-cost/bms-cost/costSubsidy/batchAllAudit`, {
+    method: 'POST',
+    body: searchKeyValues,
+  });
+}

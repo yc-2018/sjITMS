@@ -423,6 +423,10 @@ export default class CostCalculationSearch extends QuickFormSearchPage {
     } = this.state;
     // 拿到主键
     const subjectUuid = selectedRows[0][subjectKeyField];
+    if (subjectUuid==undefined) {
+      message.error('计费主体被隐藏或不存在，无法进行查看');
+      return;
+    }
     this.props.switchTab('checkView', {
       billUuid,
       subjectUuid,
@@ -430,7 +434,6 @@ export default class CostCalculationSearch extends QuickFormSearchPage {
       entityUuid: this.props.params.entityUuid,
       e,
     });
-    // this.props.switchTab('billView');
   };
   drawSearchPanel = () => {
     const { getFieldDecorator } = this.props.form;
