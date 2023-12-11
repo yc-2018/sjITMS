@@ -72,6 +72,11 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
       const component = <a onClick={() => this.checkDtl(e)}>{e.record.BILL_NUMBER}</a>;
       e.component = component;
     }
+    if (e.column.fieldName === 'TOTALAMOUNT') {
+      const fontColor = e.val === '<空>' || e.val >=0 ? 'black':'red'
+      const component = <a style={{ color: fontColor }}>{e.val}</a>;
+      e.component = component;
+    }
     if (e.column.fieldName == 'ACCESSORY') {
       let accessory = e.val == '<空>' ? 0 : e.val.split(',').length;
       let billAccessory =
