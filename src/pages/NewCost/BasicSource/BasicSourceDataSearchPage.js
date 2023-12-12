@@ -75,7 +75,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       this.initConfig(columnsData.result.records);
       this.initConfig(columnsData.result.records);
       //配置查询成功后再去查询数据
-      this.onSearch();
+      await this.onSearch();
     }
   };
 
@@ -289,7 +289,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
     const response = await deleteSourceData(param);
     if (response && response.success) {
       message.success('删除成功');
-      this.onSearch();
+      await this.onSearch();
     }
   };
 
@@ -334,7 +334,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         if (response && response.success) {
           message.success('保存成功');
           this.setState({ updateModal: false, createInfo: false });
-          this.onSearch();
+          await this.onSearch();
         }
       }
     });
