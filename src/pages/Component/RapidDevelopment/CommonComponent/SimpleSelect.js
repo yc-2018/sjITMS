@@ -21,7 +21,9 @@ import moment from 'moment';
 export default class SimpleSelect extends PureComponent {
   constructor(props) {
     super(props);
-    this.state = { sourceData: [] };
+    this.state = {
+      sourceData: [],
+    };
   }
 
   componentDidMount() {
@@ -47,7 +49,7 @@ export default class SimpleSelect extends PureComponent {
             params: [{ field: 'DICT_CODE', rule: 'eq', val: [dictCode] }],
           },
         };
-        const response = await dynamicQuery(queryParamsJson);
+        const response = await dynamicQuery(queryParamsJson, this.props.dbSource);
         if (!response || !response.success || !Array.isArray(response.result.records)) {
           this.setSourceData([]);
         } else {
@@ -64,11 +66,11 @@ export default class SimpleSelect extends PureComponent {
       ? JSON.parse(this.props.searchField?.searchProperties)
       : undefined;
     if (jsonParam) {
+      const searchField = this.props.searchField;
       let dateParam = jsonParam.dateParam;
       let textParam = jsonParam.textParam;
       //time
       if (dateParam) {
-        const searchField = this.props.searchField;
         params.push({
           field: searchField.fieldName,
           type: searchField.fieldType,
@@ -96,6 +98,7 @@ export default class SimpleSelect extends PureComponent {
         params = [...params];
       }
       const payload = {
+        // order: searchField.fieldName + ',ascend',
         superQuery: { queryParams: params },
         quickuuid: this.props.reportCode,
         pageSize: 9999,
@@ -103,9 +106,14 @@ export default class SimpleSelect extends PureComponent {
       const result = await selectCoulumns(payload);
       let sourceData = [];
       if (result.data != null) {
-        result.data.forEach(sourceDatas => {
-          sourceData.push({ NAME: sourceDatas, VALUE: sourceDatas });
-        });
+        //默认倒序
+        result.data
+          .sort((a, b) => {
+            return b - a;
+          })
+          .forEach(sourceDatas => {
+            sourceData.push({ NAME: sourceDatas, VALUE: sourceDatas });
+          });
       }
 
       this.setState({ sourceData: sourceData });

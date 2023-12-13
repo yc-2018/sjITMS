@@ -1,13 +1,16 @@
 let normalizedRoutes;
 import { dynamic } from 'umi';
 import { getRouteMenus } from '@/services/route/Route';
+import { loginUser } from '@/utils/LoginContext';
+import { saveUserLog } from '@/services/quick/Quick';
+
 // umi3.x 需要将 routes 选项从第一个参数中解构: patchRoutes({ routes }) {}
 export function patchRoutes(routes) {
   if (normalizedRoutes) {
     // console.log('routes', routes);
 
     mergeRoutes(normalizedRoutes, routes).map(item => {
-      routes[2].routes.unshift(item);
+      routes[3].routes.unshift(item);
     });
     // console.log('routes', routes);
   }
@@ -68,3 +71,15 @@ const AsyncComponent = componentPath => {
     },
   });
 };
+
+export async function onRouteChange({ location, routes, action }) {
+  let param = {
+    userName: loginUser().name,
+    userCode: loginUser().code,
+    path: location.pathname,
+    clickEvent: '',
+  };
+  if (loginUser().code) {
+    saveUserLog(param);
+  }
+}

@@ -120,4 +120,16 @@ export const ImportTemplateType = {
     name: 'OMSOUTBOUNDORDER',
     caption: 'OMS出库订单',
   },
+  JMLCOSTSTORE: {
+    name: 'JMLCOSTSTORE',
+    caption: '今麦郎邻近门店导入',
+  },
+  COSTSUBSIDY: {
+    name: 'COSTSUBSIDY',
+    caption: '费用补贴项导入',
+  },
+  DRIVERFEE: {
+    name: 'DRIVERFEE',
+    caption: '司机路桥费用导入',
+  },
 };

@@ -6,6 +6,7 @@ import memoize from 'memoize-one';
 import { addCondition, getFieldShow, memoizeDynamicQuery } from '@/utils/ryzeUtils';
 import { loginOrg, loginCompany } from '@/utils/LoginContext';
 import { uniqBy, isEqual, uniqWith } from 'lodash';
+import { getConfigDataByParams } from '@/services/sjconfigcenter/ConfigCenter';
 
 /**
  * 下拉列表输入框控件，可传入props同antd select
@@ -80,6 +81,8 @@ export default class SimpleAutoComplete extends Component {
   }
 
   componentDidMount() {
+    if (this.props.wmsSource) {
+    }
     // 非搜索直接进来就加载数据
     if (!this.props.sourceData) {
       if (this.props.autoComplete) {
@@ -201,12 +204,19 @@ export default class SimpleAutoComplete extends Component {
     //增加组织查询
     if (isOrgSearch) {
       let loginOrgType = loginOrg().type.replace('_', '');
-      let searchCondition = {
-        params: [
-          { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
-          { field: loginOrgType + 'UUID', rule: 'like', val: [loginOrg().uuid] },
-        ],
-      };
+      let searchCondition = [];
+      if (isOrgSearch.includes(',')) {
+        searchCondition = {
+          params: [
+            { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+            { field: loginOrgType + 'UUID', rule: 'like', val: [loginOrg().uuid] },
+          ],
+        };
+      } else {
+        searchCondition = {
+          params: [{ field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] }],
+        };
+      }
       addCondition(queryParams, searchCondition);
     }
     //20230228 去除没有传递linkFilter,则不加载数据
@@ -263,7 +273,7 @@ export default class SimpleAutoComplete extends Component {
   setSourceData = sourceData => {
     //多选保留已选中数据源
     const { value } = this.state;
-    const { multipleSplit, valueField, mode } = this.props;
+    const { multipleSplit, valueField, mode ,duplicate} = this.props;
     const oldData =
       this.state.sourceData && value && mode == 'multiple' && multipleSplit
         ? this.state.sourceData.filter(
@@ -271,20 +281,33 @@ export default class SimpleAutoComplete extends Component {
           )
         : [];
     sourceData = [...sourceData, ...oldData];
+   if(duplicate){
+    var dup = duplicate.split(",");
+    sourceData = uniqWith(sourceData,(arr,ot)=>{
+      if(isEqual(dup.reduce((a,cur,i)=>{a[cur] = arr[cur];return a;},{}),
+        dup.reduce((a,cur,i)=>{a[cur] = ot[cur];return a;},{}))){
+        return true;
+      }
+      return false;
+    });
+   }else{
     sourceData = uniqBy(sourceData, valueField);
-    sourceData = uniqWith(sourceData, isEqual);
-    this.setState({ sourceData: sourceData });
-    if (this.props.onSourceDataChange) {
-      this.props.onSourceDataChange(
-        sourceData,
-        this.getOptions().find(x => x.value == this.state.value)?.data
-      );
-      return;
-    }
+   }
+   sourceData = uniqWith(sourceData, isEqual);
+   this.setState({ sourceData: sourceData });
+   if (this.props.onSourceDataChange) {
+     this.props.onSourceDataChange(
+       sourceData,
+       this.getOptions().find(x => x.value == this.state.value)?.data
+     );
+     return;
+   }
   };
 
   loadData = async queryParams => {
-    const response = await memoizeDynamicQuery(queryParams);
+    const { DataSource, dbSource } = this.props;
+    let source = DataSource != undefined ? DataSource : dbSource;
+    const response = await memoizeDynamicQuery(queryParams, source);
     if (!response || !response.success || !Array.isArray(response.result.records)) {
       this.setSourceData([]);
     } else {

@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { routerRedux, Link } from 'dva/router';
-import { Modal, Form, Input, Row, Col, Button, Icon } from 'antd';
-import { loginOrg, loginUser,loginCompany } from '@/utils/LoginContext';
-// import { decode } from 'jsonwebtoken';
-import { formatMessage, FormattedMessage } from 'umi/locale';
+import { Modal, Form, Input, Icon } from 'antd';
+import { loginUser } from '@/utils/LoginContext';
+import { formatMessage } from 'umi/locale';
 const FormItem = Form.Item;
 
 @connect(state => ({
@@ -13,7 +11,7 @@ const FormItem = Form.Item;
 @Form.create()
 export default class ModifyPasswd extends Component {
   state = {
-  	...this.props,
+    ...this.props,
   }
 
   handleSubmit = (e) => {
@@ -22,8 +20,8 @@ export default class ModifyPasswd extends Component {
       (err, values) => {
         if (!err) {
           this.props.modifyPasswd({
-          	...values,
-          	userUuid: loginUser().uuid
+            ...values,
+            userUuid: loginUser().uuid
           });
         }
       }
@@ -31,7 +29,7 @@ export default class ModifyPasswd extends Component {
   }
 
   checkPassword = (rule, value, callback) => {
-    const {form} = this.props;
+    const { form } = this.props;
     if (value && value !== form.getFieldValue('newPassword')) {
       callback(formatMessage({ id: 'user.modify.twice.pwd.not.same' }));
     } else {
@@ -40,54 +38,59 @@ export default class ModifyPasswd extends Component {
   }
 
   handledCancle = () => {
-      this.props.form.resetFields();
-      this.props.hideModifyModal();
+    this.props.form.resetFields();
+    this.props.hideModifyModal();
   }
 
   componentWillReceiveProps(nextProps) {
-  	this.setState(
-  		{modifyPasswdModalVisible: nextProps.modifyPasswdModalVisible}
-  	)
+    this.setState(
+      { modifyPasswdModalVisible: nextProps.modifyPasswdModalVisible }
+    )
   }
 
   render() {
-  	const {modifyPasswdModalVisible} = this.state;
-  	const {form,confirmLoading} = this.props;
-    const {getFieldDecorator} = form;
+    const { modifyPasswdModalVisible } = this.state;
+    const { form, confirmLoading, compel } = this.props;
+    const { getFieldDecorator } = form;
     const formItemLayout = {
       labelCol: { span: 7 },
       wrapperCol: { span: 15 },
     };
-  	return (
+    return (
       <Modal
-        title={formatMessage({ id: 'menu.account.modify' })}
+        title={formatMessage({ id: compel ? 'menu.account.modify.compel' : 'menu.account.modify' })}
         visible={modifyPasswdModalVisible}
         onOk={this.handleSubmit}
         onCancel={() => this.handledCancle()}
-        destroyOnClose={true}
+        destroyOnClose={!compel}
+        maskClosable={!compel}
+        closable={!compel}
+        keyboard={!compel}
+        cancelButtonProps={{ disabled: !!compel }}
         confirmLoading={confirmLoading}
       >
         <div>
           <Form>
-            <FormItem 
-              {...formItemLayout}
-              label={formatMessage({ id: 'user.modify.old.password.label' })}>
-              {getFieldDecorator('oldPassword', {
-                initialValue: '',
-                rules: [{
-                  required: true, message: formatMessage({ id: 'user.modify.old.password' }),
-                }, {
-                  // pattern: /^[\x21-\x7E]{5,16}$/, message: formatMessage({ id: 'user.modify.ckeckPassword' }),
-                }],
-              })(
-                <Input
-                  prefix={<Icon type="lock"/>}
-                  type="password"
-                  placeholder={formatMessage({ id: 'user.modify.old.password' })}
-                />
-              )}
-            </FormItem>
-            <FormItem 
+            {compel ? <></> :
+              <FormItem
+                {...formItemLayout}
+                label={formatMessage({ id: 'user.modify.old.password.label' })}>
+                {getFieldDecorator('oldPassword', {
+                  initialValue: '',
+                  rules: [{
+                    required: true, message: formatMessage({ id: 'user.modify.old.password' }),
+                  }, {
+                    // pattern: /^[\x21-\x7E]{5,16}$/, message: formatMessage({ id: 'user.modify.ckeckPassword' }),
+                  }],
+                })(
+                  <Input
+                    prefix={<Icon type="lock" />}
+                    type="password"
+                    placeholder={formatMessage({ id: 'user.modify.old.password' })}
+                  />
+                )}
+              </FormItem>}
+            <FormItem
               {...formItemLayout}
               label={formatMessage({ id: 'user.modify.new.password.label' })}>
               {getFieldDecorator('newPassword', {
@@ -95,17 +98,17 @@ export default class ModifyPasswd extends Component {
                 rules: [{
                   required: true, message: formatMessage({ id: 'user.modify.new.password' }),
                 }, {
-                  pattern: /^[\x21-\x7E]{6,16}$/, message: formatMessage({ id: 'user.modify.ckeckPassword' }),
+                  pattern: /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,16}$/, message: formatMessage({ id: 'user.modify.ckeckPassword' }),
                 }]
               })(
                 <Input
-                  prefix={<Icon type="lock"/>}
+                  prefix={<Icon type="lock" />}
                   type="password"
                   placeholder={formatMessage({ id: 'user.modify.new.password' })}
                 />
               )}
             </FormItem>
-            <FormItem 
+            <FormItem
               {...formItemLayout}
               label={formatMessage({ id: 'form.confirm-password.placeholder' })}>
               {getFieldDecorator('confirmPassword', {
@@ -113,11 +116,11 @@ export default class ModifyPasswd extends Component {
                 rules: [{
                   required: true, message: formatMessage({ id: 'user.modify.new.password.sure' }),
                 }, {
-                    validator: this.checkPassword
+                  validator: this.checkPassword
                 }],
               })(
                 <Input
-                  prefix={<Icon type="lock"/>}
+                  prefix={<Icon type="lock" />}
                   type="password"
                   placeholder={formatMessage({ id: 'user.modify.new.password.sure' })}
                 />
@@ -126,6 +129,6 @@ export default class ModifyPasswd extends Component {
           </Form>
         </div>
       </Modal>
-  		);
+    );
   }
 }

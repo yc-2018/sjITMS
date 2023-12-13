@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-04-15 16:24:22
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-11 09:34:32
+ * @LastEditTime: 2023-08-01 12:01:48
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -25,8 +25,7 @@ export async function getDetailByBillUuids(billUuids) {
 //获取排车单
 export async function querySchedule(searchKeyValues) {
   return request(
-    `/itms-schedule/itms-schedule/sj/bill/schedule/getSchedule?companyUuid=${
-      loginCompany().uuid
+    `/itms-schedule/itms-schedule/sj/bill/schedule/getSchedule?companyUuid=${loginCompany().uuid
     }&dcUuid=${loginOrg().uuid}`,
     {
       method: 'POST',
@@ -233,7 +232,7 @@ export async function refreshETC(scheduleuuid) {
     method: 'POST',
   });
 }
-export async function checkOrderInSchedule(payload,scheduleuuid) {
+export async function checkOrderInSchedule(payload, scheduleuuid) {
   return request(
     `/itms-schedule/itms-schedule/sj/bill/schedule/checkOrderInSchedule?scheduleUuid=${scheduleuuid}`,
     {
@@ -241,4 +240,42 @@ export async function checkOrderInSchedule(payload,scheduleuuid) {
       body: payload,
     }
   );
+}
+
+export async function GetHistoryLocation(payload) {
+  return request(`/itms-schedule/itms-schedule/huoyunren/GetHistoryLocation`, {
+    method: 'POST',
+    body: payload
+  });
+}
+export async function GetTrunkLocation(payload) {
+  return request(`/itms-schedule/itms-schedule/huoyunren/GetTrunkLocation`, {
+    method: 'POST',
+    body: payload
+  });
+}
+export async function GetTrunkData(payload) {
+  return request(`/itms-schedule/itms-schedule/huoyunren/GetTrunkData`, {
+    method: 'POST',
+    body: payload
+  });
+}
+
+export async function GetScheduleEvent(billNumber) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/scheduleEvent/getScheduleEvent?billNumber=${billNumber}`);
+}
+
+export async function GetStopEvent(billNumber) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/scheduleEvent/getStopEvent?billNumber=${billNumber}`);
+}
+
+export async function GetScheduleDelivery(billUuid) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/scheduleEvent/getScheduleDelivery?billUuid=${billUuid}`);
+}
+
+export async function RefreshDelivery(params) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/scheduleEvent/refreshDelivery`, {
+    method: 'POST',
+    body: params
+  });
 }

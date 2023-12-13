@@ -8,7 +8,7 @@
  */
 import { PureComponent } from 'react';
 import { Card, Col, Input, Row, Spin, Select, message, Modal } from 'antd';
-import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
+//import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPageWrapper';
 import Page from '@/pages/Component/Page/inner/Page';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import Empty from '@/pages/Component/Form/Empty';
@@ -66,7 +66,7 @@ export default class Swiper extends PureComponent {
     }
     localStorage.setItem('showMessage', '0');
     this.setState({ loading: true, errMsg: undefined });
-    const response = await getSwipeSchedule(event.target.value, swipeFlag);
+    const response = await getSwipeSchedule(event.target.value, swipeFlag,companyUuid,dispatchUuid);
     if (response.success) {
       this.setState({
         empId: '',
@@ -122,7 +122,7 @@ export default class Swiper extends PureComponent {
       isModalOpen,
     } = this.state;
     return (
-      <FreshPageHeaderWrapper>
+      //  <FreshPageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
           <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
             <Modal
@@ -302,7 +302,7 @@ export default class Swiper extends PureComponent {
             </div>
           </Spin>
         </Page>
-      </FreshPageHeaderWrapper>
+      // </FreshPageHeaderWrapper>
     );
   }
 }

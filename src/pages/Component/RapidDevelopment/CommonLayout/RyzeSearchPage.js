@@ -10,7 +10,7 @@ import FreshPageHeaderWrapper from '@/components/PageHeaderWrapper/FullScreenPag
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
 import ToolbarPane1Content from '@/pages/Component/Page/inner/ToolbarPane1Content';
-import styles from '@/pages/Tms/TransportOrder/transportOrder.less';
+import styles from './transportOrder.less';
 /**
  * 搜索界面基类<br>
  * 界面标题：具体模块搜索界面在状态中设置title<br>
@@ -24,7 +24,7 @@ import styles from '@/pages/Tms/TransportOrder/transportOrder.less';
  */
 export default class RyzeSearchPage extends Component {
   drapTableChange = () => {}; //拖拽事件
-  setrowClassName = ()=>{}//表格样式
+  setrowClassName = () => {}; //表格样式
 
   constructor(props) {
     super(props);
@@ -95,9 +95,10 @@ export default class RyzeSearchPage extends Component {
     }
   }
 
-  handleSelectRows = rows => {
+  handleSelectRows = (rows, rowKeys) => {
     this.setState({
       selectedRows: rows,
+      selectRowKeys: rowKeys,
     });
     this.changeSelectedRows && this.changeSelectedRows(rows);
   };
@@ -155,9 +156,12 @@ export default class RyzeSearchPage extends Component {
   };
 
   drawPage = () => {
-    const { selectedRows, data, scroll, key, unSaveFilter } = this.state;
+    const { selectedRows, data, scroll, key, unSaveFilter,pagination ,notshowChanger} = this.state;
     const { loading } = this.props;
-
+    const paginationProps = {
+      ...data.pagination,
+      ...pagination,
+    };
     let tableFilter = {
       selectedRows: this.state.selectedRows,
       pageFilter: this.state.pageFilter,
@@ -208,6 +212,8 @@ export default class RyzeSearchPage extends Component {
             newScroll={scroll ? scroll : undefined}
             onSelectRow={this.handleSelectRows}
             onChange={this.handleStandardTableChange}
+            pagination = {paginationProps}
+            notshowChanger ={notshowChanger}
             comId={key}
             rest={this.state.rest}
             rowClassName={(record, index) => {
@@ -217,8 +223,8 @@ export default class RyzeSearchPage extends Component {
               if (record.errorStyle) {
                 return styles.errorStyle;
               }
-             if(this.setrowClassName(record, index)){
-              return this.setrowClassName(record, index)
+              if (this.setrowClassName(record, index)) {
+                return this.setrowClassName(record, index);
               }
               if (index % 2 === 0) {
                 return styles.lightRow;
@@ -236,6 +242,13 @@ export default class RyzeSearchPage extends Component {
             handleRowClick={this.handleRowClick}
             isRadio={this.state.isRadio}
             RightClickMenu={this.drawRightClickMenus()}
+            expandedRowRender={this.expandedRowRender}
+            expandRowByClick={this.state.expandRowByClick}
+            isMerge={this.state.isMerge}
+            isExMerge={this.state.isExMerge}
+            handleChildRowSelectChange={this.handleChildRowSelectChange}
+            handleRowSelectChange={this.handleRowSelectChange}
+            parentRows={this.state.parentRows}
           />
         ) : null}
         {this.drawOtherCom && this.drawOtherCom()}
@@ -244,10 +257,11 @@ export default class RyzeSearchPage extends Component {
   };
 
   render() {
+    const { divstyle } = this.state;
     let ret = this.state.canFullScreen ? (
       <FreshPageHeaderWrapper>{this.drawPage()}</FreshPageHeaderWrapper>
     ) : this.state.isNotHd ? (
-      <div>{this.drawPage()}</div>
+      <div style={{ ...divstyle }}>{this.drawPage()}</div>
     ) : (
       <PageHeaderWrapper>
         <Page withCollect={true} pathname={this.props.pathname}>

@@ -10,10 +10,10 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import { Layout, Row, Col, Card, Button, message } from 'antd';
 import ETCCreatePage from './ETCIssueAndRecycleCreatePage';
 import ETCDTLSearchPage from './ETCDTLSearchPage';
-import { recommend, issue, recycle } from '@/services/sjitms/ETCIssueAndRecycle';
-
+import { recommend, issue, recycle ,repairIssue} from '@/services/sjitms/ETCIssueAndRecycle';
+import { havePermission } from '@/utils/authority';
+import { log } from 'lodash-decorators/utils';
 const { Content, Sider } = Layout;
-
 export default class ETCIssueAndRecyclePage extends PureComponent {
   state = {
     selectRows: {},
@@ -21,6 +21,7 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
   };
 
   componentDidMount() {
+    this.setState({authority:this.props.route.authority})
     window.addEventListener('keydown', this.keyDown);
   }
 
@@ -42,6 +43,7 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
   }
 
   issueButton = () => {
+ 
     return (
       <span>
         <Button onClick={this.recommend.bind()}>推荐(Alt+Z)</Button>
@@ -50,6 +52,14 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
         </Button>
         <Button type="danger" onClick={this.recycle.bind()}>
           回收(Alt+C)
+        </Button>
+        <Button 
+          type="primary" 
+          style={{ margin: '0 10px'}} 
+          onClick={this.repairIssue.bind()}
+          hidden={!havePermission(this.state.authority + '.repairIssue')}
+        >
+        补发
         </Button>
       </span>
     );
@@ -85,7 +95,6 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
       return;
     }
     const data = this.getCardEntity.getEntity();
-    console.log('data', data);
     if (data.v_sj_itms_etc_issueandrecycle[0].CARDNO == undefined) {
       message.error('请填写发放的粤通卡号');
       return;
@@ -97,6 +106,26 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
       this.handlePage.onSearch();
     }
   };
+
+    //补发
+    repairIssue = async () => {
+      const { selectRows } = this.state;
+      if (selectRows.BILLNUMBER == undefined) {
+        message.error('请选择需要发放粤通卡的排车单');
+        return;
+      }
+      const data = this.getCardEntity.getEntity();
+      if (data.v_sj_itms_etc_issueandrecycle[0].CARDNO == undefined) {
+        message.error('请填写发放的粤通卡号');
+        return;
+      }
+      const response = await repairIssue(data);
+      if (response.success) {
+        message.success('补发成功');
+        this.setState({ selectRows: {} });
+        this.handlePage.onSearch();
+      }
+    };
 
   //回收
   recycle = async () => {
@@ -139,7 +168,8 @@ export default class ETCIssueAndRecyclePage extends PureComponent {
           <Sider style={{ backgroundColor: 'rgb(237, 241, 245)' }} width={'30%'}>
             <Row gutter={[0, 8]}>
               <Col>
-                <Card title="发放与回收" extra={this.issueButton()}>
+                <Card title="发放与回收"  bodyStyle ={{padding:10,}}>
+                  <div>{this.issueButton()}</div>
                   <ETCCreatePage
                     noBorder
                     noCategory

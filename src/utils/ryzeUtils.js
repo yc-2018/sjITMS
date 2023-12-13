@@ -44,14 +44,14 @@ export function addCondition(queryParams, condition) {
  * 微缓存动态查询
  */
 let dynamicQueryCache = {}; // 存的是Promise对象
-export const memoizeDynamicQuery = async queryParams => {
+export const memoizeDynamicQuery = async (queryParams, dbSource) => {
   const key = JSON.stringify(queryParams);
   let lastResult = dynamicQueryCache[key];
-  if (lastResult != undefined&&queryParams.isCache!='false') {
+  if (lastResult != undefined && queryParams.isCache != 'false') {
     return lastResult;
   }
 
-  lastResult = dynamicQuery(queryParams);
+  lastResult = dynamicQuery(queryParams, dbSource);
 
   if (lastResult.catch) {
     lastResult.catch(() => (dynamicQueryCache[key] = undefined));

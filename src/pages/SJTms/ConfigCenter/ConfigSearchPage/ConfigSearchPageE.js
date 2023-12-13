@@ -91,7 +91,7 @@ export default class ConfigSearchPageE extends ConfigSearchPage {
     let queryParamsJson = {
       tableName: 'V_SYS_DICT_ITEM',
       condition: {
-        params: [{ field: 'DICT_CODE', rule: 'eq', val: ['dispatchCenter'] }],
+        params: [{ field: 'DICT_CODE', rule: 'eq', val: ['company'] }],
       },
     };
     const response = await dynamicQuery(queryParamsJson);

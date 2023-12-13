@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-13 17:38:17
+ * @LastEditTime: 2023-10-27 14:34:20
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -39,7 +39,7 @@ export default class BasicSourceSearchPage extends Component {
   queryTree = async () => {
     await findSourceTree().then(response => {
       if (response && response.success) {
-        this.setState({ treeData: response.data });
+        this.setState({ treeData: response.data?.tree });
       }
     });
   };
@@ -169,7 +169,7 @@ export default class BasicSourceSearchPage extends Component {
             <TabPane tab={'表结构'} key="structure">
               <FormFieldSearchPage
                 key={`Line${selectedKeys[0]}`}
-                quickuuid={'cost_form_field'}
+                quickuuid={'COST_FORM_FIELD'}
                 selectedRows={selectedKeys[0]}
                 selectedNodes={event.selectedNodes[0]}
               />

@@ -19,6 +19,8 @@ import {
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { queryColumns } from '@/services/quick/Quick';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { getInitDataByQuick } from '@/services/quick/Quick';
+import { isJSON } from '@/utils/SomeUtil';
 
 const { RangePicker } = DatePicker;
 const isOrgQuery = [
@@ -53,6 +55,18 @@ export default class SearchForm extends Component {
           );
         }
       }
+      let isFirstSearch = false;
+      for (let item of selectFields) {
+        if (item.searchDefVal && isJSON(item.searchDefVal)) {
+          isFirstSearch = true;
+          let initJson = JSON.parse(item.searchDefVal);
+          let res = await getInitDataByQuick(initJson);
+          if (res?.success) {
+            item.searchDefVal = res?.data ? res.data : '';
+          }
+        }
+      }
+
       this.setState(
         {
           loading: false,
@@ -60,6 +74,13 @@ export default class SearchForm extends Component {
           advancedFields: response.result.columns.filter(data => data.isShow),
         },
         () => {
+          if (isFirstSearch) {
+            const { form } = this.props;
+            form.validateFields((err, fieldsValue) => {
+              if (err) return;
+              this.onSearch(fieldsValue);
+            });
+          }
           // this.onSearch(form.getFieldsValue());
         }
       );

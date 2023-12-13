@@ -3,9 +3,6 @@ import { Button, message } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { confirmOrder } from '@/services/sjtms/DeliveredConfirm';
-import Result from '@/components/Result';
-import { res } from '@/pages/In/Move/PlaneMovePermission';
-import { queryIdleAndThisPostionUseing } from '@/services/facility/Container';
 import { loginOrg, loginCompany, loginUser } from '@/utils/LoginContext';
 import { havePermission } from '@/utils/authority';
 @connect(({ quick, loading }) => ({

@@ -105,6 +105,7 @@ export default {
   'menu.account.trigger': 'Trigger Error',
   'menu.account.logout': 'Logout',
   'menu.account.modify': 'Modify password',
+  'menu.account.modify.compel': 'Your password is too weak, please change the password',
   'menu.account.switch': 'Switch organization',
   'menu.sjtms.basic': 'Basic',
   'menu.sjtms.basic.dc': 'Distribution Center',

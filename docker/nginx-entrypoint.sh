@@ -14,12 +14,15 @@ EOF
 # 172.17.10.124/iwms
 escapeApiServerAddr=$(echo $API_SERVER_ADDR | sed -e 's/\//\\\//g')
 escapeReportServerAddr=$(echo $REPORT_SERVER_ADDR |sed -e 's/\//\\\//g')
+escapeProEnvAddr=$(echo $PRO_ENV |sed -e 's/\//\\\//g')
 
 echo "更改后端的 Api server addr: $escapeApiServerAddr"
 sed -i "s/DOCKER_API_SERVER_ADDR/$escapeApiServerAddr/g" /usr/share/nginx/html/umi.*js
 
 echo "更改后端的 Report server addr: $escapeReportServerAddr"
 sed -i "s/DOCKER_RPORTER_SERVER_ADDR/$escapeReportServerAddr/g" /usr/share/nginx/html/umi.*js
+
+sed -i "s/DOCKER_PRO_ENV/$escapeProEnvAddr/g" /usr/share/nginx/html/umi.*js
 
 echo '更改结束, 更改后的 umi 位置: /var/log/nginx/umi'
 }

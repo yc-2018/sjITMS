@@ -20,13 +20,15 @@ import {
 } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import moment from 'moment';
 import { loginOrg, loginCompany } from '@/utils/LoginContext';
+import ControlledRangePicker
+  from "@/pages/Component/RapidDevelopment/OnlReport/SimpleQuery/ControlledRangePicker/ControlledRangePicker";
 const { RangePicker } = DatePicker;
 
 @Form.create()
 export default class SimpleQuery extends SearchForm {
   constructor(props) {
     super(props);
-    this.state = { toggle: undefined, runTimeProps: {} };
+    this.state = { toggle: props.toggle, runTimeProps: {} };
   }
 
   componentWillReceiveProps(props) {
@@ -72,6 +74,9 @@ export default class SimpleQuery extends SearchForm {
       let val = searchParam[param];
       if (val == null || val == undefined) {
         continue;
+      }
+      if (field.searchShowtype == 'datemonth' && val instanceof Array) {
+        val = val.map(x => x.format('YYYY-MM')).join('||');
       }
       if (field.searchShowtype == 'datetime' && val instanceof Array) {
         val = val.map(x => x.format('YYYY-MM-DD HH:mm:ss')).join('||');
@@ -160,6 +165,7 @@ export default class SimpleQuery extends SearchForm {
 
   //生成查询控件
   buildSearchItem = searchField => {
+    const { dbSource } = this.props;
     let searchProperties = searchField.searchProperties
       ? JSON.parse(searchField.searchProperties)
       : '';
@@ -182,6 +188,11 @@ export default class SimpleQuery extends SearchForm {
       searchProperties.linkFilter = this.state.runTimeProps[searchField.fieldName];
     }
     switch (searchField.searchShowtype) {
+      case 'datemonth':
+        return (
+          <ControlledRangePicker
+          />
+        );
       case 'date':
         return <RangePicker showToday={true} style={{ width: '100%' }} />;
       case 'datetime':
@@ -225,6 +236,7 @@ export default class SimpleQuery extends SearchForm {
       case 'list':
         return (
           <SimpleSelect
+            dbSource={dbSource}
             allowClear
             placeholder={'请选择' + searchField.fieldTxt}
             searchField={searchField}
@@ -239,6 +251,7 @@ export default class SimpleQuery extends SearchForm {
         if (searchField.searchCondition == 'in' || searchField.searchCondition == 'notIn') {
           return (
             <SimpleSelect
+              dbSource={dbSource}
               showSearch
               allowClear
               placeholder={'请输入' + searchField.fieldTxt}
@@ -271,6 +284,7 @@ export default class SimpleQuery extends SearchForm {
         //     : {};
         return (
           <SimpleAutoComplete
+            dbSource={dbSource}
             placeholder={'请选择' + searchField.fieldTxt}
             searchField={searchField}
             onChange={valueEvent => this.handleChange(valueEvent, searchField)}
@@ -290,6 +304,7 @@ export default class SimpleQuery extends SearchForm {
       case 'sel_tree':
         return (
           <SimpleTreeSelect
+            dbSource={dbSource}
             placeholder={'请选择' + searchField.fieldTxt}
             {...searchProperties}
             searchField={searchField}
@@ -304,9 +319,17 @@ export default class SimpleQuery extends SearchForm {
     const { form, filterValue, selectFields } = this.props;
     const { getFieldDecorator } = form;
     const { toggle } = this.state;
-    const showSelectFields = toggle ? selectFields : selectFields.slice(0, 3);
+    // const showSelectFields = toggle ? selectFields : selectFields.slice(0, 3);
+    const showSelectFields = selectFields.map((item, index) => {
+      if (toggle || index < 4) {
+        item.isNotDisPlay = false;
+      } else {
+        item.isNotDisPlay = true;
+      }
+      return item;
+    });
     let cols = new Array();
-    showSelectFields.forEach(searchField => {
+    showSelectFields.forEach((searchField, index) => {
       //select多选默认值
       if (
         (searchField.searchShowtype == 'list' ||
@@ -319,7 +342,11 @@ export default class SimpleQuery extends SearchForm {
         }
       }
       cols.push(
-        <SFormItem key={searchField.id} label={searchField.fieldTxt}>
+        <SFormItem
+          key={searchField.id}
+          label={searchField.fieldTxt}
+          isNotDisPlay={searchField.isNotDisPlay}
+        >
           {getFieldDecorator(searchField.fieldName, {
             initialValue: filterValue ? filterValue[searchField.fieldName] : undefined,
             rules: [

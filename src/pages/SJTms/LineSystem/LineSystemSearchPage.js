@@ -52,7 +52,7 @@ const { TreeNode } = Tree;
 const { TabPane } = Tabs;
 import { havePermission } from '@/utils/authority';
 import { throttleSetter } from 'lodash-decorators';
-import { getDispatchConfig } from '@/services/tms/DispatcherConfig';
+import { getDispatchConfig } from '@/services/sjtms/DispatcherConfig';
 import imTemplate from '@/models/account/imTemplate';
 @connect(({ lineSystem, loading }) => ({
   lineSystem,
@@ -76,7 +76,7 @@ export default class LineSystemSearchPage extends Component {
       file: {},
       uploading: false,
       authority: props.authority,
-      treeuuid :'treeuuid'
+      treeuuid: 'treeuuid',
     };
   }
   async componentDidMount() {
@@ -99,7 +99,7 @@ export default class LineSystemSearchPage extends Component {
         temp.key = e.uuid;
         temp.title = `[${e.code}]` + e.name;
         temp.icon = <Icon type="swap" rotate={90} />;
-        temp.region = data.region;  
+        temp.region = data.region;
         temp.isnewstoreline = data.isnewstoreline;
         // temp.system=true;
         treeNode.push(temp);
@@ -184,21 +184,21 @@ export default class LineSystemSearchPage extends Component {
           lineTreeData.push(itemData);
         });
         if (lineuuid == undefined) {
-          lineuuid = lineTreeData.length>0? lineTreeData[0].key:undefined;
+          lineuuid = lineTreeData.length > 0 ? lineTreeData[0].key : undefined;
           // lineuuid = lineTreeData
           //   ? lineTreeData[0]?.children
           //     ? lineTreeData[0].children[0]?.key
           //     : lineTreeData[0]?.key
           //   : undefined;
         }
-       const treeData = {
+        const treeData = {
           expandKeys: lineTreeData.map(x => x.key),
           lineTreeData,
           lineData,
           //selectLineUuid: lineuuid,
-          treeuuid:Date.now()
+          treeuuid: Date.now(),
         };
-        this.onSelects([lineuuid],treeData);
+        this.onSelects([lineuuid], treeData);
       }
     });
   };
@@ -360,24 +360,24 @@ export default class LineSystemSearchPage extends Component {
       sdf: Children,
     });
   };
-    //选中树节点
-    onSelects = async (selectedKeys,treedata) => {
-      const { lineTreeData, lineData } = this.state;
-      let sdf = await this.pdChildren(lineTreeData, selectedKeys[0]);
-      if (selectedKeys.length == 1 && selectedKeys[0] == undefined) {
-        this.setState({ rightContent: <></>, selectLineUuid: undefined });
-        return;
-      }
-      const systemuuid = treedata.lineTreeData.find(x => x.key == selectedKeys[0]);
-      const systemData = await this.swithCom(systemuuid, selectedKeys[0]);
-      this.setState({
-        ...treedata,
-        selectLineUuid: selectedKeys[0],
-        systemData: systemData,
-        systemuuid: systemuuid,
-        sdf: sdf,
-      });
-    };
+  //选中树节点
+  onSelects = async (selectedKeys, treedata) => {
+    const { lineTreeData, lineData } = this.state;
+    let sdf = await this.pdChildren(lineTreeData, selectedKeys[0]);
+    if (selectedKeys.length == 1 && selectedKeys[0] == undefined) {
+      this.setState({ rightContent: <></>, selectLineUuid: undefined, ...treedata });
+      return;
+    }
+    const systemuuid = treedata.lineTreeData.find(x => x.key == selectedKeys[0]);
+    const systemData = await this.swithCom(systemuuid, selectedKeys[0]);
+    this.setState({
+      ...treedata,
+      selectLineUuid: selectedKeys[0],
+      systemData: systemData,
+      systemuuid: systemuuid,
+      sdf: sdf,
+    });
+  };
   //展开/收起节点
   onExpand = (_, event) => {
     const { expandKeys } = this.state;
@@ -390,12 +390,14 @@ export default class LineSystemSearchPage extends Component {
   };
   //绘制左侧菜单栏
   drawSider = () => {
-     return  <div style={{ height: '100%' }}>
-       {this.drawLeftTop}
-       {this.drawLeftBotton}
+    return (
+      <div style={{ height: '100%' }}>
+        {this.drawLeftTop}
+        {this.drawLeftBotton}
       </div>
+    );
   };
-  drawLeftBotton(){
+  drawLeftBotton() {
     const { expandKeys, selectLineUuid } = this.state;
     var lineTreeData = JSON.parse(JSON.stringify(this.state.lineTreeData));
     // const formItemLayout = {
@@ -404,11 +406,17 @@ export default class LineSystemSearchPage extends Component {
     // };
     const renderTreeNode = data => {
       let nodeArr = data.map(item => {
-       const reion = !item.system && item.region==1 && this.state.dispatchConfig.checkLineArea==1 ;
-       const isnewstoreline = !item.system && item.isnewstoreline==1;
+        const reion =
+          !item.system && item.region == 1 && this.state.dispatchConfig.checkLineArea == 1;
+        const isnewstoreline = !item.system && item.isnewstoreline == 1;
         item.title = (
-          <div  style={reion?{color:'red'}:{}}>
-            <span>{item.title }{isnewstoreline?<span style={isnewstoreline?{color: '#2dcb38'}:{}}>(新)</span>:null}</span>
+          <div style={reion ? { color: 'red' } : {}}>
+            <span>
+              {item.title}
+              {isnewstoreline ? (
+                <span style={isnewstoreline ? { color: '#2dcb38' } : {}}>(新)</span>
+              ) : null}
+            </span>
             {item.key != selectLineUuid ? (
               <></>
             ) : item.system ? (
@@ -449,60 +457,64 @@ export default class LineSystemSearchPage extends Component {
     return (
       <div style={{ height: '100%' }}>
         <div style={{ height: '90%', overflow: 'auto' }}>
-          {this.state.lineTreeData.length> 0 && <Tree
-            showLine={true}
-            showIcon={true}
-            selectable
-           // expandedKeys={expandKeys}
-            selectedKeys={[selectLineUuid]}
-            onSelect={this.onSelect}
-           // onExpand={this.onExpand}
-           key = {this.state.treeuuid}
-           defaultExpandAll
-          >
-            {renderTreeNode(lineTreeData)}
-          </Tree>}
+          {this.state.lineTreeData.length > 0 && (
+            <Tree
+              showLine={true}
+              showIcon={true}
+              selectable
+              // expandedKeys={expandKeys}
+              selectedKeys={[selectLineUuid]}
+              onSelect={this.onSelect}
+              // onExpand={this.onExpand}
+              key={this.state.treeuuid}
+              defaultExpandAll
+            >
+              {renderTreeNode(lineTreeData)}
+            </Tree>
+          )}
         </div>
       </div>
     );
   }
-  drawLeftTop(){
-    return <div className={linesStyles.navigatorPanelWrapper}>
-    <div>
-      <Row gutter={[_, 2]} align="middle" type="flex">
-        <Col span={9}>
-          <Input
-            placeholder="线路编号或者门店号"
-            onBlur={e => this.setState({ lineStoreCode: e.target.value })}
-          />
-        </Col>
-        <Col span={3} push={1}>
-          <Button type="primary" size="small" onClick={() => this.handleSubmitLine()}>
-            查询
-          </Button>
-        </Col>
-        <Col span={6} push={2}>
-          <Button
-            type="primary"
-            size="small"
-            onClick={() => this.lineSystemCreatePageModalRef.show()}
-          >
-            新建体系
-          </Button>
-        </Col>
-        <Col span={6} push={1}>
-          <Button
-            type="primary"
-            size="small"
-            onClick={() => this.setState({ uploadLineVisible: true })}
-          >
-            导入线路
-          </Button>
-        </Col>
-      </Row>
-    </div>
-    <div />
-  </div>
+  drawLeftTop() {
+    return (
+      <div className={linesStyles.navigatorPanelWrapper}>
+        <div>
+          <Row gutter={[_, 2]} align="middle" type="flex">
+            <Col span={9}>
+              <Input
+                placeholder="线路编号或者门店号"
+                onBlur={e => this.setState({ lineStoreCode: e.target.value })}
+              />
+            </Col>
+            <Col span={3} push={1}>
+              <Button type="primary" size="small" onClick={() => this.handleSubmitLine()}>
+                查询
+              </Button>
+            </Col>
+            <Col span={6} push={2}>
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => this.lineSystemCreatePageModalRef.show()}
+              >
+                新建体系
+              </Button>
+            </Col>
+            <Col span={6} push={1}>
+              <Button
+                type="primary"
+                size="small"
+                onClick={() => this.setState({ uploadLineVisible: true })}
+              >
+                导入线路
+              </Button>
+            </Col>
+          </Row>
+        </div>
+        <div />
+      </div>
+    );
   }
 
   downloadTemplate = () => {
@@ -513,7 +525,7 @@ export default class LineSystemSearchPage extends Component {
         sheetData: [],
         sheetName: '线路', //工作表的名字
         sheetFilter: [],
-        sheetHeader: ['门店号', '班组', '门店名称', '调整后线路','备注'],
+        sheetHeader: ['门店号', '班组', '门店名称', '调整后线路','货主代码','备注'],
       },
     ];
     var toExcel = new ExportJsonExcel(option);
@@ -556,7 +568,7 @@ export default class LineSystemSearchPage extends Component {
           this.setState({
             errorMessage: '导入成功,共导入' + result.data + '家门店',
             errorMessageVisible: true,
-            uploadLineVisible: false
+            uploadLineVisible: false,
           });
         } else {
           this.setState({ errorMessage: result.message, errorMessageVisible: true });
@@ -597,7 +609,7 @@ export default class LineSystemSearchPage extends Component {
           {/* 左侧内容 */}
           <Sider width={350} className={linesStyles.leftWrapper}>
             {this.drawLeftTop()}
-            {this.state.lineTreeData.length> 0 && this.drawLeftBotton()}
+            {this.state.lineTreeData.length > 0 && this.drawLeftBotton()}
             <CreatePageModal
               modal={{
                 title: '新建线路体系',
@@ -759,18 +771,18 @@ export default class LineSystemSearchPage extends Component {
           </Sider>
           {/* 右侧内容 */}
           <Content className={linesStyles.rightWrapper}>
-            {
-             selectLineUuid&&<LineShipAddressSearchPage
-             selectedKey={selectLineUuid}
-             systemuuid={systemuuid}
-             lineTreeData={this.state.lineTreeData}
-             lineData={this.state.lineData}
-             systemData={this.state.systemData}
-             queryLineSystem={this.queryLineSystem}
-             sdf={this.state.sdf}
-             authority={this.props.authority}
-           />
-            }
+            {selectLineUuid && (
+              <LineShipAddressSearchPage
+                selectedKey={selectLineUuid}
+                systemuuid={systemuuid}
+                lineTreeData={this.state.lineTreeData}
+                lineData={this.state.lineData}
+                systemData={this.state.systemData}
+                queryLineSystem={this.queryLineSystem}
+                sdf={this.state.sdf}
+                authority={this.props.authority}
+              />
+            )}
             {/* {{this.drawContent()}} */}
             {/* <LineShipAddressSearchPage></LineShipAddressSearchPage> */}
           </Content>

@@ -27,13 +27,21 @@ export async function getContainerByBillUuid(billUuid) {
     }
   );
 }
-export async function queryDriverRoutes(origin, destination, waypoints) {
+export async function queryDriverRoutes(params) {
   return request(
     `/itms-schedule/itms-schedule/bmap/driving?origin=${origin}&destination=${destination}&waypoints=${encodeURI(
       waypoints
     )}&alternatives=1&intelligent_plan=1&ak=DcXGLWmzGcdU8GLzuiYtmhhtdVCjffty`
   );
 }
+
+export async function queryDriverRoutes2(params) {
+  return request(`/itms-schedule/itms-schedule/bmap/driverTruck?`, {
+    method: 'POST',
+    body: params,
+  });
+}
+
 export async function queryAuditedOrder(params) {
   return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/queryAuditedOrder`, {
     method: 'POST',
@@ -157,32 +165,23 @@ export async function removeOrder(billUuid, dispatchCenterUuid) {
 
 //修改作业号
 export async function updateOrderWavenum(uuids, WAVENUM) {
-  return request(
-    `/itms-schedule/itms-schedule/sj/bill/ordertms/updateOrderWavenum/${WAVENUM}`,
-    {
-      method: 'POST',
-      body: uuids
-    }
-  );
+  return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/updateOrderWavenum/${WAVENUM}`, {
+    method: 'POST',
+    body: uuids,
+  });
 }
 //修改复核数
 export async function updateReview(data) {
-  return request(
-    `/itms-schedule/itms-schedule/sj/bill/ordertms/updateReview`,
-    {
-      method: 'POST',
-      body:data
-    }
-  );
+  return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/updateReview`, {
+    method: 'POST',
+    body: data,
+  });
 }
 
 //复核确认
 export async function onConfirm(uuids) {
-  return request(
-    `/itms-schedule/itms-schedule/sj/bill/ordertms/onConfirm`,
-    {
-      method: 'POST',
-      body:uuids
-    }
-  );
+  return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/onConfirm`, {
+    method: 'POST',
+    body: uuids,
+  });
 }

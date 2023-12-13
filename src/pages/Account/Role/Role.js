@@ -2,7 +2,14 @@
  * @Author: Liaorongchang
  * @Date: 2023-03-27 17:04:08
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-04-21 15:11:04
+ * @LastEditTime: 2023-08-29 11:54:43
+ * @version: 1.0
+ */
+/*
+ * @Author: Liaorongchang
+ * @Date: 2023-03-27 17:04:08
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2023-06-21 15:44:32
  * @version: 1.0
  */
 import React from 'react';
@@ -27,6 +34,7 @@ import { commonLocale } from '@/utils/CommonLocale';
 import { roleLocale } from './RoleLocale';
 import { orgType } from '@/utils/OrgType';
 import siderStyle from '@/pages/Component/Page/inner/SiderPage.less';
+import BMSAuthorizeCom from '@/pages/Component/BMSAuthorize/BMSAuthorizeCom';
 const { SubMenu } = Menu;
 
 const TabPane = Tabs.TabPane;
@@ -86,6 +94,8 @@ export default class Role extends SiderPage {
       dispatchCenterCheckedResourceKeys: [],
       ownerCheckedResourceTree: [],
       ownerCheckedResourceKeys: [],
+      bmsCheckedResourceTree: [],
+      bmsCheckedResourceKeys: [],
       contentStyle: {
         marginTop: 0,
       },
@@ -158,6 +168,7 @@ export default class Role extends SiderPage {
               ? res[orgType.dispatchCenter.name]
               : [],
             ownerCheckedResourceTree: res[orgType.owner.name] ? res[orgType.owner.name] : [],
+            bmsCheckedResourceTree: res[orgType.bms.name] ? res[orgType.bms.name] : [],
           });
         }
       },
@@ -296,6 +307,7 @@ export default class Role extends SiderPage {
               ? res[orgType.dispatchCenter.name]
               : [],
             ownerCheckedResourceKeys: res[orgType.owner.name] ? res[orgType.owner.name] : [],
+            bmsCheckedResourceKeys: res[orgType.bms.name] ? res[orgType.bms.name] : [],
           });
         }
       },
@@ -998,8 +1010,8 @@ export default class Role extends SiderPage {
       carrierResourceTree,
       dispatchCenterResourceTree,
       ownerCheckedResourceTree,
+      bmsCheckedResourceTree,
     } = this.state;
-    console.log('state', this.state);
     const tabPanes = [];
     let i = 2;
     let height = 'calc(100vh - 240px)';
@@ -1104,6 +1116,31 @@ export default class Role extends SiderPage {
             loading={this.props.loading}
             orgType={orgType.owner.name}
           />
+        </TabPane>
+      );
+      i = i + 1;
+    }
+    if (bmsCheckedResourceTree && bmsCheckedResourceTree.length > 0) {
+      tabPanes.push(
+        <TabPane tab={roleLocale.bmsTabPermissionInfoTitle} key={i}>
+          <Tabs>
+            <TabPane tab={roleLocale.bmsTabPermissionInfoTitle} key="1">
+              <RolePermissionInfo
+                data={bmsCheckedResourceTree}
+                checkedKeys={this.state.bmsCheckedResourceKeys}
+                height={'calc(100vh - 300px)'}
+                handleAuthorize={this.handleAuthorize}
+                loading={this.props.loading}
+                orgType={orgType.bms.name}
+              />
+            </TabPane>
+            <TabPane tab={roleLocale.bmsDataSourceInfoTitle} key="2">
+              <BMSAuthorizeCom type="DataSource" selectedRole={this.state.selectedRole} />
+            </TabPane>
+            <TabPane tab={roleLocale.bmsPlanTabPermissionInfoTitle} key="3">
+              <BMSAuthorizeCom type="CostPlan" selectedRole={this.state.selectedRole} />
+            </TabPane>
+          </Tabs>
         </TabPane>
       );
       i = i + 1;

@@ -19,13 +19,13 @@ import {
   isEnable,
   updateState,
   YDSiparea,
-  exportLineSystem
+  exportLineSystem,
 } from '@/services/sjtms/LineSystemHis';
 import { loginKey, loginCompany, loginOrg } from '@/utils/LoginContext';
 import { havePermission } from '@/utils/authority';
 import { throttleSetter } from 'lodash-decorators';
 import LineSystem from './LineSystem.less';
-import { getDispatchConfig } from '@/services/tms/DispatcherConfig';
+import { getDispatchConfig } from '@/services/sjtms/DispatcherConfig';
 
 export default class LineShipAddressSearchPage extends Component {
   state = {
@@ -63,27 +63,24 @@ export default class LineShipAddressSearchPage extends Component {
   onApproval = async (systemUuid, systemData) => {
     const status = systemData && systemData.STATUS == 'Approved' ? 'Revising' : 'Approved';
     console.log(status);
-      if(this.state.dispatchConfig.checkLineArea==1 && status=='Approved'){
-        await YDSiparea({systemUUID:systemUuid}).then(result =>{
-          console.log(result);
-          if(result.success && result.data?.length>0){
-            Modal.confirm({
-              title: result.data+',存在不同的区域组合，确定批准吗?',
-              onOk: () => {
-                this.updateApprovedState(systemUuid, status, systemData);
-              },
-            });
-          }else{
-             this.updateApprovedState(systemUuid, status, systemData);
-          }
-        })
-       return;
-      }else{
-        await this.updateApprovedState(systemUuid, status, systemData);
-      }
-        
-    
-   
+    if (this.state.dispatchConfig.checkLineArea == 1 && status == 'Approved') {
+      await YDSiparea({ systemUUID: systemUuid }).then(result => {
+        console.log(result);
+        if (result.success && result.data?.length > 0) {
+          Modal.confirm({
+            title: result.data + ',存在不同的区域组合，确定批准吗?',
+            onOk: () => {
+              this.updateApprovedState(systemUuid, status, systemData);
+            },
+          });
+        } else {
+          this.updateApprovedState(systemUuid, status, systemData);
+        }
+      });
+      return;
+    } else {
+      await this.updateApprovedState(systemUuid, status, systemData);
+    }
   };
   //取消批准并备份
   notApprovalAndBackup = async (systemUuid, systemData) => {
@@ -270,22 +267,25 @@ export default class LineShipAddressSearchPage extends Component {
                 </Button>
                 <Button
                   type="primary"
-                  onClick={async ()  => {
-                   const result = await exportLineSystem({systemUUID:selectedKey});
-                   if(result && result.success){
-                      const sheetHeader = ['门店号', '班组', '门店名称', '调整后线路','备注'];
+                  onClick={async () => {
+                    const result = await exportLineSystem({ systemUUID: selectedKey });
+                    if (result && result.success) {
+                      const sheetHeader = ['门店号', '班组', '门店名称', '调整后线路','货主代码' ,'备注'];
                       var option = [];
                       const sheetFilter = [
                         'storeCode',
                         'contact',
                         'storeName',
                         'lineCode',
-                        'remarks'
+                        'ownerCode',
+                        'remarks',
                       ];
                       option.fileName = result.data.tableName;
                       option.datas = [
                         {
-                          sheetData: result.data.lineAddressExcels ? result.data.lineAddressExcels : [],
+                          sheetData: result.data.lineAddressExcels
+                            ? result.data.lineAddressExcels
+                            : [],
                           sheetName: result.data.sheet1, //工作表的名字
                           sheetFilter: sheetFilter,
                           sheetHeader: sheetHeader,
@@ -293,8 +293,7 @@ export default class LineShipAddressSearchPage extends Component {
                       ];
                       const toExcel = new ExportJsonExcel(option);
                       toExcel.saveExcel();
-                    
-                   }
+                    }
                   }}
                 >
                   导出
@@ -359,8 +358,7 @@ export default class LineShipAddressSearchPage extends Component {
           </div>
         )}
         <div>
-          <Tabs defaultActiveKey={'lineShipAddress'}  
-          className = {!systemuuid&&LineSystem.tabsTop}>
+          <Tabs defaultActiveKey={'lineShipAddress'} className={!systemuuid && LineSystem.tabsTop}>
             <TabPane tab="线路门店" key="1">
               <LineShipAddress
                 key="lineShipAddress"

@@ -1,15 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'dva';
 import { formatMessage } from 'umi/locale';
-import { 
-  Table, 
-  message, 
-  Switch,
-  Tabs,
-  Form,
-  Button,
-  Spin,
-} from 'antd';
+import { Table, message, Switch, Tabs, Form, Button, Spin } from 'antd';
 import DescriptionList from '@/components/DescriptionList';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
@@ -20,18 +12,13 @@ import ConfirmLeave from '@/pages/Component/Page/inner/ConfirmLeave';
 import RouteConfirmLeave from '@/pages/Component/Page/inner/RouteConfirmLeave';
 import moment from 'moment';
 import styles from './company.less';
-import {
-  COMPANY_EDIT_TYPE,
-  CONFIRM_LEAVE_ACTION,
-  SERVICE_CAPTION,
-} from '@/utils/constants';
+import { COMPANY_EDIT_TYPE, CONFIRM_LEAVE_ACTION, SERVICE_CAPTION } from '@/utils/constants';
 import { confirmLeaveFunc, formatDate } from '@/utils/utils';
 import PageDetail from '@/components/MyComponent/PageDetail';
 import OperateInfoTable from '@/components/MyComponent/OperateInfoTable';
 import AuthorizeCom from '@/pages/Component/Authorize/AuthorizeCom';
 import ErpConfiguration from '../ErpConfig/ErpConfiguration';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
-import ArticleBarcodeTab from '../../Basic/Article/ArticleBarcodeTab';
 
 const { Description } = DescriptionList;
 const TabPane = Tabs.TabPane;
@@ -53,7 +40,7 @@ export default class CompanyDetail extends Component {
     confirmLeaveVisible: false,
     companyAuthorizeData: [],
     checkedResources: [],
-    erpData: []
+    erpData: [],
   };
 
   componentWillMount() {
@@ -76,7 +63,7 @@ export default class CompanyDetail extends Component {
       this.setState({
         showBasicInfoForm: true,
         showUsedInfoForm: true,
-      })
+      });
     }
     if (newProps.company.data.company) {
       this.setState({
@@ -90,27 +77,27 @@ export default class CompanyDetail extends Component {
     // }
   }
 
-  switchBasicFormView = (flag) => {
+  switchBasicFormView = flag => {
     this.setState({
       showBasicInfoForm: !!flag,
-    })
-  }
+    });
+  };
 
-  switchUsedFormView = (flag) => {
-    if(!flag){
+  switchUsedFormView = flag => {
+    if (!flag) {
       this.refreshView();
     }
     this.setState({
       showUsedInfoForm: !!flag,
-    })
-  }
+    });
+  };
 
   /**
    * 获取企业的权限
    */
   fetchCompanyResourcesByUuid = () => {
     const { dispatch } = this.props;
-    let companyUuid = this.state.currentCompany.uuid
+    let companyUuid = this.state.currentCompany.uuid;
     dispatch({
       type: 'company/getResourceKeys',
       payload: companyUuid,
@@ -128,19 +115,19 @@ export default class CompanyDetail extends Component {
    */
   fetchErpByCompanyUuid = () => {
     const { dispatch } = this.props;
-    let companyUuid = this.state.currentCompany.uuid
+    let companyUuid = this.state.currentCompany.uuid;
     dispatch({
       type: 'erp/get',
       payload: companyUuid,
       callback: response => {
         if (response && response.success) {
           this.setState({
-            erpData: response.data
+            erpData: response.data,
           });
         }
       },
     });
-  }
+  };
 
   /**
    * 授权处理
@@ -172,17 +159,17 @@ export default class CompanyDetail extends Component {
   /**
    * 获取全部权限信息
    */
-  fetchAuthorizeData = ()=>{
-    const {dispatch} = this.props;
+  fetchAuthorizeData = () => {
+    const { dispatch } = this.props;
     dispatch({
       type: 'resource/fetch',
       callback: response => {
         this.setState({
           companyAuthorizeData: response.data,
         });
-      }
+      },
     });
-  }
+  };
 
   /**
    * 检测当前页面是否有内容正在更新
@@ -192,21 +179,21 @@ export default class CompanyDetail extends Component {
     if (showBasicInfoForm || showUsedInfoForm) {
       return true;
     }
-    
-    return false;
-  }
 
-  handleUpdateBasicInfoLoading = (flag) => {
+    return false;
+  };
+
+  handleUpdateBasicInfoLoading = flag => {
     this.setState({
       updateBasicInfoLoading: !!flag,
-    })
-  }
+    });
+  };
 
-  handleUpdateUsedInfoLoading = (flag) => {
+  handleUpdateUsedInfoLoading = flag => {
     this.setState({
       updateUsedInfoLoading: !!flag,
-    })
-  }
+    });
+  };
 
   /**
    * 启用或者禁用处理
@@ -251,21 +238,21 @@ export default class CompanyDetail extends Component {
     this.setState({
       showBasicInfoForm: false,
       showUsedInfoForm: false,
-    })
+    });
     dispatch({
       type: 'company/get',
       payload: currentCompany.uuid,
     });
-  }
+  };
 
   /**
    * 更新企业信息
-   * 
+   *
    * @param {Object} value 输入的企业信息
    * @param {String} type 更新类型
    */
   handleModify = (value, type) => {
-    const { dispatch, form, } = this.props;
+    const { dispatch, form } = this.props;
 
     if (type === COMPANY_EDIT_TYPE['basic']) {
       this.handleUpdateBasicInfoLoading(true);
@@ -304,26 +291,25 @@ export default class CompanyDetail extends Component {
           }
           this.refreshView();
         } else {
-         
         }
 
         if (type === COMPANY_EDIT_TYPE['basic']) {
           this.handleUpdateBasicInfoLoading(false);
         }
-    
+
         if (type === COMPANY_EDIT_TYPE['used']) {
           this.handleUpdateUsedInfoLoading(false);
         }
       },
     });
-  }
+  };
 
   /**
    * 离开确认 - 确认回调
    */
   handleLeaveConfirmOk = () => {
     this.props.onCancel();
-  }
+  };
 
   /**
    * 离开确认 - 取消回调
@@ -331,8 +317,8 @@ export default class CompanyDetail extends Component {
   handleLeaveConfirmCancel = () => {
     this.setState({
       confirmLeaveVisible: false,
-    })
-  }
+    });
+  };
 
   /**
    * 取消处理
@@ -341,18 +327,20 @@ export default class CompanyDetail extends Component {
     if (this.checkUpdatingContent()) {
       this.setState({
         confirmLeaveVisible: true,
-      })
+      });
     } else {
       this.props.onCancel();
     }
-  }
+  };
 
-  renderConfirmLeave = (comfirmLeaveProps) => {
-    return <div>
-             <ConfirmLeave {...comfirmLeaveProps} />
-             <RouteConfirmLeave />
-           </div>
-  }
+  renderConfirmLeave = comfirmLeaveProps => {
+    return (
+      <div>
+        <ConfirmLeave {...comfirmLeaveProps} />
+        <RouteConfirmLeave />
+      </div>
+    );
+  };
 
   render() {
     const {
@@ -367,15 +355,15 @@ export default class CompanyDetail extends Component {
       showUsedInfoForm,
       updateBasicInfoLoading,
       updateUsedInfoLoading,
-      confirmLeaveVisible, 
+      confirmLeaveVisible,
       companyAuthorizeData,
       checkedResources,
-      erpData
+      erpData,
     } = this.state;
 
     let entity = data.company;
 
-    let title = "[" + entity.code + "]" + entity.name;
+    let title = '[' + entity.code + ']' + entity.name;
 
     const companyDetailBasicInfoProps = {
       entity: entity,
@@ -383,7 +371,7 @@ export default class CompanyDetail extends Component {
       switchBasicFormView: this.switchBasicFormView,
       handleModify: this.handleModify,
       updateBasicInfoLoading: updateBasicInfoLoading,
-    }
+    };
 
     const companyDetailUsedInfoProps = {
       entity: entity,
@@ -391,21 +379,18 @@ export default class CompanyDetail extends Component {
       switchUsedFormView: this.switchUsedFormView,
       handleModify: this.handleModify,
       updateUsedInfoLoading: updateUsedInfoLoading,
-    }
+    };
 
     const comfirmLeaveProps = {
-      confirmLeaveVisible: confirmLeaveVisible, 
+      confirmLeaveVisible: confirmLeaveVisible,
       action: CONFIRM_LEAVE_ACTION['NEW'],
       handleLeaveConfirmOk: this.handleLeaveConfirmOk,
       handleLeaveConfirmCancel: this.handleLeaveConfirmCancel,
-    }
+    };
 
-    
     const actionBtn = (
       <Fragment>
-        <Button onClick={this.handleCancel}>
-          {formatMessage({ id: 'common.button.back' })}
-        </Button>
+        <Button onClick={this.handleCancel}>{formatMessage({ id: 'common.button.back' })}</Button>
       </Fragment>
     );
 
@@ -415,7 +400,7 @@ export default class CompanyDetail extends Component {
       entity: entity,
       handleEnableOrDisable: this.handleEnableOrDisable,
       action: actionBtn,
-    }
+    };
 
     return (
       <PageHeaderWrapper>
@@ -428,25 +413,27 @@ export default class CompanyDetail extends Component {
               </TabPane>
               <TabPane tab={formatMessage({ id: 'company.detail.tab.erpConfiguration' })} key="2">
                 <Spin indicator={LoadingIcon('default')} tip="处理中..." spinning={loading}>
-                  <ErpConfiguration  data={this.state.erpData} dispatch={this.props.dispatch}></ErpConfiguration>
+                  <ErpConfiguration data={this.state.erpData} dispatch={this.props.dispatch} />
                 </Spin>
               </TabPane>
               <TabPane tab={formatMessage({ id: 'company.detail.tab.permissionInfo' })} key="3">
                 <Spin indicator={LoadingIcon('default')} tip="处理中..." spinning={loading}>
-                  <AuthorizeCom data={companyAuthorizeData} disabled={false} checkedKeys={checkedResources} authorize={this.handleAuthorize} ></AuthorizeCom>
+                  <AuthorizeCom
+                    data={companyAuthorizeData}
+                    disabled={false}
+                    checkedKeys={checkedResources}
+                    authorize={this.handleAuthorize}
+                  />
                 </Spin>
               </TabPane>
               <TabPane tab={formatMessage({ id: 'company.detail.tab.operateInfo' })} key="4">
-                <OperateInfoTable 
-                  entity={entity}
-                  serviceCaption={SERVICE_CAPTION['company']}
-                />
+                <OperateInfoTable entity={entity} serviceCaption={SERVICE_CAPTION['company']} />
               </TabPane>
             </Tabs>
           </div>
         </PageDetail>
 
-        {this.checkUpdatingContent() && this.renderConfirmLeave(comfirmLeaveProps) }
+        {this.checkUpdatingContent() && this.renderConfirmLeave(comfirmLeaveProps)}
       </PageHeaderWrapper>
     );
   }

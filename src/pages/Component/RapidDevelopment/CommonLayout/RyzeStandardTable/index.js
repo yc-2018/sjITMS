@@ -15,6 +15,7 @@ import { func } from 'prop-types';
 import ToolbarPanel from '@/pages/Component/Page/inner/ToolbarPanel';
 import { T } from 'antd/lib/upload/utils';
 import { uniqBy } from 'lodash';
+// import { isContained } from '@/utils/groupByUtil';
 
 const SHOW_THRESH_HOLD = 5;
 
@@ -397,6 +398,7 @@ class StandardTable extends Component {
       return {
         selectedRowKeys: [],
         needTotalList,
+        selectedAllRows: [],
       };
     }
     return null;
@@ -589,12 +591,12 @@ class StandardTable extends Component {
   };
 
   handleRowSelectChange = (selectedRowKeys, selectedRows) => {
-    let { needTotalList, selectedAllRows } = this.state;
+    let { needTotalList, selectedAllRows, list } = this.state;
     needTotalList = needTotalList.map(item => ({
       ...item,
       total: selectedRows.reduce((sum, val) => sum + parseFloat(val[item.dataIndex], 10), 0),
     }));
-    const { onSelectRow } = this.props;
+    const { onSelectRow, isMerge, parentRows, isExMerge } = this.props;
     let selectedRowArr = [];
     if (selectedRows.length == selectedRowKeys.length) {
       //只操作一页数据
@@ -615,10 +617,62 @@ class StandardTable extends Component {
         }
       });
     }
-    if (onSelectRow) {
-      onSelectRow(selectedRowArr, selectedRowKeys);
+    const { rowKey } = this.props;
+    let selectedRowKeysAll = selectedRowKeys;
+    if (this.props.handleChildRowSelectChange) {
+      let headerRows = selectedRows.filter(e => e.isHeader);
+      if (isMerge) {
+        selectedRowKeysAll = [...headerRows.map(e => e.uuid)];
+        selectedRowArr = [...headerRows];
+        if (headerRows.length <= 0) {
+          selectedRowKeysAll = [];
+          selectedRowArr = [];
+        } else {
+          for (let record of headerRows) {
+            for (const d of record.detail) {
+              let rowKeyDetail = rowKey && typeof rowKey === 'function' ? rowKey(d) : rowKey;
+              selectedRowKeysAll.push(rowKeyDetail);
+              selectedRowArr.push(d);
+            }
+          }
+        }
+        selectedRowKeysAll = uniqBy(selectedRowKeysAll);
+        selectedRowArr = uniqBy(selectedRowArr);
+      } else {
+        //TODO 子类未全选/全选时 去除/增加父类选中
+        // console.log('headerRows', headerRows);
+        // for (let record of headerRows) {
+        //   let uuids = record.uuid.split(',');
+        //   uuids.pop();
+        //   //不包含全部则去除选中
+        //   if (!isContained(selectedRowKeysAll, uuids)) {
+        //     let headerKey = rowKey && typeof rowKey === 'function' ? rowKey(record) : rowKey;
+        //     let idx = selectedRowKeysAll.indexOf(headerKey);
+        //     if (idx > -1) {
+        //       selectedRowKeysAll.splice(idx, 1);
+        //       selectedRowArr.splice(idx, 1);
+        //     }
+        //   }
+        // }
+      }
+
+      this.props.handleChildRowSelectChange(selectedRowKeysAll);
     }
-    this.setState({ selectedRowKeys, needTotalList, selectedAllRows: selectedRowArr });
+
+    if (onSelectRow) {
+      //合并的selectRows排除单头
+      let rows = selectedRowArr;
+      if ((isMerge || isExMerge) && !parentRows) {
+        rows = selectedRowArr.filter(e => !e.isHeader);
+      }
+      onSelectRow(rows, selectedRowKeysAll);
+    }
+
+    this.setState({
+      selectedRowKeys: selectedRowKeysAll,
+      needTotalList,
+      selectedAllRows: selectedRowArr,
+    });
   };
 
   handleTableChange = (pagination, filters, sorter) => {
@@ -1152,6 +1206,7 @@ class StandardTable extends Component {
 
   onClickRow = (record, key, e, index) => {
     let { selectedRowKeys, selectedAllRows, lastIndex } = this.state;
+    const { isMerge, isExMerge } = this.props;
     if (!selectedRowKeys) {
       selectedRowKeys = [];
       selectedAllRows = [];
@@ -1175,13 +1230,38 @@ class StandardTable extends Component {
     if (idx > -1) {
       selectedRowKeys.splice(idx, 1);
       selectedAllRows.splice(idx, 1);
+      if (isMerge) {
+        for (const d of record.detail) {
+          let detailRowKey = key && typeof key === 'function' ? key(d) : key;
+          let idxDetail = selectedRowKeys.indexOf(detailRowKey);
+          if (idxDetail > -1) {
+            selectedRowKeys.splice(idxDetail, 1);
+            selectedAllRows.splice(idxDetail, 1);
+          }
+        }
+      }
     } else {
       selectedRowKeys.push(rowKey);
       selectedAllRows.push(record);
+      // if (isMerge) {
+      //   for (const d of record.detail) {
+      //     let rowKeyDetail = key && typeof key === 'function' ? key(d) : key;
+      //     selectedRowKeys.push(rowKeyDetail);
+      //     selectedAllRows.push(d);
+      //   }
+      // }
     }
     selectedRowKeys = uniqBy(selectedRowKeys);
     selectedAllRows = uniqBy(selectedAllRows);
+
     this.handleRowSelectChange(selectedRowKeys, selectedAllRows);
+
+    // if (this.props.handleChildRowSelectChange) {
+    //   if (isMerge) {
+    //     this.props.handleChildRowSelectChange(selectedRowKeys);
+    //   }
+    // }
+
     if (this.props.handleRowClick) {
       this.props.handleRowClick(record);
     }
@@ -1410,7 +1490,15 @@ class StandardTable extends Component {
       settingModalVisible,
       oriColumnLen,
     } = this.state;
-    let { data, rowKey, noSettingColumns, rest, hasSettingColumns } = this.props;
+    let {
+      data,
+      rowKey,
+      noSettingColumns,
+      rest,
+      hasSettingColumns,
+      isMerge,
+      isExMerge,
+    } = this.props;
     let list = data ? (data.list ? data.list : []) : [];
     let pagination = data ? (data.pagination ? data.pagination : {}) : {};
     let showList = isEmpty(this.state.list) ? list : this.state.list;
@@ -1432,7 +1520,7 @@ class StandardTable extends Component {
           ...pagination,
           // defaultPageSize: 20,
           pageSize: this.state.pageSize ? this.state.pageSize : 20,
-          pageSizeOptions: ['20', '50', '100', '200', '500'],
+          pageSizeOptions: ['20', '50', '100', '200'], //500
         };
       }
     }
@@ -1473,18 +1561,23 @@ class StandardTable extends Component {
       scroll.y = this.props.minHeight;
     }
     //默认第一列与最后一列操作列固定
-    let firstCol = newColumns[0];
-    newColumns[0] = {
-      ...firstCol,
-      fixed: 'left',
-    };
-    let lastCol = newColumns[newColumns.length - 1];
-    if (this.isFixedEdge(lastCol)) {
-      newColumns[newColumns.length - 1] = {
-        ...lastCol,
-        fixed: 'right',
+    //TODO 跟子表格冲突 有bug
+    if (!isMerge && !isExMerge) {
+      let firstCol = newColumns[0];
+      newColumns[0] = {
+        ...firstCol,
+        fixed: 'left',
       };
+      let lastCol = newColumns[newColumns.length - 1];
+      if (this.isFixedEdge(lastCol)) {
+        newColumns[newColumns.length - 1] = {
+          ...lastCol,
+          fixed: 'right',
+        };
+      }
     }
+
+    //------------------------------
 
     // 固定列滚动
     // if (totalWidth > tableWidth) {
@@ -1541,16 +1634,20 @@ class StandardTable extends Component {
     //   }
     // }
     const rowSelection = {
-      selectedRowKeys,
+      selectedRowKeys: this.props.selectRowKeys ? this.props.selectRowKeys : selectedRowKeys,
       columnWidth: '35px',
-      onChange: this.handleRowSelectChange,
+      onChange: this.props.handleRowSelectChange
+        ? this.props.handleRowSelectChange
+        : this.handleRowSelectChange,
       getCheckboxProps: record => ({
         disabled: record.disabled,
       }),
     };
+    // console.log('selectedRowKeys333', rowSelection.selectedRowKeys, this.props.comId);
     this.refreshColumns(newColumns);
-    let style =
-      this.props.comId && this.props.comId.indexOf('search') != -1 && !this.props.noToolbarPanel
+    let style = this.props.settingClass
+      ? this.props.settingClass
+      : this.props.comId && this.props.comId.indexOf('search') != -1 && !this.props.noToolbarPanel
         ? {
             display: 'flex',
             justifyContent: 'flex-end',
@@ -1600,6 +1697,18 @@ class StandardTable extends Component {
     });
     showColumns = this.adjustColumns(showColumns);
     let footerColumns = [];
+    //合并时填充合并按钮宽度
+    if (isMerge) {
+      footerColumns.push({
+        title: '合并',
+        dataIndex: 'isMerge',
+        key: 'isMergefooter',
+        width: '50px',
+        render: (val, record) => {
+          return val ? val : '';
+        },
+      });
+    }
     for (const item of showColumns) {
       footerColumns.push({
         title: item.title,
@@ -1608,7 +1717,7 @@ class StandardTable extends Component {
         sorter: item.sorter,
         width: item.width,
         render: (val, record) => {
-          return val ? val : '<空>';
+          return val ? val : '';
         },
       });
     }
@@ -1616,17 +1725,22 @@ class StandardTable extends Component {
     showColumns.push({});
     footerColumns.push({});
     // console.log('showColumns', showColumns);
+    this.exShowColumns = showColumns;
     let settingIcon = (
       <div className={styles.setting} onClick={() => this.handleSettingModalVisible(true)}>
         <IconFont style={{ fontSize: '20px', color: '#848C96' }} type="icon-setting" />
       </div>
     );
     let status =
-      this.props.colTotal && this.props.colTotal.length == '0'
+      (this.props.colTotal && this.props.colTotal.length == '0') || showList.length == 0
         ? { display: 'none' }
         : { display: 'block' };
     let menu = this.props.RightClickMenu;
     let userSelect = this.state.isUserSelect ? {} : { userSelect: 'none' };
+    if (!((this.props.colTotal && this.props.colTotal.length == '0') || showList.length == 0)) {
+      this.props.colTotal[0].line_show = '合计';
+    }
+
     return (
       <Dropdown
         overlay={menu}
@@ -1656,6 +1770,7 @@ class StandardTable extends Component {
                     size={this.props.size ? this.props.size : 'middle'}
                     components={this.components}
                     style={status}
+                    bodyStyle={{ fontWeight: 'bold' }}
                   />
                 );
               }}
@@ -1681,7 +1796,7 @@ class StandardTable extends Component {
               components={this.components}
               loading={this.props.loading}
               columns={showColumns}
-              bordered={bordered}
+              bordered={true}
               scroll={this.props.newScroll ? this.props.newScroll : scroll}
               onRow={
                 this.props.onRow
@@ -1712,6 +1827,10 @@ class StandardTable extends Component {
                       }
               }
               {...rest}
+              expandedRowRender={
+                this.props.isMerge || this.props.isExMerge ? this.props.expandedRowRender : false
+              }
+              expandRowByClick={this.props.expandRowByClick}
             />
           </DndProvider>
         </div>

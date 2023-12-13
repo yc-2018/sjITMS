@@ -7,7 +7,20 @@
  * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineShipAddress.js
  */
 import { connect } from 'dva';
-import { Modal, Button, Input, message, Form, Row, Col, Select, TreeSelect, Icon, Menu, Dropdown } from 'antd';
+import {
+  Modal,
+  Button,
+  Input,
+  message,
+  Form,
+  Row,
+  Col,
+  Select,
+  TreeSelect,
+  Icon,
+  Menu,
+  Dropdown,
+} from 'antd';
 import OperateCol from '@/pages/Component/Form/OperateCol';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
@@ -23,28 +36,27 @@ import {
   switchLineAddress,
   getMatchLine,
   updateNote,
-  updateIsNewStore
+  updateIsNewStore,
+  updateLineOrder
 } from '@/services/sjtms/LineSystemHis';
-import { updateStoreAddressList ,checkShipArea} from '@/services/sjtms/LineSystemHis';
+import {SimpleAutoComplete} from '@/pages/Component/RapidDevelopment/CommonComponent';
+import { updateStoreAddressList, checkShipArea } from '@/services/sjtms/LineSystemHis';
 import { dynamicqueryById, dynamicDelete, dynamicQuery } from '@/services/quick/Quick';
 import { commonLocale } from '@/utils/CommonLocale';
 import TableTransfer from './TableTransfer';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import LineShipAddressPlan from './LineShipAddressPlan';
-import AlcNumModal from '@/pages/Wcs/Dps/Job/AlcNumModal';
 import { throttleSetter } from 'lodash-decorators';
-import SelfTackShipSearchForm from '@/pages/Tms/SelfTackShip/SelfTackShipSearchForm';
-import { getDispatchConfig } from '@/services/tms/DispatcherConfig';
-import LineSystem from './LineSystem.less'
-import {
-  findLineSystemTreeByStoreCode,
-} from '@/services/sjtms/LineSystemHis';
+import { getDispatchConfig } from '@/services/sjtms/DispatcherConfig';
+import LineSystem from './LineSystem.less';
+import { findLineSystemTreeByStoreCode } from '@/services/sjtms/LineSystemHis';
 import { flushSync } from 'react-dom';
 import { log } from 'lodash-decorators/utils';
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
+@Form.create()
 export default class LineShipAddress extends QuickFormSearchPage {
   state = {
     ...this.state,
@@ -63,9 +75,16 @@ export default class LineShipAddress extends QuickFormSearchPage {
     lineValue: undefined,
     isModalVisible: false,
     noSettingColumns: true,
+    noPagination:false,
     //hasSettingColumns: false,
     canDragTable: true,
-    rest: { className: LineSystem.contentWrapglobal }
+    pagination :  {
+      showSizeChanger: true,
+      pageSizeOptions: ['20', '50', '100', '200','500','1000']
+    },
+    updateLineOrderVisible:false,
+    notshowChanger:true,
+    rest: { className: LineSystem.contentWrapglobal },
   };
   constructor(props) {
     super(props);
@@ -112,17 +131,17 @@ export default class LineShipAddress extends QuickFormSearchPage {
             this.setState({
               isOrgQuery: response.result.reportHead.organizationQuery
                 ? [
-                  {
-                    field:
-                      loginOrg().type.toLowerCase() == 'dc'
-                        ? loginOrg().type.toLowerCase() + 'Uuid'
-                        : 'dispatchCenterUuid',
-                    type: 'VarChar',
-                    rule: 'like',
-                    val: loginOrg().uuid,
-                  },
-                  ...this.state.isOrgQuery,
-                ]
+                    {
+                      field:
+                        loginOrg().type.toLowerCase() == 'dc'
+                          ? loginOrg().type.toLowerCase() + 'Uuid'
+                          : 'dispatchCenterUuid',
+                      type: 'VarChar',
+                      rule: 'like',
+                      val: loginOrg().uuid,
+                    },
+                    ...this.state.isOrgQuery,
+                  ]
                 : [...this.state.isOrgQuery],
             });
           }
@@ -214,12 +233,11 @@ export default class LineShipAddress extends QuickFormSearchPage {
           //     : lineTreeData[0]?.key
           //   : undefined;
         }
-        this.setState({ systemData: lineTreeData })
-
+        this.setState({ systemData: lineTreeData });
       }
     });
   };
- async componentDidMount() {
+  async componentDidMount() {
     this.queryCoulumns();
     this.getCreateConfig();
     this.queryLineSystem();
@@ -230,7 +248,6 @@ export default class LineShipAddress extends QuickFormSearchPage {
         ischeckArea: response.data?.checkLineArea == 1,
       });
     }
-   
   }
   // componentWillMount() {
   //   this.setState({
@@ -244,7 +261,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
     return this.state.data;
   };
   componentWillReceiveProps = async nextProps => {
-    if (nextProps.lineuuid != this.props.lineuuid && nextProps.lineuuid!=undefined) {
+    if (nextProps.lineuuid != this.props.lineuuid && nextProps.lineuuid != undefined) {
       this.state.lineuuid = nextProps.lineuuid;
       this.state.systemLineFlag = nextProps.systemLineFlag;
       this.state.buttonDisable = false;
@@ -316,8 +333,8 @@ export default class LineShipAddress extends QuickFormSearchPage {
       }
       event.component = component;
     }
-    if(event.column.fieldName =='ADDRESSNAME' && event.record['ISNEWSTORE'] == 1){
-      event.component = <span style={{color:'red'}}>{event.val}</span>
+    if (event.column.fieldName == 'ADDRESSNAME' && event.record['ISNEWSTORE'] == 1) {
+      event.component = <span style={{ color: 'red' }}>{event.val}</span>;
     }
   };
 
@@ -334,7 +351,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
         },
       ];
     }
-    
+
     if (systemLineFlag) {
       parmas = [
         {
@@ -382,7 +399,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
     let exSearchFilter = await this.exSearchFilter();
     if (!exSearchFilter) exSearchFilter = [];
 
-    let defaultSearch = this.defaultSearch();
+    let defaultSearch = await this.defaultSearch();
     if (!defaultSearch) defaultSearch = [];
     if (typeof filter == 'undefined') {
       let queryParams = this.state.pageFilters.superQuery?.queryParams?.filter(item => {
@@ -518,7 +535,6 @@ export default class LineShipAddress extends QuickFormSearchPage {
       }
     });
   };
-
   //添加门店
   handleAddStore = () => {
     this.setState({
@@ -530,8 +546,8 @@ export default class LineShipAddress extends QuickFormSearchPage {
   };
   //保存
   handleStoreSave = async () => {
-    const { targetKeys, transferDataSource, data,ischeckArea } = this.state;
-    console.log("ss",ischeckArea);
+    const { targetKeys, transferDataSource, data, ischeckArea } = this.state;
+    console.log('ss', ischeckArea);
     const { lineuuid, linecode } = this.props;
     if (targetKeys.length == 0) {
       return;
@@ -564,23 +580,21 @@ export default class LineShipAddress extends QuickFormSearchPage {
         };
       });
     if (saveData.length > 0) {
-      if(ischeckArea){
-        const shipArea = await checkShipArea(
-          { lineuuid:lineuuid,
-            addressIds:saveData.map(e=>e.ADDRESSUUID)
-          }
-        );
-        if(!shipArea.data){
+      if (ischeckArea) {
+        const shipArea = await checkShipArea({
+          lineuuid: lineuuid,
+          addressIds: saveData.map(e => e.ADDRESSUUID),
+        });
+        if (!shipArea.data) {
           Modal.confirm({
-            title:"存在门店配送区域不一致，确定加入到同一个线路吗？",
-            onOk:()=>this.saveFormData2(saveData)
-          })
+            title: '存在门店配送区域不一致，确定加入到同一个线路吗？',
+            onOk: () => this.saveFormData2(saveData),
+          });
           return;
-        }else{
+        } else {
           this.saveFormData2(saveData);
         }
-       
-      }else{
+      } else {
         this.saveFormData2(saveData);
       }
       this.setState({ targetKeys: [], transferDataSource: [] });
@@ -618,13 +632,29 @@ export default class LineShipAddress extends QuickFormSearchPage {
       },
     });
   };
+  updateLineOrder = async () => {
+    const { GOALADDRESSCODE, ADDRESSCODE, pageFilters,orientation,selectedRows,lineuuid} = this.state;
+    await updateLineOrder(
+      {
+        goaladdresscode:GOALADDRESSCODE,
+        addresscode:ADDRESSCODE,
+        orientation:orientation,
+        lineuuid:lineuuid
+      }).then(result => {
+      if (result.success) {
+        message.success('修改成功');
+        this.getData(pageFilters);
+        this.setState({ updateLineOrderVisible: false });
+      }
+    });
+  };
   onTransferChange = targetKeys => {
     this.setState({ targetKeys });
   };
   onTranferFetch = dataSource => {
     this.setState({ transferDataSource: dataSource });
   };
-  handleOk = () => { };
+  handleOk = () => {};
   handleCancel = () => {
     this.setState({ isModalVisible: false });
   };
@@ -632,6 +662,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
     this.onSearch();
   };
   drawActionButton = () => {
+    const { getFieldDecorator } = this.props.form;
     // const { getFieldDecorator, getFieldsError, getFieldError, isFieldTouched } = this.props;
     const {
       modalVisible,
@@ -644,8 +675,8 @@ export default class LineShipAddress extends QuickFormSearchPage {
       systemLineFlag,
       systemData,
       updateNoteVisible,
-      ischeckArea
-      
+      ischeckArea,
+      updateLineOrderVisible
     } = this.state;
     const options = lineData.map(a => {
       return <Select.Option key={a.uuid}>{a.name}</Select.Option>;
@@ -667,10 +698,10 @@ export default class LineShipAddress extends QuickFormSearchPage {
             //key={e.UUID}
             //showPageNow="query"
             quickuuid="sj_itms_line_shipAddress_plan"
-            ischeckArea = {ischeckArea}
+            ischeckArea={ischeckArea}
             // location={{ pathname: '1' }}
             lineuuid={this.props.lineuuid}
-          //pageFilters={{queryParams :[{field:"systemuuid", type:"VarChar", rule:"eq", val:"000000750000004"}]}}
+            //pageFilters={{queryParams :[{field:"systemuuid", type:"VarChar", rule:"eq", val:"000000750000004"}]}}
           />
         </Modal>
         <Modal
@@ -734,7 +765,108 @@ export default class LineShipAddress extends QuickFormSearchPage {
               <Form ref="updateNote">
                 <Row>
                   <Col>
-                    <Input defaultValue={this.state.note} onChange={(e) => this.setState({ note: e.target.value })}></Input>
+                    <Input
+                      defaultValue={this.state.note}
+                      onChange={e => this.setState({ note: e.target.value })}
+                    />
+                  </Col>
+                </Row>
+              </Form>
+            </Col>
+          </Row>
+        </Modal>
+        <Modal
+          title={"线路排序"}
+          width={800}
+          visible={updateLineOrderVisible}
+          onOk={this.updateLineOrder}
+          confirmLoading={false}
+          onCancel={() => this.setState({ updateLineOrderVisible: false })}
+          destroyOnClose={true}
+        >
+          <Row>
+            <Col>
+              <Form ref="updateNote">
+                <Row>
+                   <Col span={8}>
+                  源门店代码：
+                  {getFieldDecorator('ADDRESSCODE', {
+         initialValue: this.state.ADDRESSCODE,
+          rules: [{ required: true, message: '请输入门店代码!' }],
+        })(
+          <SimpleAutoComplete
+            style={{ width: 200 }}
+            placeholder="请输入门店代码"
+            textField="[%CODE%]%NAME%"
+            valueField="CODE"
+            searchField="CODE"
+            queryParams={{
+              tableName: 'SJ_ITMS_SHIP_ADDRESS',
+              condition: {
+                params: [
+                  {
+                    field: 'COMPANYUUID',
+                    rule: 'eq',
+                    val: [loginCompany().uuid],
+                  },
+                  {
+                    field: 'DISPATCHCENTERUUID',
+                    rule: 'eq',
+                    val: [loginOrg().uuid],
+                  },
+                ],
+              },
+            }}
+            noRecord
+            autoComplete
+            allowClear={true}
+            onChange={e => this.setState({ ADDRESSCODE: e })}
+          />
+        )}
+                  </Col>
+                  
+                  <Col span={8}>
+                  目标门店代码：
+                       {getFieldDecorator('GOALADDRESSCODE', {
+          rules: [{ required: true, message: '目标门店代码：!' }],
+          initialValue: this.state.GOALADDRESSCODE,
+        })(
+          <SimpleAutoComplete
+            style={{ width: 200 }}
+            placeholder="目标门店代码："
+            textField="[%CODE%]%NAME%"
+            valueField="CODE"
+            searchField="CODE"
+            queryParams={{
+              tableName: 'SJ_ITMS_SHIP_ADDRESS',
+              condition: {
+                params: [
+                  {
+                    field: 'COMPANYUUID',
+                    rule: 'eq',
+                    val: [loginCompany().uuid],
+                  },
+                  {
+                    field: 'DISPATCHCENTERUUID',
+                    rule: 'eq',
+                    val: [loginOrg().uuid],
+                  },
+                ],
+              },
+            }}
+            noRecord
+            autoComplete
+            allowClear={true}
+            onChange={e => this.setState({ GOALADDRESSCODE: e })}
+          />
+        )}
+                  </Col>
+                  <Col span={8}>
+                    <span>位置：</span>
+                    <Select onChange={e=>this.setState({orientation:e})}>
+                      <Option value ='before'>前</Option>
+                      <Option value ='after'>后</Option>
+                    </Select>
                   </Col>
                 </Row>
               </Form>
@@ -793,45 +925,50 @@ export default class LineShipAddress extends QuickFormSearchPage {
       if (result.success) {
         message.success('修改成功');
         this.getData(pageFilters);
-        this.setState({ updateNoteVisible: false })
+        this.setState({ updateNoteVisible: false });
       }
-    })
-  }
-  updateIsNewStore = async (e) => {
-   
-    console.log("e", e);
+    });
+  };
+  updateIsNewStore = async e => {
+    console.log('e', e);
     const { selectedRows, pageFilters } = this.state;
-    if(selectedRows.length ==0){ 
-      message.error("请至少选择一条记录")
+    if (selectedRows.length == 0) {
+      message.error('请至少选择一条记录');
       return;
     }
-    const  uuids = selectedRows.map(e=>e.UUID);
+    const uuids = selectedRows.map(e => e.UUID);
     console.log(uuids);
     await updateIsNewStore({ uuids: uuids, flag: e.key }).then(result => {
       if (result.success) {
         message.success('修改成功');
         this.getData(pageFilters);
       }
-    })
-  }
+    });
+  };
   handleAddToNewLine = async () => {
-    const { selectedRows, lineValue, pageFilters, lineuuid, addToNewLine,ischeckArea } = this.state;
+    const {
+      selectedRows,
+      lineValue,
+      pageFilters,
+      lineuuid,
+      addToNewLine,
+      ischeckArea,
+    } = this.state;
     //true 添加到新线路
     if (addToNewLine) {
       let params = {
         lineUuid: lineValue.value,
         addressIds: selectedRows.map(e => e.UUID),
       };
-      if(ischeckArea){
-        const shipArea = await checkShipArea(
-          { lineuuid:lineValue.value,
-            addressIds:selectedRows.map(e=>e.ADDRESSUUID)
-          }
-        );
-        if(!shipArea.data){
+      if (ischeckArea) {
+        const shipArea = await checkShipArea({
+          lineuuid: lineValue.value,
+          addressIds: selectedRows.map(e => e.ADDRESSUUID),
+        });
+        if (!shipArea.data) {
           Modal.confirm({
-            title:"存在门店配送区域不一致，确定加入到同一个线路吗？",
-            onOk:async ()=> {
+            title: '存在门店配送区域不一致，确定加入到同一个线路吗？',
+            onOk: async () => {
               await addToNewLines(params).then(result => {
                 if (result.success) {
                   message.success('添加成功');
@@ -847,10 +984,10 @@ export default class LineShipAddress extends QuickFormSearchPage {
                 });
               });
               return;
-            }
-          })
+            },
+          });
           return;
-        }else{
+        } else {
           await addToNewLines(params).then(result => {
             if (result.success) {
               message.success('添加成功');
@@ -953,7 +1090,7 @@ export default class LineShipAddress extends QuickFormSearchPage {
 
   drawToolbarPanel = () => {
     const { buttonDisable } = this.state;
-   
+
     return (
       <>
         {buttonDisable ? <Button onClick={this.tableSortSave}>排序并保存</Button> : <></>}
@@ -995,28 +1132,35 @@ export default class LineShipAddress extends QuickFormSearchPage {
             >
               移入到新线路
             </Button>
-            
-
+            <Button
+            onClick={() => {this.setState({ updateLineOrderVisible: true})}}
+            >
+              线路排序
+           </Button>
           </>
         )}
         <Button
-              onClick={() => {
-                if (this.state.selectedRows.length == 0) {
-                  message.info('请选择记录');
-                  return;
-                }
-                this.setState({ updateNoteVisible: true, note: this.state.selectedRows[0].NOTE });
-              }}
-            >
-              编辑备注
-            </Button>
+          onClick={() => {
+            if (this.state.selectedRows.length == 0) {
+              message.info('请选择记录');
+              return;
+            }
+            this.setState({ updateNoteVisible: true, note: this.state.selectedRows[0].NOTE });
+          }}
+        >
+          编辑备注
+        </Button>
       </>
     );
   };
 
   //拖拽排序
   drapTableChange = list => {
-    const { data } = this.state;
+    const { data,pageFilters } = this.state;
+    if(pageFilters?.page !== 1 && pageFilters?.page!=undefined){
+      message.error("只能在第一页使用推拽");
+      return;
+    }
     data.list = list.map((record, index) => {
       record.ORDERNUM = index + 1;
       let linecode = record.LINECODE;

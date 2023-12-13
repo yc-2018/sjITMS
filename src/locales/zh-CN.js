@@ -332,6 +332,7 @@ export default {
   'menu.notice': '通知发布',
   'menu.account': '个人中心',
   'menu.account.modify': '修改密码',
+  'menu.account.modify.compel': '您的密码强度太弱，请修改密码',
   'menu.account.switch': '切换组织',
   'menu.account.logout': '退出登录',
   'menu.account.center': '账户信息',
@@ -949,7 +950,7 @@ export default {
   'user.modify.old.password.label': '原密码',
   'user.modify.new.password.label': '新密码',
   'user.modify.twice.pwd.not.same': '两次密码输入不一致',
-  'user.modify.ckeckPassword': '密码必须为6-16位数字、字母、符号组合',
+  'user.modify.ckeckPassword': '密码必须是8-16位包含大小写字母、数字的组合',
   'user.modify.password.success': '密码修改成功',
   // 用户-切换组织
   'user.modify.checkOrg.success': '组织切换成功',

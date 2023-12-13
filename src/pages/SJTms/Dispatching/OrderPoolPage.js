@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-22 09:17:40
+ * @LastEditTime: 2023-08-11 14:13:28
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -46,10 +46,11 @@ import {
   checkAreaSchedule,
   checkOrderInSchedule,
 } from '@/services/sjitms/ScheduleBill';
-import { groupBy, sumBy, uniqBy } from 'lodash';
+import { groupBy, sumBy, uniqBy,orderBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
 import VehiclePoolPage from './VehiclePoolPage';
+import { log } from 'lodash-decorators/utils';
 
 const { TabPane } = Tabs;
 export default class OrderPoolPage extends Component {
@@ -144,11 +145,12 @@ export default class OrderPoolPage extends Component {
         pageFilter = params;
       }
     }
-    if (sorter && sorter.column)
+    if (sorter && sorter.column) {
       filter.order =
         (sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey) +
         ',' +
         sorter.order;
+    }
     if (pages) {
       filter.page = pages.current;
       filter.pageSize = pages.pageSize;
@@ -189,7 +191,7 @@ export default class OrderPoolPage extends Component {
         this.setState({
           searchPagination,
           auditedData: data,
-          auditedCollectData: this.groupData(data),
+          auditedCollectData: this.groupData(data, sorter),
           auditedParentRowKeys: [],
           auditedRowKeys: [],
           vehicleRowKeys: [],
@@ -203,7 +205,7 @@ export default class OrderPoolPage extends Component {
   };
 
   //按送货点汇总运输订单
-  groupData = data => {
+  groupData = (data, sorter) => {
     let output = groupBy(data, x => x.deliveryPoint.code);
     let deliveryPointGroupArr = Object.keys(output).map(pointCode => {
       const orders = output[pointCode];
@@ -211,8 +213,11 @@ export default class OrderPoolPage extends Component {
         pointCode,
         uuid: orders[0].uuid,
         deliveryPoint: orders[0].deliveryPoint,
+        deliveryPointCode: orders[0].deliveryPoint?.code,
         archLine: orders[0].archLine,
+        archLineCode: orders[0].archLine?.code,
         owner: orders[0].owner,
+        ownerCode: orders[0].owner?.code,
         address: orders[0].deliveryPoint.address,
         stillCartonCount: Math.round(sumBy(orders, 'stillCartonCount') * 1000) / 1000,
         stillScatteredCount: Math.round(sumBy(orders, 'stillScatteredCount') * 1000) / 1000,
@@ -225,11 +230,21 @@ export default class OrderPoolPage extends Component {
         realContainerCount: Math.round(sumBy(orders, 'realContainerCount') * 1000) / 1000,
         volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
         weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
+        shipAreaName: orders[0].shipAreaName,
+        tmsNote: orders[0].tmsNote,
       };
     });
     deliveryPointGroupArr.forEach(data => {
       data.details = output[data.pointCode];
     });
+    deliveryPointGroupArr = orderBy(deliveryPointGroupArr, 'archLineCode');
+    if (sorter && sorter.column) {
+      deliveryPointGroupArr = orderBy(
+        deliveryPointGroupArr,
+        [sorter.column.sorterCode ? sorter.columnKey + 'Code' : sorter.columnKey],
+        [sorter.order.replace('end', '')]
+      );
+    }
     return deliveryPointGroupArr;
   };
 
@@ -687,6 +702,7 @@ export default class OrderPoolPage extends Component {
     if (!dispatchConfig?.isShowSum && footer) {
       return;
     }
+    const splitSta =  dispatchConfig?.orderPoolStatistics?.split(',');
     const totalTextStyle = footer
       ? {}
       : { fontSize: 16, fontWeight: 700, marginLeft: 2, color: '#333' };
@@ -747,32 +763,71 @@ export default class OrderPoolPage extends Component {
             </div>
           </Tooltip>
         ) : null}
-        <div style={{ ...columnStyle, flex: 1 }}>
+        {splitSta?.includes('1')&&
+        <Tooltip title ={orders.realCartonCount}>
+           <div style={{ ...columnStyle, flex: 1 }}>
           整件:
           <span style={totalTextStyle}>{orders.realCartonCount}</span>
         </div>
-        <div style={{ ...columnStyle, flex: 1 }}>
-          散件:
-          <span style={totalTextStyle}>{orders.realScatteredCount}</span>
-        </div>
-        <div style={{ ...columnStyle, flex: 1.2 }}>
-          周转筐:
+        </Tooltip>
+         
+        }
+        {splitSta?.includes('2')&&
+         <Tooltip title ={orders.realScatteredCount}>
+            <div style={{ ...columnStyle, flex: 1 }}>
+           散件:
+           <span style={totalTextStyle}>{orders.realScatteredCount}</span>
+         </div>
+         </Tooltip>
+        
+        }
+        {splitSta?.includes('3')&&
+        <Tooltip title ={orders.realContainerCount}>
+           <div style={{ ...columnStyle, flex: 1.2 }}>
+            周转筐:
           <span style={totalTextStyle}>{orders.realContainerCount}</span>
         </div>
-        <div style={{ ...columnStyle, flex: 1.2 }}>
-          体积:
-          <span style={totalTextStyle}>{orders.volume}</span>
+        </Tooltip>
+       
+        }
+        {splitSta?.includes('4')&&
+         <Tooltip title ={orders.realColdContainerCount || 0}>
+          <div style={{ ...columnStyle, flex: 1.2 }}>
+            保温箱:
+          <span style={totalTextStyle}>{orders.realColdContainerCount || 0}</span>
         </div>
-        <div style={{ ...columnStyle, flex: 1.2 }}>
-          重量:
-          <span style={totalTextStyle}>{orders.weight}</span>
-        </div>
-        {footer ? null : (
+         </Tooltip>
+        
+        }
+        {splitSta?.includes('5')&&
+         <Tooltip title ={orders.volume}>
+          <div style={{ ...columnStyle, flex: 1.2 }}>
+           体积:
+           <span style={totalTextStyle}>{orders.volume}</span>
+           </div>
+         </Tooltip>
+         
+        }
+       {splitSta?.includes('6')&&
+        <Tooltip title ={orders.weight}>
+          <div style={{ ...columnStyle, flex: 1.2 }}>
+         重量:
+         <span style={totalTextStyle}>{orders.weight}</span>
+          </div>
+        </Tooltip>
+        
+       }
+       
+      {splitSta?.includes('7')&& 
+         <Tooltip title ={orders.totalStores}>
           <div style={{ ...columnStyle, flex: 1 }}>
             门店:
             <span style={totalTextStyle}>{orders.totalStores}</span>
-          </div>
-        )}
+          </div> 
+          </Tooltip>
+      }
+       
+     
       </div>
     );
   };
@@ -805,6 +860,7 @@ export default class OrderPoolPage extends Component {
       realCartonCount: Math.round(sumBy(data.map(x => x.stillCartonCount)) * 100) / 100,
       realScatteredCount: Math.round(sumBy(data.map(x => x.stillScatteredCount)) * 100) / 100,
       realContainerCount: Math.round(sumBy(data.map(x => x.stillContainerCount)) * 100) / 100,
+      realColdContainerCount:Math.round(sumBy(data.map(x => x.realColdContainerCount))),
       weight: Math.round(sumBy(data.map(x => Number(x.weight)))) / 1000,
       volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
       totalStores: totalStores.length,

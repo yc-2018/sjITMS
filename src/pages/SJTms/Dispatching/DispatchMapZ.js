@@ -19,7 +19,6 @@ import end from '@/assets/common/end.svg';
 import pass from '@/assets/common/pass.svg';
 
 import { groupBy, sumBy } from 'lodash';
-import order from '@/models/in/order';
 export default class DispatchMapZ extends Component {
   state = {
     isShowName: true,
@@ -110,10 +109,11 @@ export default class DispatchMapZ extends Component {
             coordinates: [s.longitude, s.latitude],
           },
           properties: {
-            icon: [storeIcon], //storeIcon 先隐藏缩放的icon 如需显示，去除[]  TODO：考虑是使用该缩放聚合的点击事件还是缩放显示数字后隐藏原本的marker
+            icon: storeIcon, //storeIcon 先隐藏缩放的icon 如需显示，去除[]  TODO：考虑是使用该缩放聚合的点击事件还是缩放显示数字后隐藏原本的marker
             width: 40,
             height: 40,
           },
+          order: s,
         });
       }
 
@@ -152,6 +152,16 @@ export default class DispatchMapZ extends Component {
           if (e.dataItem) {
             // 可通过dataItem下面的children属性拿到被聚合的所有点
             console.log(e.dataItem);
+          }
+        },
+        onMousemove(e) {
+          if (e.dataItem?.order) {
+            let order = e.dataItem.order;
+            console.log(order);
+            var point = new BMapGL.Point(order.longitude, order.latitude);
+            that.setState({ windowInfo: { point, order } });
+          } else {
+            that.setState({ windowInfo: undefined });
           }
         },
       });
@@ -432,7 +442,7 @@ export default class DispatchMapZ extends Component {
               strokeStyle: 'dashed', //边线的样式，solid或dashed。
             }}
           />
-          {shipOrder.map(order => {
+          {/* {shipOrder.map(order => {
             var point = new BMapGL.Point(order.longitude, order.latitude);
             return (
               <>
@@ -468,7 +478,7 @@ export default class DispatchMapZ extends Component {
                 )}
               </>
             );
-          })}
+          })} */}
           {selectOrder.map(order => {
             return (
               // <CustomOverlay position={order.point} offset={new BMapGL.Size(15, -15)}>

@@ -81,6 +81,7 @@ export default class DispatchingCreatePage extends Component {
     carSort: [1, 2, 3],
     carKey: 'init',
     carSearchSort: [1, 2, 3],
+    carrieruuids: [],
   };
 
   componentDidMount = () => {
@@ -152,7 +153,7 @@ export default class DispatchingCreatePage extends Component {
   //初始化数据
   initData = async (isEdit, record, orders) => {
     // console.log('isEdit', isEdit, record, orders);
-    let { vehicles, employees } = this.state;
+    let { vehicles, employees, carrieruuids } = this.state;
     // 查询字典
     queryDictByCode(['vehicleOwner', 'employeeType', 'relation']).then(
       res => (this.dict = res.data)
@@ -172,6 +173,8 @@ export default class DispatchingCreatePage extends Component {
     const vehiclesData = await dynamicQuery(param);
     if (vehiclesData.success && vehiclesData.result.records != 'false') {
       vehicles = vehiclesData.result.records;
+      //承运商集合
+      carrieruuids = uniq(vehicles.filter(e => e.CARRIERUUID).map(e => e.CARRIERUUID));
     }
     //获取人员
     let queryParams = [
@@ -264,6 +267,7 @@ export default class DispatchingCreatePage extends Component {
         employees,
         orders: details,
         loading: false,
+        carrieruuids,
       },
       () => {
         //itemConfig
@@ -346,17 +350,34 @@ export default class DispatchingCreatePage extends Component {
     let serachVeh = [...this.basicVehicle];
     vehicleParam[key] = value;
     if (vehicleParam.searchKey) {
-      serachVeh = serachVeh.filter(
-        item =>
+      serachVeh = serachVeh.filter(item => {
+        if (!item.DRIVERNAME) {
+          item.DRIVERNAME = '';
+        }
+        if (!item.DRIVERCODE) {
+          item.DRIVERCODE = '';
+        }
+        if (
           item.CODE.search(vehicleParam.searchKey) != -1 ||
-          item.PLATENUMBER.search(vehicleParam.searchKey) != -1
-      );
+          item.PLATENUMBER.search(vehicleParam.searchKey) != -1 ||
+          item.DRIVERNAME.search(vehicleParam.searchKey) != -1 ||
+          item.DRIVERCODE.search(vehicleParam.searchKey) != -1
+        ) {
+          return item;
+        }
+      });
     }
+    console.log('serachVeh', serachVeh);
     if (vehicleParam.vehicleOwner) {
       serachVeh = serachVeh.filter(x => x.OWNER == vehicleParam.vehicleOwner);
     }
+    if (vehicleParam.carrier) {
+      serachVeh = serachVeh.filter(x => x.CARRIERUUID == vehicleParam.carrier);
+    }
     if (key == 'vehicleOwner') {
       this.setState({ carEmpSearch: { ...this.state.carEmpSearch, vehicleOwner: value } });
+    } else if (key == 'carrier') {
+      this.setState({ carEmpSearch: { ...this.state.carEmpSearch, carrier: value } });
     } else {
       this.setState({ carEmpSearch: { ...this.state.carEmpSearch, vehicleCode: value } });
     }
@@ -457,7 +478,14 @@ export default class DispatchingCreatePage extends Component {
   //保存
   onSave = async () => {
     this.setState({ loading: true });
+
     const { isEdit, orders, schedule, selectVehicle, selectEmployees, note } = this.state;
+    //禁止整车为转运单 针对福建仓
+    if (orders.filter(e => e.orderType == 'Transshipment').length == orders.length) {
+      message.error('禁止整车为转运单排车！');
+      this.setState({ loading: false });
+      return;
+    }
     const orderType = uniqBy(orders.map(x => x.orderType)).shift();
     const orderTypeArr = ['TakeDelivery', 'AdjustWarehouse', 'DeliveryThird'];
     const type = orderTypeArr.includes(orderType) ? 'Task' : 'Job';
@@ -537,6 +565,7 @@ export default class DispatchingCreatePage extends Component {
   //保存数据校验
   handleSave = async () => {
     const { orders, selectVehicle, selectEmployees } = this.state;
+    const { dispatchConfig } = this.props;
     const orderSummary = this.groupByOrder(orders);
     // //校验订单
     // if (orderSummary.orderCount == 0) {
@@ -596,9 +625,43 @@ export default class DispatchingCreatePage extends Component {
       this.onConfirm('排车体积超' + exceedVolume.toFixed(2) + 'm³,确定继续吗?');
       return;
     }
-    this.onSave();
+    //校验随车人员
+    if (dispatchConfig.checkVehicleFollower == 1 || dispatchConfig.checkVehicleFollower == 2) {
+      const includes = await this.checkVehicleFollower(selectVehicle, selectEmployees);
+      if (!includes && dispatchConfig.checkVehicleFollower == 1) {
+        Modal.confirm({
+          title: '车辆与人员不匹配，确定生成排车单吗？',
+          onOk: () => this.onSave(),
+        });
+        return;
+      }
+      if (!includes && dispatchConfig.checkVehicleFollower == 2) {
+        message.error('车辆与人员不匹配');
+        return;
+      }
+      this.onSave();
+      return;
+    } else {
+      this.onSave();
+    }
   };
-
+  //查随车人员
+  checkVehicleFollower = async (selectVehicle, selectEmployees) => {
+    let param = {
+      tableName: 'SJ_ITMS_VEHICLE_EMPLOYEE',
+      condition: {
+        params: [{ field: 'VEHICLEUUID', rule: 'eq', val: [selectVehicle.UUID] }],
+      },
+    };
+    const response = await dynamicQuery(param);
+    if (response.success && response.result.records != 'false') {
+      const includes = selectEmployees
+        .map(f => f.CODE)
+        .every(a => response.result.records.map(e => e.EMPCODE).includes(a));
+      return includes;
+    }
+    return true;
+  };
   //汇总
   groupByOrder = data => {
     const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0;
@@ -770,7 +833,7 @@ export default class DispatchingCreatePage extends Component {
   };
 
   buildSelectVehicleCard = () => {
-    const { vehicles, selectVehicle, carKey, carSort, carSearchSort } = this.state;
+    const { vehicles, selectVehicle, carKey, carSort, carSearchSort, carrieruuids } = this.state;
     let sliceVehicles =
       this.state.carEmpNums == 'all' ? vehicles : vehicles.slice(0, this.state.carEmpNums);
 
@@ -787,7 +850,6 @@ export default class DispatchingCreatePage extends Component {
     }
 
     let carCard = undefined;
-
     switch (carKey) {
       case 'recommend':
         carCard =
@@ -854,39 +916,46 @@ export default class DispatchingCreatePage extends Component {
           );
         break;
       default:
-        carCard = sliceVehicles?.map(vehicle => {
-          return (
-            <Tooltip
-              placement="top"
-              title={
-                vehicle.BILLNUMBERS
-                  ? vehicle.PLATENUMBER + '在' + vehicle.BILLNUMBERS + '排车单中有未完成的任务'
-                  : ''
-              }
-            >
-              <Badge count={vehicle.BILLCOUNTS} style={{ backgroundColor: 'orange' }}>
-                <a
-                  href="#"
-                  className={`${disStyle.panel} ${
-                    vehicle.UUID == selectVehicle.UUID ? disStyle.panelSelect : ''
-                  }`}
-                  onClick={() => this.handleVehicle(vehicle)}
+        carCard = (
+          <div>
+            {/* <Button type="primary" ghost style={{ width: '100%' }}>
+              2222
+            </Button> */}
+            {sliceVehicles?.map(vehicle => {
+              return (
+                <Tooltip
+                  placement="top"
+                  title={
+                    vehicle.BILLNUMBERS
+                      ? vehicle.PLATENUMBER + '在' + vehicle.BILLNUMBERS + '排车单中有未完成的任务'
+                      : ''
+                  }
                 >
-                  <Row justify="space-between" style={{ height: '100%' }}>
-                    <Col span={8} className={disStyle.employeeCardContent}>
-                      <Icon type="car" style={{ fontSize: 28 }} />
-                    </Col>
-                    <Col span={16} className={disStyle.employeeCardContent}>
-                      <div className={disStyle.employeeName}>
-                        <div>{vehicle.PLATENUMBER}</div>
-                        {vehicle.DRIVERNAME ? (
-                          <div>{vehicle.DRIVERNAME.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')}</div>
-                        ) : (
-                          <></>
-                        )}
-                      </div>
-                    </Col>
-                    {/* {vehicle.pro > 0 ? (
+                  <Badge count={vehicle.BILLCOUNTS} style={{ backgroundColor: 'orange' }}>
+                    <a
+                      href="#"
+                      className={`${disStyle.panel} ${
+                        vehicle.UUID == selectVehicle.UUID ? disStyle.panelSelect : ''
+                      }`}
+                      onClick={() => this.handleVehicle(vehicle)}
+                    >
+                      <Row justify="space-between" style={{ height: '100%' }}>
+                        <Col span={8} className={disStyle.employeeCardContent}>
+                          <Icon type="car" style={{ fontSize: 28 }} />
+                        </Col>
+                        <Col span={16} className={disStyle.employeeCardContent}>
+                          <div className={disStyle.employeeName}>
+                            <div>{vehicle.PLATENUMBER}</div>
+                            {vehicle.DRIVERNAME ? (
+                              <div>
+                                {vehicle.DRIVERNAME.replace(/\([^\)]*\)|\（[^\)]*\）/g, '')}
+                              </div>
+                            ) : (
+                              <></>
+                            )}
+                          </div>
+                        </Col>
+                        {/* {vehicle.pro > 0 ? (
                       <Badge
                         style={{
                           backgroundColor:
@@ -898,17 +967,18 @@ export default class DispatchingCreatePage extends Component {
                     ) : (
                       <></>
                     )} */}
-                  </Row>
-                </a>
-              </Badge>
-            </Tooltip>
-          );
-        });
+                      </Row>
+                    </a>
+                  </Badge>
+                </Tooltip>
+              );
+            })}
+          </div>
+        );
     }
-
     //sort
     let carSearchSortConfig = {
-      '1': (
+      1: (
         <Select
           onChange={e => this.setState({ carEmpNums: e })}
           value={this.state.carEmpNums}
@@ -920,7 +990,7 @@ export default class DispatchingCreatePage extends Component {
           <Select.Option value={'all'}>全部</Select.Option>
         </Select>
       ),
-      '2': (
+      2: (
         <Select
           placeholder="车辆归属"
           onChange={value => this.vehicleFilter('vehicleOwner', value)}
@@ -933,7 +1003,7 @@ export default class DispatchingCreatePage extends Component {
           ))}
         </Select>
       ),
-      '3': (
+      3: (
         <Search
           placeholder="请输入车牌号/编号"
           onChange={event => this.vehicleFilter('searchKey', event.target.value)}
@@ -941,6 +1011,23 @@ export default class DispatchingCreatePage extends Component {
           value={this.state.carEmpSearch.vehicleCode}
           ref={e => (this.carSearchInput = e)}
         />
+      ),
+      4: (
+        <Select
+          placeholder="承运商"
+          onChange={value => this.vehicleFilter('carrier', value)}
+          allowClear={true}
+          style={{ width: 150, marginRight: 2.5, marginLeft: 2.5 }}
+          value={this.state.carEmpSearch.carrier}
+        >
+          {carrieruuids.map(e => {
+            return (
+              <Select.Option key={e} title={e}>
+                {e}
+              </Select.Option>
+            );
+          })}
+        </Select>
       ),
     };
 
@@ -1036,7 +1123,7 @@ export default class DispatchingCreatePage extends Component {
 
     return (
       <Modal
-        zIndex={99999}
+        //zIndex={99999}
         visible={this.state.visible}
         onOk={() => this.handleSave()}
         onCancel={() => this.hide()}

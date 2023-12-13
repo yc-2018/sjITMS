@@ -2,18 +2,18 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-10 11:29:27
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-08-17 17:44:53
+ * @LastEditTime: 2023-10-31 09:20:26
  * @version: 1.0
  */
 import { func } from 'prop-types';
 import request from '@/utils/request';
-import { loginOrg, loginCompany } from '@/utils/LoginContext';
+import { loginOrg, loginCompany,loginUser } from '@/utils/LoginContext';
 
 export async function calculatePlan(payload) {
   return request(
     `/itms-cost/itms-cost/costbill/calculatePlan?planUuid=${payload.planUuid}&month=${
       payload.month
-    }`,
+    }&code=${loginUser().code}`,
     {
       method: 'POST',
     }
@@ -51,11 +51,13 @@ export async function getBillLogs(billUuid, payload) {
     body: payload,
   });
 }
+
 export async function findCostFormFieldByPlanUuid(planUuid) {
   return request(`/itms-cost/itms-cost/source/findCostFormFieldByPlanUuid?planUuid=${planUuid}`, {
     method: 'POST',
   });
 }
+
 export async function onLock(planUuid, month) {
   return request(`/itms-cost/itms-cost/costbill/onLock?planUuid=${planUuid}&dateString=${month}`, {
     method: 'GET',
@@ -68,7 +70,7 @@ export async function isLock(planUuid, month) {
 }
 
 export async function haveCheck(Uuid) {
-  return request(`/itms-cost/itms-cost/costbill/haveCheck?Uuid=${Uuid}`, {
+  return request(`/itms-cost/itms-cost/costbill/haveCheck?Uuid=${Uuid}&operatorcode=${loginUser().code}`, {
     method: 'GET',
   });
 }
@@ -81,11 +83,10 @@ export async function consumed(Uuid) {
 
 export async function getSubjectBill(payload) {
   return request(
-    `/itms-cost/itms-cost/costbill/getSubjectBill?billUuid=${payload.billUuid}&subjectUuid=${
-      payload.subjectUuid
-    }`,
+    `/itms-cost/itms-cost/costbill/getSubjectBill?billUuid=${payload.billUuid}`,
     {
-      method: 'GET',
+      method: 'POST',
+      body:payload.subjectUuid
     }
   );
 }
@@ -122,11 +123,13 @@ export async function getCompareBill(billNumber, bakBillNumber, payload) {
     }
   );
 }
+
 export async function getPlanParticulars(subjectUuid, billuuid, name) {
   return request(
-    `/itms-cost/itms-cost/costbill/getPlanParticulars/${subjectUuid}/${billuuid}/${name}`,
+    `/itms-cost/itms-cost/costbill/getPlanParticulars/${billuuid}/${name}`,
     {
       method: 'POST',
+      body:subjectUuid
     }
   );
 }

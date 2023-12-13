@@ -17,7 +17,7 @@ import PendingPage from './PendingPage';
 import ScheduleDetailPage from './ScheduleDetailPage';
 import dispatchingStyles from './Dispatching.less';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { getDispatchConfig } from '@/services/tms/DispatcherConfig';
+import { getDispatchConfig } from '@/services/sjtms/DispatcherConfig';
 import { checkBaseData } from '@/services/sjitms/ScheduleBill';
 
 const { Content } = Layout;
@@ -39,6 +39,7 @@ export default class Dispatching extends Component {
 
   async componentDidMount() {
     const response = await getDispatchConfig(loginOrg().uuid);
+    console.log('response', response);
     if (response.success) {
       this.setState({
         dispatchConfig: response.data,

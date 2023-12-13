@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: guankongjin
- * @LastEditTime: 2022-11-21 14:24:03
+ * @LastEditTime: 2023-07-27 17:43:32
  * @Description: 排车单地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\schedule\ScheduleMap.js
  */
@@ -170,9 +170,21 @@ export default class DispatchMap extends Component {
   //显示线路
   showLine = () => {
     const { rowKeys, orders } = this.state;
+    //根据门店去重
+    var obj = {};
+    let disOrder = orders.reduce((cur, next) => {
+      obj[next.deliveryPoint.code] ? '' : (obj[next.deliveryPoint.code] = true && cur.push(next));
+      return cur;
+    }, []);
     rowKeys.forEach(async key => {
-      const points = orders.filter(res => res.billUuid == key);
-      await this.searchRoute(points);
+      const points = disOrder.filter(res => res.billUuid == key);
+      //每18个分隔一次
+      for (let i = 0; i < points.length; i += 18) {
+        let chunk = disOrder.slice(i == 0 ? i : i - 1, i + 18);
+        // 在这里处理 chunk，例如打印或存储
+        await this.searchRoute(chunk);
+      }
+      //await this.searchRoute(points);
     });
   };
   //隐藏线路
@@ -194,8 +206,8 @@ export default class DispatchMap extends Component {
       pointArr[pointArr.length - 1],
       waypoints.join('|')
     );
-    if (response.success && response.data.status == 0) {
-      const routePaths = response.data.result.routes[0].steps.map(x => x.path);
+    if (response.success) {
+      const routePaths = response.result.routes[0].steps.map(x => x.path);
       let pts = new Array();
       routePaths.forEach(path => {
         const points = path.split(';');

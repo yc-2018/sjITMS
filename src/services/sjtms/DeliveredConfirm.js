@@ -79,3 +79,10 @@ export async function updateNoDelivered(payload){
     body: payload
   });
 }
+
+export async function pendingStatistics(payload){
+  return request(`/itms-schedule/itms-schedule/newoperation/deliveredconfirm/confirm/pendingStatistics/${payload.companyUuid}/${payload.dispatchCenterUuid}`, {
+    method: 'POST',
+    body: payload
+  });
+}pendingStatistics

@@ -17,6 +17,7 @@
   // }
   .ant-table-footer {
     padding: 0 0 0 34px !important;
+    background-color: rgb(193, 210, 240) !important;
     // overflow:auto;
   }
 
@@ -27,6 +28,28 @@
 
 .standardTable {
   :global {
+    //排序小箭头颜色
+    .ant-table-thead
+      > tr
+      > th
+      .ant-table-column-sorter
+      .ant-table-column-sorter-inner
+      .ant-table-column-sorter-up.on,
+    .ant-table-thead
+      > tr
+      > th
+      .ant-table-column-sorter
+      .ant-table-column-sorter-inner
+      .ant-table-column-sorter-down.on {
+      color: red;
+    }
+
+    .ant-table-header {
+      background-color: rgba(255, 255, 255, 0) !important;
+    }
+    .ant-table-selection-column {
+      padding-right: 10px !important;
+    }
     .ant-table-pagination {
       margin-top: 12px;
       margin-bottom: 12px;
@@ -48,7 +71,10 @@
     }
 
     .ant-table-thead > tr > th {
-      background-color: #f9f9f9;
+      // background-color: #f9f9f9;
+      background-color: rgb(56, 88, 136) !important;
+      color: white !important;
+      font-weight: 500;
       //margin: 0 auto;
       //border-bottom: 0.2px solid;
       //border: 1px solid @border-color-base;
