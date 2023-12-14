@@ -1,11 +1,12 @@
 import React, { useDebugValue } from 'react';
 import { connect } from 'dva';
-import { Form, Upload, Button, Icon, message, Layout } from 'antd';
+import { Form, Upload, Button, Icon, message, Layout, Select, Empty } from 'antd';
 import { savePlan, addHistory } from '@/services/bms/Cost';
 import { makeFormData } from '@/pages/NewCost/CostProject/CostProjectCreate';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import CostPlanSearch from './CostPlanSearch';
 const { Footer, Content } = Layout;
+const { Option } = Select;
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -123,8 +124,14 @@ export default class CostPlanDefCreate extends QuickCreatePage {
   formLoaded = () => {
     const { formItems } = this.state;
     formItems.cost_plan_ACCESSORY.component = this.uploadComponent;
+    formItems.cost_plan_TOTAL_PROJECT.component = this.totalProjectComponent;
     this.setState({});
   };
+
+  refreshForm = () => {
+    this.formLoaded();
+  };
+
   uploadComponent = props => {
     return (
       <Upload
@@ -153,6 +160,20 @@ export default class CostPlanDefCreate extends QuickCreatePage {
       </Upload>
     );
   };
+
+  totalProjectComponent = props => {
+    const { list } = this.setting.state.data;
+    return (
+      <Select {...props} style={{ width: '100%' }}>
+        {list
+          ? list.map(data => {
+              return <Option value={data.UUID}>{data.ITEM_NAME}</Option>;
+            })
+          : ''}
+      </Select>
+    );
+  };
+
   render() {
     return (
       <Layout style={{ backgroundColor: 'white', height: '100%' }}>
@@ -186,6 +207,7 @@ export default class CostPlanDefCreate extends QuickCreatePage {
             quickuuid="cost_plan_item"
             planUuid={this.props?.params?.entityUuid}
             onRef={c => (this.setting = c)}
+            refreshForm={() => this.refreshForm()}
           />
         </Footer>
       </Layout>

@@ -241,6 +241,7 @@ export default class BasicSourceSearchPage extends Component {
                   system={system}
                   key={`Line${selectedKeys[0]}`}
                   selectedRows={selectedKeys[0]}
+                  setFunc={node => (this.sourceDataRef = node)}
                 />
               </TabPane>
               <TabPane tab={'操作日志'} key="operate">
@@ -262,6 +263,8 @@ export default class BasicSourceSearchPage extends Component {
                       uploadParams={{ sourceUuid: selectedKeys[0] }}
                       cancelCallback={() => {}}
                       costForm={system}
+                      // getFunc={this.getFunc}
+                      refDataSource={()=>this.sourceDataRef.onSearch()}
                     />
                   </div>
                 </TabPane>
@@ -278,6 +281,18 @@ export default class BasicSourceSearchPage extends Component {
   drawContent = () => {
     return this.state.rightContent;
   };
+  // //导入组件（子传父，父传子）导入成功以后，刷新表数据
+  // callbackRefreshesData =()=>{
+  //
+  // }
+
+  setFunc = (func)=>{
+    this.getFunc = func
+  }
+
+
+
+
 
   render() {
     const { selectedKeys } = this.state;

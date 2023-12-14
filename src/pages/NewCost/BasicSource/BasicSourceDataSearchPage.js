@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-27 11:28:47
+ * @LastEditTime: 2023-12-07 16:30:41
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -56,6 +56,8 @@ export default class BasicSourceDataSearchPage extends SearchPage {
 
   componentDidMount() {
     this.queryColumns();
+    //组件熏染以后，将getData函数传给父组件
+    this.props.setFunc(this);
   }
 
   //获取列配置
@@ -73,7 +75,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       this.initConfig(columnsData.result.records);
       this.initConfig(columnsData.result.records);
       //配置查询成功后再去查询数据
-      this.onSearch();
+      await this.onSearch();
     }
   };
 
@@ -184,7 +186,6 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         showTotal: total => `共 ${total} 条`,
       },
     };
-    console.log('data.record?.columnTotal', datas);
     this.setState({
       data,
       colTotal: datas?.columnTotal,
@@ -288,7 +289,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
     const response = await deleteSourceData(param);
     if (response && response.success) {
       message.success('删除成功');
-      this.onSearch();
+      await this.onSearch();
     }
   };
 
@@ -333,7 +334,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         if (response && response.success) {
           message.success('保存成功');
           this.setState({ updateModal: false, createInfo: false });
-          this.onSearch();
+          await this.onSearch();
         }
       }
     });

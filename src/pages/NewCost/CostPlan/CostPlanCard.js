@@ -2,13 +2,13 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-14 15:44:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-10-31 09:17:16
+ * @LastEditTime: 2023-12-08 17:16:18
  * @version: 1.0
  */
 import React, { Component } from 'react';
 import {
   Button,
-  Card,
+  DatePicker,
   Col,
   Steps,
   message,
@@ -23,35 +23,50 @@ import {
   Modal,
   Form,
   Input,
-  Spin,
+  Divider,
 } from 'antd';
 import { copyPlan } from '@/services/bms/Cost';
-import { apply } from '@/services/bms/CostPlan';
+import { apply, getPlanOperateByMonth } from '@/services/bms/CostPlan';
 import { sourceAbnormal, remind } from '@/services/bms/BasicSource';
 import { updateEntity } from '@/services/quick/Quick';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
+import style from './CostPlanCard.less';
+import moment from 'moment';
 
 const { Step } = Steps;
 const { confirm } = Modal;
+const { MonthPicker } = DatePicker;
 @Form.create()
 export default class CostPlanCard extends Component {
   state = {
-    current: this.props.e.current,
+    e: this.props.e,
     isModalOpen: false,
+    dataSourceModal: false,
     changeStat: '',
     reason: '',
+    month: new Date().getFullYear() + '-' + new Date().getMonth(),
   };
 
-  drawBody = costPlan => {
-    const { current } = this.state;
-    let status = this.props.e.current;
+  drawBody = (costPlan, current, month, e) => {
+    const monthFormat = 'YYYY-MM';
     const stepStyle = {
-      marginBottom: 15,
+      // marginBottom: 15,
       boxShadow: '0px -1px 0 0 #e8e8e8 inset',
+      height: '2.5rem',
     };
     return (
       <div>
-        <div style={{ color: '#8c8c8c' }}>当前月流程：</div>
+        <div style={{ fontSize: '0.8rem' }}>
+          当前月流程：
+          <MonthPicker
+            size="small"
+            defaultValue={moment(month, monthFormat)}
+            format={monthFormat}
+            onChange={(date, dateString) => {
+              this.handleChangeMonth(costPlan.uuid, dateString);
+            }}
+          />
+        </div>
         <Steps
           type="navigation"
           current={current}
@@ -60,82 +75,73 @@ export default class CostPlanCard extends Component {
           size="small"
           key={costPlan.uuid}
         >
-          <Step status={status > 0 ? 'finish' : 'process'} title="数据确认" />
-          <Step status={status > 1 ? 'finish' : status < 1 ? 'wait' : 'process'} title="费用计算" />
-          <Step status={status > 2 ? 'finish' : status < 2 ? 'wait' : 'process'} title="费用对账" />
-          <Step status={status > 3 ? 'finish' : status < 3 ? 'wait' : 'process'} title="费用核销" />
+          <Step status={current > 0 ? 'finish' : 'process'} title="数据确认" />
+          <Step
+            status={current > 1 ? 'finish' : current < 1 ? 'wait' : 'process'}
+            title="费用计算"
+          />
+          <Step
+            status={current > 2 ? 'finish' : current < 2 ? 'wait' : 'process'}
+            title="费用对账"
+          />
+          <Step
+            status={current > 3 ? 'finish' : current < 3 ? 'wait' : 'process'}
+            title="费用核销"
+          />
         </Steps>
         <div
           style={{
             marginBottom: 10,
-            height: '10rem',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
+            height: '7.7rem',
           }}
         >
-          {this.drawDtl()}
+          {this.drawDtl(e, current)}
         </div>
       </div>
     );
   };
 
-  drawDtl = () => {
-    const { current } = this.state;
-    const { sourceConfirmData, costCalculation, costConfirm, costConsumed } = this.props.e;
+  handleChangeMonth = async (uuid, dateString) => {
+    this.setState({ month: dateString });
+    const response = await getPlanOperateByMonth(uuid, dateString);
+    if (response && response.success) {
+      this.setState({ e: response.data });
+    }
+  };
+
+  drawDtl = (data, current) => {
+    const { sourceConfirmData, costCalculation, costConfirm, costConsumed } = data;
     if (current == 0) {
       return (
-        <div
-          style={{
-            borderRadius: '4px',
-            overflow: 'scroll',
-            height: '10rem',
-            width: '100%',
-          }}
-        >
-          <List
-            bordered
-            dataSource={sourceConfirmData}
-            renderItem={item => (
-              <List.Item style={{ padding: '5px 20px' }}>
-                <List.Item.Meta
-                  title={
-                    <span>
-                      {item.sourceName}
-                      <span style={{ color: 'rgba(0, 0, 0, 0.45)', marginLeft: '0.5rem' }}>
-                        {item.confirmer}
-                      </span>
-                      <Tag
-                        color={
-                          item.state == '已确认' ? 'green' : item.state == '未确认' ? 'red' : 'gold'
-                        }
-                        style={{ marginLeft: '0.5rem' }}
-                      >
-                        {item.state}
-                      </Tag>
-                    </span>
-                  }
-                />
-                {item.state == '已确认' ? (
-                  <a
-                    onClick={() => {
-                      this.showAbnormalConfirm(item);
-                    }}
-                  >
-                    异常
-                  </a>
-                ) : (
-                  <a
-                    onClick={() => {
-                      this.remind(item);
-                    }}
-                  >
-                    提醒
-                  </a>
-                )}
-              </List.Item>
-            )}
-          />
+        <div style={{ position: 'relative' }}>
+          <div
+            style={{
+              borderRadius: '4px',
+              overflow: 'scroll',
+              height: '7.7rem',
+              width: '100%',
+            }}
+          >
+            {this.createList(sourceConfirmData)}
+          </div>
+          {current == 0 && sourceConfirmData.length > 3 ? (
+            <a
+              style={{
+                position: 'absolute',
+                left: '50%',
+                transform: 'translate(-50%,-50%)',
+                fontSize: '0.9rem',
+                textDecoration: 'underline',
+              }}
+              onClick={() => {
+                this.setState({ dataSourceModal: true });
+              }}
+            >
+              全部展开
+            </a>
+          ) : (
+            ''
+          )}
         </div>
       );
     } else if (current == 1) {
@@ -147,8 +153,55 @@ export default class CostPlanCard extends Component {
     }
   };
 
+  createList = sourceConfirmData => {
+    return (
+      <List
+        bordered
+        dataSource={sourceConfirmData}
+        renderItem={item => (
+          <List.Item style={{ padding: '5px 20px' }}>
+            <List.Item.Meta
+              title={
+                <span>
+                  {item.sourceName}
+                  <span style={{ color: 'rgba(0, 0, 0, 0.45)', marginLeft: '0.5rem' }}>
+                    {item.confirmer}
+                  </span>
+                  <Tag
+                    color={
+                      item.state == '已确认' ? 'green' : item.state == '未确认' ? 'red' : 'gold'
+                    }
+                    style={{ marginLeft: '0.5rem' }}
+                  >
+                    {item.state}
+                  </Tag>
+                </span>
+              }
+            />
+            {item.state == '已确认' ? (
+              <a
+                onClick={() => {
+                  this.showAbnormalConfirm(item);
+                }}
+              >
+                异常
+              </a>
+            ) : (
+              <a
+                onClick={() => {
+                  this.remind(item);
+                }}
+              >
+                提醒
+              </a>
+            )}
+          </List.Item>
+        )}
+      />
+    );
+  };
+
   showAbnormalConfirm = item => {
-    console.log('item', item);
     const _this = this;
     confirm({
       title: item.sourceName,
@@ -166,10 +219,11 @@ export default class CostPlanCard extends Component {
   };
 
   abnormal = (data, resolve) => {
-    sourceAbnormal(data.sourceUuid).then(e => {
+    const { e, month } = this.state;
+    sourceAbnormal(data.sourceUuid, e.costPlan.uuid, month).then(response => {
       resolve();
-      if (e.success) {
-        this.props.handleSarch();
+      if (response.success) {
+        this.handleChangeMonth(e.costPlan.uuid, month);
         message.success('操作成功');
       }
     });
@@ -213,7 +267,12 @@ export default class CostPlanCard extends Component {
   };
 
   onCurrentChange = current => {
-    this.setState({ current });
+    const { e } = this.state;
+    const newE = {
+      ...e,
+      current: current,
+    };
+    this.setState({ e: newE });
   };
 
   copyPlan = (data, resolve) => {
@@ -241,7 +300,7 @@ export default class CostPlanCard extends Component {
       },
       updateAll: false,
     };
-    const result = updateEntity(param).then(e => {
+    updateEntity(param).then(e => {
       if (e.result > 0) {
         this.props.handleSarch();
         message.success('操作成功！');
@@ -301,9 +360,18 @@ export default class CostPlanCard extends Component {
   };
 
   render() {
-    const { e, costPlanStat } = this.props;
-    const { costPlan } = e;
-    const { isModalOpen, changeStat } = this.state;
+    const { costPlanStat } = this.props;
+    const {
+      isModalOpen,
+      changeStat,
+      dataSourceModal,
+      e,
+      month,
+      // current,
+      // costPlan,
+      // sourceConfirmData,
+    } = this.state;
+    const { current, costPlan, sourceConfirmData } = e;
     const { getFieldDecorator } = this.props.form;
     let stat = costPlanStat.filter(x => x.itemValue == costPlan.stat);
     const menu = (
@@ -319,69 +387,79 @@ export default class CostPlanCard extends Component {
       </Menu>
     );
     return (
-      <Col style={{ paddingBottom: 20 }} span={8}>
-        <Card
-          hoverable
-          key={costPlan.uuid}
-          headStyle={{
-            fontWeight: 'bolder',
-            fontSize: '18px',
-            padding: '0 10px',
-          }}
-          bodyStyle={{ padding: '10px 10px 10px' }}
-          title={
-            <div>
-              <Row type="flex" justify="space-around" align="middle">
-                <Col span={18}>{costPlan.schemeName}</Col>
-                <Col span={6}>
-                  <Tag color={stat[0].textColor} style={{ marginRight: '-0.3rem' }}>
-                    {stat[0].itemText}
-                  </Tag>
-                  <Dropdown overlay={menu}>
-                    <Button type="link">
-                      更多
-                      <Icon type="down" />
-                    </Button>
-                  </Dropdown>
-                </Col>
-              </Row>
-              {/* <Divider /> */}
-              <Row
-                type="flex"
-                justify="start"
-                align="middle"
-                style={{ fontSize: '0.8rem', fontWeight: 'normal', marginTop: '1rem' }}
+      <Col className={style.card} span={8}>
+        <div style={{ margin: '0.2rem 0.2rem 0 0.2rem' }}>
+          {/* 头 */}
+          <Row type="flex" justify="space-around" align="middle">
+            <Col
+              span={17}
+              style={{
+                fontWeight: 'bolder',
+                fontSize: '18px',
+              }}
+            >
+              {costPlan.schemeName}
+              <Tag
+                // color="#3B77E3"
+                color="blue"
+                style={{
+                  textAlign: 'right',
+                  fontWeight: 'normal',
+                  fontSize: '0.8rem',
+                  marginLeft: '0.3rem',
+                }}
               >
-                <Col span={3} style={{ textAlign: 'right' }}>
-                  所属组织：
-                </Col>
-                <Col span={8}>{costPlan.organizationname}</Col>
-                <Col span={3} style={{ textAlign: 'right' }}>
-                  到效期：
-                </Col>
-                <Col span={8}>{costPlan.expiringdate}</Col>
-              </Row>
-              <Row
-                type="flex"
-                justify="start"
-                align="middle"
-                style={{ fontSize: '0.8rem', fontWeight: 'normal' }}
-              >
-                <Col span={3} style={{ textAlign: 'right' }}>
-                  备注：
-                </Col>
-                <Col span={8}>{costPlan.note}</Col>
-              </Row>
-            </div>
-          }
-          style={{ width: '95%', border: '0.5px solid #3B77E3' }}
-        >
-          {this.drawBody(costPlan)}
-          {this.drawButton(costPlan)}
-        </Card>
+                {costPlan.organizationname}
+              </Tag>
+            </Col>
+            <Col span={6}>
+              <Tag color={stat[0].textColor} style={{ marginRight: '-0.2rem' }}>
+                {stat[0].itemText}
+              </Tag>
+              <Dropdown overlay={menu}>
+                <Button type="link">
+                  更多
+                  <Icon type="down" />
+                </Button>
+              </Dropdown>
+            </Col>
+          </Row>
+          <Row
+            type="flex"
+            justify="start"
+            align="middle"
+            style={{ fontSize: '0.8rem', fontWeight: 'normal', marginTop: '0.3rem' }}
+          >
+            <Col span={4} style={{ textAlign: 'right' }}>
+              生效期：
+            </Col>
+            <Col span={8}>{costPlan.effectivedate}</Col>
+            <Col span={4} style={{ textAlign: 'right' }}>
+              到效期：
+            </Col>
+            <Col span={8}>{costPlan.expiringdate}</Col>
+          </Row>
+          <Row
+            type="flex"
+            justify="start"
+            align="middle"
+            style={{ fontSize: '0.8rem', fontWeight: 'normal' }}
+          >
+            <Col span={4} style={{ textAlign: 'right' }}>
+              备注：
+            </Col>
+            <Col span={8}>{costPlan.note}</Col>
+          </Row>
+          <Divider style={{ margin: '0.3rem 0' }} />
+          {/* body */}
+          <div>
+            {this.drawBody(costPlan, current, month, e)}
+            {this.drawButton(costPlan)}
+          </div>
+        </div>
         <Modal
           visible={isModalOpen}
-          title={costPlan.schemeName || '申请'}
+          title={costPlan.schemeName + '申请'}
           onOk={() => {
             this.handleApply(costPlan.uuid);
           }}
@@ -413,6 +491,18 @@ export default class CostPlanCard extends Component {
               {getFieldDecorator('applyReason')(<Input placeholder="请输入申请原因" />)}
             </Form.Item>
           </Form>
+        </Modal>
+        <Modal
+          visible={dataSourceModal}
+          title={costPlan.schemeName}
+          onOk={() => {
+            this.setState({ dataSourceModal: false });
+          }}
+          onCancel={() => {
+            this.setState({ dataSourceModal: false });
+          }}
+        >
+          {this.createList(sourceConfirmData)}
         </Modal>
       </Col>
     );

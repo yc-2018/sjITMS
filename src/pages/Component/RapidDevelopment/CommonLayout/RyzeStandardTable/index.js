@@ -1770,7 +1770,7 @@ class StandardTable extends Component {
                     size={this.props.size ? this.props.size : 'middle'}
                     components={this.components}
                     style={status}
-                    bodyStyle={{ fontWeight: 'bold' }}
+                    bodyStyle={{ fontWeight: 'bold', color: 'red' }}
                   />
                 );
               }}

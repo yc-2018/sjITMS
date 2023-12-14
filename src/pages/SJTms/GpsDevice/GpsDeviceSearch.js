@@ -2,18 +2,18 @@
  * @Author: guankongjin
  * @Date: 2023-09-26 14:30:27
  * @LastEditors: guankongjin
- * @LastEditTime: 2023-10-12 14:19:38
+ * @LastEditTime: 2023-12-14 12:00:09
  * @Description: G7设备管理
  * @FilePath: \iwms-web\src\pages\SJTms\GpsDevice\GpsDeviceSearch.js
  */
 import React from 'react';
-import { Button, message, Modal, Radio, Form, DatePicker } from 'antd';
+import { Button, message, Modal, Radio, Form, DatePicker, Input } from 'antd';
 import { connect } from 'dva';
 import { havePermission } from '@/utils/authority';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import { formatMessage } from 'umi/locale';
-import { shift, split, switchDevice, saveServiceDate } from '@/services/sjitms/GpsDevice';
+import { shift, split, switchDevice, syncDevice, saveServiceDate } from '@/services/sjitms/GpsDevice';
 import moment from 'moment';
 @connect(({ quick, loading }) => ({
   quick,
@@ -24,12 +24,13 @@ export default class GpsDeviceSearch extends QuickFormSearchPage {
   state = {
     ...this.state,
     opType: "StopSerivce",
-    shiftMofal: false,
-    serviceMofal: false,
+    shiftModal: false,
+    syncModal: false,
+    serviceModal: false,
     record: {}
   };
   drawToolsButton = () => {
-    const { opType, shiftMofal, serviceMofal, record } = this.state;
+    const { opType, shiftModal,syncModal, serviceModal, record } = this.state;
     const { getFieldDecorator } = this.props.form;
     return <>
       <Button
@@ -40,7 +41,7 @@ export default class GpsDeviceSearch extends QuickFormSearchPage {
       </Button>
       <Modal
         title="流量管理"
-        visible={serviceMofal}
+        visible={serviceModal}
         onOk={() => {
           this.props.form.validateFields(async (err, fieldsValue) => {
             if (record.GPSNOS == undefined || fieldsValue?.serviceDate == undefined) {
@@ -50,13 +51,13 @@ export default class GpsDeviceSearch extends QuickFormSearchPage {
             serviceDate = moment(serviceDate).format('YYYY-MM-DD');
             const response = await saveServiceDate(record.GPSNOS, opType, serviceDate);
             if (response.success) {
-              this.setState({ serviceMofal: false });
+              this.setState({ serviceModal: false });
               this.onSearch();
             }
           });
         }}
         onCancel={() => {
-          this.setState({ serviceMofal: false });
+          this.setState({ serviceModal: false });
         }}
       >
         <Form>
@@ -104,9 +105,38 @@ export default class GpsDeviceSearch extends QuickFormSearchPage {
       >
         主从机更换
       </Button>
+      <Button
+        hidden={!havePermission(this.state.authority + '.syncDevice')}
+        onClick={() => this.setState({ syncModal: true })}
+      >
+        从G7获取设备信息
+      </Button>
+      {/* 从G7获取设备信息Modal */}
+      <Modal
+        title="从G7获取设备信息"
+        visible={syncModal}
+        onOk={() => {
+          this.props.form.validateFields(async (err, fieldsValue) => {
+            if (fieldsValue?.gpsno == undefined) {
+              return;
+            }
+            this.syncDevice(fieldsValue.gpsno);
+          });
+        }}
+        onCancel={() => {
+          this.setState({ syncModal: false });
+        }}
+      >
+        <Form.Item label="设备号">
+          {getFieldDecorator('gpsno', { rules: [{ required: true, message: '请填写设备号' }] })(
+            <Input placeholder="请输入设备号(多个单号请用英文逗号隔开)" allowClear/>
+          )}
+        </Form.Item>
+      </Modal>
+      {/* 移装 */}
       <Modal
         title="移装"
-        visible={shiftMofal}
+        visible={shiftModal}
         onOk={() => {
           this.props.form.validateFields(async (err, fieldsValue) => {
             if (record.GPSNOS == undefined || fieldsValue?.vehicle == undefined) {
@@ -117,13 +147,13 @@ export default class GpsDeviceSearch extends QuickFormSearchPage {
             const truckNo = vehicle.substr(vehicle.indexOf("]") + 1);
             const response = await shift(record.GPSNOS, truckId, truckNo);
             if (response.success) {
-              this.setState({ shiftMofal: false });
+              this.setState({ shiftModal: false });
               this.onSearch();
             }
           });
         }}
         onCancel={() => {
-          this.setState({ shiftMofal: false });
+          this.setState({ shiftModal: false });
         }}
       >
         <Form>
@@ -159,16 +189,44 @@ export default class GpsDeviceSearch extends QuickFormSearchPage {
       message.warn('请选中一条数据！');
       return;
     }
-    this.setState({ serviceMofal: true, record: selectedRows[0] });
+    this.setState({ serviceModal: true, record: selectedRows[0] });
   }
 
   //拆除
-  onSplit = () => {
-
+  onSplit = async () => {
+    const { selectedRows } = this.state;
+    if (selectedRows.length != 1) {
+      message.warn('请选择一个需要拆除的设备！');
+      return;
+    }
+    const gpsno = selectedRows[0].GPSNOS;
+    Modal.confirm({
+      title: `是否确认拆除设备${gpsno}？`,
+      onOk: async () => {
+        const reponse = await split(gpsno);
+        if (reponse.success) {
+          message.success('拆除成功！');
+        }
+      }
+    });
   }
 
-  onSwitchDevice = () => {
-    
+  //主从机更换
+  onSwitchDevice = async (gpsno, subGpsno) => {
+    const reponse = await switchDevice(gpsno, subGpsno);
+    if (reponse.success) {
+      message.success('主从机更换成功！');
+    }
+  }
+
+  //从G7获取设备信息
+  syncDevice = async (gpsno) => {
+    const reponse = await syncDevice(gpsno);
+    if (reponse.success) {
+      message.success('获取成功！');
+    } 
+    this.setState({ syncModal: false });
+    this.onSearch();
   }
 
   //移装
@@ -178,6 +236,6 @@ export default class GpsDeviceSearch extends QuickFormSearchPage {
       message.warn('请选中一条数据！');
       return;
     }
-    this.setState({ shiftMofal: true, record: selectedRows[0] });
+    this.setState({ shiftModal: true, record: selectedRows[0] });
   }
 }

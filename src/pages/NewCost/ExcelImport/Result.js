@@ -56,6 +56,8 @@ class Result extends PureComponent {
             });
             this.props.callback && this.props.callback(data.successData);
           }
+          //刷新表数据
+          this.props.getFunc();
         } else {
           message.error(
             formatMessage({ id: 'common.excelImport.result.message.error.import' }) +
