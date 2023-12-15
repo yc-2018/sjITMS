@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-15 10:52:13
+ * @LastEditTime: 2023-12-15 17:00:35
  * @version: 1.0
  */
 import { Form, Modal, Button, Icon, Row, Col, Upload, List, message, Spin, Divider } from 'antd';
@@ -170,15 +170,16 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
     // this.setState({ showViewer: true });
     const type = item.accessory.split('.')[item.accessory.split('.').length - 1];
     getUploadFile(item.accessory).then(res => {
-      if (res.type == 'application/pdf') {
-        window.open(URL.createObjectURL(res));
-      } else {
-        this.setState({
-          showViewer: true,
-          filePath: window.URL.createObjectURL(new Blob([res])),
-          fileType: type,
-        });
-      }
+      window.open(URL.createObjectURL(res));
+      // if (res.type == 'application/pdf') {
+      //   window.open(URL.createObjectURL(res));
+      // } else {
+      //   this.setState({
+      //     showViewer: true,
+      //     filePath: window.URL.createObjectURL(new Blob([res])),
+      //     fileType: type,
+      //   });
+      // }
     });
   };
 
@@ -304,7 +305,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
             />
           </div>
         </Modal>
-        <Modal
+        {/* <Modal
           title="附件预览"
           visible={showViewer}
           footer={null}
@@ -325,7 +326,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
               onError={err => console.log(err)}
             />
           )}
-        </Modal>
+        </Modal> */}
       </>
     );
   };
