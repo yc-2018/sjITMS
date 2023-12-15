@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-09-07 11:24:59
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-05 10:51:10
+ * @LastEditTime: 2023-12-15 10:28:18
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -62,10 +62,13 @@ export async function invoice(type, billUuid) {
   });
 }
 //票据驳回
-export async function rejectInvoice(billUuid,rejectMessage) {
-  return request(`/bms-cost/bms-cost/newCostBill/rejectInvoice?billUuid=${billUuid}&rejectMessage=${rejectMessage}`, {
-    method: 'POST',
-  });
+export async function rejectInvoice(billUuid, rejectMessage) {
+  return request(
+    `/bms-cost/bms-cost/newCostBill/rejectInvoice?billUuid=${billUuid}&rejectMessage=${rejectMessage}`,
+    {
+      method: 'POST',
+    }
+  );
 }
 //核销
 export async function verification(type, billUuid) {
@@ -87,8 +90,8 @@ export async function completed(type, billUuid) {
 }
 
 //子帐单上传附件
-export async function childUploadFile(file, uuid) {
-  return request(`/bms-cost/bms-cost/newCostBill/childUploadFile?uuid=${uuid}`, {
+export async function childUploadFile(file, uuid, type) {
+  return request(`/bms-cost/bms-cost/newCostBill/childUploadFile?uuid=${uuid}&type=${type}`, {
     method: 'POST',
     body: file,
   });

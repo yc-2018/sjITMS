@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-11-29 16:52:28
+ * @LastEditTime: 2023-12-15 10:52:13
  * @version: 1.0
  */
 import { Form, Modal, Button, Icon, Row, Col, Upload, List, message, Spin, Divider } from 'antd';
@@ -73,7 +73,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
       e.component = component;
     }
     if (e.column.fieldName === 'TOTALAMOUNT') {
-      const fontColor = e.val === '<空>' || e.val >=0 ? 'black':'red'
+      const fontColor = e.val === '<空>' || e.val >= 0 ? 'black' : 'red';
       const component = <a style={{ color: fontColor }}>{e.val}</a>;
       e.component = component;
     }
@@ -106,10 +106,11 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
   };
 
   accessoryModalShow = (isShow, e) => {
+    let downloads = [];
+    let billDownloads = [];
     if (e != 'false' && e.ACCESSORY_NAME) {
       let downloadsName = e.ACCESSORY_NAME.split(',');
       let accessory = e.ACCESSORY.split(',');
-      let downloads = [];
       downloadsName.map((data, index) => {
         let param = {
           download: data,
@@ -118,12 +119,10 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
         };
         downloads.push(param);
       });
-      this.setState({ downloads });
     }
     if (e != 'false' && e.BILL_ACCESSORY_NAME) {
       let downloadsName = e.BILL_ACCESSORY_NAME.split(',');
       let accessory = e.BILL_ACCESSORY.split(',');
-      let billDownloads = [];
       downloadsName.map((data, index) => {
         let param = {
           download: data,
@@ -132,16 +131,15 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
         };
         billDownloads.push(param);
       });
-      this.setState({ billDownloads });
     }
-    this.setState({ accessoryModal: isShow, uploadUuid: e.UUID });
+    this.setState({ accessoryModal: isShow, uploadUuid: e.UUID, downloads, billDownloads });
   };
 
-  uploadFile = async (file, fileList) => {
+  uploadFile = async (file, fileList, type) => {
     const { uploadUuid } = this.state;
     var formDatas = new FormData();
     formDatas.append('file', fileList[0]);
-    const response = await childUploadFile(formDatas, uploadUuid);
+    const response = await childUploadFile(formDatas, uploadUuid, type);
     if (response && response.success) {
       message.success('上传成功');
       this.setState({ accessoryModal: false });
@@ -217,19 +215,34 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
           title="附件列表"
           visible={accessoryModal}
           onCancel={() => this.accessoryModalShow(false, '')}
+          // key={uploadUuid}
           footer={[
             <Row justify="end">
-              <Col span={4} offset={16}>
+              <Col span={6} offset={8}>
                 <Upload
                   name="file"
                   className="upload-list-inline"
                   showUploadList={false}
-                  beforeUpload={(file, fileList) => this.uploadFile(file, fileList)}
+                  beforeUpload={(file, fileList) => this.uploadFile(file, fileList, 'invoice')}
                   maxCount={1}
                 >
                   <Button>
                     <Icon type="upload" />
-                    上传
+                    上传发票
+                  </Button>
+                </Upload>
+              </Col>
+              <Col span={6}>
+                <Upload
+                  name="file"
+                  className="upload-list-inline"
+                  showUploadList={false}
+                  beforeUpload={(file, fileList) => this.uploadFile(file, fileList, 'bill')}
+                  maxCount={1}
+                >
+                  <Button>
+                    <Icon type="upload" />
+                    上传账单
                   </Button>
                 </Upload>
               </Col>
