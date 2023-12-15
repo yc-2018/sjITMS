@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-06 18:30:25
+ * @LastEditTime: 2023-12-14 16:50:48
  * @version: 1.0
  */
 import React from 'react';
@@ -41,10 +41,21 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     selectCords: [],
     billState: [],
     e: {},
-    showCreate: false,
     isExMerge: true,
     apLoading: false,
     rejectModal: false,
+    showCreate: false,
+    showChecklistConfirm: false,
+    showBillConfirm: false,
+    showTmConfirm: false,
+    showPushBill: false,
+    showReconciliation: false,
+    showInvoiceConfirm: false,
+    showRejectInvoice: false,
+    showVerification: false,
+    showApplyPayment: false,
+    showPayment: false,
+    showCompleted: false,
   };
 
   onView = record => {};
@@ -81,16 +92,41 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
   };
 
   drawToolsButton = () => {
-    const { showCreate, selectedRows, apLoading } = this.state;
+    const {
+      showCreate,
+      showChecklistConfirm,
+      showBillConfirm,
+      showTmConfirm,
+      showPushBill,
+      showReconciliation,
+      showInvoiceConfirm,
+      showRejectInvoice,
+      showVerification,
+      showApplyPayment,
+      showPayment,
+      showCompleted,
+      selectedRows,
+      apLoading,
+    } = this.state;
     return (
       <span>
-        <Button
-          onClick={() => {
+        <Popconfirm
+          title="确定是否对所选账单进行清单确认吗?"
+          visible={showChecklistConfirm}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showChecklistConfirm: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showChecklistConfirm: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showChecklistConfirm: false });
             this.handleChecklistConfirm();
           }}
         >
-          清单确认
-        </Button>
+          <Button onClick={() => this.setState({ showChecklistConfirm: true })}>清单确认</Button>
+        </Popconfirm>
+
         <Popconfirm
           title="确定要生成所选账单的子帐单吗?"
           visible={showCreate}
@@ -115,79 +151,182 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
           </Button>
         </Popconfirm>
 
-        <Button
-          onClick={() => {
+        <Popconfirm
+          title="确定是否对所选账单进行账单确认吗?"
+          visible={showBillConfirm}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showBillConfirm: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showBillConfirm: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showBillConfirm: false });
             this.handleBillConfirm();
           }}
         >
-          账单确认
-        </Button>
-        <Button
-          onClick={() => {
+          <Button onClick={() => this.setState({ showBillConfirm: true })}>账单确认</Button>
+        </Popconfirm>
+
+        <Popconfirm
+          title="确定是否对所选账单进行运管审核吗?"
+          visible={showTmConfirm}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showTmConfirm: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showTmConfirm: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showTmConfirm: false });
             this.handleTmConfirm();
           }}
         >
-          运管审核
-        </Button>
-        <Button
-          onClick={() => {
+          <Button onClick={() => this.setState({ showTmConfirm: true })}>运管审核</Button>
+        </Popconfirm>
+
+        <Popconfirm
+          title="确定是否对所选子账单进行推送吗?"
+          visible={showPushBill}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showPushBill: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showPushBill: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showPushBill: false });
             this.handlePushBill();
           }}
         >
-          子账单推送
-        </Button>
-        <Button
-          onClick={() => {
+          <Button onClick={() => this.setState({ showPushBill: true })}>子账单推送</Button>
+        </Popconfirm>
+
+        <Popconfirm
+          title="确定是否对所选账单进行对账完成吗?"
+          visible={showReconciliation}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showReconciliation: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showReconciliation: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showReconciliation: false });
             this.handleReconciliation();
           }}
         >
-          对账完成
-        </Button>
-        <Button
-          onClick={() => {
+          <Button onClick={() => this.setState({ showReconciliation: true })}>对账完成</Button>
+        </Popconfirm>
+
+        <Popconfirm
+          title="确定是否对所选账单进行票据确认吗?"
+          visible={showInvoiceConfirm}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showInvoiceConfirm: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showInvoiceConfirm: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showInvoiceConfirm: false });
             this.handleInvoiceConfirm();
           }}
         >
-          票据确认
-        </Button>
-        <Button
-          type="danger"
-          onClick={() => {
+          <Button onClick={() => this.setState({ showInvoiceConfirm: true })}>票据确认</Button>
+        </Popconfirm>
+
+        <Popconfirm
+          title="确定是否对所选账单进行票据驳回吗?"
+          visible={showRejectInvoice}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showRejectInvoice: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showRejectInvoice: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showRejectInvoice: false });
             this.rejectInvoice();
           }}
         >
-          票据驳回
-        </Button>
-        <Button
-          onClick={() => {
+          <Button onClick={() => this.setState({ showRejectInvoice: true })}>票据驳回</Button>
+        </Popconfirm>
+
+        <Popconfirm
+          title="确定是否对所选账单进行票据驳回吗?"
+          visible={showVerification}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showVerification: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showVerification: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showVerification: false });
             this.handleVerification();
           }}
         >
-          核销
-        </Button>
-        <Button
-          type="primary"
-          loading={apLoading}
-          onClick={() => {
+          <Button onClick={() => this.setState({ showVerification: true })}>票据驳回</Button>
+        </Popconfirm>
+
+        <Popconfirm
+          title="确定是否对所选账单进行付款申请吗?"
+          visible={showApplyPayment}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showApplyPayment: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showApplyPayment: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showApplyPayment: false });
             this.applyPayment();
           }}
         >
-          申请付款
-        </Button>
-        <Button
-          onClick={() => {
+          <Button loading={apLoading} onClick={() => this.setState({ showApplyPayment: true })}>
+            付款申请
+          </Button>
+        </Popconfirm>
+
+        <Popconfirm
+          title="确定是否对所选账单进行付款吗?"
+          visible={showPayment}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showPayment: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showPayment: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showPayment: false });
             this.handlePayment();
           }}
         >
-          付款
-        </Button>
-        <Button
-          onClick={() => {
+          <Button loading={apLoading} onClick={() => this.setState({ showPayment: true })}>
+            付款
+          </Button>
+        </Popconfirm>
+
+        <Popconfirm
+          title="确定是否对所选账单进行归档吗?"
+          visible={showCompleted}
+          onVisibleChange={visible => {
+            if (!visible) this.setState({ showCompleted: visible });
+          }}
+          onCancel={() => {
+            this.setState({ showCompleted: false });
+          }}
+          onConfirm={() => {
+            this.setState({ showCompleted: false });
             this.handleCompleted();
           }}
         >
-          归档
-        </Button>
+          <Button loading={apLoading} onClick={() => this.setState({ showCompleted: true })}>
+            归档
+          </Button>
+        </Popconfirm>
+
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </span>
     );
@@ -231,7 +370,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
 
   handlePushBill = () => {
     const childSelectRows = this.childRef?.state.selectedRows;
-    if (childSelectRows.length == 0) {
+    if (childSelectRows == undefined || childSelectRows.length == 0) {
       message.error('请选择需要推送的子帐单！');
       return;
     }

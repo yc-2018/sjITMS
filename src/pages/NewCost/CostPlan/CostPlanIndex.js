@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-06-26 14:41:13
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-07 15:21:30
+ * @LastEditTime: 2023-12-14 15:17:32
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -96,7 +96,7 @@ export default class CostPlanIndex extends PureComponent {
           );
         })}
         // style={{ padding: 3 }}
-        gutter={3}
+        // gutter={3}
       />
     ) : (
       <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} />
@@ -214,7 +214,7 @@ export default class CostPlanIndex extends PureComponent {
               <Header style={{ backgroundColor: '#ffffff', height: '7%', marginTop: '2%' }}>
                 {this.drawForm()}
               </Header>
-              <Content style={{ overflow: 'auto', height: '20%' }}>{this.drowe()}</Content>
+              <Content style={{ overflowY: 'auto' }}>{this.drowe()}</Content>
               <Footer />
             </Layout>
           </Page>
