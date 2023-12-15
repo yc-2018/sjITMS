@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-15 17:00:35
+ * @LastEditTime: 2023-12-15 17:08:48
  * @version: 1.0
  */
 import { Form, Modal, Button, Icon, Row, Col, Upload, List, message, Spin, Divider } from 'antd';
@@ -170,16 +170,16 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
     // this.setState({ showViewer: true });
     const type = item.accessory.split('.')[item.accessory.split('.').length - 1];
     getUploadFile(item.accessory).then(res => {
-      window.open(URL.createObjectURL(res));
-      // if (res.type == 'application/pdf') {
-      //   window.open(URL.createObjectURL(res));
-      // } else {
-      //   this.setState({
-      //     showViewer: true,
-      //     filePath: window.URL.createObjectURL(new Blob([res])),
-      //     fileType: type,
-      //   });
-      // }
+      // window.open(URL.createObjectURL(res));
+      if (res.type == 'application/pdf') {
+        window.open(URL.createObjectURL(res));
+      } else {
+        this.setState({
+          showViewer: true,
+          filePath: window.URL.createObjectURL(new Blob([res])),
+          fileType: type,
+        });
+      }
     });
   };
 
