@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-14 16:50:48
+ * @LastEditTime: 2023-12-15 16:58:34
  * @version: 1.0
  */
 import React from 'react';
@@ -254,7 +254,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         </Popconfirm>
 
         <Popconfirm
-          title="确定是否对所选账单进行票据驳回吗?"
+          title="确定是否对所选账单进行核销吗?"
           visible={showVerification}
           onVisibleChange={visible => {
             if (!visible) this.setState({ showVerification: visible });
@@ -267,7 +267,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
             this.handleVerification();
           }}
         >
-          <Button onClick={() => this.setState({ showVerification: true })}>票据驳回</Button>
+          <Button onClick={() => this.setState({ showVerification: true })}>核销</Button>
         </Popconfirm>
 
         <Popconfirm
