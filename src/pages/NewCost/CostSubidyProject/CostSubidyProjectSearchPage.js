@@ -11,6 +11,7 @@ import { Button, Popconfirm, message } from 'antd';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
 import { audit, invalid, cancel, batchAllAudit } from '@/services/bms/CostExProject';
 import React from 'react';
+import { havePermission } from '@/utils/authority';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -115,6 +116,7 @@ export default class CostSubidyProjectSearchPage extends QuickFormSearchPage {
             onClick={() => {
               this.handleAudit();
             }}
+            hidden={!havePermission(this.state.authority + '.audit')}
           >
             审批
           </Button>
@@ -125,7 +127,7 @@ export default class CostSubidyProjectSearchPage extends QuickFormSearchPage {
           okText="确定"
           cancelText="取消"
         >
-          <Button>批量审核</Button>
+          <Button hidden={!havePermission(this.state.authority + '.batchAudit')}>批量审核</Button>
         </Popconfirm>
         <Popconfirm
           title="确定作废所选费用项吗?"
@@ -151,6 +153,7 @@ export default class CostSubidyProjectSearchPage extends QuickFormSearchPage {
             onClick={() => {
               this.handleInvalid();
             }}
+            hidden={!havePermission(this.state.authority + '.cancellation')}
           >
             作废
           </Button>
@@ -180,6 +183,7 @@ export default class CostSubidyProjectSearchPage extends QuickFormSearchPage {
             onClick={() => {
               this.handleCancel();
             }}
+            hidden={!havePermission(this.state.authority + '.cancel')}
           >
             取消
           </Button>
