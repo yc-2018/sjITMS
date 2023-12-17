@@ -10,6 +10,7 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import { Button, Popconfirm, message } from 'antd';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
 import { audit, invalid } from '@/services/bms/DriverFee';
+import { havePermission } from '@/utils/authority';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -102,6 +103,7 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
             onClick={() => {
               this.handleAudit();
             }}
+            hidden={!havePermission(this.state.authority + '.audit')}
           >
             审批
           </Button>
@@ -131,6 +133,7 @@ export default class DriverFeeSearchPage extends QuickFormSearchPage {
             onClick={() => {
               this.handleInvalid();
             }}
+            hidden={!havePermission(this.state.authority + '.cancellation')}
           >
             作废
           </Button>
