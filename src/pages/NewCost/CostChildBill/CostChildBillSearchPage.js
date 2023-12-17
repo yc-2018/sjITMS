@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-15 17:08:48
+ * @LastEditTime: 2023-12-15 17:23:00
  * @version: 1.0
  */
 import { Form, Modal, Button, Icon, Row, Col, Upload, List, message, Spin, Divider } from 'antd';
@@ -305,7 +305,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
             />
           </div>
         </Modal>
-        {/* <Modal
+        <Modal
           title="附件预览"
           visible={showViewer}
           footer={null}
@@ -326,7 +326,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
               onError={err => console.log(err)}
             />
           )}
-        </Modal> */}
+        </Modal>
       </>
     );
   };
