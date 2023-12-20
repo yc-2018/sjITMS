@@ -5,7 +5,7 @@
  * @LastEditTime: 2023-12-15 17:23:00
  * @version: 1.0
  */
-import { Form, Modal, Button, Icon, Row, Col, Upload, List, message, Spin, Divider } from 'antd';
+import { Form, Modal, Button, Icon, Row, Col, Upload, List, message, Spin, Divider, Drawer, Tabs } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import {
@@ -16,6 +16,10 @@ import {
 } from '@/services/bms/CostBill';
 import CostChildBillDtlSearchPage from './CostChildBillDtlSearchPage';
 import FileViewer from 'react-file-viewer';
+import EntityLogTab from '@/pages/Component/Page/inner/EntityLogTab';
+import React from 'react';
+
+const TabPane = Tabs.TabPane;
 
 @connect(({ quick, deliveredConfirm, loading }) => ({
   quick,
@@ -38,6 +42,8 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
     filePath: '',
     billDownloads: [],
     downloads: [],
+    Logvisible:false,
+    entityUuid:''
   };
 
   componentDidMount() {
@@ -93,7 +99,35 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
     }
   };
 
-  checkDtl = e => {
+  //子帐单添加查看日志额外的列
+  drawExColumns = e =>{
+    if (e.column.fieldName == 'STATE') {
+      return {
+        title: '操作 ',
+        width: 60,
+        render: (_, record) => {
+          return (
+            <div>
+              <a
+                onClick={() => {
+                  this.onCloseLog()
+                  this.setState({ entityUuid :record.UUID ?record.UUID:'-1'} )
+                }}
+              >
+                查看日志
+              </a>
+            </div>
+          );
+        },
+      };
+    }
+  }
+
+  onCloseLog = () => {
+    this.setState({ Logvisible: !this.state.Logvisible });
+  };
+
+    checkDtl = e => {
     this.setState({ isModalVisible: true, e });
   };
 
@@ -327,6 +361,19 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
             />
           )}
         </Modal>
+        <Drawer
+            placement="right"
+            onClose={() => this.onCloseLog()}
+            visible={this.state.Logvisible}
+            width={'50%'}
+            destroyOnClose
+          >
+            <Tabs defaultActiveKey="detail">
+              <TabPane tab="操作日志" key='log'>
+                <EntityLogTab entityUuid={this.state.entityUuid}/>
+              </TabPane>
+            </Tabs>
+        </Drawer>
       </>
     );
   };
