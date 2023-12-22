@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-15 17:23:00
+ * @LastEditTime: 2023-12-22 09:26:11
  * @version: 1.0
  */
 import { Form, Modal, Button, Icon, Row, Col, Upload, List, message, Spin, Divider } from 'antd';
@@ -15,7 +15,7 @@ import {
   getUploadFile,
 } from '@/services/bms/CostBill';
 import CostChildBillDtlSearchPage from './CostChildBillDtlSearchPage';
-import FileViewer from 'react-file-viewer';
+import FileViewer from 'viewerjs-react';
 
 @connect(({ quick, deliveredConfirm, loading }) => ({
   quick,
@@ -313,19 +313,17 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
             this.setState({ showViewer: false });
           }}
           centered={true}
-          width={'80%'}
-          bodyStyle={{ height: 'calc(84vh)', overflowY: 'auto' }}
+          bodyStyle={{
+            height: 'calc(38vh)',
+            display: 'table-cell',
+            verticalAlign: 'middle',
+            textAlign: 'center',
+          }}
         >
-          {filePath == '' ? (
-            <Spin />
-          ) : (
-            <FileViewer
-              fileType={fileType}
-              filePath={filePath}
-              errorComponent={''}
-              onError={err => console.log(err)}
-            />
-          )}
+          <FileViewer>
+            <img src={filePath} width={'60%'} />
+            <div>(点击查看大图)</div>
+          </FileViewer>
         </Modal>
       </>
     );
