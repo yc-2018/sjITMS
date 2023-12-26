@@ -7,7 +7,13 @@ import SimpleQuery from '@/pages/Component/RapidDevelopment/OnlReport/SimpleQuer
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import ExportJsonExcel from 'js-export-excel';
 import { routerRedux } from 'dva/router';
-import { loginCompany, loginOrg, getTableColumns, cacheTableColumns } from '@/utils/LoginContext';
+import {
+  loginCompany,
+  loginOrg,
+  getTableColumns,
+  cacheTableColumns,
+  loginUser,
+} from '@/utils/LoginContext';
 import { guid } from '@/utils/utils';
 import moment from 'moment';
 import styles from './index.less';
@@ -204,6 +210,20 @@ export default class QuickFormSearchPage extends SearchPage {
                     ...this.state.isOrgQuery,
                   ]
                 : [...this.state.isOrgQuery],
+            });
+          }
+
+          if (loginOrg().type == 'BMS') {
+            this.setState({
+              isOrgQuery: [
+                {
+                  field: 'ORGANIZATIONUUID',
+                  type: 'VarChar',
+                  rule: 'in',
+                  val: loginUser().rolesOrg.join('||'),
+                },
+                // ...this.state.isOrgQuery,
+              ],
             });
           }
 
