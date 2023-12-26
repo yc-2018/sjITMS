@@ -257,6 +257,7 @@ export default class BasicSourceSearchPage extends Component {
                     <ExcelImport
                       key={ selectedKeys[0]}
                       title={event.selectedNodes[0].props.dataRef.tableNameCN}
+                      selectedRows={selectedKeys[0]}
                       templateType="BASICSOURCE"
                       dispatch={this.props.dispatch}
                       uploadType="basicSource/newBatchImport"

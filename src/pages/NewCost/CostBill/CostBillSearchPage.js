@@ -6,10 +6,11 @@
  * @version: 1.0
  */
 import React from 'react';
-import { Form, Button, Modal, Popconfirm, message, Spin, Input, Row, Col } from 'antd';
+import { Form, Button, Modal, Popconfirm, message, Spin, Input, Row, Col, Drawer, Tabs } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import CostBillViewForm from '@/pages/NewCost/CostBill/CostBillViewForm';
+const TabPane = Tabs.TabPane;
 import {
   createChildBill,
   billConfirm,
@@ -26,6 +27,8 @@ import {
 } from '@/services/bms/CostBill';
 import CostChildBillSearchPage from '@/pages/NewCost/CostChildBill/CostChildBillSearchPage';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
+import { havePermission } from '@/utils/authority';
+import EntityLogTab from '@/pages/Component/Page/inner/EntityLogTab';
 
 ///CommonLayout/RyzeStandardTable
 @connect(({ quick, deliveredConfirm, loading }) => ({
@@ -56,6 +59,8 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     showApplyPayment: false,
     showPayment: false,
     showCompleted: false,
+    Logvisible:false,
+    entityUuid:''
   };
 
   onView = record => {};
@@ -71,11 +76,38 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     ];
   };
 
+  onCloseLog = () => {
+    this.setState({ Logvisible: !this.state.Logvisible });
+  };
+
   drawcell = e => {
     //找到fieldName为CODE这一列 更改它的component
     if (e.column.fieldName == 'BILL_NUMBER') {
       const component = <a onClick={() => this.checkDtl(e)}>{e.record.BILL_NUMBER}</a>;
       e.component = component;
+    }
+  };
+  //table额外的列
+  drawExColumns = e => {
+    if (e.column.fieldName == 'STATE') {
+      return {
+        title: '操作 ',
+        width: 60,
+        render: (_, record) => {
+          return (
+            <div>
+             <a
+               onClick={() => {
+                 this.onCloseLog()
+                 this.setState({ entityUuid :record.UUID ?record.UUID:'-1'} )
+               }}
+             >
+               查看日志
+             </a>
+            </div>
+          );
+        },
+      };
     }
   };
 
@@ -328,6 +360,19 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         </Popconfirm>
 
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
+        <Drawer
+            placement="right"
+            onClose={() => this.onCloseLog()}
+            visible={this.state.Logvisible}
+            width={'50%'}
+            destroyOnClose
+        >
+          <Tabs defaultActiveKey="detail">
+            <TabPane tab="操作日志" key='log'>
+              <EntityLogTab entityUuid={this.state.entityUuid}/>
+            </TabPane>
+          </Tabs>
+        </Drawer>
       </span>
     );
   };

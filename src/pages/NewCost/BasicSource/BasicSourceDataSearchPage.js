@@ -2,16 +2,22 @@
  * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-07 16:30:41
+ * @LastEditTime: 2023-12-26 18:03:52
  * @version: 1.0
  */
 import React, { Component } from 'react';
 import { connect } from 'dva';
-import { Button, Form, Input, message, Modal, Spin, DatePicker, InputNumber } from 'antd';
+import { Button, Form, Input, message, Modal, Spin, DatePicker, InputNumber, Col, Row } from 'antd';
 import AdvanceQuery from '@/pages/Component/RapidDevelopment/OnlReport/AdvancedQuery/AdvancedQuery';
 import SearchPage from '@/pages/Component/RapidDevelopment/CommonLayout/RyzeSearchPage';
 import { dynamicQuery } from '@/services/quick/Quick';
-import { newOnSave, deleteSourceData, sourceConfirm, queryData } from '@/services/bms/BasicSource';
+import {
+  newOnSave,
+  deleteSourceData,
+  sourceConfirm,
+  queryData,
+  filterDataByMonth,
+} from '@/services/bms/BasicSource';
 import { colWidth } from '@/utils/ColWidth';
 import { guid } from '@/utils/utils';
 import { loginUser } from '@/utils/LoginContext';
@@ -55,14 +61,40 @@ export default class BasicSourceDataSearchPage extends SearchPage {
   drawRightClickMenus = () => {}; //右键菜单
 
   componentDidMount() {
-    this.queryColumns();
+    this.queryTableConfig();
     //组件熏染以后，将getData函数传给父组件
     this.props.setFunc(this);
   }
 
+  //获取表管理
+  queryTableConfig = async () => {
+    const { system } = this.state;
+    let tableParam = {
+      tableName: 'cost_sourcedata_config',
+      condition: {
+        params: [{ field: 'UUID', rule: 'eq', val: [this.props.selectedRows] }],
+      },
+    };
+    const tableConfig = await dynamicQuery(tableParam, system.system);
+    if (tableConfig && tableConfig.success) {
+      if (tableConfig.result.records.length > 0) {
+        this.setState({
+          isOrgQuery: {
+            field: 'ORGANIZATIONUUID',
+            type: 'VarChar',
+            rule: 'eq',
+            val: [loginUser().rolesOrg.join('||')],
+          },
+        });
+      }
+      this.queryColumns();
+    }
+  };
+
   //获取列配置
   queryColumns = async () => {
     const { system } = this.state;
+    //获取列配置
     let param = {
       tableName: 'cost_form_field',
       orderBy: ['LINE+'],
@@ -122,7 +154,6 @@ export default class BasicSourceDataSearchPage extends SearchPage {
 
   getData = async pageFilters => {
     this.state.pageFilters = pageFilters;
-    // const result = await dynamicQuery(pageFilters, system);
     const result = await queryData(pageFilters, this.props.selectedRows);
     if (result && result.data && result.data.data.records != 'false') {
       this.initData(result.data.data);
@@ -134,15 +165,18 @@ export default class BasicSourceDataSearchPage extends SearchPage {
   };
 
   onSearch = async filter => {
-    const { system } = this.state;
+    const { system, isOrgQuery } = this.state;
     this.setState({ searchLoading: true });
-    let param;
+    let param = [];
     if (filter == undefined) {
       param = {
         pageNo: 1,
         pageSize: 20,
         searchCount: true,
         tableName: system.tableName,
+        condition: {
+          params: [isOrgQuery],
+        },
       };
     } else {
       const queryParams = params => {
@@ -154,6 +188,8 @@ export default class BasicSourceDataSearchPage extends SearchPage {
             val: [data.val],
           };
         });
+        // param = {param,...isOrgQuery}
+        param.push(isOrgQuery);
         return param;
       };
 
@@ -246,7 +282,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       option.fileName = title; //导出的Excel文件名
       option.datas = [
         {
-          sheetData: result.result.records==='false'?[]:result.result.records,
+          sheetData: result.result.records === 'false' ? [] : result.result.records,
           sheetName: title, //工作表的名字
           sheetFilter: sheetfilter,
           sheetHeader: sheetheader,
@@ -312,6 +348,29 @@ export default class BasicSourceDataSearchPage extends SearchPage {
     this.setState({ showDataConfirmModal: false, searchLoading: false });
   };
 
+  filterDataByMonth = async e => {
+    const { pageFilters } = this.state;
+    e.preventDefault();
+    this.props.form.validateFields(async (err, fieldsValue) => {
+      if (err) {
+        return;
+      }
+      const result = await filterDataByMonth(
+        pageFilters,
+        this.props.selectedRows,
+        fieldsValue['month-picker'].format('YYYY-MM')
+      );
+      if (result && result.data && result.data.data.records != 'false') {
+        this.initData(result.data.data);
+        this.setState({ showFilterDataByMonth: false });
+        message.success('查询成功');
+      } else {
+        message.error('该月份暂无数据');
+        return;
+      }
+    });
+  };
+
   handleSave = e => {
     const { selectedRows, updateModal, createInfo } = this.state;
     if (e) {
@@ -347,6 +406,12 @@ export default class BasicSourceDataSearchPage extends SearchPage {
   drawToolbarPanel = () => {
     const { showDataConfirmModal, system, confirmMonth, updateModal } = this.state;
     const monthFormat = 'YYYY-MM';
+    const { getFieldDecorator } = this.props.form;
+    //按月份查询数据的配置
+    const config = {
+      rules: [{ type: 'object', required: true, message: '请先选择月份' }],
+      initialValue: moment().subtract(1, 'months'),
+    };
     return (
       <div style={{ marginTop: '10px' }}>
         <AdvanceQuery
@@ -373,6 +438,32 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         </Button>
         <Button onClick={this.create}>新增</Button>
         <Button onClick={this.delete}>删除</Button>
+        <div style={{ marginTop: '10px' }}>
+          <Form onSubmit={this.filterDataByMonth}>
+            <Row>
+              <Col span={8}>
+                <Row>
+                  <Col span={17}>
+                    <Form.Item
+                      label="按月份筛选数据"
+                      labelCol={{ span: 10 }}
+                      wrapperCol={{ span: 14 }}
+                    >
+                      {getFieldDecorator('month-picker', config)(
+                        <MonthPicker style={{ width: '90%' }} />
+                      )}
+                    </Form.Item>
+                  </Col>
+                  <Col span={7}>
+                    <Button type="primary" htmlType="submit">
+                      筛选
+                    </Button>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+          </Form>
+        </div>
         <Modal
           title="数据确认"
           visible={showDataConfirmModal}

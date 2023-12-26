@@ -131,3 +131,10 @@ export async function queryData(payload, sourceUuid) {
     body: payload,
   });
 }
+//新
+export async function filterDataByMonth(payload, sourceUuid,month) {
+  return request(`/bms-cost/bms-cost/newSource/filterDataByMonth/${sourceUuid}/${month}`, {
+    method: 'POST',
+    body: payload,
+  });
+}

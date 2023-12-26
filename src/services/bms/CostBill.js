@@ -12,7 +12,7 @@ import { cacheLoginKey, loginKey } from '@/utils/LoginContext';
 
 //清单确认
 export async function checklistConfirm(uuid) {
-  return request(`/bms-cost/bms-cost/newCostBill/checklistConfirm?uuid=${uuid}`, {
+  return request(`/bms-cost/bms-cost/newCostBill/listConfirmCheck?uuid=${uuid}`, {
     method: 'POST',
   });
 }

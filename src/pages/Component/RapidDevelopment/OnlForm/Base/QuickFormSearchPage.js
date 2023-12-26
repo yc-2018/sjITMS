@@ -213,7 +213,7 @@ export default class QuickFormSearchPage extends SearchPage {
             });
           }
 
-          if (loginOrg().type == 'BMS') {
+          if (loginOrg().type == 'BMS' && org) {
             this.setState({
               isOrgQuery: [
                 {

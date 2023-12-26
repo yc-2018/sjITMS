@@ -10,6 +10,7 @@ import Result from './Result';
 import { DatePicker  } from 'antd';
 import { Radio } from 'antd';
 import moment from 'moment';
+import { dynamicQuery } from '@/services/quick/Quick';
 
 
 
@@ -48,7 +49,55 @@ class ExcelImport extends PureComponent {
     //导入数据的月份
     importMonth:defaultMonth,
     //是否为周期计费表
-    disabledBoolean:this.props.costForm.datatype !== 'Periodicity'
+    disabledBoolean:this.props.costForm.datatype !== 'Periodicity',
+    //数据源的列数组
+    columns:[],
+
+  };
+
+  componentDidMount() {
+    this.queryColumns();
+  }
+
+  //获取列配置
+  queryColumns = async () => {
+    const { costForm } = this.props;
+    let param = {
+      tableName: 'cost_form_field',
+      orderBy: ['LINE+'],
+      condition: {
+        params: [{ field: 'FORMUUID', rule: 'eq', val: [this.props.selectedRows] }],
+      },
+    };
+    const columnsData = await dynamicQuery(param, costForm.system);
+    if (columnsData && columnsData.success && columnsData.result.records.length > 0) {
+      this.initConfig(columnsData.result.records);
+    }
+  };
+
+  initConfig = queryConfig => {
+    let quickColumns = new Array();
+    queryConfig.filter(data => data.SHOW).forEach(data => {
+      const qiuckcolumn = {
+        title: data.DB_FIELD_TXT,
+        dataIndex: data.DB_FIELD_NAME,
+        key: data.DB_FIELD_NAME,
+        sorter: true,
+        width: data.DB_LENGTH,
+        fieldType: data.DB_TYPE,
+        allowUpdate: data.ALLOWUPDATE,
+        render: (val, record) => this.getRender(val, data, record),
+      };
+      quickColumns.push(qiuckcolumn);
+    });
+    if (quickColumns.length == 0) {
+      message.error(this.state.title + '数据源展示列为空');
+      return;
+    }
+
+    this.setState({
+      columns: quickColumns,
+    });
   };
 
   /**
@@ -120,7 +169,7 @@ class ExcelImport extends PureComponent {
   render() {
     const { title, uploadType, uploadParams, cancelCallback, dispatch, templateType} = this.props;
 
-    const { current, fileKey, fileName, isModalOpen, importType,importMonth,disabledBoolean} = this.state;
+    const { current, fileKey, fileName, isModalOpen, importType,importMonth,disabledBoolean,columns} = this.state;
 
     const pageTitle = formatMessage({ id: 'common.excelImport.title' }) + title;
 
@@ -142,6 +191,12 @@ class ExcelImport extends PureComponent {
       downloadFile: this.downloadFile,
       callback: this.importCallback,
     };
+
+    //导出空白模板所需要的变量
+    const exportEmptyTemplate = {
+      title: title,
+      columns: columns,
+    }
 
     const actionBtn = (
       <Fragment>
@@ -209,7 +264,7 @@ class ExcelImport extends PureComponent {
                 <Step key="2" title={formatMessage({ id: 'common.excelImport.step2.tips' })} />
               </Steps>
               <div className="steps-content">
-                {current === 0 && <SelectIndex {...selectProps} />}
+                {current === 0 && <SelectIndex {...selectProps } {...exportEmptyTemplate }/>}
                 {current === 1 && <Result {...resultProps} importType={importType} importMonth={disabledBoolean? null : importMonth.format("YYYY-MM")} getFunc={this.props.refDataSource}/>}
               </div>
             </div>
