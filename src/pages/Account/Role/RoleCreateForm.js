@@ -15,6 +15,7 @@ import {
 } from '@/utils/CommonLocale';
 import { codePattern } from '@/utils/PatternContants';
 import PropTypes from 'prop-types';
+import { SimpleSelect } from '@/pages/Component/RapidDevelopment/CommonComponent';
 
 const FormItem = Form.Item;
 const Option = Select.Option;
@@ -99,6 +100,27 @@ class RoleCreateForm extends PureComponent {
                 ],
                 initialValue: role ? role.name : null,
               })(<Input placeholder={placeholderLocale(commonLocale.nameLocale)} />)}
+            </FormItem>
+            <FormItem {...formItemLayout} label="所属组织">
+              {form.getFieldDecorator('org', {
+                rules: [
+                  // { required: true, message: notNullLocale(commonLocale.nameLocale) },
+                  {
+                    max: 30,
+                    message: tooLongLocale(commonLocale.nameLocale, 30),
+                  },
+                ],
+                initialValue: role ? role.org : null,
+              })(
+                <SimpleSelect
+                  // style={{ width: 120 }}
+                  // onSelect={(value, key) => {
+                  //   this.setState({ feeType: value, feeName: key.props.label });
+                  // }}
+                  dictCode={'dispatchCenter'}
+                  placeholder={'请选择所属组织'}
+                />
+              )}
             </FormItem>
             <FormItem {...formItemLayout} label="所属菜单">
               {form.getFieldDecorator('pcode', {
