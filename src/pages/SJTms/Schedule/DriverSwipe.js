@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-07-13 14:22:18
- * @LastEditors: Liaorongchang
- * @LastEditTime: 2022-09-01 11:47:33
+ * @LastEditors: guankongjin
+ * @LastEditTime: 2023-11-06 15:55:36
  * @Description: 司机刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipe.js
  */
@@ -12,6 +12,8 @@ import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import Empty from '@/pages/Component/Form/Empty';
 import { driverSwipe } from '@/services/sjitms/ScheduleProcess';
 import { queryDictByCode } from '@/services/quick/Quick';
+import swipeFail from '@/assets/audio/swipeFail.mp3';
+import swipeSuccess from '@/assets/audio/swipeSuccess.mp3';
 
 export default class Swiper extends PureComponent {
   state = {
@@ -65,7 +67,8 @@ export default class Swiper extends PureComponent {
     const response = await driverSwipe(event.target.value, companyUuid, dispatchUuid,swipeFlag);
     localStorage.setItem('showMessage', '1');
     if (response.success) {
-      this.speech('刷卡成功');
+      // this.speech('刷卡成功');
+      this.audioSuccessRef?.play();
       this.setState({
         empId: '',
         loading: false,
@@ -74,7 +77,8 @@ export default class Swiper extends PureComponent {
         isShip: response.data.message.indexOf('装车') != -1,
       });
     } else {
-      this.speech('刷卡失败');
+      // this.speech('刷卡失败');
+      this.audioFailRef?.play();
       this.setState({ empId: '', loading: false, scheduleBill: {}, errMsg: response.message });
     }
   };
@@ -91,6 +95,8 @@ export default class Swiper extends PureComponent {
     } = this.state;
     return (
       <div style={{ height: '100vh' }} onClick={() => this.empInputRef.focus()}>
+        <audio ref={audio => this.audioSuccessRef = audio} src={swipeSuccess} />
+        <audio ref={audio => this.audioFailRef = audio} src={swipeFail} />
         <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
           <div
             style={{

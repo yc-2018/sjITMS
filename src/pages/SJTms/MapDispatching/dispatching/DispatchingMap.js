@@ -22,7 +22,7 @@ import {
   Icon,
   Checkbox,
 } from 'antd';
-import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
+import { Map, Marker, CustomOverlay, DrawingManager, Label, DistanceTool } from 'react-bmapgl';
 import { getSchedule, getDetailByBillUuids } from '@/services/sjitms/ScheduleBill';
 import style from './DispatchingMap.less';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
@@ -639,6 +639,12 @@ export default class DispatchMap extends Component {
         },
       },
       {
+        text: '地图测距',
+        callback: () => {
+          this.openTool();
+        },
+      },
+      {
         text: '导航',
         callback: () => {
           const { orders } = this.state;
@@ -976,6 +982,13 @@ export default class DispatchMap extends Component {
     });
     return icon;
   };
+ 
+ // 开启测距
+  openTool() {
+     if (this.distance) {
+       this.distance.open();
+     }
+  }
 
   render() {
     const {
@@ -1263,6 +1276,11 @@ export default class DispatchMap extends Component {
                 >
                   {this.drawMarker()}
                   {/* {this.drawCheckSchedules()} */}
+                  {/* 地图测距工具 */}
+                  <DistanceTool
+                    ref={ref => this.distance = ref?.distancetool}
+                    defaultOpen={false}
+                  />
                   {/* 鼠标绘制工具 */}
                   <DrawingManager
                     // isOpen={true}
