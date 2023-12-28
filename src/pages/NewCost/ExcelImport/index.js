@@ -2,22 +2,21 @@ import React, { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { formatMessage } from 'umi/locale';
 import styles from './index.less';
-import { Steps, Button, message, Modal, } from 'antd';
+import { Steps, Button, message, Modal, Select, Row, Form } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import PageDetail from '@/components/MyComponent/PageDetail';
 import SelectIndex from './Select';
 import Result from './Result';
-import { DatePicker  } from 'antd';
+import { DatePicker } from 'antd';
 import { Radio } from 'antd';
 import moment from 'moment';
 import { dynamicQuery } from '@/services/quick/Quick';
-
-
+import { loginUser } from '@/utils/LoginContext';
 
 const Step = Steps.Step;
-const { confirm } = Modal;
-const {  MonthPicker } = DatePicker;
-const defaultMonth = moment().subtract(1, 'months')
+const { MonthPicker } = DatePicker;
+const defaultMonth = moment().subtract(1, 'months');
+const FormItem = Form.Item;
 /**
  * title{string}:提供页眉标题
  * templateType{string}:提供下载模板
@@ -30,6 +29,7 @@ const defaultMonth = moment().subtract(1, 'months')
 /**
  * 分步Excel导入组件
  */
+@Form.create()
 class ExcelImport extends PureComponent {
   static propTypes = {
     title: PropTypes.string,
@@ -47,12 +47,13 @@ class ExcelImport extends PureComponent {
     isModalOpen: false,
     importType: '1',
     //导入数据的月份
-    importMonth:defaultMonth,
+    importMonth: defaultMonth,
     //是否为周期计费表
-    disabledBoolean:this.props.costForm.datatype !== 'Periodicity',
+    disabledBoolean: this.props.costForm.datatype !== 'Periodicity',
     //数据源的列数组
-    columns:[],
-
+    columns: [],
+    queryByOrg: this.props.queryByOrg,
+    portOrg: '',
   };
 
   componentDidMount() {
@@ -100,6 +101,15 @@ class ExcelImport extends PureComponent {
     });
   };
 
+  drawOption = () => {
+    const { dict } = this.props;
+    let org = loginUser().rolesOrg[0].split(',');
+    const options = dict.filter(x => org.includes(x.itemValue));
+    return options.map(option => {
+      return <Option value={option.itemValue + ',' + option.itemText}>{option.itemText}</Option>;
+    });
+  };
+
   /**
    * 下一步
    */
@@ -107,10 +117,10 @@ class ExcelImport extends PureComponent {
     this.setState({ isModalOpen: true });
     // const current = this.state.current + 1;
     // this.setState({ current });
-    this.setState({importType:'1'})
-    this.setState({importMonth:defaultMonth})
-    if(this.state.disabledBoolean){
-      this.setState({importMonth:null})
+    this.setState({ importType: '1' });
+    this.setState({ importMonth: defaultMonth });
+    if (this.state.disabledBoolean) {
+      this.setState({ importMonth: null });
     }
   };
 
@@ -162,14 +172,33 @@ class ExcelImport extends PureComponent {
     // 如果当前月的开始时间在当前时间之后，禁用该月
     return currentMonthStart > currentDate;
   };
-  selectMonth = (date,dateString)=>{
-    this.setState({importMonth:date})
-  }
+  selectMonth = (date, dateString) => {
+    this.setState({ importMonth: date });
+  };
 
   render() {
-    const { title, uploadType, uploadParams, cancelCallback, dispatch, templateType} = this.props;
+    const {
+      title,
+      uploadType,
+      uploadParams,
+      cancelCallback,
+      dispatch,
+      templateType,
+      form,
+    } = this.props;
 
-    const { current, fileKey, fileName, isModalOpen, importType,importMonth,disabledBoolean,columns} = this.state;
+    const {
+      current,
+      fileKey,
+      fileName,
+      isModalOpen,
+      importType,
+      importMonth,
+      disabledBoolean,
+      columns,
+      queryByOrg,
+      portOrg,
+    } = this.state;
 
     const pageTitle = formatMessage({ id: 'common.excelImport.title' }) + title;
 
@@ -192,11 +221,16 @@ class ExcelImport extends PureComponent {
       callback: this.importCallback,
     };
 
+    const formItemLayout = {
+      labelCol: { span: 6 },
+      wrapperCol: { span: 15 },
+    };
+
     //导出空白模板所需要的变量
     const exportEmptyTemplate = {
       title: title,
       columns: columns,
-    }
+    };
 
     const actionBtn = (
       <Fragment>
@@ -228,14 +262,10 @@ class ExcelImport extends PureComponent {
     } else {
       return (
         <PageHeaderWrapper>
-            <Modal
+          <Modal
             title="导入选项"
             visible={isModalOpen}
             onOk={() => {
-              if (importType.importType == '2') {
-                message.error('该选项正在开发中。。。');
-                return;
-              }
               const current = this.state.current + 1;
               this.setState({ current, isModalOpen: false });
             }}
@@ -243,19 +273,91 @@ class ExcelImport extends PureComponent {
               this.setState({ isModalOpen: false });
             }}
           >
-                <Radio.Group  style={{marginLeft: 30}} value={importType} buttonStyle="solid" onChange={value => {this.setState({ importType:value.target.value})}}>
+            {/* <Row>
+              <Radio.Group
+                style={{ marginLeft: 30 }}
+                value={importType}
+                buttonStyle="solid"
+                onChange={value => {
+                  this.setState({ importType: value.target.value });
+                }}
+              >
                 <Radio value="1">覆盖导入</Radio>
                 <Radio value="2">增量更新模式</Radio>
               </Radio.Group>
-            <MonthPicker renderExtraFooter={() => '请选择月份'}
-                         value={importMonth}
-                         disabledDate={this.disabledFutureMonths}
-                         placeholder="请选择导入数据的月份"
-                         style={{marginLeft: 50}}
-                         onChange={this.selectMonth}
-                         allowClear={false}
-                         disabled={disabledBoolean}
-            />
+            </Row>
+            <Row>
+              <MonthPicker
+                renderExtraFooter={() => '请选择月份'}
+                value={importMonth}
+                disabledDate={this.disabledFutureMonths}
+                placeholder="请选择导入数据的月份"
+                style={{ marginLeft: 50 }}
+                onChange={this.selectMonth}
+                allowClear={false}
+                disabled={disabledBoolean}
+              />
+            </Row>
+            {loginUser().rolesOrg.length > 0 && queryByOrg ? (
+              <Row>
+                <Select width={'100%'} placeholder="请选择所属组织">
+                  {this.drawOption()}
+                </Select>
+              </Row>
+            ) : (
+              ''
+            )} */}
+            <Form>
+              <FormItem {...formItemLayout} label="导入模式">
+                {form.getFieldDecorator('importType')(
+                  <Radio.Group
+                    style={{ marginLeft: 30 }}
+                    value={importType}
+                    buttonStyle="solid"
+                    onChange={value => {
+                      this.setState({ importType: value.target.value });
+                    }}
+                  >
+                    <Radio value="1">覆盖导入</Radio>
+                    <Radio value="2">增量更新模式</Radio>
+                  </Radio.Group>
+                )}
+              </FormItem>
+              <FormItem {...formItemLayout} label="数据月份">
+                {form.getFieldDecorator('importMonth')(
+                  <MonthPicker
+                    renderExtraFooter={() => '请选择月份'}
+                    value={importMonth}
+                    disabledDate={this.disabledFutureMonths}
+                    placeholder="请选择导入数据的月份"
+                    // style={{ marginLeft: 50 }}
+                    width={'100%'}
+                    onChange={this.selectMonth}
+                    allowClear={false}
+                    disabled={disabledBoolean}
+                  />
+                )}
+              </FormItem>
+              {loginUser().rolesOrg.length > 0 && queryByOrg ? (
+                <FormItem {...formItemLayout} label="所属组织">
+                  {form.getFieldDecorator('portOrg', {
+                    rules: [{ required: true, message: `字段不能为空` }],
+                  })(
+                    <Select
+                      width={'100%'}
+                      placeholder="请选择所属组织"
+                      onSelect={val => {
+                        this.setState({ portOrg: val });
+                      }}
+                    >
+                      {this.drawOption()}
+                    </Select>
+                  )}
+                </FormItem>
+              ) : (
+                ''
+              )}
+            </Form>
           </Modal>
           <PageDetail {...pageDetailProps}>
             <div className={styles.excelImport}>
@@ -264,8 +366,16 @@ class ExcelImport extends PureComponent {
                 <Step key="2" title={formatMessage({ id: 'common.excelImport.step2.tips' })} />
               </Steps>
               <div className="steps-content">
-                {current === 0 && <SelectIndex {...selectProps } {...exportEmptyTemplate }/>}
-                {current === 1 && <Result {...resultProps} importType={importType} importMonth={disabledBoolean? null : importMonth.format("YYYY-MM")} getFunc={this.props.refDataSource}/>}
+                {current === 0 && <SelectIndex {...selectProps} {...exportEmptyTemplate} />}
+                {current === 1 && (
+                  <Result
+                    {...resultProps}
+                    importType={importType}
+                    importMonth={disabledBoolean ? null : importMonth.format('YYYY-MM')}
+                    portOrg={portOrg}
+                    getFunc={this.props.refDataSource}
+                  />
+                )}
               </div>
             </div>
           </PageDetail>
