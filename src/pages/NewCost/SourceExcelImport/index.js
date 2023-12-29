@@ -2,7 +2,7 @@ import React, { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { formatMessage } from 'umi/locale';
 import styles from './index.less';
-import { Steps, Button, message, Modal, Select, Row, Form } from 'antd';
+import { Steps, Button, message, Modal, Select, Form } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import PageDetail from '@/components/MyComponent/PageDetail';
 import SelectIndex from './Select';
@@ -273,40 +273,6 @@ class ExcelImport extends PureComponent {
               this.setState({ isModalOpen: false });
             }}
           >
-            {/* <Row>
-              <Radio.Group
-                style={{ marginLeft: 30 }}
-                value={importType}
-                buttonStyle="solid"
-                onChange={value => {
-                  this.setState({ importType: value.target.value });
-                }}
-              >
-                <Radio value="1">覆盖导入</Radio>
-                <Radio value="2">增量更新模式</Radio>
-              </Radio.Group>
-            </Row>
-            <Row>
-              <MonthPicker
-                renderExtraFooter={() => '请选择月份'}
-                value={importMonth}
-                disabledDate={this.disabledFutureMonths}
-                placeholder="请选择导入数据的月份"
-                style={{ marginLeft: 50 }}
-                onChange={this.selectMonth}
-                allowClear={false}
-                disabled={disabledBoolean}
-              />
-            </Row>
-            {loginUser().rolesOrg.length > 0 && queryByOrg ? (
-              <Row>
-                <Select width={'100%'} placeholder="请选择所属组织">
-                  {this.drawOption()}
-                </Select>
-              </Row>
-            ) : (
-              ''
-            )} */}
             <Form>
               <FormItem {...formItemLayout} label="导入模式">
                 {form.getFieldDecorator('importType')(
