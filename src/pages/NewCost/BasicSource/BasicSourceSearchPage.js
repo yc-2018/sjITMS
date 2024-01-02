@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-11-16 11:12:26
+ * @LastEditTime: 2023-12-28 15:39:15
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -11,7 +11,7 @@ import Page from '@/pages/Component/Page/inner/NewStylePage';
 import sourceStyle from './BasicSource.less';
 import FormFieldSearchPage from './BasicFormFieldSearchPage';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
-import ExcelImport from '@/pages/NewCost/ExcelImport/index';
+import ExcelImport from '@/pages/NewCost/SourceExcelImport/index';
 import BasicHeadCreatPage from './BasicHeadCreatPage';
 import BasicDtlCreatPage from './BasicDtlCreatPage';
 import { getAllSource, deleteSourceTree, sortDateSourceTree } from '@/services/bms/BasicSource';
@@ -19,6 +19,7 @@ import BasicSourceDataSearchPage from './BasicSourceDataSearchPage';
 import { havePermission } from '@/utils/authority';
 import BasicSourceOperateLogSearchPage from './BasicSourceOperateLogSearchPage';
 import BasicConfigCreatePage from './BasicConfigCreatePage';
+import { queryDictByCode, dynamicQuery } from '@/services/quick/Quick';
 
 const { Content, Sider } = Layout;
 const { TreeNode } = Tree;
@@ -31,6 +32,7 @@ export default class BasicSourceSearchPage extends Component {
       allData: '',
       treeData: '',
       sourceData: [],
+      dict: [],
       selectedKeys: '',
       rightContent: '',
       authority: props.route?.authority ? props.route.authority[0] : null,
@@ -38,7 +40,13 @@ export default class BasicSourceSearchPage extends Component {
   }
 
   componentDidMount = () => {
+    this.getOrg();
     this.queryTree();
+  };
+
+  getOrg = async () => {
+    // 查询字典
+    queryDictByCode(['dispatchCenter']).then(res => this.setState({ dict: res.data }));
   };
 
   queryTree = async () => {
@@ -167,116 +175,131 @@ export default class BasicSourceSearchPage extends Component {
     });
   };
 
-  onSelect = (selectedKeys, event) => {
-    const { allData } = this.state;
+  onSelect = async (selectedKeys, event) => {
+    const { allData, dict } = this.state;
     const system = allData.find(x => x.uuid == selectedKeys[0]);
-    if (selectedKeys.length == 1) {
-      this.setState({
-        rightContent:
-          system.type == undefined ? (
-            <div>
-              <div className={sourceStyle.navigatorPanelWrapper}>
-                <span className={sourceStyle.sidertitle}>
-                  {event.selectedNodes[0].props.dataRef.tableNameCN}
-                </span>
-                <div className={sourceStyle.action}>
-                  <Button type="primary" onClick={e => this.basicHeadCreatPage.onSave(e)}>
-                    保存
-                  </Button>
-                </div>
-              </div>
-              <BasicHeadCreatPage
-                key={selectedKeys[0]}
-                quickuuid="cost_form_head"
-                showPageNow="update"
-                noBorder={true}
-                noCategory={true}
-                params={{ entityUuid: selectedKeys[0] }}
-                onRef={node => (this.basicHeadCreatPage = node)}
-                refresh={this.queryTree.bind()}
-              />
-            </div>
-          ) : (
-            <Tabs defaultActiveKey="data">
-              {havePermission(this.state.authority + '.structure') ? (
-                <TabPane tab={'表结构'} key="structure">
-                  <FormFieldSearchPage
-                    key={`Line${selectedKeys[0]}`}
-                    quickuuid={'cost_form_field'}
-                    selectedRows={selectedKeys[0]}
-                    selectedNodes={event.selectedNodes[0]}
-                    system={system}
-                  />
-                </TabPane>
-              ) : (
-                ''
-              )}
-              {havePermission(this.state.authority + '.manage') ? (
-                <TabPane tab={'管理'} key="manage">
-                  <div>
-                    <BasicConfigCreatePage
-                      key={selectedKeys[0]}
-                      quickuuid="cost_sourcedata_config"
-                      showPageNow="update"
-                      noBorder={true}
-                      noCategory={true}
-                      params={{ entityUuid: selectedKeys[0] }}
-                      onRef={node => (this.configCreatPage = node)}
-                      uuid={selectedKeys[0]}
-                    />
-                  </div>
-                  <div className={sourceStyle.config}>
-                    <Button type="primary" onClick={e => this.configCreatPage.onSave(e)}>
+    let tableParam = {
+      tableName: 'cost_sourcedata_config',
+      condition: {
+        params: [{ field: 'UUID', rule: 'eq', val: [selectedKeys[0]] }],
+      },
+    };
+    await dynamicQuery(tableParam, system?.system).then(tableConfig => {
+      let queryByOrg = false;
+      if (tableConfig.result.records.length > 0 && tableConfig.result.records[0].QUERYBYORG == 1) {
+        queryByOrg = true;
+      }
+      if (selectedKeys.length == 1) {
+        this.setState({
+          rightContent:
+            system.type == undefined ? (
+              <div>
+                <div className={sourceStyle.navigatorPanelWrapper}>
+                  <span className={sourceStyle.sidertitle}>
+                    {event.selectedNodes[0].props.dataRef.tableNameCN}
+                  </span>
+                  <div className={sourceStyle.action}>
+                    <Button type="primary" onClick={e => this.basicHeadCreatPage.onSave(e)}>
                       保存
                     </Button>
                   </div>
-                </TabPane>
-              ) : (
-                ''
-              )}
-              <TabPane tab={'表数据'} key="data">
-                <BasicSourceDataSearchPage
-                  expanded={event.selectedNodes[0].props.dataRef.expanded}
-                  title={event.selectedNodes[0].props.dataRef.tableNameCN}
-                  system={system}
-                  key={`Line${selectedKeys[0]}`}
-                  selectedRows={selectedKeys[0]}
-                  setFunc={node => (this.sourceDataRef = node)}
+                </div>
+                <BasicHeadCreatPage
+                  key={selectedKeys[0]}
+                  quickuuid="cost_form_head"
+                  showPageNow="update"
+                  noBorder={true}
+                  noCategory={true}
+                  params={{ entityUuid: selectedKeys[0] }}
+                  onRef={node => (this.basicHeadCreatPage = node)}
+                  refresh={this.queryTree.bind()}
                 />
-              </TabPane>
-              <TabPane tab={'操作日志'} key="operate">
-                <BasicSourceOperateLogSearchPage
-                  quickuuid={'cost_sourcedata_log'}
-                  key={`Line${selectedKeys[0]}`}
-                  selectedRows={selectedKeys[0]}
-                />
-              </TabPane>
-              {event.selectedNodes[0].props.dataRef.expanded == '1' ? (
-                <TabPane tab={'导入'} key="import">
-                  <div style={{ marginTop: '20px' }}>
-                    <ExcelImport
-                      key={ selectedKeys[0]}
-                      title={event.selectedNodes[0].props.dataRef.tableNameCN}
+              </div>
+            ) : (
+              <Tabs defaultActiveKey="data">
+                {havePermission(this.state.authority + '.structure') ? (
+                  <TabPane tab={'表结构'} key="structure">
+                    <FormFieldSearchPage
+                      key={`Line${selectedKeys[0]}`}
+                      quickuuid={'cost_form_field'}
                       selectedRows={selectedKeys[0]}
-                      templateType="BASICSOURCE"
-                      dispatch={this.props.dispatch}
-                      uploadType="basicSource/newBatchImport"
-                      uploadParams={{ sourceUuid: selectedKeys[0] }}
-                      cancelCallback={() => {}}
-                      costForm={system}
-                      // getFunc={this.getFunc}
-                      refDataSource={()=>this.sourceDataRef.onSearch()}
+                      selectedNodes={event.selectedNodes[0]}
+                      system={system}
                     />
-                  </div>
+                  </TabPane>
+                ) : (
+                  ''
+                )}
+                {havePermission(this.state.authority + '.manage') ? (
+                  <TabPane tab={'管理'} key="manage">
+                    <div>
+                      <BasicConfigCreatePage
+                        key={selectedKeys[0]}
+                        quickuuid="cost_sourcedata_config"
+                        showPageNow="update"
+                        noBorder={true}
+                        noCategory={true}
+                        params={{ entityUuid: selectedKeys[0] }}
+                        onRef={node => (this.configCreatPage = node)}
+                        uuid={selectedKeys[0]}
+                      />
+                    </div>
+                    <div className={sourceStyle.config}>
+                      <Button type="primary" onClick={e => this.configCreatPage.onSave(e)}>
+                        保存
+                      </Button>
+                    </div>
+                  </TabPane>
+                ) : (
+                  ''
+                )}
+                <TabPane tab={'表数据'} key="data">
+                  <BasicSourceDataSearchPage
+                    expanded={event.selectedNodes[0].props.dataRef.expanded}
+                    title={event.selectedNodes[0].props.dataRef.tableNameCN}
+                    system={system}
+                    key={`Line${selectedKeys[0]}`}
+                    selectedRows={selectedKeys[0]}
+                    setFunc={node => (this.sourceDataRef = node)}
+                    dict={dict}
+                    queryByOrg={queryByOrg}
+                  />
                 </TabPane>
-              ) : (
-                ''
-              )}
-            </Tabs>
-          ),
-        selectedKeys: selectedKeys[0],
-      });
-    }
+                <TabPane tab={'操作日志'} key="operate">
+                  <BasicSourceOperateLogSearchPage
+                    quickuuid={'cost_sourcedata_log'}
+                    key={`Line${selectedKeys[0]}`}
+                    selectedRows={selectedKeys[0]}
+                  />
+                </TabPane>
+                {event.selectedNodes[0].props.dataRef.expanded == '1' ? (
+                  <TabPane tab={'导入'} key="import">
+                    <div style={{ marginTop: '20px' }}>
+                      <ExcelImport
+                        key={selectedKeys[0]}
+                        title={event.selectedNodes[0].props.dataRef.tableNameCN}
+                        selectedRows={selectedKeys[0]}
+                        templateType="BASICSOURCE"
+                        dispatch={this.props.dispatch}
+                        uploadType="basicSource/newBatchImport"
+                        uploadParams={{ sourceUuid: selectedKeys[0] }}
+                        cancelCallback={() => {}}
+                        costForm={system}
+                        refDataSource={() => this.sourceDataRef.onSearch()}
+                        dict={dict}
+                        queryByOrg={queryByOrg}
+                      />
+                    </div>
+                  </TabPane>
+                ) : (
+                  ''
+                )}
+              </Tabs>
+            ),
+          selectedKeys: selectedKeys[0],
+        });
+      }
+    });
   };
 
   drawContent = () => {
@@ -287,13 +310,9 @@ export default class BasicSourceSearchPage extends Component {
   //
   // }
 
-  setFunc = (func)=>{
-    this.getFunc = func
-  }
-
-
-
-
+  setFunc = func => {
+    this.getFunc = func;
+  };
 
   render() {
     const { selectedKeys } = this.state;

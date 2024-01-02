@@ -2,14 +2,17 @@ import React, { PureComponent, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { formatMessage } from 'umi/locale';
 import styles from './index.less';
-import { Steps, Icon, Button, message } from 'antd';
+import { Steps, Icon, Button, Select, Modal, Form } from 'antd';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import NavigatorPanel from '@/components/MyComponent/NavigatorPanel';
 import PageDetail from '@/components/MyComponent/PageDetail';
-import Select from './Select';
+import PortSelect from './Select';
 import Result from './Result';
+import { loginUser, loginOrg } from '@/utils/LoginContext';
+import { queryDictByCode } from '@/services/quick/Quick';
 
 const Step = Steps.Step;
+const FormItem = Form.Item;
 /**
  * title{string}:提供页眉标题
  * templateType{string}:提供下载模板
@@ -22,6 +25,7 @@ const Step = Steps.Step;
 /**
  * 分步Excel导入组件
  */
+@Form.create()
 class ExcelImport extends PureComponent {
   static propTypes = {
     title: PropTypes.string,
@@ -36,14 +40,41 @@ class ExcelImport extends PureComponent {
     current: 0,
     fileKey: '',
     fileName: '',
+    isModalOpen: false,
+    dict: [],
+    portOrg: loginUser().rolesOrg ? loginUser().rolesOrg[0] : '',
+  };
+
+  componentDidMount() {
+    this.getDict();
+  }
+
+  getDict = async () => {
+    queryDictByCode(['dispatchCenter']).then(res => this.setState({ dict: res.data }));
+  };
+
+  drawOption = () => {
+    const { dict } = this.state;
+    let org = loginUser().rolesOrg ? loginUser().rolesOrg[0].split(',') : [];
+    const options = dict.filter(x => org.includes(x.itemValue));
+    return options.map(option => {
+      return <Option value={option.itemValue + ',' + option.itemText}>{option.itemText}</Option>;
+    });
   };
 
   /**
    * 下一步
    */
   next = () => {
-    const current = this.state.current + 1;
-    this.setState({ current });
+    let org = loginUser().rolesOrg ? loginUser().rolesOrg[0] : '';
+    let orgList = org.split(',');
+    console.log('orgList', orgList);
+    if (loginOrg().type == 'BMS' && orgList.length > 1) {
+      this.setState({ isModalOpen: true });
+    } else {
+      const current = this.state.current + 1;
+      this.setState({ current });
+    }
   };
 
   /**
@@ -119,11 +150,24 @@ class ExcelImport extends PureComponent {
   };
 
   render() {
-    const { title, uploadType, uploadParams, cancelCallback, dispatch, templateType } = this.props;
+    const {
+      title,
+      uploadType,
+      uploadParams,
+      cancelCallback,
+      dispatch,
+      templateType,
+      form,
+    } = this.props;
 
-    const { current, fileKey, fileName } = this.state;
+    const { current, fileKey, fileName, isModalOpen, portOrg } = this.state;
 
     const pageTitle = formatMessage({ id: 'common.excelImport.title' }) + title;
+
+    const formItemLayout = {
+      labelCol: { span: 6 },
+      wrapperCol: { span: 15 },
+    };
 
     const selectProps = {
       templateType: templateType,
@@ -165,7 +209,7 @@ class ExcelImport extends PureComponent {
               <Step key="2" title={formatMessage({ id: 'common.excelImport.step2.tips' })} />
             </Steps>
             <div className="steps-content">
-              {current === 0 && <Select {...selectProps} />}
+              {current === 0 && <PortSelect {...selectProps} />}
               {current === 1 && <Result {...resultProps} />}
             </div>
           </div>
@@ -174,6 +218,35 @@ class ExcelImport extends PureComponent {
     } else {
       return (
         <PageHeaderWrapper>
+          <Modal
+            title="导入选项"
+            visible={isModalOpen}
+            onOk={() => {
+              const current = this.state.current + 1;
+              this.setState({ current, isModalOpen: false });
+            }}
+            onCancel={() => {
+              this.setState({ isModalOpen: false });
+            }}
+          >
+            <Form>
+              <FormItem {...formItemLayout} label="所属组织">
+                {form.getFieldDecorator('portOrg', {
+                  rules: [{ required: true, message: `字段不能为空` }],
+                })(
+                  <Select
+                    width={'100%'}
+                    placeholder="请选择所属组织"
+                    onSelect={val => {
+                      this.setState({ portOrg: val });
+                    }}
+                  >
+                    {this.drawOption()}
+                  </Select>
+                )}
+              </FormItem>
+            </Form>
+          </Modal>
           <PageDetail {...pageDetailProps}>
             <div className={styles.excelImport}>
               <Steps current={current}>
@@ -181,8 +254,8 @@ class ExcelImport extends PureComponent {
                 <Step key="2" title={formatMessage({ id: 'common.excelImport.step2.tips' })} />
               </Steps>
               <div className="steps-content">
-                {current === 0 && <Select {...selectProps} />}
-                {current === 1 && <Result {...resultProps} />}
+                {current === 0 && <PortSelect {...selectProps} />}
+                {current === 1 && <Result {...resultProps} portOrg={portOrg} />}
               </div>
             </div>
           </PageDetail>

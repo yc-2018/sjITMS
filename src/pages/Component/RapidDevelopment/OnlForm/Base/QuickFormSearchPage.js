@@ -213,16 +213,16 @@ export default class QuickFormSearchPage extends SearchPage {
             });
           }
 
-          if (loginOrg().type == 'BMS' && org) {
+          if (loginOrg().type == 'BMS' && queryConfig.reportHead.organizationQuery == 1) {
             this.setState({
               isOrgQuery: [
                 {
                   field: 'ORGANIZATIONUUID',
                   type: 'VarChar',
                   rule: 'in',
-                  val: loginUser().rolesOrg.join('||'),
+                  val: loginUser().rolesOrg[0].replace(',', '||'),
                 },
-                // ...this.state.isOrgQuery,
+                ...this.state.isOrgQuery,
               ],
             });
           }

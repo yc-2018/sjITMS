@@ -21,14 +21,22 @@ class Result extends PureComponent {
 
   uploadFile = () => {
     const { uploading, result } = this.state;
-    const { fileKey, uploadType, uploadParams, dispatch, importType,importMonth} = this.props;
+    const {
+      fileKey,
+      uploadType,
+      uploadParams,
+      dispatch,
+      importType,
+      importMonth,
+      portOrg,
+    } = this.props;
     this.setState({
       uploading: true,
     });
 
     dispatch({
       type: uploadType,
-      payload: { fileKey, ...uploadParams,importType,importMonth},
+      payload: { fileKey, ...uploadParams, importType, importMonth, portOrg },
       callback: response => {
         if (response && response.success) {
           let data = response.data;
