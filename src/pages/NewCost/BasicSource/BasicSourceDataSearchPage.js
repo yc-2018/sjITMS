@@ -1,8 +1,15 @@
 /*
  * @Author: Liaorongchang
+ * @Date: 2023-12-28 15:29:31
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2024-01-04 16:55:11
+ * @version: 1.0
+ */
+/*
+ * @Author: Liaorongchang
  * @Date: 2022-06-14 11:10:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-28 11:01:12
+ * @LastEditTime: 2024-01-04 15:19:45
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -202,6 +209,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
             }
           : {},
       };
+      this.setState({ queryParams: [isOrgQuery] });
     } else {
       const queryParams = params => {
         let param = params.map(data => {

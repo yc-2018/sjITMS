@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-14 15:44:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-14 15:33:53
+ * @LastEditTime: 2024-01-03 09:06:46
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -44,7 +44,10 @@ export default class CostPlanCard extends Component {
     dataSourceModal: false,
     changeStat: '',
     reason: '',
-    month: new Date().getFullYear() + '-' + new Date().getMonth(),
+    month:
+      new Date().getMonth() == 0
+        ? new Date().getFullYear() - 1 + '-12'
+        : new Date().getFullYear() + '-' + new Date().getMonth(),
   };
 
   componentWillReceiveProps(newProps) {

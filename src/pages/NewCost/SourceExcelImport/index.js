@@ -53,7 +53,7 @@ class ExcelImport extends PureComponent {
     //数据源的列数组
     columns: [],
     queryByOrg: this.props.queryByOrg,
-    portOrg: loginUser().rolesOrg[0],
+    portOrg: this.props.queryByOrg ? loginUser().rolesOrg[0] : '',
   };
 
   componentDidMount() {
