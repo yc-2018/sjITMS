@@ -194,6 +194,9 @@ export default {
             message: response.message,
           },
         });
+        // window.g_app._store.dispatch({
+        //   type: 'login/logout',
+        // });
       }
       yield put({ type: 'changeSubmitting', payload: false });
       if (callback) callback(response);

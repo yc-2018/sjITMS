@@ -23,6 +23,7 @@ export default class LoginPage extends PureComponent {
   state = {
     captcha: {},
     autoLogin: true,
+    orgType: 'DISPATCH_CENTER',
   };
   componentDidMount() {
     this.getImageCaptcha();
@@ -121,7 +122,7 @@ export default class LoginPage extends PureComponent {
           // 登录
           dispatch({
             type: 'login/accountLogin',
-            payload: { ...values },
+            payload: { ...values, orgType: this.state.orgType },
             callback: response => {
               if (response && response.success) {
                 clearCookie(values.loginAccount);
@@ -244,7 +245,7 @@ export default class LoginPage extends PureComponent {
               </Form>
             </TabPane>
             <TabPane tab="钉钉登录" key="2">
-              {DingTalkRqCodeLogin(this.props.dispatch)}
+              {DingTalkRqCodeLogin(this.props.dispatch, this.state.orgType)}
             </TabPane>
           </Tabs>
           <div className={styles.copyRight}>广东时捷物流有限公司 版权所有</div>

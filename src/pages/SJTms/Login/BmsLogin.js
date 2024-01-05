@@ -1,11 +1,13 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'dva';
-import { Row, Col, Form, Icon, Input, Button, Checkbox, Tabs } from 'antd';
+import { Row, Col, Form, Icon, Input, Button, Checkbox, Tabs, message } from 'antd';
 import { formatMessage, FormattedMessage } from 'umi/locale';
 import login from '@/assets/login/bmsCalc.jpg';
 import { setCookie, clearCookie, getCookie } from '@/utils/Cookies';
 import DingTalkRqCodeLogin from './DingTalkRqCodeLogin';
 import styles from './Login.less';
+import configs from '@/utils/config';
+import { switchOrg } from '@/services/account/Login';
 
 const { TabPane } = Tabs;
 @connect(({ login }) => ({ login }))
@@ -14,6 +16,7 @@ export default class LoginPage extends PureComponent {
   state = {
     captcha: {},
     autoLogin: true,
+    orgType: 'BMS',
   };
   componentDidMount() {
     this.getImageCaptcha();
@@ -112,7 +115,10 @@ export default class LoginPage extends PureComponent {
           // 登录
           dispatch({
             type: 'login/accountLogin',
-            payload: { ...values },
+            payload: {
+              ...values,
+              orgType: this.state.orgType,
+            },
             callback: response => {
               if (response && response.success) {
                 clearCookie(values.loginAccount);
@@ -241,7 +247,7 @@ export default class LoginPage extends PureComponent {
               </Form>
             </TabPane>
             <TabPane tab="钉钉登录" key="2">
-              {DingTalkRqCodeLogin(this.props.dispatch)}
+              {DingTalkRqCodeLogin(this.props.dispatch, this.state.orgType)}
             </TabPane>
           </Tabs>
 
