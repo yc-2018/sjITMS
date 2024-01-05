@@ -27,7 +27,7 @@ export async function getContainerByBillUuid(billUuid) {
     }
   );
 }
-export async function queryDriverRoutes(params) {
+export async function queryDriverRoutes(origin, destination, waypoints) {
   return request(
     `/itms-schedule/itms-schedule/bmap/driving?origin=${origin}&destination=${destination}&waypoints=${encodeURI(
       waypoints
