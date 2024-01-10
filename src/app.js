@@ -3,6 +3,7 @@ import { dynamic } from 'umi';
 import { getRouteMenus } from '@/services/route/Route';
 import { loginUser } from '@/utils/LoginContext';
 import { saveUserLog } from '@/services/quick/Quick';
+import errorPage from '@/pages/404.js';
 
 // umi3.x 需要将 routes 选项从第一个参数中解构: patchRoutes({ routes }) {}
 export function patchRoutes(routes) {
@@ -21,13 +22,18 @@ export function render(oldRender) {
   getRouteMenus().then(
     response => {
       //   console.log('response', response);
-      normalizedRoutes = response.data.sort((a, b) => {
-        return b.sort - a.sort;
-      });
-      oldRender();
+      if (response.success) {
+        normalizedRoutes = response.data.sort((a, b) => {
+          return b.sort - a.sort;
+        });
+        oldRender();
+      } else {
+        alert('系统升级中，请稍后重试');
+      }
     },
     error => {
       console.log('error', error);
+      alert('系统升级中，请稍后重试');
     }
   );
 }
