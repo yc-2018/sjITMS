@@ -2,10 +2,24 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-22 09:29:02
+ * @LastEditTime: 2024-01-06 11:38:46
  * @version: 1.0
  */
-import { Form, Modal, Button, Icon, Row, Col, Upload, List, message, Spin, Divider, Drawer, Tabs } from 'antd';
+import {
+  Form,
+  Modal,
+  Button,
+  Icon,
+  Row,
+  Col,
+  Upload,
+  List,
+  message,
+  Spin,
+  Divider,
+  Drawer,
+  Tabs,
+} from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import {
@@ -42,8 +56,8 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
     filePath: '',
     billDownloads: [],
     downloads: [],
-    Logvisible:false,
-    entityUuid:''
+    Logvisible: false,
+    entityUuid: '',
   };
 
   componentDidMount() {
@@ -100,7 +114,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
   };
 
   //子帐单添加查看日志额外的列
-  drawExColumns = e =>{
+  drawExColumns = e => {
     if (e.column.fieldName == 'STATE') {
       return {
         title: '操作 ',
@@ -110,8 +124,8 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
             <div>
               <a
                 onClick={() => {
-                  this.onCloseLog()
-                  this.setState({ entityUuid :record.UUID ?record.UUID:'-1'} )
+                  this.onCloseLog();
+                  this.setState({ entityUuid: record.UUID ? record.UUID : '-1' });
                 }}
               >
                 查看日志
@@ -121,13 +135,13 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
         },
       };
     }
-  }
+  };
 
   onCloseLog = () => {
     this.setState({ Logvisible: !this.state.Logvisible });
   };
 
-    checkDtl = e => {
+  checkDtl = e => {
     this.setState({ isModalVisible: true, e });
   };
 
@@ -201,10 +215,8 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
   };
   //预览附件
   preview = async item => {
-    // this.setState({ showViewer: true });
     const type = item.accessory.split('.')[item.accessory.split('.').length - 1];
     getUploadFile(item.accessory).then(res => {
-      // window.open(URL.createObjectURL(res));
       if (res.type == 'application/pdf') {
         window.open(URL.createObjectURL(res));
       } else {
@@ -360,17 +372,17 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
           </FileViewer>
         </Modal>
         <Drawer
-            placement="right"
-            onClose={() => this.onCloseLog()}
-            visible={this.state.Logvisible}
-            width={'50%'}
-            destroyOnClose
-          >
-            <Tabs defaultActiveKey="detail">
-              <TabPane tab="操作日志" key='log'>
-                <EntityLogTab entityUuid={this.state.entityUuid}/>
-              </TabPane>
-            </Tabs>
+          placement="right"
+          onClose={() => this.onCloseLog()}
+          visible={this.state.Logvisible}
+          width={'50%'}
+          destroyOnClose
+        >
+          <Tabs defaultActiveKey="detail">
+            <TabPane tab="操作日志" key="log">
+              <EntityLogTab entityUuid={this.state.entityUuid} />
+            </TabPane>
+          </Tabs>
         </Drawer>
       </>
     );

@@ -76,6 +76,15 @@ export async function verification(type, billUuid) {
     method: 'POST',
   });
 }
+
+//付款申请
+export async function applyPayment(billUuid) {
+  return request(`/bms-cost/bms-cost/newCostBill/applyPayment`, {
+    method: 'POST',
+    body: billUuid,
+  });
+}
+
 //付款
 export async function payment(type, billUuid) {
   return request(`/bms-cost/bms-cost/newCostBill/payment?type=${type}&billUuid=${billUuid}`, {

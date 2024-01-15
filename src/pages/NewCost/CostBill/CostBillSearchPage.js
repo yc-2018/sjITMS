@@ -2,11 +2,23 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-15 16:58:34
+ * @LastEditTime: 2024-01-06 15:48:36
  * @version: 1.0
  */
 import React from 'react';
-import { Form, Button, Modal, Popconfirm, message, Spin, Input, Row, Col, Drawer, Tabs } from 'antd';
+import {
+  Form,
+  Button,
+  Modal,
+  Popconfirm,
+  message,
+  Spin,
+  Input,
+  Row,
+  Col,
+  Drawer,
+  Tabs,
+} from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import CostBillViewForm from '@/pages/NewCost/CostBill/CostBillViewForm';
@@ -24,6 +36,7 @@ import {
   pushBill,
   tmConfirm,
   rejectInvoice,
+  applyPayment,
 } from '@/services/bms/CostBill';
 import CostChildBillSearchPage from '@/pages/NewCost/CostChildBill/CostChildBillSearchPage';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm';
@@ -59,8 +72,8 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     showApplyPayment: false,
     showPayment: false,
     showCompleted: false,
-    Logvisible:false,
-    entityUuid:''
+    Logvisible: false,
+    entityUuid: '',
   };
 
   onView = record => {};
@@ -96,14 +109,14 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
         render: (_, record) => {
           return (
             <div>
-             <a
-               onClick={() => {
-                 this.onCloseLog()
-                 this.setState({ entityUuid :record.UUID ?record.UUID:'-1'} )
-               }}
-             >
-               查看日志
-             </a>
+              <a
+                onClick={() => {
+                  this.onCloseLog();
+                  this.setState({ entityUuid: record.UUID ? record.UUID : '-1' });
+                }}
+              >
+                查看日志
+              </a>
             </div>
           );
         },
@@ -335,9 +348,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
             this.handlePayment();
           }}
         >
-          <Button loading={apLoading} onClick={() => this.setState({ showPayment: true })}>
-            付款
-          </Button>
+          <Button onClick={() => this.setState({ showPayment: true })}>付款</Button>
         </Popconfirm>
 
         <Popconfirm
@@ -354,22 +365,20 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
             this.handleCompleted();
           }}
         >
-          <Button loading={apLoading} onClick={() => this.setState({ showCompleted: true })}>
-            归档
-          </Button>
+          <Button onClick={() => this.setState({ showCompleted: true })}>归档</Button>
         </Popconfirm>
 
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
         <Drawer
-            placement="right"
-            onClose={() => this.onCloseLog()}
-            visible={this.state.Logvisible}
-            width={'50%'}
-            destroyOnClose
+          placement="right"
+          onClose={() => this.onCloseLog()}
+          visible={this.state.Logvisible}
+          width={'50%'}
+          destroyOnClose
         >
           <Tabs defaultActiveKey="detail">
-            <TabPane tab="操作日志" key='log'>
-              <EntityLogTab entityUuid={this.state.entityUuid}/>
+            <TabPane tab="操作日志" key="log">
+              <EntityLogTab entityUuid={this.state.entityUuid} />
             </TabPane>
           </Tabs>
         </Drawer>
@@ -696,7 +705,7 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
   };
 
   //付款申请
-  applyPayment = () => {
+  applyPayment = async () => {
     this.setState({ apLoading: true });
     const childSelectRows = this.childRef?.state.selectedRows;
     if (childSelectRows.length == 0) {
@@ -707,7 +716,14 @@ export default class CostBillSearchPage extends QuickFormSearchPage {
     childSelectRows.map(data => {
       uuid.push(data.UUID);
     });
-    console.log('uuid', uuid);
+    const response = await applyPayment(uuid);
+    if (response && response.success) {
+      message.success('申请成功！');
+      this.setState({ apLoading: false });
+      this.onSearch();
+    } else {
+      this.setState({ apLoading: false });
+    }
   };
 
   //付款
