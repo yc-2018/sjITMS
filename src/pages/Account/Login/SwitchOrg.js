@@ -66,7 +66,11 @@ export default class SwitchOrg extends Component {
     const children = [];
     let i = 0;
     if (orgInfos) {
-      for (const orgInfo of orderBy(orgInfos, x => x.orgUuid)) {
+      let orgInfosFilter =
+        loginOrg().type == 'COMPANY'
+          ? orgInfos
+          : orgInfos.filter(e => e.orgType == loginOrg().type || e.orgType == 'COMPANY');
+      for (const orgInfo of orderBy(orgInfosFilter, x => x.orgUuid)) {
         if (orgInfo.enable === true && orgInfo.orgState === 'ONLINE') {
           if (!childGroup[orgInfo.orgType]) {
             childGroup[orgInfo.orgType] = [];
