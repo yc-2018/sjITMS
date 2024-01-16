@@ -7,7 +7,7 @@
  */
 const org = [
   { key: 'SUPER', value: '管理员' },
-  { key: 'HEADING', value: 'HD' },
+  { key: 'SJWL', value: '时捷物流' },
   { key: 'COMPANY', value: '企业' },
   { key: 'DISPATCH_CENTER', value: '调度中心' },
   { key: 'DC', value: '配送中心' },

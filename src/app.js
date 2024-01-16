@@ -3,6 +3,9 @@ import { dynamic } from 'umi';
 import { getRouteMenus } from '@/services/route/Route';
 import { loginUser } from '@/utils/LoginContext';
 import { saveUserLog } from '@/services/quick/Quick';
+import errorPage from '@/pages/404.js';
+import { Modal } from 'antd';
+const { warning } = Modal;
 
 // umi3.x 需要将 routes 选项从第一个参数中解构: patchRoutes({ routes }) {}
 export function patchRoutes(routes) {
@@ -21,13 +24,28 @@ export function render(oldRender) {
   getRouteMenus().then(
     response => {
       //   console.log('response', response);
-      normalizedRoutes = response.data.sort((a, b) => {
-        return b.sort - a.sort;
-      });
-      oldRender();
+      if (response.success) {
+        normalizedRoutes = response.data.sort((a, b) => {
+          return b.sort - a.sort;
+        });
+        oldRender();
+      } else {
+        warning({
+          title: '系统升级中，请稍后重试!',
+          onOk() {
+            window.location.reload();
+          },
+        });
+      }
     },
     error => {
       console.log('error', error);
+      warning({
+        title: '系统升级中，请稍后重试!',
+        onOk() {
+          window.location.reload();
+        },
+      });
     }
   );
 }

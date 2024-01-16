@@ -1,7 +1,7 @@
 export const orgType = {
-  heading: {
-    name: 'HEADING',
-    caption: '海鼎',
+  sjwl: {
+    name: 'SJWL',
+    caption: '时捷物流',
   },
   company: {
     name: 'COMPANY',
@@ -37,8 +37,8 @@ export const orgType = {
   },
   queqiao: {
     name: 'QUEQIAO',
-    caption:'鹊桥'
-  }
+    caption: '鹊桥',
+  },
 };
 
 export function getOrgCaption(name) {

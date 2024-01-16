@@ -1,7 +1,7 @@
 import React from 'react';
 import PromiseRender from './PromiseRender';
 import { CURRENT } from './renderAuthorize';
-import {loginOrg} from '../../utils/LoginContext';
+import { loginOrg } from '../../utils/LoginContext';
 
 function isPromise(obj) {
   return (
@@ -26,7 +26,7 @@ const checkPermissions = (authority, currentAuthority, target, Exception) => {
     return target;
   }
 
-  if (loginOrg() && loginOrg().type === 'HEADING') {
+  if (loginOrg() && loginOrg().type === 'SJWL') {
     return target;
   }
 
@@ -41,11 +41,11 @@ const checkPermissions = (authority, currentAuthority, target, Exception) => {
         for (let i = 0; i < authority.length; i++) {
           if (element === authority[i]) {
             return target;
-          } 
+          }
           if (element.indexOf(authority[i]) >= 0) {
             let char = element.charAt(authority[i].length);
             if (char === '.') {
-              return target; 
+              return target;
             }
           }
         }
@@ -69,11 +69,11 @@ const checkPermissions = (authority, currentAuthority, target, Exception) => {
 
         if (element === authority) {
           return target;
-        } 
+        }
         if (element.indexOf(authority) >= 0) {
           let char = element.charAt(authority.length);
           if (char === '.') {
-            return target; 
+            return target;
           }
         }
 

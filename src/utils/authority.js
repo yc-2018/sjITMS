@@ -31,7 +31,7 @@ export function setAuthority(authority) {
  * @param {String} currentResource 当前要检测的资源
  */
 export function havePermission(currentResource) {
-  if (loginOrg() && loginOrg().type === 'HEADING') {
+  if (loginOrg() && loginOrg().type === 'SJWL') {
     return true;
   }
 

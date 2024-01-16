@@ -26,3 +26,10 @@ export async function queryAllDataByOpen(payload) {
     body: payload,
   });
 }
+
+export async function sendMessageTo(payload) {
+  return request(`/itms-schedule/itms-schedule/sse/sendMessage`, {
+    method: 'POST',
+    body: payload,
+  });
+}
