@@ -17,11 +17,11 @@ export default class Config extends SiderPage {
     this.state = {
       // title: configLocale.title,
       openKeys:
-        loginOrg().type == 'HEADING'
+        loginOrg().type == 'SJWL'
           ? [configLocale.billDailyKnotsConfig.billConfig.key]
           : [configLocale.interfaceConfig.key],
       selectedKeys:
-        loginOrg().type == 'HEADING'
+        loginOrg().type == 'SJWL'
           ? [configLocale.billDailyKnotsConfig.billConfig.key]
           : loginOrg().type == 'DISPATCH_CENTER'
             ? [configLocale.timeIntervalConfig.timeIntervalConfig.key]
@@ -64,7 +64,7 @@ export default class Config extends SiderPage {
           selectedKeys={selectedKeys}
         >
           {/* 海鼎端 */}
-          {loginOrg().type === 'HEADING' ? (
+          {loginOrg().type === 'SJWL' ? (
             <SubMenu
               key={configLocale.billDailyKnotsConfig.billConfig.key}
               title={
@@ -79,7 +79,7 @@ export default class Config extends SiderPage {
               </Menu.Item>
             </SubMenu>
           ) : null}
-          {loginOrg().type === 'HEADING' ? (
+          {loginOrg().type === 'SJWL' ? (
             <SubMenu
               key={configLocale.billDailyKnotsConfig.dailyKnotsConfig.key}
               title={
