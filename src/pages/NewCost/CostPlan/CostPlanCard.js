@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-14 15:44:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-01-03 09:06:46
+ * @LastEditTime: 2024-01-16 08:56:07
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -131,7 +131,7 @@ export default class CostPlanCard extends Component {
           >
             {this.createList(sourceConfirmData)}
           </div>
-          {current == 0 && sourceConfirmData.length > 3 ? (
+          {current == 0 && sourceConfirmData?.length > 3 ? (
             <a
               style={{
                 position: 'absolute',
