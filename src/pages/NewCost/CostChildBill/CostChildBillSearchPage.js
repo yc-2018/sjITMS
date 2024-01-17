@@ -2,10 +2,24 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-11-29 16:52:28
+ * @LastEditTime: 2024-01-06 11:38:46
  * @version: 1.0
  */
-import { Form, Modal, Button, Icon, Row, Col, Upload, List, message, Spin, Divider } from 'antd';
+import {
+  Form,
+  Modal,
+  Button,
+  Icon,
+  Row,
+  Col,
+  Upload,
+  List,
+  message,
+  Spin,
+  Divider,
+  Drawer,
+  Tabs,
+} from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import {
@@ -15,7 +29,11 @@ import {
   getUploadFile,
 } from '@/services/bms/CostBill';
 import CostChildBillDtlSearchPage from './CostChildBillDtlSearchPage';
-import FileViewer from 'react-file-viewer';
+import FileViewer from 'viewerjs-react';
+import EntityLogTab from '@/pages/Component/Page/inner/EntityLogTab';
+import React from 'react';
+
+const TabPane = Tabs.TabPane;
 
 @connect(({ quick, deliveredConfirm, loading }) => ({
   quick,
@@ -38,6 +56,8 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
     filePath: '',
     billDownloads: [],
     downloads: [],
+    Logvisible: false,
+    entityUuid: '',
   };
 
   componentDidMount() {
@@ -73,7 +93,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
       e.component = component;
     }
     if (e.column.fieldName === 'TOTALAMOUNT') {
-      const fontColor = e.val === '<空>' || e.val >=0 ? 'black':'red'
+      const fontColor = e.val === '<空>' || e.val >= 0 ? 'black' : 'red';
       const component = <a style={{ color: fontColor }}>{e.val}</a>;
       e.component = component;
     }
@@ -93,6 +113,34 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
     }
   };
 
+  //子帐单添加查看日志额外的列
+  drawExColumns = e => {
+    if (e.column.fieldName == 'STATE') {
+      return {
+        title: '操作 ',
+        width: 60,
+        render: (_, record) => {
+          return (
+            <div>
+              <a
+                onClick={() => {
+                  this.onCloseLog();
+                  this.setState({ entityUuid: record.UUID ? record.UUID : '-1' });
+                }}
+              >
+                查看日志
+              </a>
+            </div>
+          );
+        },
+      };
+    }
+  };
+
+  onCloseLog = () => {
+    this.setState({ Logvisible: !this.state.Logvisible });
+  };
+
   checkDtl = e => {
     this.setState({ isModalVisible: true, e });
   };
@@ -106,10 +154,11 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
   };
 
   accessoryModalShow = (isShow, e) => {
+    let downloads = [];
+    let billDownloads = [];
     if (e != 'false' && e.ACCESSORY_NAME) {
       let downloadsName = e.ACCESSORY_NAME.split(',');
       let accessory = e.ACCESSORY.split(',');
-      let downloads = [];
       downloadsName.map((data, index) => {
         let param = {
           download: data,
@@ -118,12 +167,10 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
         };
         downloads.push(param);
       });
-      this.setState({ downloads });
     }
     if (e != 'false' && e.BILL_ACCESSORY_NAME) {
       let downloadsName = e.BILL_ACCESSORY_NAME.split(',');
       let accessory = e.BILL_ACCESSORY.split(',');
-      let billDownloads = [];
       downloadsName.map((data, index) => {
         let param = {
           download: data,
@@ -132,16 +179,15 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
         };
         billDownloads.push(param);
       });
-      this.setState({ billDownloads });
     }
-    this.setState({ accessoryModal: isShow, uploadUuid: e.UUID });
+    this.setState({ accessoryModal: isShow, uploadUuid: e.UUID, downloads, billDownloads });
   };
 
-  uploadFile = async (file, fileList) => {
+  uploadFile = async (file, fileList, type) => {
     const { uploadUuid } = this.state;
     var formDatas = new FormData();
     formDatas.append('file', fileList[0]);
-    const response = await childUploadFile(formDatas, uploadUuid);
+    const response = await childUploadFile(formDatas, uploadUuid, type);
     if (response && response.success) {
       message.success('上传成功');
       this.setState({ accessoryModal: false });
@@ -169,7 +215,6 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
   };
   //预览附件
   preview = async item => {
-    // this.setState({ showViewer: true });
     const type = item.accessory.split('.')[item.accessory.split('.').length - 1];
     getUploadFile(item.accessory).then(res => {
       if (res.type == 'application/pdf') {
@@ -217,19 +262,34 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
           title="附件列表"
           visible={accessoryModal}
           onCancel={() => this.accessoryModalShow(false, '')}
+          // key={uploadUuid}
           footer={[
             <Row justify="end">
-              <Col span={4} offset={16}>
+              <Col span={6} offset={8}>
                 <Upload
                   name="file"
                   className="upload-list-inline"
                   showUploadList={false}
-                  beforeUpload={(file, fileList) => this.uploadFile(file, fileList)}
+                  beforeUpload={(file, fileList) => this.uploadFile(file, fileList, 'invoice')}
                   maxCount={1}
                 >
                   <Button>
                     <Icon type="upload" />
-                    上传
+                    上传发票
+                  </Button>
+                </Upload>
+              </Col>
+              <Col span={6}>
+                <Upload
+                  name="file"
+                  className="upload-list-inline"
+                  showUploadList={false}
+                  beforeUpload={(file, fileList) => this.uploadFile(file, fileList, 'bill')}
+                  maxCount={1}
+                >
+                  <Button>
+                    <Icon type="upload" />
+                    上传账单
                   </Button>
                 </Upload>
               </Col>
@@ -299,20 +359,31 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
             this.setState({ showViewer: false });
           }}
           centered={true}
-          width={'80%'}
-          bodyStyle={{ height: 'calc(84vh)', overflowY: 'auto' }}
+          bodyStyle={{
+            height: 'calc(38vh)',
+            display: 'table-cell',
+            verticalAlign: 'middle',
+            textAlign: 'center',
+          }}
         >
-          {filePath == '' ? (
-            <Spin />
-          ) : (
-            <FileViewer
-              fileType={fileType}
-              filePath={filePath}
-              errorComponent={''}
-              onError={err => console.log(err)}
-            />
-          )}
+          <FileViewer>
+            <img src={filePath} width={'60%'} />
+            <div>(点击查看大图)</div>
+          </FileViewer>
         </Modal>
+        <Drawer
+          placement="right"
+          onClose={() => this.onCloseLog()}
+          visible={this.state.Logvisible}
+          width={'50%'}
+          destroyOnClose
+        >
+          <Tabs defaultActiveKey="detail">
+            <TabPane tab="操作日志" key="log">
+              <EntityLogTab entityUuid={this.state.entityUuid} />
+            </TabPane>
+          </Tabs>
+        </Drawer>
       </>
     );
   };

@@ -6,6 +6,7 @@ import { Button, Upload, Icon, message, Badge } from 'antd';
 import configs from '@/utils/config';
 import { OSS_UPLOAD_URL } from '@/utils/constants';
 import { loginKey } from '@/utils/LoginContext';
+import ExportJsonExcel from 'js-export-excel';
 
 const Dragger = Upload.Dragger;
 
@@ -59,31 +60,52 @@ class Select extends PureComponent {
   };
 
   downloadTemplate = () => {
-    const { templateUrl, downloadFile, templateType } = this.props;
 
-    if (!templateType) {
-      message.error(formatMessage({ id: 'common.excelImport.select.templateEmptyTips' }));
-      return;
-    }
-
-    const { dispatch } = this.props;
-    dispatch({
-      type: 'imTemplate/getPath',
-      payload: {
-        type: templateType,
-        isDataBase: true,
-      },
-      // callback:response=>{
-      //   if(response&&response.success){
-      //     if(response.data){
-      //       downloadFile(response.data);
-      //     }else{
-      //       message.error(formatMessage({ id: 'common.excelImport.select.templateEmptyTips' }))
-      //       return;
-      //     }
-      //   }
-      // }
+    const columns = this.props.columns;
+    const title = this.props.title;
+    var option = [];
+    let sheetfilter = []; //对应列表数据中的key值数组，就是上面resdata中的 name，address
+    let sheetheader = []; //对应key值的表头，即excel表头
+    columns.map(a => {
+      sheetfilter.push(a.key);
+      sheetheader.push(a.title);
     });
+    option.fileName = title; //导出的Excel文件名
+    option.datas = [
+      {
+        sheetData: [],
+        sheetName: title, //工作表的名字
+        sheetFilter: sheetfilter,
+        sheetHeader: sheetheader,
+      },
+    ];
+    var toExcel = new ExportJsonExcel(option);
+    toExcel.saveExcel();
+    // const { templateUrl, downloadFile, templateType } = this.props;
+    //
+    // if (!templateType) {
+    //   message.error(formatMessage({ id: 'common.excelImport.select.templateEmptyTips' }));
+    //   return;
+    // }
+    //
+    // const { dispatch } = this.props;
+    // dispatch({
+    //   type: 'imTemplate/getPath',
+    //   payload: {
+    //     type: templateType,
+    //     isDataBase: true,
+    //   },
+    //   // callback:response=>{
+    //   //   if(response&&response.success){
+    //   //     if(response.data){
+    //   //       downloadFile(response.data);
+    //   //     }else{
+    //   //       message.error(formatMessage({ id: 'common.excelImport.select.templateEmptyTips' }))
+    //   //       return;
+    //   //     }
+    //   //   }
+    //   // }
+    // });
   };
 
   render() {

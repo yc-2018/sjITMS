@@ -34,6 +34,7 @@ class RoleCreateForm extends PureComponent {
     const { form, role, handleSave } = this.props;
     form.validateFields((errors, fieldsValue) => {
       if (errors) return;
+      fieldsValue.org = fieldsValue.org.join(',');
       const data = {
         ...fieldsValue,
         uuid: role ? role.uuid : null,
@@ -103,20 +104,17 @@ class RoleCreateForm extends PureComponent {
             </FormItem>
             <FormItem {...formItemLayout} label="所属组织">
               {form.getFieldDecorator('org', {
-                rules: [
-                  // { required: true, message: notNullLocale(commonLocale.nameLocale) },
-                  {
-                    max: 30,
-                    message: tooLongLocale(commonLocale.nameLocale, 30),
-                  },
-                ],
-                initialValue: role ? role.org : null,
+                // rules: [
+                //   // { required: true, message: notNullLocale(commonLocale.nameLocale) },
+                //   {
+                //     max: 30,
+                //     message: tooLongLocale(commonLocale.nameLocale, 30),
+                //   },
+                // ],
+                initialValue: role.org != undefined ? role.org.split(',') : null,
               })(
                 <SimpleSelect
-                  // style={{ width: 120 }}
-                  // onSelect={(value, key) => {
-                  //   this.setState({ feeType: value, feeName: key.props.label });
-                  // }}
+                  searchField={{ searchCondition: 'in' }}
                   dictCode={'dispatchCenter'}
                   placeholder={'请选择所属组织'}
                 />

@@ -128,6 +128,7 @@ export default class QuickFormSearchPage extends SearchPage {
       //合并规则下 selectRows中是否包含父类 默认falst
       parentRows: false,
       isNotHd: props.isNotHd ? props.isNotHd : false,
+      bmsOrgQuery: [],
     };
   }
 
@@ -213,18 +214,36 @@ export default class QuickFormSearchPage extends SearchPage {
             });
           }
 
-          if (loginOrg().type == 'BMS') {
-            this.setState({
-              isOrgQuery: [
-                {
-                  field: 'ORGANIZATIONUUID',
-                  type: 'VarChar',
-                  rule: 'in',
-                  val: loginUser().rolesOrg.join('||'),
-                },
-                // ...this.state.isOrgQuery,
-              ],
+          if (loginOrg().type == 'BMS' && queryConfig.reportHead.organizationQuery == 1) {
+            // this.setState({
+            //   isOrgQuery: [
+            //     {
+            //       field: 'ORGANIZATIONUUID',
+            //       type: 'VarChar',
+            //       rule: 'in',
+            //       val: loginUser().rolesOrg[0].replace(',', '||'),
+            //     },
+            //     ...this.state.isOrgQuery,
+            //   ],
+            // });
+            let rolesOrg = loginUser().rolesOrg[0].split(',');
+            let queryParams = [];
+            let bmsOrgQuery = [];
+            rolesOrg.map(rog => {
+              queryParams.push({
+                field: 'ORGANIZATIONUUID',
+                type: 'VarChar',
+                rule: 'like',
+                val: rog,
+              });
             });
+            bmsOrgQuery.push({
+              nestCondition: {
+                matchType: 'or',
+                queryParams: queryParams,
+              },
+            });
+            this.setState({ bmsOrgQuery });
           }
 
           let defaultSortColumn = queryConfig.columns.find(item => item.orderType > 1);
@@ -900,6 +919,7 @@ export default class QuickFormSearchPage extends SearchPage {
 
   //查询
   onSearch = async (filter, isNotFirstSearch) => {
+    console.log('ccc', filter, isNotFirstSearch);
     let exSearchFilter = this.exSearchFilter();
     if (!exSearchFilter) exSearchFilter = [];
     let defaultSearch = await this.defaultSearch();
@@ -913,7 +933,14 @@ export default class QuickFormSearchPage extends SearchPage {
       this.onReset(pageSize, [...exSearchFilter, ...defaultSearch]);
       return;
     }
-    const { pageFilters, isOrgQuery, defaultSort, superParams, linkQuery } = this.state;
+    const {
+      pageFilters,
+      isOrgQuery,
+      defaultSort,
+      superParams,
+      linkQuery,
+      bmsOrgQuery,
+    } = this.state;
     // let simpleParams = [...exSearchFilter];
     let simpleParams = [];
     if (filter?.queryParams) {
@@ -948,7 +975,7 @@ export default class QuickFormSearchPage extends SearchPage {
       order: this.state.pageFilters?.order ? this.state.pageFilters?.order : defaultSort,
       superQuery: {
         matchType: 'and',
-        queryParams: [...isOrgQuery, ...queryParams, ...params],
+        queryParams: [...isOrgQuery, ...queryParams, ...params, ...bmsOrgQuery],
       },
     };
     this.setState({ pageFilters: newPageFilters, simpleParams });
