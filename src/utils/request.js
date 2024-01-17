@@ -173,7 +173,7 @@ export default function request(url, option, ingoreTimeOut) {
     }),
   ])
     .then(response => {
-      const res = response.json();
+      const res = response?.json();
       res.then(body => {
         if (
           body &&
@@ -210,8 +210,8 @@ export default function request(url, option, ingoreTimeOut) {
           message.error('登录信息失效，请重新登录！');
           return e.response.json();
         }
-        const res = e.response.json();
-        res.then(result => {
+        const res = e.response?.json();
+        res?.then(result => {
           //暂时去除禁用全局消息
           // if (!localStorage.getItem('showMessage') || localStorage.getItem('showMessage') === '1') {
           //   message.error(result.message);
