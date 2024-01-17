@@ -173,9 +173,9 @@ export function cacheLoginKey(loginKey) {
       }
     }
   }, 1000);
-  // if (loginUser().code) {
-  //   createSseConnect(loginUser().code);
-  // }
+  if (loginUser().code) {
+    createSseConnect(loginUser().code);
+  }
 }
 
 function clickLog(btn) {
@@ -316,37 +316,32 @@ let eventSource;
 const createSseConnect = clientId => {
   if (window.EventSource && !eventSource) {
     //ZUUL 不支持 SSE
-    let url =
-      configs[API_ENV].API_SERVER.substring(0, configs[API_ENV].API_SERVER.lastIndexOf(':')) +
-      ':8092/itms-schedule/sse/createSseConnect?clientId=' +
-      clientId;
-    eventSource = new EventSource(new URL(url));
-
-    console.log(eventSource);
-
-    eventSource.onmessage = event => {
-      console.log('onmessage:' + clientId + ': ' + event.data);
-      if (event.data) {
-        console.log('event.data', event.data);
-        let message = JSON.parse(event.data);
-        warning({
-          title: message.sendTitle,
-          content: message.sendMessage,
-        });
-      }
-    };
-
-    eventSource.onopen = event => {
-      console.log('onopen:' + clientId + ': ' + event);
-    };
-
-    eventSource.onerror = event => {
-      console.log('onerror :' + clientId + ': ' + event);
-    };
-
-    eventSource.close = event => {
-      console.log('close :' + clientId + ': ' + event);
-    };
+    // let url =
+    //   configs[API_ENV].API_SERVER.substring(0, configs[API_ENV].API_SERVER.lastIndexOf(':')) +
+    //   ':8092/itms-schedule/sse/createSseConnect?clientId=' +
+    //   clientId;
+    // eventSource = new EventSource(new URL(url));
+    // console.log(eventSource);
+    // eventSource.onmessage = event => {
+    //   console.log('onmessage:' + clientId + ': ' + event.data);
+    //   if (event.data) {
+    //     console.log('event.data', event.data);
+    //     let message = JSON.parse(event.data);
+    //     warning({
+    //       title: message.sendTitle,
+    //       content: message.sendMessage,
+    //     });
+    //   }
+    // };
+    // eventSource.onopen = event => {
+    //   console.log('onopen:' + clientId + ': ' + event);
+    // };
+    // eventSource.onerror = event => {
+    //   console.log('onerror :' + clientId + ': ' + event);
+    // };
+    // eventSource.close = event => {
+    //   console.log('close :' + clientId + ': ' + event);
+    // };
   } else {
     if (!window.EventSource) {
       console.log('你的浏览器不支持SSE~');
@@ -354,4 +349,9 @@ const createSseConnect = clientId => {
       console.log('eventSource', eventSource);
     }
   }
+  console.log(
+    configs[API_ENV].API_SERVER.substring(0, configs[API_ENV].API_SERVER.lastIndexOf(':')) +
+      ':8092/itms-schedule/sse/createSseConnect?clientId=' +
+      clientId
+  );
 };
