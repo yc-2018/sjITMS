@@ -350,6 +350,8 @@ const createSseConnect = clientId => {
     }
   }
   console.log(
-    process.env.PROXY_ZUUL_HOST + ':8092/itms-schedule/sse/createSseConnect?clientId=' + clientId
+    process.env.REACT_APP_ADDRESS_IP +
+      ':8092/itms-schedule/sse/createSseConnect?clientId=' +
+      clientId
   );
 };
