@@ -350,7 +350,7 @@ const createSseConnect = clientId => {
     }
   }
   console.log(
-    process.env.REACT_APP_ADDRESS_IP +
+    process.env.REACT_APP_HOST_IP_ADDRESS +
       ':8092/itms-schedule/sse/createSseConnect?clientId=' +
       clientId
   );
