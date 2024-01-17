@@ -350,8 +350,6 @@ const createSseConnect = clientId => {
     }
   }
   console.log(
-    configs[API_ENV].API_SERVER.substring(0, configs[API_ENV].API_SERVER.lastIndexOf(':')) +
-      ':8092/itms-schedule/sse/createSseConnect?clientId=' +
-      clientId
+    process.env.PROXY_ZUUL_HOST + ':8092/itms-schedule/sse/createSseConnect?clientId=' + clientId
   );
 };
