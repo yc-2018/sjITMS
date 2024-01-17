@@ -314,40 +314,42 @@ export function getCollectData() {
 let eventSource;
 // 建立连接
 const createSseConnect = clientId => {
-  let isProp = configs[API_ENV].PRO_ENV;
   if (window.EventSource && !eventSource) {
-    //ZUUL 不支持 SSE
-    // let url =
-    //   configs[API_ENV].API_SERVER.substring(0, configs[API_ENV].API_SERVER.lastIndexOf(':')) +
-    //   ':8092/itms-schedule/sse/createSseConnect?clientId=' +
-    //   clientId;
-    // if (isProp == 1) {
-    //   url =
-    //     configs[API_ENV].PROXY_ZUUL_HOST +
-    //     ':8092/itms-schedule/sse/createSseConnect?clientId=' +
-    //     clientId;
-    // }
-    // eventSource = new EventSource(new URL(url));
-    // eventSource.onmessage = event => {
-    //   console.log('onmessage:' + clientId + ': ' + event.data);
-    //   if (event.data) {
-    //     console.log('event.data', event.data);
-    //     let message = JSON.parse(event.data);
-    //     warning({
-    //       title: message.sendTitle,
-    //       content: message.sendMessage,
-    //     });
-    //   }
-    // };
-    // eventSource.onopen = event => {
-    //   console.log('onopen:' + clientId + ': ' + event);
-    // };
-    // eventSource.onerror = event => {
-    //   console.log('onerror :' + clientId + ': ' + event);
-    // };
-    // eventSource.close = event => {
-    //   console.log('close :' + clientId + ': ' + event);
-    // };
+    try {
+      //ZUUL 不支持 SSE
+
+      // let url =
+      //   configs[API_ENV].API_SERVER.substring(0, configs[API_ENV].API_SERVER.lastIndexOf(':')) +
+      //   ':8092/itms-schedule/sse/createSseConnect?clientId=' +
+      //   clientId;
+      // eventSource = new EventSource(new URL(url));
+
+      eventSource = new EventSource(
+        '/itms/itms-schedule/sse/createSseConnect?clientId=' + clientId
+      );
+      eventSource.onmessage = event => {
+        console.log('onmessage:' + clientId + ': ' + event.data);
+        if (event.data) {
+          console.log('event.data', event.data);
+          let message = JSON.parse(event.data);
+          warning({
+            title: message.sendTitle,
+            content: message.sendMessage,
+          });
+        }
+      };
+      eventSource.onopen = event => {
+        console.log('onopen:' + clientId + ': ' + event);
+      };
+      eventSource.onerror = event => {
+        console.log('onerror :' + clientId + ': ' + event);
+      };
+      eventSource.close = event => {
+        console.log('close :' + clientId + ': ' + event);
+      };
+    } catch (error) {
+      console.error(error);
+    }
   } else {
     if (!window.EventSource) {
       console.log('你的浏览器不支持SSE~');
@@ -355,10 +357,5 @@ const createSseConnect = clientId => {
       console.log('eventSource', eventSource);
     }
   }
-  console.log(
-    'IP',
-    configs[API_ENV].PROXY_ZUUL_HOST +
-      ':8092/itms-schedule/sse/createSseConnect?clientId=' +
-      clientId
-  );
+  console.log('SSE');
 };
