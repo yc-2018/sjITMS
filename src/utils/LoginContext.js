@@ -325,7 +325,7 @@ const createSseConnect = clientId => {
       // eventSource = new EventSource(new URL(url));
 
       eventSource = new EventSource(
-        '/itms/itms-schedule/sse/createSseConnect?clientId=' + clientId
+        'iwms/itms/itms-schedule/sse/createSseConnect?clientId=' + clientId
       );
       eventSource.onmessage = event => {
         console.log('onmessage:' + clientId + ': ' + event.data);
