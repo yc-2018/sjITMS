@@ -173,9 +173,9 @@ export function cacheLoginKey(loginKey) {
       }
     }
   }, 1000);
-  if (loginUser().code) {
-    createSseConnect(loginUser().code);
-  }
+  // if (loginUser().code) {
+  //   createSseConnect(loginUser().code);
+  // }
 }
 
 function clickLog(btn) {
@@ -350,6 +350,8 @@ const createSseConnect = clientId => {
   } else {
     if (!window.EventSource) {
       console.log('你的浏览器不支持SSE~');
+    } else {
+      console.log('eventSource', eventSource);
     }
   }
 };
