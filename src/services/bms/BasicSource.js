@@ -34,7 +34,9 @@ export async function newBatchImport(payload) {
   return request(
     `/bms-cost/bms-cost/source/batchImport?sourceUuid=${payload.sourceUuid}&fileKey=${
       payload.fileKey
-    }&importType=${payload.importType}&importMonth=${payload.importMonth}`,
+    }&importType=${payload.importType}&importMonth=${payload.importMonth}&portOrg=${
+      payload.portOrg
+    }`,
     {
       method: 'POST',
     }
@@ -127,6 +129,13 @@ export async function sortDateSourceTree(payload) {
 //新
 export async function queryData(payload, sourceUuid) {
   return request(`/bms-cost/bms-cost/newSource/queryData/${sourceUuid}`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+//新
+export async function filterDataByMonth(payload, sourceUuid, month) {
+  return request(`/bms-cost/bms-cost/newSource/filterDataByMonth/${sourceUuid}/${month}`, {
     method: 'POST',
     body: payload,
   });

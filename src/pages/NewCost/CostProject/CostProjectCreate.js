@@ -252,7 +252,6 @@ export default class CostProjectCreate extends QuickCreatePage {
   };
 
   formLoaded = () => {
-    console.log('this', this);
     const { formItems, onlFormInfos } = this.state;
 
     formItems.cost_project_ACCESSORY.component = this.uploadComponent;

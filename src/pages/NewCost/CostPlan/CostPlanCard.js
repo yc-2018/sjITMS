@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-07-14 15:44:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-08 17:16:18
+ * @LastEditTime: 2024-01-16 08:56:07
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -44,8 +44,15 @@ export default class CostPlanCard extends Component {
     dataSourceModal: false,
     changeStat: '',
     reason: '',
-    month: new Date().getFullYear() + '-' + new Date().getMonth(),
+    month:
+      new Date().getMonth() == 0
+        ? new Date().getFullYear() - 1 + '-12'
+        : new Date().getFullYear() + '-' + new Date().getMonth(),
   };
+
+  componentWillReceiveProps(newProps) {
+    this.setState({ e: newProps.e });
+  }
 
   drawBody = (costPlan, current, month, e) => {
     const monthFormat = 'YYYY-MM';
@@ -92,7 +99,7 @@ export default class CostPlanCard extends Component {
         <div
           style={{
             marginBottom: 10,
-            height: '7.7rem',
+            // height: '7.7rem',
           }}
         >
           {this.drawDtl(e, current)}
@@ -124,7 +131,7 @@ export default class CostPlanCard extends Component {
           >
             {this.createList(sourceConfirmData)}
           </div>
-          {current == 0 && sourceConfirmData.length > 3 ? (
+          {current == 0 && sourceConfirmData?.length > 3 ? (
             <a
               style={{
                 position: 'absolute',
@@ -361,16 +368,7 @@ export default class CostPlanCard extends Component {
 
   render() {
     const { costPlanStat } = this.props;
-    const {
-      isModalOpen,
-      changeStat,
-      dataSourceModal,
-      e,
-      month,
-      // current,
-      // costPlan,
-      // sourceConfirmData,
-    } = this.state;
+    const { isModalOpen, changeStat, dataSourceModal, e, month } = this.state;
     const { current, costPlan, sourceConfirmData } = e;
     const { getFieldDecorator } = this.props.form;
     let stat = costPlanStat.filter(x => x.itemValue == costPlan.stat);
