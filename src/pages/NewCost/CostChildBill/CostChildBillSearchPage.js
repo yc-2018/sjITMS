@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-01-06 11:38:46
+ * @LastEditTime: 2024-01-16 15:43:33
  * @version: 1.0
  */
 import {
@@ -217,7 +217,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
   preview = async item => {
     const type = item.accessory.split('.')[item.accessory.split('.').length - 1];
     getUploadFile(item.accessory).then(res => {
-      if (res.type == 'application/pdf') {
+      if (type == 'pdf') {
         window.open(URL.createObjectURL(res));
       } else {
         this.setState({
