@@ -487,8 +487,8 @@ export default class DispatchingCreatePage extends Component {
       return;
     }
     const orderType = uniqBy(orders.map(x => x.orderType)).shift();
-    const orderTypeArr = ['TakeDelivery', 'AdjustWarehouse', 'DeliveryThird'];
-    const type = orderTypeArr.includes(orderType) ? 'Task' : 'Job';
+    const orderTypeArr = ['Delivery', 'DeliveryAgain', 'Transshipment', 'OnlyBill'];
+    const type = orderTypeArr.includes(orderType) ? 'Job' : 'Task';
     const driver = selectEmployees.find(x => x.memberType == 'Driver');
     const details = orders.map(item => {
       if (!item.isSplit) {
