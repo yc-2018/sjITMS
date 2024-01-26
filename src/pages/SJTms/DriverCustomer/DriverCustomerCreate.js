@@ -11,12 +11,11 @@ import React from 'react';
 import CostPlanSearch from '@/pages/NewCost/CostPlan/CostPlanSearch';
 import DriverCustomerLessBuy from '@/pages/SJTms/DriverCustomer/DriverCustomerLessBuy';
 import emptySvg from '@/assets/common/img_empoty.svg';
-import DriverCustomerRecord from '@/pages/SJTms/DriverCustomer/DriverCustomerRecord';
-import DriverCustomerGoodsDetail from '@/pages/SJTms/DriverCustomer/DriverCustomerGoodsDetail';
 import { v4 as uuidv4 } from 'uuid';
 import { onSaveGoodsDetailRecord } from '@/services/sjitms/DriverCustomerService';
 import { saveFormData } from '@/services/quick/Quick';
 import { commonLocale } from '@/utils/CommonLocale';
+import DriverCustomerDutyBuy from '@/pages/SJTms/DriverCustomer/DriverCustomerDutyBuy';
 const { Footer, Content } = Layout;
 
 @connect(({ quick, loading }) => ({
@@ -187,15 +186,16 @@ export default class DriverCustomerCreate extends QuickCreatePage {
             返回
           </Button>
         </div>
-        <Content style={{ marginLeft: '4.6%' }}>{this.drawForm()}</Content>
+        {/*这个用的是低代码的配置，还是自己写好一点*/}
+        {/*<Content style={{ marginLeft: '4.6%' }}>{this.drawForm()}</Content>*/}
+        <Content>
+          <Form>
+            <div>
+              啊达瓦达瓦
+            </div>
+          </Form>
+        </Content>
         <Footer style={{ backgroundColor: 'white' }}>
-          {/*<DriverCustomerGoodsDetail*/}
-          {/*  quickuuid="sj_driver_store_goods_detail"*/}
-          {/*  // planUuid={this.props?.params?.entityUuid}*/}
-          {/*  // onRef={c => (this.setting = c)}*/}
-          {/*  // refreshForm={() => this.refreshForm()}*/}
-
-          {/*/>*/}
         </Footer>
         <div style={{ paddingTop: 20 }}>
           <Button
@@ -224,6 +224,17 @@ export default class DriverCustomerCreate extends QuickCreatePage {
           width={'80%'}
           bodyStyle={{ height: 'calc(80vh)', overflowY: 'auto' }}
         >
+          {/*//判断是责任买单还是少货买单*/}
+          {false ?
+            <DriverCustomerLessBuy
+              quickuuid="sj_driver_customer_lessbuy"
+              getGoodsDetailDatas={this.getGoodsDetailDatas}
+            />:
+            <DriverCustomerDutyBuy
+            quickuuid="sj_driver_customer_dutypayment"
+            getGoodsDetailDatas={this.getGoodsDetailDatas}
+            />
+          }
           <DriverCustomerLessBuy
             quickuuid="sj_driver_customer_lessbuy"
             getGoodsDetailDatas={this.getGoodsDetailDatas}
