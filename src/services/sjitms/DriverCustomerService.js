@@ -64,3 +64,9 @@ export async function onFinish(uuid) {
   });
 }
 
+//获取货品详情
+export async function getCargoDetails(billUuid) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/getCargoDetails?billUuid=${billUuid}`);
+}
+
+
