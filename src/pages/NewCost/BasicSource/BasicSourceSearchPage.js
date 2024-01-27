@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-01-23 15:12:07
+ * @LastEditTime: 2024-01-27 10:25:39
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -46,7 +46,7 @@ export default class BasicSourceSearchPage extends Component {
 
   getOrg = async () => {
     // 查询字典
-    queryDictByCode(['dispatchCenter']).then(res => this.setState({ dict: res.data }));
+    queryDictByCode(['bmsDispatchCenter']).then(res => this.setState({ dict: res.data }));
   };
 
   queryTree = async () => {
@@ -179,7 +179,7 @@ export default class BasicSourceSearchPage extends Component {
     const { allData, dict } = this.state;
     const system = allData.find(x => x.uuid == selectedKeys[0]);
     let tableParam = {
-      tableName: 'cost_sourcedata_config',
+      tableName: 'cost_form',
       condition: {
         params: [{ field: 'UUID', rule: 'eq', val: [selectedKeys[0]] }],
       },
@@ -244,7 +244,7 @@ export default class BasicSourceSearchPage extends Component {
                     <div>
                       <BasicConfigCreatePage
                         key={selectedKeys[0]}
-                        quickuuid="cost_form_children"
+                        quickuuid="cost_datasource_manage"
                         showPageNow="update"
                         noBorder={true}
                         noCategory={true}
@@ -347,7 +347,7 @@ export default class BasicSourceSearchPage extends Component {
         <CreatePageModal
           modal={{
             title: '新增数据源',
-            width: 500,
+            width: 1300,
             afterClose: () => {
               this.queryTree();
             },
@@ -359,7 +359,7 @@ export default class BasicSourceSearchPage extends Component {
         <CreatePageModal
           modal={{
             title: '编辑数据源',
-            width: 500,
+            width: 1300,
             afterClose: () => {
               this.queryTree();
             },
