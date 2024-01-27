@@ -115,7 +115,7 @@ class RoleCreateForm extends PureComponent {
               })(
                 <SimpleSelect
                   searchField={{ searchCondition: 'in' }}
-                  dictCode={'dispatchCenter'}
+                  dictCode={'bmsDispatchCenter'}
                   placeholder={'请选择所属组织'}
                 />
               )}
