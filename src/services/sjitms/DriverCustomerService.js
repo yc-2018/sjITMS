@@ -37,9 +37,14 @@ export async function getProcessRecords(billUuid) {
   return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/getProcessRecords?billUuid=${billUuid}`);
 }
 
-//获取协助类型和问题类型字典
+//获取无联动协助类型和问题类型字典
 export async function getTypeDict() {
   return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/getTypeDict`);
+}
+
+//获取联动的协助类型和问题类型字典
+export async function getLinkTypeDict() {
+  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/getLinkTypeDict`);
 }
 
 //处理回复进度
