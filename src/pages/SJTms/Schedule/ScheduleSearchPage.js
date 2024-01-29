@@ -233,7 +233,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
   };
 
   initOptionsData = async () => {
-    await getPris().then(datas => {
+    const dispatchCenterUuid = this.state.selectedRows[0].DISPATCHCENTERUUID;
+    await getPris(dispatchCenterUuid).then(datas => {
       this.setState({ sourceData: datas });
     });
   };
@@ -1266,7 +1267,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
               <th colspan={10} style={{ border: 0, height: 30 }}>
                 <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                   {/* <div style={{ float: 'left', width: '25%' }}>
-                    排车序号： 
+                    排车序号：
                   </div> */}
                   <div style={{ float: 'left', width: '30%', fontWeight: 'normal' }}>
                     排车单号： {schedule.BILLNUMBER}
@@ -1499,7 +1500,7 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
               <th colspan={12} style={{ border: 0, height: 30 }}>
                 <div style={{ textAlign: 'left', fontWeight: 'normal' }}>
                   {/* <div style={{ float: 'left', width: '25%' }}>
-                    排车序号： 
+                    排车序号：
                   </div> */}
                   <div style={{ float: 'left', width: '25%', fontWeight: 'normal' }}>
                     排车单号： {schedule.BILLNUMBER}

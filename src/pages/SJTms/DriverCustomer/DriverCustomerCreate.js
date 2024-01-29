@@ -1,5 +1,5 @@
 import { connect } from 'dva';
-import { Button, Form, Layout, Spin, Card, Row,Col,Modal,Empty,message} from 'antd';
+import { Button, Form, Layout, Spin, Card, Row,Col,Modal,Empty,message,Select } from 'antd';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import moment from 'moment';
 import { loginOrg } from '@/utils/LoginContext';
@@ -11,14 +11,13 @@ import React from 'react';
 import CostPlanSearch from '@/pages/NewCost/CostPlan/CostPlanSearch';
 import DriverCustomerLessBuy from '@/pages/SJTms/DriverCustomer/DriverCustomerLessBuy';
 import emptySvg from '@/assets/common/img_empoty.svg';
-import DriverCustomerRecord from '@/pages/SJTms/DriverCustomer/DriverCustomerRecord';
-import DriverCustomerGoodsDetail from '@/pages/SJTms/DriverCustomer/DriverCustomerGoodsDetail';
-import { v4 as uuidv4 } from 'uuid';
-import { onSaveGoodsDetailRecord } from '@/services/sjitms/DriverCustomerService';
+import { getLinkTypeDict, onSaveGoodsDetailRecord } from '@/services/sjitms/DriverCustomerService';
 import { saveFormData } from '@/services/quick/Quick';
 import { commonLocale } from '@/utils/CommonLocale';
+import DriverCustomerDutyBuy from '@/pages/SJTms/DriverCustomer/DriverCustomerDutyBuy';
 const { Footer, Content } = Layout;
-
+//联动选择
+const { Option } = Select;
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -33,8 +32,25 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     //所选择的货品明细数据
     theSelectGoodsDetailDatas:[],
     //新建保存时的uuid
-    uuidSave:''
+    uuidSave:'',
+//新建：
+  //联动数组所需要的两个数组
+    //协助类型arr
+    assistTypeData:[],
+    //协助类型key+问题类型problemType
+    assistAndProblemTypeData:[],
+
   };
+
+  componentDidMount() {
+    //获取联动数组数据
+    getLinkTypeDict().then(response =>{
+      if(response && response.success){
+        this.setState({assistTypeData:response.data.assistTypeData,assistAndProblemTypeData:response.data.assistAndProblemTypeData})
+        console.log("responsedata",response.data);
+      }
+    })
+  }
 
   //表单加载的时候
   formLoaded = () => {
@@ -57,60 +73,6 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     // console.log("fieldName",fieldName);
     // console.log("valueEvent",valueEvent);
 
-
-
-    // if (fieldName == 'RESPONSIBILITYGROUP' && valueEvent) {
-    //   const { formItems } = this.state;
-    //   let rules = formItems['sj_itms_customer_service_RESPONSIBILITYCODE'].rules;
-    //   rules.forEach(rule => {
-    //     if (rule.hasOwnProperty('required')) {
-    //       rule.required = valueEvent.record.DESCRIPTION === '1';
-    //     }
-    //   });
-    //   this.setState({ formItems });
-    // }
-    // if (fieldName == 'ISDISPOSE' && valueEvent) {
-    //   const { formItems } = this.state;
-    //   const rules = formItems['sj_itms_customer_service_DISPOSEDEPT']?.rules || [];
-    //   rules.forEach(rule => {
-    //     if (rule.hasOwnProperty('required')) {
-    //       rule.required = valueEvent.value == '1';
-    //     }
-    //   });
-    //   this.setState({ formItems });
-    // }
-    // if (fieldName == 'DISPOSEDEPT' && valueEvent) {
-    //   this.entity[mainName][0]['DISPOSEDEPTNAME'] = valueEvent.record.NAME;
-    //   // this.entity[mainName][0]['DISPOSECODE'] = valueEvent.record.MANAGERCODE?.split(',')[0];
-    //   this.entity[mainName][0]['DISPOSENAME'] = valueEvent.record.MANAGERNAME?.split(',')[0];
-    //   this.setFieldsValue(
-    //     mainName,
-    //     'DISPOSECODE',
-    //     valueEvent.record.MANAGERCODE?.split(',')[0],
-    //     undefined,
-    //     valueEvent.record.MANAGERNAME?.split(',')[0]
-    //   );
-    // }
-    // if (fieldName == 'COMPLETIONTIME' && valueEvent) {
-    //   const feedbackTime = this.entity[mainName][0]['FEEDBACKTIME'];
-    //   if (feedbackTime) {
-    //     this.entity[mainName][0]['DEADLINE'] = moment(feedbackTime)
-    //       .add(Number(valueEvent.value), 'hours')
-    //       .format('YYYY-MM-DD HH:mm:ss');
-    //   }
-    // }
-    // if (fieldName == 'FEEDBACKTIME' && valueEvent) {
-    //   const completionTime = this.entity[mainName][0]['COMPLETIONTIME'];
-    //   if (completionTime) {
-    //     this.entity[mainName][0]['DEADLINE'] = moment(valueEvent)
-    //       .add(Number(completionTime), 'hours')
-    //       .format('YYYY-MM-DD HH:mm:ss');
-    //   }
-    // }
-    // if (fieldName == 'CUSTOMERCODE' && valueEvent) {
-    //   this.entity[mainName][0]['CUSTOMERCODE'] = valueEvent.value?.split(']')[0].replaceAll('[',"");
-    //
-    // }
   }
   //重写afterSave方法
   saveAfterItem= (uuidSave) => {
@@ -165,6 +127,52 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     console.log("theSelectGoodsDetailDatas",selectedRows);
   };
 
+  //联动
+  handleLinkedArr = () =>{
+
+  }
+
+  //表单
+  getFormFields = () => {
+    const {assistTypeData,assistAndProblemTypeData}  = this.state;
+    const { getFieldDecorator } = this.props.form;
+    const children = [];
+    children.push(
+      <Col span={8} >
+        <Form.Item label={`司机信息`}>
+          {getFieldDecorator(`field-`, { rules: [{ required: true, message: '请选择司机', },] })}
+        </Form.Item>
+      </Col>,
+      <Col span={8}>
+        <Form.Item label={`协助类型`}>
+          {getFieldDecorator(`field-`, { rules: [{ required: true, message: '请选择协助类型', },] })
+          (<Select
+            defaultValue={assistTypeData[0].name}
+            style={{ width: 120 }}
+            onChange={this.handleLinkedArr}
+          >
+            {assistAndProblemTypeData.map(province => (
+              <Option key={province.code}>{province.name}</Option>
+            ))}
+          </Select>
+          )
+          }
+        </Form.Item>
+      </Col>,
+      <Col span={8}>
+        <Form.Item label={`问题类型`}>
+          {getFieldDecorator(`field-`, { rules: [{ required: true, message: '请选择司机', },] })}
+        </Form.Item>
+      </Col>,
+      <Col span={8}>
+        <Form.Item label={`司机描述`}>
+          {getFieldDecorator(`field-`, { rules: [{ required: true, message: '请选择司机', },] },)}
+        </Form.Item>
+      </Col>,
+    );
+
+    return children;
+  }
 
   render() {
     const {isModalVisible,theSelectGoodsDetailDatas}= this.state
@@ -187,15 +195,14 @@ export default class DriverCustomerCreate extends QuickCreatePage {
             返回
           </Button>
         </div>
-        <Content style={{ marginLeft: '4.6%' }}>{this.drawForm()}</Content>
+        {/*这个用的是低代码的配置，还是自己写好一点*/}
+        {/*<Content style={{ marginLeft: '4.6%' }}>{this.drawForm()}</Content>*/}
+        <Content>
+          <Form>
+            <Row gutter={24}>{this.getFormFields()}</Row>
+          </Form>
+        </Content>
         <Footer style={{ backgroundColor: 'white' }}>
-          {/*<DriverCustomerGoodsDetail*/}
-          {/*  quickuuid="sj_driver_store_goods_detail"*/}
-          {/*  // planUuid={this.props?.params?.entityUuid}*/}
-          {/*  // onRef={c => (this.setting = c)}*/}
-          {/*  // refreshForm={() => this.refreshForm()}*/}
-
-          {/*/>*/}
         </Footer>
         <div style={{ paddingTop: 20 }}>
           <Button
@@ -224,10 +231,17 @@ export default class DriverCustomerCreate extends QuickCreatePage {
           width={'80%'}
           bodyStyle={{ height: 'calc(80vh)', overflowY: 'auto' }}
         >
-          <DriverCustomerLessBuy
-            quickuuid="sj_driver_customer_lessbuy"
+          {/*//判断是责任买单还是少货买单*/}
+          {false ?
+            <DriverCustomerLessBuy
+              quickuuid="sj_driver_customer_lessbuy"
+              getGoodsDetailDatas={this.getGoodsDetailDatas}
+            />:
+            <DriverCustomerDutyBuy
+            quickuuid="sj_driver_customer_dutypayment"
             getGoodsDetailDatas={this.getGoodsDetailDatas}
-          />
+            />
+          }
         </Modal>
         <Row type="flex" justify="end">
           <Col span={23}>

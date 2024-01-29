@@ -1,17 +1,23 @@
 import React, { Component } from 'react';
-import { Form, Input, Row, Col, Tooltip, Collapse, Divider,DatePicker } from 'antd';
+import { Form, Input, Row, Col, Tooltip, Collapse, Divider,DatePicker,Card,Checkbox } from 'antd';
 import IconFont from '@/components/IconFont';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import Empty from '@/pages/Component/Form/Empty';
 // import styles from './DisposePage.less';
 import styles from'./DriverCustomerPage.less'
+import cargoDetailStyles from './DriverDisposeForm.less'
 import moment from 'moment';
 import log from '@/models/common/log';
 import Select from '@/components/ExcelImport/Select';
+import { getCargoDetails } from '@/services/sjitms/DriverCustomerService';
+import { length } from 'localforage';
 const Panel = Collapse.Panel;
 
 @Form.create()
 export default class DriverDisposeForm extends Component {
+  constructor(props) {
+    super(props);
+  }
   placeholders = {
     Rejected: '驳回说明',
     Release: '发布说明',
@@ -21,6 +27,10 @@ export default class DriverDisposeForm extends Component {
   state={
     records:[],
     operation:"",
+    //货品明细详情数据
+    cargoDetailsList:[],
+    //货品选中复选框数组uuid
+    cargoCheckArr: [],
   }
   onResponsibilityChange = data => {
     this.props.form.setFieldsValue({ responsibilityName: data.record.NAME });
@@ -37,20 +47,40 @@ export default class DriverDisposeForm extends Component {
     };
   }
 
-  componentDidMount() {
-    const { bill, records, operation } = this.props;
-    this.setState({bill:bill,records:records,operation:operation});
+    async componentWillMount() {
+      const { bill, records, operation } = this.props;
+      this.setState({ bill: bill, records: records, operation: operation });
+      if (this.props.operation === 'Result') {
+        const response = await getCargoDetails(bill.UUID)
+        if (response && response.success) {
+          this.setState({ cargoDetailsList: response.data ,cargoCheckArr:response.data.filter(item => item.istakedelivery === 1).map(item=>item.uuid)})
+        }
+      }
+    }
+  //
+  checkAllCargo= () => {
+    //cargoCheckArr:cargoDetailsList的主键uuid集合  ||   cargoDetailsList就是货品详情明细集合
+     const {cargoCheckArr,cargoDetailsList}=this.state
+      const cargoCheckUUIDs = cargoDetailsList?.map((x) => x.uuid);
+    //全选
+    if (cargoCheckArr.length !== cargoDetailsList.length) {
+      this.setState({ cargoCheckArr: cargoCheckUUIDs })
+      this.props.getRequireTakeDeliveryData(cargoCheckUUIDs)
+      //取消全选
+    }else {
+      this.setState({ cargoCheckArr: [] })
+      this.props.getRequireTakeDeliveryData([])
+    }
   }
+
+
   render() {
     const formItem = {
       labelCol: { span: 8 },
       wrapperCol: { span: 16 },
     };
-    const { bill, records, operation,typeDictArr} = this.state;
-
+    const { bill, records, operation,typeDictArr,cargoDetailsList,cargoCheckArr} = this.state;
     const { getFieldDecorator } = this.props.form;
-
-    console.log('records',records);
     return (
 
       bill ? <Form labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
@@ -83,13 +113,13 @@ export default class DriverDisposeForm extends Component {
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item label="业务类型2">
-              <Tooltip>{bill.BUSINESSTYPE || <Empty />} </Tooltip>
+            <Form.Item label="提交次数">
+              <Tooltip>{bill.SUBMISSIONSNUMBER || <Empty />} </Tooltip>
             </Form.Item>
           </Col>
           <Col span={8}>
-            <Form.Item label="业务类型3">
-              <Tooltip>{bill.SPECIFICTYPE || <Empty />} </Tooltip>
+            <Form.Item label="反馈来源">
+              <Tooltip>{bill.FEEDBACKSOURCE || <Empty />} </Tooltip>
             </Form.Item>
           </Col>
           <Col span={8}>
@@ -122,6 +152,69 @@ export default class DriverDisposeForm extends Component {
               <Tooltip>{bill.ASSISTCONTENT || <Empty />} </Tooltip>
             </Form.Item>
           </Col>
+        </Row>
+
+        {/*处理结果：客服决定司机是否取货某些货品*/}
+        {
+          this.props.operation === "Result" && cargoDetailsList.length > 0 ? (
+            <Row type="flex" justify="end">
+              <Checkbox
+                // indeterminate={this.state.indeterminate}
+                checked={cargoCheckArr.length === cargoDetailsList.length}
+                onChange={this.checkAllCargo}
+              >
+                全选
+              </Checkbox>
+            </Row>
+          ) : <></>
+        }
+        <Row style={{display:"flex",flexWrap:"wrap"}}>
+        {
+          this.props.operation==="Result" && cargoDetailsList.length > 0?(
+            cargoDetailsList.map((item)=>{
+                return   <Col span={6}>
+                  {/*<Card title={item.productname} bordered={true} className={cargoDetailStyles.antCardBody}>*/}
+                  <label>
+                    <div className={cargoDetailStyles.cargoDetail} onClick={this.bigCheck}>
+                      <Row>
+                        <Col span={4}>货品:</Col>
+                        <Col span={18}>{item.productname}</Col>
+                        <Col span={2}>
+                          <Checkbox
+                            checked={cargoCheckArr.indexOf(item.uuid) > -1}
+                            onChange={(e) => {
+                              const uuids = e.target.checked ? [...cargoCheckArr, item.uuid] : cargoCheckArr.filter((x) => x !== item.uuid);
+                              this.setState({ cargoCheckArr: uuids });
+                              this.props.getRequireTakeDeliveryData(uuids);
+                            }}
+                            iconSize='10px'
+                          />
+                        </Col>
+                      </Row>
+                      <Divider style={{ margin: '0px' }} />
+                      <Row>
+                        <Col span={3}>价格:</Col>
+                        <Col span={9}>{item.productprice || '<空>'}</Col>
+                        <Col span={3}>金额:</Col>
+                        <Col span={9}>{item.productamount || '<空>'}</Col>
+                      </Row>
+                      <Row>
+                        <Col span={3}>货位:</Col>
+                        <Col span={9}>{item.productposition || '<空>'}</Col>
+                        <Col span={3}>件数:</Col>
+                        <Col span={9}>{item.productquantity || '<空>'}</Col>
+                      </Row>
+
+                    </div>
+                  </label>
+                  {/*</Card>*/}
+                </Col>
+            })
+
+
+
+          ):<></>
+        }
         </Row>
          {/*处理记录*/}
         {records.length > 0 ? (

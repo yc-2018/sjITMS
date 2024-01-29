@@ -12,6 +12,8 @@ export default class DriverCustomerDisposePageModal extends Component {
     //处理记录集合
     records: [],
     saving: false,
+    //需要取货的数据的uuid
+    requireTakeCargoArr:[]
   };
   modeTxt = {
     Rejecte: '驳回',
@@ -82,13 +84,17 @@ export default class DriverCustomerDisposePageModal extends Component {
     this.setState({ saving: false });
   };
 
+  //获取客服决定司机需要取货的数据主键:回调函数，由子组件触发
+  getRequireTakeDeliveryData = (cargoCheckArr) => {
+    this.setState({requireTakeCargoArr:cargoCheckArr})
+  };
   //处理回复结果
-  processResult = async stat => {
-    const { bill } = this.state;
-    const validate = await this.formRef.validateFields();
+  processResult = stat => {
+    const { bill,requireTakeCargoArr} = this.state;
+    const validate =  this.formRef.validateFields();
     this.setState({ saving: true });
-    const param = { billuuid: bill.UUID, type: this.modeTxt[stat], detail: validate.remark };
-    await onResult(param).then(response => {
+    const param = { billuuid: bill.UUID, type: this.modeTxt[stat], detail: validate.remark,requireTakeCargoList:requireTakeCargoArr};
+    onResult(param).then(response => {
       if (response && response.success) {
         message.success('回复结果成功！');
         this.hide();
@@ -154,7 +160,7 @@ export default class DriverCustomerDisposePageModal extends Component {
           bill={bill}
           records={records}
           operation={operation}
-          // seelct
+          getRequireTakeDeliveryData={this.getRequireTakeDeliveryData}
           ref={node => (this.formRef = node)}
         />
       </Modal>

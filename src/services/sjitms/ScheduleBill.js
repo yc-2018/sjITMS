@@ -158,8 +158,8 @@ export async function shipRollback(Uuid) {
 }
 
 // 获取空闲码头
-export async function getPris() {
-  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/getPris`, {
+export async function getPris(dispatchCenterUuid) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/getPris?dispatchCenterUuid=${dispatchCenterUuid}`, {
     method: 'GET',
   });
 }
