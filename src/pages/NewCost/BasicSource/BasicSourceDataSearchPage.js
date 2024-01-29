@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-12-28 15:29:31
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-01-04 16:55:11
+ * @LastEditTime: 2024-01-29 10:49:42
  * @version: 1.0
  */
 /*
@@ -454,6 +454,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
    */
   drawToolbarPanel = () => {
     const { showDataConfirmModal, system, confirmMonth, updateModal, queryByOrg } = this.state;
+    const { dict } = this.props;
     const monthFormat = 'YYYY-MM';
     const { getFieldDecorator } = this.props.form;
     const formItemLayout = {
@@ -465,6 +466,11 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       rules: [{ type: 'object', required: true, message: '请先选择月份' }],
       initialValue: moment().subtract(1, 'months'),
     };
+    let org = loginUser().rolesOrg[0].split(',');
+    let option;
+    if (org.length > 0) {
+      option = dict.filter(x => org.includes(x.itemValue));
+    }
     return (
       <div style={{ marginTop: '10px' }}>
         <AdvanceQuery
@@ -546,6 +552,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
             {loginUser().rolesOrg.length > 0 && queryByOrg ? (
               <FormItem {...formItemLayout} label="所属组织">
                 {getFieldDecorator('confirmOrg', {
+                  initialValue: option[0].itemValue,
                   rules: [{ required: true, message: `字段不能为空` }],
                 })(
                   <Select width={'100%'} placeholder="请选择所属组织">

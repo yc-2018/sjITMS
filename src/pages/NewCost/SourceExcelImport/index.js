@@ -185,6 +185,7 @@ class ExcelImport extends PureComponent {
       dispatch,
       templateType,
       form,
+      dict,
     } = this.props;
 
     const {
@@ -239,6 +240,12 @@ class ExcelImport extends PureComponent {
         </Button>
       </Fragment>
     );
+
+    let org = loginUser().rolesOrg[0].split(',');
+    let option;
+    if (org.length > 0) {
+      option = dict.filter(x => org.includes(x.itemValue));
+    }
 
     const pageDetailProps = {
       title: pageTitle,
@@ -307,6 +314,7 @@ class ExcelImport extends PureComponent {
               {loginUser().rolesOrg.length > 0 && queryByOrg ? (
                 <FormItem {...formItemLayout} label="所属组织">
                   {form.getFieldDecorator('portOrg', {
+                    initialValue: option[0].itemValue + ',' + option[0].itemText,
                     rules: [{ required: true, message: `字段不能为空` }],
                   })(
                     <Select
