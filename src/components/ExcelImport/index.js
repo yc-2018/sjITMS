@@ -42,7 +42,7 @@ class ExcelImport extends PureComponent {
     fileName: '',
     isModalOpen: false,
     dict: [],
-    portOrg: loginUser().rolesOrg ? loginUser().rolesOrg[0] : '',
+    portOrg: loginUser().rolesOrg[0] ? loginUser().rolesOrg[0] : '',
   };
 
   componentDidMount() {

@@ -1,3 +1,10 @@
+/*
+ * @Author: Liaorongchang
+ * @Date: 2023-10-19 17:01:36
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2024-02-01 18:09:24
+ * @version: 1.0
+ */
 export default [
   // user
   {
@@ -27,6 +34,7 @@ export default [
       { path: '/driver/DriverSwipePrint', component: './SJTms/Schedule/DriverSwipePrint' },
       { path: '/driver/DriverSwipeSign', component: './SJTms/Schedule/DriverSwipeSign' },
       { path: '/driver/sign', component: './SJTms/PreView/Sign/View' },
+      // { path: '/driver/companyCostBill/*', component: './NewCost/CompanyBill/index' }
     ],
   },
   {

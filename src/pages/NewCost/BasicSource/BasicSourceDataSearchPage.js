@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-12-28 15:29:31
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-01-29 10:49:42
+ * @LastEditTime: 2024-01-30 17:50:07
  * @version: 1.0
  */
 /*
@@ -88,32 +88,6 @@ export default class BasicSourceDataSearchPage extends SearchPage {
     this.props.setFunc(this);
   }
 
-  //获取表管理
-  // queryTableConfig = async () => {
-  // const { system } = this.state;
-  // let tableParam = {
-  //   tableName: 'cost_sourcedata_config',
-  //   condition: {
-  //     params: [{ field: 'UUID', rule: 'eq', val: [this.props.selectedRows] }],
-  //   },
-  // };
-  // const tableConfig = await dynamicQuery(tableParam, system.system);
-  // if (tableConfig && tableConfig.success) {
-  //   if (tableConfig.result.records.length > 0 && tableConfig.result.records[0].QUERYBYORG == 1) {
-  //     this.setState({
-  //       isOrgQuery: {
-  //         field: 'ORGANIZATIONUUID',
-  //         type: 'VarChar',
-  //         rule: 'in',
-  //         val: loginUser().rolesOrg[0].split(','),
-  //       },
-  //       queryByOrg: true,
-  //     });
-  //   }
-  //   this.queryColumns();
-  // }
-  // };
-
   //获取列配置
   queryColumns = async () => {
     const { system } = this.state;
@@ -190,12 +164,25 @@ export default class BasicSourceDataSearchPage extends SearchPage {
   onSearch = async filter => {
     const { system, queryByOrg } = this.state;
     this.setState({ searchLoading: true });
-    const isOrgQuery = {
-      field: 'ORGANIZATIONUUID',
-      type: 'VarChar',
-      rule: 'in',
-      val: loginUser().rolesOrg[0].split(','),
-    };
+
+    let rolesOrg = loginUser().rolesOrg[0].split(',');
+    let queryParams = [];
+    let bmsOrgQuery = [];
+    rolesOrg.map(rog => {
+      queryParams.push({
+        field: 'ORGANIZATIONUUID',
+        type: 'VarChar',
+        rule: 'like',
+        val: [rog],
+      });
+    });
+    bmsOrgQuery.push({
+      nestCondition: {
+        matchType: 'or',
+        params: queryParams,
+      },
+    });
+
     let param = [];
     if (filter == undefined) {
       param = {
@@ -205,11 +192,11 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         tableName: system.tableName,
         condition: queryByOrg
           ? {
-              params: [isOrgQuery],
+              params: [...bmsOrgQuery],
             }
           : {},
       };
-      this.setState({ queryParams: [isOrgQuery] });
+      this.setState({ queryParams: [...bmsOrgQuery] });
     } else {
       const queryParams = params => {
         let param = params.map(data => {
@@ -220,7 +207,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
             val: [data.val],
           };
         });
-        if (queryByOrg) param.push(isOrgQuery);
+        if (queryByOrg) param.push(bmsOrgQuery);
         return param;
       };
       param = {
