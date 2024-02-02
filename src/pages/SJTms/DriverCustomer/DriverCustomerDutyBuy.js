@@ -51,15 +51,9 @@ export default class DriverCustomerDutyBuy extends QuickFormSearchPage {
   drawToolbarPanel = () => {
     return (
       <div style={{ marginBottom: 10 }}>
-        <Popconfirm
-          title="确定回填货物?"
-          onConfirm={this.backfillGoods}
-          style={{ marginLeft: 10 }}
-        >
-          <Button type={'primary'}  style={{ marginLeft: 10 }}>
+          <Button type={'primary'}  style={{ marginLeft: 10 }} onClick={this.backfillGoods}>
             货品回填
           </Button>
-        </Popconfirm>
       </div>
     );
   };
