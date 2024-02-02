@@ -215,17 +215,6 @@ export default class QuickFormSearchPage extends SearchPage {
           }
 
           if (loginOrg().type == 'BMS' && queryConfig.reportHead.organizationQuery == 1) {
-            // this.setState({
-            //   isOrgQuery: [
-            //     {
-            //       field: 'ORGANIZATIONUUID',
-            //       type: 'VarChar',
-            //       rule: 'in',
-            //       val: loginUser().rolesOrg[0].replace(',', '||'),
-            //     },
-            //     ...this.state.isOrgQuery,
-            //   ],
-            // });
             let rolesOrg = loginUser().rolesOrg[0].split(',');
             let queryParams = [];
             let bmsOrgQuery = [];
