@@ -22,6 +22,7 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
     isShowLogs: false,
     billLogs: [],
     isLock: null,
+    sucomIdspendLoading: true,
   };
 
   month = moment().format('YYYY-MM');
@@ -83,7 +84,7 @@ export default class CostBillDtlSeacrhPage extends QuickFormSearchPage {
       },
     };
     this.setState({
-      key: this.props.quickuuid + new Date(),
+      // key: this.props.quickuuid + new Date(),
       data: datas,
       searchLoading: false,
       // bill,
