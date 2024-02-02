@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-01-24 17:11:10
+ * @LastEditTime: 2024-02-02 14:45:52
  * @version: 1.0
  */
 import {
@@ -258,7 +258,6 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
       billDownloads,
       e,
       filePath,
-      fileType,
       showViewer,
     } = this.state;
     return (
