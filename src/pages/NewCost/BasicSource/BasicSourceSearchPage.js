@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-05-31 14:49:23
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-12-28 15:39:15
+ * @LastEditTime: 2024-01-27 10:25:39
  * @version: 1.0
  */
 import React, { Component } from 'react';
@@ -46,7 +46,7 @@ export default class BasicSourceSearchPage extends Component {
 
   getOrg = async () => {
     // 查询字典
-    queryDictByCode(['dispatchCenter']).then(res => this.setState({ dict: res.data }));
+    queryDictByCode(['bmsDispatchCenter']).then(res => this.setState({ dict: res.data }));
   };
 
   queryTree = async () => {
@@ -179,7 +179,7 @@ export default class BasicSourceSearchPage extends Component {
     const { allData, dict } = this.state;
     const system = allData.find(x => x.uuid == selectedKeys[0]);
     let tableParam = {
-      tableName: 'cost_sourcedata_config',
+      tableName: 'cost_form',
       condition: {
         params: [{ field: 'UUID', rule: 'eq', val: [selectedKeys[0]] }],
       },
@@ -232,10 +232,19 @@ export default class BasicSourceSearchPage extends Component {
                 )}
                 {havePermission(this.state.authority + '.manage') ? (
                   <TabPane tab={'管理'} key="manage">
+                    <div className={sourceStyle.config}>
+                      <Button
+                        style={{ float: 'right' }}
+                        type="primary"
+                        onClick={e => this.configCreatPage.onSave(e)}
+                      >
+                        保存
+                      </Button>
+                    </div>
                     <div>
                       <BasicConfigCreatePage
                         key={selectedKeys[0]}
-                        quickuuid="cost_sourcedata_config"
+                        quickuuid="cost_datasource_manage"
                         showPageNow="update"
                         noBorder={true}
                         noCategory={true}
@@ -243,11 +252,6 @@ export default class BasicSourceSearchPage extends Component {
                         onRef={node => (this.configCreatPage = node)}
                         uuid={selectedKeys[0]}
                       />
-                    </div>
-                    <div className={sourceStyle.config}>
-                      <Button type="primary" onClick={e => this.configCreatPage.onSave(e)}>
-                        保存
-                      </Button>
                     </div>
                   </TabPane>
                 ) : (
@@ -272,28 +276,28 @@ export default class BasicSourceSearchPage extends Component {
                     selectedRows={selectedKeys[0]}
                   />
                 </TabPane>
-                {event.selectedNodes[0].props.dataRef.expanded == '1' ? (
-                  <TabPane tab={'导入'} key="import">
-                    <div style={{ marginTop: '20px' }}>
-                      <ExcelImport
-                        key={selectedKeys[0]}
-                        title={event.selectedNodes[0].props.dataRef.tableNameCN}
-                        selectedRows={selectedKeys[0]}
-                        templateType="BASICSOURCE"
-                        dispatch={this.props.dispatch}
-                        uploadType="basicSource/newBatchImport"
-                        uploadParams={{ sourceUuid: selectedKeys[0] }}
-                        cancelCallback={() => {}}
-                        costForm={system}
-                        refDataSource={() => this.sourceDataRef.onSearch()}
-                        dict={dict}
-                        queryByOrg={queryByOrg}
-                      />
-                    </div>
-                  </TabPane>
-                ) : (
+                {/* {event.selectedNodes[0].props.dataRef.expanded == '1' ? ( */}
+                <TabPane tab={'导入'} key="import">
+                  <div style={{ marginTop: '20px' }}>
+                    <ExcelImport
+                      key={selectedKeys[0]}
+                      title={event.selectedNodes[0].props.dataRef.tableNameCN}
+                      selectedRows={selectedKeys[0]}
+                      templateType="BASICSOURCE"
+                      dispatch={this.props.dispatch}
+                      uploadType="basicSource/newBatchImport"
+                      uploadParams={{ sourceUuid: selectedKeys[0] }}
+                      cancelCallback={() => {}}
+                      costForm={system}
+                      refDataSource={() => this.sourceDataRef.onSearch()}
+                      dict={dict}
+                      queryByOrg={queryByOrg}
+                    />
+                  </div>
+                </TabPane>
+                {/* ) : (
                   ''
-                )}
+                )} */}
               </Tabs>
             ),
           selectedKeys: selectedKeys[0],
@@ -343,7 +347,7 @@ export default class BasicSourceSearchPage extends Component {
         <CreatePageModal
           modal={{
             title: '新增数据源',
-            width: 500,
+            width: 1300,
             afterClose: () => {
               this.queryTree();
             },
@@ -355,7 +359,7 @@ export default class BasicSourceSearchPage extends Component {
         <CreatePageModal
           modal={{
             title: '编辑数据源',
-            width: 500,
+            width: 1300,
             afterClose: () => {
               this.queryTree();
             },

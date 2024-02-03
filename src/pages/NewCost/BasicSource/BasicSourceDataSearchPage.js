@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-12-28 15:29:31
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-01-04 16:55:11
+ * @LastEditTime: 2024-01-30 17:50:07
  * @version: 1.0
  */
 /*
@@ -88,32 +88,6 @@ export default class BasicSourceDataSearchPage extends SearchPage {
     this.props.setFunc(this);
   }
 
-  //获取表管理
-  // queryTableConfig = async () => {
-  // const { system } = this.state;
-  // let tableParam = {
-  //   tableName: 'cost_sourcedata_config',
-  //   condition: {
-  //     params: [{ field: 'UUID', rule: 'eq', val: [this.props.selectedRows] }],
-  //   },
-  // };
-  // const tableConfig = await dynamicQuery(tableParam, system.system);
-  // if (tableConfig && tableConfig.success) {
-  //   if (tableConfig.result.records.length > 0 && tableConfig.result.records[0].QUERYBYORG == 1) {
-  //     this.setState({
-  //       isOrgQuery: {
-  //         field: 'ORGANIZATIONUUID',
-  //         type: 'VarChar',
-  //         rule: 'in',
-  //         val: loginUser().rolesOrg[0].split(','),
-  //       },
-  //       queryByOrg: true,
-  //     });
-  //   }
-  //   this.queryColumns();
-  // }
-  // };
-
   //获取列配置
   queryColumns = async () => {
     const { system } = this.state;
@@ -190,12 +164,25 @@ export default class BasicSourceDataSearchPage extends SearchPage {
   onSearch = async filter => {
     const { system, queryByOrg } = this.state;
     this.setState({ searchLoading: true });
-    const isOrgQuery = {
-      field: 'ORGANIZATIONUUID',
-      type: 'VarChar',
-      rule: 'in',
-      val: loginUser().rolesOrg[0].split(','),
-    };
+
+    let rolesOrg = loginUser().rolesOrg[0].split(',');
+    let queryParams = [];
+    let bmsOrgQuery = [];
+    rolesOrg.map(rog => {
+      queryParams.push({
+        field: 'ORGANIZATIONUUID',
+        type: 'VarChar',
+        rule: 'like',
+        val: [rog],
+      });
+    });
+    bmsOrgQuery.push({
+      nestCondition: {
+        matchType: 'or',
+        params: queryParams,
+      },
+    });
+
     let param = [];
     if (filter == undefined) {
       param = {
@@ -205,11 +192,11 @@ export default class BasicSourceDataSearchPage extends SearchPage {
         tableName: system.tableName,
         condition: queryByOrg
           ? {
-              params: [isOrgQuery],
+              params: [...bmsOrgQuery],
             }
           : {},
       };
-      this.setState({ queryParams: [isOrgQuery] });
+      this.setState({ queryParams: [...bmsOrgQuery] });
     } else {
       const queryParams = params => {
         let param = params.map(data => {
@@ -220,7 +207,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
             val: [data.val],
           };
         });
-        if (queryByOrg) param.push(isOrgQuery);
+        if (queryByOrg) param.push(bmsOrgQuery);
         return param;
       };
       param = {
@@ -454,6 +441,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
    */
   drawToolbarPanel = () => {
     const { showDataConfirmModal, system, confirmMonth, updateModal, queryByOrg } = this.state;
+    const { dict } = this.props;
     const monthFormat = 'YYYY-MM';
     const { getFieldDecorator } = this.props.form;
     const formItemLayout = {
@@ -465,6 +453,11 @@ export default class BasicSourceDataSearchPage extends SearchPage {
       rules: [{ type: 'object', required: true, message: '请先选择月份' }],
       initialValue: moment().subtract(1, 'months'),
     };
+    let org = loginUser().rolesOrg[0].split(',');
+    let option;
+    if (org.length > 0) {
+      option = dict.filter(x => org.includes(x.itemValue));
+    }
     return (
       <div style={{ marginTop: '10px' }}>
         <AdvanceQuery
@@ -546,6 +539,7 @@ export default class BasicSourceDataSearchPage extends SearchPage {
             {loginUser().rolesOrg.length > 0 && queryByOrg ? (
               <FormItem {...formItemLayout} label="所属组织">
                 {getFieldDecorator('confirmOrg', {
+                  initialValue: option[0].itemValue,
                   rules: [{ required: true, message: `字段不能为空` }],
                 })(
                   <Select width={'100%'} placeholder="请选择所属组织">
