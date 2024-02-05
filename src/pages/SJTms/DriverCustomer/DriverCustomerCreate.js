@@ -46,8 +46,6 @@ export default class DriverCustomerCreate extends QuickCreatePage {
   //表单加载的时候
   formLoaded = () => {
     const { showPageNow } = this.props;
-    const { formItems, onlFormInfos } = this.state;
-    console.log('█████████████onlFormInfos,formItems = ', onlFormInfos, formItems)
     if (showPageNow == 'create') {
       this.entity.sj_driver_customer_service = [{}]
         //获取联动数组数据
@@ -57,16 +55,10 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     }
     // 低代码配套里面要设置全部允许空值  因为重写了也看不到那些必填的字段 导致无法校验
   };
+
+
   //某个字段发生改变的时候
   exHandleChange = columnEvent => {
-    const mainName = 'sj_driver_customer_service';
-    const { fieldName, valueEvent } = columnEvent;
-    const { formItems, onlFormInfos } = this.state;
-    console.log("###formItems#####",formItems);
-    // const { formItems, onlFormInfos } = this.state;
-    // console.log("fieldName",fieldName);
-    // console.log("valueEvent",valueEvent);
-
   }
   //重写afterSave方法
   saveAfterItem = uuidSave => {
@@ -173,7 +165,6 @@ export default class DriverCustomerCreate extends QuickCreatePage {
           (
                     <Select
                         value={this.state.assistanceType} // 在表单里面是不会生效的
-                        style={{width: '200px'}}
                         onChange={v => {
                             this.setState({assistanceType: v, theSelectGoodsDetailDatas: []}) // 赋值 顺便 子表数据清空
                             this.props.form.setFieldsValue({'field-problemType': undefined})
@@ -191,7 +182,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
             <Form.Item label={`问题类型`}>
                 {getFieldDecorator(`field-problemType`, {rules: [{required: true, message: '请选择司机'}]})
                 (
-                    <Select style={{width: '200px'}}>
+                    <Select>
                         {assistAndProblemTypeData?.filter(item => item.PRCODE === this.state.assistanceType)?.map(province => (
                             <Option key={province.CODE} value={province.CODE}>{province.NAME}</Option>
                         ))}
@@ -275,7 +266,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
         </div>
         {/*这个用的是低代码的配置，还是自己写好一点*/}
         {/*<Content style={{ marginLeft: '4.6%' }}>{this.drawForm()}</Content>*/}
-        <Content>
+        <Content style={{margin:25}}>
           <Form>
             <Row gutter={24}>{this.getFormFields()}</Row>
         </Form>
@@ -285,16 +276,15 @@ export default class DriverCustomerCreate extends QuickCreatePage {
 
     {/* 下面的货品选择框显示 */}
     {['REVIEWMONITORING', 'STAMPOFF', 'CARGOHANDLING'].includes(this.state.assistanceType) && <>
-      <div style={{paddingTop: 20}}>
+      <div>
           <Button type="primary"
-            style={{float: 'left'}}
-            onClick={() => this.setState({isModalVisible: true})}>
+                  style={{margin:'0 10px'}}
+                  onClick={() => this.setState({isModalVisible: true})}>
             搜索货品
         </Button>
 
           <Button type="danger"
-            style={{float: 'left'}}
-            onClick={() => this.setState({theSelectGoodsDetailDatas: []})}>
+                  onClick={() => this.setState({theSelectGoodsDetailDatas: []})}>
             清空货品
           </Button>
       </div>
@@ -320,7 +310,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
             /> : <></>
           }
         </Modal>
-        <Row type="flex" justify="end">
+        <Row style={{margin:20}}>
           <Col span={23}>
             <Card title="货品明细">
               {theSelectGoodsDetailDatas && theSelectGoodsDetailDatas.length > 0 ?
