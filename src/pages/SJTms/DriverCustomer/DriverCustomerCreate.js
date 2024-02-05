@@ -97,10 +97,12 @@ export default class DriverCustomerCreate extends QuickCreatePage {
 
   //重写save方法
   handleSave = () => {
+    const {theSelectGoodsDetailDatas} = this.state
+    if (theSelectGoodsDetailDatas.length === 0 && this.state.assistanceType !== 'PROBLEMFEEDBACK') return message.error('请先选择货物！')
+
     this.props.form.validateFields((err, values) => {
       if (err) return message.error('请填写完整信息！')    // 如果没填完整，就直接返回
 
-        const {theSelectGoodsDetailDatas} = this.state
         // 新增保存工单：设置一个uuid
         const uuidSave = getUUID();                                     // 生产一个uuid
         const saveObj = this.entity.sj_driver_customer_service[0]   // 客服服务对象(框架是列表，所以拿到第一个就好了)
