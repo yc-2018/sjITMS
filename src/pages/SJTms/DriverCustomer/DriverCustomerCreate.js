@@ -63,7 +63,6 @@ export default class DriverCustomerCreate extends QuickCreatePage {
   //重写afterSave方法
   saveAfterItem = uuidSave => {
     const {theSelectGoodsDetailDatas} = this.state    // 所选择的货品明细数据
-      console.log('███████dtl>>>>', theSelectGoodsDetailDatas,'<<<<██████')
 
     //发请求保存
     const driverCustomerGoodsDetailList=[];
@@ -80,7 +79,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       tempObj.productquantity=isCargoHandling? dtl.QTY_EACH:dtl.QTY         // 货物数量
       tempObj.deliverydate=isCargoHandling? dtl.ADDTIME:dtl.APPLICATIONDATE // 配送日期
       tempObj.productamount=isCargoHandling? dtl.MONEY:dtl.AMOUNT           // 货物金额
-    //tempObj.istakedelivery                                                // 是否取货
+      tempObj.istakedelivery=dtl.ISTAKEDELIVERY??0                          // 是否取货
       tempObj.productprice=dtl.PRICE                                        // 货品价格
       tempObj.customername=dtl.STORENAME                                    // 门店名称
       driverCustomerGoodsDetailList.push(tempObj)
@@ -249,6 +248,29 @@ export default class DriverCustomerCreate extends QuickCreatePage {
         return children;
     }
 
+    /** 生成货品明细头部
+     * @param item {object} 对象
+     * @param index {number} 这个对象在列表的位置的索引
+     * */
+    buildGoodsDetailTable = (item,index) =>
+        <>
+            <span>货品：{this.state.assistanceType === 'CARGOHANDLING' ? item.DESCR_C : item.ARTICLENAME}</span>
+            <span style={{float: 'right'}}>是否取货：&nbsp;
+              <Radio.Group defaultValue={0}
+                           onChange={v=>this.setState(prevState => ({
+                             theSelectGoodsDetailDatas: prevState.theSelectGoodsDetailDatas.map((item, i) => {
+                               // 检查是否是第当前对象  是的话，添加属性
+                               if (i === index) return { ...item, ISTAKEDELIVERY: v.target.value };
+                               return item;  // 对于其他对象，不做修改直接返回
+                             })
+                           }))}
+              >
+                <Radio value={0}>不取货</Radio>
+                <Radio value={1}>取货</Radio>
+              </Radio.Group>
+            </span>
+        </>
+
   render() {
     const {isModalVisible,theSelectGoodsDetailDatas}= this.state
     return (
@@ -280,7 +302,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     {['REVIEWMONITORING', 'STAMPOFF', 'CARGOHANDLING'].includes(this.state.assistanceType) && <>
       <div>
           <Button type="primary"
-                  style={{margin:'0 10px'}}
+                  style={{margin:'0 20px'}}
                   onClick={() => this.setState({isModalVisible: true})}>
             搜索货品
         </Button>
@@ -315,11 +337,11 @@ export default class DriverCustomerCreate extends QuickCreatePage {
         <Row style={{margin:20}}>
           <Col span={23}>
             <Card title="货品明细">
-              {theSelectGoodsDetailDatas && theSelectGoodsDetailDatas.length > 0 ?
-                theSelectGoodsDetailDatas.map(item => {
+              {theSelectGoodsDetailDatas?.length > 0 ?
+                theSelectGoodsDetailDatas.map((item,index) => {
                   return <div>
                     <Card type="inner"
-                          title={`货品：${this.state.assistanceType === 'CARGOHANDLING' ? item.DESCR_C : item.ARTICLENAME}`}
+                          title={this.buildGoodsDetailTable(item,index)}
                           style={{marginTop: 16}}>
                             <Row>
                               <Col span={24}>门店：{`[${item.STORECODE}]${item.STORENAME}`}</Col>
