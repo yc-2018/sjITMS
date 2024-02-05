@@ -1,26 +1,27 @@
-import { connect } from 'dva';
-import { Button, Form, Layout, Spin, Card, Row,Col,Modal,Empty,message,Select } from 'antd';
+import {connect} from 'dva';
+import {
+    Button, Form, Layout, Card, Row, Col, Modal,
+    Empty, message, Select, Radio
+} from 'antd';
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import moment from 'moment';
-import { loginOrg } from '@/utils/LoginContext';
-import PageHeaderWrapper from '@/components/PageHeaderWrapper';
-import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
-import Page from '@/pages/Component/Page/inner/Page';
-import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel';
+import {loginOrg} from '@/utils/LoginContext';
 import React from 'react';
-import CostPlanSearch from '@/pages/NewCost/CostPlan/CostPlanSearch';
 import DriverCustomerLessBuy from '@/pages/SJTms/DriverCustomer/DriverCustomerLessBuy';
 import emptySvg from '@/assets/common/img_empoty.svg';
-import { getLinkTypeDict, onSaveGoodsDetailRecord } from '@/services/sjitms/DriverCustomerService';
-import { saveFormData } from '@/services/quick/Quick';
-import { commonLocale } from '@/utils/CommonLocale';
+import {getLinkTypeDict, onSaveGoodsDetailRecord} from '@/services/sjitms/DriverCustomerService';
 import DriverCustomerDutyBuy from '@/pages/SJTms/DriverCustomer/DriverCustomerDutyBuy';
-const { Footer, Content } = Layout;
+import TextArea from "antd/lib/input/TextArea";
+import RadioGroup from "antd/es/radio/group";
+import {SimpleAutoComplete} from "@/pages/Component/RapidDevelopment/CommonComponent";
+import getUUID from "@/utils/getUUID";
+
+const {Footer, Content} = Layout;
 //联动选择
-const { Option } = Select;
-@connect(({ quick, loading }) => ({
-  quick,
-  loading: loading.models.quick,
+const {Option} = Select;
+@connect(({quick, loading}) => ({
+    quick,
+    loading: loading.models.quick,
 }))
 @Form.create()
 export default class DriverCustomerCreate extends QuickCreatePage {
@@ -31,37 +32,30 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     isModalVisible:false,
     //所选择的货品明细数据
     theSelectGoodsDetailDatas:[],
-    //新建保存时的uuid
-    uuidSave:'',
 //新建：
   //联动数组所需要的两个数组
     //协助类型arr
     assistTypeData:[],
     //协助类型key+问题类型problemType
     assistAndProblemTypeData:[],
-
+    assistanceType: '', // 当前选中的协助类型 用来控制页面的变化
+    storeList: [],     // 门店列表
   };
 
-  componentDidMount() {
-    //获取联动数组数据
-    getLinkTypeDict().then(response =>{
-      if(response && response.success){
-        this.setState({assistTypeData:response.data.assistTypeData,assistAndProblemTypeData:response.data.assistAndProblemTypeData})
-        console.log("responsedata",response.data);
-      }
-    })
-  }
 
   //表单加载的时候
   formLoaded = () => {
     const { showPageNow } = this.props;
     const { formItems, onlFormInfos } = this.state;
+    console.log('█████████████onlFormInfos,formItems = ', onlFormInfos, formItems)
     if (showPageNow == 'create') {
-      const mainName = 'sj_driver_customer_service';
-      console.log("this.entity[mainName][0]",this.entity[mainName]);
-      this.entity[mainName][0]['FEEDBACKTIME'] = moment().format('YYYY-MM-DD HH:mm:ss');
-      this.entity[mainName][0]['WAREHOUSE'] = loginOrg().uuid;
+      this.entity.sj_driver_customer_service = [{}]
+        //获取联动数组数据
+        getLinkTypeDict().then(response =>
+          response?.success && this.setState({assistAndProblemTypeData: response.data})
+        )
     }
+    // 低代码配套里面要设置全部允许空值  因为重写了也看不到那些必填的字段 导致无法校验
   };
   //某个字段发生改变的时候
   exHandleChange = columnEvent => {
@@ -75,20 +69,28 @@ export default class DriverCustomerCreate extends QuickCreatePage {
 
   }
   //重写afterSave方法
-  saveAfterItem= (uuidSave) => {
-    const {theSelectGoodsDetailDatas}=this.state
+  saveAfterItem = uuidSave => {
+    const {theSelectGoodsDetailDatas} = this.state    // 所选择的货品明细数据
+      console.log('███████dtl>>>>', theSelectGoodsDetailDatas,'<<<<██████')
+
     //发请求保存
-    let driverCustomerGoodsDetailList=[];
+    const driverCustomerGoodsDetailList=[];
+    // 货物处理（责任买单）和 (少货买单) 字段不一样
+    const isCargoHandling = this.state.assistanceType === 'CARGOHANDLING'
     for (let i = 0; i <theSelectGoodsDetailDatas.length; i++) {
-      let tempObj={}
-      tempObj.customercode=theSelectGoodsDetailDatas[i].STORECODE
-      tempObj.billuuid = uuidSave
-      tempObj.productcode= theSelectGoodsDetailDatas[i].ARTICLECODE
-      tempObj.productname=theSelectGoodsDetailDatas[i].ARTICLENAME
-      tempObj.productposition=theSelectGoodsDetailDatas[i].PICKBIN
-      tempObj.productquantity=theSelectGoodsDetailDatas[i].QTY
-      tempObj.deliverydate=theSelectGoodsDetailDatas[i].APPLICATIONDATE
-      tempObj.productamount=theSelectGoodsDetailDatas[i].AMOUNT
+      const tempObj={}
+      const dtl = theSelectGoodsDetailDatas[i]
+      tempObj.billuuid = uuidSave                                           // 主表uuid
+      tempObj.customercode=dtl.STORECODE                                    // 门店号码
+      tempObj.productcode= isCargoHandling? dtl.SKU:dtl.ARTICLECODE         // 货物代码
+      tempObj.productname=isCargoHandling? dtl.DESCR_C: dtl.ARTICLENAME     // 货物名称
+      tempObj.productposition=isCargoHandling? dtl.LOCATION:dtl.PICKBIN     // 货位
+      tempObj.productquantity=isCargoHandling? dtl.QTY_EACH:dtl.QTY         // 货物数量
+      tempObj.deliverydate=isCargoHandling? dtl.ADDTIME:dtl.APPLICATIONDATE // 配送日期
+      tempObj.productamount=isCargoHandling? dtl.MONEY:dtl.AMOUNT           // 货物金额
+    //tempObj.istakedelivery                                                // 是否取货
+      tempObj.productprice=dtl.PRICE                                        // 货品价格
+      tempObj.customername=dtl.STORENAME                                    // 门店名称
       driverCustomerGoodsDetailList.push(tempObj)
     }
     onSaveGoodsDetailRecord(driverCustomerGoodsDetailList).then(result => {
@@ -99,99 +101,175 @@ export default class DriverCustomerCreate extends QuickCreatePage {
 
 
   };
+
+
   //重写save方法
-
   handleSave = () => {
-    const {theSelectGoodsDetailDatas}=this.state
-    // 新增保存工单：设置一个uuid
-    const uuidSave=uuidv4();
-    this.setState({uuidSave:uuidSave})
-    this.entity.sj_driver_customer_service[0].UUID=uuidSave
-    // //如果是问题反馈还得选一家门店的问题 TODO
-    if(theSelectGoodsDetailDatas && theSelectGoodsDetailDatas.length>0){
-      this.entity.sj_driver_customer_service[0].CUSTOMERCODE=theSelectGoodsDetailDatas[0].STORECODE
-      this.entity.sj_driver_customer_service[0].CUSTOMERNAME=theSelectGoodsDetailDatas[0].STORENAME
-    }
-    console.log("this.entity",this.entity)
-    //保存客服服务信息
-    this.onSave()
+    this.props.form.validateFields((err, values) => {
+      if (err) return message.error('请填写完整信息！')    // 如果没填完整，就直接返回
 
-    //保存货品详情信息
-    //保存客服服务处理记录
-    this.saveAfterItem(uuidSave)
+        const {theSelectGoodsDetailDatas} = this.state
+        // 新增保存工单：设置一个uuid
+        const uuidSave = getUUID();                                     // 生产一个uuid
+        const saveObj = this.entity.sj_driver_customer_service[0]   // 客服服务对象(框架是列表，所以拿到第一个就好了)
+
+        saveObj.UUID = uuidSave                                                   // 客服服务主键
+        saveObj.BILLNUMBER = uuidSave                                             // 单号(海鼎
+        saveObj.FEEDBACKTIME = moment().format('YYYY-MM-DD HH:mm:ss');     // 反馈时间
+        saveObj.WAREHOUSE = loginOrg().uuid;                                      // 仓库
+        saveObj.PROCESSINGSTATE = "Saved"                                         // 处理状态（固定就是保存状态）
+        saveObj.DRIVERCODE = values['field-driverInfo'].split("@@@")[0]           // 司机编号
+        saveObj.DRIVERNAME = values['field-driverInfo'].split("@@@")[1]           // 司机姓名
+        saveObj.ASSISTANCETYPE = values['field-assistanceType']                   // 协助类型
+        saveObj.PROBLEMTYPE = values['field-problemType']                         // 问题类型
+        saveObj.ASSISTCONTENT = values['field-assistanceContent']                 // 协助内容
+
+        if (theSelectGoodsDetailDatas?.length > 0) {                        // 所选择的货品明细数据 > 0
+            saveObj.CUSTOMERCODE = theSelectGoodsDetailDatas[0].STORECODE   // 客户(门店)编号
+            saveObj.CUSTOMERNAME = theSelectGoodsDetailDatas[0].STORENAME   // 客户(门店)名称
+        }
+        //通过框架 保存客服服务信息this.entity[tableName]
+        this.onSave()
+
+        //不是问题反馈   ==>  保存货品详情信息   保存客服服务处理记录
+        this.state.assistanceType !== 'PROBLEMFEEDBACK' && this.saveAfterItem(uuidSave)
+    });
   }
 
-  //子传父的货品明细数据
+    //子传父的货品明细数据
   getGoodsDetailDatas = (isModalVisible,selectedRows) => {
-    this.setState({isModalVisible:isModalVisible,theSelectGoodsDetailDatas:selectedRows})
-    console.log("theSelectGoodsDetailDatas",selectedRows);
-  };
+        this.setState({isModalVisible: isModalVisible, theSelectGoodsDetailDatas: selectedRows})
+    };
 
-  //联动
-  handleLinkedArr = () =>{
-
-  }
-
-  //表单
+    //表单
   getFormFields = () => {
-    const {assistTypeData,assistAndProblemTypeData}  = this.state;
-    const { getFieldDecorator } = this.props.form;
+    const {assistTypeData, assistAndProblemTypeData} = this.state;
+    const {getFieldDecorator} = this.props.form;
     const children = [];
     children.push(
-      <Col span={8} >
-        <Form.Item label={`司机信息`}>
-          {getFieldDecorator(`field-`, { rules: [{ required: true, message: '请选择司机', },] })}
-        </Form.Item>
-      </Col>,
       <Col span={8}>
-        <Form.Item label={`协助类型`}>
-          {getFieldDecorator(`field-`, { rules: [{ required: true, message: '请选择协助类型', },] })
-          (<Select
-            defaultValue={assistTypeData[0].name}
-            style={{ width: 120 }}
-            onChange={this.handleLinkedArr}
-          >
-            {assistAndProblemTypeData.map(province => (
-              <Option key={province.code}>{province.name}</Option>
-            ))}
-          </Select>
+        <Form.Item label={`司机信息`}>
+          {getFieldDecorator(`field-driverInfo`,
+              {rules: [{required: true, message: '请选择司机'}]})
+          (
+              <SimpleAutoComplete
+                  placeholder="请选择司机"
+                  textField="[%CODE%]%NAME%"
+                  valueField="%CODE%@@@%NAME%"    // 取值时工号和名字直接分割@@@
+                  queryParams={{tableName: "sj_itms_employee", "selects ": ["CODE", "NAME"]}}
+                  searchField="CODE,NAME"
+                  showSearch={true}
+                  style={{width: '100%'}}
+                  noRecord
+                  autoComplete
+              />
           )
           }
         </Form.Item>
       </Col>,
       <Col span={8}>
-        <Form.Item label={`问题类型`}>
-          {getFieldDecorator(`field-`, { rules: [{ required: true, message: '请选择司机', },] })}
-        </Form.Item>
-      </Col>,
-      <Col span={8}>
-        <Form.Item label={`司机描述`}>
-          {getFieldDecorator(`field-`, { rules: [{ required: true, message: '请选择司机', },] },)}
-        </Form.Item>
-      </Col>,
+      <Form.Item label={`协助类型`}>
+          {getFieldDecorator(`field-assistanceType`, {rules: [{required: true, message: '请选择协助类型'}]})
+          (
+                    <Select
+                        value={this.state.assistanceType} // 在表单里面是不会生效的
+                        style={{width: '200px'}}
+                        onChange={v => {
+                            this.setState({assistanceType: v, theSelectGoodsDetailDatas: []}) // 赋值 顺便 子表数据清空
+                            this.props.form.setFieldsValue({'field-problemType': undefined})
+                        }}
+                    >
+                        {assistAndProblemTypeData?.filter(item => !item.PRCODE)?.map(province => (
+                            <Option key={province.CODE} value={province.CODE}>{province.NAME}</Option>
+                        ))}
+                    </Select>
+                )
+                }
+            </Form.Item>
+        </Col>,
+        <Col span={8}>
+            <Form.Item label={`问题类型`}>
+                {getFieldDecorator(`field-problemType`, {rules: [{required: true, message: '请选择司机'}]})
+                (
+                    <Select style={{width: '200px'}}>
+                        {assistAndProblemTypeData?.filter(item => item.PRCODE === this.state.assistanceType)?.map(province => (
+                            <Option key={province.CODE} value={province.CODE}>{province.NAME}</Option>
+                        ))}
+                    </Select>
+                )}
+            </Form.Item>
+        </Col>,
+        <Col span={8}>
+            <Form.Item label={`协助内容`}>
+                {getFieldDecorator(`field-assistanceContent`, {
+                    rules: [{
+                        required: true,
+                        message: '请输入协助内容'
+                    }]
+                })
+                (<TextArea placeholder={'请输入需要协助的问题描述(200字以内)'} rows={3}/>)}
+            </Form.Item>
+        </Col>,
+        /* 类型是监控复查的话就显示 */
+        <>{this.state.assistanceType === 'REVIEWMONITORING' && (
+            <Col span={8}>
+                <Form.Item label="是否录制监控">
+                    {getFieldDecorator('field-recordMonitoring', {
+                        rules: [{required: true, message: '请选择是否录制监控'}],
+                        initialValue: 0, // 这里设置默认值为“否”
+                    })(
+                        <RadioGroup>
+                            <Radio value={0}>否</Radio>
+                            <Radio value={1}>是</Radio>
+                        </RadioGroup>
+                    )}
+                </Form.Item>
+            </Col>
+        )}</>,
+        <>{this.state.assistanceType === 'PROBLEMFEEDBACK' && (   // === "问题反馈" => 要自己写门店信息
+          <Col span={8}>
+            <Form.Item label="门店">
+              {getFieldDecorator('field-store', {
+                  rules: [{required: true, message: '请选门店'}],
+              })(
+                <SimpleAutoComplete
+                  placeholder="请选择门店"
+                  textField="[%CODE%]%NAME%"
+                  valueField="%CODE%@@@%NAME%"
+                  queryParams={{tableName: "sj_itms_ship_address", "selects ": ["CODE", "NAME"]}}
+                  searchField="CODE,NAME"
+                  showSearch={true}
+                  style={{width: '100%'}}
+                  noRecord
+                  autoComplete
+                  onChange={v => {
+                    this.entity.sj_driver_customer_service[0].CUSTOMERCODE = v.split('@@@')[0]
+                    this.entity.sj_driver_customer_service[0].CUSTOMERNAME = v.split('@@@')[1]
+                  }}
+                />
+              )}
+                </Form.Item>
+            </Col>
+        )}</>
     );
 
-    return children;
-  }
+        return children;
+    }
 
   render() {
     const {isModalVisible,theSelectGoodsDetailDatas}= this.state
     return (
       <Layout style={{ backgroundColor: 'white', height: '100%' }}>
         <div style={{ paddingTop: 20 }}>
-          <Button
-            type="primary"
-            style={{ float: 'right', marginLeft: 10, marginRight: 10 }}
-            onClick={this.handleSave}
-          >
+
+          <Button type="primary"
+                  style={{ float: 'right', marginLeft: 10, marginRight: 10 }}
+                  onClick={this.handleSave}>
             保存
           </Button>
-          <Button
-            style={{ float: 'right' }}
-            onClick={() => {
-              this.props.switchTab('query');
-            }}
-          >
+
+          <Button style={{ float: 'right' }}
+                  onClick={() => this.props.switchTab('query')}>
             返回
           </Button>
         </div>
@@ -200,83 +278,88 @@ export default class DriverCustomerCreate extends QuickCreatePage {
         <Content>
           <Form>
             <Row gutter={24}>{this.getFormFields()}</Row>
-          </Form>
-        </Content>
-        <Footer style={{ backgroundColor: 'white' }}>
-        </Footer>
-        <div style={{ paddingTop: 20 }}>
-          <Button
-            type="primary"
-            style={{ float: 'left' }}
-            onClick={() => {
-              this.setState({isModalVisible:true})
-            }}
-          >
+        </Form>
+    </Content>
+    <Footer style={{backgroundColor: 'white'}}>
+    </Footer>
+
+    {/* 下面的货品选择框显示 */}
+    {['REVIEWMONITORING', 'STAMPOFF', 'CARGOHANDLING'].includes(this.state.assistanceType) && <>
+      <div style={{paddingTop: 20}}>
+          <Button type="primary"
+            style={{float: 'left'}}
+            onClick={() => this.setState({isModalVisible: true})}>
             搜索货品
-          </Button>
-          <Button
-            type="danger"
-            style={{ float: 'left' }}
-            onClick={() => {
-              this.setState({theSelectGoodsDetailDatas:[]})
-            }}
-          >
+        </Button>
+
+          <Button type="danger"
+            style={{float: 'left'}}
+            onClick={() => this.setState({theSelectGoodsDetailDatas: []})}>
             清空货品
           </Button>
-        </div>
+      </div>
+
         <Modal
           footer={null}
-          onCancel={()=>{this.setState({isModalVisible:false})}}
+          onCancel={() => {
+              this.setState({isModalVisible: false})
+          }}
           visible={isModalVisible}
           width={'80%'}
-          bodyStyle={{ height: 'calc(80vh)', overflowY: 'auto' }}
+          bodyStyle={{height: 'calc(80vh)', overflowY: 'auto'}}
         >
-          {/*//判断是责任买单还是少货买单*/}
-          {false ?
+          {/*判断是责任买单还是少货买单*/}
+          {this.state.assistanceType === 'REVIEWMONITORING' || this.state.assistanceType === 'STAMPOFF' ? /* 复查监控和盖章取消：少货买单 */
             <DriverCustomerLessBuy
               quickuuid="sj_driver_customer_lessbuy"
               getGoodsDetailDatas={this.getGoodsDetailDatas}
-            />:
+            /> : this.state.assistanceType === 'CARGOHANDLING' ?     /* 货物处理:责任买单 */
             <DriverCustomerDutyBuy
-            quickuuid="sj_driver_customer_dutypayment"
-            getGoodsDetailDatas={this.getGoodsDetailDatas}
-            />
+              quickuuid="sj_driver_customer_dutypayment"
+              getGoodsDetailDatas={this.getGoodsDetailDatas}
+            /> : <></>
           }
         </Modal>
         <Row type="flex" justify="end">
           <Col span={23}>
             <Card title="货品明细">
               {theSelectGoodsDetailDatas && theSelectGoodsDetailDatas.length > 0 ?
-                theSelectGoodsDetailDatas.map(item =>{
+                theSelectGoodsDetailDatas.map(item => {
                   return <div>
-                          <Card type="inner" title={`货品：${item.ARTICLENAME}`} style={{ marginTop: 16 }}>
+                    <Card type="inner"
+                          title={`货品：${this.state.assistanceType === 'CARGOHANDLING' ? item.DESCR_C : item.ARTICLENAME}`}
+                          style={{marginTop: 16}}>
                             <Row>
                               <Col span={24}>门店：{`[${item.STORECODE}]${item.STORENAME}`}</Col>
                               <Col span={12}>
-                                <span >货位：</span>
-                                <span>{item.PICKBIN}</span>
+                                <span>货位：</span>
+                                <span>{this.state.assistanceType === 'CARGOHANDLING' ? item.LOCATION : item.PICKBIN}</span>
                               </Col>
                               <Col span={12}>
                                 <span className="">数量：</span>
-                                <span>{item.QTY}</span>
+                                <span>{this.state.assistanceType === 'CARGOHANDLING' ? item.QTY_EACH : item.QTY}</span>
                               </Col>
                               <Col span={12}>
-                                <span >价格：</span>
+                                <span>价格：</span>
                                 <span>{item.PRICE}</span>
                               </Col>
                               <Col span={12}>
                                 <span>金额：</span>
-                                <span>{item.AMOUNT}</span>
+                                <span>{this.state.assistanceType === 'CARGOHANDLING' ? item.MONEY : item.AMOUNT}</span>
                               </Col>
                             </Row>
                           </Card>
 
-                  </div>
-                }): <Empty style={{ marginTop: 80 }} image={emptySvg} description="暂无货品明细，请选择货品！" />
-              }
-            </Card>
-          </Col>
-        </Row>
+                        </div>
+                      }) : <Empty style={{marginTop: 80}} image={emptySvg}
+                                  description="暂无货品明细，请选择货品！"/>
+                    }
+                  </Card>
+                </Col>
+              </Row>
+          </>}
+
+
       </Layout>
     );
   }

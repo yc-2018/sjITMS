@@ -161,7 +161,7 @@ export default class DriverCustomerDisposePageModal extends Component {
           records={records}
           operation={operation}
           getRequireTakeDeliveryData={this.getRequireTakeDeliveryData}
-          ref={node => (this.formRef = node)}
+          ref={node => {this.formRef = node}}
         />
       </Modal>
     );

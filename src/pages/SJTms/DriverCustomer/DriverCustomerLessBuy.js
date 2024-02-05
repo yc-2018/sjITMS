@@ -26,14 +26,9 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
   //货品回填确认
   backfillGoods = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length === 0) {
-      message.error('请至少选中一条货品数据!');
-    }
+    if (selectedRows.length === 0) return message.error('请至少选中一条货品数据!')
     for (let i = 0; i < selectedRows.length; i++) {
-      if(selectedRows[0].STORENAME!==selectedRows[i].STORENAME){
-        message.error('只能选择同一家门店的货品数据!');
-        return;
-      }
+      if(selectedRows[0].STORENAME!==selectedRows[i].STORENAME)return message.error('只能选择同一家门店的货品数据!');
     }
     //关闭遮罩层并回传数据
     this.props.getGoodsDetailDatas(false,selectedRows);
