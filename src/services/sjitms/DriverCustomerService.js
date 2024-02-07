@@ -74,4 +74,7 @@ export async function getCargoDetails(billUuid) {
   return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/getCargoDetails?billUuid=${billUuid}`);
 }
 
-
+/** 获取单号 */
+export function getBillNo(ownerCode) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/getBillNo?ownerCode=${ownerCode}`);
+}
