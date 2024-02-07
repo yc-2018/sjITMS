@@ -93,7 +93,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
 
   /** 重写save方法 => 保存保存司机客服服务信息和调用保存货品明细 */
   handleSave = () => {
-    const { theSelectGoodsDetailDatas } = this.state
+    const { theSelectGoodsDetailDatas,assistAndProblemTypeData } = this.state
     if (theSelectGoodsDetailDatas.length === 0 && this.state.assistanceType !== 'PROBLEMFEEDBACK') return message.error('请先选择货物！')
 
     this.props.form.validateFields(async (err, values) => {
@@ -115,6 +115,9 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       saveObj.ASSISTANCETYPE = values['field-assistanceType']                   // 协助类型
       saveObj.PROBLEMTYPE = values['field-problemType']                         // 问题类型
       saveObj.ASSISTCONTENT = values['field-assistanceContent']                 // 协助内容
+      saveObj.PROCESSINGTIMELINESS =                                            // 处理时效（小时）
+        assistAndProblemTypeData.find(item => item.CODE === saveObj.PROBLEMTYPE).TIMELINESS
+      saveObj.DEADLINE = getFormattedTime(saveObj.PROCESSINGTIMELINESS)         // 处理截止时效
 
       if (theSelectGoodsDetailDatas?.length > 0) {                        // 所选择的货品明细数据 > 0
         saveObj.CUSTOMERCODE = theSelectGoodsDetailDatas[0].STORECODE    // 客户(门店)编号
@@ -370,4 +373,30 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       </Layout>
     );
   }
+}
+
+/** 获取格式化时间
+ * @param hoursToAdd 加上的小时数
+ * @author chenGuangLong
+ * @since 2024-02-07 17:36:00
+ * @return string 格式化的时间
+ */
+function getFormattedTime (hoursToAdd = 0) {
+  const date = new Date() // 获取当前日期和时间
+  date.setHours(date.getHours() + hoursToAdd) // 在当前时间上增加指定的小时数
+
+  // 定义格式化时间的函数
+  const formatTime = date => {
+    const pad = num => (num < 10 ? '0' + num : num)
+    const year = date.getFullYear()
+    const month = pad(date.getMonth() + 1) // 月份从0开始，所以加1
+    const day = pad(date.getDate())
+    const hour = pad(date.getHours())
+    const minute = pad(date.getMinutes())
+    const second = pad(date.getSeconds())
+
+    return `${year}-${month}-${day} ${hour}:${minute}:${second}`
+  }
+
+  return formatTime(date) // 返回格式化的时间字符串
 }
