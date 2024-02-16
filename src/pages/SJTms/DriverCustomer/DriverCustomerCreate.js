@@ -83,10 +83,10 @@ export default class DriverCustomerCreate extends QuickCreatePage {
   /** 重写save方法 => 保存保存司机客服服务信息和调用保存货品明细 */
   handleSave = () => {
     const { theSelectGoodsDetailDatas,assistAndProblemTypeData } = this.state
-    if (theSelectGoodsDetailDatas.length === 0 && this.state.assistanceType !== 'PROBLEMFEEDBACK') return message.error('请先选择货物！')
 
     this.props.form.validateFields(async (err, values) => {
       if (err) return message.error('请填写完整信息！')    // 如果没填完整，就直接返回
+      if (theSelectGoodsDetailDatas.length === 0 && this.state.assistanceType !== 'PROBLEMFEEDBACK') return message.error('请先选择货物！')
 
       // 向后端获取单号
       const billNo = await getBillNo(loginOrg().code)
