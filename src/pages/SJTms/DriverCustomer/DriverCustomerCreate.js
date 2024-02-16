@@ -38,7 +38,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
   //表单加载的时候
   formLoaded = () => {
     const { showPageNow } = this.props;
-    if (showPageNow == 'create') {
+    if (showPageNow === 'create') {
       this.entity.sj_driver_customer_service = [{}]
         //获取联动数组数据
         getLinkTypeDict().then(response =>
@@ -285,7 +285,9 @@ export default class DriverCustomerCreate extends QuickCreatePage {
                     onClick={() => this.setState({ theSelectGoodsDetailDatas: [] })}>
               清空货品
             </Button>
-            <span style={{ marginLeft: '34%', fontSize: 'large', fontWeight: 800 }}>货品明细</span>
+            <span style={{ marginLeft: '34%', fontSize: 'large', fontWeight: 800 }} className={'ant-form-item-required'}>
+              货品明细
+            </span>
           </div>
 
           <Modal
