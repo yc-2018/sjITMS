@@ -1,8 +1,8 @@
 import {connect} from 'dva';
 import {
-    Button, Form, Layout, Card, Row, Col, Modal,
-    Empty, message, Select, Radio
-} from 'antd';
+  Button, Form, Layout, Card, Row, Col, Modal,
+  Empty, message, Select, Radio, Table
+} from 'antd'
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import moment from 'moment';
 import {loginOrg} from '@/utils/LoginContext';
@@ -266,6 +266,20 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       </span>
     </>
 
+  whetherToPickUpTheGoods = index =>
+    <Radio.Group defaultValue={0}
+                 onChange={v => this.setState(prevState => ({
+                   theSelectGoodsDetailDatas: prevState.theSelectGoodsDetailDatas.map((item, i) => {
+                     // 检查是否是第当前对象  是的话，添加属性
+                     if (i === index) return { ...item, ISTAKEDELIVERY: v.target.value }
+                     return item  // 对于其他对象，不做修改直接返回
+                   })
+                 }))}
+    >
+      <Radio value={0}>不取货</Radio>
+      <Radio value={1}>取货</Radio>
+    </Radio.Group>
+
   render() {
     const {isModalVisible,theSelectGoodsDetailDatas}= this.state
     return (
@@ -329,6 +343,20 @@ export default class DriverCustomerCreate extends QuickCreatePage {
             /> : <></>
           }
         </Modal>
+
+      <Table scroll={{ x: true }}
+             columns={[
+               { title: '货品', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'DESCR_C' : 'ARTICLENAME', key: '1' },
+               { title: '门店', dataIndex: 'store', width: 350, key: '2' },
+               { title: '数量', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'QTY_EACH' : 'QTY', key: '3' },
+               { title: '价位', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'LOCATION' : 'PICKBIN', key: '4' },
+               { title: '价格', dataIndex: 'PRICE', key: '5' },
+               { title: '金额', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'MONEY' : 'AMOUNT', key: '6' },
+               { title: '是否取货', render:(text, record, index)=>this.whetherToPickUpTheGoods(index) }]}
+             dataSource={theSelectGoodsDetailDatas.map(item => ({...item, store: item.STORECODE + ' ' + item.STORENAME}))}
+
+      />
+
         <Row style={{margin:20}}>
           <Col span={23}>
             <Card title="货品明细">
@@ -374,6 +402,11 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     );
   }
 }
+
+
+
+
+
 
 /** 获取格式化时间
  * @param hoursToAdd 加上的小时数
