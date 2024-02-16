@@ -314,7 +314,9 @@ export default class DriverCustomerCreate extends QuickCreatePage {
             }
           </Modal>
 
-          <Table scroll={{ x: true }} style={{margin: '0 20px'}}
+          <Table dataSource={theSelectGoodsDetailDatas.map(item => ({...item, store: item.STORECODE + ' ' + item.STORENAME}))}
+                 scroll={{ x: true }} style={{margin: '0 20px'}}
+                 pagination={false} // 隐藏分页并显示所有数据
                  columns={[
                    { title: '货品', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'DESCR_C' : 'ARTICLENAME', key: '1' },
                    { title: '门店', dataIndex: 'store', width: 350, key: '2' },
@@ -323,7 +325,6 @@ export default class DriverCustomerCreate extends QuickCreatePage {
                    { title: '价格', dataIndex: 'PRICE', key: '5' },
                    { title: '金额', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'MONEY' : 'AMOUNT', key: '6' },
                    { title: '是否取货', render:(_text, _record, index)=>this.whetherToPickUpTheGoods(index) }]}
-                 dataSource={theSelectGoodsDetailDatas.map(item => ({...item, store: item.STORECODE + ' ' + item.STORENAME}))}
           /></>}
       </Layout>
     );
