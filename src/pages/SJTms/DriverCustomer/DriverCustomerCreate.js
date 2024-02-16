@@ -1,14 +1,11 @@
 import {connect} from 'dva';
-import {
-  Button, Form, Layout, Card, Row, Col, Modal,
-  Empty, message, Select, Radio, Table
+import { Button, Form, Layout, Row, Col, Modal, message, Select, Radio, Table
 } from 'antd'
 import QuickCreatePage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickCreatePage';
 import moment from 'moment';
 import {loginOrg} from '@/utils/LoginContext';
 import React from 'react';
 import DriverCustomerLessBuy from '@/pages/SJTms/DriverCustomer/DriverCustomerLessBuy';
-import emptySvg from '@/assets/common/img_empoty.svg';
 import { getBillNo, getLinkTypeDict, onSaveGoodsDetailRecord } from '@/services/sjitms/DriverCustomerService'
 import DriverCustomerDutyBuy from '@/pages/SJTms/DriverCustomer/DriverCustomerDutyBuy';
 import TextArea from "antd/lib/input/TextArea";
@@ -32,14 +29,9 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     isModalVisible:false,
     //所选择的货品明细数据
     theSelectGoodsDetailDatas:[],
-//新建：
-  //联动数组所需要的两个数组
-    //协助类型arr
-    assistTypeData:[],
     //协助类型key+问题类型problemType
     assistAndProblemTypeData:[],
     assistanceType: '', // 当前选中的协助类型 用来控制页面的变化
-    storeList: [],     // 门店列表
   };
 
 
@@ -57,9 +49,6 @@ export default class DriverCustomerCreate extends QuickCreatePage {
   };
 
 
-  //某个字段发生改变的时候
-  exHandleChange = columnEvent => {
-  }
   //重写afterSave方法
   saveAfterItem = uuidSave => {
     const { theSelectGoodsDetailDatas } = this.state    // 所选择的货品明细数据
@@ -136,9 +125,9 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     this.setState({ isModalVisible: isModalVisible, theSelectGoodsDetailDatas: selectedRows })
   };
 
-    //表单
+  //表单
   getFormFields = () => {
-    const {assistTypeData, assistAndProblemTypeData} = this.state;
+    const { assistAndProblemTypeData } = this.state
     const { getFieldDecorator } = this.props.form
     const children = []
     children.push(
@@ -197,7 +186,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
           (<TextArea placeholder={'请输入需要协助的问题描述(200字以内)'} rows={3}/>)}
         </Form.Item>
       </Col>,
-        /* 类型是监控复查的话就显示 */
+      /* 类型是监控复查的话就显示 */
       <>{this.state.assistanceType === 'REVIEWMONITORING' && (
         <Col span={8}>
           <Form.Item label="是否录制监控">
@@ -213,35 +202,35 @@ export default class DriverCustomerCreate extends QuickCreatePage {
           </Form.Item>
         </Col>
       )}</>,
-        <>{this.state.assistanceType === 'PROBLEMFEEDBACK' && (   // === "问题反馈" => 要自己写门店信息
-          <Col span={8}>
-            <Form.Item label="门店">
-              {getFieldDecorator('field-store', {
-                  rules: [{required: true, message: '请选门店'}],
-              })(
-                <SimpleAutoComplete
-                  placeholder="请选择门店"
-                  textField="[%CODE%]%NAME%"
-                  valueField="%CODE%@@@%NAME%"
-                  queryParams={{tableName: "sj_itms_ship_address", "selects ": ["CODE", "NAME"]}}
-                  searchField="CODE,NAME"
-                  showSearch={true}
-                  style={{width: '100%'}}
-                  noRecord
-                  autoComplete
-                  onChange={v => {
-                    this.entity.sj_driver_customer_service[0].CUSTOMERCODE = v.split('@@@')[0]
-                    this.entity.sj_driver_customer_service[0].CUSTOMERNAME = v.split('@@@')[1]
-                  }}
-                />
-              )}
-                </Form.Item>
-            </Col>
-        )}</>
-    );
+      <>{this.state.assistanceType === 'PROBLEMFEEDBACK' && (   // === "问题反馈" => 要自己写门店信息
+        <Col span={8}>
+          <Form.Item label="门店">
+            {getFieldDecorator('field-store', {
+              rules: [{ required: true, message: '请选门店' }],
+            })(
+              <SimpleAutoComplete
+                placeholder="请选择门店"
+                textField="[%CODE%]%NAME%"
+                valueField="%CODE%@@@%NAME%"
+                queryParams={{ tableName: 'sj_itms_ship_address', 'selects ': ['CODE', 'NAME'] }}
+                searchField="CODE,NAME"
+                showSearch={true}
+                style={{ width: '100%' }}
+                noRecord
+                autoComplete
+                onChange={v => {
+                  this.entity.sj_driver_customer_service[0].CUSTOMERCODE = v.split('@@@')[0]
+                  this.entity.sj_driver_customer_service[0].CUSTOMERNAME = v.split('@@@')[1]
+                }}
+              />
+            )}
+          </Form.Item>
+        </Col>
+      )}</>
+    )
 
-        return children;
-    }
+    return children
+  }
   whetherToPickUpTheGoods = index =>
     <Radio.Group defaultValue={0}
                  onChange={v => this.setState(prevState => ({
@@ -256,8 +245,8 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       <Radio value={1}>取货</Radio>
     </Radio.Group>
 
-  render() {
-    const {isModalVisible,theSelectGoodsDetailDatas}= this.state
+  render () {
+    const { isModalVisible, theSelectGoodsDetailDatas } = this.state
     return (
       <Layout style={{ backgroundColor: 'white', height: '100%' }}>
         <div style={{ paddingTop: 20 }}>
@@ -275,68 +264,63 @@ export default class DriverCustomerCreate extends QuickCreatePage {
         </div>
         {/*这个用的是低代码的配置，还是自己写好一点*/}
         {/*<Content style={{ marginLeft: '4.6%' }}>{this.drawForm()}</Content>*/}
-        <Content style={{margin:25}}>
+        <Content style={{ margin: 25 }}>
           <Form>
             <Row gutter={24}>{this.getFormFields()}</Row>
-        </Form>
-    </Content>
-    <Footer style={{backgroundColor: 'white'}}>
-    </Footer>
+          </Form>
+        </Content>
+        <Footer style={{ backgroundColor: 'white' }}>
+        </Footer>
 
-    {/* 下面的货品选择框显示 */}
-    {['REVIEWMONITORING', 'STAMPOFF', 'CARGOHANDLING'].includes(this.state.assistanceType) && <>
-      <div>
-        <Button type="primary"
-                style={{ margin: '0 20px' }}
-                onClick={() => this.setState({ isModalVisible: true })}>
-          搜索货品
-        </Button>
+        {/* 下面的货品选择框显示 */}
+        {['REVIEWMONITORING', 'STAMPOFF', 'CARGOHANDLING'].includes(this.state.assistanceType) && <>
+          <div>
+            <Button type="primary"
+                    style={{ margin: '0 20px' }}
+                    onClick={() => this.setState({ isModalVisible: true })}>
+              搜索货品
+            </Button>
 
-        <Button type="danger"
-                onClick={() => this.setState({ theSelectGoodsDetailDatas: [] })}>
-          清空货品
-        </Button>
-        <span style={{ marginLeft: '34%', fontSize: 'large', fontWeight: 800 }}>货品明细</span>
-      </div>
+            <Button type="danger"
+                    onClick={() => this.setState({ theSelectGoodsDetailDatas: [] })}>
+              清空货品
+            </Button>
+            <span style={{ marginLeft: '34%', fontSize: 'large', fontWeight: 800 }}>货品明细</span>
+          </div>
 
-        <Modal
-          footer={null}
-          onCancel={() => {
-              this.setState({isModalVisible: false})
-          }}
-          visible={isModalVisible}
-          width={'80%'}
-          bodyStyle={{height: 'calc(80vh)', overflowY: 'auto'}}
-        >
-          {/*判断是责任买单还是少货买单*/}
-          {this.state.assistanceType === 'REVIEWMONITORING' || this.state.assistanceType === 'STAMPOFF' ? /* 复查监控和盖章取消：少货买单 */
-            <DriverCustomerLessBuy
-              quickuuid="sj_driver_customer_lessbuy"
-              getGoodsDetailDatas={this.getGoodsDetailDatas}
-            /> : this.state.assistanceType === 'CARGOHANDLING' ?     /* 货物处理:责任买单 */
-            <DriverCustomerDutyBuy
-              quickuuid="sj_driver_customer_dutypayment"
-              getGoodsDetailDatas={this.getGoodsDetailDatas}
-            /> : <></>
-          }
-        </Modal>
+          <Modal
+            footer={null}
+            onCancel={() => {
+              this.setState({ isModalVisible: false })
+            }}
+            visible={isModalVisible}
+            width={'80%'}
+            bodyStyle={{ height: 'calc(80vh)', overflowY: 'auto' }}
+          >
+            {/*判断是责任买单还是少货买单*/}
+            {this.state.assistanceType === 'REVIEWMONITORING' || this.state.assistanceType === 'STAMPOFF' ? /* 复查监控和盖章取消：少货买单 */
+              <DriverCustomerLessBuy
+                quickuuid="sj_driver_customer_lessbuy"
+                getGoodsDetailDatas={this.getGoodsDetailDatas}
+              /> : this.state.assistanceType === 'CARGOHANDLING' ?     /* 货物处理:责任买单 */
+                <DriverCustomerDutyBuy
+                  quickuuid="sj_driver_customer_dutypayment"
+                  getGoodsDetailDatas={this.getGoodsDetailDatas}
+                /> : <></>
+            }
+          </Modal>
 
-      <Table scroll={{ x: true }} style={{margin: '0 20px'}}
-             columns={[
-               { title: '货品', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'DESCR_C' : 'ARTICLENAME', key: '1' },
-               { title: '门店', dataIndex: 'store', width: 350, key: '2' },
-               { title: '数量', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'QTY_EACH' : 'QTY', key: '3' },
-               { title: '价位', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'LOCATION' : 'PICKBIN', key: '4' },
-               { title: '价格', dataIndex: 'PRICE', key: '5' },
-               { title: '金额', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'MONEY' : 'AMOUNT', key: '6' },
-               { title: '是否取货', render:(_text, _record, index)=>this.whetherToPickUpTheGoods(index) }]}
-             dataSource={theSelectGoodsDetailDatas.map(item => ({...item, store: item.STORECODE + ' ' + item.STORENAME}))}
-      />
-
-
-          </>}
-
-
+          <Table scroll={{ x: true }} style={{margin: '0 20px'}}
+                 columns={[
+                   { title: '货品', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'DESCR_C' : 'ARTICLENAME', key: '1' },
+                   { title: '门店', dataIndex: 'store', width: 350, key: '2' },
+                   { title: '数量', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'QTY_EACH' : 'QTY', key: '3' },
+                   { title: '价位', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'LOCATION' : 'PICKBIN', key: '4' },
+                   { title: '价格', dataIndex: 'PRICE', key: '5' },
+                   { title: '金额', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'MONEY' : 'AMOUNT', key: '6' },
+                   { title: '是否取货', render:(_text, _record, index)=>this.whetherToPickUpTheGoods(index) }]}
+                 dataSource={theSelectGoodsDetailDatas.map(item => ({...item, store: item.STORECODE + ' ' + item.STORENAME}))}
+          /></>}
       </Layout>
     );
   }
@@ -356,7 +340,6 @@ export default class DriverCustomerCreate extends QuickCreatePage {
 function getFormattedTime (hoursToAdd = 0) {
   const date = new Date() // 获取当前日期和时间
   date.setHours(date.getHours() + hoursToAdd) // 在当前时间上增加指定的小时数
-
   // 定义格式化时间的函数
   const formatTime = date => {
     const pad = num => (num < 10 ? '0' + num : num)
@@ -366,9 +349,7 @@ function getFormattedTime (hoursToAdd = 0) {
     const hour = pad(date.getHours())
     const minute = pad(date.getMinutes())
     const second = pad(date.getSeconds())
-
     return `${year}-${month}-${day} ${hour}:${minute}:${second}`
   }
-
   return formatTime(date) // 返回格式化的时间字符串
 }
