@@ -242,30 +242,6 @@ export default class DriverCustomerCreate extends QuickCreatePage {
 
         return children;
     }
-
-  /** 生成货品明细头部
-   * @param item {object} 对象
-   * @param index {number} 这个对象在列表的位置的索引
-   * */
-  buildGoodsDetailTable = (item, index) =>
-    <>
-      <span>货品：{this.state.assistanceType === 'CARGOHANDLING' ? item.DESCR_C : item.ARTICLENAME}</span>
-      <span style={{ float: 'right' }}>是否取货：&nbsp;
-        <Radio.Group defaultValue={0}
-                     onChange={v => this.setState(prevState => ({
-                       theSelectGoodsDetailDatas: prevState.theSelectGoodsDetailDatas.map((item, i) => {
-                         // 检查是否是第当前对象  是的话，添加属性
-                         if (i === index) return { ...item, ISTAKEDELIVERY: v.target.value }
-                         return item  // 对于其他对象，不做修改直接返回
-                       })
-                     }))}
-        >
-          <Radio value={0}>不取货</Radio>
-          <Radio value={1}>取货</Radio>
-        </Radio.Group>
-      </span>
-    </>
-
   whetherToPickUpTheGoods = index =>
     <Radio.Group defaultValue={0}
                  onChange={v => this.setState(prevState => ({
@@ -310,16 +286,17 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     {/* 下面的货品选择框显示 */}
     {['REVIEWMONITORING', 'STAMPOFF', 'CARGOHANDLING'].includes(this.state.assistanceType) && <>
       <div>
-          <Button type="primary"
-                  style={{margin:'0 20px'}}
-                  onClick={() => this.setState({isModalVisible: true})}>
-            搜索货品
+        <Button type="primary"
+                style={{ margin: '0 20px' }}
+                onClick={() => this.setState({ isModalVisible: true })}>
+          搜索货品
         </Button>
 
-          <Button type="danger"
-                  onClick={() => this.setState({theSelectGoodsDetailDatas: []})}>
-            清空货品
-          </Button>
+        <Button type="danger"
+                onClick={() => this.setState({ theSelectGoodsDetailDatas: [] })}>
+          清空货品
+        </Button>
+        <span style={{ marginLeft: '34%', fontSize: 'large', fontWeight: 800 }}>货品明细</span>
       </div>
 
         <Modal
@@ -344,7 +321,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
           }
         </Modal>
 
-      <Table scroll={{ x: true }}
+      <Table scroll={{ x: true }} style={{margin: '0 20px'}}
              columns={[
                { title: '货品', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'DESCR_C' : 'ARTICLENAME', key: '1' },
                { title: '门店', dataIndex: 'store', width: 350, key: '2' },
@@ -352,49 +329,11 @@ export default class DriverCustomerCreate extends QuickCreatePage {
                { title: '价位', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'LOCATION' : 'PICKBIN', key: '4' },
                { title: '价格', dataIndex: 'PRICE', key: '5' },
                { title: '金额', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'MONEY' : 'AMOUNT', key: '6' },
-               { title: '是否取货', render:(text, record, index)=>this.whetherToPickUpTheGoods(index) }]}
+               { title: '是否取货', render:(_text, _record, index)=>this.whetherToPickUpTheGoods(index) }]}
              dataSource={theSelectGoodsDetailDatas.map(item => ({...item, store: item.STORECODE + ' ' + item.STORENAME}))}
-
       />
 
-        <Row style={{margin:20}}>
-          <Col span={23}>
-            <Card title="货品明细">
-              {theSelectGoodsDetailDatas?.length > 0 ?
-                theSelectGoodsDetailDatas.map((item,index) => {
-                  return <div>
-                    <Card type="inner"
-                          title={this.buildGoodsDetailTable(item,index)}
-                          style={{marginTop: 16}}>
-                            <Row>
-                              <Col span={24}>门店：{`[${item.STORECODE}]${item.STORENAME}`}</Col>
-                              <Col span={12}>
-                                <span>货位：</span>
-                                <span>{this.state.assistanceType === 'CARGOHANDLING' ? item.LOCATION : item.PICKBIN}</span>
-                              </Col>
-                              <Col span={12}>
-                                <span className="">数量：</span>
-                                <span>{this.state.assistanceType === 'CARGOHANDLING' ? item.QTY_EACH : item.QTY}</span>
-                              </Col>
-                              <Col span={12}>
-                                <span>价格：</span>
-                                <span>{item.PRICE}</span>
-                              </Col>
-                              <Col span={12}>
-                                <span>金额：</span>
-                                <span>{this.state.assistanceType === 'CARGOHANDLING' ? item.MONEY : item.AMOUNT}</span>
-                              </Col>
-                            </Row>
-                          </Card>
 
-                        </div>
-                      }) : <Empty style={{marginTop: 80}}
-                                  image={emptySvg}
-                                  description="暂无货品明细，请选择货品！"/>
-                    }
-                  </Card>
-                </Col>
-              </Row>
           </>}
 
 
