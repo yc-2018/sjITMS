@@ -1,3 +1,10 @@
+/*
+* @Description: 司机服务新建页面
+* @authors: xuqifeng ChenGuangLong
+* @注意：低代码配置里面要设置全部允许空值  因为重写了也看不到那些必填的字段 会导致无法校验
+*/
+
+
 import {connect} from 'dva';
 import { Button, Form, Layout, Row, Col, Modal, message, Select, Radio, Table
 } from 'antd'
@@ -14,8 +21,8 @@ import {SimpleAutoComplete} from "@/pages/Component/RapidDevelopment/CommonCompo
 import getUUID from "@/utils/getUUID";
 
 const {Footer, Content} = Layout;
-//联动选择
 const {Option} = Select;
+
 @connect(({quick, loading}) => ({
     quick,
     loading: loading.models.quick,
@@ -23,15 +30,11 @@ const {Option} = Select;
 @Form.create()
 export default class DriverCustomerCreate extends QuickCreatePage {
   state = {
-    ...this.state,
-    // flag:true,
-    //货物搜索打开开关
-    isModalVisible:false,
-    //所选择的货品明细数据
-    theSelectGoodsDetailDatas:[],
-    //协助类型key+问题类型problemType
-    assistAndProblemTypeData:[],
-    assistanceType: '', // 当前选中的协助类型 用来控制页面的变化
+    ...this.state,                  // QuickCreatePage的state
+    isModalVisible:false,           // 货物搜索打开开关
+    theSelectGoodsDetailDatas:[],   // 所选择的货品明细数据
+    assistAndProblemTypeData:[],    // 协助类型key+问题类型problemType
+    assistanceType: '',             // 当前选中的协助类型 用来控制页面的变化
   };
 
 
@@ -39,13 +42,12 @@ export default class DriverCustomerCreate extends QuickCreatePage {
   formLoaded = () => {
     const { showPageNow } = this.props;
     if (showPageNow === 'create') {
-      this.entity.sj_driver_customer_service = [{}]
+      this.entity.sj_driver_customer_service = [{}]     // 初始化>>>通过框架提交到数据库<<<的数据
         //获取联动数组数据
         getLinkTypeDict().then(response =>
           response?.success && this.setState({assistAndProblemTypeData: response.data})
         )
     }
-    // 低代码配套里面要设置全部允许空值  因为重写了也看不到那些必填的字段 导致无法校验
   };
 
 
