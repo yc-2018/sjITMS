@@ -286,7 +286,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
               清空货品
             </Button>
             <span style={{ marginLeft: '34%', fontSize: 'large', fontWeight: 800 }} className={'ant-form-item-required'}>
-              货品明细
+              {this.state.assistanceType === 'CARGOHANDLING' ?'责任买单':'少货买单'}货品明细
             </span>
           </div>
 
