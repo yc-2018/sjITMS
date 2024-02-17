@@ -45,7 +45,6 @@ export default class DriverCustomerCreate extends QuickCreatePage {
 
   //表单加载的时候
   formLoaded = async () => {
-    console.log('███████this.props>>>>', this.props, '<<<<██████')
     const { showPageNow } = this.props
     //获取联动数组数据
     const response = await getLinkTypeDict()
@@ -59,6 +58,10 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     if (showPageNow === 'update') {
       this.initObj = this.props.params.entity    // 缩短
       this.setState({ assistanceType: this.initObj.ASSISTANCETYPE })  // 设置协助类型的显示
+      // 初始化数据(问题反馈类型 编辑不动就会没有门店数据，所以专门 为它提前准备好)
+      this.entity.sj_driver_customer_service[0].CUSTOMERCODE = this.initObj.CUSTOMERCODE
+      this.entity.sj_driver_customer_service[0].CUSTOMERNAME = this.initObj.CUSTOMERNAME
+
       if (this.initObj.ASSISTANCETYPE !== 'PROBLEMFEEDBACK'){              // 不是问题反馈就有货品明细
         const goodsList = await getCargoDetails(this.initObj.UUID)
         if (goodsList?.success)
@@ -142,8 +145,10 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       saveObj.WAREHOUSE = loginOrg().uuid                                       // 仓库
       saveObj.WAREHOUSENAME = loginOrg().name                                   // 仓库名称
       saveObj.PROCESSINGSTATE = 'Saved'                                         // 处理状态（固定就是保存状态）
-      saveObj.DRIVERCODE = values['field-driverInfo'].split('@@@')[0]           // 司机编号
-      saveObj.DRIVERNAME = values['field-driverInfo'].split('@@@')[1]           // 司机姓名
+      saveObj.DRIVERCODE = values['field-driverInfo'].includes('@@@')?          // 司机编号
+          values['field-driverInfo'].split('@@@')[0]:this.initObj.DRIVERCODE
+      saveObj.DRIVERNAME = values['field-driverInfo'].includes('@@@')?           // 司机姓名
+          values['field-driverInfo'].split('@@@')[1]:this.initObj.DRIVERNAME
       saveObj.ASSISTANCETYPE = values['field-assistanceType']                   // 协助类型
       saveObj.PROBLEMTYPE = values['field-problemType']                         // 问题类型
       saveObj.ASSISTCONTENT = values['field-assistanceContent']                 // 协助内容
@@ -249,7 +254,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
           <Form.Item label="是否录制监控">
             {getFieldDecorator('field-recordMonitoring', {
               rules: [{ required: true, message: '请选择是否录制监控' }],
-              initialValue: parseInt(initObj?.ISRECORDEMONITOR, 10) || 0, // 这里设置默认值为“否”
+              initialValue: parseInt(initObj?.ISRECORDEMONITOR) || 0, // 这里设置默认值为“否”
             })(
               <RadioGroup>
                 <Radio value={0}>否</Radio>
