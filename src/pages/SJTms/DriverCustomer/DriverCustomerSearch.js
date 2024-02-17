@@ -317,19 +317,10 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
 
   //编辑
   onUpdate = () => {
-    const { selectedRows } = this.state;
-    if (selectedRows.length !== 0) {
-      if (selectedRows[0].STATUS !== 'Finished') {
-        const { onlFormField } = this.props;
-        var field = onlFormField[0].onlFormFields.find(x => x.dbIsKey)?.dbFieldName;
-        this.props.switchTab('update', {
-          entityUuid: selectedRows[0][field],
-        });
-      } else {
-        message.error('该客服工单已完结，不能修改');
-      }
-    } else {
-      message.error('请至少选中一条数据!');
-    }
-  };
+    const { selectedRows } = this.state
+    if (selectedRows.length === 1)
+      if (selectedRows[0].STATUS !== 'Finished') this.props.switchTab('update', { entity: selectedRows[0], })
+      else message.error('该客服工单已完结，不能修改')
+    else message.error('请选中一条数据!')
+  }
 }

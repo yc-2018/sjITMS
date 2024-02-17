@@ -1,5 +1,5 @@
 /*
-* @Description: 司机服务新建页面
+* @Description: 司机服务新建和编辑页面
 * @authors: xuqifeng ChenGuangLong
 * @注意：低代码配置里面要设置全部允许空值  因为重写了也看不到那些必填的字段 会导致无法校验
 */
@@ -35,20 +35,27 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     theSelectGoodsDetailDatas:[],   // 所选择的货品明细数据
     assistAndProblemTypeData:[],    // 协助类型key+问题类型problemType
     assistanceType: '',             // 当前选中的协助类型 用来控制页面的变化
-  };
+  }
 
 
   //表单加载的时候
-  formLoaded = () => {
-    const { showPageNow } = this.props;
-    if (showPageNow === 'create' || showPageNow === 'update') {
-      this.entity.sj_driver_customer_service = [{}]     // 初始化>>>通过框架提交到数据库<<<的数据
-        //获取联动数组数据
-        getLinkTypeDict().then(response =>
-          response?.success && this.setState({assistAndProblemTypeData: response.data})
-        )
+  formLoaded = async () => {
+    console.log('███████this.props>>>>', this.props, '<<<<██████')
+    const { showPageNow } = this.props
+    //获取联动数组数据
+    const response = await getLinkTypeDict()
+    if (response?.success)
+      this.setState({ assistAndProblemTypeData: response.data })
+    else return
+
+    // if (showPageNow === 'create')
+    this.entity.sj_driver_customer_service = [{}]     // 初始化>>>通过框架提交到数据库<<<的数据
+
+    if (showPageNow === 'update') {
+      this.initObj = this.props.params.entity    // 缩短
+      this.setState({ assistanceType: this.initObj.ASSISTANCETYPE })  // 设置协助类型的显示
     }
-  };
+  }
 
 
   //重写afterSave方法
@@ -133,12 +140,15 @@ export default class DriverCustomerCreate extends QuickCreatePage {
   getFormFields = () => {
     const { assistAndProblemTypeData } = this.state
     const { getFieldDecorator } = this.props.form
+    const {initObj} = this
     const children = []
     children.push(
       <Col span={8}>
         <Form.Item label={`司机信息`}>
           {getFieldDecorator(`field-driverInfo`,
-            { rules: [{ required: true, message: '请选择司机' }] })
+            { rules: [{ required: true, message: '请选择司机' }],
+              initialValue: initObj && `[${initObj.DRIVERCODE}]${initObj.DRIVERNAME}`
+            })
           (
             <SimpleAutoComplete
               placeholder="请选择司机"
@@ -157,7 +167,10 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       </Col>,
       <Col span={8}>
         <Form.Item label={`协助类型`}>
-          {getFieldDecorator(`field-assistanceType`, { rules: [{ required: true, message: '请选择协助类型' }] })
+          {getFieldDecorator(`field-assistanceType`,
+              { rules: [{ required: true, message: '请选择协助类型' }],
+                initialValue: initObj?.ASSISTANCETYPE
+              })
           (
             <Select
               value={this.state.assistanceType} // 在表单里面是不会生效的
@@ -175,7 +188,10 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       </Col>,
       <Col span={8}>
         <Form.Item label={`问题类型`}>
-          {getFieldDecorator(`field-problemType`, { rules: [{ required: true, message: '请选择司机' }] })
+          {getFieldDecorator(`field-problemType`, {
+            rules: [{ required: true, message: '请选择问题类型' }],
+            initialValue:initObj?.PROBLEMTYPE
+          })
           (
             <Select>
               {assistAndProblemTypeData?.filter(item => item.PRCODE === this.state.assistanceType)?.map(province => (
@@ -187,7 +203,10 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       </Col>,
       <Col span={8}>
         <Form.Item label={`协助内容`}>
-          {getFieldDecorator(`field-assistanceContent`, { rules: [{ required: true, message: '请输入协助内容' }] })
+          {getFieldDecorator(`field-assistanceContent`, {
+            rules: [{ required: true, message: '请输入协助内容' }],
+            initialValue: initObj?.ASSISTCONTENT
+          })
           (<TextArea placeholder={'请输入需要协助的问题描述'} rows={3}/>)}
         </Form.Item>
       </Col>,
@@ -197,7 +216,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
           <Form.Item label="是否录制监控">
             {getFieldDecorator('field-recordMonitoring', {
               rules: [{ required: true, message: '请选择是否录制监控' }],
-              initialValue: 0, // 这里设置默认值为“否”
+              initialValue: parseInt(initObj?.ISRECORDEMONITOR, 10) || 0, // 这里设置默认值为“否”
             })(
               <RadioGroup>
                 <Radio value={0}>否</Radio>
@@ -212,6 +231,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
           <Form.Item label="门店">
             {getFieldDecorator('field-store', {
               rules: [{ required: true, message: '请选门店' }],
+              initialValue: initObj && `[${initObj.CUSTOMERCODE}]${initObj.CUSTOMERNAME}`
             })(
               <SimpleAutoComplete
                 placeholder="请选择门店"

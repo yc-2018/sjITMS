@@ -1,11 +1,12 @@
+/*
+ * 少货买单组件
+ */
+
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { connect } from 'dva';
-import { Button, message, Popconfirm } from 'antd';
+import { Button, message } from 'antd';
 import React from 'react';
 
-/*
-    少货买单组件
- */
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
