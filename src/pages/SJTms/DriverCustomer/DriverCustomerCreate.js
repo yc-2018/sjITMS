@@ -100,6 +100,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       saveObj.BILLNUMBER = billNo.data                                          // 单号(海鼎
       saveObj.FEEDBACKTIME = moment().format('YYYY-MM-DD HH:mm:ss')      // 反馈时间
       saveObj.WAREHOUSE = loginOrg().uuid                                       // 仓库
+      saveObj.WAREHOUSENAME = loginOrg().name                                   // 仓库名称
       saveObj.PROCESSINGSTATE = 'Saved'                                         // 处理状态（固定就是保存状态）
       saveObj.DRIVERCODE = values['field-driverInfo'].split('@@@')[0]           // 司机编号
       saveObj.DRIVERNAME = values['field-driverInfo'].split('@@@')[1]           // 司机姓名
