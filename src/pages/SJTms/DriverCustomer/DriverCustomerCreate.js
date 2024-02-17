@@ -106,6 +106,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       saveObj.ASSISTANCETYPE = values['field-assistanceType']                   // 协助类型
       saveObj.PROBLEMTYPE = values['field-problemType']                         // 问题类型
       saveObj.ASSISTCONTENT = values['field-assistanceContent']                 // 协助内容
+      saveObj.ISRECORDEMONITOR = values['field-recordMonitoring']               // 复查监控（复查监控专属）
       saveObj.PROCESSINGTIMELINESS =                                            // 处理时效（小时）
         assistAndProblemTypeData.find(item => item.CODE === saveObj.PROBLEMTYPE).TIMELINESS
       saveObj.DEADLINE = getFormattedTime(saveObj.PROCESSINGTIMELINESS)         // 处理截止时效
