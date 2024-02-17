@@ -41,7 +41,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
   //表单加载的时候
   formLoaded = () => {
     const { showPageNow } = this.props;
-    if (showPageNow === 'create') {
+    if (showPageNow === 'create' || showPageNow === 'update') {
       this.entity.sj_driver_customer_service = [{}]     // 初始化>>>通过框架提交到数据库<<<的数据
         //获取联动数组数据
         getLinkTypeDict().then(response =>
@@ -144,6 +144,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
               placeholder="请选择司机"
               textField="[%CODE%]%NAME%"
               valueField="%CODE%@@@%NAME%"    // 取值时工号和名字直接分割@@@
+              duplicate={'CODE'}              // 当valueField不是一个字段的时候加上这个，不加valueField就只会显示一个
               queryParams={{ tableName: 'sj_itms_employee', 'selects ': ['CODE', 'NAME'] }}
               searchField="CODE,NAME"
               showSearch={true}
@@ -216,6 +217,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
                 placeholder="请选择门店"
                 textField="[%CODE%]%NAME%"
                 valueField="%CODE%@@@%NAME%"
+                duplicate={'CODE'}              // 当valueField不是一个字段的时候加上这个，不加valueField就只会显示一个
                 queryParams={{ tableName: 'sj_itms_ship_address', 'selects ': ['CODE', 'NAME'] }}
                 searchField="CODE,NAME"
                 showSearch={true}
