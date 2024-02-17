@@ -13,7 +13,12 @@ import moment from 'moment';
 import {loginOrg} from '@/utils/LoginContext';
 import React from 'react';
 import DriverCustomerLessBuy from '@/pages/SJTms/DriverCustomer/DriverCustomerLessBuy';
-import { getBillNo, getLinkTypeDict, onSaveGoodsDetailRecord } from '@/services/sjitms/DriverCustomerService'
+import {
+  getBillNo,
+  getCargoDetails,
+  getLinkTypeDict,
+  onSaveGoodsDetailRecord
+} from '@/services/sjitms/DriverCustomerService'
 import DriverCustomerDutyBuy from '@/pages/SJTms/DriverCustomer/DriverCustomerDutyBuy';
 import TextArea from "antd/lib/input/TextArea";
 import RadioGroup from "antd/es/radio/group";
@@ -54,6 +59,34 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     if (showPageNow === 'update') {
       this.initObj = this.props.params.entity    // 缩短
       this.setState({ assistanceType: this.initObj.ASSISTANCETYPE })  // 设置协助类型的显示
+      if (this.initObj.ASSISTANCETYPE !== 'PROBLEMFEEDBACK'){              // 不是问题反馈就有货品明细
+        const goodsList = await getCargoDetails(this.initObj.UUID)
+        if (goodsList?.success)
+          // 字段变量变来又变去真的有够麻烦的
+          this.setState({
+            theSelectGoodsDetailDatas: goodsList.data.map(item => (
+                {
+                  ...item,
+                  STORECODE: item.customercode,             // 门店号码
+                  SKU: item.productcode,                    // 货物代码
+                  ARTICLECODE: item.productcode,            // 货物代码，与SKU相同
+                  DESCR_C: item.productname,                // 货物名称
+                  ARTICLENAME: item.productname,            // 货物名称，与DESCR_C相同
+                  LOCATION: item.productposition,           // 货位
+                  PICKBIN: item.productposition,            // 货位，与LOCATION相同
+                  QTY_EACH: item.productquantity,           // 货物数量（每件）
+                  QTY: item.productquantity,                // 货物总数量，与QTY_EACH相同
+                  ADDTIME: item.deliverydate,               // 配送日期
+                  APPLICATIONDATE: item.deliverydate,       // 应用日期，与ADDTIME相同
+                  MONEY: item.productamount,                // 货物金额
+                  AMOUNT: item.productamount,               // 总金额，与MONEY相同
+                  ISTAKEDELIVERY: item.istakedelivery ?? 0, // 是否取货，默认为0
+                  PRICE: item.productprice,                 // 货品价格
+                  STORENAME: item.customername              // 门店名称
+                }
+            ))
+          })
+      }
     }
   }
 
@@ -257,19 +290,19 @@ export default class DriverCustomerCreate extends QuickCreatePage {
 
     return children
   }
-  whetherToPickUpTheGoods = index =>
-    <Radio.Group defaultValue={0}
-                 onChange={v => this.setState(prevState => ({
-                   theSelectGoodsDetailDatas: prevState.theSelectGoodsDetailDatas.map((item, i) => {
-                     // 检查是否是第当前对象  是的话，添加属性
-                     if (i === index) return { ...item, ISTAKEDELIVERY: v.target.value }
-                     return item  // 对于其他对象，不做修改直接返回
-                   })
-                 }))}
-    >
-      <Radio value={0}>不取货</Radio>
-      <Radio value={1}>取货</Radio>
-    </Radio.Group>
+  whetherToPickUpTheGoods = (record, index) =>
+      <Radio.Group defaultValue={record?.istakedelivery ?? 0}
+                   onChange={v => this.setState(prevState => ({
+                     theSelectGoodsDetailDatas: prevState.theSelectGoodsDetailDatas.map((item, i) => {
+                       // 检查是否是第当前对象  是的话，添加属性
+                       if (i === index) return { ...item, ISTAKEDELIVERY: v.target.value }
+                       return item  // 对于其他对象，不做修改直接返回
+                     })
+                   }))}
+      >
+        <Radio value={0}>不取货</Radio>
+        <Radio value={1}>取货</Radio>
+      </Radio.Group>
 
   render () {
     const { isModalVisible, theSelectGoodsDetailDatas } = this.state
@@ -348,7 +381,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
                    { title: '价位', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'LOCATION' : 'PICKBIN', key: '4' },
                    { title: '价格', dataIndex: 'PRICE', key: '5' },
                    { title: '金额', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'MONEY' : 'AMOUNT', key: '6' },
-                   { title: '是否取货', render:(_text, _record, index)=>this.whetherToPickUpTheGoods(index) }]}
+                   { title: '是否取货', render:(_text, record, index)=>this.whetherToPickUpTheGoods(record, index) }]}
           /></>}
       </Layout>
     );
