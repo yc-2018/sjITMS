@@ -136,8 +136,8 @@ export default class DriverCustomerCreate extends QuickCreatePage {
 
       const saveObj = this.entity.sj_driver_customer_service[0]   // 客服服务对象(框架是列表，所以拿到第一个就好了)
 
-      saveObj.UUID = getUUID()                                                  // 客服服务主键
-      saveObj.BILLNUMBER = billNo.data                                          // 单号(海鼎
+      saveObj.UUID = this.initObj?.UUID ?? getUUID()                            // 客服服务主键
+      saveObj.BILLNUMBER = this.initObj?.BILLNUMBER ?? billNo.data              // 单号(海鼎
       saveObj.FEEDBACKTIME = moment().format('YYYY-MM-DD HH:mm:ss')      // 反馈时间
       saveObj.WAREHOUSE = loginOrg().uuid                                       // 仓库
       saveObj.WAREHOUSENAME = loginOrg().name                                   // 仓库名称
@@ -290,6 +290,14 @@ export default class DriverCustomerCreate extends QuickCreatePage {
 
     return children
   }
+
+
+  /**
+   * @description 渲染货品详细 是否取货
+   * @param record 列对象
+   * @param index 行数
+   * @author chenGuangLong
+   * */
   whetherToPickUpTheGoods = (record, index) =>
       <Radio.Group defaultValue={record?.istakedelivery ?? 0}
                    onChange={v => this.setState(prevState => ({
