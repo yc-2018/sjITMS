@@ -161,6 +161,11 @@ export default class DriverCustomerCreate extends QuickCreatePage {
         saveObj.CUSTOMERCODE = theSelectGoodsDetailDatas[0].STORECODE    // 客户(门店)编号
         saveObj.CUSTOMERNAME = theSelectGoodsDetailDatas[0].STORENAME   // 客户(门店)名称
       }
+
+      if (this.props.showPageNow === 'update'){                     // 更新 要加些字段
+        saveObj.LASTMODIFIEDTIME = getFormattedTime()  // 修改时间  （修改人命名空间 修改人ID 修改人姓名 框架自动赋值）
+      }
+
       //通过框架 保存司机客服服务信息this.entity[tableName]
       this.onSave()
 
