@@ -140,53 +140,38 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
   //发布
   handleRelease = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length === 0) {
-      message.warning('请至少选中一条数据！');
-      return;
+    if (selectedRows.length === 0) return message.warning('请至少选中一条数据！')
+    if (selectedRows.length > 1){
+      if (selectedRows.find(x => x.PROCESSINGSTATE === 'Released'))
+        return message.warning('存在已发布工单，不能批量发布！')
+      if (selectedRows.find(x => x.PROCESSINGSTATE === 'Rejected'))
+        return message.warning('存在驳回工单，不能批量发布！');
+      if (selectedRows.find(x => x.PROCESSINGSTATE === 'Dispose'))
+        return message.warning('存在处理中工单，不能批量发布！')
+      if (selectedRows.find(x => x.PROCESSINGSTATE === 'Disposed'))
+        return message.warning('存在已处理工单，不能批量发布！');
     }
-    if (selectedRows.find(x => x.PROCESSINGSTATE === 'Released') && selectedRows.length > 1) {
-      message.warning('存在已发布工单，不能批量发布！');
-      return;
-    }
-    if (selectedRows.find(x => x.PROCESSINGSTATE === 'Rejected') && selectedRows.length > 1) {
-      message.warning('存在驳回工单，不能批量发布！');
-      return;
-    }
-    if (selectedRows.find(x => x.PROCESSINGSTATE === 'Dispose') && selectedRows.length > 1) {
-      message.warning('存在处理中工单，不能批量发布！');
-      return;
-    }
-    if (selectedRows.find(x => x.PROCESSINGSTATE === 'Disposed') && selectedRows.length > 1) {
-      message.warning('存在已处理工单，不能批量发布！');
-      return;
-    }
-    if (
-      selectedRows.length === 1 &&
-      ( selectedRows[0].PROCESSINGSTATE === 'Released' ||
-        selectedRows[0].PROCESSINGSTATE === 'Rejected' ||
-        selectedRows[0].PROCESSINGSTATE === 'Disposed' ||
-        selectedRows[0].PROCESSINGSTATE === 'Dispose')
-    ) {
-      // this.setState({ releaseModal: true });
-      this.releasePageRef.show(selectedRows[0]);
-      return;
-    }
-    //TODO 我在改
-    //为保存且只选择一份工单
-    if (selectedRows.length === 1) {
+
+    if(selectedRows.length === 1) {
+      if(['Released', 'Rejected', 'Disposed', 'Dispose'].includes(selectedRows[0].PROCESSINGSTATE))
+        return this.releasePageRef.show(selectedRows[0])
+
+      //TODO 我在改
+      //为保存且只选择一份工单
       this.publish(selectedRows[0].UUID,
-        {
-          //暂时不要吧
-          // COMPLETIONTIME:selectedRows[0].COMPLETIONTIME,
-          // DEADLINE:moment(new Date()).format(selectedRows[0].DEADLINE)
-        }).then(response => {
+          {
+            //暂时不要吧
+            // COMPLETIONTIME:selectedRows[0].COMPLETIONTIME,
+            // DEADLINE:moment(new Date()).format(selectedRows[0].DEADLINE)
+          }).then(response => {
         if (response && response.success) {
           message.success('发布成功！');
           this.onSearch();
         }else{
           message.error('发布失败！');
         }
-      });
+      })
+
     } else {//多条处理了 TODO 先写的这个
       this.batchProcessConfirmRef.show(
         '发布',
@@ -206,8 +191,8 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
   };
 
   //这是我的客服服务发布
-  publish = async (uuid ,data)=> {
-    return await publish(uuid, data);
+  publish = async (uuids)=> {
+    return await publish(uuids);
   };
 
 

@@ -24,11 +24,13 @@ export async function onReject(param) {
   });
 }
 
-//发布工单
-export async function publish(uuid,data) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/publish?uuid=${uuid}`, {
+/**
+ *  发布工单
+ *  @param uuids 多个uuid用于逗号分隔
+ * */
+export async function publish(uuids) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/publish?uuids=${uuids}`, {
     method: 'POST',
-    body: data,
   });
 }
 
