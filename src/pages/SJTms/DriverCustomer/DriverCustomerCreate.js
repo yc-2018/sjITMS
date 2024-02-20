@@ -279,17 +279,17 @@ export default class DriverCustomerCreate extends QuickCreatePage {
               <SimpleAutoComplete
                 placeholder="请选择门店"
                 textField="[%CODE%]%NAME%"
-                valueField="%CODE%@@@%NAME%"
-                duplicate={'CODE'}              // 当valueField不是一个字段的时候加上这个，不加valueField就只会显示一个
+                valueField="CODE"//valueField="%CODE%@@@%NAME%"
+             // duplicate={'CODE'}              // 当valueField不是一个字段的时候加上这个，不加valueField就只会显示一个
                 queryParams={{ tableName: 'sj_itms_ship_address', 'selects ': ['CODE', 'NAME'] }}
                 searchField="CODE,NAME"
                 showSearch={true}
                 style={{ width: '100%' }}
-                noRecord
+                //noRecord // 加了onChange的value就是valueField写的字段，不加onChange的value就是整个返回的对象
                 autoComplete
                 onChange={v => {
-                  this.entity.sj_driver_customer_service[0].CUSTOMERCODE = v.split('@@@')[0]
-                  this.entity.sj_driver_customer_service[0].CUSTOMERNAME = v.split('@@@')[1]
+                  this.entity.sj_driver_customer_service[0].CUSTOMERCODE = v.record.CODE
+                  this.entity.sj_driver_customer_service[0].CUSTOMERNAME = v.record.NAME
                 }}
               />
             )}
