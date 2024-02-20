@@ -69,7 +69,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
           this.setState({
             theSelectGoodsDetailDatas: goodsList.data.map(item => (
                 {
-                  ...item,
+                  ...item,                                  /*下面相同的字段就是因为责任买单和少货买单在数据库的字段不同而做出兼容*/
                   STORECODE: item.customercode,             // 门店号码
                   SKU: item.productcode,                    // 货物代码
                   ARTICLECODE: item.productcode,            // 货物代码，与SKU相同
