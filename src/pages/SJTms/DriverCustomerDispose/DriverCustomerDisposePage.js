@@ -109,31 +109,22 @@ export default class DriverCustomerDisposePageModal extends Component {
 
   drawButton = operation=> {
     const { saving } = this.state;
+    const buildButton = (text,onClick,type="primary") => {
+      return (
+        <Button type={type} onClick={onClick} loading={saving}>
+          {text}
+        </Button>
+      );
+    };
     switch (operation) {
       case 'Rejecte':
-        return (
-          <Button type="danger" onClick={() => this.processReject("Rejecte")} loading={saving}>
-            驳回
-          </Button>
-        );
+        return buildButton('驳回',()=>this.processReject("Rejecte"),'danger')
       case 'Release':
-        return (
-          <Button type="primary" onClick={() => this.handleRelease("Release")} loading={saving}>
-            发布
-          </Button>
-        );
+        return buildButton('发布',()=>this.handleProgress("Release"))
       case 'Dispose':
-        return (
-          <Button type="primary" onClick={() => this.handleProgress("Dispose")} loading={saving}>
-            回复进度
-          </Button>
-        );
+        return buildButton('回复进度',() => this.handleProgress("Dispose"),'default')
       case 'Result':
-        return (
-          <Button type="primary" onClick={() => this.processResult("Result")} loading={saving}>
-            回复结果
-          </Button>
-        );
+        return buildButton('回复结果',() => this.processResult("Result"),'default')
     }
   }
 
