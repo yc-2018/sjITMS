@@ -169,7 +169,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       //通过框架 保存司机客服服务信息this.entity[tableName]
       this.onSave()
 
-      //不是问题反馈   就执行==>  保存货品详情信息   保存客服服务处理记录
+      //不是问题反馈   就执行==>  保存货品详情信息&&客服服务处理记录
       this.state.assistanceType !== 'PROBLEMFEEDBACK' && this.saveAfterItem(saveObj.UUID)
     })
   }

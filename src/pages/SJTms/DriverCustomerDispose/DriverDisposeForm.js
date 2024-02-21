@@ -47,14 +47,19 @@ export default class DriverDisposeForm extends Component {
     };
   }
 
+  // TODO 峰子 在这里写 。。。  就第一次打开的时候，获取货品明细数据  打开第二次的时候复用第一个的明细？6666666666
     async componentWillMount() {
       const { bill, records, operation } = this.props;
       this.setState({ bill: bill, records: records, operation: operation });
       if (this.props.operation === 'Result') {
         const response = await getCargoDetails(bill.UUID)
-        if (response && response.success) {
-          this.setState({ cargoDetailsList: response.data ,cargoCheckArr:response.data.filter(item => item.istakedelivery === 1).map(item=>item.uuid)})
-        }
+        console.log('███████response>>>>', response,'<<<<██████')
+        if (response?.success && response.data)
+          this.setState({
+            cargoDetailsList: response?.data ,
+            cargoCheckArr:response?.data?.filter(item => item.istakedelivery === 1)?.map(item=>item.uuid)
+          })
+        else this.setState({ cargoDetailsList: [] ,cargoCheckArr:[]})
       }
     }
   //
@@ -256,7 +261,7 @@ export default class DriverDisposeForm extends Component {
           <></>
         )}
         <Form.Item
-          label={this.placeholders[operation]}
+          label={this.placeholders.operation}
           labelCol={{ span: 2 }}
           wrapperCol={{ span: 22 }}
         >

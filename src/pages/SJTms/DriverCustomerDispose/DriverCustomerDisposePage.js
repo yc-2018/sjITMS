@@ -89,10 +89,11 @@ export default class DriverCustomerDisposePageModal extends Component {
   getRequireTakeDeliveryData = (cargoCheckArr) => {
     this.setState({requireTakeCargoArr:cargoCheckArr})
   };
-  //处理回复结果
-  processResult = stat => {
+
+  /** 处理回复结果 */
+  processResult = async stat => {
     const { bill,requireTakeCargoArr} = this.state;
-    const validate =  this.formRef.validateFields();
+    const validate = await this.formRef.validateFields();
     this.setState({ saving: true });
     const param = { billuuid: bill.UUID, type: this.modeTxt[stat], detail: validate.remark,requireTakeCargoList:requireTakeCargoArr};
     onResult(param).then(response => {
@@ -105,7 +106,7 @@ export default class DriverCustomerDisposePageModal extends Component {
       }
     });
     this.setState({ saving: false });
-  };
+  }
 
   drawButton = operation=> {
     const { saving } = this.state;
