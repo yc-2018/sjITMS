@@ -9,16 +9,13 @@
 import React from 'react';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { Button, message, Form, Modal, Input, Popconfirm } from 'antd';
-import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
-import { release, unFinished, norm } from '@/services/sjitms/Customer';
+import { Button, message, Popconfirm } from 'antd';
+import { release, unFinished } from '@/services/sjitms/Customer';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { loginUser } from '@/utils/LoginContext';
-import DisposePage from '../CustomerDispose/DisposePage';
-import moment from 'moment';
-import { havePermission } from '@/utils/authority';
-import { onBatchReject, onFinish, onReject, publish } from '@/services/sjitms/DriverCustomerService';
+import { onFinish, onReject, publish } from '@/services/sjitms/DriverCustomerService';
 import DriverCustomerDisposePageModal from '@/pages/SJTms/DriverCustomerDispose/DriverCustomerDisposePage';
+import styles from './DriverCustomerSearch.less'
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -41,15 +38,21 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
     creatorCol.searchDefVal = loginUser().name;
     return queryConfig;
   };
+
+  /**
+   * @description 改变每一行的数据展示（这里改变状态颜色）
+   * @param row 行数据
+   * */
   drawcell = row => {
-    // if (row.column.fieldName == 'NORM' && row.record.NORM && row.record.NORM != '规范') {
-    //   row.component = (
-    //     <span style={{ padding: '0 10px', background: 'red', color: '#fff' }}>
-    //       {row.record.NORM}
-    //     </span>
-    //   );
-    // }
+    if (row.column.fieldName == 'PROCESSINGSTATE') {
+      let color = this.colorChange(row.record.PROCESSINGSTATE, row.column.textColorJson);
+      let textColor = color ? this.hexToRgb(color) : 'black';
+      row.component = (
+          <div className={styles.stat} style={{ backgroundColor: color, color: textColor }}>{row.val}</div>
+      );
+    }
   };
+
 
   //中间那些按钮
   drawToolsButton = () => {
