@@ -150,6 +150,7 @@ export default class DriverCustomerDisposePageModal extends Component {
         {...modal}
       >
         <DriverDisposeForm
+          visible={visible}
           bill={bill}
           records={records}
           operation={operation}

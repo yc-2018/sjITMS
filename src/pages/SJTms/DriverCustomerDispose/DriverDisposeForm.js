@@ -47,21 +47,37 @@ export default class DriverDisposeForm extends Component {
     };
   }
 
-  // TODO 峰子 在这里写 。。。  就第一次打开的时候，获取货品明细数据  打开第二次的时候复用第一个的明细？6666666666
-    async componentWillMount() {
-      const { bill, records, operation } = this.props;
-      this.setState({ bill: bill, records: records, operation: operation });
-      if (this.props.operation === 'Result') {
-        const response = await getCargoDetails(bill.UUID)
-        console.log('███████response>>>>', response,'<<<<██████')
-        if (response?.success && response.data)
-          this.setState({
-            cargoDetailsList: response?.data ,
-            cargoCheckArr:response?.data?.filter(item => item.istakedelivery === 1)?.map(item=>item.uuid)
-          })
-        else this.setState({ cargoDetailsList: [] ,cargoCheckArr:[]})
+
+  componentDidMount() {
+    this.getInitialData()
+  }
+  componentDidUpdate(prevProps) {
+    // 打开了 并且不是之前的uuid 获取货品明细数据，因为第一是空所以在componentDidMount钩子也获取一下
+    if (this.props.visible && this.props.bill.UUID !== prevProps.bill.UUID)
+      this.getInitialData()
+  }
+
+  /**加载该条单的初始数据*/
+  async getInitialData() {
+    const { bill, records, operation } = this.props;
+    this.setState({ bill: bill, records: records, operation: operation });
+
+    if (operation === 'Result') {
+      const response = await getCargoDetails(bill.UUID);
+      if (response?.success && response.data) {
+        this.setState({
+          cargoDetailsList: response?.data,
+          cargoCheckArr: response?.data?.filter(item => item.istakedelivery === 1)?.map(item => item.uuid)
+        });
+      } else {
+        this.setState({ cargoDetailsList: [], cargoCheckArr: [] }); // 如果后端返回空数组，则自行处理。
       }
     }
+  }
+
+
+
+
   //
   checkAllCargo= () => {
     //cargoCheckArr:cargoDetailsList的主键uuid集合  ||   cargoDetailsList就是货品详情明细集合
