@@ -1,16 +1,10 @@
 import React, { Component } from 'react';
-import { Form, Input, Row, Col, Tooltip, Collapse, Divider,DatePicker,Card,Checkbox } from 'antd';
+import { Form, Input, Row, Col, Tooltip, Collapse, Divider,Checkbox } from 'antd';
 import IconFont from '@/components/IconFont';
-import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import Empty from '@/pages/Component/Form/Empty';
-// import styles from './DisposePage.less';
 import styles from'./DriverCustomerPage.less'
 import cargoDetailStyles from './DriverDisposeForm.less'
-import moment from 'moment';
-import log from '@/models/common/log';
-import Select from '@/components/ExcelImport/Select';
 import { getCargoDetails } from '@/services/sjitms/DriverCustomerService';
-import { length } from 'localforage';
 const Panel = Collapse.Panel;
 
 @Form.create()
@@ -49,10 +43,10 @@ export default class DriverDisposeForm extends Component {
 
 
   componentDidMount() {
-    this.getInitialData()
+    this.getInitialData() // 获取货品明细数据
   }
   componentDidUpdate(prevProps) {
-    // 打开了 并且不是之前的uuid 获取货品明细数据，因为第一是空所以在componentDidMount钩子也获取一下
+    // 打开了 并且不是之前的uuid 获取货品明细数据，因为第一次是空所以在componentDidMount钩子也获取一下
     if (this.props.visible && this.props.bill.UUID !== prevProps.bill.UUID)
       this.getInitialData()
   }
