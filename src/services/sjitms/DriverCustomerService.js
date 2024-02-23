@@ -80,3 +80,17 @@ export async function getCargoDetails(billUuid) {
 export function getBillNo(ownerCode) {
   return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/getBillNo?ownerCode=${ownerCode}`);
 }
+
+/**
+ * 司机服务取货
+ *
+ * @param uuids uuid列表
+ * @author ChenGuangLong
+ * @since 2024/02/23 14:44:44
+ */
+export async function driverSvcPickup(uuids) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/driverSvcPickup`, {
+    method: 'POST',
+    body: uuids,
+  });
+}

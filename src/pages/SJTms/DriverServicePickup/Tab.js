@@ -1,10 +1,12 @@
 /*
-* 责任买单组件
+* 司机服务取货组件
 */
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { connect } from 'dva';
 import { Button, Input, message, Popconfirm } from 'antd'
 import React from 'react';
+import { driverSvcPickup } from '@/services/sjitms/DriverCustomerService'
+import styles from '@/pages/SJTms/DriverCustomer/DriverCustomerSearch.less'
 
 @connect(({ quick, loading }) => ({
     quick,
@@ -14,46 +16,66 @@ export default class extends QuickFormSearchPage {
     constructor(props) {
         super(props);
         this.state = {
+            successList:[],     // 成功的UUID列表
+            noTable:true,
             ...this.state,
-            DRIVERCODE:'',
-            //设置弹出框的样式
-            data: [{
-                BILLUUID: "bd504e0c19fb436ea747e8cc13ff81f8",
-                CUSTOMERCODE: "24250",
-                CUSTOMERNAME: "(A)广东深圳龙华共和优乐佳美宜佳",
-                ISTAKEDELIVERY: 0,
-                PRODUCTAMOUNT: 4.3,
-                PRODUCTCODE: "24054710",
-                PRODUCTNAME: "魔爪能量风味饮料(奇异果苹果混合果味)330ml",
-                PRODUCTPOSITION: "202_10",
-                PRODUCTPRICE: 4.3,
-                PRODUCTQUANTITY: 1,
-                ROW_ID: 1,
-                UUID: "4eb31f49-ebac-4d82-86d3-4725cbb1ba0a"}],
+            DRIVERCODE:'',   // 司机工号
         };
     }
 
     componentDidMount() {
-        this.queryCoulumns();
-        this.getCreateConfig();
-        this.empInputRef.focus()
+        this.queryCoulumns()
+        this.getCreateConfig()
+        this.empInputRef?.focus() //进来直接获取司机工号输入框焦点
     }
-    //确认取货
-    confirmPickup = () => {
-        const { selectedRows } = this.state;
-        if (selectedRows.length === 0) {
-            message.error('请至少选中一条货品数据!');
+
+
+    componentDidUpdate(_prevProps, prevState,_) {
+        // 有数据才显示表格
+        if (prevState.data !== this.state.data) {
+            if (this.state.data?.list?.length > 0)
+                this.setState({ noTable: false })
+            else
+                this.setState({ noTable: true })
         }
-        console.log('███████selectedRows>>>>', selectedRows,'<<<<██████')
+    }
+
+
+    /** 确认取货 */
+    confirmPickup = async () => {
+        const { selectedRows } = this.state;
+        if (selectedRows.length === 0) return message.error('请至少选中一条货品数据!');
+        const uuidList = selectedRows.map(item => item.UUID)    // 选中的全部UUID
+        const uuids = uuidList.filter(item => !this.state.successList.includes(item))   // 过滤掉已经成功的UUID
+        if (uuids.length === 0) return message.info('你选择的货品都已经取货啦')
+        if (uuids.length !== uuidList.length) message.warning('已过滤已取货的~')
+
+       const resp = await driverSvcPickup(uuids)
+        if (resp.success) {
+            message.success('操作成功!')
+            this.setState({ successList: [...this.state.successList, ...uuids]})
+        }
     };
+
+    /**
+     * @description 改变每一行的数据展示（这里改变颜色）
+     * @param row 一行数据
+     * */
+    drawcell = row => {
+        if (this.state.successList.includes(row.record.UUID)) {
+            row.component = (
+                <div style={{ backgroundColor: '#47ff00' }}>{row.val}✔</div>
+            )
+        }
+    }
+
 
     //该方法会覆盖所有的上层按钮
     drawActionButton = () => <></>;
 
-    /** 绘制搜索表格 */
+    /** 绘制搜索 */
     drawSearchPanel = () => {
-        let { isOrgQuery, defaultSort } = this.state;
-        const { quickuuid } = this.props;
+        let { isOrgQuery } = this.state;
         return <div style={{ fontSize: 16, textAlign: 'center' }}>
             司机工号：
             <Input
@@ -66,14 +88,14 @@ export default class extends QuickFormSearchPage {
                             {
                                 ...this.state.pageFilters, superQuery: {
                                     matchType: 'and',
-                                    queryParams: [...isOrgQuery, {
+                                    queryParams: [{
                                         field: 'DRIVERCODE',
                                         rule: 'eq',
                                         type: 'VarChar',
                                         val: this.state.DRIVERCODE, //司机代码
-                                    }],
+                                    },...isOrgQuery],
                                 }
-                            }
+                            },noTable: false
                     },()=>this.getData(this.state.pageFilters))
                 }
                 placeholder={'输入司机工号'}
@@ -90,12 +112,19 @@ export default class extends QuickFormSearchPage {
                 onConfirm={this.confirmPickup}
                 style={{ marginLeft: 10 }}
             >
-                <Button type={'primary'}  style={{ marginLeft: 10 }}>
+                <Button type={'primary'}  style={{ marginLeft: 10, visibility: this.state.selectedRows.length > 0 ? 'visible' :'hidden'}}>
                     确认取货
                 </Button>
             </Popconfirm>
         </div>
 
 
+    /** 绘制其他组件：没数据时提示组件 */
+    drawOtherCom = () =>
+        <div style={{ marginBottom: 10, fontSize: 55, textAlign: 'center', color: '#ff0000'}}>
+            {!this.state.pageFilters?.superQuery?.queryParams?.[0]?.val? '请输入司机工号获取数据':
+            this.state.data?.list?.length > 0 ? <></> : '该工号暂无数据\n请检查输入是否正确'}
+        </div>
 
 }
+
