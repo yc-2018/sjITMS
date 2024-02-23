@@ -6,7 +6,6 @@ import { connect } from 'dva';
 import { Button, Input, message, Popconfirm } from 'antd'
 import React from 'react';
 import { driverSvcPickup } from '@/services/sjitms/DriverCustomerService'
-import styles from '@/pages/SJTms/DriverCustomer/DriverCustomerSearch.less'
 
 @connect(({ quick, loading }) => ({
     quick,
@@ -123,7 +122,7 @@ export default class extends QuickFormSearchPage {
     drawOtherCom = () =>
         <div style={{ marginBottom: 10, fontSize: 55, textAlign: 'center', color: '#ff0000'}}>
             {!this.state.pageFilters?.superQuery?.queryParams?.[0]?.val? '请输入司机工号获取数据':
-            this.state.data?.list?.length > 0 ? <></> : '该工号暂无数据\n请检查输入是否正确'}
+            this.state.data?.list?.length > 0 || this.props.loading ? <></> : '该工号暂无数据\n请检查输入是否正确'}
         </div>
 
 }
