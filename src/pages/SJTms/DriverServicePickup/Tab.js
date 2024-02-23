@@ -60,20 +60,22 @@ export default class extends QuickFormSearchPage {
                 ref={input => (this.empInputRef = input)}
                 allowClear
                 style={{ width: 250, height: 40, fontSize: 16, margin: 15, }}
-                onPressEnter={() => this.getData({
-                    pageSize: 20,
-                    order: defaultSort,
-                    quickuuid: quickuuid,
-                    superQuery: {
-                        matchType: 'and',
-                        queryParams: [...isOrgQuery,{
-                            field: "DRIVERCODE",
-                            rule: "eq",
-                            type: "VarChar",
-                            val: this.state.DRIVERCODE, //司机代码
-                        }],
-                    },
-                })}
+                onPressEnter={() =>
+                    this.setState({
+                        pageFilters:
+                            {
+                                ...this.state.pageFilters, superQuery: {
+                                    matchType: 'and',
+                                    queryParams: [...isOrgQuery, {
+                                        field: 'DRIVERCODE',
+                                        rule: 'eq',
+                                        type: 'VarChar',
+                                        val: this.state.DRIVERCODE, //司机代码
+                                    }],
+                                }
+                            }
+                    },()=>this.getData(this.state.pageFilters))
+                }
                 placeholder={'输入司机工号'}
                 onChange={e => this.setState({ DRIVERCODE: e.target.value })}
             />
