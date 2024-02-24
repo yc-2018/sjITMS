@@ -84,13 +84,12 @@ export function getBillNo(ownerCode) {
 /**
  * 司机服务取货
  *
- * @param uuids uuid列表
+ * @param uuid uuid
  * @author ChenGuangLong
  * @since 2024/02/23 14:44:44
  */
-export async function driverSvcPickup(uuids) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/driverSvcPickup`, {
-    method: 'POST',
-    body: uuids,
+export async function driverSvcPickup(uuid) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/driverSvcPickup?uuid=${uuid}`, {
+    method: 'POST'
   });
 }
