@@ -67,14 +67,14 @@ export default class DriverCustomerCreate extends QuickCreatePage {
         if (goodsList?.success)
           // 字段变量变来又变去真的有够麻烦的
           this.setState({
-            theSelectGoodsDetailDatas: goodsList.data.map(item => (
+            theSelectGoodsDetailDatas: goodsList.data?.map(item => (
                 {
                   ...item,                                  /*下面相同的字段就是因为责任买单和少货买单在数据库的字段不同而做出兼容*/
                   STORECODE: item.customercode,             // 门店号码
                   SKU: item.productcode,                    // 货物代码
                   ARTICLECODE: item.productcode,            // 货物代码，与SKU相同
-                  DESCR_C: item.productname,                // 货物名称
-                  ARTICLENAME: item.productname,            // 货物名称，与DESCR_C相同
+                  SKUNAME: item.productname,                // 货物名称
+                  ARTICLENAME: item.productname,            // 货物名称，与SKUNAME相同
                   LOCATION: item.productposition,           // 货位
                   PICKBIN: item.productposition,            // 货位，与LOCATION相同
                   QTY_EACH: item.productquantity,           // 货物数量（每件）
@@ -108,7 +108,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       tempObj.billuuid = uuidSave                                                // 主表uuid
       tempObj.customercode = dtl.STORECODE                                       // 门店号码
       tempObj.productcode = isCargoHandling ? dtl.SKU : dtl.ARTICLECODE          // 货物代码
-      tempObj.productname = isCargoHandling ? dtl.DESCR_C : dtl.ARTICLENAME      // 货物名称
+      tempObj.productname = isCargoHandling ? dtl.SKUNAME : dtl.ARTICLENAME      // 货物名称
       tempObj.productposition = isCargoHandling ? dtl.LOCATION : dtl.PICKBIN     // 货位
       tempObj.productquantity = isCargoHandling ? dtl.QTY_EACH : dtl.QTY         // 货物数量
       tempObj.deliverydate = isCargoHandling ? dtl.ADDTIME : dtl.APPLICATIONDATE // 配送日期
@@ -167,7 +167,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       }
 
       //通过框架 保存司机客服服务信息this.entity[tableName]
-      this.onSave()
+      await this.onSave()
 
       //不是问题反馈   就执行==>  保存货品详情信息&&客服服务处理记录
       this.state.assistanceType !== 'PROBLEMFEEDBACK' && this.saveAfterItem(saveObj.UUID)
@@ -389,11 +389,11 @@ export default class DriverCustomerCreate extends QuickCreatePage {
             }
           </Modal>
 
-          <Table dataSource={theSelectGoodsDetailDatas.map(item => ({...item, store: item.STORECODE + ' ' + item.STORENAME}))}
+          <Table dataSource={theSelectGoodsDetailDatas?.map(item => ({...item, store: item.STORECODE + ' ' + item.STORENAME}))}
                  scroll={{ x: true }} style={{margin: '0 20px'}}
                  pagination={false} // 隐藏分页并显示所有数据
                  columns={[
-                   { title: '货品', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'DESCR_C' : 'ARTICLENAME', key: '1' },
+                   { title: '货品', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'SKUNAME' : 'ARTICLENAME', key: '1' },
                    { title: '门店', dataIndex: 'store', width: 350, key: '2' },
                    { title: '数量', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'QTY_EACH' : 'QTY', key: '3' },
                    { title: '价位', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'LOCATION' : 'PICKBIN', key: '4' },

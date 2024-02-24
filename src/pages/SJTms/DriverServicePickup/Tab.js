@@ -78,7 +78,8 @@ export default class extends QuickFormSearchPage {
                           val: this.state.DRIVERCODE, //司机代码
                         }, ...isOrgQuery],
                       }
-                    }
+                    },
+                successList: []   // 清空成功列表
               }, () => this.getData(this.state.pageFilters))
           }
           placeholder={'输入司机工号'}
@@ -103,19 +104,21 @@ export default class extends QuickFormSearchPage {
       </div>
 
 
-  /** 绘制其他组件 */
+  /** 绘制组件 */
   drawOtherCom = () =>
       <div style={{ marginBottom: 10, fontSize: 55, textAlign: 'center', color: '#ff0000' }}>
-        {!this.state.pageFilters?.superQuery?.queryParams?.[0]?.val ? '请输入司机工号获取数据' :
+        {!this.state.pageFilters?.superQuery?.queryParams?.[0]?.val ?
+            '请输入司机工号获取数据' :
             this.state.data?.list?.length > 0 || this.props.loading ?
                 <Table dataSource={this.state.data?.list}
-                       pagination={false} // 设置 pagination 为 false 以去掉翻页组件
+                       loading={this.props.loading}
                        scroll={{ x: '100%' }}
+                       pagination={false}           // 去掉翻页组件
                        columns={[
                          { title: '门店号码', width: 100, dataIndex: 'CUSTOMERCODE', key: 'CUSTOMERCODE' },
                          { title: '货物代码', width: 100, dataIndex: 'PRODUCTCODE', key: 'PRODUCTCODE' },
                          { title: '货物名称', width: 200, dataIndex: 'PRODUCTNAME', key: 'PRODUCTNAME' },
-                         { title: '货位', width: 80, dataIndex: 'PRODUCTPOSITION', key: 'PRODUCTPOSITION' },
+                         { title: '货位', width: 88, dataIndex: 'PRODUCTPOSITION', key: 'PRODUCTPOSITION' },
                          { title: '货物数量', width: 80, dataIndex: 'PRODUCTQUANTITY', key: 'PRODUCTQUANTITY' },
                          { title: '配送日期', width: 133, dataIndex: 'DELIVERYDATE', key: 'DELIVERYDATE' },
                          { title: '货物金额', width: 80, dataIndex: 'PRODUCTAMOUNT', key: 'PRODUCTAMOUNT' },
@@ -124,18 +127,16 @@ export default class extends QuickFormSearchPage {
                          { title: '排车单号', width: 111, dataIndex: 'SCHEDULENUMBER', key: 'SCHEDULENUMBER' },
                          { title: '买单单号', width: 111, dataIndex: 'BUYNUMBER', key: 'BUYNUMBER' },
                          { title: '取货操作', width: 100, key: 'action', fixed: 'right',
-                           render: (_text, record) => {
-                             const { UUID } = record // 假设每行数据有一个 `uuid` 字段
+                           render: (_text, { UUID }) => {
                              return this.state.successList.includes(UUID) ?
-                                 <Button disabled>已取货</Button>
-                                 :
+                                 <Button disabled>已取货</Button> :
                                  <Button onClick={() => this.confirmPickup(UUID)} type="primary">
                                    确认取货
                                  </Button>
-                           },
-                         },
+                           }
+                         }
                        ]}
                 /> :
-                '工号' + this.state.pageFilters?.superQuery?.queryParams?.[0]?.val + '暂无数据\n请检查输入是否正确'}
+                '工号' + this.state.pageFilters?.superQuery?.queryParams?.[0]?.val + '暂无未取货数据\n请检查输入是否正确'}
       </div>
 }
