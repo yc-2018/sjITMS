@@ -17,7 +17,7 @@ import {
   getBillNo,
   getCargoDetails,
   getLinkTypeDict,
-  onSaveGoodsDetailRecord
+  onSaveGoodsDetailRecord, onSaveProcessingRecord
 } from '@/services/sjitms/DriverCustomerService'
 import DriverCustomerDutyBuy from '@/pages/SJTms/DriverCustomer/DriverCustomerDutyBuy';
 import TextArea from "antd/lib/input/TextArea";
@@ -170,7 +170,9 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       await this.onSave()
 
       //不是问题反馈   就执行==>  保存货品详情信息&&客服服务处理记录
-      this.state.assistanceType !== 'PROBLEMFEEDBACK' && this.saveAfterItem(saveObj.UUID)
+      if (this.state.assistanceType !== 'PROBLEMFEEDBACK')
+        this.saveAfterItem(saveObj.UUID)
+     else await onSaveProcessingRecord(saveObj.UUID) // 是问题反馈 单保存客服服务处理记录
     })
   }
 

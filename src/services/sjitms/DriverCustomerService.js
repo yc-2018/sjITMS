@@ -93,3 +93,15 @@ export async function driverSvcPickup(uuid) {
     method: 'POST'
   });
 }
+
+/**
+ * 新建保存工单，不保存货品详情表数据时， 单保存客服服务处理记录的保存
+ * @param billUuid 单据UUID
+ * @author ChenGuangLong
+ * @since 2024/02/26 16:38:56
+ */
+export async function onSaveProcessingRecord(billUuid) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/onSaveProcessingRecord?billUuid=${billUuid}`, {
+    method: 'POST'
+  });
+}
