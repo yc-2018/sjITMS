@@ -173,13 +173,14 @@ export default class DriverDisposeForm extends Component {
         {
           this.props.operation === "Result" && cargoDetailsList.length > 0 ? (
             <Row type="flex" justify="end">
-              <Checkbox
-                // indeterminate={this.state.indeterminate}
-                checked={cargoCheckArr.length === cargoDetailsList.length}
-                onChange={this.checkAllCargo}
-              >
-                全选
-              </Checkbox>
+              <label>
+                <span style={{marginRight:'5px'}}>全部取货</span>
+                <Checkbox
+                  // indeterminate={this.state.indeterminate}
+                  checked={cargoCheckArr.length === cargoDetailsList.length}
+                  onChange={this.checkAllCargo}
+                />
+              </label>
             </Row>
           ) : <></>
         }
@@ -193,18 +194,7 @@ export default class DriverDisposeForm extends Component {
                     <div className={cargoDetailStyles.cargoDetail} onClick={this.bigCheck}>
                       <Row>
                         <Col span={4}>货品:</Col>
-                        <Col span={18}>{item.productname}</Col>
-                        <Col span={2}>
-                          <Checkbox
-                            checked={cargoCheckArr.indexOf(item.uuid) > -1}
-                            onChange={(e) => {
-                              const uuids = e.target.checked ? [...cargoCheckArr, item.uuid] : cargoCheckArr.filter((x) => x !== item.uuid);
-                              this.setState({ cargoCheckArr: uuids });
-                              this.props.getRequireTakeDeliveryData(uuids);
-                            }}
-                            iconSize='10px'
-                          />
-                        </Col>
+                        <Col span={20}>{item.productname}</Col>
                       </Row>
                       <Divider style={{ margin: '0px' }} />
                       <Row>
@@ -218,6 +208,22 @@ export default class DriverDisposeForm extends Component {
                         <Col span={9}>{item.productposition || '<空>'}</Col>
                         <Col span={3}>件数:</Col>
                         <Col span={9}>{item.productquantity || '<空>'}</Col>
+                      </Row>
+                      <Divider style={{ margin: '0px' }} />
+                      <Row>
+                        <Col span={24}>
+                          <div className={cargoDetailStyles.checkboxDriverDisposeForm}>
+                            <span style={{marginRight:'5px'}}>是否取货</span>
+                            <input type="checkbox"
+                                   checked={cargoCheckArr.indexOf(item.uuid) > -1}
+                                   onChange={(e) => {
+                                     const uuids = e.target.checked ? [...cargoCheckArr, item.uuid] : cargoCheckArr.filter((x) => x !== item.uuid);
+                                     this.setState({ cargoCheckArr: uuids });
+                                     this.props.getRequireTakeDeliveryData(uuids);
+                                   }}
+                            />
+                          </div>
+                        </Col>
                       </Row>
 
                     </div>
