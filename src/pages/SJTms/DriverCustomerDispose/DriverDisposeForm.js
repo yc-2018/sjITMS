@@ -13,7 +13,7 @@ export default class DriverDisposeForm extends Component {
     super(props);
   }
   placeholders = {
-    Rejected: '驳回说明',
+    Rejecte: '驳回说明',
     Release: '发布说明',
     Result: '最终结果',
     Dispose: '处理说明',
@@ -206,8 +206,8 @@ export default class DriverDisposeForm extends Component {
                   <label>
                     <div className={cargoDetailStyles.cargoDetail} onClick={this.bigCheck}>
                       <Row>
-                        <Col span={4}>货品:</Col>
-                        <Col span={20}>{item.productname}</Col>
+                        <Col span={2}>货品:</Col>
+                        <Col span={22}>{item.productname}</Col>
                       </Row>
                       <Divider style={{ margin: '0px' }} />
                       <Row>
@@ -296,7 +296,7 @@ export default class DriverDisposeForm extends Component {
           wrapperCol={{ span: 22 }}
         >
           {getFieldDecorator('remark', {
-            rules: [{ required: true, message: '请输入' + this.placeholders[operation] }],
+            rules: [{ required: true, message: '请输入' + this.placeholders[operation]}],
             initialValue: operation === 'Result' ? bill.STAFFRESULT : '',
           })(
             <Input.TextArea
