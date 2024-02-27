@@ -34,7 +34,7 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
   }
 
   editColumns = queryConfig => {
-    let creatorCol = queryConfig.columns.find(x => x.fieldName == 'CREATORNAME');
+    let creatorCol = queryConfig.columns.find(x => x.fieldName === 'CREATORNAME');
     creatorCol.searchDefVal = loginUser().name;
     return queryConfig;
   };
@@ -44,7 +44,7 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
    * @param row 行数据
    * */
   drawcell = row => {
-    if (row.column.fieldName == 'PROCESSINGSTATE') {
+    if (row.column.fieldName === 'PROCESSINGSTATE') {
       let color = this.colorChange(row.record.PROCESSINGSTATE, row.column.textColorJson);
       let textColor = color ? this.hexToRgb(color) : 'black';
       row.component = (
@@ -165,9 +165,8 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
         if (response && response.success) {
           message.success('发布成功！');
           this.onSearch();
-        }else{
-          message.error('发布失败！');
-        }
+        }else message.error('发布失败！')
+
       })
 
     } else {//多条处理了 TODO 先写的这个
@@ -197,20 +196,18 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
   //回复进度
   handleProgress = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length !== 1) {
-      message.warning('请选中一条数据！');
-      return;
-    }
+    if (selectedRows.length !== 1) return message.warning('请选中一条数据！')
+    if (!['Dispose','Released'].includes(selectedRows[0].PROCESSINGSTATE)) message.warning('只有已发布或处理中的状态才能回复进度，当前状态无法回复结果！')
+
     this.processPageRef.show(selectedRows[0]);
   }
 
   //回复结果
   handleResult = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length !== 1) {
-      message.warning('请选中一条数据！');
-      return;
-    }
+    if (selectedRows.length !== 1) return message.warning('请选中一条数据！');
+    if (!['Dispose','Released'].includes(selectedRows[0].PROCESSINGSTATE)) message.warning('只有已发布或处理中的状态才能回复结果，当前状态无法回复结果！')
+
     this.resultPageRef.show(selectedRows[0]);
   };
 
@@ -218,19 +215,15 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
   //完结
   handleFinished = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length === 0) {
-      message.warning('请至少选中一条数据！');
-      return;
-    }
+    if (selectedRows.length === 0) return message.warning('请至少选中一条数据！');
+
     if (selectedRows.length === 1) {
       onFinish(selectedRows[0].UUID).then(response => {
         if (response.success) {
           message.success('保存成功！');
           this.onSearch();
-        }else{
-          message.error(response.message)
-        }
-      });
+        }else message.error(response.message)
+      })
     } else {
       this.batchProcessConfirmRef.show(
         '完结',
@@ -277,33 +270,28 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
   handleDelete = () => {
     const { selectedRows } = this.state;
     const service = selectedRows
-      .filter(x => 'Saved,ReleasedDispose'.indexOf(x.PROCESSINGSTATE) == -1)
+      .filter(x => 'Saved,ReleasedDispose'.indexOf(x.PROCESSINGSTATE) === -1)
       .shift();
-    if (service) {
-      // message.error('客服工单:' + service.BILLNUMBER + service.STATUS_CN + '状态，不能删除！');
-      message.error('客服工单:' + service.BILLNUMBER+ service.PROCESSINGSTATE_CN + '状态，不能删除！');
-      return;
-    }
+    if (service) return message.error('客服工单:' + service.BILLNUMBER+ service.PROCESSINGSTATE_CN + '状态，不能删除！');
+
     this.onBatchDelete();
   };
 
-  // TODO 已弄好,再弄
   //驳回
   handleReject = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length !== 1) {
-      message.warning('请选中一条数据！');
-      return;
-    }
+    if (selectedRows.length !== 1) return message.warning('请选中一条数据！')
+    if (selectedRows[0].PROCESSINGSTATE !== 'Released') message.warning('只有发布状态的工单才能驳回！当前状态不能驳回！')
+
       this.rejectedPageRef.show(selectedRows[0]);
-  };
+  }
 
   //编辑
   onUpdate = () => {
     const { selectedRows } = this.state
     if (selectedRows.length === 1)
-      if (selectedRows[0].STATUS !== 'Finished') this.props.switchTab('update', { entity: selectedRows[0], })
+      if (selectedRows[0].PROCESSINGSTATE !== 'Finished') this.props.switchTab('update', { entity: selectedRows[0] })
       else message.error('该客服工单已完结，不能修改')
-    else message.error('请选中一条数据!')
+    else message.warn('请选中一条数据!')
   }
 }
