@@ -18,6 +18,17 @@ export default class DriverDisposeForm extends Component {
     Result: '最终结果',
     Dispose: '处理说明',
   };
+  processingStatus = {  // 处理状态
+    Released: '已发布',
+    Disposed: '已处理',
+    Rejected: '已驳回',
+    Finished: '已完成',
+    TimeoutFinished: '超时完成',
+    Saved: '保存',
+    Rejecte: '驳回',
+    Dispose: '处理进度',
+    Result: '处理结果',
+  };
   state={
     records:[],
     operation:"",
@@ -190,7 +201,7 @@ export default class DriverDisposeForm extends Component {
         {
           this.props.operation==="Result" && cargoDetailsList.length > 0?(
             cargoDetailsList.map((item)=>{
-                return   <Col span={6}>
+                return   <Col span={12}>
                   {/*<Card title={item.productname} bordered={true} className={cargoDetailStyles.antCardBody}>*/}
                   <label>
                     <div className={cargoDetailStyles.cargoDetail} onClick={this.bigCheck}>
@@ -200,16 +211,17 @@ export default class DriverDisposeForm extends Component {
                       </Row>
                       <Divider style={{ margin: '0px' }} />
                       <Row>
-                        <Col span={3}>价格:</Col>
-                        <Col span={9}>{item.productprice || '<空>'}</Col>
-                        <Col span={3}>金额:</Col>
-                        <Col span={9}>{item.productamount || '<空>'}</Col>
-                      </Row>
-                      <Row>
-                        <Col span={3}>货位:</Col>
-                        <Col span={9}>{item.productposition || '<空>'}</Col>
-                        <Col span={3}>件数:</Col>
-                        <Col span={9}>{item.productquantity || '<空>'}</Col>
+                        <Col span={2}>价格:</Col>
+                        <Col span={4}>{item.productprice || '<空>'}</Col>
+
+                        <Col span={2}>金额:</Col>
+                        <Col span={4}>{item.productamount || '<空>'}</Col>
+
+                        <Col span={2}>货位:</Col>
+                        <Col span={4}>{item.productposition || '<空>'}</Col>
+
+                        <Col span={2}>件数:</Col>
+                        <Col span={4}>{item.productquantity || '<空>'}</Col>
                       </Row>
                       <Divider style={{ margin: '0px' }} />
                       <Row>
@@ -265,7 +277,7 @@ export default class DriverDisposeForm extends Component {
                     <Divider />
                     <div className={styles.disposeTitle}>
                       {record.creatorname}
-                      <span style={{ fontWeight: 'bold' }}>({record.type})</span>
+                      <span style={{ fontWeight: 'bold' }}>({this.processingStatus[record.type]??record.type})</span>
                       <span style={{ float: 'right' }}>{record.created}</span>
                     </div>
                     <div>{record.detail || '<空>'}</div>

@@ -54,7 +54,7 @@ export default class DriverCustomerDisposePageModal extends Component {
     const { bill } = this.state;
     const validate = await this.formRef.validateFields();
     this.setState({ saving: true });
-    const param = { billuuid: bill.UUID, type: this.modeTxt[stat], detail: validate.remark };
+    const param = { billuuid: bill.UUID, type: stat, detail: validate.remark };
     await onReject(param).then(response => {
       if (response && response.success) {
         message.success('驳回处理成功！');
@@ -72,7 +72,7 @@ export default class DriverCustomerDisposePageModal extends Component {
     const { bill } = this.state;
     const validate = await this.formRef.validateFields();
     this.setState({ saving: true });
-    const param = { billuuid: bill.UUID, type: this.modeTxt[stat], detail: validate.remark };
+    const param = { billuuid: bill.UUID, type: stat, detail: validate.remark };
     await disposeProcess(param).then(response => {
       if (response && response.success) {
         message.success('回复处理成功！');
@@ -95,7 +95,7 @@ export default class DriverCustomerDisposePageModal extends Component {
     const { bill,requireTakeCargoArr} = this.state;
     const validate = await this.formRef.validateFields();
     this.setState({ saving: true });
-    const param = { billuuid: bill.UUID, type: this.modeTxt[stat], detail: validate.remark,requireTakeCargoList:requireTakeCargoArr};
+    const param = { billuuid: bill.UUID, type: stat, detail: validate.remark,requireTakeCargoList:requireTakeCargoArr};
     onResult(param).then(response => {
       if (response && response.success) {
         message.success('回复结果成功！');
