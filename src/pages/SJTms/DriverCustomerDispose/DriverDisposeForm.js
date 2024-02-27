@@ -103,83 +103,43 @@ export default class DriverDisposeForm extends Component {
 
 
   render() {
-    const formItem = {
-      labelCol: { span: 8 },
-      wrapperCol: { span: 16 },
-    };
+    /** 取货卡片用 */
+    const build2Col = (text, value, textSpan=2, valueSpan=4) =>
+      <>
+      <Col span={textSpan}>{text}:</Col>
+      <Col span={valueSpan}>{value || '<空>'}</Col>
+    </>
+
+    /** 表单查看用 */
+    const buildColFormItem = (label,value,colSpan=8,ItemAttribute={}) =>
+      <Col span={colSpan}>
+        <Form.Item label={label} {...ItemAttribute}>
+          <Tooltip title={value}>
+            {value || <Empty />}
+          </Tooltip>
+        </Form.Item>
+      </Col>
+
+
     const { bill, records, operation,typeDictArr,cargoDetailsList,cargoCheckArr} = this.state;
     const { getFieldDecorator } = this.props.form;
     return (
 
       bill ? <Form labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
         <Row gutter={[12, 0]}>
-          <Col span={24}>
-            <Form.Item label="客户信息" labelCol={{ span: 2 }} wrapperCol={{ span: 22 }}>
-              <Tooltip title={`[${bill.CUSTOMERCODE}]${bill.CUSTOMERNAME}`}>
-                {`[${bill.CUSTOMERCODE}]${bill.CUSTOMERNAME}`}
-              </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="协助类型">
-              <Tooltip>{bill.ASSISTANCETYPE_CN  || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="问题类型">
-              <Tooltip>{bill.PROBLEMTYPE_CN || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="反馈时间">
-              <Tooltip>{bill.FEEDBACKTIME || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="司机信息">
-              <Tooltip>{`[${bill.DRIVERCODE}]${bill.DRIVERNAME}`}  </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="提交次数">
-              <Tooltip>{bill.SUBMISSIONSNUMBER || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="反馈来源">
-              <Tooltip>{bill.FEEDBACKSOURCE || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="紧急程度">
-              <Tooltip>{bill.URGENCY || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="处理时效">
-              <Tooltip>{bill.PROCESSINGTIMELINESS+'小时' || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="截止时间">
-              <Tooltip>{bill.DEADLINE || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="处理部门">
-              <Tooltip>{bill.DISPOSEDEPT || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="处理人">
-              <Tooltip>{bill.DISPOSENAME || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={24}>
-            <Form.Item label="投诉描述" labelCol={{ span: 2 }} wrapperCol={{ span: 22 }}>
-              <Tooltip>{bill.ASSISTCONTENT || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
+          {buildColFormItem('客户信息',`[${bill.CUSTOMERCODE}]${bill.CUSTOMERNAME}`,24,{labelCol:{ span: 2 },wrapperCol:{ span: 22}})}
+          {buildColFormItem('协助类型',bill.ASSISTANCETYPE_CN)}
+          {buildColFormItem('问题类型',bill.PROBLEMTYPE_CN)}
+          {buildColFormItem('反馈时间',bill.FEEDBACKTIME)}
+          {buildColFormItem('司机信息',`[${bill.DRIVERCODE}]${bill.DRIVERNAME}`)}
+          {buildColFormItem('提交次数',bill.SUBMISSIONSNUMBER)}
+          {buildColFormItem('反馈来源',bill.FEEDBACKSOURCE)}
+          {buildColFormItem('紧急程度',bill.URGENCY)}
+          {buildColFormItem('处理时效',bill.PROCESSINGTIMELINESS+'小时')}
+          {buildColFormItem('截止时间',bill.DEADLINE)}
+          {buildColFormItem('处理部门',bill.DISPOSEDEPT)}
+          {buildColFormItem('处理人',bill.DISPOSENAME)}
+          {buildColFormItem('投诉描述',bill.ASSISTCONTENT,24,{labelCol:{ span: 2 },wrapperCol:{ span: 22}})}
         </Row>
 
         {/*处理结果：客服决定司机是否取货某些货品*/}
@@ -189,7 +149,6 @@ export default class DriverDisposeForm extends Component {
               <label>
                 <span style={{marginRight:'5px'}}>全部取货</span>
                 <Checkbox
-                  // indeterminate={this.state.indeterminate}
                   checked={cargoCheckArr.length === cargoDetailsList.length}
                   onChange={this.checkAllCargo}
                 />
@@ -202,26 +161,17 @@ export default class DriverDisposeForm extends Component {
           this.props.operation==="Result" && cargoDetailsList.length > 0?(
             cargoDetailsList.map((item)=>{
                 return   <Col span={12}>
-                  {/*<Card title={item.productname} bordered={true} className={cargoDetailStyles.antCardBody}>*/}
                   <label>
                     <div className={cargoDetailStyles.cargoDetail} onClick={this.bigCheck}>
                       <Row>
-                        <Col span={2}>货品:</Col>
-                        <Col span={22}>{item.productname}</Col>
+                        {build2Col('货品',item.productname,2,22)}
                       </Row>
                       <Divider style={{ margin: '0px' }} />
                       <Row>
-                        <Col span={2}>价格:</Col>
-                        <Col span={4}>{item.productprice || '<空>'}</Col>
-
-                        <Col span={2}>金额:</Col>
-                        <Col span={4}>{item.productamount || '<空>'}</Col>
-
-                        <Col span={2}>货位:</Col>
-                        <Col span={4}>{item.productposition || '<空>'}</Col>
-
-                        <Col span={2}>件数:</Col>
-                        <Col span={4}>{item.productquantity || '<空>'}</Col>
+                        {build2Col('价格',item.productprice)}
+                        {build2Col('金额',item.productamount)}
+                        {build2Col('货位',item.productposition)}
+                        {build2Col('件数',item.productquantity)}
                       </Row>
                       <Divider style={{ margin: '0px' }} />
                       <Row>
@@ -239,19 +189,15 @@ export default class DriverDisposeForm extends Component {
                           </div>
                         </Col>
                       </Row>
-
                     </div>
                   </label>
-                  {/*</Card>*/}
                 </Col>
             })
-
 
 
           ):<></>
         }
         </Row>
-         {/*处理记录*/}
         {records.length > 0 ? (
           <Collapse
             bordered={false}
