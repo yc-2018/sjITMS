@@ -63,6 +63,8 @@ export default class DriverDisposeForm extends Component {
           cargoDetailsList: response?.data,
           cargoCheckArr: response?.data?.filter(item => item.istakedelivery === 1)?.map(item => item.uuid)
         });
+        // 货品明细数据要初始化 不然没动父组件什么都拿不到
+        this.props.getRequireTakeDeliveryData(response?.data?.filter(item => item.istakedelivery === 1)?.map(item => item.uuid))
       } else {
         this.setState({ cargoDetailsList: [], cargoCheckArr: [] }); // 如果后端返回空数组，则自行处理。
       }
