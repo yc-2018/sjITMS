@@ -156,8 +156,10 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
     }
 
     if(selectedRows.length === 1) {
-      if(['Released', 'Rejected', 'Disposed', 'Dispose'].includes(selectedRows[0].PROCESSINGSTATE))
+      if(['Released', 'Rejected', 'Disposed', 'Dispose','Finished'].includes(selectedRows[0].PROCESSINGSTATE)) {
+        message.warning('只有已保存状态的工单才能发布，当前状态不能发布！')
         return this.releasePageRef.show(selectedRows[0])
+      }
 
       //TODO 我在改
       //为保存且只选择一份工单
