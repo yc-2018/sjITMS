@@ -314,7 +314,6 @@ export default class DriverCustomerCreate extends QuickCreatePage {
                    onChange={v => this.setState({
                      theSelectGoodsDetailDatas: this.state.theSelectGoodsDetailDatas.map((item, i) => {
                        // 检查是否是第当前对象  是的话，添加属性
-                       console.log('███████record,this.state.theSelectGoodsDetailDatas>>>>', record,this.state.theSelectGoodsDetailDatas,'<<<<██████')
                        if (i === index) return { ...item, ISTAKEDELIVERY: v.target.value }
                        return item  // 对于其他对象，不做修改直接返回
                      })
