@@ -120,12 +120,11 @@ export default class DriverDisposeForm extends Component {
         </Form.Item>
       </Col>
 
-
     const { bill, records, operation,typeDictArr,cargoDetailsList,cargoCheckArr} = this.state;
     const { getFieldDecorator } = this.props.form;
-    return (
 
-      bill ? <Form labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
+    return (!bill ? <></> :
+      <Form labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
         <Row gutter={[12, 0]}>
           {buildColFormItem('客户信息',`[${bill.CUSTOMERCODE}]${bill.CUSTOMERNAME}`,24,{labelCol:{ span: 2 },wrapperCol:{ span: 22}})}
           {buildColFormItem('协助类型',bill.ASSISTANCETYPE_CN)}
@@ -142,8 +141,7 @@ export default class DriverDisposeForm extends Component {
           {buildColFormItem('投诉描述',bill.ASSISTCONTENT,24,{labelCol:{ span: 2 },wrapperCol:{ span: 22}})}
         </Row>
 
-        {/*处理结果：客服决定司机是否取货某些货品*/}
-        {
+        {/*处理结果：客服决定司机是否取货某些货品*/
           this.props.operation === "Result" && cargoDetailsList.length > 0 ? (
             <Row type="flex" justify="end">
               <label>
@@ -165,16 +163,13 @@ export default class DriverDisposeForm extends Component {
                     <div className={cargoDetailStyles.cargoDetail} onClick={this.bigCheck}>
                       <Row>
                         {build2Col('货品',item.productname,2,22)}
-                      </Row>
-                      <Divider style={{ margin: '0px' }} />
-                      <Row>
+                        <Divider style={{ margin: '0px' }} />
                         {build2Col('价格',item.productprice)}
                         {build2Col('金额',item.productamount)}
                         {build2Col('货位',item.productposition)}
                         {build2Col('件数',item.productquantity)}
-                      </Row>
-                      <Divider style={{ margin: '0px' }} />
-                      <Row>
+                        <Divider style={{ margin: '0px' }} />
+                        {/* 取货开关 */}
                         <Col span={24}>
                           <div className={cargoDetailStyles.checkboxDriverDisposeForm}>
                             <span style={{marginRight:'5px'}}>是否取货</span>
@@ -193,8 +188,6 @@ export default class DriverDisposeForm extends Component {
                   </label>
                 </Col>
             })
-
-
           ):<></>
         }
         </Row>
@@ -252,7 +245,7 @@ export default class DriverDisposeForm extends Component {
             />
           )}
         </Form.Item>
-      </Form>:<></>
+      </Form>
     );
   }
 }

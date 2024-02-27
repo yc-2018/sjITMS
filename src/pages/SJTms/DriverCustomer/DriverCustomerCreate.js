@@ -52,7 +52,6 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       this.setState({ assistAndProblemTypeData: response.data })
     else return
 
-    // if (showPageNow === 'create')
     this.entity.sj_driver_customer_service = [{}]     // 初始化>>>通过框架提交到数据库<<<的数据
 
     if (showPageNow === 'update') {

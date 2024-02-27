@@ -16,10 +16,11 @@ import { message } from 'antd';
 export default class DriverCustomerView extends QuickViewPage {
   //编辑
   onEdit = () => {
-    if (this.entity.sj_driver_customer_service[0].PROCESSINGSTATE.indexOf('Finished') == -1) {
-      this.props.switchTab('update', { entityUuid: this.state.entityUuid });
+    if (this.entity.v_sj_itms_driver_customer[0].PROCESSINGSTATE.indexOf('Finished') === -1) {
+      this.props.switchTab('update', { entity: this.entity.v_sj_itms_driver_customer[0] });
     } else {
       message.error('该客服工单已完结，不能修改');
     }
-  };
+  }
+
 }
