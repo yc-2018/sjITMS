@@ -28,8 +28,8 @@ export async function onReject(param) {
  *  发布工单
  *  @param uuids 多个uuid用于逗号分隔
  * */
-export async function publish(uuids) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/publish?uuids=${uuids}`, {
+export async function publish(uuid) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/publish?uuid=${uuid}`, {
     method: 'POST',
   });
 }

@@ -161,12 +161,7 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
 
       //TODO 我在改
       //为保存且只选择一份工单
-      this.publish(selectedRows[0].UUID,
-          {
-            //暂时不要吧
-            // COMPLETIONTIME:selectedRows[0].COMPLETIONTIME,
-            // DEADLINE:moment(new Date()).format(selectedRows[0].DEADLINE)
-          }).then(response => {
+      this.publish(selectedRows[0].UUID).then(response => {
         if (response && response.success) {
           message.success('发布成功！');
           this.onSearch();
@@ -194,8 +189,8 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
   };
 
   //这是我的客服服务发布
-  publish = async (uuids)=> {
-    return await publish(uuids);
+  publish = async (uuid)=> {
+    return await publish(uuid);
   };
 
 
