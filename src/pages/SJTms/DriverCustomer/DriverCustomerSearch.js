@@ -1,10 +1,5 @@
 /*
- * @Author: guankongjin
- * @Date: 2022-12-19 17:48:10
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-21 14:39:39
- * @Description: 客服工单
- * @FilePath: \iwms-web\src\pages\SJTms\Customer\CustomerSearch.js
+ * 司机服务表格上面的那些操作按钮
  */
 import React from 'react';
 import { connect } from 'dva';

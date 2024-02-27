@@ -310,14 +310,15 @@ export default class DriverCustomerCreate extends QuickCreatePage {
    * @author chenGuangLong
    * */
   whetherToPickUpTheGoods = (record, index) =>
-      <Radio.Group defaultValue={record?.istakedelivery ?? 0}
-                   onChange={v => this.setState(prevState => ({
-                     theSelectGoodsDetailDatas: prevState.theSelectGoodsDetailDatas.map((item, i) => {
+      <Radio.Group value={record?.ISTAKEDELIVERY ?? 0}
+                   onChange={v => this.setState({
+                     theSelectGoodsDetailDatas: this.state.theSelectGoodsDetailDatas.map((item, i) => {
                        // 检查是否是第当前对象  是的话，添加属性
+                       console.log('███████record,this.state.theSelectGoodsDetailDatas>>>>', record,this.state.theSelectGoodsDetailDatas,'<<<<██████')
                        if (i === index) return { ...item, ISTAKEDELIVERY: v.target.value }
                        return item  // 对于其他对象，不做修改直接返回
                      })
-                   }))}
+                   })}
       >
         <Radio value={0}>不取货</Radio>
         <Radio value={1}>取货</Radio>
