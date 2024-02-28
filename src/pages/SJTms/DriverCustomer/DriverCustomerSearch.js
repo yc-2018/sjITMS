@@ -123,13 +123,14 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
         >
           完结
         </Button>
-        {/*<Button*/}
-        {/*  onClick={() => this.handleUnFinished()}*/}
-        {/*  type="primary"*/}
-        {/*  // hidden={!havePermission(this.state.authority + '.norm')}*/}
-        {/*>*/}
-        {/*  撤销完结*/}
-        {/*</Button>*/}
+
+        <Button
+         onClick={() => this.handleUnFinished()}
+         type="primary"
+         // hidden={!havePermission(this.state.authority + '.norm')}
+        >
+         撤销完结
+        </Button>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
       </>
     );
@@ -291,8 +292,8 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
   onUpdate = () => {
     const { selectedRows } = this.state
     if (selectedRows.length === 1)
-      if (selectedRows[0].PROCESSINGSTATE !== 'Finished') this.props.switchTab('update', { entity: selectedRows[0] })
-      else message.error('该客服工单已完结，不能修改')
+      if (['Saved','Released','Rejected'].includes(selectedRows[0].PROCESSINGSTATE)) this.props.switchTab('update', { entity: selectedRows[0] })
+      else message.error('回复后不能再编辑了！')
     else message.warn('请选中一条数据!')
   }
 }

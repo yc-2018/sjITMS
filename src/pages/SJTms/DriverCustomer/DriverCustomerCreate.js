@@ -53,6 +53,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     else return
 
     this.entity.sj_driver_customer_service = [{}]     // 初始化>>>通过框架提交到数据库<<<的数据
+    this.entity.sj_driver_customer_service[0].PROCESSINGSTATE = 'Saved'     //处理状态 默认是保存状态
 
     if (showPageNow === 'update') {
       this.initObj = this.props.params.entity    // 缩短
@@ -60,6 +61,8 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       // 初始化数据(问题反馈类型 编辑不动就会没有门店数据，所以专门 为它提前准备好)
       this.entity.sj_driver_customer_service[0].CUSTOMERCODE = this.initObj.CUSTOMERCODE
       this.entity.sj_driver_customer_service[0].CUSTOMERNAME = this.initObj.CUSTOMERNAME
+      this.entity.sj_driver_customer_service[0].PROCESSINGSTATE =
+        this.initObj.PROCESSINGSTATE==='Rejected'? 'Saved' : this.initObj.PROCESSINGSTATE   // 处理状态（驳回保存变保存状态）
 
       if (this.initObj.ASSISTANCETYPE !== 'PROBLEMFEEDBACK'){              // 不是问题反馈就有货品明细
         const goodsList = await getCargoDetails(this.initObj.UUID)
@@ -112,7 +115,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       tempObj.productquantity = isCargoHandling ? dtl.QTY_EACH : dtl.QTY         // 货物数量
       tempObj.deliverydate = isCargoHandling ? dtl.ADDTIME : dtl.APPLICATIONDATE // 配送日期
       tempObj.productamount = isCargoHandling ? dtl.MONEY : dtl.AMOUNT           // 货物金额
-      tempObj.istakedelivery = dtl.ISTAKEDELIVERY ?? 0                           // 是否取货
+      tempObj.istakedelivery = 0                                                 // 是否取货
       tempObj.productprice = dtl.PRICE                                           // 货品价格
       tempObj.customername = dtl.STORENAME                                       // 门店名称
       driverCustomerGoodsDetailList.push(tempObj)
@@ -143,7 +146,6 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       saveObj.FEEDBACKTIME = moment().format('YYYY-MM-DD HH:mm:ss')      // 反馈时间
       saveObj.WAREHOUSE = loginOrg().uuid                                       // 仓库
       saveObj.WAREHOUSENAME = loginOrg().name                                   // 仓库名称
-      saveObj.PROCESSINGSTATE = 'Saved'                                         // 处理状态（固定就是保存状态）
       saveObj.DRIVERCODE = values['field-driverInfo'].includes('@@@')?          // 司机编号
           values['field-driverInfo'].split('@@@')[0]:this.initObj.DRIVERCODE
       saveObj.DRIVERNAME = values['field-driverInfo'].includes('@@@')?           // 司机姓名
@@ -303,26 +305,6 @@ export default class DriverCustomerCreate extends QuickCreatePage {
   }
 
 
-  /**
-   * @description 渲染货品详细 是否取货
-   * @param record 列对象
-   * @param index 行数
-   * @author chenGuangLong
-   * */
-  whetherToPickUpTheGoods = (record, index) =>
-      <Radio.Group value={record?.ISTAKEDELIVERY ?? 0}
-                   onChange={v => this.setState({
-                     theSelectGoodsDetailDatas: this.state.theSelectGoodsDetailDatas.map((item, i) => {
-                       // 检查是否是第当前对象  是的话，添加属性
-                       if (i === index) return { ...item, ISTAKEDELIVERY: v.target.value }
-                       return item  // 对于其他对象，不做修改直接返回
-                     })
-                   })}
-      >
-        <Radio value={0}>不取货</Radio>
-        <Radio value={1}>取货</Radio>
-      </Radio.Group>
-
   render () {
     const { isModalVisible, theSelectGoodsDetailDatas } = this.state
     return (
@@ -400,7 +382,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
                    { title: '价位', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'LOCATION' : 'PICKBIN', key: '4' },
                    { title: '价格', dataIndex: 'PRICE', key: '5' },
                    { title: '金额', dataIndex: this.state.assistanceType === 'CARGOHANDLING' ? 'MONEY' : 'AMOUNT', key: '6' },
-                   { title: '是否取货', render:(_text, record, index)=>this.whetherToPickUpTheGoods(record, index) }]}
+                 ]}
           /></>}
       </Layout>
     );

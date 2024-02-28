@@ -120,7 +120,7 @@ export default class DriverCustomerDisposePageModal extends Component {
     };
     switch (operation) {
       case 'Rejecte':
-        return //buildButton('驳回',()=>this.processReject("Rejecte"),'danger')
+        return buildButton('驳回',()=>this.processReject("Rejecte"),'danger')
       case 'Release':
         return //buildButton('发布',()=>this.handleProgress("Release"))
       case 'Dispose':
