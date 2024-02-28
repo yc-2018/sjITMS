@@ -49,21 +49,6 @@ export async function getLinkTypeDict() {
   return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/getLinkTypeDict`);
 }
 
-//处理回复进度
-export async function disposeProcess(param) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/disposeProcess`, {
-    method: 'POST',
-    body: param,
-  });
-}
-
-//处理回复结果
-export async function onResult(param) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/onResult`, {
-    method: 'POST',
-    body: param,
-  });
-}
 //完结
 export async function onFinish(uuid) {
   return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/onFinish?uuid=${uuid}`, {
@@ -103,5 +88,18 @@ export async function driverSvcPickup(uuid) {
 export async function onSaveProcessingRecord(billUuid) {
   return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/onSaveProcessingRecord?billUuid=${billUuid}`, {
     method: 'POST'
+  });
+}
+
+/**
+ * 回复处理内容(==回复处理进度+回复处理结果)
+ * @param param 回复记录对象
+ * @author ChenGuangLong
+ * @since 2024/02/28 17:24:44
+ */
+export async function onContent(param) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/onContent`, {
+    method: 'POST',
+    body: param,
   });
 }

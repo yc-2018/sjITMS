@@ -1,6 +1,10 @@
 /* eslint-disable */
 import React, { Component } from 'react';
-import { disposeProcess, getProcessRecords, onReject, onResult } from '@/services/sjitms/DriverCustomerService';
+import {
+  getProcessRecords,
+  onContent,
+  onReject
+} from '@/services/sjitms/DriverCustomerService'
 import { Button, message, Modal } from 'antd';
 import DriverDisposeForm from '@/pages/SJTms/DriverCustomerDispose/DriverDisposeForm';
 export default class DriverCustomerDisposePageModal extends Component {
@@ -67,45 +71,25 @@ export default class DriverCustomerDisposePageModal extends Component {
     this.setState({ saving: false });
   }
 
-  //处理回复进度
-  handleProgress = async stat => {
-    const { bill } = this.state;
-    const validate = await this.formRef.validateFields();
-    this.setState({ saving: true });
-    const param = { billuuid: bill.UUID, type: stat, detail: validate.remark };
-    await disposeProcess(param).then(response => {
-      if (response && response.success) {
-        message.success('回复处理成功！');
-        this.hide();
-        this.props.onSearch();
-      } else {
-        message.error(response.message);
-      }
-    });
-    this.setState({ saving: false });
-  };
-
   //获取客服决定司机需要取货的数据主键:回调函数，由子组件触发
   getRequireTakeDeliveryData = (cargoCheckArr) => {
     this.setState({requireTakeCargoArr:cargoCheckArr})
   };
 
-  /** 处理回复结果 */
-  processResult = async stat => {
-    const { bill,requireTakeCargoArr} = this.state;
-    const validate = await this.formRef.validateFields();
-    this.setState({ saving: true });
-    const param = { billuuid: bill.UUID, type: stat, detail: validate.remark,requireTakeCargoList:requireTakeCargoArr};
-    onResult(param).then(response => {
+  /** 回复处理内容(==回复处理进度+回复处理结果 合并了) */
+  replyToProcessingContent = async stat => {
+    const { bill,requireTakeCargoArr} = this.state
+    const validate = await this.formRef.validateFields()
+    this.setState({ saving: true })
+    const param = { billuuid: bill.UUID, type: stat, detail: validate.remark,requireTakeCargoList:requireTakeCargoArr}
+    onContent(param).then(response => {
       if (response && response.success) {
-        message.success('回复结果成功！');
-        this.hide();
-        this.props.onSearch();
-      } else {
-        message.error(response.message);
-      }
-    });
-    this.setState({ saving: false });
+        message.success('回复结果成功！')
+        this.hide()
+        this.props.onSearch()
+      } else message.error(response.message)
+    })
+    this.setState({ saving: false })
   }
 
   /** 弹窗里面的按钮 */
@@ -123,14 +107,10 @@ export default class DriverCustomerDisposePageModal extends Component {
         return buildButton('驳回',()=>this.processReject("Rejecte"),'danger')
       case 'Release':
         return //buildButton('发布',()=>this.handleProgress("Release"))
-      case 'Dispose':
-        return buildButton('回复进度',() => this.handleProgress("Dispose"),'default')
-      case 'Result':
-        return buildButton('回复结果',() => this.processResult("Result"),'default')
       case 'formReply':
         return <>
-          {buildButton('回复进度', () => this.handleProgress('Dispose'), 'default')}
-          {buildButton('回复结果', () => this.processResult('Result'), 'default')}
+          {buildButton('回复进度', () => this.replyToProcessingContent('Dispose'), 'default')}
+          {buildButton('回复结果', () => this.replyToProcessingContent('Result'), 'default')}
         </>
 
     }
