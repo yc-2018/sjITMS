@@ -139,6 +139,7 @@ export default class DriverCustomerDisposePageModal extends Component {
       case 'Dispose': // 回复进度
       case 'Result':  // 回复结果
         return !['Released','Dispose'].includes(this.state.bill.PROCESSINGSTATE)
+      default: return false
     }
   }
 

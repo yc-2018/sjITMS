@@ -215,6 +215,10 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
     if (selectedRows.length === 0) return message.warning('请至少选中一条数据！');
 
     if (selectedRows.length === 1) {
+      if (selectedRows[0].PROCESSINGSTATE!=='Disposed'){
+        this.resultPageRef.show(selectedRows[0])
+        return message.warning('只有已处理状态才能完结，当前状态无法完结！')
+      }
       onFinish(selectedRows[0].UUID).then(response => {
         if (response.success) {
           message.success('保存成功！');
