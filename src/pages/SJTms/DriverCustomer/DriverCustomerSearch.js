@@ -95,44 +95,13 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
           onSearch={this.onSearch}
         />
 
-
-        <Button
-          onClick={() => this.handleProgress()}
-          // hidden={!havePermission(this.state.authority + '.complete')}
-        >
-          回复进度
-        </Button>
-        <DriverCustomerDisposePageModal
-          operation="Dispose"
-          ref={page => (this.processPageRef = page)}
-          onSearch={this.onSearch}
-        />
-
-
-        <Button
-          onClick={() => this.handleResult()}
-          // hidden={!havePermission(this.state.authority + '.complete')}
-        >
-          回复结果
-        </Button>
-        <DriverCustomerDisposePageModal
-          operation="Result"
-          ref={page => (this.resultPageRef = page)}
-          onSearch={this.onSearch}
-        />
-
-
-        <Button onClick={() => this.handleResult()}
-          // hidden={!havePermission(this.state.authority + '.complete')}
-        >
+        <Button onClick={() => this.formReply()}/* hidden={!havePermission(this.state.authority + '.complete')} */ >
           回复
         </Button>
-        <DriverCustomerDisposePageModal
-          operation="formReply"
-          ref={page => (this.resultPageRef = page)}
-          onSearch={this.onSearch}
+        <DriverCustomerDisposePageModal operation="formReply"
+                                        ref={page => (this.resultPageRef = page)}
+                                        onSearch={this.onSearch}
         />
-
 
         <Button
           type="danger"
@@ -209,32 +178,13 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
   };
 
 
-  //回复进度
-  handleProgress = () => {
-    const { selectedRows } = this.state;
-    if (selectedRows.length !== 1) return message.warning('请选中一条数据！')
-    if (!['Dispose','Released'].includes(selectedRows[0].PROCESSINGSTATE)) message.warning('只有已发布或处理中的状态才能回复进度，当前状态无法回复结果！')
-
-    this.processPageRef.show(selectedRows[0]);
-  }
-
-  //回复结果
-  handleResult = () => {
-    const { selectedRows } = this.state;
-    if (selectedRows.length !== 1) return message.warning('请选中一条数据！');
-    if (!['Dispose','Released'].includes(selectedRows[0].PROCESSINGSTATE)) message.warning('只有已发布或处理中的状态才能回复结果，当前状态无法回复结果！')
-
-    this.resultPageRef.show(selectedRows[0]);
-  };
-
-
   /**
    * 表单回复（==回复进度+回复结果）
    */
   formReply = () => {
     const { selectedRows } = this.state;
     if (selectedRows.length !== 1) return message.warning('请选中一条数据！');
-    if (!['Dispose','Released'].includes(selectedRows[0].PROCESSINGSTATE)) message.warning('只有已发布或处理中的状态才能回复结果，当前状态无法回复结果！')
+    if (!['Dispose','Released'].includes(selectedRows[0].PROCESSINGSTATE)) message.warning('只有已发布或处理中的状态才能回复内容，当前状态无法回复内容！')
 
     this.resultPageRef.show(selectedRows[0]);
   };

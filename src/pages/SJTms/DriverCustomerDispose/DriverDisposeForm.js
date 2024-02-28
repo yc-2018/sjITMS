@@ -230,9 +230,9 @@ export default class DriverDisposeForm extends Component {
           <></>
         )}
         <Form.Item
-          label={this.placeholders.operation}
+          label={this.placeholders[operation]}
           labelCol={{ span: 2 }}
-          wrapperCol={{ span: 22 }}
+          wrapperCol={{ span: 21 }}
         >
           {getFieldDecorator('remark', {
             rules: [{ required: true, message: '请输入' + this.placeholders[operation]}],
