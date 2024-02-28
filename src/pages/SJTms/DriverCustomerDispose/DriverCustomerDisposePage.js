@@ -1,8 +1,8 @@
+/* eslint-disable */
 import React, { Component } from 'react';
 import { disposeProcess, getProcessRecords, onReject, onResult } from '@/services/sjitms/DriverCustomerService';
 import { Button, message, Modal } from 'antd';
 import DriverDisposeForm from '@/pages/SJTms/DriverCustomerDispose/DriverDisposeForm';
-
 export default class DriverCustomerDisposePageModal extends Component {
 
   state = {
@@ -108,6 +108,7 @@ export default class DriverCustomerDisposePageModal extends Component {
     this.setState({ saving: false });
   }
 
+  /** 弹窗里面的按钮 */
   drawButton = operation=> {
     const { saving } = this.state;
     const buildButton = (text,onClick,type="primary") => {
@@ -119,13 +120,25 @@ export default class DriverCustomerDisposePageModal extends Component {
     };
     switch (operation) {
       case 'Rejecte':
-        return buildButton('驳回',()=>this.processReject("Rejecte"),'danger')
+        return //buildButton('驳回',()=>this.processReject("Rejecte"),'danger')
       case 'Release':
-        return buildButton('发布',()=>this.handleProgress("Release"))
+        return //buildButton('发布',()=>this.handleProgress("Release"))
       case 'Dispose':
         return buildButton('回复进度',() => this.handleProgress("Dispose"),'default')
       case 'Result':
         return buildButton('回复结果',() => this.processResult("Result"),'default')
+    }
+  }
+  /** 在Model中显示按钮 */
+  isNoDrawButton= operation => {
+    switch (operation) {
+      case 'Rejecte': // 驳回
+        return this.state.bill.PROCESSINGSTATE!=='Released'
+      case 'Release': // 发布
+        return this.state.bill.PROCESSINGSTATE!=='Saved'
+      case 'Dispose': // 回复进度
+      case 'Result':  // 回复结果
+        return !['Released','Dispose'].includes(this.state.bill.PROCESSINGSTATE)
     }
   }
 
@@ -144,7 +157,12 @@ export default class DriverCustomerDisposePageModal extends Component {
         footer={
           <div>
             <Button onClick={this.hide}>取消</Button>
-            {this.drawButton(operation)}
+            {
+              this.isNoDrawButton(operation)?<Button disabled>当前状态不能进行此操作</Button>:
+              this.drawButton(operation)
+            }
+            {}
+
           </div>
         }
         {...modal}
