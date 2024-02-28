@@ -17,6 +17,7 @@ export default class DriverDisposeForm extends Component {
     Release: '发布说明',
     Result: '最终结果',
     Dispose: '处理说明',
+    formReply:'回复内容'
   };
   processingStatus = {  // 处理状态
     Released: '已发布',
@@ -82,8 +83,6 @@ export default class DriverDisposeForm extends Component {
       }
     }
   }
-
-
 
 
   //

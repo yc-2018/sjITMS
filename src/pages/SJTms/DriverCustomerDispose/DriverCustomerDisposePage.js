@@ -127,6 +127,12 @@ export default class DriverCustomerDisposePageModal extends Component {
         return buildButton('回复进度',() => this.handleProgress("Dispose"),'default')
       case 'Result':
         return buildButton('回复结果',() => this.processResult("Result"),'default')
+      case 'formReply':
+        return <>
+          {buildButton('回复进度', () => this.handleProgress('Dispose'), 'default')}
+          {buildButton('回复结果', () => this.processResult('Result'), 'default')}
+        </>
+
     }
   }
   /** 在Model中显示按钮 */
@@ -138,6 +144,7 @@ export default class DriverCustomerDisposePageModal extends Component {
         return this.state.bill.PROCESSINGSTATE!=='Saved'
       case 'Dispose': // 回复进度
       case 'Result':  // 回复结果
+      case 'formReply':  // 回复结果
         return !['Released','Dispose'].includes(this.state.bill.PROCESSINGSTATE)
       default: return false
     }
