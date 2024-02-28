@@ -67,7 +67,8 @@ export default class DriverDisposeForm extends Component {
     const { bill, records, operation } = this.props;
     this.setState({ bill: bill, records: records, operation: operation });
 
-    if (operation === 'Result') {
+    // 如果该条单是问题反馈单 它就没有货品明细数据
+    if (bill.ASSISTANCETYPE !== 'PROBLEMFEEDBACK') {
       const response = await getCargoDetails(bill.UUID);
       if (response?.success && response.data) {
         this.setState({
@@ -156,7 +157,7 @@ export default class DriverDisposeForm extends Component {
         }
         <Row style={{display:"flex",flexWrap:"wrap"}}>
         {
-          this.props.operation==="Result" && cargoDetailsList.length > 0?(
+          bill.ASSISTANCETYPE !== 'PROBLEMFEEDBACK' && cargoDetailsList.length > 0?(
             cargoDetailsList.map((item)=>{
                 return   <Col span={12}>
                   <label>
