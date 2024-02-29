@@ -57,16 +57,18 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
           cancelText="取消"
         >
           <Button type="danger"
-            hidden={!havePermission(this.state.authority + '.remove')}
+            hidden={!havePermission(this.state.authority + '.delete')}
           >
             删除
           </Button>
         </Popconfirm>
+
+
         {/* 驳回 */}
         <Button
           type="danger"
           onClick={() => this.handleReject()}
-          hidden={!havePermission(this.state.authority + '.remove')}
+          hidden={!havePermission(this.state.authority + '.reject')}
         >
           驳回
         </Button>
@@ -91,7 +93,7 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
       {/* 回复 */}
         <Button
           onClick={() => this.formReply()}
-          hidden={!havePermission(this.state.authority + '.complete')}
+          hidden={!havePermission(this.state.authority + '.reply')}
         >
           回复
         </Button>
@@ -111,7 +113,7 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
         <Button
           onClick={() => this.handleUnFinished()}
           type="primary"
-          hidden={!havePermission(this.state.authority + '.norm')}
+          hidden={!havePermission(this.state.authority + '.unCompletion`')}
         >
           撤销完结
         </Button>

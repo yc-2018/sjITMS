@@ -250,7 +250,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       <Col span={8}>
         <Form.Item label={`协助内容`}>
           {getFieldDecorator(`field-assistanceContent`, {
-            rules: [{ required: true, message: '请输入协助内容' }],
+            rules: [{ required: this.state.assistanceType !== 'STAMPOFF', message: '请输入协助内容' }],
             initialValue: initObj?.ASSISTCONTENT
           })
           (<TextArea placeholder={'请输入需要协助的问题描述'} rows={3}/>)}
