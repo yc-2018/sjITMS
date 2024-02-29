@@ -8,7 +8,7 @@ import { Button, message, Popconfirm } from 'antd';
 import { release, unFinished } from '@/services/sjitms/Customer';
 import BatchProcessConfirm from '../Dispatching/BatchProcessConfirm';
 import { loginUser } from '@/utils/LoginContext';
-import { onFinish, onReject, publish } from '@/services/sjitms/DriverCustomerService';
+import { cancelFinish, onFinish, onReject, publish } from '@/services/sjitms/DriverCustomerService'
 import DriverCustomerDisposePageModal from '@/pages/SJTms/DriverCustomerDispose/DriverCustomerDisposePage';
 import styles from './DriverCustomerSearch.less'
 
@@ -110,6 +110,8 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
         >
           完结
         </Button>
+
+
 
         <Button
          onClick={() => this.handleUnFinished()}
@@ -223,10 +225,7 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
   // 取消完结
   handleUnFinished = () => {
     const { selectedRows } = this.state;
-    if (selectedRows.length === 0) {
-      message.warning('请至少选中一条数据！');
-      return;
-    }
+    if (selectedRows.length === 0) return message.warning('请至少选中一条数据！')
     if (selectedRows.length === 1) {
       this.unFinished(selectedRows[0].UUID).then(response => {
         if (response.success) {
@@ -244,7 +243,7 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
     }
   };
   unFinished = async uuid => {
-    return await unFinished(uuid);
+    return await cancelFinish(uuid);
   };
 
   // TODO 已弄好

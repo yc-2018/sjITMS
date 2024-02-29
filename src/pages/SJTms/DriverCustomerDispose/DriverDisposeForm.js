@@ -29,6 +29,7 @@ export default class DriverDisposeForm extends Component {
     Rejecte: '驳回',
     Dispose: '处理进度',
     Result: '处理结果',
+    CancelFinish:'取消完成'
   };
   state={
     records:[],

@@ -103,3 +103,14 @@ export async function onContent(param) {
     body: param,
   });
 }
+
+/**
+ * 取消完结司机客服工单
+ * @author ChenGuangLong
+ * @since 2024/02/29 10:50:17
+ */
+export async function cancelFinish(uuid) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/cancelFinish?uuid=${uuid}`, {
+    method: 'POST',
+  });
+}
