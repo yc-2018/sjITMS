@@ -28,7 +28,6 @@ export default class DriverCustomerDisposePageModal extends Component {
 
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
-    this.props.onSearch();    // 打开就自动刷新一次列表
   };
 
   //展示
