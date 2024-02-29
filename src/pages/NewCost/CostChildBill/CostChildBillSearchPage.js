@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2023-08-08 17:06:51
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-01-06 11:38:46
+ * @LastEditTime: 2024-02-02 14:45:52
  * @version: 1.0
  */
 import {
@@ -115,10 +115,11 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
 
   //子帐单添加查看日志额外的列
   drawExColumns = e => {
+    console.log('e', e);
     if (e.column.fieldName == 'STATE') {
       return {
-        title: '操作 ',
-        width: 60,
+        title: '日志记录',
+        width: 110,
         render: (_, record) => {
           return (
             <div>
@@ -130,6 +131,26 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
               >
                 查看日志
               </a>
+            </div>
+          );
+        },
+      };
+    }
+    if (e.column.fieldName == 'ACCESSORY') {
+      return {
+        title: '结转',
+        width: 140,
+        render: (_, record) => {
+          return (
+            <div>
+              <Button
+                type="danger"
+                onClick={() => {
+                  console.log('record', record.UUID);
+                }}
+              >
+                账单结转
+              </Button>
             </div>
           );
         },
@@ -217,7 +238,7 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
   preview = async item => {
     const type = item.accessory.split('.')[item.accessory.split('.').length - 1];
     getUploadFile(item.accessory).then(res => {
-      if (res.type == 'application/pdf') {
+      if (type == 'pdf') {
         window.open(URL.createObjectURL(res));
       } else {
         this.setState({
@@ -237,7 +258,6 @@ export default class CostChildBillSearchPage extends QuickFormSearchPage {
       billDownloads,
       e,
       filePath,
-      fileType,
       showViewer,
     } = this.state;
     return (

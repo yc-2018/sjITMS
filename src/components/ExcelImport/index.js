@@ -55,7 +55,11 @@ class ExcelImport extends PureComponent {
 
   drawOption = () => {
     const { dict } = this.state;
-    let org = loginUser().rolesOrg ? loginUser().rolesOrg[0].split(',') : [];
+    let org = loginUser().rolesOrg
+      ? loginUser().rolesOrg[0]
+        ? loginUser().rolesOrg[0].split(',')
+        : []
+      : [];
     const options = dict.filter(x => org.includes(x.itemValue));
     return options.map(option => {
       return <Option value={option.itemValue + ',' + option.itemText}>{option.itemText}</Option>;
@@ -66,9 +70,11 @@ class ExcelImport extends PureComponent {
    * 下一步
    */
   next = () => {
-    let org = loginUser().rolesOrg ? loginUser().rolesOrg[0] : '';
-    let orgList = org.split(',');
-    console.log('orgList', orgList);
+    let orgList = loginUser().rolesOrg
+      ? loginUser().rolesOrg[0]
+        ? loginUser().rolesOrg[0].split(',')
+        : []
+      : [];
     if (loginOrg().type == 'BMS' && orgList.length > 1) {
       this.setState({ isModalOpen: true });
     } else {

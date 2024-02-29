@@ -1,16 +1,10 @@
 import React, { Component } from 'react';
-import { Form, Input, Row, Col, Tooltip, Collapse, Divider,DatePicker,Card,Checkbox } from 'antd';
+import { Form, Input, Row, Col, Tooltip, Collapse, Divider,Checkbox } from 'antd';
 import IconFont from '@/components/IconFont';
-import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
 import Empty from '@/pages/Component/Form/Empty';
-// import styles from './DisposePage.less';
 import styles from'./DriverCustomerPage.less'
 import cargoDetailStyles from './DriverDisposeForm.less'
-import moment from 'moment';
-import log from '@/models/common/log';
-import Select from '@/components/ExcelImport/Select';
 import { getCargoDetails } from '@/services/sjitms/DriverCustomerService';
-import { length } from 'localforage';
 const Panel = Collapse.Panel;
 
 @Form.create()
@@ -19,10 +13,23 @@ export default class DriverDisposeForm extends Component {
     super(props);
   }
   placeholders = {
-    Rejected: '驳回说明',
+    Rejecte: '驳回说明',
     Release: '发布说明',
     Result: '最终结果',
     Dispose: '处理说明',
+    formReply:'回复内容'
+  };
+  processingStatus = {  // 处理状态
+    Released: '已发布',
+    Disposed: '已处理',
+    Rejected: '已驳回',
+    Finished: '已完成',
+    TimeoutFinished: '超时完成',
+    Saved: '保存',
+    Rejecte: '驳回',
+    Dispose: '处理进度',
+    Result: '处理结果',
+    CancelFinish:'取消完成'
   };
   state={
     records:[],
@@ -47,16 +54,38 @@ export default class DriverDisposeForm extends Component {
     };
   }
 
-    async componentWillMount() {
-      const { bill, records, operation } = this.props;
-      this.setState({ bill: bill, records: records, operation: operation });
-      if (this.props.operation === 'Result') {
-        const response = await getCargoDetails(bill.UUID)
-        if (response && response.success) {
-          this.setState({ cargoDetailsList: response.data ,cargoCheckArr:response.data.filter(item => item.istakedelivery === 1).map(item=>item.uuid)})
-        }
+
+  componentDidMount() {
+    this.getInitialData() // 获取货品明细数据
+  }
+  componentDidUpdate(prevProps) {
+    // 打开了 并且不是之前的uuid 获取货品明细数据，因为第一次是空所以在componentDidMount钩子也获取一下
+    if (this.props.visible && this.props.bill.UUID !== prevProps.bill.UUID)
+      this.getInitialData()
+  }
+
+  /**加载该条单的初始数据*/
+  async getInitialData() {
+    const { bill, records, operation } = this.props;
+    this.setState({ bill: bill, records: records, operation: operation });
+
+    // 如果该条单是问题反馈单 它就没有货品明细数据
+    if (bill.ASSISTANCETYPE !== 'PROBLEMFEEDBACK') {
+      const response = await getCargoDetails(bill.UUID);
+      if (response?.success && response.data) {
+        this.setState({
+          cargoDetailsList: response?.data,
+          cargoCheckArr: response?.data?.filter(item => item.istakedelivery === 1)?.map(item => item.uuid)
+        });
+        // 货品明细数据要初始化 不然没动父组件什么都拿不到
+        this.props.getRequireTakeDeliveryData(response?.data?.filter(item => item.istakedelivery === 1)?.map(item => item.uuid))
+      } else {
+        this.setState({ cargoDetailsList: [], cargoCheckArr: [] }); // 如果后端返回空数组，则自行处理。
       }
     }
+  }
+
+
   //
   checkAllCargo= () => {
     //cargoCheckArr:cargoDetailsList的主键uuid集合  ||   cargoDetailsList就是货品详情明细集合
@@ -75,148 +104,94 @@ export default class DriverDisposeForm extends Component {
 
 
   render() {
-    const formItem = {
-      labelCol: { span: 8 },
-      wrapperCol: { span: 16 },
-    };
+    /** 取货卡片用 */
+    const build2Col = (text, value, textSpan=2, valueSpan=4) =>
+      <>
+      <Col span={textSpan}>{text}:</Col>
+      <Col span={valueSpan}>{value || '<空>'}</Col>
+    </>
+
+    /** 表单查看用 */
+    const buildColFormItem = (label,value,colSpan=8,ItemAttribute={}) =>
+      <Col span={colSpan}>
+        <Form.Item label={label} {...ItemAttribute}>
+          <Tooltip title={value}>
+            {value || <Empty />}
+          </Tooltip>
+        </Form.Item>
+      </Col>
+
     const { bill, records, operation,typeDictArr,cargoDetailsList,cargoCheckArr} = this.state;
     const { getFieldDecorator } = this.props.form;
-    return (
 
-      bill ? <Form labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
+    return (!bill ? <></> :
+      <Form labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
         <Row gutter={[12, 0]}>
-          <Col span={24}>
-            <Form.Item label="客户信息" labelCol={{ span: 2 }} wrapperCol={{ span: 22 }}>
-              <Tooltip title={`[${bill.CUSTOMERCODE}]${bill.CUSTOMERNAME}`}>
-                {`[${bill.CUSTOMERCODE}]${bill.CUSTOMERNAME}`}
-              </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="协助类型">
-              <Tooltip>{bill.ASSISTANCETYPE_CN  || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="问题类型">
-              <Tooltip>{bill.PROBLEMTYPE_CN || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="反馈时间">
-              <Tooltip>{bill.FEEDBACKTIME || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="司机信息">
-              <Tooltip>{`[${bill.DRIVERCODE}]${bill.DRIVERNAME}`}  </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="提交次数">
-              <Tooltip>{bill.SUBMISSIONSNUMBER || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="反馈来源">
-              <Tooltip>{bill.FEEDBACKSOURCE || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="紧急程度">
-              <Tooltip>{bill.URGENCY || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="处理时效">
-              <Tooltip>{bill.PROCESSINGTIMELINESS+'小时' || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="截止时间">
-              <Tooltip>{bill.DEADLINE || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="处理部门">
-              <Tooltip>{bill.DISPOSEDEPT || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={8}>
-            <Form.Item label="处理人">
-              <Tooltip>{bill.DISPOSENAME || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
-          <Col span={24}>
-            <Form.Item label="投诉描述" labelCol={{ span: 2 }} wrapperCol={{ span: 22 }}>
-              <Tooltip>{bill.ASSISTCONTENT || <Empty />} </Tooltip>
-            </Form.Item>
-          </Col>
+          {buildColFormItem('客户信息',`[${bill.CUSTOMERCODE}]${bill.CUSTOMERNAME}`,24,{labelCol:{ span: 2 },wrapperCol:{ span: 22}})}
+          {buildColFormItem('协助类型',bill.ASSISTANCETYPE_CN)}
+          {buildColFormItem('问题类型',bill.PROBLEMTYPE_CN)}
+          {buildColFormItem('反馈时间',bill.FEEDBACKTIME)}
+          {buildColFormItem('司机信息',`[${bill.DRIVERCODE}]${bill.DRIVERNAME}`)}
+          {buildColFormItem('提交次数',bill.SUBMISSIONSNUMBER)}
+          {buildColFormItem('反馈来源',bill.FEEDBACKSOURCE)}
+          {buildColFormItem('紧急程度',bill.URGENCY)}
+          {buildColFormItem('处理时效',bill.PROCESSINGTIMELINESS+'小时')}
+          {buildColFormItem('截止时间',bill.DEADLINE)}
+          {buildColFormItem('处理部门',bill.DISPOSEDEPT)}
+          {buildColFormItem('处理人',bill.DISPOSENAME)}
+          {buildColFormItem('投诉描述',bill.ASSISTCONTENT,24,{labelCol:{ span: 2 },wrapperCol:{ span: 22}})}
         </Row>
 
-        {/*处理结果：客服决定司机是否取货某些货品*/}
-        {
+        {/*处理结果：客服决定司机是否取货某些货品*/
           this.props.operation === "Result" && cargoDetailsList.length > 0 ? (
             <Row type="flex" justify="end">
-              <Checkbox
-                // indeterminate={this.state.indeterminate}
-                checked={cargoCheckArr.length === cargoDetailsList.length}
-                onChange={this.checkAllCargo}
-              >
-                全选
-              </Checkbox>
+              <label>
+                <span style={{marginRight:'5px'}}>全部取货</span>
+                <Checkbox
+                  checked={cargoCheckArr.length === cargoDetailsList.length}
+                  onChange={this.checkAllCargo}
+                />
+              </label>
             </Row>
           ) : <></>
         }
         <Row style={{display:"flex",flexWrap:"wrap"}}>
         {
-          this.props.operation==="Result" && cargoDetailsList.length > 0?(
+          bill.ASSISTANCETYPE !== 'PROBLEMFEEDBACK' && cargoDetailsList.length > 0?(
             cargoDetailsList.map((item)=>{
-                return   <Col span={6}>
-                  {/*<Card title={item.productname} bordered={true} className={cargoDetailStyles.antCardBody}>*/}
+                return   <Col span={12}>
                   <label>
                     <div className={cargoDetailStyles.cargoDetail} onClick={this.bigCheck}>
                       <Row>
-                        <Col span={4}>货品:</Col>
-                        <Col span={18}>{item.productname}</Col>
-                        <Col span={2}>
-                          <Checkbox
-                            checked={cargoCheckArr.indexOf(item.uuid) > -1}
-                            onChange={(e) => {
-                              const uuids = e.target.checked ? [...cargoCheckArr, item.uuid] : cargoCheckArr.filter((x) => x !== item.uuid);
-                              this.setState({ cargoCheckArr: uuids });
-                              this.props.getRequireTakeDeliveryData(uuids);
-                            }}
-                            iconSize='10px'
-                          />
+                        {build2Col('货品',item.productname,2,22)}
+                        <Divider style={{ margin: '0px' }} />
+                        {build2Col('价格',item.productprice)}
+                        {build2Col('金额',item.productamount)}
+                        {build2Col('货位',item.productposition)}
+                        {build2Col('件数',item.productquantity)}
+                        <Divider style={{ margin: '0px' }} />
+                        {/* 取货开关 */}
+                        <Col span={24}>
+                          <div className={cargoDetailStyles.checkboxDriverDisposeForm}>
+                            <span style={{marginRight:'5px'}}>是否取货</span>
+                            <input type="checkbox"
+                                   checked={cargoCheckArr.indexOf(item.uuid) > -1}
+                                   onChange={(e) => {
+                                     const uuids = e.target.checked ? [...cargoCheckArr, item.uuid] : cargoCheckArr.filter((x) => x !== item.uuid);
+                                     this.setState({ cargoCheckArr: uuids });
+                                     this.props.getRequireTakeDeliveryData(uuids);
+                                   }}
+                            />
+                          </div>
                         </Col>
                       </Row>
-                      <Divider style={{ margin: '0px' }} />
-                      <Row>
-                        <Col span={3}>价格:</Col>
-                        <Col span={9}>{item.productprice || '<空>'}</Col>
-                        <Col span={3}>金额:</Col>
-                        <Col span={9}>{item.productamount || '<空>'}</Col>
-                      </Row>
-                      <Row>
-                        <Col span={3}>货位:</Col>
-                        <Col span={9}>{item.productposition || '<空>'}</Col>
-                        <Col span={3}>件数:</Col>
-                        <Col span={9}>{item.productquantity || '<空>'}</Col>
-                      </Row>
-
                     </div>
                   </label>
-                  {/*</Card>*/}
                 </Col>
             })
-
-
-
           ):<></>
         }
         </Row>
-         {/*处理记录*/}
         {records.length > 0 ? (
           <Collapse
             bordered={false}
@@ -242,7 +217,7 @@ export default class DriverDisposeForm extends Component {
                     <Divider />
                     <div className={styles.disposeTitle}>
                       {record.creatorname}
-                      <span style={{ fontWeight: 'bold' }}>({record.type})</span>
+                      <span style={{ fontWeight: 'bold' }}>({this.processingStatus[record.type]??record.type})</span>
                       <span style={{ float: 'right' }}>{record.created}</span>
                     </div>
                     <div>{record.detail || '<空>'}</div>
@@ -258,10 +233,10 @@ export default class DriverDisposeForm extends Component {
         <Form.Item
           label={this.placeholders[operation]}
           labelCol={{ span: 2 }}
-          wrapperCol={{ span: 22 }}
+          wrapperCol={{ span: 21 }}
         >
           {getFieldDecorator('remark', {
-            rules: [{ required: true, message: '请输入' + this.placeholders[operation] }],
+            rules: [{ required: true, message: '请输入' + this.placeholders[operation]}],
             initialValue: operation === 'Result' ? bill.STAFFRESULT : '',
           })(
             <Input.TextArea
@@ -271,7 +246,7 @@ export default class DriverDisposeForm extends Component {
             />
           )}
         </Form.Item>
-      </Form>:<></>
+      </Form>
     );
   }
 }

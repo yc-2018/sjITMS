@@ -1,11 +1,12 @@
+/*
+* 责任买单组件
+*/
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { connect } from 'dva';
-import { Button, message, Popconfirm } from 'antd';
+import { Button, message } from 'antd';
 import React from 'react';
 
-/*
-    责任买单组件
- */
+
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
@@ -51,15 +52,9 @@ export default class DriverCustomerDutyBuy extends QuickFormSearchPage {
   drawToolbarPanel = () => {
     return (
       <div style={{ marginBottom: 10 }}>
-        <Popconfirm
-          title="确定回填货物?"
-          onConfirm={this.backfillGoods}
-          style={{ marginLeft: 10 }}
-        >
-          <Button type={'primary'}  style={{ marginLeft: 10 }}>
+          <Button type={'primary'}  style={{ marginLeft: 10 }} onClick={this.backfillGoods}>
             货品回填
           </Button>
-        </Popconfirm>
       </div>
     );
   };
