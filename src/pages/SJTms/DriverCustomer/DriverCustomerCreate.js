@@ -250,6 +250,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       <Col span={8}>
         <Form.Item label={`协助内容`}>
           {getFieldDecorator(`field-assistanceContent`, {
+            //盖章取消买单的，协助内容不用设置必选项”
             rules: [{ required: this.state.assistanceType !== 'STAMPOFF', message: '请输入协助内容' }],
             initialValue: initObj?.ASSISTCONTENT
           })
