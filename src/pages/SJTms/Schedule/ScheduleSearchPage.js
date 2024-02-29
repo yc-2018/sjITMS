@@ -949,7 +949,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
         loginOrg().uuid == '000000750000008' ||
         loginOrg().uuid == '000008150000005' ||
         loginOrg().uuid == '000008150000006' ||
-        loginOrg().uuid == '000000750000010'
+        loginOrg().uuid == '000000750000010' ||
+        loginOrg().uuid == '000008150000007'
       ) {
         LODOP.ADD_PRINT_HTM('2%', '2%', '96%', '96%', page.innerHTML);
       } else {
@@ -1729,7 +1730,10 @@ const drawPrintPage = async (schedule, scheduleDetails, dc) => {
         </table>
       </div>
     );
-  } else if (loginOrg().uuid == '000000750000008' || loginOrg().uuid == '000008150000005') {
+  } else if (loginOrg().uuid == '000000750000008' || 
+            loginOrg().uuid == '000008150000005' ||
+            loginOrg().uuid == '000008150000007'
+            ) {
     let scheduleDetailSum = {};
     let REALCARTONCOUNT = 0;
     let REALSCATTEREDCOUNT = 0;
