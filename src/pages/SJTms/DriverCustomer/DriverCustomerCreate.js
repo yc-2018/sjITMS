@@ -1,7 +1,6 @@
 /*
 * @Description: 司机服务新建和编辑页面
 * @authors: xuqifeng ChenGuangLong
-* @注意：低代码配置里面要设置全部允许空值  因为重写了也看不到那些必填的字段 会导致无法校验
 */
 import React from "react";
 import { connect } from "dva";
@@ -24,7 +23,7 @@ import moment from "moment";
 @Form.create()
 export default class DriverCustomerCreate extends QuickCreatePage {
   state = {
-    ...this.state,// QuickCreatePage的state
+    ...this.state,// 父类的state
     loading: false,
     isModalVisible: false,// 货物搜索打开开关
     serviceBill: {},
@@ -38,8 +37,8 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     const { showPageNow } = this.props;
     const mainName = 'sj_driver_customer_service';
     if (showPageNow == 'create') {
-      this.entity[mainName][0].WAREHOUSE = loginOrg().uuid;// 仓库
-      this.entity[mainName][0].WAREHOUSENAME = loginOrg().name;// 仓库名称
+      this.entity[mainName][0].WAREHOUSE = loginOrg().uuid;                                    // 仓库
+      this.entity[mainName][0].WAREHOUSENAME = loginOrg().name;                                // 仓库名称
       this.entity[mainName][0]['FEEDBACKTIME'] = moment().format('YYYY-MM-DD HH:mm:ss');//反馈时间
       //处理状态 默认是保存状态
       this.entity[mainName][0]['PROCESSINGSTATE'] = "Saved";
@@ -84,10 +83,10 @@ export default class DriverCustomerCreate extends QuickCreatePage {
   exHandleChange = columnEvent => {
     const { fieldName, valueEvent } = columnEvent;
     if (fieldName == 'ASSISTANCETYPE' && valueEvent) {            // 协助类型改变
-      this.setState({ assistanceType: valueEvent.value });
+      this.setState({ assistanceType: valueEvent.value,selectDetails:[] });
     }
     if (fieldName == 'CUSTOMERCODE' && valueEvent) {              // 门店改变
-      this.setState({ store: valueEvent.value });
+      this.setState({ store: valueEvent.value,selectDetails:[] });
     }
     if (fieldName == 'PROBLEMTYPE' && valueEvent) {               // 问题类型改变
       const timeLiness = this.entity.sj_driver_customer_service[0].PROCESSINGTIMELINESS;

@@ -23,6 +23,20 @@ export default class DriverCustomerDutyBuy extends QuickFormSearchPage {
     };
   }
 
+  /** 监控storeCode变化 去改变搜索 */
+  componentWillReceiveProps(nextProps) {
+    // 检查 storeCode 是否发生变化
+    if (this.props.storeCode !== nextProps.storeCode) {
+      let {queryConfig}=this.state;
+      let creatorCol = queryConfig.columns.find(x => x.fieldName === 'STORE');
+      creatorCol.searchDefVal = nextProps.storeCode;
+      this.setState({queryConfigColumns:queryConfig.columns,queryConfig,pageFilters:{}});
+      this.onSearch('reset', false);  // 重置查询条件
+      this.onSearch('first', false);  // 查询数据
+    }
+  }
+
+
   /* 设置默认查询条件 */
   editColumns = queryConfig => {
     let creatorCol = queryConfig.columns.find(x => x.fieldName === 'STORE');
