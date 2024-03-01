@@ -87,7 +87,17 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     }
     if (fieldName == 'PROBLEMTYPE' && valueEvent) {
       const timeLiness = this.entity.sj_driver_customer_service[0].PROCESSINGTIMELINESS;
-      this.entity.sj_driver_customer_service[0].DEADLINE = moment().add(timeLiness,"h").format("YYYY-MM-DD HH:mm:ss");
+      this.entity.sj_driver_customer_service[0].DEADLINE = moment().add(timeLiness, "h").format("YYYY-MM-DD HH:mm:ss");
+
+      //盖章取消 协助内容非必填
+      const { formItems } = this.state;
+      const rules = formItems['sj_driver_customer_service_ASSISTCONTENT']?.rules || [];
+      rules.forEach(rule => {
+        if (rule.hasOwnProperty('required')) {
+          rule.required = valueEvent.value != "PSTAMPOFF";
+        }
+      });
+      this.setState({ formItems });
     }
   }
 
