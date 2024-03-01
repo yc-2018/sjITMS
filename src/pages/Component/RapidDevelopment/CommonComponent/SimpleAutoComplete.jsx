@@ -95,7 +95,7 @@ export default class SimpleAutoComplete extends Component {
 
   componentDidUpdate(_, preState) {
     // 判断判断查询条件是否一致,如果一致则不加载
-    if (preState.preQueryStr != this.state.preQueryStr) {
+    if (preState.preQueryStr != this.state.preQueryStr || preState.value != this.state.value) {
       if (this.props.autoComplete) {
         this.autoCompleteFetchData(this.state.searchText);
       } else {
