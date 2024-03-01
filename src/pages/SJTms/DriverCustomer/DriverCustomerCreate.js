@@ -191,12 +191,14 @@ export default class DriverCustomerCreate extends QuickCreatePage {
                       <DriverCustomerLessBuy
                         quickuuid="sj_driver_customer_lessbuy"
                         getGoodsDetail={this.getGoodsDetail}
+                        storeCode={store}
                       />
                       :
                       isDutyBuy ?     /* 货物处理:责任买单 */
                         <DriverCustomerDutyBuy
                           quickuuid="sj_driver_customer_dutypayment"
                           getGoodsDetail={this.getGoodsDetail}
+                          storeCode={store}
                         />
                         : <></>
                     }

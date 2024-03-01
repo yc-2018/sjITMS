@@ -23,6 +23,12 @@ export default class DriverCustomerDutyBuy extends QuickFormSearchPage {
     };
   }
 
+  /* 设置默认查询条件 */
+  editColumns = queryConfig => {
+    let creatorCol = queryConfig.columns.find(x => x.fieldName === 'STORE');
+    creatorCol.searchDefVal = this.props.storeCode;
+    return queryConfig;
+  };
 
   //货品回填确认
   backfillGoods = () => {

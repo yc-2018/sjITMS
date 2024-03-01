@@ -6,6 +6,7 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import { connect } from 'dva';
 import { Button, message } from 'antd';
 import React from 'react';
+import { loginUser } from '@/utils/LoginContext'
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -23,6 +24,12 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
     };
   }
 
+  /* 设置默认查询条件 */
+  editColumns = queryConfig => {
+    let creatorCol = queryConfig.columns.find(x => x.fieldName === 'STORE');
+    creatorCol.searchDefVal = this.props.storeCode;
+    return queryConfig;
+  };
 
   //货品回填确认
   backfillGoods = () => {
