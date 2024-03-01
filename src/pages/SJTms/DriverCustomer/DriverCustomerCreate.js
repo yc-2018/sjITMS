@@ -35,8 +35,8 @@ export default class DriverCustomerCreate extends QuickCreatePage {
   //表单加载的时候
   formLoaded = async () => {
     const { showPageNow } = this.props;
-      const mainName = 'sj_driver_customer_service';
-      if (showPageNow == 'create') {
+    const mainName = 'sj_driver_customer_service';
+    if (showPageNow == 'create') {
       this.entity[mainName][0].WAREHOUSE = loginOrg().uuid;// 仓库
       this.entity[mainName][0].WAREHOUSENAME = loginOrg().name;// 仓库名称
       this.entity[mainName][0]['FEEDBACKTIME'] = moment().format('YYYY-MM-DD HH:mm:ss');//反馈时间
@@ -101,33 +101,24 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     }
   }
 
-  //主表保存完成后保存明细
-  onSaved = async (result) => {
+  //保存明细
+  buildDetails = () => {
     const { selectDetails, assistanceType } = this.state;
     if (assistanceType !== "PROBLEMFEEDBACK") {
-      const billUuid = result.param.entity.sj_driver_customer_service[0].UUID;
-      //发请求保存
-      const details = selectDetails?.map(dtl => {
+      return selectDetails?.map(dtl => {
         return {
-          billuuid: billUuid,// 主表uuid
-          customercode: dtl.STORECODE,// 门店号码
-          customername: dtl.STORENAME,// 门店名称
-          productcode: dtl.SKUCODE,// 货物代码
-          productname: dtl.SKUNAME,// 货物名称
-          productposition: dtl.PICKBIN,// 货位
-          productquantity: dtl.QTY,// 货物数量
-          deliverydate: dtl.APPLICATIONDATE,// 配送日期
-          productamount: dtl.AMOUNT,// 货物金额
-          istakedelivery: 0,// 是否取货
-          productprice: dtl.PRICE// 货品价格
+          CUSTOMERCODE: dtl.STORECODE,// 门店号码
+          CUSTOMERNAME: dtl.STORENAME,// 门店名称
+          PRODUCTCODE: dtl.SKUCODE,// 货物代码
+          PRODUCTNAME: dtl.SKUNAME,// 货物名称
+          PRODUCTPOSITION: dtl.PICKBIN,// 货位
+          PRODUCTQUANTITY: dtl.QTY,// 货物数量
+          DELIVERYDATE: dtl.APPLICATIONDATE,// 配送日期
+          PRODUCTAMOUNT: dtl.AMOUNT,// 货物金额
+          ISTAKEDELIVERY: 0,// 是否取货
+          PRODUCTPRICE: dtl.PRICE// 货品价格
         }
       });
-      const response = await onSaveGoodsDetailRecord(details);
-      if (response.success) {
-        this.props.switchTab('query');
-      } else {
-        message.error("明细保存失败！");
-      }
     }
   }
 
@@ -138,6 +129,8 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       message.error("请先选择货品！");
       return false;
     }
+    const details = this.buildDetails();
+    this.entity.sj_driver_store_goods_detail = details;
   }
 
   //子传父的货品明细数据
@@ -160,67 +153,67 @@ export default class DriverCustomerCreate extends QuickCreatePage {
             <div style={{ height: "calc(100vh - 165px)", overflowY: "auto", overflowX: "hidden" }}>
               <Form onChange={this.onChange} autoComplete="off">
                 {this.drawFormItems()}
-                {/* 下面的货品选择框显示 */}
-                {["REVIEWMONITORING", "STAMPOFF", "CARGOHANDLING"].includes(assistanceType) ?
+              </Form>
+              {/* 下面的货品选择框显示 */}
+              {["REVIEWMONITORING", "STAMPOFF", "CARGOHANDLING"].includes(assistanceType) ?
+                <div>
                   <div>
-                    <div>
-                      <Button type="primary"
-                        style={{ margin: "0 20px" }}
-                        onClick={() => this.setState({ isModalVisible: true })}>
-                        搜索货品
-                      </Button>
-                      <Button type="danger"
-                        onClick={() => this.setState({ selectDetails: [] })}>
-                        清空货品
-                      </Button>
-                      <span
-                        style={{ marginLeft: "34%", fontSize: "large", fontWeight: 800 }}
-                        className={"ant-form-item-required"}>
-                        {isDutyBuy ? "责任买单" : "少货买单"}
-                        货品明细
-                      </span>
-                    </div>
-                    <Modal
-                      footer={null}
-                      centered
-                      onCancel={() => this.setState({ isModalVisible: false })}
-                      visible={isModalVisible}
-                      width={"90%"}
-                      bodyStyle={{ height: "calc(90vh)", overflowY: "auto" }}
-                    >
-                      {assistanceType === "REVIEWMONITORING" || assistanceType === "STAMPOFF" ?
-                        <DriverCustomerLessBuy
-                          quickuuid="sj_driver_customer_lessbuy"
+                    <Button type="primary"
+                      style={{ margin: "0 20px" }}
+                      onClick={() => this.setState({ isModalVisible: true })}>
+                      搜索货品
+                    </Button>
+                    <Button type="danger"
+                      onClick={() => this.setState({ selectDetails: [] })}>
+                      清空货品
+                    </Button>
+                    <span
+                      style={{ marginLeft: "34%", fontSize: "large", fontWeight: 800 }}
+                      className={"ant-form-item-required"}>
+                      {isDutyBuy ? "责任买单" : "少货买单"}
+                      货品明细
+                    </span>
+                  </div>
+                  <Modal
+                    footer={null}
+                    centered
+                    onCancel={() => this.setState({ isModalVisible: false })}
+                    visible={isModalVisible}
+                    width={"90%"}
+                    bodyStyle={{ height: "calc(90vh)", overflowY: "auto" }}
+                  >
+                    {assistanceType === "REVIEWMONITORING" || assistanceType === "STAMPOFF" ?
+                      <DriverCustomerLessBuy
+                        quickuuid="sj_driver_customer_lessbuy"
+                        getGoodsDetail={this.getGoodsDetail}
+                      />
+                      :
+                      isDutyBuy ?     /* 货物处理:责任买单 */
+                        <DriverCustomerDutyBuy
+                          quickuuid="sj_driver_customer_dutypayment"
                           getGoodsDetail={this.getGoodsDetail}
                         />
-                        :
-                        isDutyBuy ?     /* 货物处理:责任买单 */
-                          <DriverCustomerDutyBuy
-                            quickuuid="sj_driver_customer_dutypayment"
-                            getGoodsDetail={this.getGoodsDetail}
-                          />
-                          : <></>
-                      }
-                    </Modal>
-                    <Table
-                      size="small"
-                      dataSource={selectDetails}
-                      scroll={{ x: true }}
-                      style={{ margin: 10 }}
-                      pagination={false} // 隐藏分页并显示所有数据
-                      bordered
-                      columns={[
-                        { title: "货品", dataIndex: "SKU", key: "1" },
-                        { title: "门店", dataIndex: "STORE", key: "2" },
-                        { title: "货位", dataIndex: "PICKBIN", key: "4" },
-                        { title: "数量", dataIndex: "QTY", key: "3" },
-                        { title: "价格", dataIndex: "PRICE", key: "5" },
-                        { title: "金额", dataIndex: "AMOUNT", key: "6" },
-                      ]}
-                    />
-                  </div>
-                  : <></>}
-              </Form>
+                        : <></>
+                    }
+                  </Modal>
+                  <Table
+                    size="small"
+                    dataSource={selectDetails}
+                    scroll={{ x: true }}
+                    style={{ margin: 10 }}
+                    pagination={false} // 隐藏分页并显示所有数据
+                    bordered
+                    columns={[
+                      { title: "货品", dataIndex: "SKU", key: "1" },
+                      { title: "门店", dataIndex: "STORE", key: "2" },
+                      { title: "货位", dataIndex: "PICKBIN", key: "4" },
+                      { title: "数量", dataIndex: "QTY", key: "3" },
+                      { title: "价格", dataIndex: "PRICE", key: "5" },
+                      { title: "金额", dataIndex: "AMOUNT", key: "6" },
+                    ]}
+                  />
+                </div>
+                : <></>}
             </div>
           </Page>
         </Spin>
