@@ -1,12 +1,6 @@
 import request from '@/utils/request';
 
-//新建保存工单：同时保存工单的货品明细记录
-export function onSaveGoodsDetailRecord(objArr) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/onSaveGoodsDetailRecord`, {
-    method: 'POST',
-    body: objArr,
-  });
-}
+
 
 //批量驳回
 export async function onBatchReject(uuids) {
@@ -79,17 +73,6 @@ export async function driverSvcPickup(uuid) {
   });
 }
 
-/**
- * 新建保存工单，不保存货品详情表数据时， 单保存客服服务处理记录的保存
- * @param billUuid 单据UUID
- * @author ChenGuangLong
- * @since 2024/02/26 16:38:56
- */
-export async function onSaveProcessingRecord(billUuid) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/onSaveProcessingRecord?billUuid=${billUuid}`, {
-    method: 'POST'
-  });
-}
 
 /**
  * 回复处理内容(==回复处理进度+回复处理结果)
