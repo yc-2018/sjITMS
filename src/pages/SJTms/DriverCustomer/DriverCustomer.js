@@ -17,10 +17,12 @@ export default class DriverCustomer extends QuickForm {
 
   drawTab = e => {
     if (e.showPageNow == 'create') {
-      const component = <DriverCustomerCreate{...e.props} />;
+      const component = <DriverCustomerCreate {...e.props} />;
       e.component = component;
     } else if (e.showPageNow == 'update') {
-      const component = <DriverCustomerCreate{...e.props} />;
+      let formParams = { ...e.props };
+      formParams.params.entityUuid = formParams.params.entity.UUID;
+      const component = <DriverCustomerCreate {...formParams} />;
       e.component = component;
     } else if (e.showPageNow == 'view') {
       const component = <DriverCustomerView {...e.props} />;

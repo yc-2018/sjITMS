@@ -26,7 +26,7 @@ export default class DriverCustomerDutyBuy extends QuickFormSearchPage {
 
   //货品回填确认
   backfillGoods = () => {
-    const { selectedRows } = this.state;
+    let { selectedRows } = this.state;
     if (selectedRows.length === 0) {
       message.error('请至少选中一条货品数据!');
     }
@@ -36,17 +36,23 @@ export default class DriverCustomerDutyBuy extends QuickFormSearchPage {
         return;
       }
     }
+    selectedRows = selectedRows?.map(row => {
+      return {
+        ...row,
+        SKUCODE: row.SKU,
+        SKU: `[${row.SKU}]${row.SKUNAME}`,
+        QTY: row.QTY_EACH,
+        PICKBIN: row.LOCATION,
+        AMOUNT: row.MONEY
+      }
+    });
     //关闭遮罩层并回传数据
-    this.props.getGoodsDetailDatas(false,selectedRows);
-    this.setState({selectedRows:[]})
+    this.props.getGoodsDetail(false,selectedRows);
+    this.setState({ selectedRows: [] });
   };
 
   //该方法会覆盖所有的上层按钮
-  drawActionButton = () => {
-    return (
-      <></>
-    );
-  };
+  drawActionButton = () => {  }
 
   //该方法会覆盖所有的中间功能按钮
   drawToolbarPanel = () => {
