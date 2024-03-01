@@ -29,7 +29,8 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     isModalVisible: false,// 货物搜索打开开关
     serviceBill: {},
     selectDetails: [], // 所选择的货品明细数据
-    assistanceType: ""// 当前选中的协助类型 用来控制页面的变化
+    assistanceType: "",// 当前选中的协助类型 用来控制页面的变化
+    store:'',          // 门店，控制货品搜索的门店和货品显示
   }
 
   //表单加载的时候
@@ -75,17 +76,20 @@ export default class DriverCustomerCreate extends QuickCreatePage {
           });
         }
       }
-      this.setState({ serviceBill, selectDetails, assistanceType: serviceBill.ASSISTANCETYPE });
+      this.setState({ serviceBill, selectDetails, assistanceType: serviceBill.ASSISTANCETYPE,store: serviceBill.STORECODE });
     }
   }
 
   //字段change
   exHandleChange = columnEvent => {
     const { fieldName, valueEvent } = columnEvent;
-    if (fieldName == 'ASSISTANCETYPE' && valueEvent) {
+    if (fieldName == 'ASSISTANCETYPE' && valueEvent) {            // 协助类型改变
       this.setState({ assistanceType: valueEvent.value });
     }
-    if (fieldName == 'PROBLEMTYPE' && valueEvent) {
+    if (fieldName == 'CUSTOMERCODE' && valueEvent) {              // 门店改变
+      this.setState({ store: valueEvent.value });
+    }
+    if (fieldName == 'PROBLEMTYPE' && valueEvent) {               // 问题类型改变
       const timeLiness = this.entity.sj_driver_customer_service[0].PROCESSINGTIMELINESS;
       this.entity.sj_driver_customer_service[0].DEADLINE = moment().add(timeLiness, "h").format("YYYY-MM-DD HH:mm:ss");
 
@@ -140,7 +144,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
   };
 
   render() {
-    const { isModalVisible, selectDetails, assistanceType } = this.state;
+    const { isModalVisible, selectDetails, assistanceType ,store} = this.state;
     const isDutyBuy = assistanceType === "CARGOHANDLING";
     return (
       <PageHeaderWrapper>
@@ -156,7 +160,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
                 {this.drawFormItems()}
               </Form>
               {/* 下面的货品选择框显示 */}
-              {["REVIEWMONITORING", "STAMPOFF", "CARGOHANDLING"].includes(assistanceType) ?
+              {["REVIEWMONITORING", "STAMPOFF", "CARGOHANDLING"].includes(assistanceType) && store ?
                 <div>
                   <div>
                     <Button type="primary"
