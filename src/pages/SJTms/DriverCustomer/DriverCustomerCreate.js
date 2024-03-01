@@ -14,7 +14,7 @@ import { loginOrg } from "@/utils/LoginContext";
 import LoadingIcon from "@/pages/Component/Loading/LoadingIcon";
 import DriverCustomerLessBuy from "@/pages/SJTms/DriverCustomer/DriverCustomerLessBuy";
 import DriverCustomerDutyBuy from "@/pages/SJTms/DriverCustomer/DriverCustomerDutyBuy";
-import { getCargoDetails, onSaveGoodsDetailRecord } from "@/services/sjitms/DriverCustomerService";
+import { getCargoDetails } from "@/services/sjitms/DriverCustomerService";
 import moment from "moment";
 
 @connect(({ quick, loading }) => ({
@@ -118,8 +118,9 @@ export default class DriverCustomerCreate extends QuickCreatePage {
           ISTAKEDELIVERY: 0,// 是否取货
           PRODUCTPRICE: dtl.PRICE// 货品价格
         }
-      });
+      }) || [];
     }
+    return [];
   }
 
   //保存前校验
