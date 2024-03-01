@@ -75,7 +75,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
           });
         }
       }
-      this.setState({ serviceBill, selectDetails, assistanceType: serviceBill.ASSISTANCETYPE,store: serviceBill.STORECODE });
+      this.setState({ serviceBill, selectDetails, assistanceType: serviceBill.ASSISTANCETYPE,store: serviceBill.CUSTOMERCODE });
     }
   }
 

@@ -6,7 +6,6 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import { connect } from 'dva';
 import { Button, message } from 'antd';
 import React from 'react';
-import { loginUser } from '@/utils/LoginContext'
 
 @connect(({ quick, loading }) => ({
   quick,
