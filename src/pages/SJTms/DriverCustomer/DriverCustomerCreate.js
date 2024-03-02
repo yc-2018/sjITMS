@@ -27,9 +27,9 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     loading: false,
     isModalVisible: false,// 货物搜索打开开关
     serviceBill: {},
-    selectDetails: [], // 所选择的货品明细数据
-    assistanceType: "",// 当前选中的协助类型 用来控制页面的变化
-    store:'',          // 门店，控制货品搜索的门店和货品显示
+    selectDetails: [],    // 所选择的货品明细数据
+    assistanceType: "",   // 当前选中的协助类型 用来控制页面的变化
+    responsiblePerson:'', // 责任人，控制货品搜索和货品显示
   }
 
   //表单加载的时候
@@ -75,7 +75,9 @@ export default class DriverCustomerCreate extends QuickCreatePage {
           });
         }
       }
-      this.setState({ serviceBill, selectDetails, assistanceType: serviceBill.ASSISTANCETYPE,store: serviceBill.CUSTOMERCODE });
+      this.setState({ serviceBill, selectDetails,
+        assistanceType: serviceBill.ASSISTANCETYPE,
+        responsiblePerson: `[${serviceBill.DRIVERCODE}]${serviceBill.DRIVERNAME}` });
     }
   }
 
@@ -85,8 +87,8 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     if (fieldName == 'ASSISTANCETYPE' && valueEvent) {            // 协助类型改变
       this.setState({ assistanceType: valueEvent.value,selectDetails:[] });
     }
-    if (fieldName == 'CUSTOMERCODE' && valueEvent) {              // 门店改变
-      this.setState({ store: valueEvent.value,selectDetails:[] });
+    if (fieldName == 'DRIVERCODE' && valueEvent) {              // 司机改变
+      this.setState({ responsiblePerson: `[${valueEvent.value}]${valueEvent.record.NAME}`,selectDetails:[] });
     }
     if (fieldName == 'PROBLEMTYPE' && valueEvent) {               // 问题类型改变
       const timeLiness = this.entity.sj_driver_customer_service[0].PROCESSINGTIMELINESS;
@@ -143,7 +145,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
   };
 
   render() {
-    const { isModalVisible, selectDetails, assistanceType ,store} = this.state;
+    const { isModalVisible, selectDetails, assistanceType ,responsiblePerson} = this.state;
     const isDutyBuy = assistanceType === "CARGOHANDLING";
     return (
       <PageHeaderWrapper>
@@ -159,7 +161,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
                 {this.drawFormItems()}
               </Form>
               {/* 下面的货品选择框显示 */}
-              {["REVIEWMONITORING", "STAMPOFF", "CARGOHANDLING"].includes(assistanceType) && store ?
+              {["REVIEWMONITORING", "STAMPOFF", "CARGOHANDLING"].includes(assistanceType) && responsiblePerson ?
                 <div>
                   <div>
                     <Button type="primary"
@@ -190,14 +192,14 @@ export default class DriverCustomerCreate extends QuickCreatePage {
                       <DriverCustomerLessBuy
                         quickuuid="sj_driver_customer_lessbuy"
                         getGoodsDetail={this.getGoodsDetail}
-                        storeCode={store}
+                        responsiblePerson={responsiblePerson}
                       />
                       :
                       isDutyBuy ?     /* 货物处理:责任买单 */
                         <DriverCustomerDutyBuy
                           quickuuid="sj_driver_customer_dutypayment"
                           getGoodsDetail={this.getGoodsDetail}
-                          storeCode={store}
+                          responsiblePerson={responsiblePerson}
                         />
                         : <></>
                     }
