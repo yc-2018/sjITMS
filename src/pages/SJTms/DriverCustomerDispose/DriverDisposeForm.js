@@ -170,8 +170,9 @@ export default class DriverDisposeForm extends Component {
                         {build2Col('货位',item.productposition)}
                         {build2Col('件数',item.productquantity)}
                         <Divider style={{ margin: '0px' }} />
-                        {/* 取货开关 */}
+
                         <Col span={24}>
+                        {/* 取货开关 */item.takecode?`已取货：[${item.takecode}]${item.takename} 时间：${item.taketime}`:
                           <div className={cargoDetailStyles.checkboxDriverDisposeForm}>
                             <span style={{marginRight:'5px'}}>是否取货</span>
                             <input type="checkbox"
@@ -182,8 +183,9 @@ export default class DriverDisposeForm extends Component {
                                      this.props.getRequireTakeDeliveryData(uuids);
                                    }}
                             />
-                          </div>
+                          </div>}
                         </Col>
+
                       </Row>
                     </div>
                   </label>
