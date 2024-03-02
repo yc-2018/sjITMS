@@ -113,7 +113,7 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
         <Button
           onClick={() => this.handleUnFinished()}
           type="primary"
-          hidden={!havePermission(this.state.authority + '.unCompletion`')}
+          hidden={!havePermission(this.state.authority + '.uncompletion')}
         >
           撤销完结
         </Button>
