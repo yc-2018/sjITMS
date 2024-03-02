@@ -23,7 +23,7 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
     };
   }
 
-  /** 监控storeCode变化 去改变搜索 */
+  /** 监控司机（责任人）变化 去改变搜索 */
   componentWillReceiveProps(nextProps) {
     // 检查 storeCode 是否发生变化
     if (this.props.responsiblePerson !== nextProps.responsiblePerson) {
