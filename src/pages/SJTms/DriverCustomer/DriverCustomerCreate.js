@@ -141,7 +141,16 @@ export default class DriverCustomerCreate extends QuickCreatePage {
 
   //子传父的货品明细数据
   getGoodsDetail = (isModalVisible, selectedRows) => {
+    const driverSvcObj = this.entity.sj_driver_customer_service[0]
     this.setState({ isModalVisible: isModalVisible, selectDetails: selectedRows });
+
+    if (!driverSvcObj.CUSTOMERCODE ) {
+      driverSvcObj.CUSTOMERCODE = selectedRows[0].STORECODE // 回填门店代码
+      driverSvcObj.CUSTOMERNAME = selectedRows[0].STORENAME // 回填门店代码
+    }else if (driverSvcObj.CUSTOMERCODE !== selectedRows[0].STORECODE)return message.warning('门店信息和明细不一致，请检查')
+
+
+
   };
 
   render() {
