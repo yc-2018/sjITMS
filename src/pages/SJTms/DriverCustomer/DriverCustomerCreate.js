@@ -86,6 +86,10 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     const { fieldName, valueEvent } = columnEvent;
     if (fieldName == 'ASSISTANCETYPE' && valueEvent) {            // 协助类型改变
       this.setState({ assistanceType: valueEvent.value,selectDetails:[] });
+      if(this.entity.sj_driver_customer_service[0].PROBLEMTYPE) // 清空问题类型
+        this.setFieldsValue('sj_driver_customer_service', 'PROBLEMTYPE')
+
+
     }
     if (fieldName == 'DRIVERCODE' && valueEvent) {              // 司机改变
       this.setState({ responsiblePerson: `[${valueEvent.value}]${valueEvent.record.NAME}`,selectDetails:[] });
@@ -146,8 +150,18 @@ export default class DriverCustomerCreate extends QuickCreatePage {
 
     if (!driverSvcObj.CUSTOMERCODE ) {
       driverSvcObj.CUSTOMERCODE = selectedRows[0].STORECODE // 回填门店代码
-      driverSvcObj.CUSTOMERNAME = selectedRows[0].STORENAME // 回填门店代码
-    }else if (driverSvcObj.CUSTOMERCODE !== selectedRows[0].STORECODE)return message.warning('门店信息和明细不一致，请检查')
+      driverSvcObj.CUSTOMERNAME = selectedRows[0].STORENAME // 回填门店名称
+    }else if (driverSvcObj.CUSTOMERCODE !== selectedRows[0].STORECODE) {
+      // 覆盖本来的门店信息，label 有时正常有事不正常 所以也有写安全
+      message.warning("门店信息已覆盖！")
+      driverSvcObj.CUSTOMERNAME = selectedRows[0].STORENAME // 回填门店名称
+      // 设置门店代码
+      this.setFieldsValue('sj_driver_customer_service',
+        'CUSTOMERCODE',
+        selectedRows[0].STORECODE,
+        null,
+        `[${selectedRows[0].STORECODE}]${selectedRows[0].STORENAME}`)
+    }
 
 
 
