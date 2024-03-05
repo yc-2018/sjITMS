@@ -66,6 +66,14 @@ export async function deliveredConfirmSchedule(payload) {
     body: payload,
   });
 }
+
+// 取消送达
+export async function cancelDeliveredConfirm(payload) {
+  return request(`/itms-schedule/itms-schedule/newoperation/deliveredconfirm/confirm/schedule/cancelDeliveredConfirm`, {
+    method: 'POST',
+    body: payload,
+  });
+}
 // 全部未送达
 // export async function unDeliveredConfirmSchedule(payload) {
 //   return request(`/itms-schedule/itms-schedule/operation/deliveredconfirm/confirm/schedule/unDeliveredConfirmSchedule`, {

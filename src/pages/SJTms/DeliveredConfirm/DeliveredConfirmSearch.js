@@ -102,7 +102,19 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
           <Button type={'danger'} hidden={!havePermission(this.state.authority + '.noOk')}>
             未送达
           </Button>
+         
         </Popconfirm>
+        <Popconfirm
+          title="确定取消送达?"
+          onConfirm={() => this.cancelDeliveredConfirm()}
+          okText="确定"
+          cancelText="取消"
+        >
+          <Button hidden={!havePermission(this.state.authority + '.noOk')}>
+            取消送达
+          </Button>
+        </Popconfirm>
+       
       </>
     );
   };
@@ -176,7 +188,28 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
       },
     });
   };
-
+  cancelDeliveredConfirm  = ()=>{
+    if (this.state.selectedRows.length == 0) {
+      message.info('至少选择一条数据！');
+      return;
+    }
+    this.props.dispatch({
+      type: 'deliveredConfirm1/cancelDeliveredConfirm',
+      payload: this.state.selectedRows.map(e => {
+        return {
+          ...e,
+          companyUuid: loginCompany().uuid,
+          dispatchCenterUuid: loginOrg().uuid,
+        };
+      }),
+      callback: response => {
+        if (response && response.success) {
+          this.refreshTable();
+          message.success('保存成功');
+        }
+      },
+    });
+  }
   //取消
   handleCancel = () => {
     this.setState({ isShowStandardTable: false ,isShowScheduleInfo:false});
