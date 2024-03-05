@@ -110,7 +110,7 @@ export default class DeliveredConfirmSearch extends QuickFormSearchPage {
           okText="确定"
           cancelText="取消"
         >
-          <Button hidden={!havePermission(this.state.authority + '.noOk')}>
+          <Button hidden={!havePermission(this.state.authority + '.qxOk')}>
             取消送达
           </Button>
         </Popconfirm>
