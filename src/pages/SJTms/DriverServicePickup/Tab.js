@@ -17,10 +17,9 @@ export default class extends QuickFormSearchPage {
     super(props)
     this.state = {
       ...this.state,
-      successList: [],   // 成功的UUID列表
+      successObjs: {},   // 成功的UUID列表
       noTable: true,     // 框架的表格不显示
       takecode: '',      // 司机工号
-      takename: '',      // 司机姓名 保存时用
       teamUpToPick:false //是否是组队取货
     }
   }
@@ -32,13 +31,14 @@ export default class extends QuickFormSearchPage {
 
 
   /** 确认取货 */
-  confirmPickup = async (UUID) => {
-    let { takecode, takename, successList } = this.state
-    if (this.state.successList.includes(UUID)) return message.error('你选择的货品已经取货啦')
-    const resp = await driverSvcPickup({uuid:UUID,takecode,takename})
+  confirmPickup = async (UUID,type) => {
+    let { takecode, successObjs } = this.state
+    if (this.state.successObjs[UUID]) return message.error('你选择的货品已经取货啦')
+    // take代表司机                                                                             1交货 2收货
+    const resp = await driverSvcPickup( UUID, type === '已交货' ? 1 : 2, takecode)
     if (resp.success) {
       message.success('操作成功!')
-      this.setState({ successList: [...successList, UUID] })
+      this.setState({ successObjs: {...successObjs,  [UUID] : type}})
     }
   }
 
@@ -64,7 +64,7 @@ export default class extends QuickFormSearchPage {
         autoComplete
         style={{width: 250, height: 40, fontSize: 16, margin: 15,display: 'inline-block',top:6}}
         onChange={value => {
-          this.setState({ takecode: value.value ,takename:value.record.NAME,
+          this.setState({ takecode: value.value ,
             pageFilters:
               {
                 ...this.state.pageFilters, superQuery: {
@@ -77,7 +77,7 @@ export default class extends QuickFormSearchPage {
                   }, ...isOrgQuery],
                 }
               },
-            successList: []   // 清空成功列表
+            successObjs: {}   // 清空成功列表
              }, () => this.getData(this.state.pageFilters));
         }}
       />
@@ -112,19 +112,23 @@ export default class extends QuickFormSearchPage {
                          { title: '货物名称', width: 200, dataIndex: 'PRODUCTNAME',     key: 'PRODUCTNAME' },
                          { title: '货位',    width: 88,  dataIndex: 'PRODUCTPOSITION', key: 'PRODUCTPOSITION' },
                          { title: '货物数量', width: 80,  dataIndex: 'PRODUCTQUANTITY', key: 'PRODUCTQUANTITY' },
-                         { title: '配送日期', width: 133, dataIndex: 'DELIVERYDATE',    key: 'DELIVERYDATE' },
+                         { title: '配送日期', width: 160, dataIndex: 'DELIVERYDATE',    key: 'DELIVERYDATE' },
                          { title: '货物金额', width: 80,  dataIndex: 'PRODUCTAMOUNT',   key: 'PRODUCTAMOUNT' },
                          { title: '货品价格', width: 80,  dataIndex: 'PRODUCTPRICE',    key: 'PRODUCTPRICE' },
                          { title: '门店名称', width: 222, dataIndex: 'CUSTOMERNAME',    key: 'CUSTOMERNAME' },
                          { title: '排车单号', width: 111, dataIndex: 'SCHEDULENUMBER',  key: 'SCHEDULENUMBER' },
                          { title: '买单单号', width: 111, dataIndex: 'BUYNUMBER',       key: 'BUYNUMBER' },
-                         { title: '取货操作', width: 100, key: 'action', fixed: 'right',
+                         { title: '取货操作', width: 200, key: 'action', fixed: 'right',
                            render: (_text, { UUID }) => {
-                             return this.state.successList.includes(UUID) ?
-                                 <Button disabled>已取货</Button> :
-                                 <Button onClick={() => this.confirmPickup(UUID)} type="primary">
-                                   确认取货
-                                 </Button>
+                             const successObj = this.state.successObjs[UUID]
+                             return successObj ?
+                                 <Button disabled>{successObj}</Button> :
+                               <>
+                                 <Button onClick={() => this.confirmPickup(UUID,"已交货")} type="primary">
+                                   确认交货</Button>&nbsp;
+                                 <Button onClick={() => this.confirmPickup(UUID,"已收货")} type="primary">
+                                   确认收货</Button>
+                               </>
                            }
                          }
                        ]}

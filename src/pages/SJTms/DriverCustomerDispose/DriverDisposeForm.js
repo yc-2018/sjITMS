@@ -1,10 +1,10 @@
 import React, { Component } from 'react';
-import { Form, Input, Row, Col, Tooltip, Collapse, Divider,Checkbox } from 'antd';
+import { Form, Input, Row, Col, Tooltip, Collapse, Divider, Checkbox, Button, Table } from 'antd'
 import IconFont from '@/components/IconFont';
 import Empty from '@/pages/Component/Form/Empty';
 import styles from'./DriverCustomerPage.less'
 import cargoDetailStyles from './DriverDisposeForm.less'
-import { getCargoDetails } from '@/services/sjitms/DriverCustomerService';
+import { getCargoDetails, getDriverSvcPickupData } from '@/services/sjitms/DriverCustomerService'
 const Panel = Collapse.Panel;
 
 @Form.create()
@@ -38,6 +38,7 @@ export default class DriverDisposeForm extends Component {
     cargoDetailsList:[],
     //货品选中复选框数组uuid
     cargoCheckArr: [],
+    goodsHandoverRecordList:[] // 货品交接记录
   }
   onResponsibilityChange = data => {
     this.props.form.setFieldsValue({ responsibilityName: data.record.NAME });
@@ -64,13 +65,14 @@ export default class DriverDisposeForm extends Component {
       this.getInitialData()
   }
 
-  /**加载该条单的初始数据*/
+  /**加载该条单的初始货品数据*/
   async getInitialData() {
     const { bill, records, operation } = this.props;
     this.setState({ bill: bill, records: records, operation: operation });
 
     // 如果该条单是问题反馈单 它就没有货品明细数据
     if (bill.ASSISTANCETYPE !== 'PROBLEMFEEDBACK') {
+      // 获取货品明细数据
       const response = await getCargoDetails(bill.UUID);
       if (response?.success && response.data) {
         this.setState({
@@ -79,9 +81,13 @@ export default class DriverDisposeForm extends Component {
         });
         // 货品明细数据要初始化 不然没动父组件什么都拿不到
         this.props.getRequireTakeDeliveryData(response?.data?.filter(item => item.istakedelivery === 1)?.map(item => item.uuid))
-      } else {
-        this.setState({ cargoDetailsList: [], cargoCheckArr: [] }); // 如果后端返回空数组，则自行处理。
-      }
+      } else this.setState({ cargoDetailsList: [], cargoCheckArr: [] }); // 如果后端返回空数组，则自行处理。
+
+      // 获取货品交接记录
+      const goodsHandoverRecord = await getDriverSvcPickupData(bill.UUID);
+      if (response?.success && response.data)
+        this.setState({ goodsHandoverRecordList: goodsHandoverRecord.data })
+      else this.setState({ goodsHandoverRecordList: [] })
     }
   }
 
@@ -121,7 +127,14 @@ export default class DriverDisposeForm extends Component {
         </Form.Item>
       </Col>
 
-    const { bill, records, operation,typeDictArr,cargoDetailsList,cargoCheckArr} = this.state;
+    const {
+      bill,
+      records,
+      operation,
+      cargoDetailsList,
+      cargoCheckArr,
+      goodsHandoverRecordList
+    } = this.state;
     const { getFieldDecorator } = this.props.form;
 
     return (!bill ? <></> :
@@ -156,7 +169,7 @@ export default class DriverDisposeForm extends Component {
           ) : <></>
         }
         <Row style={{display:"flex",flexWrap:"wrap"}}>
-        {
+        { // 取货开关
           bill.ASSISTANCETYPE !== 'PROBLEMFEEDBACK' && cargoDetailsList.length > 0?(
             cargoDetailsList.map((item)=>{
                 return   <Col span={12}>
@@ -194,7 +207,9 @@ export default class DriverDisposeForm extends Component {
           ):<></>
         }
         </Row>
-        {records.length > 0 ? (
+
+
+        {records.length > 0  &&   // 处理记录
           <Collapse
             bordered={false}
             defaultActiveKey={['0']}
@@ -229,9 +244,48 @@ export default class DriverDisposeForm extends Component {
               })}
             </Panel>
           </Collapse>
-        ) : (
-          <></>
-        )}
+        }
+
+
+        {/* 货物交接 */bill.ASSISTANCETYPE !== 'PROBLEMFEEDBACK' && goodsHandoverRecordList.length>0 &&
+          <Collapse
+            bordered={false}
+            defaultActiveKey={['0']}
+            className={styles.collapse}
+            expandIcon={({ isActive }) => (
+              <div className={styles.titleWrappr}>
+                <div className={styles.navTitle}>
+                  <span>货物交接记录</span>
+                  <IconFont className={styles.icon} type={isActive ? 'icon-arrow_fold' : 'icon-arrow_unfold'}/>
+                </div>
+              </div>
+            )}
+          >
+            <Panel style={{ border: 0 }}>
+              <Table dataSource={goodsHandoverRecordList??[]}
+                     scroll={{ x: '100%' }}       // 横向滚动
+                     pagination={false}           // 去掉翻页组件
+                     size={'small'}               // 表格尺寸
+                     bordered                     // 表格边框
+                     columns={[
+                       { title: '当前类型',   width: 88, dataIndex: 'type',            key: 'type' },
+                       { title: '货物代码',   width: 100, dataIndex: 'productcode',     key: 'productcode' },
+                       { title: '货物名称',   width: 200, dataIndex: 'productname',     key: 'productname' },
+                       { title: '数量',      width: 70,  dataIndex: 'productquantity', key: 'productquantity' },
+                       { title: '金额',      width: 70,  dataIndex: 'productamount',   key: 'productamount' },
+                       { title: '收货人工号', width: 110, dataIndex: 'takecode',        key: 'takecode' },
+                       { title: '收货人名字', width: 88,  dataIndex: 'takename',        key: 'takename' },
+                       { title: '交货人代码', width: 90,  dataIndex: 'receivecode',     key: 'receivecode' },
+                       { title: '交货人名字', width: 112, dataIndex: 'receivename',     key: 'receivename' },
+                       { title: '交接时间',   width: 188, dataIndex: 'disposetime',     key: 'disposetime' },
+                     ]}
+              />
+            </Panel>
+          </Collapse>
+        }
+
+
+
         <Form.Item
           label={this.placeholders[operation]}
           labelCol={{ span: 2 }}

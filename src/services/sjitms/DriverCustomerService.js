@@ -63,14 +63,15 @@ export function getBillNo(ownerCode) {
 /**
  * 司机服务取货
  *
- * @param param 取货对象+取货人信息
+ * @param uuid 取货uuid
+ * @param type 1交货 2收货
+ * @param driverCode 司机代码
  * @author ChenGuangLong
  * @since 2024/02/23 14:44:44
  */
-export async function driverSvcPickup(param) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/driverSvcPickup`, {
+export async function driverSvcPickup(uuid,type,driverCode) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/driverSvcPickup?uuid=${uuid}&type=${type}&driverCode=${driverCode}`, {
     method: 'POST',
-    body: param,
   });
 }
 
@@ -97,4 +98,15 @@ export async function cancelFinish(uuid) {
   return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/cancelFinish?uuid=${uuid}`, {
     method: 'POST',
   });
+}
+
+/**
+ * 获取司机服务货物交接数据
+ *
+ * @param billUuid 司机客服表UUID
+ * @author ChenGuangLong
+ * @since 2024/03/06 14:53:35
+ */
+export function getDriverSvcPickupData(billUuid) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/getDriverSvcGoods?billUuid=${billUuid}`);
 }
