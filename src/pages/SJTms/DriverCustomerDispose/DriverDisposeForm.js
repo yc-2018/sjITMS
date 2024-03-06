@@ -240,21 +240,23 @@ export default class DriverDisposeForm extends Component {
           >
             <Panel style={{ border: 0 }}>
               <Table dataSource={goodsHandoverRecordList ?? []}
-                scroll={{ x: '100%' }}       // 横向滚动
                 pagination={false}           // 去掉翻页组件
                 size={'small'}               // 表格尺寸
-                bordered                     // 表格边框
                 columns={[
-                  { title: '当前类型', width: 88, dataIndex: 'type', key: 'type' },
                   { title: '货物代码', width: 100, dataIndex: 'productcode', key: 'productcode' },
                   { title: '货物名称', width: 200, dataIndex: 'productname', key: 'productname' },
                   { title: '数量', width: 70, dataIndex: 'productquantity', key: 'productquantity' },
                   { title: '金额', width: 70, dataIndex: 'productamount', key: 'productamount' },
-                  { title: '收货人工号', width: 110, dataIndex: 'takecode', key: 'takecode' },
-                  { title: '收货人名字', width: 88, dataIndex: 'takename', key: 'takename' },
-                  { title: '交货人代码', width: 90, dataIndex: 'receivecode', key: 'receivecode' },
-                  { title: '交货人名字', width: 112, dataIndex: 'receivename', key: 'receivename' },
-                  { title: '交接时间', width: 188, dataIndex: 'disposetime', key: 'disposetime' },
+                  { title: '交接状态', width: 80, dataIndex: 'type', key: 'type' },
+                  {
+                    title: '收货人', width: 120, dataIndex: 'takecode', key: 'takecode',
+                    render: (val, record) => {return <span>{`[${val}]${record.takename}`}</span> }
+                  },
+                  {
+                    title: '交货人', width: 120, dataIndex: 'receivecode', key: 'receivecode',
+                    render: (val, record) => {return <span>{`[${val}]${record.receivename}`}</span> }
+                  },
+                  { title: '交接时间', width: 150, dataIndex: 'disposetime', key: 'disposetime' },
                 ]}
               />
             </Panel>
