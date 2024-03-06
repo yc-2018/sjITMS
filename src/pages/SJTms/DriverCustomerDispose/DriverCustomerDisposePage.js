@@ -135,7 +135,7 @@ export default class DriverCustomerDisposePageModal extends Component {
     return (
       <Modal
         bodyStyle={{ overflowY: 'auto', maxHeight: '80vh', margin: -12 }}
-        width="70vw"
+        width="85vw"
         visible={visible}
         centered
         onCancel={() => this.hide()}
