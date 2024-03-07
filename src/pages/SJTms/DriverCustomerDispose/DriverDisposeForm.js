@@ -110,7 +110,7 @@ export default class DriverDisposeForm extends Component {
 
   render() {
     /** 取货卡片用 */
-    const build2Col = (text, value, textSpan = 2, valueSpan = 4) =>
+    const build2Col = (text, value, textSpan = 3, valueSpan = 5) =>
       <>
         <Col span={textSpan}>{text}:</Col>
         <Col span={valueSpan}>{value || '<空>'}</Col>
@@ -195,19 +195,14 @@ export default class DriverDisposeForm extends Component {
                     return <Col span={12} className={cargoDetailStyles.cargoDetail}
                       onClick={() => this.bigCheck(cargoCheckArr.indexOf(item.uuid) == -1, item)}>
                       <Row>
-                        {build2Col('货品', item.productname, 2, 22)}
-                        <Divider style={{ margin: '0px' }} />
-                        {build2Col('价格', item.productprice)}
-                        {build2Col('金额', item.productamount)}
-                        {build2Col('货位', item.productposition)}
-                        {build2Col('件数', item.productquantity)}
-                        <Divider style={{ margin: '0px' }} />
-                        <Col span={24}>
+                        <Col span={3}>商品:</Col>
+                        <Col span={15}>{`[${item.articlecode}]${item.articlename}` || '<空>'}</Col>
+                        <Col span={6}>
                           {
                             /* 取货开关 */
                             item.flag ? '货品已完成交接' :
-                              <div>
-                                <span style={{ marginRight: '5px' }}>是否需交接</span>
+                              <div style={{ textAlign: "right", display: 'flex', alignItems: "center" }}>
+                                <span style={{ marginRight: "3px" }}>是否需交接</span>
                                 <Switch
                                   checked={cargoCheckArr.indexOf(item.uuid) !== -1}
                                   onChange={(checked) => this.bigCheck(checked, item)}
@@ -215,6 +210,14 @@ export default class DriverDisposeForm extends Component {
                               </div>
                           }
                         </Col>
+                        <Divider style={{ margin: '0px' }} />
+                        {build2Col('件数', item.qty)}
+                        {build2Col('价格', item.price)}
+                        {build2Col('金额', item.amount)}
+                        <Divider style={{ margin: '0px' }} />
+                        {build2Col('商品条码', item.articlebarcode)}
+                        {build2Col('拣货位', item.pickbin)}
+                        {build2Col('是否可退', item.isreturnvendor)}
                       </Row>
                     </Col>
                   })
@@ -301,7 +304,7 @@ export default class DriverDisposeForm extends Component {
             </Panel>
           </Collapse>
         }
-        <Form.Item label="处理结果类型" labelCol={{ span: 2 }} wrapperCol={{ span: 21 }}>
+        <Form.Item label="处理结果类型" labelCol={{ span: 2 }} wrapperCol={{ span: 10 }}>
           {getFieldDecorator('procResType')(
             <Select placeholder="回复处理结果时必须选择,回复进度时不会保存。" allowClear>
               {Object.entries(procResTypeMapping).map(([key, value]) =>
