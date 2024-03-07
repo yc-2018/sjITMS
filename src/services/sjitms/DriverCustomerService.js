@@ -110,3 +110,18 @@ export async function cancelFinish(uuid) {
 export function getDriverSvcPickupData(billUuid) {
   return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/getDriverSvcGoods?billUuid=${billUuid}`);
 }
+
+
+/**
+ * 通过司机工号获取货品明细列表给 司机服务货物交接展示
+ * @param driverCode 司机代码
+ * @param isATeam    是否组队取货  0：否  1：是
+ * @author ChenGuangLong
+ * @since 2024/03/06 20:20:13
+ */
+export function getGoodsDetailList(driverCode,isATeam) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/getGoodsDetailList?driverCode=${driverCode}&isATeam=${isATeam}`);
+}
+
+
+
