@@ -1,6 +1,6 @@
 /*
 * @Description: 司机服务新建和编辑页面
-* @authors: xuqifeng ChenGuangLong
+* @authors: xuqifeng ChenGuangLong GuanKongJin
 */
 import React from "react";
 import { connect } from "dva";
@@ -55,29 +55,36 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       if (serviceBill.ASSISTANCETYPE !== "PROBLEMFEEDBACK") {
         const response = await getCargoDetails(serviceBill.UUID)
         if (response.success && response.data) {
-          // 字段变量变来又变去真的有够麻烦的
           selectDetails = response.data?.map(item => {
             return {
-              ...item,
-              STORE: `[${item.customercode}]${item.customername}`,
-              STORECODE: item.customercode,// 门店号码
-              STORENAME: item.customername,// 门店名称
-              SKU: `[${item.productcode}]${item.productname}`,// 货物
-              SKUCODE: item.productcode,// 货物代码
-              SKUNAME: item.productname,// 货物名称
-              PICKBIN: item.productposition,// 货位
-              QTY: item.productquantity,// 数量
-              DELIVERYDATE: item.deliverydate,// 配送日期
-              AMOUNT: item.productamount,// 总金额，与MONEY相同
-              ISTAKEDELIVERY: item.istakedelivery || 0, // 是否取货，默认为0
-              PRICE: item.productprice// 货品价格
+              UUID: item.uuid,
+              BILLUUID: item.billuuid,
+              SCHEDULENUMBER: item.schedulenumber,
+              DELIVERYDATE: item.deliverydate,
+              BUYNUMBER: item.buynumber,
+              STORE: `[${item.storecode}]${item.storename}`,
+              ARTICLE: `[${item.articlecode}]${item.articlename}`,
+              STORECODE: item.storecode,
+              STORENAME: item.storename,
+              ARTICLECODE: item.articlecode,
+              ARTICLENAME: item.articlename,
+              ARTICLEBARCODE: item.articlebarcode,
+              PICKBIN: item.pickbin,
+              QTY: item.qty,
+              PRICE: item.price,
+              AMOUNT: item.amount,
+              ISTAKEDELIVERY: item.istakedelivery,
+              ISRETURNVENDOR: item.isreturnvendor,
+              FLAG: item.flag
             }
           });
         }
       }
-      this.setState({ serviceBill, selectDetails,
+      this.setState({
+        serviceBill, selectDetails,
         assistanceType: serviceBill.ASSISTANCETYPE,
-        responsiblePerson: `[${serviceBill.DRIVERCODE}]${serviceBill.DRIVERNAME}` });
+        responsiblePerson: serviceBill.DRIVERCODE
+      });
     }
   }
 
@@ -88,11 +95,9 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       this.setState({ assistanceType: valueEvent.value,selectDetails:[] });
       if(this.entity.sj_driver_customer_service[0].PROBLEMTYPE) // 清空问题类型
         this.setFieldsValue('sj_driver_customer_service', 'PROBLEMTYPE')
-
-
     }
     if (fieldName == 'DRIVERCODE' && valueEvent) {              // 司机改变
-      this.setState({ responsiblePerson: `[${valueEvent.value}]${valueEvent.record.NAME}`,selectDetails:[] });
+      this.setState({ responsiblePerson: valueEvent.value, selectDetails: [] });
     }
     if (fieldName == 'PROBLEMTYPE' && valueEvent) {               // 问题类型改变
       const timeLiness = this.entity.sj_driver_customer_service[0].PROCESSINGTIMELINESS;
@@ -110,28 +115,6 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     }
   }
 
-  //保存明细
-  buildDetails = () => {
-    const { selectDetails, assistanceType } = this.state;
-    if (assistanceType !== "PROBLEMFEEDBACK") {
-      return selectDetails?.map(dtl => {
-        return {
-          CUSTOMERCODE: dtl.STORECODE,// 门店号码
-          CUSTOMERNAME: dtl.STORENAME,// 门店名称
-          PRODUCTCODE: dtl.SKUCODE,// 货物代码
-          PRODUCTNAME: dtl.SKUNAME,// 货物名称
-          PRODUCTPOSITION: dtl.PICKBIN,// 货位
-          PRODUCTQUANTITY: dtl.QTY,// 货物数量
-          DELIVERYDATE: dtl.APPLICATIONDATE,// 配送日期
-          PRODUCTAMOUNT: dtl.AMOUNT,// 货物金额
-          ISTAKEDELIVERY: 0,// 是否取货
-          PRODUCTPRICE: dtl.PRICE// 货品价格
-        }
-      }) || [];
-    }
-    return [];
-  }
-
   //保存前校验
   beforeSave = () => {
     const { selectDetails, assistanceType } = this.state;
@@ -139,8 +122,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
       message.error("请先选择货品！");
       return false;
     }
-    const details = this.buildDetails();
-    this.entity.sj_driver_store_goods_detail = details;
+    this.entity.sj_driver_store_goods_detail = selectDetails;
   }
 
   //子传父的货品明细数据
@@ -162,9 +144,6 @@ export default class DriverCustomerCreate extends QuickCreatePage {
         null,
         `[${selectedRows[0].STORECODE}]${selectedRows[0].STORENAME}`)
     }
-
-
-
   };
 
   render() {
@@ -231,16 +210,19 @@ export default class DriverCustomerCreate extends QuickCreatePage {
                     size="small"
                     dataSource={selectDetails}
                     scroll={{ x: true }}
+                    footer={false}
                     style={{ margin: 10 }}
                     pagination={false} // 隐藏分页并显示所有数据
                     bordered
                     columns={[
-                      { title: "货品", dataIndex: "SKU", key: "1" },
-                      { title: "门店", dataIndex: "STORE", key: "2" },
-                      { title: "货位", dataIndex: "PICKBIN", key: "4" },
-                      { title: "数量", dataIndex: "QTY", key: "3" },
-                      { title: "价格", dataIndex: "PRICE", key: "5" },
-                      { title: "金额", dataIndex: "AMOUNT", key: "6" },
+                      { title: "门店", dataIndex: "STORE", key: "1" },
+                      { title: "货品", dataIndex: "ARTICLE", key: "2" },
+                      { title: "条码", dataIndex: "ARTICLEBARCODE", key: "3" },
+                      { title: "拣货位", dataIndex: "PICKBIN", key: "4" },
+                      { title: "数量", dataIndex: "QTY", key: "5" },
+                      { title: "价格", dataIndex: "PRICE", key: "6" },
+                      { title: "金额", dataIndex: "AMOUNT", key: "7" },
+                      { title: "是否可退", dataIndex: "ISRETURNVENDOR", key: "8" },
                     ]}
                   />
                 </div>

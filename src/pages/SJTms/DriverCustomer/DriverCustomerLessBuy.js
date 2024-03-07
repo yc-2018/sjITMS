@@ -51,14 +51,14 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
     for (let i = 0; i < selectedRows.length; i++) {
       if (selectedRows[0].STORENAME !== selectedRows[i].STORENAME) return message.error('只能选择同一家门店的货品数据!');
     }
-    selectedRows = selectedRows?.map(row => {
-      return {
-        ...row,
-        SKU: `[${row.ARTICLECODE}]${row.ARTICLENAME}`,
-        SKUCODE: row.ARTICLECODE,
-        SKUNAME: row.ARTICLENAME
-      }
-    });
+    // selectedRows = selectedRows?.map(row => {
+    //   return {
+    //     ...row,
+    //     SKU: `[${row.ARTICLECODE}]${row.ARTICLENAME}`,
+    //     SKUCODE: row.ARTICLECODE,
+    //     SKUNAME: row.ARTICLENAME
+    //   }
+    // });
     //关闭遮罩层并回传数据
     this.props.getGoodsDetail(false, selectedRows);
     this.setState({ selectedRows: [] });

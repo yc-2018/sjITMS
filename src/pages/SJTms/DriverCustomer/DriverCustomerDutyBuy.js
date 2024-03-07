@@ -28,7 +28,7 @@ export default class DriverCustomerDutyBuy extends QuickFormSearchPage {
     // 检查 storeCode 是否发生变化
     if (this.props.responsiblePerson !== nextProps.responsiblePerson) {
       let {queryConfig}=this.state;
-      let creatorCol = queryConfig.columns.find(x => x.fieldName === 'STAFF');
+      let creatorCol = queryConfig.columns.find(x => x.fieldName === 'STAFFID');
       creatorCol.searchDefVal = nextProps.responsiblePerson;
       this.setState({queryConfigColumns:queryConfig.columns,queryConfig,pageFilters:{}});
       this.onSearch('reset', true);  // 重置查询条件
@@ -39,7 +39,7 @@ export default class DriverCustomerDutyBuy extends QuickFormSearchPage {
 
   /* 设置默认查询条件 */
   editColumns = queryConfig => {
-    let creatorCol = queryConfig.columns.find(x => x.fieldName === 'STAFF');
+    let creatorCol = queryConfig.columns.find(x => x.fieldName === 'STAFFID');
     creatorCol.searchDefVal = this.props.responsiblePerson;
     return queryConfig;
   };
@@ -56,16 +56,16 @@ export default class DriverCustomerDutyBuy extends QuickFormSearchPage {
         return;
       }
     }
-    selectedRows = selectedRows?.map(row => {
-      return {
-        ...row,
-        SKUCODE: row.SKU,
-        SKU: `[${row.SKU}]${row.SKUNAME}`,
-        QTY: row.QTY_EACH,
-        PICKBIN: row.LOCATION,
-        AMOUNT: row.MONEY
-      }
-    });
+    // selectedRows = selectedRows?.map(row => {
+    //   return {
+    //     ...row,
+    //     SKUCODE: row.SKU,
+    //     SKU: `[${row.SKU}]${row.SKUNAME}`,
+    //     QTY: row.QTY_EACH,
+    //     PICKBIN: row.LOCATION,
+    //     AMOUNT: row.MONEY
+    //   }
+    // });
     //关闭遮罩层并回传数据
     this.props.getGoodsDetail(false,selectedRows);
     this.setState({ selectedRows: [] });
