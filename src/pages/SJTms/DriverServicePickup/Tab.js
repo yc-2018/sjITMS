@@ -98,16 +98,16 @@ getGoodsDetails = async () => {
                  scroll={{ x: '100%' }}
                  pagination={false}           // 去掉翻页组件
                  columns={[
-                   { title: '门店', width: 300, dataIndex: 'customercode',    key: 'customer',
-                     render: (val, { customername }) => {return <span>{`[${val}]${customername}`}</span> }
+                   { title: '门店', width: 300, dataIndex: 'storecode',    key: 'store',
+                     render: (val, { storename }) => {return <span>{`[${val}]${storename}`}</span> }
                    },
-                   { title: '货物', width: 300, dataIndex: 'productcode',     key: 'product',
-                     render: (val, { productname }) => {return <span>{`[${val}]${productname}`}</span> }
+                   { title: '货物', width: 300, dataIndex: 'articlecode',     key: 'article',
+                     render: (val, { articlename }) => {return <span>{`[${val}]${articlename}`}</span> }
                    },
-                   { title: '货品价格', width: 80,  dataIndex: 'productprice',    key: 'productprice' },
-                   { title: '货物数量', width: 80,  dataIndex: 'productquantity', key: 'productquantity' },
-                   { title: '货物金额', width: 80,  dataIndex: 'productamount',   key: 'productamount' },
-                   { title: '货位',    width: 88,  dataIndex: 'productposition', key: 'productposition' },
+                   { title: '货品价格', width: 80,  dataIndex: 'price',    key: 'price' },
+                   { title: '货物数量', width: 80,  dataIndex: 'qty', key: 'qty' },
+                   { title: '货物金额', width: 80,  dataIndex: 'amount',   key: 'amount' },
+                   { title: '货位',    width: 88,  dataIndex: 'pickbin', key: 'pickbin' },
                    { title: '配送日期', width: 160, dataIndex: 'deliverydate',    key: 'deliverydate' },
                    { title: '排车单号', width: 111, dataIndex: 'schedulenumber',  key: 'schedulenumber' },
                    { title: '买单单号', width: 111, dataIndex: 'buynumber',       key: 'buynumber' },
