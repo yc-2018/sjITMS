@@ -204,9 +204,9 @@ export default class DriverDisposeForm extends Component {
                         <Col span={24}>
                           {
                             /* 取货开关 */
-                            item.takecode ? `已取货：[${item.takecode}]${item.takename} 时间：${item.taketime}` :
+                            item.flag ? '货品已完成交接' :
                               <div>
-                                <span style={{ marginRight: '5px' }}>是否取货</span>
+                                <span style={{ marginRight: '5px' }}>是否需交接</span>
                                 <Switch
                                   checked={cargoCheckArr.indexOf(item.uuid) != -1}
                                   onChange={(checked) => this.bigCheck(checked, item)}
