@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Form, Input, Row, Col, Tooltip, Collapse, Divider, Checkbox, Switch, Table } from 'antd'
+import { Form, Input, Row, Col, Tooltip, Collapse, Divider, Checkbox, Switch, Table, Select } from 'antd'
 import IconFont from '@/components/IconFont';
 import Empty from '@/pages/Component/Form/Empty';
 import styles from './DriverCustomerPage.less'
@@ -151,6 +151,7 @@ export default class DriverDisposeForm extends Component {
           {buildColFormItem('截止时间', bill.DEADLINE)}
           {buildColFormItem('处理部门', bill.DISPOSEDEPT)}
           {buildColFormItem('处理人', bill.DISPOSENAME)}
+          {buildColFormItem('处理结果类型', bill.PROCRESTYPE_CN)}
           {buildColFormItem('投诉描述', bill.ASSISTCONTENT, 24, { labelCol: { span: 2 }, wrapperCol: { span: 22 } })}
         </Row>
 
@@ -208,7 +209,7 @@ export default class DriverDisposeForm extends Component {
                               <div>
                                 <span style={{ marginRight: '5px' }}>是否需交接</span>
                                 <Switch
-                                  checked={cargoCheckArr.indexOf(item.uuid) != -1}
+                                  checked={cargoCheckArr.indexOf(item.uuid) !== -1}
                                   onChange={(checked) => this.bigCheck(checked, item)}
                                 />
                               </div>
@@ -300,6 +301,18 @@ export default class DriverDisposeForm extends Component {
             </Panel>
           </Collapse>
         }
+        <Form.Item label="处理结果类型" labelCol={{ span: 2 }} wrapperCol={{ span: 21 }}>
+          {getFieldDecorator('procResType')(
+            <Select placeholder="回复处理结果时必须选择,回复进度时不会保存。" allowClear>
+              {Object.entries(procResTypeMapping).map(([key, value]) =>
+                <Select.Option key={key} value={key}>
+                  {value}
+                </Select.Option>
+              )}
+            </Select>
+          )}
+        </Form.Item>
+
         <Form.Item
           label={this.placeholders[operation]}
           labelCol={{ span: 2 }}
@@ -320,3 +333,15 @@ export default class DriverDisposeForm extends Component {
     );
   }
 }
+
+/** 处理结果类型映射 */
+const procResTypeMapping = {
+  orderCancelled: '已取消买单',
+  orderNonCancellable: '无法取消买单',
+  replacementGiven: '已给予换货',
+  redirectedToStore: '已引导退回门店',
+  basketMisplaced: '放错筐',
+  leakageOccurred: '漏出',
+  pickedUp: '有拣',
+  wrongItemDelivered: '出错货'
+};

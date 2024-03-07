@@ -79,8 +79,15 @@ export default class DriverCustomerDisposePageModal extends Component {
   replyToProcessingContent = async stat => {
     const { bill,requireTakeCargoArr} = this.state
     const validate = await this.formRef.validateFields()
+    if (stat==='Result' && !validate.procResType) return message.error('回复结果时请选择处理结果！')
     this.setState({ saving: true })
-    const param = { billuuid: bill.UUID, type: stat, detail: validate.remark,requireTakeCargoList:requireTakeCargoArr}
+    const param = {
+      billuuid: bill.UUID,
+      type: stat,
+      detail: validate.remark,
+      requireTakeCargoList:requireTakeCargoArr,
+      procResType: validate.procResType
+    }
     onContent(param).then(response => {
       if (response && response.success) {
         message.success('回复结果成功！')
