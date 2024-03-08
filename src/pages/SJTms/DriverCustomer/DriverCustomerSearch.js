@@ -57,7 +57,7 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
           cancelText="取消"
         >
           <Button type="danger"
-            hidden={!havePermission(this.state.authority + '.delete')}
+            hidden={!havePermission(this.state.authority + '.del')}
           >
             删除
           </Button>
