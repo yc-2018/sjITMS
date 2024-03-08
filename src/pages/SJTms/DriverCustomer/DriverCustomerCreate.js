@@ -45,12 +45,8 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     }
 
     if (showPageNow === "update") {
-      const serviceBill = this.props.params.entity;
+      let serviceBill = this.props.params.entity;
       let { selectDetails } = this.state;
-      // 处理状态（驳回保存变保存状态）
-      if (serviceBill.PROCESSINGSTATE === "Rejected") {
-        this.entity[mainName][0].PROCESSINGSTATE = "Saved";
-      }
       //货品明细
       if (serviceBill.ASSISTANCETYPE !== "PROBLEMFEEDBACK") {
         const response = await getCargoDetails(serviceBill.UUID)
@@ -75,7 +71,8 @@ export default class DriverCustomerCreate extends QuickCreatePage {
               AMOUNT: item.amount,
               ISTAKEDELIVERY: item.istakedelivery,
               ISRETURNVENDOR: item.isreturnvendor,
-              FLAG: item.flag
+              FLAG: item.flag,
+              JOBID: item.jobid
             }
           });
         }
@@ -121,6 +118,11 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     if (selectDetails.length === 0 && assistanceType !== "PROBLEMFEEDBACK") {
       message.error("请先选择货品！");
       return false;
+    }
+    // 处理状态（驳回状态变保存状态）
+    const mainName = 'sj_driver_customer_service';
+    if (this.entity[mainName][0].PROCESSINGSTATE === "Rejected") {
+      this.entity[mainName][0].PROCESSINGSTATE = "Saved";
     }
     this.entity.sj_driver_store_goods_detail = selectDetails;
   }
