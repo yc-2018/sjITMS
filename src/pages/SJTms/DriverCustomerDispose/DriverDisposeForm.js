@@ -1,10 +1,12 @@
 import React, { Component } from 'react';
-import { Form, Input, Row, Col, Tooltip, Collapse, Divider, Checkbox, Switch, Table, Select } from 'antd'
+import { Form, Input, Row, Col, Tooltip, Collapse, Divider, Checkbox, Switch, Table, Select, Button } from 'antd';
 import IconFont from '@/components/IconFont';
 import Empty from '@/pages/Component/Form/Empty';
-import styles from './DriverCustomerPage.less'
-import cargoDetailStyles from './DriverDisposeForm.less'
-import { getCargoDetails, getDriverSvcPickupData } from '@/services/sjitms/DriverCustomerService'
+import styles from './DriverCustomerPage.less';
+import cargoDetailStyles from './DriverDisposeForm.less';
+import { getCargoDetails, getDriverSvcPickupData, getPickDtl } from '@/services/sjitms/DriverCustomerService';
+import { drawPrintPage } from './Print';
+import print from 'print-js';
 const Panel = Collapse.Panel;
 
 @Form.create()
@@ -38,6 +40,7 @@ export default class DriverDisposeForm extends Component {
     cargoDetailsList: [],
     //货品选中复选框数组uuid
     cargoCheckArr: [],
+    printPage: "",
     goodsHandoverRecordList: [] // 货品交接记录
   }
   onResponsibilityChange = data => {
@@ -108,6 +111,21 @@ export default class DriverDisposeForm extends Component {
     this.props.getRequireTakeDeliveryData(uuids);
   }
 
+  onPrint = async (detail) => {
+    await this.buildPrintPage(detail);
+    print({ printable: 'stkinPrint', type: 'html', targetStyles: ["*"], scanStyles: false });
+    this.setState({ printPage: "" });
+  }
+
+  buildPrintPage = async (detail) => {
+    const response = await getPickDtl(detail.jobid, detail.storecode, detail.pickbin);
+    if (response.success) {
+      const records = response.data || [];
+      const printPage = drawPrintPage(detail, records);
+      this.setState({ printPage: printPage });
+    }
+  };
+
   render() {
     /** 取货卡片用 */
     const build2Col = (text, value, textSpan = 3, valueSpan = 5) =>
@@ -132,6 +150,7 @@ export default class DriverDisposeForm extends Component {
       operation,
       cargoDetailsList,
       cargoCheckArr,
+      printPage,
       goodsHandoverRecordList
     } = this.state;
     const { getFieldDecorator } = this.props.form;
@@ -193,7 +212,8 @@ export default class DriverDisposeForm extends Component {
                 bill.ASSISTANCETYPE !== 'PROBLEMFEEDBACK' && cargoDetailsList.length > 0 ? (
                   cargoDetailsList.map((item) => {
                     return <Col span={12} className={cargoDetailStyles.cargoDetail}
-                      onClick={() => this.bigCheck(cargoCheckArr.indexOf(item.uuid) == -1, item)}>
+                      // onClick={() => this.bigCheck(cargoCheckArr.indexOf(item.uuid) == -1, item)}
+                    >
                       <Row>
                         <Col span={3}>商品:</Col>
                         <Col span={15}>{`[${item.articlecode}]${item.articlename}` || '<空>'}</Col>
@@ -219,6 +239,7 @@ export default class DriverDisposeForm extends Component {
                         {build2Col('拣货位', item.pickbin)}
                         {build2Col('是否可退', item.isreturnvendor)}
                       </Row>
+                      <Button type="default" onClick={()=>this.onPrint(item)}>打印</Button>
                     </Col>
                   })
                 ) : <></>
@@ -254,11 +275,11 @@ export default class DriverDisposeForm extends Component {
                   { title: '交接状态', width: 80, dataIndex: 'type', key: 'type' },
                   {
                     title: '收货人', width: 120, dataIndex: 'takecode', key: 'takecode',
-                    render: (val, record) => {return <span>{`[${val}]${record.takename}`}</span> }
+                    render: (val, record) => { return <span>{`[${val}]${record.takename}`}</span> }
                   },
                   {
                     title: '交货人', width: 120, dataIndex: 'receivecode', key: 'receivecode',
-                    render: (val, record) => {return <span>{`[${val}]${record.receivename}`}</span> }
+                    render: (val, record) => { return <span>{`[${val}]${record.receivename}`}</span> }
                   },
                   { title: '交接时间', width: 150, dataIndex: 'disposetime', key: 'disposetime' },
                 ]}
@@ -332,6 +353,9 @@ export default class DriverDisposeForm extends Component {
             />
           )}
         </Form.Item>
+        <div style={{ display: "none" }}>
+          <div id="stkinPrint">{printPage}</div>
+        </div>
       </Form>
     );
   }

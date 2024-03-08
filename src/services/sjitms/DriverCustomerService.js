@@ -123,5 +123,8 @@ export function getGoodsDetailList(driverCode,isATeam) {
   return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/getGoodsDetailList?driverCode=${driverCode}&isATeam=${isATeam}`);
 }
 
+export function getPickDtl(jobId, storeCode, pickBin) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/driverCustomer/getPickDtl?jobId=${jobId}&storeCode=${storeCode}&pickBin=${pickBin}`);
+}
 
 
