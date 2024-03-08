@@ -26,11 +26,12 @@ export default class DriverCustomerSearch extends QuickFormSearchPage {
     unNormType: '',
   };
 
-  editColumns = queryConfig => {
-    let creatorCol = queryConfig.columns.find(x => x.fieldName === 'CREATORNAME');
-    creatorCol.searchDefVal = loginUser().name;
-    return queryConfig;
-  };
+  // 编辑默认的查询条件：创建人是当前用户
+  // editColumns = queryConfig => {
+  //   let creatorCol = queryConfig.columns.find(x => x.fieldName === 'CREATORNAME');
+  //   creatorCol.searchDefVal = loginUser().name;
+  //   return queryConfig;
+  // };
 
   /**
    * @description 改变每一行的数据展示（这里改变状态颜色）
