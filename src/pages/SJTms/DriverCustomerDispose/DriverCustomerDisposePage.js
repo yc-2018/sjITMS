@@ -80,7 +80,6 @@ export default class DriverCustomerDisposePageModal extends Component {
     const { bill,requireTakeCargoArr} = this.state
     const validate = await this.formRef.validateFields()
     // 获取责任人信息
-    console.log('███████validate.responsiblePerson>>>>', validate.responsiblePerson,'<<<<██████')
     const responsiblePerson = validate.responsiblePerson?.split('@@@')
     if (responsiblePerson && responsiblePerson[2] === 'undefined') responsiblePerson[2] = ''  // 责任人部门可能为空
     if (stat==='Result' && !validate.procResType) return message.error('回复结果时请选择处理结果！')
