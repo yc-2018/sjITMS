@@ -7,6 +7,7 @@ import cargoDetailStyles from './DriverDisposeForm.less';
 import { getCargoDetails, getDriverSvcPickupData, getPickDtl } from '@/services/sjitms/DriverCustomerService';
 import { drawPrintPage } from './Print';
 import print from 'print-js';
+import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent'
 const Panel = Collapse.Panel;
 
 @Form.create()
@@ -325,17 +326,43 @@ export default class DriverDisposeForm extends Component {
             </Panel>
           </Collapse>
         }
-        <Form.Item label="处理结果类型" labelCol={{ span: 2 }} wrapperCol={{ span: 10 }}>
-          {getFieldDecorator('procResType')(
-            <Select placeholder="回复处理结果时必须选择,回复进度时不会保存。" allowClear>
-              {Object.entries(procResTypeMapping).map(([key, value]) =>
-                <Select.Option key={key} value={key}>
-                  {value}
-                </Select.Option>
+        <Row>
+          <Col span={12}>
+            <Form.Item label="处理结果类型" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }}>
+              {getFieldDecorator('procResType')(
+                <Select placeholder="回复处理结果时必须选择,回复进度时不会保存。" allowClear>
+                  {Object.entries(procResTypeMapping).map(([key, value]) =>
+                    <Select.Option key={key} value={key}>
+                      {value}
+                    </Select.Option>
+                  )}
+                </Select>
               )}
-            </Select>
-          )}
-        </Form.Item>
+            </Form.Item>
+          </Col>
+          <Col span={12}>
+            <Form.Item label="责任人" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }}>
+              {getFieldDecorator('responsible', { initialValue: bill.PERSONRESPCODE })(
+                <SimpleAutoComplete
+                  placeholder="请选择责任人"
+                  textField="[%CODE%]%NAME%[%DEPARTMENT%]"
+                  valueField="CODE"//"%CODE%@@@%NAME%@@@%DEPARTMENT%"    // 取值时工号 名字 部门直接分割@@@
+                  duplicate={'CODE'}              // 当valueField不是一个字段的时候加上这个，不加valueField就只会显示一个
+                  queryParams={{ tableName: 'sj_itms_employee', 'selects ': ['CODE', 'NAME','DEPARTMENT'] }}
+                  searchField="CODE,NAME,DEPARTMENT"
+                  showSearch={true}
+                  style={{ width: '100%' }}
+                  onChange={v=>this.props.form.setFieldsValue({ responsiblePerson: `${v.value}@@@${v.record.NAME}@@@${v.record.DEPARTMENT}` })}
+                  autoComplete
+                />
+              )}
+            </Form.Item>
+            <Form.Item label="责任人隐藏" labelCol={{ span: 0 }} wrapperCol={{ span: 0 }} style={{ display: 'none'}}>
+              {getFieldDecorator('responsiblePerson')(<Input/>)}
+            </Form.Item>
+          </Col>
+        </Row>
+
 
         <Form.Item
           label={this.placeholders[operation]}
