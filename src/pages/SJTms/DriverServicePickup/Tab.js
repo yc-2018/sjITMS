@@ -11,7 +11,7 @@ export default class extends QuickFormSearchPage {
     super(props)
     this.state = {
       ...this.state,
-      successObjs: {},    // 成功的UUID列表对象
+      successObjs: {},    // 成功的UUID列表对象{uuid:成功类型,...}
       noTable: true,      // 框架的表格不显示
       driverCode: null,   // 司机工号
       teamUpToPick:false, // 是否是组队取货

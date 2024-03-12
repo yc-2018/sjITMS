@@ -178,9 +178,9 @@ export default class DriverDisposeForm extends Component {
             )}
           >
             <Panel style={{ border: 0 }}>
-              <Row style={{ display: 'flex', flexWrap: 'wrap' }}>
+              <Row>
                 <Table dataSource={cargoDetailsList ?? []}
-                       scroll={{ x: '100%' }}
+                       scroll={{ x: true }}
                        pagination={false}           // 去掉翻页组件
                        size={'small'}               // 表格尺寸
                        columns={[
@@ -195,7 +195,7 @@ export default class DriverDisposeForm extends Component {
                          { title: '拣货位', width: 80, dataIndex: 'pickbin', key: 'pickbin' },
                          { title: '是否可退', width: 77, dataIndex: 'isreturnvendor', key: 'isreturnvendor' },
                          {
-                           title: '货物交接', width: 255, key: '货物交接', align: 'center',
+                           title: '货物交接', width: 255, key: '货物交接', align: 'center',fixed: 'right',
                            render: (_, item) =>
                              <Radio.Group
                                value={this.state.cargoCheckObj[item.uuid] ?? item.istakedelivery ?? 0}  // 用||遇到0会有问题
@@ -207,7 +207,7 @@ export default class DriverDisposeForm extends Component {
                              </Radio.Group>
                          },
                          {
-                           title: '操作', width: 80, key: '操作', align: 'center',
+                           title: '操作', width: 80, key: '操作', align: 'center',fixed: 'right',
                            render: (_, item) => <Button type="default" onClick={() => this.onPrint(item)}>打印</Button>
                          },
                        ]}
@@ -357,6 +357,7 @@ export default class DriverDisposeForm extends Component {
     );
   }
 }
+
 
 /** 处理结果类型映射 */
 const procResTypeMapping = {
