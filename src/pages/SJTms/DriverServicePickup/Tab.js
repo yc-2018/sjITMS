@@ -44,7 +44,7 @@ getGoodsDetails = async () => {
   if (driverCode) {
     this.setState({ tableLoading: true })
     const resp = await getGoodsDetailList(driverCode, teamUpToPick? '1' : '0')
-    this.setState({ goodsList: resp.data ?? [], tableLoading: false })
+    this.setState({ goodsList: resp.data ?? [], tableLoading: false ,successObjs:{}})
 
   }
 }
