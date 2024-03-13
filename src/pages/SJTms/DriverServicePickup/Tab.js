@@ -112,7 +112,7 @@ getGoodsDetails = async () => {
                    { title: '排车单号', width: 111, dataIndex: 'schedulenumber',  key: 'schedulenumber' },
                    { title: '买单单号', width: 111, dataIndex: 'buynumber',       key: 'buynumber' },
                    {
-                     title: '取货操作', width: 200, key: 'action', fixed: 'right',
+                     title: '货物操作', width: 200, key: 'action', fixed: 'right', align: 'center',
                      render: (_text, { uuid }) => {
                        const successObj = this.state.successObjs[uuid]
                        return successObj ?

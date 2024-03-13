@@ -236,6 +236,7 @@ export default class DriverDisposeForm extends Component {
               <Table dataSource={goodsHandoverRecordList ?? []}
                 pagination={false}           // 去掉翻页组件
                 size={'small'}               // 表格尺寸
+                scroll={{ x: true }}
                 columns={[
                   { title: '货物代码', width: 100, dataIndex: 'productcode', key: 'productcode' },
                   { title: '货物名称', width: 200, dataIndex: 'productname', key: 'productname' },
