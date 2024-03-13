@@ -298,8 +298,8 @@ export default class DriverDisposeForm extends Component {
           </Collapse>
         }
         <Row>
-          <Col span={12}>
-            <Form.Item label="处理结果类型" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }}>
+          <Col span={8}>
+            <Form.Item label="处理结果类型" labelCol={{ span: 5 }} wrapperCol={{ span: 18 }}>
               {getFieldDecorator('procResType')(
                 <Select placeholder="回复处理结果时必须选择,回复进度时不会保存。" allowClear>
                   {Object.entries(procResTypeMapping).map(([key, value]) =>
@@ -311,16 +311,16 @@ export default class DriverDisposeForm extends Component {
               )}
             </Form.Item>
           </Col>
-          <Col span={12}>
+          <Col span={6}>
             <Form.Item label="责任人" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }}>
               {getFieldDecorator('responsible', { initialValue: bill.PERSONRESPCODE })(
                 <SimpleAutoComplete
                   placeholder="请选择责任人"
-                  textField="[%CODE%]%NAME%[%DEPARTMENT%]"
-                  valueField="CODE"//"%CODE%@@@%NAME%@@@%DEPARTMENT%"    // 取值时工号 名字 部门直接分割@@@
+                  textField="[%CODE%]%NAME%"
+                  valueField="CODE"//"%CODE%@@@%NAME%"    // 取值时工号 名字直接分割@@@
                   duplicate={'CODE'}              // 当valueField不是一个字段的时候加上这个，不加valueField就只会显示一个
-                  queryParams={{ tableName: 'sj_itms_employee', 'selects ': ['CODE', 'NAME','DEPARTMENT'] }}
-                  searchField="CODE,NAME,DEPARTMENT"
+                  queryParams={{ tableName: 'sj_itms_employee', 'selects ': ['CODE', 'NAME'] }}
+                  searchField="CODE,NAME"
                   showSearch={true}
                   style={{ width: '100%' }}
                   onChange={v=>this.props.form.setFieldsValue({ responsiblePerson: `${v.value}@@@${v.record.NAME}@@@${v.record.DEPARTMENT}` })}
@@ -330,6 +330,19 @@ export default class DriverDisposeForm extends Component {
             </Form.Item>
             <Form.Item label="责任人隐藏" style={{ display: 'none'}}>
               {getFieldDecorator('responsiblePerson')(<Input/>)}
+            </Form.Item>
+          </Col>
+
+          <Col span={6}>
+            <Form.Item label="责任部门" labelCol={{ span: 5 }} wrapperCol={{ span: 19 }}>
+              {getFieldDecorator('department', { initialValue: bill.DEPTRESP })(
+                <SimpleAutoComplete
+                  showSearch
+                  placeholder="请选择责任部门"
+                  dictCode="serviceDept"
+                  //onChange={e => this.setState({ classify: e.value })}
+                />
+              )}
             </Form.Item>
           </Col>
         </Row>

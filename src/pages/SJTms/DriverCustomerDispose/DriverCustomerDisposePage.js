@@ -79,10 +79,11 @@ export default class DriverCustomerDisposePageModal extends Component {
   replyToProcessingContent = async stat => {
     const { bill,requireTakeCargoArr} = this.state
     const validate = await this.formRef.validateFields()
+
+    if (stat==='Result' && !validate.procResType) return message.error('回复结果时请选择处理结果！')
     // 获取责任人信息
     const responsiblePerson = validate.responsiblePerson?.split('@@@')
-    if (responsiblePerson && responsiblePerson[2] === 'undefined') responsiblePerson[2] = ''  // 责任人部门可能为空
-    if (stat==='Result' && !validate.procResType) return message.error('回复结果时请选择处理结果！')
+    if (validate.department) responsiblePerson[2] = validate.department?.value  // 责任部门
     this.setState({ saving: true })
     const param = {
       billuuid: bill.UUID,
