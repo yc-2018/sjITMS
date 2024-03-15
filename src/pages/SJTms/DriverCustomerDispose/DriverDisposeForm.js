@@ -311,6 +311,20 @@ export default class DriverDisposeForm extends Component {
               )}
             </Form.Item>
           </Col>
+
+          <Col span={6}>
+            <Form.Item label="责任部门" labelCol={{ span: 5 }} wrapperCol={{ span: 19 }}>
+              {getFieldDecorator('department', { initialValue: bill.DEPTRESP })(
+                <SimpleAutoComplete
+                  showSearch
+                  placeholder="请选择责任部门"
+                  dictCode="serviceDept"
+                  //onChange={e => this.setState({ classify: e.value })}
+                />
+              )}
+            </Form.Item>
+          </Col>
+
           <Col span={6}>
             <Form.Item label="责任人" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }}>
               {getFieldDecorator('responsible', { initialValue: bill.PERSONRESPCODE })(
@@ -330,19 +344,6 @@ export default class DriverDisposeForm extends Component {
             </Form.Item>
             <Form.Item label="责任人隐藏" style={{ display: 'none'}}>
               {getFieldDecorator('responsiblePerson')(<Input/>)}
-            </Form.Item>
-          </Col>
-
-          <Col span={6}>
-            <Form.Item label="责任部门" labelCol={{ span: 5 }} wrapperCol={{ span: 19 }}>
-              {getFieldDecorator('department', { initialValue: bill.DEPTRESP })(
-                <SimpleAutoComplete
-                  showSearch
-                  placeholder="请选择责任部门"
-                  dictCode="serviceDept"
-                  //onChange={e => this.setState({ classify: e.value })}
-                />
-              )}
             </Form.Item>
           </Col>
         </Row>
