@@ -124,12 +124,12 @@ export default class extends QuickFormSearchPage {
                   }
                   if (istakedelivery == 1) {
                     return <Button onClick={() => this.confirmPickup(uuid, '已交货')} type="primary">
-                      确认交货
+                      司机交货
                     </Button>
                   }
                   if (istakedelivery == 2) {
                     return <Button onClick={() => this.confirmPickup(uuid, '已收货')} type="primary">
-                      确认收货
+                      司机收货
                     </Button>
                   }
                 }
