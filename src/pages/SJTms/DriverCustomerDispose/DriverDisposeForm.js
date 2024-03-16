@@ -299,7 +299,7 @@ export default class DriverDisposeForm extends Component {
         }
         <Row>
           <Col span={8}>
-            <Form.Item label="处理结果类型" labelCol={{ span: 5 }} wrapperCol={{ span: 18 }}>
+            <Form.Item label="处理结果类型" labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
               {getFieldDecorator('procResType')(
                 <Select placeholder="回复处理结果时必须选择,回复进度时不会保存。" allowClear>
                   {Object.entries(procResTypeMapping).map(([key, value]) =>
@@ -312,7 +312,7 @@ export default class DriverDisposeForm extends Component {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
+          <Col span={8}>
             <Form.Item label="责任部门" labelCol={{ span: 5 }} wrapperCol={{ span: 19 }}>
               {getFieldDecorator('department', { initialValue: bill.DEPTRESP })(
                 <SimpleAutoComplete
@@ -325,8 +325,8 @@ export default class DriverDisposeForm extends Component {
             </Form.Item>
           </Col>
 
-          <Col span={6}>
-            <Form.Item label="责任人" labelCol={{ span: 4 }} wrapperCol={{ span: 20 }}>
+          <Col span={8}>
+            <Form.Item label="责任人" labelCol={{ span: 4 }} wrapperCol={{ span: 18 }}>
               {getFieldDecorator('responsible', { initialValue: bill.PERSONRESPCODE })(
                 <SimpleAutoComplete
                   placeholder="请选择责任人"
