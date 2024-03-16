@@ -195,9 +195,9 @@ export default class DriverDisposeForm extends Component {
                     { title: '商品条码', width: 100, dataIndex: 'articlebarcode', key: 'articlebarcode' },
                     { title: '拣货位', width: 80, dataIndex: 'pickbin', key: 'pickbin' },
                     { title: '是否可退', width: 70, dataIndex: 'isreturnvendor', key: 'isreturnvendor' },
-                    { title: '交接状态', width: 70, dataIndex: 'flag', key: 'flag' },
+                    { title: '交接状态', width: 80, dataIndex: 'flag', key: 'flag' },
                     {
-                      title: '货物交接', width: 240, key: '货物交接', align: 'center', fixed: 'right',
+                      title: '货物交接', width: 260, key: '货物交接', align: 'center', fixed: 'right',
                       render: (_, item) =>
                         <Radio.Group
                           value={this.state.cargoCheckObj[item.uuid] ?? item.istakedelivery ?? 0}  // 用||遇到0会有问题
