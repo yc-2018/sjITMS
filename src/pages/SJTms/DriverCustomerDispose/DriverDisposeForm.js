@@ -186,17 +186,18 @@ export default class DriverDisposeForm extends Component {
                   size={'small'}               // 表格尺寸
                   columns={[
                     {
-                      title: '商品', width: 266, dataIndex: 'articlecode', key: 'articlecode',
+                      title: '商品', width: 220, dataIndex: 'articlecode', key: 'articlecode',
                       render: (val, { articlename }) => { return <span>{`[${val}]${articlename}`}</span> }
                     },
                     { title: '件数', width: 80, dataIndex: 'qty', key: 'qty' },
                     { title: '价格', width: 80, dataIndex: 'price', key: 'price' },
                     { title: '金额', width: 80, dataIndex: 'amount', key: 'amount' },
-                    { title: '商品条码', width: 133, dataIndex: 'articlebarcode', key: 'articlebarcode' },
+                    { title: '商品条码', width: 100, dataIndex: 'articlebarcode', key: 'articlebarcode' },
                     { title: '拣货位', width: 80, dataIndex: 'pickbin', key: 'pickbin' },
-                    { title: '是否可退', width: 77, dataIndex: 'isreturnvendor', key: 'isreturnvendor' },
+                    { title: '是否可退', width: 70, dataIndex: 'isreturnvendor', key: 'isreturnvendor' },
+                    { title: '交接状态', width: 70, dataIndex: 'flag', key: 'flag' },
                     {
-                      title: '货物交接', width: 255, key: '货物交接', align: 'center', fixed: 'right',
+                      title: '货物交接', width: 240, key: '货物交接', align: 'center', fixed: 'right',
                       render: (_, item) =>
                         <Radio.Group
                           value={this.state.cargoCheckObj[item.uuid] ?? item.istakedelivery ?? 0}  // 用||遇到0会有问题
