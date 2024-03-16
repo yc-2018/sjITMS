@@ -77,9 +77,10 @@ export default class DriverDisposeForm extends Component {
           cargoDetailsList: response?.data,
           cargoCheckObj: response?.data.reduce((acc, item) => {   // 只做展示的货品状态
             acc[item.uuid] = item.istakedelivery;
-            return acc}, {})
+            return acc
+          }, {})
           // 给后端处理的货品状态// 货品明细数据要初始化 不然没动父组件什么都拿不到
-        },()=>this.props.getRequireTakeDeliveryData(Object.entries(this.state.cargoCheckObj).map(([uuid, istakedelivery]) => `${uuid}@${istakedelivery}`)));
+        }, () => this.props.getRequireTakeDeliveryData(Object.entries(this.state.cargoCheckObj).map(([uuid, istakedelivery]) => `${uuid}@${istakedelivery}`)));
       } else this.setState({ cargoDetailsList: [], cargoCheckObj: {} }); // 如果后端返回空对象，则自行处理。
 
       // 获取货品交接记录
@@ -87,7 +88,7 @@ export default class DriverDisposeForm extends Component {
       if (response.success) {
         this.setState({ goodsHandoverRecordList: goodsHandoverRecord.data || [] });
       }
-    }else {
+    } else {
       this.setState({ cargoDetailsList: [], cargoCheckObj: {} })
       this.props.getRequireTakeDeliveryData([])
     }
@@ -96,7 +97,7 @@ export default class DriverDisposeForm extends Component {
   /** 改变货品选中状态 */
   onCheck = (uuid, i) => {
     this.setState({ cargoCheckObj: { ...this.state.cargoCheckObj, [uuid]: i } },
-      ()=>this.props.getRequireTakeDeliveryData(Object.entries(this.state.cargoCheckObj).map(([uuid, istakedelivery]) => `${uuid}@${istakedelivery}`)))
+      () => this.props.getRequireTakeDeliveryData(Object.entries(this.state.cargoCheckObj).map(([uuid, istakedelivery]) => `${uuid}@${istakedelivery}`)))
   }
 
   onPrint = async (detail) => {
@@ -151,7 +152,7 @@ export default class DriverDisposeForm extends Component {
           {buildColFormItem('问题类型', bill.PROBLEMTYPE_CN)}
           {buildColFormItem('反馈时间', bill.FEEDBACKTIME)}
           {buildColFormItem('司机信息', `[${bill.DRIVERCODE}]${bill.DRIVERNAME}`)}
-          {buildColFormItem('提交次数', bill.SUBMISSIONSNUMBER)}
+          {buildColFormItem('货物状态', bill.GOODSSTATUS)}
           {buildColFormItem('反馈来源', bill.FEEDBACKSOURCE)}
           {buildColFormItem('紧急程度', bill.URGENCY)}
           {buildColFormItem('处理时效', bill.PROCESSINGTIMELINESS + '小时')}
@@ -180,37 +181,37 @@ export default class DriverDisposeForm extends Component {
             <Panel style={{ border: 0 }}>
               <Row>
                 <Table dataSource={cargoDetailsList ?? []}
-                       scroll={{ x: true }}
-                       pagination={false}           // 去掉翻页组件
-                       size={'small'}               // 表格尺寸
-                       columns={[
-                         {
-                           title: '商品', width: 266, dataIndex: 'articlecode', key: 'articlecode',
-                           render: (val, { articlename }) => { return <span>{`[${val}]${articlename}`}</span> }
-                         },
-                         { title: '件数', width: 80, dataIndex: 'qty', key: 'qty' },
-                         { title: '价格', width: 80, dataIndex: 'price', key: 'price' },
-                         { title: '金额', width: 80, dataIndex: 'amount', key: 'amount' },
-                         { title: '商品条码', width: 133, dataIndex: 'articlebarcode', key: 'articlebarcode' },
-                         { title: '拣货位', width: 80, dataIndex: 'pickbin', key: 'pickbin' },
-                         { title: '是否可退', width: 77, dataIndex: 'isreturnvendor', key: 'isreturnvendor' },
-                         {
-                           title: '货物交接', width: 255, key: '货物交接', align: 'center',fixed: 'right',
-                           render: (_, item) =>
-                             <Radio.Group
-                               value={this.state.cargoCheckObj[item.uuid] ?? item.istakedelivery ?? 0}  // 用||遇到0会有问题
-                               onChange={e => this.onCheck(item.uuid, e.target.value)}
-                             >
-                               <Radio.Button value={0}>不交接</Radio.Button>
-                               <Radio.Button value={1}>司机交货</Radio.Button>
-                               <Radio.Button value={2}>司机取货</Radio.Button>
-                             </Radio.Group>
-                         },
-                         {
-                           title: '操作', width: 80, key: '操作', align: 'center',fixed: 'right',
-                           render: (_, item) => <Button type="default" onClick={() => this.onPrint(item)}>打印</Button>
-                         },
-                       ]}
+                  scroll={{ x: true }}
+                  pagination={false}           // 去掉翻页组件
+                  size={'small'}               // 表格尺寸
+                  columns={[
+                    {
+                      title: '商品', width: 266, dataIndex: 'articlecode', key: 'articlecode',
+                      render: (val, { articlename }) => { return <span>{`[${val}]${articlename}`}</span> }
+                    },
+                    { title: '件数', width: 80, dataIndex: 'qty', key: 'qty' },
+                    { title: '价格', width: 80, dataIndex: 'price', key: 'price' },
+                    { title: '金额', width: 80, dataIndex: 'amount', key: 'amount' },
+                    { title: '商品条码', width: 133, dataIndex: 'articlebarcode', key: 'articlebarcode' },
+                    { title: '拣货位', width: 80, dataIndex: 'pickbin', key: 'pickbin' },
+                    { title: '是否可退', width: 77, dataIndex: 'isreturnvendor', key: 'isreturnvendor' },
+                    {
+                      title: '货物交接', width: 255, key: '货物交接', align: 'center', fixed: 'right',
+                      render: (_, item) =>
+                        <Radio.Group
+                          value={this.state.cargoCheckObj[item.uuid] ?? item.istakedelivery ?? 0}  // 用||遇到0会有问题
+                          onChange={e => this.onCheck(item.uuid, e.target.value)}
+                        >
+                          <Radio.Button value={0}>不交接</Radio.Button>
+                          <Radio.Button value={1}>司机交货</Radio.Button>
+                          <Radio.Button value={2}>司机取货</Radio.Button>
+                        </Radio.Group>
+                    },
+                    {
+                      title: '操作', width: 80, key: '操作', align: 'center', fixed: 'right',
+                      render: (_, item) => <Button type="default" onClick={() => this.onPrint(item)}>打印</Button>
+                    },
+                  ]}
                 />
               </Row>
             </Panel>
@@ -242,7 +243,7 @@ export default class DriverDisposeForm extends Component {
                   { title: '货物名称', width: 200, dataIndex: 'productname', key: 'productname' },
                   { title: '数量', width: 70, dataIndex: 'productquantity', key: 'productquantity' },
                   { title: '金额', width: 70, dataIndex: 'productamount', key: 'productamount' },
-                  { title: '交接状态', width: 80, dataIndex: 'type', key: 'type' },
+                  { title: '类型', width: 80, dataIndex: 'type', key: 'type' },
                   {
                     title: '收货人', width: 120, dataIndex: 'takecode', key: 'takecode',
                     render: (val, record) => { return <span>{`[${val}]${record.takename}`}</span> }
@@ -319,7 +320,7 @@ export default class DriverDisposeForm extends Component {
                   showSearch
                   placeholder="请选择责任部门"
                   dictCode="serviceDept"
-                  //onChange={e => this.setState({ classify: e.value })}
+                //onChange={e => this.setState({ classify: e.value })}
                 />
               )}
             </Form.Item>
@@ -337,13 +338,13 @@ export default class DriverDisposeForm extends Component {
                   searchField="CODE,NAME"
                   showSearch={true}
                   style={{ width: '100%' }}
-                  onChange={v=>this.props.form.setFieldsValue({ responsiblePerson: `${v.value}@@@${v.record.NAME}@@@${v.record.DEPARTMENT}` })}
+                  onChange={v => this.props.form.setFieldsValue({ responsiblePerson: `${v.value}@@@${v.record.NAME}@@@${v.record.DEPARTMENT}` })}
                   autoComplete
                 />
               )}
             </Form.Item>
-            <Form.Item label="责任人隐藏" style={{ display: 'none'}}>
-              {getFieldDecorator('responsiblePerson')(<Input/>)}
+            <Form.Item label="责任人隐藏" style={{ display: 'none' }}>
+              {getFieldDecorator('responsiblePerson')(<Input />)}
             </Form.Item>
           </Col>
         </Row>
