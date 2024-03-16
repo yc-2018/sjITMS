@@ -16,8 +16,8 @@ import { message } from 'antd';
 export default class DriverCustomerView extends QuickViewPage {
   //编辑
   onEdit = () => {
-    if (['Saved','Released','Rejected'].includes(this.entity.v_sj_itms_driver_customer[0].PROCESSINGSTATE))
-      this.props.switchTab('update', { entity: this.entity.v_sj_itms_driver_customer[0] })
+    if (['Saved','Released','Rejected'].includes(this.entity.v_sj_driver_customer_service[0].PROCESSINGSTATE))
+      this.props.switchTab('update', { entity: this.entity.v_sj_driver_customer_service[0] })
     else message.error('回复后不能再编辑了！');
   }
 
