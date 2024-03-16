@@ -124,7 +124,15 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     if (this.entity[mainName][0].PROCESSINGSTATE === "Rejected") {
       this.entity[mainName][0].PROCESSINGSTATE = "Saved";
     }
+
     this.entity.sj_driver_store_goods_detail = selectDetails;
+
+    // 货物处理比较特殊
+    if (this.props.showPageNow === 'create' && assistanceType === "CARGOHANDLING") {
+      this.entity[mainName][0].ISGOODSPROC = 1
+      this.entity.sj_driver_store_goods_detail =
+        this.entity.sj_driver_store_goods_detail.map(item => ({...item, ISTAKEDELIVERY: 1}))
+    }
   }
 
   //子传父的货品明细数据
@@ -133,8 +141,8 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     this.setState({ isModalVisible: isModalVisible, selectDetails: selectedRows });
 
     if (!driverSvcObj.CUSTOMERCODE ) {
-      driverSvcObj.CUSTOMERCODE = selectedRows[0].STORECODE // 回填门店代码
-      driverSvcObj.CUSTOMERNAME = selectedRows[0].STORENAME // 回填门店名称
+      driverSvcObj.CUSTOMERCODE = selectedRows?.[0]?.STORECODE // 回填门店代码
+      driverSvcObj.CUSTOMERNAME = selectedRows?.[0]?.STORENAME // 回填门店名称
     }else if (driverSvcObj.CUSTOMERCODE !== selectedRows[0].STORECODE) {
       // 覆盖本来的门店信息，label 有时正常有事不正常 所以也有写安全
       message.warning("门店信息已覆盖！")
