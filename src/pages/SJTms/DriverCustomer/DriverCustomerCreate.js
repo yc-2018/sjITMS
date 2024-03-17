@@ -129,8 +129,8 @@ export default class DriverCustomerCreate extends QuickCreatePage {
 
     // 货物处理比较特殊
     if (this.props.showPageNow === 'create' && assistanceType === "CARGOHANDLING") {
-      this.entity[mainName][0].ISGOODSPROC = 1
-      this.entity.sj_driver_store_goods_detail =
+      this.entity[mainName][0].ISGOODSPROC = 1    // 一个标记 司机发布也会变成保存  保存状态就能交接货物 交接完变成0
+      this.entity.sj_driver_store_goods_detail =  // 货品默认取货状态变成司机交货↓↓↓
         this.entity.sj_driver_store_goods_detail.map(item => ({...item, ISTAKEDELIVERY: 1}))
     }
   }
