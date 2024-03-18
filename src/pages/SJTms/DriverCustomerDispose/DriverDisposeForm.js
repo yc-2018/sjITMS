@@ -339,7 +339,6 @@ export default class DriverDisposeForm extends Component {
                   searchField="CODE,NAME"
                   showSearch={true}
                   style={{ width: '100%' }}
-                  onChange={v => this.props.form.setFieldsValue({ responsiblePerson: `${v.value}@@@${v.record.NAME}@@@${v.record.DEPARTMENT}` })}
                   autoComplete
                 />
               )}
