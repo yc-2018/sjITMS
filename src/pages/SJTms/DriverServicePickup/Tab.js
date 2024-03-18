@@ -44,7 +44,7 @@ export default class extends QuickFormSearchPage {
     if (driverCode) {
       this.setState({ tableLoading: true })
       const resp = await getGoodsDetailList(driverCode, teamUpToPick ? '1' : '0')
-      this.setState({ goodsList: resp.data ?? [], tableLoading: false, successObjs: {} })
+      this.setState({ goodsList: resp.data ?? [], tableLoading: false, successObjs: {} ,driverCode:''})
 
     }
   }
@@ -64,12 +64,14 @@ export default class extends QuickFormSearchPage {
         style={{ width: 250, height: 40, fontSize: 16, margin: 15 }}
         onPressEnter={() =>
           this.setState({
-            searchText: this.state.driverCode,
+            searchText: this.state.driverCode+'',
             successList: []   // 清空成功列表
           }, () => this.getGoodsDetails())
         }
         placeholder={'输入司机工号'}
-        onChange={e => this.setState({ driverCode: e.target.value, searchText: null })}
+        onChange={e =>
+          this.setState({ driverCode: e.target.value, searchText: null })
+        }
       />
 
 
@@ -90,7 +92,7 @@ export default class extends QuickFormSearchPage {
 
   /** 绘制组件 */
   drawOtherCom = () => {
-    const { searchText, goodsList, tableLoading, successObjs, teamUpToPick, driverCode } = this.state;
+    const { searchText, goodsList, tableLoading, successObjs, teamUpToPick } = this.state;
     return <div style={{ marginBottom: 10, fontSize: 55, textAlign: 'center', color: '#ff0000' }}>
       {!searchText ?
         '请输入司机工号获取数据' :
@@ -122,12 +124,12 @@ export default class extends QuickFormSearchPage {
                   if (successObjs[uuid]) {
                     return <Button disabled>{successObj}</Button>;
                   }
-                  if (istakedelivery == 1) {
+                  if (istakedelivery === 1) {
                     return <Button onClick={() => this.confirmPickup(uuid, '已交货')} type="primary">
                       司机交货
                     </Button>
                   }
-                  if (istakedelivery == 2) {
+                  if (istakedelivery === 2) {
                     return <Button onClick={() => this.confirmPickup(uuid, '已收货')} type="primary">
                       司机收货
                     </Button>
@@ -137,13 +139,13 @@ export default class extends QuickFormSearchPage {
             ]}
           /> :
           <div>
-            {teamUpToPick && driverCode ?
-              '工号' + driverCode + '未发现有可组队取货的货品'
+            {teamUpToPick && searchText ?
+              '工号' + searchText + '未发现有可组队取货的货品'
               : teamUpToPick ?
                 '请输入同队司机工号获取数据'
-                : driverCode ?
-                  '工号' + driverCode + '暂无未取货数据\n请检查输入是否正确'
-                  : '请输入司机工号获取数据'
+                : searchText ?
+                  '工号' + searchText + '暂无未取货数据\n请检查输入是否正确'
+                  : '请输入司机工号获取数据!'
             }
           </div>
       }
