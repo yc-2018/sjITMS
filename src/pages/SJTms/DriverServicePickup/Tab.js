@@ -28,10 +28,10 @@ export default class extends QuickFormSearchPage {
 
   /** 确认取货 */
   confirmPickup = async (UUID, type) => {
-    let { driverCode, successObjs } = this.state
+    let { searchText, successObjs } = this.state
     if (this.state.successObjs[UUID]) return message.warn('你选择的货品已经取货啦')
     // take代表司机                                                                             1交货 2收货
-    const resp = await driverSvcPickup(UUID, type === '已交货' ? 1 : 2, driverCode)
+    const resp = await driverSvcPickup(UUID, type === '已交货' ? 1 : 2, searchText)
     if (resp.success) {
       message.success('操作成功!')
       this.setState({ successObjs: { ...successObjs, [UUID]: type } })
