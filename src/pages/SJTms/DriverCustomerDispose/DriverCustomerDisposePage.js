@@ -76,18 +76,21 @@ export default class DriverCustomerDisposePageModal extends Component {
   replyToProcessingContent = async stat => {
     const { bill, requireTakeCargoArr } = this.state;
     const validate = await this.formRef.validateFields();
-    console.log(validate);
     if (stat === 'Result' && !validate.procResType) return message.error('回复结果时请选择处理结果！');
     // 获取责任人信息
-    const responsiblePerson = [validate.responsible?.value || null, validate.responsible.record?.NAME || null];
-    if (validate.department) responsiblePerson[2] = validate.department?.value;  // 责任部门
+    let responsiblePerson = [
+      validate?.responsible?.value,           // 工号
+      validate?.responsible?.record?.NAME,    // 姓名
+      validate?.department?.value             // 部门
+    ];
+
     this.setState({ saving: true });
     const param = {
       billuuid: bill.UUID,
       type: stat,
       detail: validate.remark,
       requireTakeCargoList: requireTakeCargoArr,
-      procResType: validate.procResType,
+      procResType: validate.procResType,  // 处理结果（后端只有在处理结果时处理)
       responsiblePerson, // 责任人 [工号，姓名，部门]
     };
     onContent(param).then(response => {

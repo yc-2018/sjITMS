@@ -3,7 +3,6 @@ import { Form, Input, Row, Col, Tooltip, Collapse, Divider, Radio, Switch, Table
 import IconFont from '@/components/IconFont';
 import Empty from '@/pages/Component/Form/Empty';
 import styles from './DriverCustomerPage.less';
-import cargoDetailStyles from './DriverDisposeForm.less';
 import { getCargoDetails, getDriverSvcPickupData, getPickDtl } from '@/services/sjitms/DriverCustomerService';
 import { drawPrintPage } from './Print';
 import print from 'print-js';
@@ -61,6 +60,7 @@ export default class DriverDisposeForm extends Component {
     // 打开了 并且不是之前的uuid 获取货品明细数据，因为第一次是空所以在componentDidMount钩子也获取一下
     if (this.props.visible && this.props.bill.UUID !== prevProps.bill.UUID)
       this.getInitialData()
+    console.log('███████this.props.bill>>>>', this.props.bill,'<<<<██████')
   }
 
   /**加载该条单的初始货品数据*/
@@ -321,7 +321,6 @@ export default class DriverDisposeForm extends Component {
                   showSearch
                   placeholder="请选择责任部门"
                   dictCode="serviceDept"
-                //onChange={e => this.setState({ classify: e.value })}
                 />
               )}
             </Form.Item>
@@ -343,29 +342,29 @@ export default class DriverDisposeForm extends Component {
                 />
               )}
             </Form.Item>
-            <Form.Item label="责任人隐藏" style={{ display: 'none' }}>
-              {getFieldDecorator('responsiblePerson')(<Input />)}
-            </Form.Item>
           </Col>
         </Row>
 
 
-        <Form.Item
-          label={this.placeholders[operation]}
-          labelCol={{ span: 2 }}
-          wrapperCol={{ span: 21 }}
-        >
-          {getFieldDecorator('remark', {
-            rules: [{ required: true, message: '请输入' + this.placeholders[operation] }],
-            initialValue: operation === 'Result' ? bill.STAFFRESULT : '',
-          })(
-            <Input.TextArea
-              placeholder={'请输入' + this.placeholders[operation]}
-              autoSize={{ minRows: 6, maxRows: 10 }}
-              style={{ width: '100%' }}
-            />
-          )}
-        </Form.Item>
+        {/* 已发布或处理中的状态才能回复内容 */ ['Dispose', 'Released'].includes(bill.PROCESSINGSTATE) && <>
+          <Form.Item
+            label={this.placeholders[operation]}
+            labelCol={{ span: 2 }}
+            wrapperCol={{ span: 21 }}
+          >
+            {getFieldDecorator('remark', {
+              rules: [{ required: true, message: '请输入' + this.placeholders[operation] }],
+              initialValue: operation === 'Result' ? bill.STAFFRESULT : '',
+            })(
+              <Input.TextArea
+                placeholder={'请输入' + this.placeholders[operation]}
+                autoSize={{ minRows: 6, maxRows: 10 }}
+                style={{ width: '100%' }}
+              />
+            )}
+          </Form.Item>
+        </>}
+
         <div style={{ display: "none" }}>
           <div id="stkinPrint">{printPage}</div>
         </div>
