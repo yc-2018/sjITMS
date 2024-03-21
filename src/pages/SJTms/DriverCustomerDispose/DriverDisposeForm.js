@@ -302,7 +302,7 @@ export default class DriverDisposeForm extends Component {
         <Row>
           <Col span={8}>
             <Form.Item label="处理结果类型" labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
-              {getFieldDecorator('procResType')(
+              {getFieldDecorator('procResType', { initialValue: bill.PROCRESTYPE })(
                 <Select placeholder="回复处理结果时必须选择,回复进度时不会保存。" allowClear>
                   {Object.entries(procResTypeMapping).map(([key, value]) =>
                     <Select.Option key={key} value={key}>
