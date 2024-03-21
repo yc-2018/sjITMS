@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-04-12 09:47:38
+ * @LastEditTime: 2024-03-20 16:49:59
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -58,6 +58,7 @@ export default class AreaSubsidySearchPage extends QuickFormSearchPage {
     const { form } = this.props;
     form.validateFields(async (err, fieldsValue) => {
       const response = await bak(
+        moment(fieldsValue.beginPeriod.toString()).format('YYYY-MM-DD 23:59:59'),
         moment(fieldsValue.validityPeriod.toString()).format('YYYY-MM-DD 23:59:59'),
         fieldsValue.note
       );
@@ -106,12 +107,10 @@ export default class AreaSubsidySearchPage extends QuickFormSearchPage {
             <Form.Item label="备注" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
               {getFieldDecorator('note', { rules: [{ required: true }] })(<Input />)}
             </Form.Item>
-            <Form.Item
-              label="到效期"
-              // name="validityPeriod"
-              labelCol={{ span: 6 }}
-              wrapperCol={{ span: 15 }}
-            >
+            <Form.Item label="开始日期" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
+              {getFieldDecorator('beginPeriod')(<DatePicker />)}
+            </Form.Item>
+            <Form.Item label="截止日期" labelCol={{ span: 6 }} wrapperCol={{ span: 15 }}>
               {getFieldDecorator('validityPeriod')(<DatePicker />)}
             </Form.Item>
           </Form>

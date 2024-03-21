@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-10-22 08:57:05
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-04-11 10:11:36
+ * @LastEditTime: 2024-03-20 16:50:46
  * @version: 1.0
  */
 import request from '@/utils/request';
@@ -21,9 +21,9 @@ export async function deleteDtl(payload) {
   });
 }
 
-export async function bak(validityPeriod, name) {
+export async function bak(beginPeriod,validityPeriod, name) {
   return request(
-    `/itms-schedule/itms-schedule/sj/areaSubsidy/bak?validityPeriod=${validityPeriod}&name=${name}`,
+    `/itms-schedule/itms-schedule/sj/areaSubsidy/bak?beginPeriod=${beginPeriod}&validityPeriod=${validityPeriod}&name=${name}`,
     {
       method: 'POST',
     }
