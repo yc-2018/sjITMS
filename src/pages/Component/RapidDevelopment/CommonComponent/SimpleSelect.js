@@ -1,8 +1,8 @@
 /*
  * @Author: Liaorongchang
  * @Date: 2022-02-10 14:16:00
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-03-22 14:55:01
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2024-03-25 10:35:33
  * @version: 1.0
  */
 import React, { PureComponent } from 'react';
@@ -41,7 +41,7 @@ export default class SimpleSelect extends PureComponent {
       this.initSearch();
       // this.setState({ sourceData: [] });
     } else {
-      const { dictCode } = this.props;
+      const { dictCode, DataSource, dbSource } = this.props;
       if (dictCode) {
         queryParamsJson = {
           tableName: 'V_SYS_DICT_ITEM',
@@ -49,7 +49,8 @@ export default class SimpleSelect extends PureComponent {
             params: [{ field: 'DICT_CODE', rule: 'eq', val: [dictCode] }],
           },
         };
-        const response = await dynamicQuery(queryParamsJson, this.props.dbSource);
+        let source = DataSource != undefined ? DataSource : dbSource;
+        const response = await dynamicQuery(queryParamsJson, source);
         if (!response || !response.success || !Array.isArray(response.result.records)) {
           this.setSourceData([]);
         } else {
