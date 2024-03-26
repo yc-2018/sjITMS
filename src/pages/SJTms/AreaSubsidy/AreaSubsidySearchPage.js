@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-07-19 16:25:19
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-03-20 16:49:59
+ * @LastEditTime: 2024-03-26 17:09:12
  * @version: 1.0
  */
 import { connect } from 'dva';
@@ -58,7 +58,7 @@ export default class AreaSubsidySearchPage extends QuickFormSearchPage {
     const { form } = this.props;
     form.validateFields(async (err, fieldsValue) => {
       const response = await bak(
-        moment(fieldsValue.beginPeriod.toString()).format('YYYY-MM-DD 23:59:59'),
+        moment(fieldsValue.beginPeriod.toString()).format('YYYY-MM-DD 00:00:00'),
         moment(fieldsValue.validityPeriod.toString()).format('YYYY-MM-DD 23:59:59'),
         fieldsValue.note
       );
