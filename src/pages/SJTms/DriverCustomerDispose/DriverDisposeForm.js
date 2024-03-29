@@ -60,7 +60,6 @@ export default class DriverDisposeForm extends Component {
     // 打开了 并且不是之前的uuid 获取货品明细数据，因为第一次是空所以在componentDidMount钩子也获取一下
     if (this.props.visible && this.props.bill.UUID !== prevProps.bill.UUID)
       this.getInitialData()
-    console.log('███████this.props.bill>>>>', this.props.bill,'<<<<██████')
   }
 
   /**加载该条单的初始货品数据*/
@@ -303,13 +302,12 @@ export default class DriverDisposeForm extends Component {
           <Col span={8}>
             <Form.Item label="处理结果类型" labelCol={{ span: 6 }} wrapperCol={{ span: 18 }}>
               {getFieldDecorator('procResType', { initialValue: bill.PROCRESTYPE })(
-                <Select placeholder="回复处理结果时必须选择,回复进度时不会保存。" allowClear>
-                  {Object.entries(procResTypeMapping).map(([key, value]) =>
-                    <Select.Option key={key} value={key}>
-                      {value}
-                    </Select.Option>
-                  )}
-                </Select>
+                <SimpleAutoComplete
+                  placeholder={'回复处理结果时必须选择,回复进度时不会保存。'}
+                  dictCode="procResType"
+                  allowClear
+                  noRecord
+                />
               )}
             </Form.Item>
           </Col>
@@ -372,16 +370,3 @@ export default class DriverDisposeForm extends Component {
     );
   }
 }
-
-
-/** 处理结果类型映射 */
-const procResTypeMapping = {
-  orderCancelled: '已取消买单',
-  orderNonCancellable: '无法取消买单',
-  replacementGiven: '已给予换货',
-  redirectedToStore: '已引导退回门店',
-  basketMisplaced: '放错筐',
-  leakageOccurred: '漏出',
-  pickedUp: '有拣',
-  wrongItemDelivered: '出错货'
-};

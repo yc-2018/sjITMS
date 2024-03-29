@@ -115,7 +115,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
   //保存前校验
   beforeSave = () => {
     const { selectDetails, assistanceType } = this.state;
-    if (selectDetails.length === 0 && assistanceType !== "PROBLEMFEEDBACK") {
+    if (selectDetails.length === 0 && !['INTERNALCOMPL','PROBLEMFEEDBACK'].includes(assistanceType)) {
       message.error("请先选择货品！");
       return false;
     }
