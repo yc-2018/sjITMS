@@ -1,3 +1,4 @@
+/* 回复弹窗框框 和按钮 和按钮的逻辑 */
 /* eslint-disable */
 import React, { Component } from 'react';
 import { getProcessRecords, onContent, onReject } from '@/services/sjitms/DriverCustomerService';
@@ -77,6 +78,7 @@ export default class DriverCustomerDisposePageModal extends Component {
     const { bill, requireTakeCargoArr } = this.state;
     const validate = await this.formRef.validateFields();
     if (stat === 'Result' && !validate.procResType) return message.error('回复结果时请选择处理结果！');
+    if (stat === 'Result' && !validate.department) return message.error('回复结果时请选择责任部门！');
     // 获取责任人信息
     let responsiblePerson = [
       validate?.responsible?.value,           // 工号
