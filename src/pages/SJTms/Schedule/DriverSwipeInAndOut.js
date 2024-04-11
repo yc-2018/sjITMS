@@ -7,17 +7,14 @@
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipeInAndOut.js
  */
 
-
 import React, { PureComponent } from 'react'
-import { Card, Col, Input, Row, Spin, Select, message, Modal } from 'antd'
-// eslint-disable-next-line import/extensions
-import Page from '@/pages/Component/Page/inner/Page'
+import { Card, Col, Input, Row, Spin, Select, message, Modal, Table } from 'antd'
 // eslint-disable-next-line import/extensions
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon'
 // eslint-disable-next-line import/extensions
 import Empty from '@/pages/Component/Form/Empty'
 // eslint-disable-next-line import/extensions
-import { getSwipeSchedule, swipeByScheduleUuid } from '@/services/sjitms/ScheduleProcess'
+import { getReleaseNote, getSwipeSchedule, swipeByScheduleUuid } from '@/services/sjitms/ScheduleProcess'
 // eslint-disable-next-line import/extensions
 import { queryDictByCode } from '@/services/quick/Quick'
 // eslint-disable-next-line import/extensions
@@ -39,6 +36,7 @@ export default class Swiper extends PureComponent {
     dispatchName: undefined,
     isModalOpen: false,
     swipeFlag: 'inAndOut', // 刷卡标识用于区分出回车，开始结束装车 刷卡
+    releaseNote: {},        // 司机放行条数据
   }
 
   componentDidMount () {
@@ -69,6 +67,7 @@ export default class Swiper extends PureComponent {
 
   // 刷卡
   onSubmit = async event => {
+    const empId = event.target.value
     const { dispatchUuid, companyUuid, swipeFlag } = this.state
     if (dispatchUuid === undefined || companyUuid === undefined) {
       message.error('企业中心或调度中心值缺失！')
@@ -76,7 +75,7 @@ export default class Swiper extends PureComponent {
     }
     localStorage.setItem('showMessage', '0')
     this.setState({ loading: true, errMsg: undefined })
-    const response = await getSwipeSchedule(event.target.value, swipeFlag, companyUuid, dispatchUuid)
+    const response = await getSwipeSchedule(empId, swipeFlag, companyUuid, dispatchUuid)
     if (response.success) {
       this.setState({
         empId: '',
@@ -97,6 +96,13 @@ export default class Swiper extends PureComponent {
     } else {
       this.speech('获取可刷卡排车单失败')
       this.setState({ empId: '', loading: false, scheduleBill: {}, errMsg: response.message })
+    }
+
+    // 司机放行条获取
+    const resp = await getReleaseNote(empId)
+    if (resp?.data) {
+      this.setState({ releaseNote: resp.data })
+      message.success('获取司机放行条成功')
     }
   }
 
@@ -130,12 +136,13 @@ export default class Swiper extends PureComponent {
       isShip,
       dispatchName,
       isModalOpen,
+      releaseNote,
     } = this.state
 
     const { location } = this.props
     return (
-      <Page withCollect pathname={location ? location.pathname : ''}>
-        <Spin indicator={LoadingIcon('default')} spinning={loading} size="large">
+      <div style={{ padding: 20, backgroundColor: '#fff' }}>
+        <Spin indicator={LoadingIcon('default')} spinning={loading} size="small">
           <Modal
             title="回厂提醒"
             visible={isModalOpen}
@@ -152,7 +159,8 @@ export default class Swiper extends PureComponent {
               发运时间未超过3小时，是否继续刷卡
             </p>
           </Modal>
-          <div style={{ height: '100vh' }} onClick={() => this.empInputRef.focus()}>
+
+          <div onClick={() => this.empInputRef.focus()}>
             <NavigatorPanel
               title="司机出入厂刷卡"
               canFullScreen={location.pathname !== '/driver/swipeInAndOut'}
@@ -203,19 +211,6 @@ export default class Swiper extends PureComponent {
               </div>
             </div>
 
-            {/* <div
-            style={{
-              height: 50,
-              lineHeight: '50px',
-              fontSize: 16,
-              fontWeight: 800,
-              color: '#363e4b',
-              paddingLeft: 24,
-              borderBottom: '1px solid #e8e8e8',
-            }}
-          >
-            司机刷卡
-          </div> */}
             <div style={{ fontSize: 16, textAlign: 'center' }}>
               工号：
               <Input
@@ -232,33 +227,42 @@ export default class Swiper extends PureComponent {
                 placeholder="输入员工代码"
               />
             </div>
+
+
             <Card
               title="刷卡结果"
               bordered
               // style={{ height: '18vh', boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
               bodyStyle={{
-                height: '20vh',
+                height: '10vh',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
+                padding: 0 ,
               }}
             >
               {/* eslint-disable-next-line no-nested-ternary */}
               {errMsg ? (
-                <div style={{ color: '#F5222D', fontSize: '45px', margin: 'auto' }}>{errMsg}</div>
+                <span style={{ color: '#F5222D', fontSize: '45px', margin: 'auto' }}>{errMsg}</span>
               ) : isShip ? (
-                <div style={{ color: '#00DD00', fontSize: '45px', margin: 'auto' }}>
+                <span style={{ color: '#00DD00', fontSize: '45px', margin: 'auto' }}>
                   {msg}
-                </div>
+                </span>
               ) : (
-                <div style={{ color: '#1354DA', fontSize: '45px', margin: 'auto' }}>
+                <span style={{ color: '#1354DA', fontSize: '45px', margin: 'auto' }}>
                   {msg}
-                </div>
+                </span>
               )}
+              { // 放行条成功信息
+                releaseNote.drivercode &&
+                <span style={{ color: '#1dff0e', fontSize: '45px', margin: 'auto' }}>放行条获取成功</span>
+              }
             </Card>
+
+
             <Card
               title="排车单信息"
-              style={{ height: 250, marginTop: 20, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
+              style={{ height: 200, marginTop: 20, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
             >
               <Row gutter={[4, 28]}>
                 <Col span={6}>
@@ -289,7 +293,7 @@ export default class Swiper extends PureComponent {
                   <span style={{ fontSize: 15 }}>
                     驾驶员：
                     {scheduleBill.carrier ? (
-                      `[${  scheduleBill.carrier.code  }]${  scheduleBill.carrier.name}`
+                      `[${scheduleBill.carrier.code}]${scheduleBill.carrier.name}`
                     ) : <Empty />
                     }
                   </span>
@@ -308,9 +312,37 @@ export default class Swiper extends PureComponent {
                 </Col>
               </Row>
             </Card>
+
+
+            <Card title="放行条" style={{marginTop: 20}}>
+              {releaseNote.drivercode &&
+                <Table
+                  dataSource={[releaseNote] ?? []}
+                  pagination={false}           // 去掉翻页组件
+                  size="small"                 // 表格尺寸
+                  scroll={{ x: true }}
+                  columns={[
+                    { title: '放行条单号', width: 100, dataIndex: 'num', key: 'num' },
+                    {
+                      title: '司机工号', width: 120, dataIndex: 'drivercode', key: 'drivercode',
+                      render: (val, record) => { return <span>{`[${val}]${record.drivername}`}</span> }
+                    },
+                    { title: '车牌号', width: 70, dataIndex: 'licenseplatenum', key: 'licenseplatenum' },
+                    {
+                      title: '放行人', width: 120, dataIndex: 'releasecode', key: 'releasecode',
+                      render: (val, record) => { return <span>{`[${val}]${record.releasename}`}</span> }
+                    },
+                    { title: '放行时间', width: 80, dataIndex: 'releasetime', key: 'releasetime' },
+                    { title: '放行内容', width: 80, dataIndex: 'releasecontent', key: 'releasecontent' },
+                    { title: '状态', width: 80, dataIndex: 'status', key: 'status' },
+                    { title: '出园时间', width: 80, dataIndex: 'exittime', key: 'exittime' },
+                  ]}
+                />
+              }
+            </Card>
           </div>
         </Spin>
-      </Page>
+      </div>
     )
   }
 }
