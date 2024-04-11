@@ -6,6 +6,7 @@
  * @Description: file content
  * @FilePath: \iwms-web\src\services\sjitms\ScheduleProcess.js
  */
+/* eslint-disable import/extensions */
 import request from '@/utils/request'
 import { loginCompany, loginOrg } from '@/utils/LoginContext'
 
