@@ -6,20 +6,16 @@
  * @Description: 司机刷卡
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\DriverSwipeInAndOut.js
  */
+/* eslint-disable import/extensions */
+/* eslint-disable no-nested-ternary */
 
 import React, { PureComponent } from 'react'
 import { Card, Col, Input, Row, Spin, Select, message, Modal, Table } from 'antd'
-// eslint-disable-next-line import/extensions
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon'
-// eslint-disable-next-line import/extensions
 import Empty from '@/pages/Component/Form/Empty'
-// eslint-disable-next-line import/extensions
 import { getReleaseNote, getSwipeSchedule, swipeByScheduleUuid } from '@/services/sjitms/ScheduleProcess'
-// eslint-disable-next-line import/extensions
 import { queryDictByCode } from '@/services/quick/Quick'
-// eslint-disable-next-line import/extensions
 import NavigatorPanel from '@/pages/Component/Page/inner/NavigatorPanel'
-// eslint-disable-next-line import/extensions
 import { loginOrg } from '@/utils/LoginContext'
 
 export default class Swiper extends PureComponent {
@@ -230,18 +226,18 @@ export default class Swiper extends PureComponent {
 
 
             <Card
-              title="刷卡结果"
+              title={<b>刷卡结果</b>}
               bordered
               // style={{ height: '18vh', boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
+              headStyle={{textAlign: 'center'}}
               bodyStyle={{
                 height: '10vh',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
-                padding: 0 ,
+                padding: 0,
               }}
             >
-              {/* eslint-disable-next-line no-nested-ternary */}
               {errMsg ? (
                 <span style={{ color: '#F5222D', fontSize: '45px', margin: 'auto' }}>{errMsg}</span>
               ) : isShip ? (
@@ -261,8 +257,10 @@ export default class Swiper extends PureComponent {
 
 
             <Card
-              title="排车单信息"
-              style={{ height: 200, marginTop: 20, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
+              title={<b>排车单信息</b>}
+              headStyle={{textAlign: 'center'}}
+              bodyStyle={{ padding: '5px 24px' }}
+              style={{ marginTop: 20, boxShadow: '0 1px 2px rgba(0, 0, 0, 0.1)' }}
             >
               <Row gutter={[4, 28]}>
                 <Col span={6}>
@@ -314,12 +312,11 @@ export default class Swiper extends PureComponent {
             </Card>
 
 
-            <Card title="放行条" style={{marginTop: 20}}>
+            <Card title={<b>放行条</b>} style={{ marginTop: 20 }} headStyle={{textAlign: 'center'}}>
               {releaseNote.drivercode &&
                 <Table
                   dataSource={[releaseNote] ?? []}
                   pagination={false}           // 去掉翻页组件
-                  size="small"                 // 表格尺寸
                   scroll={{ x: true }}
                   columns={[
                     { title: '放行条单号', width: 100, dataIndex: 'num', key: 'num' },
