@@ -99,7 +99,7 @@ export default class Swiper extends PureComponent {
     if (resp?.data) {
       this.setState({ releaseNote: resp.data })
       message.success('获取司机放行条成功')
-    }
+    }else this.setState({releaseNote: {}})  // 清空放行条
   }
 
   swipeByUuid = async () => {
