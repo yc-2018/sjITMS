@@ -98,7 +98,7 @@ export default class DriverCustomerCreate extends QuickCreatePage {
     }
     if (fieldName == 'PROBLEMTYPE' && valueEvent) {               // 问题类型改变
       const timeLiness = this.entity.sj_driver_customer_service[0].PROCESSINGTIMELINESS;
-      this.entity.sj_driver_customer_service[0].DEADLINE = moment().add(timeLiness, "h").format("YYYY-MM-DD HH:mm:ss");
+      // this.entity.sj_driver_customer_service[0].DEADLINE = moment().add(timeLiness, "h").format("YYYY-MM-DD HH:mm:ss");
 
       //盖章取消 协助内容非必填
       const { formItems } = this.state;
