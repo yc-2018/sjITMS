@@ -129,6 +129,7 @@ export default class QuickFormSearchPage extends SearchPage {
       parentRows: false,
       isNotHd: props.isNotHd ? props.isNotHd : false,
       bmsOrgQuery: [],
+      searchLoading: false, //查询按钮loading
     };
   }
 
@@ -614,7 +615,7 @@ export default class QuickFormSearchPage extends SearchPage {
         showTotal: total => `共 ${total} 条`,
       },
     };
-    this.setState({ data, selectedRows: [], colTotal });
+    this.setState({ data, selectedRows: [], colTotal, searchLoading: false });
   };
 
   /**
@@ -908,7 +909,6 @@ export default class QuickFormSearchPage extends SearchPage {
 
   //查询
   onSearch = async (filter, isNotFirstSearch) => {
-    console.log('ccc', filter, isNotFirstSearch);
     let exSearchFilter = this.exSearchFilter();
     if (!exSearchFilter) exSearchFilter = [];
     let defaultSearch = await this.defaultSearch();
@@ -922,6 +922,8 @@ export default class QuickFormSearchPage extends SearchPage {
       this.onReset(pageSize, [...exSearchFilter, ...defaultSearch]);
       return;
     }
+    this.setState({ searchLoading: true });
+
     const {
       pageFilters,
       isOrgQuery,
@@ -1122,6 +1124,7 @@ export default class QuickFormSearchPage extends SearchPage {
         </Popconfirm>
         <AdvanceQuery
           searchFields={this.state.advancedFields}
+          loading={this.state.searchLoading}
           fieldInfos={this.columns}
           filterValue={this.state.pageFilter.searchKeyValues}
           refresh={this.onSuperSearch}
@@ -1175,6 +1178,7 @@ export default class QuickFormSearchPage extends SearchPage {
           toggleCallback={() => {
             this.setState({});
           }}
+          loading={this.state.searchLoading}
           selectFields={this.state.searchFields}
           filterValue={filterValue}
           refresh={this.onSearch}

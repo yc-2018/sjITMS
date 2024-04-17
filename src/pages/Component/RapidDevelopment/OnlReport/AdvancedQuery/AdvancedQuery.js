@@ -338,7 +338,7 @@ export default class AdvancedQuery extends Component {
             <Button key="3" onClick={this.hideModal}>
               关闭
             </Button>,
-            <Button key="4" type="primary" onClick={this.advanceQuery}>
+            <Button key="4" type="primary" onClick={this.advanceQuery} loading={this.props.loading}>
               查询
             </Button>,
           ]}
