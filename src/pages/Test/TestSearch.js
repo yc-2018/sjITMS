@@ -13,6 +13,7 @@ import FormPanel from '@/pages/Component/Form/FormPanel';
 import CFormItem from '@/pages/Component/Form/CFormItem';
 import CreatePageModal from '../Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
 import QuickView from '../Component/RapidDevelopment/OnlForm/QuickViewPageDefault';
+import RyzeSettingDrowDown from '../Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
 import TestView from './TestView';
 
 @connect(({ quick, loading }) => ({
@@ -24,6 +25,15 @@ export default class TestSearch extends QuickFormSearchPage {
   //需要操作列的显示 将noActionCol设置为false
   state = { ...this.state, noActionCol: false, isShow: false, canDragTable: true };
 
+  //删除后事件
+  afterDelete = response => {
+    console.log('response', response);
+  };
+  beforeDelete = e => {
+    console.log('e', e);
+    message.error('不允许删除');
+    return false;
+  };
   //该方法用于扩展查询
   exSearchFilter = () => {
     let testS = [
@@ -134,6 +144,7 @@ export default class TestSearch extends QuickFormSearchPage {
       <span>
         <Button>阿巴阿巴</Button>
         <Button>111</Button>
+        {/* <RyzeSettingDrowDown columns={this.columns} /> */}
       </span>
     );
   };

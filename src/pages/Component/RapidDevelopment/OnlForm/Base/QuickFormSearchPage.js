@@ -36,6 +36,10 @@ export default class QuickFormSearchPage extends SearchPage {
   drapTableChange = e => {}; //拖拽事件
   exSearchFilter = () => {}; //扩展查询
   drawRightClickMenus = () => {}; //右键菜单
+  afterDelete = response => {}; //删除后置事件
+  beforeDelete = selectedRows => {
+    return true;
+  }; //删除前置事件 需返回true/false
 
   defaultSearch = async () => {
     //默认查询
@@ -736,6 +740,9 @@ export default class QuickFormSearchPage extends SearchPage {
    */
   onBatchDelete = () => {
     const { selectedRows, batchAction } = this.state;
+    if (!this.beforeDelete(selectedRows)) {
+      return;
+    }
     const { dispatch } = this.props;
     const params = [];
     const code = this.state.formConfig[0].onlFormHead.code
@@ -761,6 +768,7 @@ export default class QuickFormSearchPage extends SearchPage {
             that.refreshTable();
             message.success('删除成功！');
           }
+          this.afterDelete(response);
         },
       });
     } else {
