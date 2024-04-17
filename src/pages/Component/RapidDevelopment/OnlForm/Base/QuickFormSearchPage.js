@@ -970,7 +970,11 @@ export default class QuickFormSearchPage extends SearchPage {
       },
     };
     this.setState({ pageFilters: newPageFilters, simpleParams });
-    if (!(filter == 'first' && isNotFirstSearch)) this.getData(newPageFilters);
+    if (!(filter == 'first' && isNotFirstSearch)) {
+      this.getData(newPageFilters);
+    } else {
+      this.setState({ searchLoading: false });
+    }
   };
 
   //高级查询
@@ -1014,6 +1018,7 @@ export default class QuickFormSearchPage extends SearchPage {
    * 刷新/重置
    */
   refreshTable = filter => {
+    this.setState({ searchLoading: true });
     const { pageFilters, defaultSort } = this.state;
     let queryFilter = { ...pageFilters };
     if (filter) {
