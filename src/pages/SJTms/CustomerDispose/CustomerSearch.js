@@ -43,7 +43,7 @@ export default class CustomerSearch extends QuickFormSearchPage {
   };
 
   componentDidMount() {
-    if (!havePermission('sjtms.core.customer.service.view')) {
+    if (!havePermission('customer.service.view')) {
       getDepartments(loginUser().code).then(response => {
         this.setState({ departments: response.data ? response.data : [] });
       });
@@ -56,7 +56,7 @@ export default class CustomerSearch extends QuickFormSearchPage {
     const { departments } = this.state;
     ///let param = [{ field: 'STATUS', type: 'VarChar', rule: 'ne', val: 'Saved' }];
     let param =[];
-    if (!havePermission('sjtms.core.customer.service.view')) {
+    if (!havePermission('customer.service.view')) {
       param.push({
         nestCondition: {
           matchType: 'or',

@@ -321,7 +321,7 @@ export default class CountInfo extends PureComponent {
 
   getCustomer = async () => {
     let response;
-    if (havePermission('sjtms.core.customer.service.view')) {
+    if (havePermission('customer.service.view')) {
       response = await getServicesByDc();
     } else {
       response = await getServicesByDept(loginUser().code);
