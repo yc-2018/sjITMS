@@ -364,12 +364,12 @@ export default class DispatchMap extends Component {
     const { orders, orderMarkers, ScheduledMarkers } = this.state;
     // console.log('orderMarkers', orderMarkers);
     let that = this;
-    const otherStore = new BMapGL.Icon(ShopClickIcon, new BMapGL.Size(30, 30)); //42
-    const otherStore2 = new BMapGL.Icon(ShopClickIcon2, new BMapGL.Size(30, 30)); //42
+    const otherStore = new BMapGL.Icon(ShopClickIcon, new BMapGL.Size(20, 20)); //42
+    const otherStore2 = new BMapGL.Icon(ShopClickIcon2, new BMapGL.Size(20, 20)); //42
 
-    const icon = new BMapGL.Icon(ShopIcon, new BMapGL.Size(30, 30));
+    const icon = new BMapGL.Icon(ShopIcon, new BMapGL.Size(20, 20));
 
-    const vanIcon = new BMapGL.Icon(van, new BMapGL.Size(30, 30));
+    const vanIcon = new BMapGL.Icon(van, new BMapGL.Size(20, 20));
     let markers = [];
     orderMarkers.map((order, index) => {
       var point = new BMapGL.Point(order.longitude, order.latitude);
@@ -601,7 +601,6 @@ export default class DispatchMap extends Component {
     let allSelectOrders = orders.filter(
       e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
     );
-    console.log('allSelectOrders', allSelectOrders, orders, this.basicOrders);
     // console.log('22', selectOrderStoreCodes, allSelectOrders);
     // const selectPoints = orders.filter(x => x.isSelect);
     if (allSelectOrders.length === 0) {
@@ -624,6 +623,17 @@ export default class DispatchMap extends Component {
         text: '排车(ALT+Q)',
         callback: () => {
           this.saveSchedule();
+        },
+      },
+      {
+        text: '取消选中',
+        callback: () => {
+          let { orders } = this.state;
+          orders.map(e => {
+            e.isSelect = false;
+            e.sort = undefined;
+          });
+          this.setState({ orders });
         },
       },
       {
@@ -982,12 +992,12 @@ export default class DispatchMap extends Component {
     });
     return icon;
   };
- 
- // 开启测距
+
+  // 开启测距
   openTool() {
-     if (this.distance) {
-       this.distance.open();
-     }
+    if (this.distance) {
+      this.distance.open();
+    }
   }
 
   render() {
@@ -1278,7 +1288,7 @@ export default class DispatchMap extends Component {
                   {/* {this.drawCheckSchedules()} */}
                   {/* 地图测距工具 */}
                   <DistanceTool
-                    ref={ref => this.distance = ref?.distancetool}
+                    ref={ref => (this.distance = ref?.distancetool)}
                     defaultOpen={false}
                   />
                   {/* 鼠标绘制工具 */}
