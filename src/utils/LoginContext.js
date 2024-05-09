@@ -174,7 +174,8 @@ export function cacheLoginKey(loginKey) {
     }
   }, 1000);
   if (loginUser().code) {
-    createSseConnect(loginUser().code);
+    //TODO 有bug 暂时注释
+    // createSseConnect(loginUser().code);
   }
 }
 

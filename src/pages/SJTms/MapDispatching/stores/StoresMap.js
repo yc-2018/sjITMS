@@ -13,6 +13,7 @@ import {
   Icon,
   Modal,
   Drawer,
+  Card,
 } from 'antd';
 import { Map, Marker, CustomOverlay, DrawingManager, Label } from 'react-bmapgl';
 import style from './DispatchingMap.less';
@@ -25,6 +26,7 @@ import {
 } from '@/services/sjitms/OrderBill';
 import { queryDict, updateEntity } from '@/services/quick/Quick';
 import ShopIcon from '@/assets/common/myj.png';
+import noStore from '@/assets/common/no_store.jpeg';
 import Page from '@/pages/Component/RapidDevelopment/CommonLayout/Page/Page';
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import moment from 'moment';
@@ -40,6 +42,7 @@ import { shencopy } from '@/utils/SomeUtil';
 
 const { Search } = Input;
 const { Option } = Select;
+const { Meta } = Card;
 
 export default class StoresMap extends Component {
   basicOrders = [];
@@ -47,6 +50,7 @@ export default class StoresMap extends Component {
   contextMenu = [];
   canDragBefore = true;
   state = {
+    storeInfoVisible: false,
     visible: true,
     // loading: true,
     windowInfo: undefined,
@@ -65,6 +69,7 @@ export default class StoresMap extends Component {
     canDrag: false,
     file: '',
     reviewVisible: false,
+    storeView: undefined,
   };
 
   componentDidMount = () => {
@@ -154,7 +159,6 @@ export default class StoresMap extends Component {
 
   //自动聚焦
   autoViewPort = points => {
-    console.log('points', points);
     const newPoints = points.map(point => {
       return new BMapGL.Point(point.longitude, point.latitude);
     });
@@ -201,6 +205,7 @@ export default class StoresMap extends Component {
   lastSelectedTowerId = -1; //全局变量
   lastSelectTowerTime = -1; //全局变量
   onDoubleClickMarker = order => {
+    let that = this;
     //官方onDbclick不生效 手动写双击事件
     let a = 0;
     if (this.lastSelectedTowerId && this.lastSelectTowerTime) {
@@ -220,6 +225,7 @@ export default class StoresMap extends Component {
           //单击事件
           if (order?.address) {
             copy(order.address);
+            that.setState({ storeInfoVisible: true, storeView: order });
             message.success('复制门店地址成功');
           } else {
             message.error('门店地址复制失败，检查该门店是否维护了地址！！');
@@ -234,8 +240,8 @@ export default class StoresMap extends Component {
   //标注点
   drawMarker = () => {
     const { orders, otherData, canDrag } = this.state;
-    const otherStore = new BMapGL.Icon(otherIcon, new BMapGL.Size(30, 30)); //42
-    const icon = new BMapGL.Icon(ShopIcon, new BMapGL.Size(30, 30));
+    const otherStore = new BMapGL.Icon(otherIcon, new BMapGL.Size(20, 20)); //42
+    const icon = new BMapGL.Icon(ShopIcon, new BMapGL.Size(20, 20));
     let markers = [];
     // let that = this;
     otherData.map(order => {
@@ -770,9 +776,42 @@ export default class StoresMap extends Component {
     return tempdata;
   };
 
+  getStoreInfoCard = () => {
+    const { storeView } = this.state;
+    if (!storeView) return;
+    let storeCode = storeView.isOrder ? storeView.deliveryPoint.code : storeView.code;
+    let storeName = storeView.isOrder ? storeView.name : storeView.name;
+    //TODO 等门店图片上传后再添加门店图片
+    return (
+      <div>
+        <Card
+          cover={<img alt="example" src={noStore} style={{ height: '200px' }} />}
+          title={`[${storeCode}]${storeName}`}
+          style={{ width: 360 }}
+        >
+          <Meta
+            style={{ fontSize: '14px' }}
+            title="线路/区域"
+            description={`${storeView.archlinecode}/${storeView.shipareaname}`}
+          />
+          <Meta
+            title="地址"
+            description={storeView.address}
+            style={{ marginTop: '10px', fontSize: '14px' }}
+          />
+          <Meta
+            title="备注"
+            description={storeView.note ? storeView.note : '无'}
+            style={{ marginTop: '10px', fontSize: '14px' }}
+          />
+        </Card>
+      </div>
+    );
+  };
+
   render() {
     let that = this;
-    const { visible, loading, windowInfo, orders, isOrder, otherData } = this.state;
+    const { visible, loading, windowInfo, orders, isOrder, otherData, storeView } = this.state;
     const uploadProps = {
       name: 'file',
       // action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
@@ -951,6 +990,21 @@ export default class StoresMap extends Component {
                 <Col span={18}>
                   <Drawer
                     getContainer={false}
+                    title={'门店资料'}
+                    placement="right"
+                    closable={true}
+                    onClose={() => this.setState({ storeInfoVisible: false })}
+                    visible={this.state.storeInfoVisible}
+                    mask={false}
+                    maskClosable={true}
+                    // height={300}
+                    width={400}
+                    style={{ position: 'absolute' }}
+                  >
+                    {this.getStoreInfoCard()}
+                  </Drawer>
+                  <Drawer
+                    getContainer={false}
                     title="门店审核"
                     placement="right"
                     closable={true}
@@ -985,6 +1039,7 @@ export default class StoresMap extends Component {
                           position={windowInfo.point}
                           offset={new BMapGL.Size(10, -15)}
                         >
+                          {/* {this.getStoreInfoCard(windowInfo, storeCode, storeName)} */}
                           <div
                             style={{
                               width: 280,
@@ -1000,13 +1055,6 @@ export default class StoresMap extends Component {
                                 whiteSpace: 'nowrap',
                               }}
                             >
-                              {/* {`[${
-                                windowInfo.order.deliveryPoint
-                                  ? windowInfo.order.deliveryPoint.code
-                                  : windowInfo.order.code
-                              }]` + windowInfo.order.deliveryPoint
-                                ? windowInfo.order.deliveryPoint?.name
-                                : windowInfo.order.name} */}
                               {`[${storeCode}]` + storeName}
                             </div>
                             <div>

@@ -195,7 +195,6 @@ export default class AddressReportSearch extends QuickFormSearchPage {
     //将样式加载到地图中
     // map.setMapStyleV2({styleJson:eval("style_map")});
     const { selectedRows } = this.state;
-    console.log(selectedRows[0]);
     const LONGITUDE = selectedRows[0]?.LONGITUDE;
     const LATITUDE = selectedRows[0]?.LATITUDE;
     return (
