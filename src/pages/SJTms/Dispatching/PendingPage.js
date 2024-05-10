@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-20 08:43:51
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2024-05-10 16:20:57
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\PendingPage.js
  */
@@ -91,6 +91,12 @@ export default class PendingPage extends Component {
         realScatteredCount: Math.round(sumBy(orders, 'realScatteredCount') * 1000) / 1000,
         containerCount: Math.round(sumBy(orders, 'containerCount') * 1000) / 1000,
         realContainerCount: Math.round(sumBy(orders, 'realContainerCount') * 1000) / 1000,
+
+        freezeContainerCount: Math.round(sumBy(orders, 'freezeContainerCount') * 1000) / 1000,
+        coldContainerCount: Math.round(sumBy(orders, 'coldContainerCount') * 1000) / 1000,
+        freshContainerCount: Math.round(sumBy(orders, 'freshContainerCount') * 1000) / 1000,
+        insulatedBag: Math.round(sumBy(orders, 'insulatedbagcount') * 1000) / 1000,
+        
         volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
         weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
       };

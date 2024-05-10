@@ -139,7 +139,7 @@ export const OrderColumns = [
     dataIndex: 'tmsNote',
     width: 80,
     render: val => (val ? <span>{val}</span> : <Empty />),
-  }
+  },
 ];
 export const OrderCollectColumns = [
   {
@@ -198,6 +198,34 @@ export const OrderCollectColumns = [
     render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
+    title: '冷冻',
+    dataIndex: 'freezeContainerCount',
+    sorter: true,
+    width: 60,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '冷藏',
+    dataIndex: 'coldContainerCount',
+    sorter: true,
+    width: 60,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '鲜食筐',
+    dataIndex: 'freshContainerCount',
+    sorter: true,
+    width: 60,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '保温袋',
+    dataIndex: 'insulatedBag',
+    sorter: true,
+    width: 60,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
+  {
     title: '体积',
     dataIndex: 'volume',
     sorter: true,
@@ -223,7 +251,7 @@ export const OrderCollectColumns = [
     dataIndex: 'tmsNote',
     width: 80,
     render: val => (val ? <span>{val}</span> : <Empty />),
-  }
+  },
 ];
 export const OrderDetailColumns = [
   {
@@ -264,6 +292,34 @@ export const OrderDetailColumns = [
   {
     title: '周转箱',
     dataIndex: 'stillContainerCount',
+    sorter: true,
+    width: 60,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '冷冻',
+    dataIndex: 'freezeContainerCount',
+    sorter: true,
+    width: 60,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '冷藏',
+    dataIndex: 'coldContainerCount',
+    sorter: true,
+    width: 60,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '鲜食筐',
+    dataIndex: 'freshContainerCount',
+    sorter: true,
+    width: 60,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '保温袋',
+    dataIndex: 'insulatedBag',
     sorter: true,
     width: 60,
     render: val => (val != undefined ? <span>{val}</span> : <Empty />),
@@ -314,7 +370,7 @@ export const OrderDetailColumns = [
     dataIndex: 'tmsNote',
     width: 80,
     render: val => (val ? <span>{val}</span> : <Empty />),
-  }
+  },
 ];
 
 export const VehicleColumns = [
@@ -578,6 +634,34 @@ export const ScheduleColumns = [
     sorter: true,
     width: 100,
     render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '冷冻',
+    dataIndex: 'FREEZECONTAINERCOUNT',
+    sorter: true,
+    width: 100,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '冷藏',
+    dataIndex: 'COLDCONTAINERCOUNT',
+    sorter: true,
+    width: 100,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '鲜食筐',
+    dataIndex: 'FRESHCONTAINERCOUNT',
+    sorter: true,
+    width: 100,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '保温袋',
+    dataIndex: 'INSULATEDBAG',
+    sorter: true,
+    width: 100,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
     title: '体积',

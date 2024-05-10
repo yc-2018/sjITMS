@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-08-11 14:13:28
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2024-05-10 16:20:28
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -46,7 +46,7 @@ import {
   checkAreaSchedule,
   checkOrderInSchedule,
 } from '@/services/sjitms/ScheduleBill';
-import { groupBy, sumBy, uniqBy,orderBy } from 'lodash';
+import { groupBy, sumBy, uniqBy, orderBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
 import VehiclePoolPage from './VehiclePoolPage';
@@ -228,6 +228,12 @@ export default class OrderPoolPage extends Component {
         realScatteredCount: Math.round(sumBy(orders, 'realScatteredCount') * 1000) / 1000,
         containerCount: Math.round(sumBy(orders, 'containerCount') * 1000) / 1000,
         realContainerCount: Math.round(sumBy(orders, 'realContainerCount') * 1000) / 1000,
+
+        freezeContainerCount: Math.round(sumBy(orders, 'freezeContainerCount') * 1000) / 1000,
+        coldContainerCount: Math.round(sumBy(orders, 'coldContainerCount') * 1000) / 1000,
+        freshContainerCount: Math.round(sumBy(orders, 'freshContainerCount') * 1000) / 1000,
+        insulatedBag: Math.round(sumBy(orders, 'insulatedbagcount') * 1000) / 1000,
+
         volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
         weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
         shipAreaName: orders[0].shipAreaName,
@@ -702,7 +708,7 @@ export default class OrderPoolPage extends Component {
     if (!dispatchConfig?.isShowSum && footer) {
       return;
     }
-    const splitSta =  dispatchConfig?.orderPoolStatistics?.split(',');
+    const splitSta = dispatchConfig?.orderPoolStatistics?.split(',');
     const totalTextStyle = footer
       ? {}
       : { fontSize: 16, fontWeight: 700, marginLeft: 2, color: '#333' };
@@ -720,7 +726,7 @@ export default class OrderPoolPage extends Component {
     const vehicleCount1 = Math.ceil(orders.weight / (dispatchConfig.calvehicle1 / 1000));
     return (
       <div style={{ display: 'flex' }}>
-        <div style={{ ...columnStyle, flex: 1.3 }}>
+        <div style={{ fontSize: 14, width: '15%' }}>
           总件数:
           <span style={totalTextStyle}>{count}</span>
         </div>
@@ -763,71 +769,195 @@ export default class OrderPoolPage extends Component {
             </div>
           </Tooltip>
         ) : null}
-        {splitSta?.includes('1')&&
-        <Tooltip title ={orders.realCartonCount}>
-           <div style={{ ...columnStyle, flex: 1 }}>
-          整件:
-          <span style={totalTextStyle}>{orders.realCartonCount}</span>
-        </div>
-        </Tooltip>
-         
-        }
-        {splitSta?.includes('2')&&
-         <Tooltip title ={orders.realScatteredCount}>
+        <Row gutter={[4, 4]} style={{ width: '100%' }}>
+          {splitSta?.map(data => {
+            switch (data) {
+              case '1':
+                return (
+                  <Tooltip title={orders.realCartonCount}>
+                    <Col span={4} style={{ ...columnStyle, flex: 1 }}>
+                      整件:
+                      <span style={totalTextStyle}>{orders.realCartonCount}</span>
+                    </Col>
+                  </Tooltip>
+                );
+              case '2':
+                return (
+                  <Tooltip title={orders.realScatteredCount}>
+                    <Col span={4} style={{ ...columnStyle, flex: 1 }}>
+                      散件:
+                      <span style={totalTextStyle}>{orders.realScatteredCount}</span>
+                    </Col>
+                  </Tooltip>
+                );
+              case '3':
+                return (
+                  <Tooltip title={orders.realContainerCount}>
+                    <Col span={4} style={{ ...columnStyle, flex: 1 }}>
+                      周转筐:
+                      <span style={totalTextStyle}>{orders.realContainerCount}</span>
+                    </Col>
+                  </Tooltip>
+                );
+              case '4':
+                return (
+                  <Tooltip title={orders.realColdContainerCount}>
+                    <Col span={4} style={{ ...columnStyle, flex: 1 }}>
+                      保温箱:
+                      <span style={totalTextStyle}>{orders.realColdContainerCount || 0}</span>
+                    </Col>
+                  </Tooltip>
+                );
+              case '5':
+                return (
+                  <Tooltip title={orders.volume}>
+                    <Col span={4} style={{ ...columnStyle, flex: 1 }}>
+                      体积:
+                      <span style={totalTextStyle}>{orders.volume}</span>
+                    </Col>
+                  </Tooltip>
+                );
+              case '6':
+                return (
+                  <Tooltip title={orders.weight}>
+                    <Col span={4} style={{ ...columnStyle, flex: 1 }}>
+                      重量:
+                      <span style={totalTextStyle}>{orders.weight}</span>
+                    </Col>
+                  </Tooltip>
+                );
+              case '7':
+                return (
+                  <Tooltip title={orders.totalStores}>
+                    <Col span={4} style={{ ...columnStyle, flex: 1 }}>
+                      门店:
+                      <span style={totalTextStyle}>{orders.totalStores}</span>
+                    </Col>
+                  </Tooltip>
+                );
+              case '8':
+                return (
+                  <Tooltip title={orders.totalStores}>
+                    <Col span={4} style={{ ...columnStyle, flex: 1 }}>
+                      冷冻:
+                      <span style={totalTextStyle}>{orders.totalStores}</span>
+                    </Col>
+                  </Tooltip>
+                );
+              case '9':
+                return (
+                  <Tooltip title={orders.totalStores}>
+                    <Col span={4} style={{ ...columnStyle, flex: 1 }}>
+                      冷藏:
+                      <span style={totalTextStyle}>{orders.totalStores}</span>
+                    </Col>
+                  </Tooltip>
+                );
+              case '10':
+                return (
+                  <Tooltip title={orders.totalStores}>
+                    <Col span={4} style={{ ...columnStyle, flex: 1 }}>
+                      保温袋:
+                      <span style={totalTextStyle}>{orders.totalStores}</span>
+                    </Col>
+                  </Tooltip>
+                );
+                case '11':
+                  return (
+                    <Tooltip title={orders.totalStores}>
+                      <Col span={4} style={{ ...columnStyle, flex: 1 }}>
+                        鲜食筐:
+                        <span style={totalTextStyle}>{orders.totalStores}</span>
+                      </Col>
+                    </Tooltip>
+                  );
+              default:
+                return '';
+            }
+          })}
+        </Row>
+
+        {/* {splitSta?.includes('1') && (
+          <Tooltip title={orders.realCartonCount}>
             <div style={{ ...columnStyle, flex: 1 }}>
-           散件:
-           <span style={totalTextStyle}>{orders.realScatteredCount}</span>
-         </div>
-         </Tooltip>
-        
-        }
-        {splitSta?.includes('3')&&
-        <Tooltip title ={orders.realContainerCount}>
-           <div style={{ ...columnStyle, flex: 1.2 }}>
-            周转筐:
-          <span style={totalTextStyle}>{orders.realContainerCount}</span>
-        </div>
-        </Tooltip>
-       
-        }
-        {splitSta?.includes('4')&&
-         <Tooltip title ={orders.realColdContainerCount || 0}>
-          <div style={{ ...columnStyle, flex: 1.2 }}>
-            保温箱:
-          <span style={totalTextStyle}>{orders.realColdContainerCount || 0}</span>
-        </div>
-         </Tooltip>
-        
-        }
-        {splitSta?.includes('5')&&
-         <Tooltip title ={orders.volume}>
-          <div style={{ ...columnStyle, flex: 1.2 }}>
-           体积:
-           <span style={totalTextStyle}>{orders.volume}</span>
-           </div>
-         </Tooltip>
-         
-        }
-       {splitSta?.includes('6')&&
-        <Tooltip title ={orders.weight}>
-          <div style={{ ...columnStyle, flex: 1.2 }}>
-         重量:
-         <span style={totalTextStyle}>{orders.weight}</span>
-          </div>
-        </Tooltip>
-        
-       }
-       
-      {splitSta?.includes('7')&& 
-         <Tooltip title ={orders.totalStores}>
-          <div style={{ ...columnStyle, flex: 1 }}>
-            门店:
-            <span style={totalTextStyle}>{orders.totalStores}</span>
-          </div> 
+              整件:
+              <span style={totalTextStyle}>{orders.realCartonCount}</span>
+            </div>
           </Tooltip>
-      }
-       
-     
+        )}
+        {splitSta?.includes('2') && (
+          <Tooltip title={orders.realScatteredCount}>
+            <div style={{ ...columnStyle, flex: 1 }}>
+              散件:
+              <span style={totalTextStyle}>{orders.realScatteredCount}</span>
+            </div>
+          </Tooltip>
+        )}
+        {splitSta?.includes('3') && (
+          <Tooltip title={orders.realContainerCount}>
+            <div style={{ ...columnStyle, flex: 1.2 }}>
+              周转筐:
+              <span style={totalTextStyle}>{orders.realContainerCount}</span>
+            </div>
+          </Tooltip>
+        )}
+        {splitSta?.includes('4') && (
+          <Tooltip title={orders.realColdContainerCount || 0}>
+            <div style={{ ...columnStyle, flex: 1.2 }}>
+              保温箱:
+              <span style={totalTextStyle}>{orders.realColdContainerCount || 0}</span>
+            </div>
+          </Tooltip>
+        )}
+        {splitSta?.includes('5') && (
+          <Tooltip title={orders.volume}>
+            <div style={{ ...columnStyle, flex: 1.2 }}>
+              体积:
+              <span style={totalTextStyle}>{orders.volume}</span>
+            </div>
+          </Tooltip>
+        )}
+        {splitSta?.includes('6') && (
+          <Tooltip title={orders.weight}>
+            <div style={{ ...columnStyle, flex: 1.2 }}>
+              重量:
+              <span style={totalTextStyle}>{orders.weight}</span>
+            </div>
+          </Tooltip>
+        )}
+
+        {splitSta?.includes('7') && (
+          <Tooltip title={orders.totalStores}>
+            <div style={{ ...columnStyle, flex: 1 }}>
+              门店:
+              <span style={totalTextStyle}>{orders.totalStores}</span>
+            </div>
+          </Tooltip>
+        )}
+        {splitSta?.includes('8') && (
+          <Tooltip title={orders.totalStores}>
+            <div style={{ ...columnStyle, flex: 1 }}>
+              冷冻:
+              <span style={totalTextStyle}>{orders.totalStores}</span>
+            </div>
+          </Tooltip>
+        )}
+        {splitSta?.includes('9') && (
+          <Tooltip title={orders.totalStores}>
+            <div style={{ ...columnStyle, flex: 1 }}>
+              冷藏:
+              <span style={totalTextStyle}>{orders.totalStores}</span>
+            </div>
+          </Tooltip>
+        )}
+        {splitSta?.includes('10') && (
+          <Tooltip title={orders.totalStores}>
+            <div style={{ ...columnStyle, flex: 1 }}>
+              保温袋:
+              <span style={totalTextStyle}>{orders.totalStores}</span>
+            </div>
+          </Tooltip>
+        )} */}
       </div>
     );
   };
@@ -860,7 +990,7 @@ export default class OrderPoolPage extends Component {
       realCartonCount: Math.round(sumBy(data.map(x => x.stillCartonCount)) * 100) / 100,
       realScatteredCount: Math.round(sumBy(data.map(x => x.stillScatteredCount)) * 100) / 100,
       realContainerCount: Math.round(sumBy(data.map(x => x.stillContainerCount)) * 100) / 100,
-      realColdContainerCount:Math.round(sumBy(data.map(x => x.realColdContainerCount))),
+      realColdContainerCount: Math.round(sumBy(data.map(x => x.realColdContainerCount))),
       weight: Math.round(sumBy(data.map(x => Number(x.weight)))) / 1000,
       volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
       totalStores: totalStores.length,
@@ -937,7 +1067,12 @@ export default class OrderPoolPage extends Component {
         </Col>
       </Row>
     ));
-    const orderPoolHeight = dispatchConfig?.isShowSum ? 235 : 210;
+    const splitSta = dispatchConfig?.orderPoolStatistics?.split(',');
+    const orderPoolHeight = dispatchConfig?.isShowSum
+      ? splitSta != undefined && splitSta.length > 6
+        ? 290
+        : 235
+      : 210;
     return (
       <div>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
