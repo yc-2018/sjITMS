@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-05-10 16:20:28
+ * @LastEditTime: 2024-05-11 10:17:58
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -183,6 +183,7 @@ export default class OrderPoolPage extends Component {
         const collectResponse = this.props.dispatchConfig?.isShowSum
           ? await queryCollectAuditedOrder(filter)
           : {};
+        console.log('collectResponse', collectResponse);
         data = data?.map(order => {
           const cartonCount = order.realCartonCount || order.cartonCount;
           order.warning = order.stillCartonCount < cartonCount;
@@ -837,40 +838,40 @@ export default class OrderPoolPage extends Component {
                 );
               case '8':
                 return (
-                  <Tooltip title={orders.totalStores}>
+                  <Tooltip title={orders.realFreezeContainerCount}>
                     <Col span={4} style={{ ...columnStyle, flex: 1 }}>
                       冷冻:
-                      <span style={totalTextStyle}>{orders.totalStores}</span>
+                      <span style={totalTextStyle}>{orders.realFreezeContainerCount}</span>
                     </Col>
                   </Tooltip>
                 );
               case '9':
                 return (
-                  <Tooltip title={orders.totalStores}>
+                  <Tooltip title={orders.realColdContainerCount}>
                     <Col span={4} style={{ ...columnStyle, flex: 1 }}>
                       冷藏:
-                      <span style={totalTextStyle}>{orders.totalStores}</span>
+                      <span style={totalTextStyle}>{orders.realColdContainerCount}</span>
                     </Col>
                   </Tooltip>
                 );
               case '10':
                 return (
-                  <Tooltip title={orders.totalStores}>
+                  <Tooltip title={orders.realInsulatedBagCount}>
                     <Col span={4} style={{ ...columnStyle, flex: 1 }}>
                       保温袋:
-                      <span style={totalTextStyle}>{orders.totalStores}</span>
+                      <span style={totalTextStyle}>{orders.realInsulatedBagCount}</span>
                     </Col>
                   </Tooltip>
                 );
-                case '11':
-                  return (
-                    <Tooltip title={orders.totalStores}>
-                      <Col span={4} style={{ ...columnStyle, flex: 1 }}>
-                        鲜食筐:
-                        <span style={totalTextStyle}>{orders.totalStores}</span>
-                      </Col>
-                    </Tooltip>
-                  );
+              case '11':
+                return (
+                  <Tooltip title={orders.realFreshContainerCount}>
+                    <Col span={4} style={{ ...columnStyle, flex: 1 }}>
+                      鲜食筐:
+                      <span style={totalTextStyle}>{orders.realFreshContainerCount}</span>
+                    </Col>
+                  </Tooltip>
+                );
               default:
                 return '';
             }
@@ -964,11 +965,17 @@ export default class OrderPoolPage extends Component {
   //计算汇总
   collectByOrder = data => {
     data = data.filter(x => x.orderType !== 'OnlyBill');
+    console.log('data', data);
     if (data.length == 0) {
       return {
         realCartonCount: 0,
         realScatteredCount: 0,
         realContainerCount: 0,
+        realColdContainerCount: 0,
+        realFreezeContainerCount: 0,
+        realFreshContainerCount: 0,
+        realInsulatedBagCount: 0,
+        realInsulatedContainerCount: 0,
         volume: 0,
         weight: 0,
         totalStores: 0,
@@ -980,6 +987,12 @@ export default class OrderPoolPage extends Component {
         x.stillCartonCount = x.cartonCount;
         x.stillScatteredCount = x.scatteredCount;
         x.stillContainerCount = x.containerCount;
+
+        x.stillColdContainerCount = x.coldContainerCount;
+        x.stillFreezeContainerCount = x.freezeContainerCount;
+        x.stillFreshContainerCount = x.freshContainerCount;
+        x.stillInsulatedBagCount = x.insulatedBagCount;
+        x.stillInsulatedContainerCount = x.insulatedContainerCount;
       }
       if (totalStores.indexOf(x.deliveryPoint.code) == -1) {
         totalStores.push(x.deliveryPoint.code);
@@ -990,7 +1003,15 @@ export default class OrderPoolPage extends Component {
       realCartonCount: Math.round(sumBy(data.map(x => x.stillCartonCount)) * 100) / 100,
       realScatteredCount: Math.round(sumBy(data.map(x => x.stillScatteredCount)) * 100) / 100,
       realContainerCount: Math.round(sumBy(data.map(x => x.stillContainerCount)) * 100) / 100,
-      realColdContainerCount: Math.round(sumBy(data.map(x => x.realColdContainerCount))),
+      realColdContainerCount: Math.round(sumBy(data.map(x => x.coldContainerCount))),
+
+      realFreezeContainerCount:
+        Math.round(sumBy(data.map(x => x.freezeContainerCount)) * 100) / 100,
+      realFreshContainerCount: Math.round(sumBy(data.map(x => x.freshContainerCount)) * 100) / 100,
+      realInsulatedBagCount: Math.round(sumBy(data.map(x => x.insulatedBagCount)) * 100) / 100,
+      realInsulatedContainerCount:
+        Math.round(sumBy(data.map(x => x.insulatedContainerCount)) * 100) / 100,
+
       weight: Math.round(sumBy(data.map(x => Number(x.weight)))) / 1000,
       volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
       totalStores: totalStores.length,
