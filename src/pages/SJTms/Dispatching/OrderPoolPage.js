@@ -183,7 +183,6 @@ export default class OrderPoolPage extends Component {
         const collectResponse = this.props.dispatchConfig?.isShowSum
           ? await queryCollectAuditedOrder(filter)
           : {};
-        console.log('collectResponse', collectResponse);
         data = data?.map(order => {
           const cartonCount = order.realCartonCount || order.cartonCount;
           order.warning = order.stillCartonCount < cartonCount;
