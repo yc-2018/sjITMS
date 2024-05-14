@@ -282,8 +282,9 @@ export default class ConfigCenter extends SiderPage {
           onOk={this.handleOk}
           onCancel={this.hidden}
           width={1100}
+          style={{ top: 40 }}
           destroyOnClose
-          bodyStyle={{ maxHeight: window.innerHeight - 200, overflowY: 'auto' }}
+          bodyStyle={{ maxHeight: window.innerHeight - 180, overflowY: 'auto' }}
         >
           <Form onSubmit={this.handleOk}>
             <Row>

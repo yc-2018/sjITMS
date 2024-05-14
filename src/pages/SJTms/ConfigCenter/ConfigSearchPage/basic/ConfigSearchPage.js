@@ -307,52 +307,34 @@ export default class ConfigSearchPage extends Component {
             <div className={styles.action}>{this.drawActionButton && this.drawActionButton()}</div>
           </div>
         )}
-        <Tabs defaultActiveKey="1" onChange={this.handleChangeTab}>
-          {!this.state.hideBusTabe && (
-            <TabPane tab={commonLocale.congfigLocale} key="1">
-              {this.drawSearchPanel && (
-                <div className={styles.searchPanel}>
-                  {this.drawSearchPanel && this.drawSearchPanel()}
-                </div>
-              )}
-              {this.drawToolbarPanel && <ToolbarPanel>{this.drawToolbarPanel()}</ToolbarPanel>}
+        {this.drawSearchPanel && (
+          <div className={styles.searchPanel}>
+            {this.drawSearchPanel && this.drawSearchPanel()}
+          </div>
+        )}
+        {this.drawToolbarPanel && <ToolbarPanel>{this.drawToolbarPanel()}</ToolbarPanel>}
 
-              {!this.state.hideTable && (
-                <StandardTable
-                  selectedRows={selectedRows}
-                  rowKey={record => record.uuid}
-                  loading={tableLoading}
-                  noActionCol={this.state.noActionCol ? true : false}
-                  unShowRow={unShowRow}
-                  data={data}
-                  columns={this.state.columns ? this.state.columns : []}
-                  onSelectRow={this.handleSelectRows}
-                  // onChange={this.handleStandardTableChange}
-                  scroll={scroll}
-                  newScroll={this.state.newScroll}
-                  comId={key}
-                  noSettingColumns
-                  noToolbarPanel={this.state.noToolbarPanel}
-                  colTotal={[]}
-                />
-              )}
-              {this.drawCreateModal && this.drawCreateModal()}
-              {this.drawProgress()}
-            </TabPane>
-          )}
-          {!this.state.hideLogTab ? (
-            <TabPane tab={formatMessage({ id: 'company.detail.tab.operateInfo' })} key="2">
-              <EntityLogTab
-                entityUuid={
-                  this.state.onlyEntityUuid
-                    ? this.state.logCaption
-                    : loginOrg().uuid + this.state.logCaption
-                }
-                key={this.state.keyLog}
-              />
-            </TabPane>
-          ) : null}
-        </Tabs>
+        {!this.state.hideTable && (
+          <StandardTable
+            size="small"
+            selectedRows={selectedRows}
+            rowKey={record => record.uuid}
+            loading={tableLoading}
+            noActionCol={this.state.noActionCol ? true : false}
+            unShowRow={unShowRow}
+            data={data}
+            columns={this.state.columns ? this.state.columns : []}
+            onSelectRow={this.handleSelectRows}
+            // onChange={this.handleStandardTableChange}
+            scroll={scroll ? scroll : undefined}
+            comId={key}
+            // noSettingColumns
+            noToolbarPanel={this.state.noToolbarPanel}
+            colTotal={[]}
+          />
+        )}
+        {this.drawCreateModal && this.drawCreateModal()}
+        {this.drawProgress()}
       </div>
     );
   }

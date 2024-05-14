@@ -22,25 +22,31 @@ export default class ConfigSearchPageE extends ConfigSearchPage {
           title: '调度中心UUID',
           dataIndex: 'dispatchcenteruuid',
           width: 120,
+          render: (val, record)=>{
+            return <a onClick={() => this.onView(record)}>{val}</a>;
+          }
         },
         {
           title: '调度中心名称',
           dataIndex: 'dispatchcentername',
           width: 100,
+          render: (val, record)=>{
+            return <span onClick={() => this.onView(record)}>{val}</span>;
+          }
         },
       ];
       for (let column of columns) {
+        const len = column.keyCn.length < 4 ? 60 : column.keyCn.length * 12 + 20;
         columnsConfigs.push({
           title: column.keyCn,
           dataIndex: column.keyEn,
           key: column.keyEn,
-          width: 100,
+          width: len,
           render: (val, record) => (
             <div>
               {record[`${column.keyEn}_ex`] ? (
                 <Badge dot color="green">
                   <Input
-                    style={{ width: 80 }}
                     defaultValue={val}
                     onBlur={event => this.onInputChange(record, column.keyEn, event.target.value)}
                     //   onChange={v => (record[column.keyEn] = v.target.value)}
@@ -48,7 +54,6 @@ export default class ConfigSearchPageE extends ConfigSearchPage {
                 </Badge>
               ) : (
                 <Input
-                  style={{ width: 80 }}
                   defaultValue={val}
                   onBlur={event => this.onInputChange(record, column.keyEn, event.target.value)}
                   //   onChange={v => (record[column.keyEn] = v.target.value)}
@@ -74,7 +79,7 @@ export default class ConfigSearchPageE extends ConfigSearchPage {
       columns: this.getColumnsConfig(props.contentProps.columns),
       suspendLoading: true,
       sourceData: [],
-      newScroll: { x: 'auto' },
+      scroll: { x: 'auto', y: 'auto' },
       isEdit: false,
       isCopy: false,
     };
@@ -160,33 +165,26 @@ export default class ConfigSearchPageE extends ConfigSearchPage {
     this.refreshTable(data);
   };
 
-  handleCreateModalVisible = (flag, uuid) => {
-    this.setState({
-      entity: {},
-      isEdit: false,
-      isCopy: false,
-    });
+  handleCreateModalVisible = (flag) => {
+    this.setState({ entity: {}, isEdit: false, isCopy: false });
 
-    this.setState({
-      createModalVisible: !!flag,
-    });
+    this.setState({ createModalVisible: !!flag });
   };
 
-  handleEditModalVisible = (flag, uuid) => {
+  onView = record => {
+    this.setState({ entity: record });
+    setTimeout(() => { this.setState({ isEdit: true, isCopy: false, createModalVisible: true }) }, 100);
+  }
+
+  handleEditModalVisible = (flag) => {
     const { selectedRows } = this.state;
     if (selectedRows.length != 1) {
       message.error('请选择具体数据修改！');
       return;
     }
-    this.setState({
-      entity: {},
-      isEdit: true,
-      isCopy: false,
-    });
+    this.setState({ entity: selectedRows[0], isEdit: true, isCopy: false });
 
-    this.setState({
-      createModalVisible: !!flag,
-    });
+    this.setState({ createModalVisible: !!flag });
   };
 
   handleSave = async params => {
@@ -229,11 +227,7 @@ export default class ConfigSearchPageE extends ConfigSearchPage {
       message.error('请选择具体数据修改！');
       return;
     }
-    this.setState({
-      entity: {},
-      isEdit: true,
-      isCopy: true,
-    });
+    this.setState({ entity: selectedRows[0], isEdit: true, isCopy: true });
 
     this.setState({
       createModalVisible: true,
@@ -241,23 +235,22 @@ export default class ConfigSearchPageE extends ConfigSearchPage {
   };
 
   drawCreateModal = () => {
-    const { entity, selectedRows, createModalVisible, sourceData, isEdit, isCopy } = this.state;
+    const { entity, createModalVisible, sourceData, isEdit, isCopy } = this.state;
     const { contentProps } = this.props;
     const { columns } = contentProps;
     let exValue = {};
     if (isEdit) {
       columns.map(e => {
-        exValue[e.keyEn] = selectedRows[0][`${e.keyEn}_ex`];
+        exValue[e.keyEn] = entity[`${e.keyEn}`];
       });
     }
     const createModalProps = {
-      entity: entity,
       modalVisible: createModalVisible,
       handleCreateModalVisible: this.handleCreateModalVisible,
       handleSave: this.handleSave,
       loading: this.props.loading,
       exValue: exValue,
-      initData: isEdit ? selectedRows[0] : {},
+      initData: isEdit ? entity : {},
       isEdit: isEdit,
       isCopy: isCopy,
     };
@@ -288,7 +281,7 @@ export default class ConfigSearchPageE extends ConfigSearchPage {
         <Button type="primary" icon="plus" onClick={() => this.handleCreateModalVisible(true)}>
           {commonLocale.createLocale}
         </Button>
-        <Button type="primary" icon="plus" onClick={() => this.handleEditModalVisible(true)}>
+        <Button type="primary" icon="edit" onClick={() => this.handleEditModalVisible(true)}>
           编辑
         </Button>
       </Fragment>

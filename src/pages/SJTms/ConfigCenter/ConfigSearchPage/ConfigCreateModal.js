@@ -1,5 +1,5 @@
 import React, { PureComponent } from 'react';
-import { Form, Input, Modal, Select, Row, Col, message, Button } from 'antd';
+import { Form, Input, Modal, Select, Row, Col, message, Button, Tooltip } from 'antd';
 import { loginCompany } from '@/utils/LoginContext';
 import { commonLocale, notNullLocale } from '@/utils/CommonLocale';
 const FormItem = Form.Item;
@@ -70,7 +70,7 @@ function formatJson(jsonObj) {
   jsonString = jsonString.replace(/\r\n\,/g, ',');
   // 特殊处理双引号中的内容
   jsonArray = jsonString.split('\r\n');
-  jsonArray.forEach(function(node, index) {
+  jsonArray.forEach(function (node, index) {
     // 获取当前字符串段中"的数量
     let num = node.match(/\"/g) ? node.match(/\"/g).length : 0;
     // 判断num是否为奇数来确定是否需要特殊处理
@@ -91,7 +91,7 @@ function formatJson(jsonObj) {
     }
   });
   // 开始处理双引号中的内容，将多余的"去除
-  _index.reverse().forEach(function(item, index) {
+  _index.reverse().forEach(function (item, index) {
     let newArray = jsonArray.slice(item.start, item.end + 1);
     jsonArray.splice(item.start, item.end + 1 - item.start, newArray.join(''));
   });
@@ -104,7 +104,7 @@ function formatJson(jsonObj) {
   // 将上述转换后的字符串再次以\r\n分割成数组
   jsonArray = jsonString.split('\r\n');
   // 将转换完成的字符串根据PADDING值来组合成最终的形态
-  jsonArray.forEach(function(item, index) {
+  jsonArray.forEach(function (item, index) {
     // console.log(item);
     let i = 0;
     // 表示缩进的位数，以tab作为计数单位
@@ -219,7 +219,6 @@ export default class DispatcherConfigCreateModal extends PureComponent {
     const {
       form,
       modalVisible,
-      entity,
       loading,
       contentProps,
       initData,
@@ -247,6 +246,8 @@ export default class DispatcherConfigCreateModal extends PureComponent {
     }
     return (
       <Modal
+        width={columns.length > 10 ? 1200 : 500}
+        style={{ top: "50px" }}
         title={isEdit ? (isCopy ? '复制' : commonLocale.editLocale) : commonLocale.addLocale}
         visible={modalVisible}
         onOk={this.okHandle}
@@ -255,41 +256,51 @@ export default class DispatcherConfigCreateModal extends PureComponent {
         destroyOnClose
       >
         <Form {...baseFormItemLayout}>
-          <FormItem label={'调度中心'}>
-            {getFieldDecorator('dispatchcenter', {
-              ...initDispatchValue,
-              rules: [{ required: true, message: notNullLocale('调度中心') }],
-            })(<Select disabled={isCopy ? false : isEdit}>{this.buildOptions()}</Select>)}
-          </FormItem>
-          {columns.map(column => {
-            let init = isEdit ? { initialValue: `${initData[column.keyEn]}` } : {};
-            return (
-              <FormItem label={column.keyCn}>
-                {getFieldDecorator(`${column.keyEn}`, {
-                  ...init,
-                  rules: [{ required: true, message: notNullLocale(column.keyCn) }],
-                })(
-                  <Row>
-                    <Col span={20}>
-                      <Input defaultValue={initData[column.keyEn]} />
-                    </Col>
-                    <Col span={4}>
-                      <Button
-                        style={{
-                          marginLeft: '5px',
-                          borderColor: exValue[column.keyEn] ? 'red' : '',
-                          color: exValue[column.keyEn] ? 'red' : '',
-                        }}
-                        onClick={() => this.clickEx(column.keyEn)}
-                      >
-                        Json
-                      </Button>
-                    </Col>
-                  </Row>
-                )}
+          <Row>
+            <Col span={columns.length > 10 ? 12 : 24}>
+              <FormItem label={'调度中心'}>
+                {getFieldDecorator('dispatchcenter', {
+                  ...initDispatchValue,
+                  rules: [{ required: true, message: notNullLocale('调度中心') }],
+                })(<Select disabled={isCopy ? false : isEdit}>{this.buildOptions()}</Select>)}
               </FormItem>
-            );
-          })}
+            </Col>
+          </Row>
+          <Row align='center' gutter={10}>
+            {columns.map(column => {
+              let init = isEdit ? { initialValue: `${initData[column.keyEn]}` } : {};
+              return (
+                <Col span={columns.length > 10 ? 12 : 24}>
+                  <FormItem label={
+                    <Tooltip title={column.note }>{column.keyCn}</Tooltip>
+                  }>
+                    {getFieldDecorator(`${column.keyEn}`, {
+                      ...init,
+                      rules: [{ required: true, message: notNullLocale(column.keyCn) }],
+                    })(
+                      <Row>
+                        <Col span={20}>
+                          <Input defaultValue={initData[column.keyEn]} />
+                        </Col>
+                        <Col span={4}>
+                          <Button
+                            style={{
+                              marginLeft: '5px',
+                              borderColor: exValue[column.keyEn] ? 'red' : '',
+                              color: exValue[column.keyEn] ? 'red' : '',
+                            }}
+                            onClick={() => this.clickEx(column.keyEn)}
+                          >
+                            Json
+                          </Button>
+                        </Col>
+                      </Row>
+                    )}
+                  </FormItem>
+                </Col>
+              );
+            })}
+          </Row>
         </Form>
         <Modal
           title={selectKeyEn + '额外参数'}
