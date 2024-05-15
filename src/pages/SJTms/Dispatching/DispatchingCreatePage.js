@@ -152,7 +152,7 @@ export default class DispatchingCreatePage extends Component {
 
   //初始化数据
   initData = async (isEdit, record, orders) => {
-    // console.log('isEdit', isEdit, record, orders);
+    console.log('orders', orders);
     let { vehicles, employees, carrieruuids } = this.state;
     // 查询字典
     queryDictByCode(['vehicleOwner', 'employeeType', 'relation']).then(
@@ -367,7 +367,6 @@ export default class DispatchingCreatePage extends Component {
         }
       });
     }
-    console.log('serachVeh', serachVeh);
     if (vehicleParam.vehicleOwner) {
       serachVeh = serachVeh.filter(x => x.OWNER == vehicleParam.vehicleOwner);
     }
@@ -497,10 +496,22 @@ export default class DispatchingCreatePage extends Component {
       item.cartonCount = item.stillCartonCount;
       item.scatteredCount = item.stillScatteredCount;
       item.containerCount = item.stillContainerCount;
+      item.coldContainerCount = item.stillColdContainerCount;
+      item.freezeContainerCount = item.stillFreezeContainerCount;
+      item.insulatedBagCount = item.stillInsulatedBagCount;
+      item.insulatedContainerCount = item.stillInsulatedContainerCount;
+      item.freshContainerCount = item.stillFreshContainerCount;
+
       if (item.reviewed) {
         item.realCartonCount = item.stillCartonCount;
         item.realScatteredCount = item.stillScatteredCount;
         item.realContainerCount = item.stillContainerCount;
+
+        item.realColdContainerCount = item.stillColdContainerCount;
+        item.realFreezeContainerCount = item.stillFreezeContainerCount;
+        item.realInsulatedBagCount = item.stillInsulatedBagCount;
+        item.realInsulatedContainerCount = item.stillInsulatedContainerCount;
+        item.realFreshContainerCount = item.stillFreshContainerCount;
       }
       return {
         ...item,
@@ -672,12 +683,30 @@ export default class DispatchingCreatePage extends Component {
       cartonCount: data ? sumBy(data.map(x => x.stillCartonCount)) : 0,
       scatteredCount: data ? sumBy(data.map(x => x.stillScatteredCount)) : 0,
       containerCount: data ? sumBy(data.map(x => x.stillContainerCount)) : 0,
+      coldContainerCount: data ? sumBy(data.map(x => x.stillColdContainerCount)) : 0,
+      freezeContainerCount: data ? sumBy(data.map(x => x.stillFreezeContainerCount)) : 0,
+      insulatedBagCount: data ? sumBy(data.map(x => x.stillInsulatedBagCount)) : 0,
+      insulatedContainerCount: data ? sumBy(data.map(x => x.stillInsulatedContainerCount)) : 0,
+      freshContainerCount: data ? sumBy(data.map(x => x.stillFreshContainerCount)) : 0,
+
       realCartonCount: data ? sumBy(data.map(x => x.realCartonCount)) : 0,
       realScatteredCount: data ? sumBy(data.map(x => x.realScatteredCount)) : 0,
       realContainerCount: data ? sumBy(data.map(x => x.realContainerCount)) : 0,
+      realColdContainerCount: data ? sumBy(data.map(x => x.realColdContainerCount)) : 0,
+      realFreezeContainerCount: data ? sumBy(data.map(x => x.realFreezeContainerCount)) : 0,
+      realInsulatedBagCount: data ? sumBy(data.map(x => x.realInsulatedBagCount)) : 0,
+      realInsulatedContainerCount: data ? sumBy(data.map(x => x.realInsulatedContainerCount)) : 0,
+      realFreshContainerCount: data ? sumBy(data.map(x => x.realFreshContainerCount)) : 0,
+
       stillCartonCount: data ? sumBy(data.map(x => x.stillCartonCount)) : 0,
       stillScatteredCount: data ? sumBy(data.map(x => x.stillScatteredCount)) : 0,
       stillContainerCount: data ? sumBy(data.map(x => x.stillContainerCount)) : 0,
+      stillColdContainerCount: data ? sumBy(data.map(x => x.stillColdContainerCount)) : 0,
+      stillFreezeContainerCount: data ? sumBy(data.map(x => x.stillFreezeContainerCount)) : 0,
+      stillInsulatedBagCount: data ? sumBy(data.map(x => x.stillInsulatedBagCount)) : 0,
+      stillInsulatedContainerCount: data ? sumBy(data.map(x => x.stillInsulatedContainerCount)) : 0,
+      stillFreshContainerCount: data ? sumBy(data.map(x => x.stillFreshContainerCount)) : 0,
+
       weight: data ? sumBy(data.map(x => Number(x.weight))) : 0,
       volume: data ? sumBy(data.map(x => Number(x.volume))) : 0,
       totalAmount: data ? sumBy(data.map(x => Number(x.amount))) : 0,

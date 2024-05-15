@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-05-11 10:17:58
+ * @LastEditTime: 2024-05-15 09:20:42
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -876,88 +876,6 @@ export default class OrderPoolPage extends Component {
             }
           })}
         </Row>
-
-        {/* {splitSta?.includes('1') && (
-          <Tooltip title={orders.realCartonCount}>
-            <div style={{ ...columnStyle, flex: 1 }}>
-              整件:
-              <span style={totalTextStyle}>{orders.realCartonCount}</span>
-            </div>
-          </Tooltip>
-        )}
-        {splitSta?.includes('2') && (
-          <Tooltip title={orders.realScatteredCount}>
-            <div style={{ ...columnStyle, flex: 1 }}>
-              散件:
-              <span style={totalTextStyle}>{orders.realScatteredCount}</span>
-            </div>
-          </Tooltip>
-        )}
-        {splitSta?.includes('3') && (
-          <Tooltip title={orders.realContainerCount}>
-            <div style={{ ...columnStyle, flex: 1.2 }}>
-              周转筐:
-              <span style={totalTextStyle}>{orders.realContainerCount}</span>
-            </div>
-          </Tooltip>
-        )}
-        {splitSta?.includes('4') && (
-          <Tooltip title={orders.realColdContainerCount || 0}>
-            <div style={{ ...columnStyle, flex: 1.2 }}>
-              保温箱:
-              <span style={totalTextStyle}>{orders.realColdContainerCount || 0}</span>
-            </div>
-          </Tooltip>
-        )}
-        {splitSta?.includes('5') && (
-          <Tooltip title={orders.volume}>
-            <div style={{ ...columnStyle, flex: 1.2 }}>
-              体积:
-              <span style={totalTextStyle}>{orders.volume}</span>
-            </div>
-          </Tooltip>
-        )}
-        {splitSta?.includes('6') && (
-          <Tooltip title={orders.weight}>
-            <div style={{ ...columnStyle, flex: 1.2 }}>
-              重量:
-              <span style={totalTextStyle}>{orders.weight}</span>
-            </div>
-          </Tooltip>
-        )}
-
-        {splitSta?.includes('7') && (
-          <Tooltip title={orders.totalStores}>
-            <div style={{ ...columnStyle, flex: 1 }}>
-              门店:
-              <span style={totalTextStyle}>{orders.totalStores}</span>
-            </div>
-          </Tooltip>
-        )}
-        {splitSta?.includes('8') && (
-          <Tooltip title={orders.totalStores}>
-            <div style={{ ...columnStyle, flex: 1 }}>
-              冷冻:
-              <span style={totalTextStyle}>{orders.totalStores}</span>
-            </div>
-          </Tooltip>
-        )}
-        {splitSta?.includes('9') && (
-          <Tooltip title={orders.totalStores}>
-            <div style={{ ...columnStyle, flex: 1 }}>
-              冷藏:
-              <span style={totalTextStyle}>{orders.totalStores}</span>
-            </div>
-          </Tooltip>
-        )}
-        {splitSta?.includes('10') && (
-          <Tooltip title={orders.totalStores}>
-            <div style={{ ...columnStyle, flex: 1 }}>
-              保温袋:
-              <span style={totalTextStyle}>{orders.totalStores}</span>
-            </div>
-          </Tooltip>
-        )} */}
       </div>
     );
   };
