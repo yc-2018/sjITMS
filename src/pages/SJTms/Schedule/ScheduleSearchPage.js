@@ -78,6 +78,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
       '000008150000002',
       '000008150000003',
       '000000750000006',
+      '000008150000016'
     ],
     isRadio: true,
     billnumbers: [],
@@ -248,7 +249,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     ];
     if (sourceData.success == true && sourceData.data) {
       return sourceData.data.map(data => {
-        const textColor = color.find(x => x.stat == data.stat).color;
+        const textColor = color.find(x => x.stat == data.stat)?.color;
         return (
           <Select.Option value={data.dockno}>
             <span style={{ color: textColor }}>{data.dockno + ' ' + data.stat}</span>
