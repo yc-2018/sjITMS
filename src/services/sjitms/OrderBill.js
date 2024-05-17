@@ -27,6 +27,23 @@ export async function getContainerByBillUuid(billUuid) {
     }
   );
 }
+
+/**
+ * 获取时捷配置中心配置
+ * @param name 配置名称（英文那个）
+ * @param dispatchUuid 调度中心uuid
+ * @param key 配置key（不知道干嘛的，反正非必填）
+ * @author ChenGuangLong
+ * @since 2024/5/17 11:57
+*/
+export async function GetConfig(name, dispatchUuid, key) {
+  const params = { dispatchcenteruuid: dispatchUuid, key_En: key };
+  return request(`/itms-schedule/itms-schedule/configCenter/getConfigData/${name}`, {
+    method: 'POST',
+    body: params
+  });
+}
+
 export async function queryDriverRoutes(origin, destination, waypoints) {
   return request(
     `/itms-schedule/itms-schedule/bmap/driving?origin=${origin}&destination=${destination}&waypoints=${encodeURI(
