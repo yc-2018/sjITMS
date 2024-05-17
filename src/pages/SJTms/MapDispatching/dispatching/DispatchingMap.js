@@ -13,7 +13,6 @@ import {
   Button,
   Row,
   Col,
-  Empty,
   Spin,
   message,
   Input,
@@ -26,15 +25,12 @@ import { Map, Marker, CustomOverlay, DrawingManager, Label, DistanceTool } from 
 import { getSchedule, getDetailByBillUuids } from '@/services/sjitms/ScheduleBill';
 import style from './DispatchingMap.less';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
-import emptySvg from '@/assets/common/img_empoty.svg';
 import SearchForm from './SearchForm';
 import {
-  queryAuditedOrderByStoreMap,
-  queryAuditedOrder,
   queryDriverRoutes,
   queryDriverRoutes2,
-  queryAuditedOrderByParams,
-} from '@/services/sjitms/OrderBill';
+  queryAuditedOrderByParams, GetConfig,
+} from '@/services/sjitms/OrderBill'
 import { queryDict, queryData, dynamicQuery } from '@/services/quick/Quick';
 
 import ShopIcon from '@/assets/common/22.png';
@@ -43,12 +39,30 @@ import ShopClickIcon2 from '@/assets/common/24.png';
 import van from '@/assets/common/van.svg';
 
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { sumBy, uniqBy } from 'lodash';
+import { uniqBy } from 'lodash';
 import truck from '@/assets/common/truck.svg';
 import ShopsIcons from '@/assets/common/shops.png';
-import { log } from 'lodash-decorators/utils';
 
 const { Search } = Input;
+/**
+ * build简化Flex Div代码 +++
+ * @author ChenGuangLong
+ * @since 2024/5/16 11:03
+*/
+const bFlexDiv = (name,value) =>
+  <div style={{ flex: 1, fontWeight: 'bold' }}>
+    {name}:{value}
+  </div>
+/**
+ * build简化Col Div代码 +++
+ * @author ChenGuangLong
+ * @since 2024/5/17 9:18
+*/
+const bColDiv2 = (name, value, span = 4) =>
+  <Col span={span}>
+    <div>{name}</div>
+    <div>{value}</div>
+  </Col>
 
 //百度地图api变量
 // BMAP_DRAWING_MARKER    = "marker",     // 鼠标画点模式
@@ -65,6 +79,11 @@ export default class DispatchMap extends Component {
       cartonCount: 0, //整件数
       scatteredCount: 0, //散件数
       containerCount: 0, //周转箱
+      coldContainerCount: 0,      // 冷藏周转筐+++
+      freezeContainerCount: 0,    // 冷冻周转筐+++
+      insulatedContainerCount: 0, // 保温箱+++
+      insulatedBagCount: 0,       // 保温袋+++
+      freshContainerCount: 0,     // 鲜食筐+++
       volume: 0, //体积
       weight: 0, //重量,
       totalCount: 0, //总件数
@@ -91,6 +110,7 @@ export default class DispatchMap extends Component {
     checkScheduleOrders: [],
     bearweight: 0,
     volumet: 0,
+    multiVehicle: false,  // 是否多载具+++
   };
 
   colors = [
@@ -118,6 +138,18 @@ export default class DispatchMap extends Component {
 
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this);
+    this.initConfig();
+  };
+
+  /**
+   * 获取时捷配置中心配置，拿到改调度中心是否是多载具的+++
+   * @author ChenGuangLong
+   * @since 2024/5/17 14:57
+  */
+  initConfig = async () => {
+    const configResponse = await GetConfig('dispatch', loginOrg().uuid)
+    if (configResponse?.data?.[0]?.multiVehicle)
+      this.setState({ multiVehicle: configResponse?.data?.[0]?.multiVehicle === '1' })
   };
 
   keyDown = (event, ...args) => {
@@ -784,9 +816,14 @@ export default class DispatchMap extends Component {
 
   getAllTotals = orders => {
     let totals = {
-      cartonCount: 0, //整件数
-      scatteredCount: 0, //散件数
-      containerCount: 0, //周转箱
+      cartonCount: 0,     // 整件数
+      scatteredCount: 0,  // 散件数
+      containerCount: 0,  // 周转箱
+      coldContainerCount: 0,      // 冷藏周转筐+++
+      freezeContainerCount: 0,    // 冷冻周转筐+++
+      insulatedContainerCount: 0, // 保温箱+++
+      insulatedBagCount: 0,       // 保温袋+++
+      freshContainerCount: 0,     // 鲜食筐+++
       volume: 0, //体积
       weight: 0, //重量,
       totalCount: 0, //总件数
@@ -794,17 +831,31 @@ export default class DispatchMap extends Component {
     };
     let totalStores = [];
     orders.map(e => {
-      totals.cartonCount += e.cartonCount;
-      totals.scatteredCount += e.scatteredCount;
-      totals.containerCount += e.containerCount;
+      totals.cartonCount += e.cartonCount;          // 整件数
+      totals.scatteredCount += e.scatteredCount;    // 散件数
+      totals.containerCount += e.containerCount;    // 周转箱
+      totals.coldContainerCount += e.coldContainerCount;            // 冷藏周转筐+++
+      totals.freezeContainerCount += e.freezeContainerCount;        // 冷冻周转筐+++
+      totals.insulatedContainerCount += e.insulatedContainerCount;  // 保温箱+++
+      totals.insulatedBagCount += e.insulatedBagCount;              // 保温袋+++
+      totals.freshContainerCount += e.freshContainerCount;          // 鲜食筐+++
       totals.volume = this.accAdd(totals.volume, e.volume);
       totals.weight = this.accAdd(totals.weight, e.weight);
-      if (totalStores.indexOf(e.deliveryPoint.code) == -1) {
+      if (totalStores.indexOf(e.deliveryPoint.code) === -1) {
         totalStores.push(e.deliveryPoint.code);
       }
     });
     totals.stores = totalStores.length;
-    totals.totalCount = totals.cartonCount + totals.scatteredCount + totals.containerCount * 2;
+    // totals.totalCount = totals.cartonCount + totals.scatteredCount + totals.containerCount * 2;
+    // 总件数 = 整件+ 散件+（周转筐 + 冷藏）*2 + 冷冻*3 + 保温袋 + 鲜食筐
+    totals.totalCount =
+      totals.cartonCount +
+      totals.scatteredCount +
+      (totals.containerCount + totals.coldContainerCount) * 2 +
+      totals.freezeContainerCount * 3 +
+      totals.insulatedBagCount +
+      totals.freshContainerCount;
+
     return totals;
   };
 
@@ -815,9 +866,14 @@ export default class DispatchMap extends Component {
       e => selectOrderStoreCodes.indexOf(e.deliveryPoint?.code) != -1
     );
     let totals = {
-      cartonCount: 0, //整件数
-      scatteredCount: 0, //散件数
-      containerCount: 0, //周转箱
+      cartonCount: 0,     // 整件数
+      scatteredCount: 0,  // 散件数
+      containerCount: 0,  // 周转箱
+      coldContainerCount: 0,      // 冷藏周转筐+++
+      freezeContainerCount: 0,    // 冷冻周转筐+++
+      insulatedContainerCount: 0, // 保温箱+++
+      insulatedBagCount: 0,       // 保温袋+++
+      freshContainerCount: 0,     // 鲜食筐+++
       volume: 0, //体积
       weight: 0, //重量,
       totalCount: 0, //总件数
@@ -827,10 +883,23 @@ export default class DispatchMap extends Component {
       totals.cartonCount += e.cartonCount;
       totals.scatteredCount += e.scatteredCount;
       totals.containerCount += e.containerCount;
+      totals.coldContainerCount += e.coldContainerCount;            // 冷藏周转筐+++
+      totals.freezeContainerCount += e.freezeContainerCount;        // 冷冻周转筐+++
+      totals.insulatedContainerCount += e.insulatedContainerCount;  // 保温箱+++
+      totals.insulatedBagCount += e.insulatedBagCount;              // 保温袋+++
       totals.volume = this.accAdd(totals.volume, e.volume);
       totals.weight = this.accAdd(totals.weight, e.weight);
     });
-    totals.totalCount = totals.cartonCount + totals.scatteredCount + totals.containerCount * 2;
+    // totals.totalCount = totals.cartonCount + totals.scatteredCount + totals.containerCount * 2;
+    // 总件数 = 整件+ 散件+（周转筐 + 冷藏）*2 + 冷冻*3 + 保温袋 + 鲜食筐
+    totals.totalCount =
+      totals.cartonCount +
+      totals.scatteredCount +
+      (totals.containerCount + totals.coldContainerCount) * 2 +
+      totals.freezeContainerCount * 3 +
+      totals.insulatedBagCount +
+      totals.freshContainerCount;
+
     totals = { ...totals, bearweight, volumet };
     return totals;
   };
@@ -841,6 +910,11 @@ export default class DispatchMap extends Component {
       cartonCount: 0, //整件数
       scatteredCount: 0, //散件数
       containerCount: 0, //周转箱
+      coldContainerCount: 0,      // 冷藏周转筐+++
+      freezeContainerCount: 0,    // 冷冻周转筐+++
+      insulatedContainerCount: 0, // 保温箱+++
+      insulatedBagCount: 0,       // 保温袋+++
+      freshContainerCount: 0,     // 鲜食筐+++
       volume: 0, //体积
       weight: 0, //重量,
     };
@@ -852,6 +926,10 @@ export default class DispatchMap extends Component {
       totals.cartonCount += e.cartonCount;
       totals.scatteredCount += e.scatteredCount;
       totals.containerCount += e.containerCount;
+      totals.coldContainerCount += e.coldContainerCount;            // 冷藏周转筐+++
+      totals.freezeContainerCount += e.freezeContainerCount;        // 冷冻周转筐+++
+      totals.insulatedContainerCount += e.insulatedContainerCount;  // 保温箱+++
+      totals.insulatedBagCount += e.insulatedBagCount;              // 保温袋+++
       totals.volume = this.accAdd(totals.volume, e.volume);
       totals.weight = this.accAdd(totals.weight, e.weight);
     });
@@ -1013,6 +1091,7 @@ export default class DispatchMap extends Component {
       closeLeft,
       checkScheduleOrders,
       checkSchedules,
+      multiVehicle, // 是否多载具+++
     } = this.state;
     const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
@@ -1055,51 +1134,30 @@ export default class DispatchMap extends Component {
             <Divider style={{ margin: 0, marginTop: 5 }} />
             <Row>
               <div style={{ display: 'flex', marginTop: 5 }}>
-                <div style={{ flex: 1, fontWeight: 'bold' }}>
-                  总件数:
-                  {totals.totalCount}
-                </div>
-                <div style={{ flex: 1, fontWeight: 'bold' }}>
-                  整件数:
-                  {totals.cartonCount}
-                </div>
-                <div style={{ flex: 1, fontWeight: 'bold' }}>
-                  散件数:
-                  {totals.scatteredCount}
-                </div>
-                <div style={{ flex: 1, fontWeight: 'bold' }}>
-                  周转箱:
-                  {totals.containerCount}
-                </div>
-                <div style={{ flex: 1, fontWeight: 'bold' }}>
-                  体积:
-                  {totals.volume}
-                </div>
-                <div style={{ flex: 1, fontWeight: 'bold' }}>
-                  重量:
-                  {/* {totals.weight} */}
-                  {(totals.weight / 1000).toFixed(3)}
-                </div>
-                <div style={{ flex: 1, fontWeight: 'bold' }}>
-                  车辆承重(T):
-                  {/* {totals.weight} */}
-                  {(totals?.bearweight / 1000).toFixed(3)}
-                </div>
-                <div style={{ flex: 1, fontWeight: 'bold' }}>
-                  车辆体积(m3):
-                  {/* {totals.weight} */}
-                  {(totals?.volumet / 1000000).toFixed(3)}
-                </div>
-                <div style={{ flex: 1, fontWeight: 'bold' }}>
-                  门店:
-                  {totals.stores}
-                </div>
+                {bFlexDiv('总件数',totals.totalCount)}
+                {bFlexDiv('整件数',totals.cartonCount)}
+                {bFlexDiv('散件数',totals.scatteredCount)}
+                {bFlexDiv('周转箱',totals.containerCount)}
+                {bFlexDiv('体积',totals.volume)}
+                {bFlexDiv('重量',(totals.weight / 1000).toFixed(3))}
+                {bFlexDiv('车辆承重(T)',(totals?.bearweight / 1000).toFixed(3))}
+                {bFlexDiv('车辆体积(m3)',(totals?.volumet / 1000000).toFixed(3))}
+                {bFlexDiv('门店',totals.stores)}
               </div>
+              {multiVehicle &&  // 多载具+++
+                <div style={{ display: 'flex', marginTop: 5 }}>
+                  {bFlexDiv('冷藏周转筐',totals.coldContainerCount)}
+                  {bFlexDiv('冷冻周转筐',totals.freezeContainerCount)}
+                  {bFlexDiv('保温袋',totals.insulatedBagCount)}
+                  {bFlexDiv('鲜食筐',totals.freshContainerCount)}
+                  {/* 为了美观而占位 */<div style={{ flex: 5 }} />}
+                </div>
+              }
             </Row>
           </div>
         }
         closable={false}
-        destroyOnClose={true}
+        destroyOnClose
       >
         <Spin
           indicator={LoadingIcon('default')}
@@ -1107,7 +1165,8 @@ export default class DispatchMap extends Component {
           tip="加载中..."
           wrapperClassName={style.loading}
         >
-          <Row type="flex" style={{ height: window.innerHeight - 145 }}>
+          {/* 是否多载具高度不同+++ */}
+          <Row type="flex" style={{ height: window.innerHeight - (multiVehicle ? 185 : 145) }}>
             <Col
               span={closeLeft ? 0 : 6}
               style={{ height: '100%', background: '#fff', overflow: 'auto' }}
@@ -1162,27 +1221,23 @@ export default class DispatchMap extends Component {
                           </div>
                         </div>
                         <Divider style={{ margin: 0, marginTop: 5 }} />
-                        <div style={{ display: 'flex', marginTop: 5 }}>
-                          <div style={{ flex: 1 }}>整件数</div>
-                          <div style={{ flex: 1 }}>散件数</div>
-                          <div style={{ flex: 1 }}>周转箱</div>
-                          <div style={{ flex: 1 }}>体积</div>
-                          <div style={{ flex: 1 }}>重量</div>
-                        </div>
-                        {/* <div style={{ display: 'flex' }}>
-                          <div style={{ flex: 1 }}>{order.cartonCount}</div>
-                          <div style={{ flex: 1 }}>{order.scatteredCount}</div>
-                          <div style={{ flex: 1 }}>{order.containerCount}</div>
-                          <div style={{ flex: 1 }}>{order.volume}</div>
-                          <div style={{ flex: 1 }}>{(order.weight / 1000).toFixed(3)}</div>
-                        </div> */}
-                        <div style={{ display: 'flex' }}>
-                          <div style={{ flex: 1 }}>{totals.cartonCount}</div>
-                          <div style={{ flex: 1 }}>{totals.scatteredCount}</div>
-                          <div style={{ flex: 1 }}>{totals.containerCount}</div>
-                          <div style={{ flex: 1 }}>{totals.volume}</div>
-                          <div style={{ flex: 1 }}>{(totals.weight / 1000).toFixed(3)}</div>
-                        </div>
+
+
+                        <Row type="flex" justify="space-around" style={{ textAlign: 'center' }}>
+                          {bColDiv2('整件数', totals.cartonCount, 4)}
+                          {bColDiv2('散件数', totals.scatteredCount, 4)}
+                          {bColDiv2('周转箱', totals.containerCount, 4)}
+                          {bColDiv2('体积', totals.volume, 4)}
+                          {bColDiv2('重量', (totals.weight / 1000).toFixed(3), 4)}
+                          {multiVehicle &&  // 多载具+++
+                            <>
+                              {bColDiv2('冷藏周转筐', totals.coldContainerCount, 5)}
+                              {bColDiv2('冷冻周转筐', totals.freezeContainerCount, 5)}
+                              {bColDiv2('保温袋', totals.insulatedBagCount, 5)}
+                              {bColDiv2('鲜食筐', totals.freshContainerCount, 5)}
+                            </>
+                          }
+                        </Row>
                       </div>
                     );
                   })}
@@ -1316,9 +1371,17 @@ export default class DispatchMap extends Component {
                     ref={ref => (this.drawingManagerRef = ref)}
                   />
 
-                  {windowInfo ? (
+                  {windowInfo ? (   // 地图上在鼠标在美宜佳坐标时显示的窗口
                     <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
-                      <div style={{ width: 280, height: 150, padding: 5, background: '#FFF' }}>
+                      <div
+                        style={{ /* width: 280, height: 150, */
+                          minWidth: 300,
+                          padding: 5,
+                          background: '#FFF',
+                          borderRadius: 5,
+                          boxShadow: '0 0 5px rgba(0, 0, 0, 0.2)',
+                        }}
+                      >
                         <div
                           style={{ fontWeight: 'bold', overflow: 'hidden', whiteSpace: 'nowrap' }}
                         >
@@ -1344,29 +1407,21 @@ export default class DispatchMap extends Component {
                           {windowInfo.order?.deliveryPoint?.address}
                         </div>
                         <Divider style={{ margin: 0, marginTop: 5 }} />
-                        <div style={{ display: 'flex', marginTop: 5 }}>
-                          <div style={{ flex: 1 }}>整件数</div>
-                          <div style={{ flex: 1 }}>散件数</div>
-                          <div style={{ flex: 1 }}>周转箱</div>
-                          <div style={{ flex: 1 }}>体积</div>
-                          <div style={{ flex: 1 }}>重量</div>
-                        </div>
-                        <div style={{ display: 'flex' }}>
-                          {/* <div style={{ flex: 1 }}>{windowInfo.order.cartonCount}</div>
-                          <div style={{ flex: 1 }}>{windowInfo.order.scatteredCount}</div>
-                          <div style={{ flex: 1 }}>{windowInfo.order.containerCount}</div>
-                          <div style={{ flex: 1 }}>{windowInfo.order.volume}</div>
-                          <div style={{ flex: 1 }}>
-                            {(windowInfo.order.weight / 1000).toFixed(3)}
-                          </div> */}
-                          <div style={{ flex: 1 }}>{windowsInfoTotals.cartonCount}</div>
-                          <div style={{ flex: 1 }}>{windowsInfoTotals.scatteredCount}</div>
-                          <div style={{ flex: 1 }}>{windowsInfoTotals.containerCount}</div>
-                          <div style={{ flex: 1 }}>{windowsInfoTotals.volume}</div>
-                          <div style={{ flex: 1 }}>
-                            {(windowsInfoTotals.weight / 1000).toFixed(3)}
-                          </div>
-                        </div>
+                        <Row type="flex" justify="space-around" style={{ textAlign: 'center' }}>
+                          {bColDiv2('整件数', windowsInfoTotals.cartonCount, 4)}
+                          {bColDiv2('散件数', windowsInfoTotals.scatteredCount, 4)}
+                          {bColDiv2('周转箱', windowsInfoTotals.containerCount, 4)}
+                          {bColDiv2('体积', windowsInfoTotals.volume, 4)}
+                          {bColDiv2('重量', (windowsInfoTotals.weight / 1000).toFixed(3), 4)}
+                          {multiVehicle &&  // 多载具+++
+                            <>
+                              {bColDiv2('冷藏周转筐', windowsInfoTotals.coldContainerCount, 5)}
+                              {bColDiv2('冷冻周转筐', windowsInfoTotals.freezeContainerCount, 5)}
+                              {bColDiv2('保温袋', windowsInfoTotals.insulatedBagCount, 5)}
+                              {bColDiv2('鲜食筐', windowsInfoTotals.freshContainerCount, 5)}
+                            </>
+                          }
+                        </Row>
                       </div>
                     </CustomOverlay>
                   ) : (
@@ -1389,36 +1444,22 @@ export default class DispatchMap extends Component {
           <Divider style={{ margin: 0, marginTop: 5 }} />
           <Row width="100%">
             <div style={{ display: 'flex', marginTop: 5, fontSize: '14px' }}>
-              <div style={{ flex: 1, fontWeight: 'bold' }}>
-                总件数:
-                {allTotals.totalCount}
-              </div>
-              <div style={{ flex: 1, fontWeight: 'bold' }}>
-                总整件数:
-                {allTotals.cartonCount}
-              </div>
-              <div style={{ flex: 1, fontWeight: 'bold' }}>
-                总散件数:
-                {allTotals.scatteredCount}
-              </div>
-              <div style={{ flex: 1, fontWeight: 'bold' }}>
-                总周转箱:
-                {allTotals.containerCount}
-              </div>
-              <div style={{ flex: 1, fontWeight: 'bold' }}>
-                总体积:
-                {allTotals.volume}
-              </div>
-              <div style={{ flex: 1, fontWeight: 'bold' }}>
-                总重量:
-                {/* {totals.weight} */}
-                {(allTotals.weight / 1000).toFixed(3)}
-              </div>
-              <div style={{ flex: 1, fontWeight: 'bold' }}>
-                总门店数:
-                {/* {totals.weight} */}
-                {allTotals.stores}
-              </div>
+              {bFlexDiv('总件数', allTotals.totalCount)}
+              {bFlexDiv('总整件数', allTotals.cartonCount)}
+              {bFlexDiv('总散件数', allTotals.scatteredCount)}
+              {bFlexDiv('总周转箱', allTotals.containerCount)}
+              {multiVehicle &&  // 多载具+++
+                <>
+                  {bFlexDiv('总冷藏周转筐', allTotals.coldContainerCount)}
+                  {bFlexDiv('总冷冻周转筐', allTotals.freezeContainerCount)}
+                  {bFlexDiv('总保温袋', allTotals.insulatedBagCount)}
+                  {bFlexDiv('总鲜食筐', allTotals.freshContainerCount)}
+                </>
+              }
+              {bFlexDiv('总体积', allTotals.volume)}
+              {bFlexDiv('总重量', (allTotals.weight / 1000).toFixed(3))}
+              {bFlexDiv('总门店数', allTotals.stores)}
+
             </div>
           </Row>
         </Spin>
