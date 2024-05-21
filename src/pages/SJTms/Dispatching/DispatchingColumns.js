@@ -220,7 +220,7 @@ export const OrderCollectColumns = [
   },
   {
     title: '保温袋',
-    dataIndex: 'insulatedBag',
+    dataIndex: 'insulatedBagCount',
     sorter: true,
     width: 60,
     render: val => (val != undefined ? <span>{val}</span> : <Empty />),
@@ -319,7 +319,7 @@ export const OrderDetailColumns = [
   },
   {
     title: '保温袋',
-    dataIndex: 'insulatedBag',
+    dataIndex: 'insulatedBagCount',
     sorter: true,
     width: 60,
     render: val => (val != undefined ? <span>{val}</span> : <Empty />),
@@ -658,7 +658,7 @@ export const ScheduleColumns = [
   },
   {
     title: '保温袋',
-    dataIndex: 'INSULATEDBAG',
+    dataIndex: 'INSULATEDBAGCOUNT',
     sorter: true,
     width: 100,
     render: val => (val != undefined ? <span>{val}</span> : <Empty />),

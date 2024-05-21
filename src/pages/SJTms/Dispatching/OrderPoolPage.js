@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-05-21 09:22:00
+ * @LastEditTime: 2024-05-21 15:43:09
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -232,7 +232,7 @@ export default class OrderPoolPage extends Component {
         freezeContainerCount: Math.round(sumBy(orders, 'freezeContainerCount') * 1000) / 1000,
         coldContainerCount: Math.round(sumBy(orders, 'coldContainerCount') * 1000) / 1000,
         freshContainerCount: Math.round(sumBy(orders, 'freshContainerCount') * 1000) / 1000,
-        insulatedBag: Math.round(sumBy(orders, 'insulatedbagcount') * 1000) / 1000,
+        insulatedBagCount: Math.round(sumBy(orders, 'insulatedBagCount') * 1000) / 1000,
 
         volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
         weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
