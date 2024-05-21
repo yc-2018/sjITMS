@@ -174,28 +174,29 @@ export function getMatchLine(payload) {
   });
 }
 export function updateNote(payload) {
-  return request(`/itms-schedule/itms-schedule/lineShipAddress/updateNote/${payload.uuid}/${payload.note}`, {
-    method: 'get'
-   
-  });
+  return request(
+    `/itms-schedule/itms-schedule/lineShipAddress/updateNote/${payload.uuid}/${payload.note}`,
+    {
+      method: 'get',
+    }
+  );
 }
 export function updateIsNewStore(payload) {
   return request(`/itms-schedule/itms-schedule/lineShipAddress/updateIsNewStore/${payload.flag}`, {
     method: 'POST',
-    body:payload.uuids
-   
+    body: payload.uuids,
   });
-}updateIsNewStore
+}
+updateIsNewStore;
 export function YDSiparea(payload) {
   return request(`/itms-schedule/itms-schedule/LineSystem/YDSiparea/${payload.systemUUID}`, {
-    method: 'POST'
-   
+    method: 'POST',
   });
 }
 
 export function exportLineSystem(payload) {
   return request(`/itms-schedule/itms-schedule/LineSystem/export/${payload.systemUUID}`, {
-    method: 'POST'
+    method: 'POST',
   });
 }
 export async function checkShipArea(payload) {
@@ -203,9 +204,16 @@ export async function checkShipArea(payload) {
     method: 'POST',
     body: payload.addressIds,
   });
-};
+}
 export async function updateLineOrder(payload) {
   return request(`/itms-schedule/itms-schedule/lineShipAddress/updateLineOrder`, {
+    method: 'POST',
+    body: payload,
+  });
+}
+
+export async function sortDateSourceTree(payload) {
+  return request(`/itms-schedule/itms-schedule/LineSystem/sortDateSourceTree`, {
     method: 'POST',
     body: payload,
   });
