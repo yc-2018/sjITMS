@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-03-30 16:34:02
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-05-15 09:20:42
+ * @LastEditTime: 2024-05-21 09:22:00
  * @Description: 订单池面板
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\OrderPoolPage.js
  */
@@ -721,7 +721,10 @@ export default class OrderPoolPage extends Component {
     const count =
       Number(orders.realCartonCount) +
       Number(orders.realScatteredCount) +
-      Number(orders.realContainerCount) * 2;
+      (Number(orders.realContainerCount) + Number(orders.realColdContainerCount)) * 2 +
+      Number(orders.realFreezeContainerCount) * 3 +
+      Number(orders.realInsulatedBagCount) +
+      Number(orders.realFreshContainerCount);
     const vehicleCount = Math.ceil(count / dispatchConfig.calvehicle);
     const vehicleCount1 = Math.ceil(orders.weight / (dispatchConfig.calvehicle1 / 1000));
     return (
