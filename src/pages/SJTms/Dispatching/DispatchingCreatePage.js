@@ -152,7 +152,6 @@ export default class DispatchingCreatePage extends Component {
 
   //初始化数据
   initData = async (isEdit, record, orders) => {
-    console.log('orders', orders);
     let { vehicles, employees, carrieruuids } = this.state;
     // 查询字典
     queryDictByCode(['vehicleOwner', 'employeeType', 'relation']).then(
@@ -207,6 +206,15 @@ export default class DispatchingCreatePage extends Component {
                   stillCartonCount: item.realCartonCount || item.cartonCount,
                   stillScatteredCount: item.realScatteredCount || item.scatteredCount,
                   stillContainerCount: item.realContainerCount || item.containerCount,
+
+                  stillColdContainerCount: item.realColdContainerCount || item.coldContainerCount,
+                  stillFreezeContainerCount:
+                    item.realFreezeContainerCount || item.freezeContainerCount,
+                  stillInsulatedBagCount: item.realInsulatedBagCount || item.insulatedBagCount,
+                  stillInsulatedContainerCount:
+                    item.realInsulatedContainerCount || item.insulatedContainerCount,
+                  stillFreshContainerCount:
+                    item.realFreshContainerCount || item.freshContainerCount,
                 };
               })
             : [];
@@ -222,6 +230,13 @@ export default class DispatchingCreatePage extends Component {
                 stillCartonCount: item.realCartonCount || item.cartonCount,
                 stillScatteredCount: item.realScatteredCount || item.scatteredCount,
                 stillContainerCount: item.realContainerCount || item.containerCount,
+                stillColdContainerCount: item.realColdContainerCount || item.coldContainerCount,
+                stillFreezeContainerCount:
+                  item.realFreezeContainerCount || item.freezeContainerCount,
+                stillInsulatedBagCount: item.realInsulatedBagCount || item.insulatedBagCount,
+                stillInsulatedContainerCount:
+                  item.realInsulatedContainerCount || item.insulatedContainerCount,
+                stillFreshContainerCount: item.realFreshContainerCount || item.freshContainerCount,
               };
             })
             .concat(newDetails);

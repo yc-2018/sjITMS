@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-05-12 16:10:30
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-04-04 16:36:19
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2024-05-22 10:56:17
  * @Description: 待定订单
  * @FilePath: \iwms-web\src\pages\SJTms\Dispatching\ScheduleDetailPage.js
  */
@@ -85,6 +85,17 @@ export default class ScheduleDetailPage extends Component {
         realScatteredCount: Math.round(sumBy(orders, 'realScatteredCount') * 1000) / 1000,
         containerCount: Math.round(sumBy(orders, 'containerCount') * 1000) / 1000,
         realContainerCount: Math.round(sumBy(orders, 'realContainerCount') * 1000) / 1000,
+        
+        coldContainerCount: Math.round(sumBy(orders, 'coldContainerCount') * 1000) / 1000,
+        realColdContainerCount: Math.round(sumBy(orders, 'realColdContainerCount') * 1000) / 1000,
+        freezeContainerCount: Math.round(sumBy(orders, 'freezeContainerCount') * 1000) / 1000,
+        realFreezeContainerCount: Math.round(sumBy(orders, 'realFreezeContainerCount') * 1000) / 1000,
+        freshContainerCount: Math.round(sumBy(orders, 'freshContainerCount') * 1000) / 1000,
+        realFreshContainerCount: Math.round(sumBy(orders, 'realFreshContainerCount') * 1000) / 1000,
+        insulatedBagCount: Math.round(sumBy(orders, 'insulatedBagCount') * 1000) / 1000,
+        realInsulatedBagCount: Math.round(sumBy(orders, 'realInsulatedBagCount') * 1000) / 1000,
+        
+
         volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
         weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
         warning: orders.findIndex(x => x.isSplit) >= 0,

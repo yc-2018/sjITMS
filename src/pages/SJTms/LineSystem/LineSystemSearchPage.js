@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-03-09 10:31:16
- * @LastEditors: guankongjin
- * @LastEditTime: 2022-06-28 16:16:01
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2024-05-21 12:25:54
  * @Description: file content
  * @FilePath: \iwms-web\src\pages\SJTms\LineSystem\LineSystemSearchPage.js
  */
@@ -25,9 +25,6 @@ import {
   Divider,
 } from 'antd';
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
-import LineShipAddress from './LineShipAddress';
-import LineSystemCreatePage from './LineSystemCreatePage';
-import LineMap from './LineMap';
 import configs from '@/utils/config';
 import { dynamicqueryById, dynamicDelete, dynamicQuery } from '@/services/quick/Quick';
 import { loginKey, loginCompany, loginOrg } from '@/utils/LoginContext';
@@ -39,21 +36,19 @@ import {
   isEnable,
   updateState,
   findLineSystemTreeByStoreCode,
+  sortDateSourceTree,
 } from '@/services/sjtms/LineSystemHis';
 import linesStyles from './LineSystem.less';
 import { SimpleAutoComplete } from '@/pages/Component/RapidDevelopment/CommonComponent';
-import Select from '@/components/ExcelImport/Select';
 import request from '@/utils/request';
 import ExportJsonExcel from 'js-export-excel';
 import { LineSystemAddPage } from './LineSystemAddPage';
 import LineShipAddressSearchPage from './LineShipAddressSearchPage';
+import { getConfigDataByParams } from '@/services/sjconfigcenter/ConfigCenter';
 const { Content, Sider } = Layout;
 const { TreeNode } = Tree;
-const { TabPane } = Tabs;
 import { havePermission } from '@/utils/authority';
-import { throttleSetter } from 'lodash-decorators';
 import { getDispatchConfig } from '@/services/sjtms/DispatcherConfig';
-import imTemplate from '@/models/account/imTemplate';
 @connect(({ lineSystem, loading }) => ({
   lineSystem,
   loading: loading.models.lineSystem,
@@ -77,9 +72,18 @@ export default class LineSystemSearchPage extends Component {
       uploading: false,
       authority: props.authority,
       treeuuid: 'treeuuid',
+      draggable: false,
     };
   }
   async componentDidMount() {
+    //获取配置
+    const config = await getConfigDataByParams('XLTX', loginOrg().uuid, 'draggable');
+    if (config.success && config.data) {
+      if (config.data[0].draggable == 1) {
+        this.setState({ draggable: true });
+      }
+    }
+
     this.queryLineSystem();
     const response = await getDispatchConfig(loginOrg().uuid);
     if (response.success) {
@@ -398,7 +402,7 @@ export default class LineSystemSearchPage extends Component {
     );
   };
   drawLeftBotton() {
-    const { expandKeys, selectLineUuid } = this.state;
+    const { selectLineUuid, draggable } = this.state;
     var lineTreeData = JSON.parse(JSON.stringify(this.state.lineTreeData));
     // const formItemLayout = {
     //   labelCol: 8,
@@ -462,9 +466,11 @@ export default class LineSystemSearchPage extends Component {
               showLine={true}
               showIcon={true}
               selectable
+              draggable={draggable}
               // expandedKeys={expandKeys}
               selectedKeys={[selectLineUuid]}
               onSelect={this.onSelect}
+              onDrop={this.onDrop}
               // onExpand={this.onExpand}
               key={this.state.treeuuid}
               defaultExpandAll
@@ -476,6 +482,28 @@ export default class LineSystemSearchPage extends Component {
       </div>
     );
   }
+
+  onDrop = async info => {
+    const dropKey = info.node.props.eventKey;
+    const dragKey = info.dragNode.props.eventKey;
+    const dropToGap = info.dropToGap;
+    const dropPos = info.node.props.pos.split('-');
+    const dropPosition = info.dropPosition - Number(dropPos[dropPos.length - 1]);
+    const payload = {
+      dropKey: dropKey,
+      dragKey: dragKey,
+      dropToGap: dropToGap,
+      dropPosition: dropPosition,
+    };
+
+    const response = await sortDateSourceTree(payload);
+    if (response && response.success) {
+      this.queryLineSystem();
+    } else {
+      message.error('拖拽失败！');
+    }
+  };
+
   drawLeftTop() {
     return (
       <div className={linesStyles.navigatorPanelWrapper}>
@@ -525,7 +553,7 @@ export default class LineSystemSearchPage extends Component {
         sheetData: [],
         sheetName: '线路', //工作表的名字
         sheetFilter: [],
-        sheetHeader: ['门店号', '班组', '门店名称', '调整后线路','货主代码','备注'],
+        sheetHeader: ['门店号', '班组', '门店名称', '调整后线路', '货主代码', '备注'],
       },
     ];
     var toExcel = new ExportJsonExcel(option);
