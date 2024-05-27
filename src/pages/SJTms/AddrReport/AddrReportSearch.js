@@ -48,7 +48,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
           // 请求门店图片
           getStoreImgList(item.UUID).then(res => {
             this.setState({
-              storeImages: res?.data?.map(i => `http://127.0.0.1:8081/itms-schedule/itms-schedule/addressReport/preview?fileName=${i.imgUrl}`) ?? []
+              storeImages: res?.data?.map(i => `http://172.29.30.103:9000/test/${i.imgUrl}`) ?? []
             })
           })
 
@@ -61,10 +61,8 @@ export default class AddrReportSearch extends QuickFormSearchPage {
           style={{ top: 0 }}
           title="门店经纬度 地图审核"
           visible={MapVisible}
-          // onOk={this.handleOk}
           width={'100%'}
           onCancel={() => this.setState({ MapVisible: false })}
-          okText={'审核'}
           footer={
             <>
               <Popconfirm title="确认通过审核？" onConfirm={()=>this.handleAudit('通过')}>
@@ -82,7 +80,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
         >
           <Row>
             {/* ------———-----———————————左边地图———————————————--------- */}
-            <Col span={20}>
+            <Col span={19}>
               <div style={{fontWeight:'bold',textAlign:'center',marginBottom:20}}>
                 <span style={{marginRight:20}}>派车单: {item.BILLNUMBER}</span>
                 <span style={{marginRight:20}}>司机: {item.CARRIERCODENAME}</span>
@@ -100,7 +98,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
                 enableTilt={false}                          // 是否开启地图倾斜功能
                 enableRotate={false}                        // 是否开启地图旋转功能
                 enableScrollWheelZoom                       // 是否开启鼠标滚轮缩放
-                style={{ height: '73vh' }}                  // 地图容器父元素的style样式
+                style={{ height: '78vh' }}                  // 地图容器父元素的style样式
                 mapStyleV2={{ styleJson: eval(mapStyle) }}  // 个性化地图样式
               >
                 {isOneItem &&
@@ -113,11 +111,11 @@ export default class AddrReportSearch extends QuickFormSearchPage {
             </Col>
 
             {/* ------———-----———————————右边图片———————————————--------- */}
-            <Col span={4}>
+            <Col span={5}>
               <div style={{fontWeight:'bold',textAlign:'center',marginBottom:20}}>
                 司机上传的门店图片
               </div>
-              <div style={{height:'76vh',overflow:'auto'}}>
+              <div style={{height:'81vh',overflow:'auto'}}>
                 {storeImages.length === 0 ? <Empty/> : <MyImg images={storeImages}/>}
               </div>
             </Col>
@@ -142,7 +140,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
       case "通过":
         const successReps = await audit(item.UUID)
         if (successReps.success) {
-          this.onSearch()
+          this.onSearch()   // 刷新列表数据
           message.success('审核成功')
           return this.setState({ MapVisible: false })
         }else return message.error(successReps.message)
@@ -150,7 +148,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
       case "作废":
         const voidedReps = await voided(item.UUID)
         if (voidedReps.success) {
-          this.onSearch()
+          this.onSearch()   // 刷新列表数据
           message.success('作废成功')
           return this.setState({ MapVisible: false })
         } else return message.error(voidedReps.message)
