@@ -2,7 +2,7 @@
  * @Author: Liaorongchang
  * @Date: 2022-03-10 11:29:17
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2023-03-28 15:48:34
+ * @LastEditTime: 2024-05-27 16:19:25
  * @version: 1.0
  */
 import React from 'react';
@@ -397,6 +397,14 @@ export default class OrderSearch extends QuickFormSearchPage {
       e.component = (
         <div style={{ backgroundColor: color, textAlign: 'center', color: textColor }}>{e.val}</div>
         // <div style={{ border: '1px solid ' + color, textAlign: 'center' }}>{e.val}</div>
+      );
+    }
+
+    if (e.column.fieldName == 'REVIEWED') {
+      let color = this.colorChange(e.record.REVIEWED, e.column.textColorJson);
+      let textColor = color ? this.hexToRgb(color) : 'black';
+      e.component = (
+        <div style={{ backgroundColor: color, textAlign: 'center', color: textColor }}>{e.val}</div>
       );
     }
   };
