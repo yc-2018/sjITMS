@@ -5,8 +5,9 @@ import 'antd/dist/antd.css'
 /**
  * 图片列表展示+预览组件
  * @param props 参数：
- * ------images:    【必填】图片URL数组
- * ------className: 【可选】列表图片样式class
+ * ------images:      【必填】图片URL数组
+ * ------className:   【可选】列表图片样式class
+ * ------imgListStyle 【可选】列表的图片样式
  * 注意：不传图片URL列表或传参为空，直接报错，请使用组件前用 三元表达式 判断是后使用该组件
  * @author ChenGuangLong
  * @since 2024/5/24 8:36
@@ -149,7 +150,7 @@ class MyImg extends Component {
 
   render () {
     const { isDragging, isFullscreen, currentIndex, zoom, offsetX, offsetY } = this.state
-    const { images, className } = this.props
+    const { images, className, imgListStyle } = this.props
 
     return (
       <div>
@@ -162,7 +163,7 @@ class MyImg extends Component {
                 loading="lazy"
                 alt={`img-${index}`}
                 onClick={() => this.showFullscreen(index)}
-                style={{ width: '200px', height: '150px', cursor: 'pointer' }}
+                style={{ width: '100%', cursor: 'pointer', ...imgListStyle ?? {} }}
               />
             </div>
           ))}
