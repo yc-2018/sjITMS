@@ -1,6 +1,5 @@
 import React, { Component } from 'react'
 import { Button } from 'antd'
-import 'antd/dist/antd.css'
 
 /**
  * 图片列表展示+预览组件
