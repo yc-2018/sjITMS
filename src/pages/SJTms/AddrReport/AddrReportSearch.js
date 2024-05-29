@@ -7,6 +7,7 @@ import MyImg from '@/components/MyImg'
 import ShopIcon from '@/assets/common/22.png';
 import  styles from './AddrReportSearch.less'
 import { audit, getStoreImgList, voided } from '@/services/sjitms/AddressReport'
+import configs from '@/utils/config'
 
 /**
  * 搜索列表界面
@@ -48,7 +49,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
           // 请求门店图片
           getStoreImgList(item.UUID).then(res => {
             this.setState({
-              storeImages: res?.data?.map(i => `http://172.29.30.103:9000/test/${i.imgUrl}`) ?? []
+              storeImages: res?.data?.map(i => `${configs[API_ENV].API_SERVER}/itms-schedule/itms-schedule/addressReport/seeImg/${i.imgUrl}`) ?? []
             })
           })
 
@@ -82,7 +83,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
             {/* ------———-----———————————左边地图———————————————--------- */}
             <Col span={19}>
               <div style={{fontWeight:'bold',textAlign:'center',marginBottom:20}}>
-                <span style={{marginRight:20}}>派车单: {item.BILLNUMBER}</span>
+                <span style={{marginRight:20}}>排车单: {item.BILLNUMBER}</span>
                 <span style={{marginRight:20}}>司机: {item.CARRIERCODENAME}</span>
                 <span style={{marginRight:20}}>送货点: {item.DELIVERYPOINTCODENAME}</span>
                 <span style={{marginRight:20}}>送货点位置: {item.DELIVERYPOINTADDRESS}</span>
@@ -158,15 +159,10 @@ export default class AddrReportSearch extends QuickFormSearchPage {
     }
   }
 
-
 }
 
 
-
-
-
-
-
+/** 地图样式 */
 const mapStyle=[
   {
     // 地图背景
