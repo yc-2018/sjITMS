@@ -82,11 +82,15 @@ export default class AddrReportSearch extends QuickFormSearchPage {
           <Row>
             {/* ------———-----———————————左边地图———————————————--------- */}
             <Col span={19}>
-              <div style={{fontWeight:'bold',textAlign:'center',marginBottom:20}}>
-                <span style={{marginRight:20}}>排车单: {item.BILLNUMBER}</span>
-                <span style={{marginRight:20}}>司机: {item.CARRIERCODENAME}</span>
-                <span style={{marginRight:20}}>送货点: {item.DELIVERYPOINTCODENAME}</span>
-                <span style={{marginRight:20}}>送货点位置: {item.DELIVERYPOINTADDRESS}</span>
+              <div style={{ fontWeight: 'bold', textAlign: 'center', marginBottom: 5 }}>
+                <span style={{ marginRight: 40 }}>排车单: {item.BILLNUMBER}</span>
+                <span style={{ marginRight: 40 }}>司机: {item.CARRIERCODENAME}</span>
+                <span style={{ marginRight: 40 }}>送货点: {item.DELIVERYPOINTCODENAME}</span>
+              </div>
+              <div style={{ fontWeight: 'bold', textAlign: 'center', marginBottom: 10 }}>
+                <span style={{ marginRight: 40 }}>送货点位置: {item.DELIVERYPOINTADDRESS}</span>
+                <span style={{ marginRight: 40 }}>经度: {item.LONGITUDE}</span>
+                <span style={{ marginRight: 40 }}>纬度: {item.LATITUDE}</span>
               </div>
               <Map
                 center={                                    // 中心点坐标
