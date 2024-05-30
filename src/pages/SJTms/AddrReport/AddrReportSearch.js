@@ -99,7 +99,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
                     : new BMapGL.Point(113.809388, 23.067107)
                 }
                 zoom={19}
-                tilt={30}                                   // 地图倾斜角度
+                // tilt={30}                                // 地图倾斜角度
                 enableTilt={false}                          // 是否开启地图倾斜功能
                 enableRotate={false}                        // 是否开启地图旋转功能
                 enableScrollWheelZoom                       // 是否开启鼠标滚轮缩放
