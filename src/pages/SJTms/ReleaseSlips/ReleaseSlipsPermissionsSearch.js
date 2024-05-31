@@ -4,6 +4,7 @@ import { connect } from 'dva'
 import React from 'react'
 import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCreatePageModal'
 import { dynamicDelete } from '@/services/quick/Quick'
+import { loginCompany, loginOrg } from '@/utils/LoginContext'
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -16,12 +17,19 @@ export default class ReleaseSlipsPermissionsSearch extends QuickFormSearchPage {
   }
 
 /**
- * 查询数据(重写为了把每页改成99条数据）
+ * 查询数据(重写为了把每页改成99条数据 和 分调度中心）
  * @author ChenGuangLong
  * @since 2024/5/31 14:16
 */
   getData = pageFilters => {
-    pageFilters.pageSize = 99
+    pageFilters.pageSize = 99     // 一页
+    pageFilters.superQuery.queryParams[0]= {
+      field: "dispatchcenterUuid",
+      type: "VarChar",
+      rule: "eq",
+      val: loginOrg().uuid        // 分调度中心
+    }
+
     const { dispatch } = this.props;
     dispatch({
       type: 'quick/queryData',
