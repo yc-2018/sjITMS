@@ -34,23 +34,35 @@ class HeaderView extends PureComponent {
     return null;
   }
 
+  //监测到切换组织时，关闭所有页签
+  orgChange = event => {
+    if (event.key === window.location.hostname + '-org') {
+      this.props.fetchReportMenu();
+      // this.props.refreshNotice();
+      this.props.clearTabPanes();
+      // window.location.reload();
+    }
+  };
+  //增加切换组织监听
   componentDidMount() {
     document.addEventListener('scroll', this.handScroll, { passive: true });
+    window.addEventListener('storage', this.orgChange);
     this.checkPassword();
   }
 
   componentWillUnmount() {
     document.removeEventListener('scroll', this.handScroll);
+    window.removeEventListener('storage', this.orgChange);
   }
 
   /**
    * 设置确认loading状态
    */
-  setConfirmLoading = (loading) => {
+  setConfirmLoading = loading => {
     this.setState({
       confirmLoading: loading,
-    })
-  }
+    });
+  };
   getHeadWidth = () => {
     const { isMobile, collapsed, setting } = this.props;
     const { fixedHeader, layout } = setting;
@@ -58,7 +70,9 @@ class HeaderView extends PureComponent {
       return '100%';
     }
 
-    return collapsed ? `calc(100% - ${defaultSettings.closeSiderNavigatorWidth})` : `calc(100% - ${defaultSettings.openSiderNavigatorWidth})`;
+    return collapsed
+      ? `calc(100% - ${defaultSettings.closeSiderNavigatorWidth})`
+      : `calc(100% - ${defaultSettings.openSiderNavigatorWidth})`;
   };
 
   handleNoticeClear = type => {
@@ -74,11 +88,11 @@ class HeaderView extends PureComponent {
         type: 'notice/clearNotice',
         payload: {
           orgUuid: loginOrg().uuid,
-          userUuid: loginUser().uuid
+          userUuid: loginUser().uuid,
         },
         callback: () => {
           this.props.refreshNotice();
-        }
+        },
       });
 
       this.props.refreshNotice();
@@ -90,7 +104,7 @@ class HeaderView extends PureComponent {
         },
         callback: () => {
           this.props.refreshNotice();
-        }
+        },
       });
     }
   };
@@ -99,11 +113,11 @@ class HeaderView extends PureComponent {
     this.props.dispatch({
       type: 'notice/onShowPage',
       payload: {
-        showPage: 'query'
-      }
+        showPage: 'query',
+      },
     });
     router.push('/notice');
-  }
+  };
   handleMenuClick = ({ key }) => {
     const { dispatch } = this.props;
     if (key === 'userCenter') {
@@ -118,11 +132,11 @@ class HeaderView extends PureComponent {
       this.props.dispatch({
         type: 'user/get',
         payload: loginUser().uuid,
-        callback: (response) => {
+        callback: response => {
           if (response.data) {
             this.setState({
               switchOrgModalVisible: true,
-              orgInfos: response.data.orgs
+              orgInfos: response.data.orgs,
             });
           } else {
             message.error('获取用户组织信息失败！');
@@ -172,12 +186,12 @@ class HeaderView extends PureComponent {
     }
   };
   // 修改密码
-  modifyPasswd = (values) => {
+  modifyPasswd = values => {
     this.setConfirmLoading(true);
     this.props.dispatch({
       type: 'login/modifyPassword',
       payload: values,
-      callback: (response) => {
+      callback: response => {
         if (response.success) {
           message.success(formatMessage({ id: 'user.modify.password.success' }));
           this.setState({ modifyPasswdModalVisible: false });
@@ -186,13 +200,13 @@ class HeaderView extends PureComponent {
         this.setConfirmLoading(false);
       },
     });
-  }
+  };
   // 取消修改密码
-  hidePwdModifyModal = (flag) => {
+  hidePwdModifyModal = flag => {
     this.setState({
       modifyPasswdModalVisible: !!flag,
     });
-  }
+  };
   // 切换组织
   switchOrg = (orgUuid, userUuid) => {
     this.setConfirmLoading(true);
@@ -202,7 +216,7 @@ class HeaderView extends PureComponent {
         orgUuid,
         userUuid,
       },
-      callback: (response) => {
+      callback: response => {
         if (response.success) {
           this.setState({ switchOrgModalVisible: false });
           message.success(formatMessage({ id: 'user.modify.checkOrg.success' }));
@@ -216,46 +230,53 @@ class HeaderView extends PureComponent {
         this.setConfirmLoading(false);
       },
     });
-  }
+  };
   // 取消切换组织
-  hideOrgModifyModal = (flag) => {
+  hideOrgModifyModal = flag => {
     this.setState({
       switchOrgModalVisible: !!flag,
     });
-  }
+  };
 
   //校验密码强度
   checkPassword = () => {
-    if (loginUser()?.name.indexOf("刷卡") == -1 && configs[API_ENV].PRO_ENV == 1) {
-      const passwordUsable = getCookie("passwordUsable");
+    if (loginUser()?.name.indexOf('刷卡') == -1 && configs[API_ENV].PRO_ENV == 1) {
+      const passwordUsable = getCookie('passwordUsable');
       if (passwordUsable == 'N' && passwordUsable != undefined) {
         this.setState({ modifyPasswdModalVisible: true, compelPasswd: true });
       }
     }
-  }
+  };
 
   // 强制修改密码
-  modifyNewPassword = (values) => {
+  modifyNewPassword = values => {
     this.setConfirmLoading(true);
     this.props.dispatch({
       type: 'login/modifyNewPassword',
       payload: values,
-      callback: (response) => {
+      callback: response => {
         if (response.success) {
           message.success(formatMessage({ id: 'user.modify.password.success' }));
           this.setState({ modifyPasswdModalVisible: false });
-          clearCookie("passwordUsable");
+          clearCookie('passwordUsable');
           this.props.dispatch({ type: 'login/logout' });
         }
         this.setConfirmLoading(false);
       },
     });
-  }
+  };
 
   render() {
     const { isMobile, handleMenuCollapse, setting, notices, replitions } = this.props;
     const { navTheme, layout, fixedHeader } = setting;
-    const { visible, compelPasswd, modifyPasswdModalVisible, switchOrgModalVisible, orgInfos, confirmLoading } = this.state;
+    const {
+      visible,
+      compelPasswd,
+      modifyPasswdModalVisible,
+      switchOrgModalVisible,
+      orgInfos,
+      confirmLoading,
+    } = this.state;
     const isTop = layout === 'topmenu';
     const width = this.getHeadWidth();
     const HeaderDom = visible ? (
@@ -289,16 +310,14 @@ class HeaderView extends PureComponent {
           modifyPasswd={compelPasswd ? this.modifyNewPassword : this.modifyPasswd}
           compel={compelPasswd}
           confirmLoading={confirmLoading}
-        >
-        </ModifyPwd>
+        />
         <SwitchOrg
           switchOrgModalVisible={switchOrgModalVisible}
           hideOrgModal={this.hideOrgModifyModal}
           switchOrg={this.switchOrg}
           orgInfos={orgInfos}
           confirmLoading={confirmLoading}
-        >
-        </SwitchOrg>
+        />
       </Header>
     ) : null;
     return (
