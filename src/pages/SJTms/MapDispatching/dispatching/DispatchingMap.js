@@ -1,8 +1,8 @@
 /*
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-07-27 17:43:20
+ * @LastEditors: Liaorongchang
+ * @LastEditTime: 2024-06-11 11:08:44
  * @Description: 地图排车
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -22,6 +22,7 @@ import {
   Checkbox,
 } from 'antd';
 import { Map, Marker, CustomOverlay, DrawingManager, Label, DistanceTool } from 'react-bmapgl';
+import { DrawScene, Select, DrawingType, OperateEventType, GeoCalculator } from 'bmap-draw';
 import { uniqBy } from 'lodash';
 import { getSchedule, getDetailByBillUuids } from '@/services/sjitms/ScheduleBill';
 import style from './DispatchingMap.less';
@@ -30,8 +31,9 @@ import SearchForm from './SearchForm';
 import {
   queryDriverRoutes,
   queryDriverRoutes2,
-  queryAuditedOrderByParams, GetConfig,
-} from '@/services/sjitms/OrderBill'
+  queryAuditedOrderByParams,
+  GetConfig,
+} from '@/services/sjitms/OrderBill';
 import { queryDict, queryData, dynamicQuery } from '@/services/quick/Quick';
 
 import ShopIcon from '@/assets/common/22.png';
@@ -48,21 +50,23 @@ const { Search } = Input;
  * build简化Flex Div代码 +++
  * @author ChenGuangLong
  * @since 2024/5/16 11:03
-*/
-const bFlexDiv = (name, value, bold = true) =>
+ */
+const bFlexDiv = (name, value, bold = true) => (
   <div style={{ flex: 1, fontWeight: bold ? 'bold' : 'normal' }}>
     {name}:{value}
   </div>
+);
 /**
  * build简化Col Div代码 +++
  * @author ChenGuangLong
  * @since 2024/5/17 9:18
-*/
-const bColDiv2 = (name, value, span = 4) =>
+ */
+const bColDiv2 = (name, value, span = 4) => (
   <Col span={span}>
     <div>{name}</div>
     <div>{value}</div>
   </Col>
+);
 
 // 百度地图api变量
 // BMAP_DRAWING_MARKER    = "marker",     // 鼠标画点模式
@@ -76,16 +80,20 @@ export default class DispatchMap extends Component {
 
   isSelectOrders = [];
 
+  selectedOverlay = [];
+
+  select = null;
+
   state = {
     allTotals: {
       cartonCount: 0, // 整件数
       scatteredCount: 0, // 散件数
       containerCount: 0, // 周转箱
-      coldContainerCount: 0,      // 冷藏周转筐+++
-      freezeContainerCount: 0,    // 冷冻周转筐+++
+      coldContainerCount: 0, // 冷藏周转筐+++
+      freezeContainerCount: 0, // 冷冻周转筐+++
       insulatedContainerCount: 0, // 保温箱+++
-      insulatedBagCount: 0,       // 保温袋+++
-      freshContainerCount: 0,     // 鲜食筐+++
+      insulatedBagCount: 0, // 保温袋+++
+      freshContainerCount: 0, // 鲜食筐+++
       volume: 0, // 体积
       weight: 0, // 重量,
       totalCount: 0, // 总件数
@@ -112,7 +120,8 @@ export default class DispatchMap extends Component {
     checkScheduleOrders: [],
     bearweight: 0,
     volumet: 0,
-    multiVehicle: false,  // 是否多载具+++
+    multiVehicle: false, // 是否多载具+++
+    mapSelect: false, //地图框选
   };
 
   colors = [
@@ -147,23 +156,23 @@ export default class DispatchMap extends Component {
    * 获取时捷配置中心配置，拿到改调度中心是否是多载具的+++
    * @author ChenGuangLong
    * @since 2024/5/17 14:57
-  */
+   */
   initConfig = async () => {
-    const configResponse = await GetConfig('dispatch', loginOrg().uuid)
+    const configResponse = await GetConfig('dispatch', loginOrg().uuid);
     if (configResponse?.data?.[0]?.multiVehicle)
-      this.setState({ multiVehicle: configResponse?.data?.[0]?.multiVehicle === '1' })
+      this.setState({ multiVehicle: configResponse?.data?.[0]?.multiVehicle === '1' });
   };
 
   keyDown = (event, ...args) => {
     const that = this;
     const e = event || window.event || args.callee.caller.arguments[0];
     if (e && e.keyCode == 82 && e.altKey) {
-      if (!this.drawingManagerRef.drawingmanager?._isOpen) {
-        this.drawingManagerRef.drawingmanager?.open();
-        this.drawingManagerRef.drawingmanager?.setDrawingMode('rectangle');
-      } else {
-        this.drawingManagerRef.drawingmanager?.close();
-      }
+      // if (!this.drawingManagerRef.drawingmanager?._isOpen) {
+      //   this.drawingManagerRef.drawingmanager?.open();
+      //   this.drawingManagerRef.drawingmanager?.setDrawingMode('rectangle');
+      // } else {
+      //   this.drawingManagerRef.drawingmanager?.close();
+      // }
     } else if (e && e.keyCode == 81 && e.altKey) {
       // 81 = q Q
       // const { orders, orderMarkers } = this.state;
@@ -309,8 +318,6 @@ export default class DispatchMap extends Component {
             }, 500);
           }
         );
-        // this.drawingManagerRef?.open();
-        // this.drawingManagerRef?.setDrawingMode(BMAP_DRAWING_RECTANGLE);
       }
       // 查询排车单
       const queryParams = {
@@ -406,6 +413,7 @@ export default class DispatchMap extends Component {
     const icon = new BMapGL.Icon(ShopIcon, new BMapGL.Size(20, 20));
 
     const vanIcon = new BMapGL.Icon(van, new BMapGL.Size(20, 20));
+
     let markers = [];
     orderMarkers.map((order, index) => {
       const point = new BMapGL.Point(order.longitude, order.latitude);
@@ -458,6 +466,21 @@ export default class DispatchMap extends Component {
     return markers;
   };
 
+  createMapSelect = map => {
+    if (map == undefined || this.select != null) {
+      return;
+    }
+    const scene = new DrawScene(map);
+    this.select = new Select(scene, {
+      type: DrawingType.DRAWING_RECTANGLE,
+      isSeries: true,
+      enableSnap: true,
+      graphicOpts: {
+        fillColor: 'yellow',
+      },
+    });
+  };
+
   // 数字
 
   // 标注点聚合图层初始化
@@ -481,13 +504,13 @@ export default class DispatchMap extends Component {
       minPoints: 5,
       onClick(event) {
         if (event.dataItem?.order) {
-          const {order} = event.dataItem;
+          const { order } = event.dataItem;
           that.onChangeSelect(!order.isSelect, order);
         }
       },
       onMousemove(event) {
         if (event.dataItem?.order) {
-          const {order} = event.dataItem;
+          const { order } = event.dataItem;
           const point = new BMapGL.Point(order.longitude, order.latitude);
           that.setState({ windowInfo: { point, order } });
         } else {
@@ -535,10 +558,10 @@ export default class DispatchMap extends Component {
   // 路线规划
   searchRoute = async selectPoints => {
     // this.clusterSetData([]);
-    const {map} = this;
+    const { map } = this;
     const { startPoint } = this.state;
     const pointArr = selectPoints.map(order => {
-      return (`${order.latitude  },${  order.longitude}`).trim();
+      return `${order.latitude},${order.longitude}`.trim();
     });
     const waypoints = pointArr.filter((_, index) => index < pointArr.length - 1);
     const response = await queryDriverRoutes(
@@ -576,10 +599,10 @@ export default class DispatchMap extends Component {
   // 路线规划
   searchRoute2 = async selectPoints => {
     // this.clusterSetData([]);
-    const {map} = this;
+    const { map } = this;
     const { startPoint } = this.state;
     const pointArr = selectPoints.map(order => {
-      return (`${order.latitude  },${  order.longitude}`).trim();
+      return `${order.latitude},${order.longitude}`.trim();
     });
     const waypoints = pointArr.filter((_, index) => index < pointArr.length - 1);
     const params = {
@@ -634,7 +657,9 @@ export default class DispatchMap extends Component {
 
   saveSchedule = () => {
     const { orders, orderMarkers, isEdit, schdule } = this.state;
-    const selectOrderStoreCodes = orderMarkers.filter(x => x.isSelect).map(e => e.deliveryPoint.code);
+    const selectOrderStoreCodes = orderMarkers
+      .filter(x => x.isSelect)
+      .map(e => e.deliveryPoint.code);
     let allSelectOrders = orders.filter(
       e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
     );
@@ -704,13 +729,14 @@ export default class DispatchMap extends Component {
             message.error('请选择导航起点门店和终点门店！');
             return;
           }
-          const url = `http://api.map.baidu.com/direction?origin=latlng:${selectPoints[0].latitude},${
-            selectPoints[0].longitude
-          }|name:${selectPoints[0].name.replace(/\([^\)]*\)/g, '')}&destination=${
-            selectPoints[selectPoints.length - 1].latitude
-          },${selectPoints[selectPoints.length - 1].longitude}|name:${selectPoints[
-            selectPoints.length - 1
-          ].name.replace(
+          const url = `http://api.map.baidu.com/direction?origin=latlng:${
+            selectPoints[0].latitude
+          },${selectPoints[0].longitude}|name:${selectPoints[0].name.replace(
+            /\([^\)]*\)/g,
+            ''
+          )}&destination=${selectPoints[selectPoints.length - 1].latitude},${
+            selectPoints[selectPoints.length - 1].longitude
+          }|name:${selectPoints[selectPoints.length - 1].name.replace(
             /\([^\)]*\)/g,
             ''
           )}&mode=driving&region=东莞市&output=html&src=webapp.companyName.appName&coord_type=bd09ll`;
@@ -728,7 +754,7 @@ export default class DispatchMap extends Component {
     const menu = new BMapGL.ContextMenu();
     menuItems.forEach((item, index) => {
       menu.addItem(
-        new BMapGL.MenuItem(item.text, item.callback, { width: 100, id: `menu${  index}` })
+        new BMapGL.MenuItem(item.text, item.callback, { width: 100, id: `menu${index}` })
       );
     });
     this.contextMenu = menu;
@@ -740,10 +766,12 @@ export default class DispatchMap extends Component {
     const { orders, orderMarkers } = this.state;
     const overlays = [];
     overlays.push(event.overlay);
-    const pStart = event.overlay.getPath()[3]; // 矩形左上角坐标
-    const pEnd = event.overlay.getPath()[1]; // 矩形右上角坐标
-    const pt1 = new BMapGL.Point(pStart.lng, pStart.lat); // 3象限
-    const pt2 = new BMapGL.Point(pEnd.lng, pEnd.lat); // 1象限
+    // const pStart = event.overlay.getPath()[3]; // 矩形左上角坐标
+    // const pEnd = event.overlay.getPath()[1]; // 矩形右下角坐标
+    const pStart = event[3]; // 矩形左上角坐标
+    const pEnd = event[1]; // 矩形右下角坐标
+    const pt1 = new BMapGL.Point(pStart[0], pStart[1]); // 3象限
+    const pt2 = new BMapGL.Point(pEnd[0], pEnd[1]); // 1象限
     const bds = new BMapGL.Bounds(pt1, pt2); // 范围
 
     for (const order of orderMarkers.filter(x => !x.isSelect)) {
@@ -792,7 +820,10 @@ export default class DispatchMap extends Component {
     }
     arg1 = Number(arg1);
     arg2 = Number(arg2);
-    let r1; let r2; let m; let c;
+    let r1;
+    let r2;
+    let m;
+    let c;
     try {
       r1 = arg1.toString().split('.')[1].length;
     } catch (e) {
@@ -823,14 +854,14 @@ export default class DispatchMap extends Component {
 
   getAllTotals = orders => {
     const totals = {
-      cartonCount: 0,     // 整件数
-      scatteredCount: 0,  // 散件数
-      containerCount: 0,  // 周转箱
-      coldContainerCount: 0,      // 冷藏周转筐+++
-      freezeContainerCount: 0,    // 冷冻周转筐+++
+      cartonCount: 0, // 整件数
+      scatteredCount: 0, // 散件数
+      containerCount: 0, // 周转箱
+      coldContainerCount: 0, // 冷藏周转筐+++
+      freezeContainerCount: 0, // 冷冻周转筐+++
       insulatedContainerCount: 0, // 保温箱+++
-      insulatedBagCount: 0,       // 保温袋+++
-      freshContainerCount: 0,     // 鲜食筐+++
+      insulatedBagCount: 0, // 保温袋+++
+      freshContainerCount: 0, // 鲜食筐+++
       volume: 0, // 体积
       weight: 0, // 重量,
       totalCount: 0, // 总件数
@@ -838,14 +869,14 @@ export default class DispatchMap extends Component {
     };
     const totalStores = [];
     orders.map(e => {
-      totals.cartonCount += e.cartonCount;          // 整件数
-      totals.scatteredCount += e.scatteredCount;    // 散件数
-      totals.containerCount += e.containerCount;    // 周转箱
-      totals.coldContainerCount += e.coldContainerCount;            // 冷藏周转筐+++
-      totals.freezeContainerCount += e.freezeContainerCount;        // 冷冻周转筐+++
-      totals.insulatedContainerCount += e.insulatedContainerCount;  // 保温箱+++
-      totals.insulatedBagCount += e.insulatedBagCount;              // 保温袋+++
-      totals.freshContainerCount += e.freshContainerCount;          // 鲜食筐+++
+      totals.cartonCount += e.cartonCount; // 整件数
+      totals.scatteredCount += e.scatteredCount; // 散件数
+      totals.containerCount += e.containerCount; // 周转箱
+      totals.coldContainerCount += e.coldContainerCount; // 冷藏周转筐+++
+      totals.freezeContainerCount += e.freezeContainerCount; // 冷冻周转筐+++
+      totals.insulatedContainerCount += e.insulatedContainerCount; // 保温箱+++
+      totals.insulatedBagCount += e.insulatedBagCount; // 保温袋+++
+      totals.freshContainerCount += e.freshContainerCount; // 鲜食筐+++
       totals.volume = this.accAdd(totals.volume, e.volume);
       totals.weight = this.accAdd(totals.weight, e.weight);
       if (totalStores.indexOf(e.deliveryPoint.code) === -1) {
@@ -873,14 +904,14 @@ export default class DispatchMap extends Component {
       e => selectOrderStoreCodes.indexOf(e.deliveryPoint?.code) != -1
     );
     let totals = {
-      cartonCount: 0,     // 整件数
-      scatteredCount: 0,  // 散件数
-      containerCount: 0,  // 周转箱
-      coldContainerCount: 0,      // 冷藏周转筐+++
-      freezeContainerCount: 0,    // 冷冻周转筐+++
+      cartonCount: 0, // 整件数
+      scatteredCount: 0, // 散件数
+      containerCount: 0, // 周转箱
+      coldContainerCount: 0, // 冷藏周转筐+++
+      freezeContainerCount: 0, // 冷冻周转筐+++
       insulatedContainerCount: 0, // 保温箱+++
-      insulatedBagCount: 0,       // 保温袋+++
-      freshContainerCount: 0,     // 鲜食筐+++
+      insulatedBagCount: 0, // 保温袋+++
+      freshContainerCount: 0, // 鲜食筐+++
       volume: 0, // 体积
       weight: 0, // 重量,
       totalCount: 0, // 总件数
@@ -890,10 +921,10 @@ export default class DispatchMap extends Component {
       totals.cartonCount += e.cartonCount;
       totals.scatteredCount += e.scatteredCount;
       totals.containerCount += e.containerCount;
-      totals.coldContainerCount += e.coldContainerCount;            // 冷藏周转筐+++
-      totals.freezeContainerCount += e.freezeContainerCount;        // 冷冻周转筐+++
-      totals.insulatedContainerCount += e.insulatedContainerCount;  // 保温箱+++
-      totals.insulatedBagCount += e.insulatedBagCount;              // 保温袋+++
+      totals.coldContainerCount += e.coldContainerCount; // 冷藏周转筐+++
+      totals.freezeContainerCount += e.freezeContainerCount; // 冷冻周转筐+++
+      totals.insulatedContainerCount += e.insulatedContainerCount; // 保温箱+++
+      totals.insulatedBagCount += e.insulatedBagCount; // 保温袋+++
       totals.volume = this.accAdd(totals.volume, e.volume);
       totals.weight = this.accAdd(totals.weight, e.weight);
     });
@@ -917,11 +948,11 @@ export default class DispatchMap extends Component {
       cartonCount: 0, // 整件数
       scatteredCount: 0, // 散件数
       containerCount: 0, // 周转箱
-      coldContainerCount: 0,      // 冷藏周转筐+++
-      freezeContainerCount: 0,    // 冷冻周转筐+++
+      coldContainerCount: 0, // 冷藏周转筐+++
+      freezeContainerCount: 0, // 冷冻周转筐+++
       insulatedContainerCount: 0, // 保温箱+++
-      insulatedBagCount: 0,       // 保温袋+++
-      freshContainerCount: 0,     // 鲜食筐+++
+      insulatedBagCount: 0, // 保温袋+++
+      freshContainerCount: 0, // 鲜食筐+++
       volume: 0, // 体积
       weight: 0, // 重量,
     };
@@ -933,10 +964,10 @@ export default class DispatchMap extends Component {
       totals.cartonCount += e.cartonCount;
       totals.scatteredCount += e.scatteredCount;
       totals.containerCount += e.containerCount;
-      totals.coldContainerCount += e.coldContainerCount;            // 冷藏周转筐+++
-      totals.freezeContainerCount += e.freezeContainerCount;        // 冷冻周转筐+++
-      totals.insulatedContainerCount += e.insulatedContainerCount;  // 保温箱+++
-      totals.insulatedBagCount += e.insulatedBagCount;              // 保温袋+++
+      totals.coldContainerCount += e.coldContainerCount; // 冷藏周转筐+++
+      totals.freezeContainerCount += e.freezeContainerCount; // 冷冻周转筐+++
+      totals.insulatedContainerCount += e.insulatedContainerCount; // 保温箱+++
+      totals.insulatedBagCount += e.insulatedBagCount; // 保温袋+++
       totals.volume = this.accAdd(totals.volume, e.volume);
       totals.weight = this.accAdd(totals.weight, e.weight);
     });
@@ -1017,7 +1048,7 @@ export default class DispatchMap extends Component {
 
   checkSchedule = async (e, schdule) => {
     const { checkSchedules } = this.state;
-    const {checked} = e.target;
+    const { checked } = e.target;
     let checkList = [...checkSchedules];
     let data = [];
     if (checked) {
@@ -1099,6 +1130,7 @@ export default class DispatchMap extends Component {
       checkScheduleOrders,
       checkSchedules,
       multiVehicle, // 是否多载具+++
+      mapSelect,
     } = this.state;
     const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
@@ -1108,6 +1140,7 @@ export default class DispatchMap extends Component {
     if (windowInfo) {
       windowsInfoTotals = this.getOrderTotal(windowInfo.order.deliveryPoint.code);
     }
+
     return (
       <Modal
         // zIndex={999}
@@ -1141,25 +1174,25 @@ export default class DispatchMap extends Component {
             <Divider style={{ margin: 0, marginTop: 5 }} />
             <Row>
               <div style={{ display: 'flex', marginTop: 5 }}>
-                {bFlexDiv('总件数',totals.totalCount)}
-                {bFlexDiv('整件数',totals.cartonCount)}
-                {bFlexDiv('散件数',totals.scatteredCount)}
-                {bFlexDiv('周转箱',totals.containerCount)}
-                {bFlexDiv('体积',totals.volume)}
-                {bFlexDiv('重量',(totals.weight / 1000).toFixed(3))}
-                {bFlexDiv('车辆承重(T)',(totals?.bearweight / 1000).toFixed(3))}
-                {bFlexDiv('车辆体积(m3)',(totals?.volumet / 1000000).toFixed(3))}
-                {bFlexDiv('门店',totals.stores)}
+                {bFlexDiv('总件数', totals.totalCount)}
+                {bFlexDiv('整件数', totals.cartonCount)}
+                {bFlexDiv('散件数', totals.scatteredCount)}
+                {bFlexDiv('周转箱', totals.containerCount)}
+                {bFlexDiv('体积', totals.volume)}
+                {bFlexDiv('重量', (totals.weight / 1000).toFixed(3))}
+                {bFlexDiv('车辆承重(T)', (totals?.bearweight / 1000).toFixed(3))}
+                {bFlexDiv('车辆体积(m3)', (totals?.volumet / 1000000).toFixed(3))}
+                {bFlexDiv('门店', totals.stores)}
               </div>
-              {multiVehicle &&  // 多载具+++
+              {multiVehicle && ( // 多载具+++
                 <div style={{ display: 'flex', marginTop: 5 }}>
-                  {bFlexDiv('冷藏周转筐',totals.coldContainerCount)}
-                  {bFlexDiv('冷冻周转筐',totals.freezeContainerCount)}
-                  {bFlexDiv('保温袋',totals.insulatedBagCount)}
-                  {bFlexDiv('鲜食筐',totals.freshContainerCount)}
-                  {/* 为了美观而占位 */<div style={{ flex: 5 }} />}
+                  {bFlexDiv('冷藏周转筐', totals.coldContainerCount)}
+                  {bFlexDiv('冷冻周转筐', totals.freezeContainerCount)}
+                  {bFlexDiv('保温袋', totals.insulatedBagCount)}
+                  {bFlexDiv('鲜食筐', totals.freshContainerCount)}
+                  {/* 为了美观而占位 */ <div style={{ flex: 5 }} />}
                 </div>
-              }
+              )}
             </Row>
           </div>
         }
@@ -1229,14 +1262,14 @@ export default class DispatchMap extends Component {
                           {bColDiv2('周转箱', totals.containerCount, 4)}
                           {bColDiv2('体积', totals.volume, 4)}
                           {bColDiv2('重量', (totals.weight / 1000).toFixed(3), 4)}
-                          {multiVehicle &&  // 多载具+++
+                          {multiVehicle && ( // 多载具+++
                             <>
                               {bColDiv2('冷藏周转筐', totals.coldContainerCount, 5)}
                               {bColDiv2('冷冻周转筐', totals.freezeContainerCount, 5)}
                               {bColDiv2('保温袋', totals.insulatedBagCount, 5)}
                               {bColDiv2('鲜食筐', totals.freshContainerCount, 5)}
                             </>
-                          }
+                          )}
                         </Row>
                       </div>
                     );
@@ -1327,6 +1360,36 @@ export default class DispatchMap extends Component {
                   />
                 </div>
               </a>
+
+              {orderMarkers.length > 0 || checkScheduleOrders.length > 0 ? (
+                <div>
+                  <Button
+                    size="large"
+                    type={mapSelect ? 'danger' : 'primary'}
+                    onClick={() => {
+                      if (mapSelect) {
+                        orders.map(e => {
+                          e.isSelect = false;
+                          e.sort = undefined;
+                        });
+                        this.setState({ orders, mapSelect: !mapSelect });
+                        this.select.close();
+                      } else {
+                        this.select.open();
+                        this.setState({ mapSelect: !mapSelect });
+                        this.select.addEventListener(OperateEventType.COMPLETE, e => {
+                          this.drawSelete(e.target.overlay.toGeoJSON().geometry.coordinates[0]);
+                        });
+                      }
+                    }}
+                  >
+                    <Icon type="select" />
+                  </Button>
+                </div>
+              ) : (
+                <div />
+              )}
+
               {orderMarkers.length > 0 || checkScheduleOrders.length > 0 ? (
                 <Map
                   center={{ lng: 113.809388, lat: 23.067107 }}
@@ -1347,34 +1410,12 @@ export default class DispatchMap extends Component {
                     defaultOpen={false}
                   />
                   {/* 鼠标绘制工具 */}
-                  <DrawingManager
-                    // isOpen={true}
-                    enableLimit
-                    enableCalculate
-                    // enableDrawingTool={false}
-                    onOverlaycomplete={event => this.drawSelete(event)}
-                    limitOptions={{ area: 9999999999999, distance: 9999999999999 }}
-                    drawingToolOptions={{
-                      drawingModes: ['rectangle'],
-                    }}
-                    // skipEditing={true}
-                    drawingMode="rectangle"
-                    rectangleOptions={{
-                      strokeColor: '#d9534f', // 边线颜色。
-                      fillColor: '#f4cdcc', // 填充颜色。当参数为空时，圆形将没有填充效果。
-                      strokeWeight: 2, // 边线的宽度，以像素为单位。         ");
-                      strokeOpacity: 0.6, // 边线透明度，取值范围0 - 1。
-                      fillOpacity: 0.3, // 填充的透明度，取值范围0 - 1。
-                      strokeStyle: 'dashed', // 边线的样式，solid或dashed。
-                    }}
-                    // ref={ref => (this.drawingManagerRef = ref?.drawingmanager)}
-                    ref={ref => (this.drawingManagerRef = ref)}
-                  />
-
-                  {windowInfo ? (   // 地图上在鼠标在美宜佳坐标时显示的窗口
+                  {this.createMapSelect(this.map)}
+                  {windowInfo ? ( // 地图上在鼠标在美宜佳坐标时显示的窗口
                     <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
                       <div
-                        style={{ /* width: 280, height: 150, */
+                        style={{
+                          /* width: 280, height: 150, */
                           minWidth: 300,
                           padding: 5,
                           background: '#FFF',
@@ -1385,14 +1426,22 @@ export default class DispatchMap extends Component {
                         <div
                           style={{ fontWeight: 'bold', overflow: 'hidden', whiteSpace: 'nowrap' }}
                         >
-                          {`[${windowInfo.order.deliveryPoint.code}]${windowInfo.order.deliveryPoint.name}`}
+                          {`[${windowInfo.order.deliveryPoint.code}]${
+                            windowInfo.order.deliveryPoint.name
+                          }`}
                         </div>
                         <div style={{ display: 'flex' }}>
                           {bFlexDiv('线路', windowInfo.order.archLine?.code, false)}
                           {bFlexDiv('备注', windowInfo.order?.lineNote, false)}
                         </div>
-                        <div>配送区域：{windowInfo.order?.shipAreaName}</div>
-                        <div>门店地址：{windowInfo.order?.deliveryPoint?.address}</div>
+                        <div>
+                          配送区域：
+                          {windowInfo.order?.shipAreaName}
+                        </div>
+                        <div>
+                          门店地址：
+                          {windowInfo.order?.deliveryPoint?.address}
+                        </div>
                         {/* 地图里显示数据 */}
                         <Divider style={{ margin: 0, marginTop: 5 }} />
                         <Row type="flex" justify="space-around" style={{ textAlign: 'center' }}>
@@ -1401,14 +1450,14 @@ export default class DispatchMap extends Component {
                           {bColDiv2('周转箱', windowsInfoTotals.containerCount, 4)}
                           {bColDiv2('体积', windowsInfoTotals.volume, 4)}
                           {bColDiv2('重量', (windowsInfoTotals.weight / 1000).toFixed(3), 4)}
-                          {multiVehicle &&  // 多载具+++
+                          {multiVehicle && ( // 多载具+++
                             <>
                               {bColDiv2('冷藏周转筐', windowsInfoTotals.coldContainerCount, 5)}
                               {bColDiv2('冷冻周转筐', windowsInfoTotals.freezeContainerCount, 5)}
                               {bColDiv2('保温袋', windowsInfoTotals.insulatedBagCount, 5)}
                               {bColDiv2('鲜食筐', windowsInfoTotals.freshContainerCount, 5)}
                             </>
-                          }
+                          )}
                         </Row>
                       </div>
                     </CustomOverlay>
@@ -1436,18 +1485,17 @@ export default class DispatchMap extends Component {
               {bFlexDiv('总整件数', allTotals.cartonCount)}
               {bFlexDiv('总散件数', allTotals.scatteredCount)}
               {bFlexDiv('总周转箱', allTotals.containerCount)}
-              {multiVehicle &&  // 多载具+++
+              {multiVehicle && ( // 多载具+++
                 <>
                   {bFlexDiv('总冷藏周转筐', allTotals.coldContainerCount)}
                   {bFlexDiv('总冷冻周转筐', allTotals.freezeContainerCount)}
                   {bFlexDiv('总保温袋', allTotals.insulatedBagCount)}
                   {bFlexDiv('总鲜食筐', allTotals.freshContainerCount)}
                 </>
-              }
+              )}
               {bFlexDiv('总体积', allTotals.volume)}
               {bFlexDiv('总重量', (allTotals.weight / 1000).toFixed(3))}
               {bFlexDiv('总门店数', allTotals.stores)}
-
             </div>
           </Row>
         </Spin>
