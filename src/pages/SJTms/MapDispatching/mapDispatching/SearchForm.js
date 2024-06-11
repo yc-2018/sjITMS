@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-10-25 10:25:16
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-06-11 12:02:30
+ * @LastEditTime: 2024-06-11 16:34:22
  * @Description:地图排车查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\SearchForm.js
  */
@@ -54,7 +54,6 @@ export default class SearchForm extends Component {
     this.props.onRef && this.props.onRef(this);
     this.setState({ loading: true });
     const response = await queryColumns({ reportCode: this.state.quickuuid, sysCode: 'tms' });
-    console.log('response', response);
     const { form } = this.props;
     if (response.success) {
       let selectFields = response.result.columns.filter(data => data.isSearch);
@@ -224,7 +223,7 @@ export default class SearchForm extends Component {
       case 'radio':
         return <SimpleRadio {...searchProperties} />;
       case 'sel_search':
-        searchField.fieldWidthz = 6;
+        searchField.fieldWidth = 6;
         return (
           <SimpleSelect
             showSearch
