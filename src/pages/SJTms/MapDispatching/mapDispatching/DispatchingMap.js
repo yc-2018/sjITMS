@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-06-11 11:08:44
+ * @LastEditTime: 2024-06-11 15:06:42
  * @Description: 地图排车
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -35,15 +35,17 @@ import {
   GetConfig,
 } from '@/services/sjitms/OrderBill';
 import { queryDict, queryData, dynamicQuery } from '@/services/quick/Quick';
-
+import Page from '@/pages/Component/RapidDevelopment/CommonLayout/Page/Page';
+import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 import ShopIcon from '@/assets/common/22.png';
 import ShopClickIcon from '@/assets/common/23.png';
 import ShopClickIcon2 from '@/assets/common/24.png';
 import van from '@/assets/common/van.svg';
-
+import DispatchingCreatePage from '@/pages/SJTms/Dispatching/DispatchingCreatePage';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import truck from '@/assets/common/truck.svg';
 import ShopsIcons from '@/assets/common/shops.png';
+import { getDispatchConfig } from '@/services/sjtms/DispatcherConfig';
 
 const { Search } = Input;
 /**
@@ -122,6 +124,7 @@ export default class DispatchMap extends Component {
     volumet: 0,
     multiVehicle: false, // 是否多载具+++
     mapSelect: false, //地图框选
+    dispatchConfig: {},
   };
 
   colors = [
@@ -158,6 +161,14 @@ export default class DispatchMap extends Component {
    * @since 2024/5/17 14:57
    */
   initConfig = async () => {
+    const response = await getDispatchConfig(loginOrg().uuid);
+    if (response.success) {
+      this.setState({
+        dispatchConfig: response.data,
+        // isOrderCollect: response.data?.isSumOrder == 1,
+      });
+    }
+
     const configResponse = await GetConfig('dispatch', loginOrg().uuid);
     if (configResponse?.data?.[0]?.multiVehicle)
       this.setState({ multiVehicle: configResponse?.data?.[0]?.multiVehicle === '1' });
@@ -199,46 +210,46 @@ export default class DispatchMap extends Component {
   basicScheduleList = [];
 
   // 显示modal
-  show = orders => {
-    this.setState({ visible: true });
-    queryDict('warehouse').then(res => {
-      this.setState({
-        startPoint: res.data.find(x => x.itemValue == loginOrg().uuid)?.description,
-      });
-    });
-    if (orders) {
-      for (const order of orders.filter(x => !x.isSelect)) {
-        const num = orders.filter(e => {
-          return e.isSelect;
-        }).length;
-        order.isSelect = true;
-        order.sort = num + 1;
-      }
-      this.isSelectOrders = orders;
-    }
-    setTimeout(() => {
-      this.drawMenu();
-    }, 1000);
-  };
+  // show = orders => {
+  //   this.setState({ visible: true });
+  //   queryDict('warehouse').then(res => {
+  //     this.setState({
+  //       startPoint: res.data.find(x => x.itemValue == loginOrg().uuid)?.description,
+  //     });
+  //   });
+  //   if (orders) {
+  //     for (const order of orders.filter(x => !x.isSelect)) {
+  //       const num = orders.filter(e => {
+  //         return e.isSelect;
+  //       }).length;
+  //       order.isSelect = true;
+  //       order.sort = num + 1;
+  //     }
+  //     this.isSelectOrders = orders;
+  //   }
+  //   setTimeout(() => {
+  //     this.drawMenu();
+  //   }, 1000);
+  // };
 
   // 隐藏modal
-  hide = () => {
-    this.setState({
-      visible: false,
-      isEdit: false,
-      checkScheduleOrders: [],
-      checkSchedules: [],
-      bearweight: 0,
-      volumet: 0,
-    });
-    this.clusterLayer = undefined;
-    this.contextMenu = undefined;
-    this.isSelectOrders = [];
-    setTimeout(() => {
-      window.removeEventListener('keydown', this.keyDown);
-    }, 500);
-    this.props.addEvent();
-  };
+  // hide = () => {
+  //   this.setState({
+  //     visible: false,
+  //     isEdit: false,
+  //     checkScheduleOrders: [],
+  //     checkSchedules: [],
+  //     bearweight: 0,
+  //     volumet: 0,
+  //   });
+  //   this.clusterLayer = undefined;
+  //   this.contextMenu = undefined;
+  //   this.isSelectOrders = [];
+  //   setTimeout(() => {
+  //     window.removeEventListener('keydown', this.keyDown);
+  //   }, 500);
+  //   this.props.addEvent();
+  // };
 
   // 查询
   refresh = params => {
@@ -673,7 +684,59 @@ export default class DispatchMap extends Component {
       schdule.uuid = schdule.UUID;
     }
     allSelectOrders = uniqBy(allSelectOrders, 'uuid');
-    this.props.dispatchingByMap(isEdit, isEdit ? schdule : allSelectOrders, allSelectOrders);
+    this.dispatchingByMap(isEdit, isEdit ? schdule : allSelectOrders, allSelectOrders);
+  };
+
+  //地图排车
+  dispatchingByMap = (isEdit, record, orders) => {
+    //订单类型校验
+    if (!this.veriftOrder(orders)) {
+      return;
+    }
+    this.createPageModalRef.show(isEdit, record, orders);
+  };
+
+  veriftOrder = orders => {
+    const orderType = uniqBy(orders.map(x => x.orderType));
+    if (orderType.includes('Returnable') && orderType.some(x => x != 'Returnable')) {
+      message.error('门店退货类型运输订单不能与其它类型订单混排，请检查！');
+      return false;
+    }
+    if (orderType.includes('TakeDelivery') && orderType.some(x => x != 'TakeDelivery')) {
+      message.error('提货类型运输订单不能与其它类型订单混排，请检查！');
+      return false;
+    }
+    //不可共配校验
+    let owners = [...orders].map(x => {
+      return { ...x.owner, noJointlyOwnerCodes: x.noJointlyOwnerCode };
+    });
+    owners = uniqBy(owners, 'uuid');
+    const checkOwners = owners.filter(x => x.noJointlyOwnerCodes);
+    let noJointlyOwner = undefined;
+    checkOwners.forEach(owner => {
+      //不可共配货主
+      const noJointlyOwnerCodes = owner.noJointlyOwnerCodes.split(',');
+      const noJointlyOwners = owners.filter(
+        x => noJointlyOwnerCodes.indexOf(x.code) != -1 && x.code != owner.code
+      );
+      if (noJointlyOwners.length > 0) {
+        noJointlyOwner = {
+          ownerName: owner.name,
+          owners: noJointlyOwners.map(x => x.name).join(','),
+        };
+      }
+    });
+    if (noJointlyOwner != undefined) {
+      message.error(
+        '货主：' +
+          noJointlyOwner.ownerName +
+          '与[' +
+          noJointlyOwner.owners +
+          ']不可共配，请检查货主配置!'
+      );
+      return false;
+    }
+    return true;
   };
 
   // 右键菜单
@@ -1118,7 +1181,6 @@ export default class DispatchMap extends Component {
 
   render() {
     const {
-      visible,
       loading,
       windowInfo,
       orders,
@@ -1131,6 +1193,7 @@ export default class DispatchMap extends Component {
       checkSchedules,
       multiVehicle, // 是否多载具+++
       mapSelect,
+      dispatchConfig,
     } = this.state;
     const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
     const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
@@ -1140,35 +1203,16 @@ export default class DispatchMap extends Component {
     if (windowInfo) {
       windowsInfoTotals = this.getOrderTotal(windowInfo.order.deliveryPoint.code);
     }
-
     return (
-      <Modal
-        // zIndex={999}
-        style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
-        width="100vw"
-        className={style.dispatchingMap}
-        bodyStyle={{ margin: -24, height: '99vh' }}
-        visible={visible}
-        title={
+      <PageHeaderWrapper>
+        <Page withCollect={true} pathname={this.props.location ? this.props.location.pathname : ''}>
           <div>
             <Row type="flex" justify="space-between">
-              <Col span={21}>
+              <Col span={23}>
                 <SearchForm refresh={this.refresh} onRef={node => (this.searchFormRef = node)} />
               </Col>
-              {/* <Col span={1}>
-              <Search
-                placeholder="请输入门店编号或名称"
-                allowClear
-                onChange={event => this.storeFilter('storeInfo', event.target.value)}
-                style={{ width: 150, marginLeft: -80 }}
-                value={this.state.storeInfo}
-              />
-            </Col> */}
               <Col span={1}>
                 <Button onClick={() => this.onReset()}>清空</Button>
-              </Col>
-              <Col span={1}>
-                <Button onClick={() => this.hide()}>关闭</Button>
               </Col>
             </Row>
             <Divider style={{ margin: 0, marginTop: 5 }} />
@@ -1195,311 +1239,305 @@ export default class DispatchMap extends Component {
               )}
             </Row>
           </div>
-        }
-        closable={false}
-        destroyOnClose
-      >
-        <Spin
-          indicator={LoadingIcon('default')}
-          spinning={loading}
-          tip="加载中..."
-          wrapperClassName={style.loading}
-        >
-          {/* 是否多载具高度不同+++ */}
-          <Row type="flex" style={{ height: window.innerHeight - (multiVehicle ? 185 : 145) }}>
-            <Col
-              span={closeLeft ? 0 : 6}
-              style={{ height: '100%', background: '#fff', overflow: 'auto' }}
-            >
-              {isEdit || selectOrder.length > 0 ? (
-                <div style={{ position: 'relative', height: '100%', marginTop: '10px' }}>
-                  <Button
-                    style={{ float: 'left' }}
-                    onClick={() => {
-                      this.setState({ isEdit: false, bearweight: 0, volumet: 0 });
-                      this.isSelectOrders = [];
-                      this.searchFormRef?.onSubmit();
-                    }}
-                  >
-                    返回
-                  </Button>
-                  <div
-                    style={{
-                      fontSize: '14px',
-                      fontWeight: 'bold',
-                      textAlign: 'center',
-                      marginBottom: '10px',
-                      marginRight: '20px',
-                    }}
-                  >
-                    {isEdit ? `编辑排车单:${schdule.BILLNUMBER}` : '新建排车单'}
-                    (ALT+Q)
-                  </div>
-
-                  {selectOrder.map(order => {
-                    const totals = this.getOrderTotal(order.deliveryPoint.code);
-                    return (
-                      <div
-                        className={style.storeCard}
-                        onClick={() => this.onChangeSelect(!order.isSelect, order)}
-                      >
-                        <div className={style.storeCardTitle}>
-                          {/* <Checkbox
-                        checked={order.isSelect}
-                        onChange={event => this.onChangeSelect(event.target.checked, order)}
-                      /> */}
-                          {`[${order.deliveryPoint.code}]${order.deliveryPoint.name}`}
-                        </div>
-                        <div style={{ display: 'flex' }}>
-                          {bFlexDiv('线路', order.archLine?.code, false)}
-                          {bFlexDiv('备注', order?.lineNote, false)}
-                        </div>
-                        {/* 左边显示数据 */}
-                        <Divider style={{ margin: 0, marginTop: 5 }} />
-                        <Row type="flex" justify="space-around" style={{ textAlign: 'center' }}>
-                          {bColDiv2('整件数', totals.cartonCount, 4)}
-                          {bColDiv2('散件数', totals.scatteredCount, 4)}
-                          {bColDiv2('周转箱', totals.containerCount, 4)}
-                          {bColDiv2('体积', totals.volume, 4)}
-                          {bColDiv2('重量', (totals.weight / 1000).toFixed(3), 4)}
-                          {multiVehicle && ( // 多载具+++
-                            <>
-                              {bColDiv2('冷藏周转筐', totals.coldContainerCount, 5)}
-                              {bColDiv2('冷冻周转筐', totals.freezeContainerCount, 5)}
-                              {bColDiv2('保温袋', totals.insulatedBagCount, 5)}
-                              {bColDiv2('鲜食筐', totals.freshContainerCount, 5)}
-                            </>
-                          )}
-                        </Row>
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <List
-                  header={
-                    <div style={{ textAlign: 'center', fontSize: '18px', fontWeight: 'bold' }}>
-                      排车单查询：
-                      <Input
-                        style={{ width: '150px', marginLeft: '10px' }}
-                        onChange={e => this.scheduleFilter(e.target.value)}
-                      />
-                    </div>
-                  }
-                  size="large"
-                  itemLayout="horizontal"
-                  dataSource={this.state.scheduleList}
-                  renderItem={item => (
-                    <List.Item
-                      style={
-                        {
-                          // backgroundColor: this.colors[
-                          //   checkSchedules.findIndex(e => e == item.UUID) % 20
-                          // ],
-                        }
-                      }
-                      extra={
-                        <div>
-                          <Checkbox
-                            style={{ marginRight: '10px' }}
-                            onChange={e => this.checkSchedule(e, item.UUID)}
-                            checked={this.state.checkSchedules.indexOf(item.UUID) != -1}
-                          />
-                          <div
-                            style={{
-                              backgroundColor: this.colors[
-                                checkSchedules.findIndex(e => e == item.UUID) % 20
-                              ],
-                              width: '20px',
-                              height: '20px',
-                              float: 'left',
-                              marginRight: '10px',
-                              borderRadius: '50px',
-                            }}
-                          />
-                        </div>
-                      }
+          <DispatchingCreatePage
+            modal={{ title: '排车' }}
+            refresh={() => {
+              this.refresh();
+            }}
+            dispatchConfig={dispatchConfig}
+            onRef={node => (this.createPageModalRef = node)}
+            refreshMap={() => this.dispatchMapRef?.refresh()}
+          />
+          <Spin
+            indicator={LoadingIcon('default')}
+            spinning={loading}
+            tip="加载中..."
+            wrapperClassName={style.loading}
+          >
+            {/* 是否多载具高度不同+++ */}
+            <Row type="flex" style={{ height: window.innerHeight - (multiVehicle ? 250 : 200) }}>
+              <Col
+                span={closeLeft ? 0 : 6}
+                style={{ height: '100%', background: '#fff', overflow: 'auto' }}
+              >
+                {isEdit || selectOrder.length > 0 ? (
+                  <div style={{ position: 'relative', height: '100%', marginTop: '10px' }}>
+                    <Button
+                      style={{ float: 'left' }}
+                      onClick={() => {
+                        this.setState({ isEdit: false, bearweight: 0, volumet: 0 });
+                        this.isSelectOrders = [];
+                        this.searchFormRef?.onSubmit();
+                      }}
                     >
-                      <List.Item.Meta
-                        avatar={<Avatar style={{ width: '50px', height: '50px' }} src={truck} />}
-                        title={
-                          <a
-                            style={{ fontSize: '15px' }}
-                            onClick={() => {
-                              this.clickSchdule(item);
-                            }}
-                          >
-                            {item.BILLNUMBER}
-                          </a>
-                        }
-                        description={
-                          <div style={{ fontWeight: 'bold' }}>
-                            车辆：
-                            {item.VEHICLEPLATENUMBER ? item.VEHICLEPLATENUMBER : '<空>'}
-                            &nbsp;&nbsp;司机：[
-                            {item.CARRIERCODE ? item.CARRIERCODE : '<空>'}]
-                            {item.CARRIERNAME ? item.CARRIERNAME : ''}
+                      返回
+                    </Button>
+                    <div
+                      style={{
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                        marginBottom: '10px',
+                        marginRight: '20px',
+                      }}
+                    >
+                      {isEdit ? `编辑排车单:${schdule.BILLNUMBER}` : '新建排车单'}
+                      (ALT+Q)
+                    </div>
+
+                    {selectOrder.map(order => {
+                      const totals = this.getOrderTotal(order.deliveryPoint.code);
+                      return (
+                        <div
+                          className={style.storeCard}
+                          onClick={() => this.onChangeSelect(!order.isSelect, order)}
+                        >
+                          <div className={style.storeCardTitle}>
+                            {`[${order.deliveryPoint.code}]${order.deliveryPoint.name}`}
+                          </div>
+                          <div style={{ display: 'flex' }}>
+                            {bFlexDiv('线路', order.archLine?.code, false)}
+                            {bFlexDiv('备注', order?.lineNote, false)}
+                          </div>
+                          {/* 左边显示数据 */}
+                          <Divider style={{ margin: 0, marginTop: 5 }} />
+                          <Row type="flex" justify="space-around" style={{ textAlign: 'center' }}>
+                            {bColDiv2('整件数', totals.cartonCount, 4)}
+                            {bColDiv2('散件数', totals.scatteredCount, 4)}
+                            {bColDiv2('周转箱', totals.containerCount, 4)}
+                            {bColDiv2('体积', totals.volume, 4)}
+                            {bColDiv2('重量', (totals.weight / 1000).toFixed(3), 4)}
+                            {multiVehicle && ( // 多载具+++
+                              <>
+                                {bColDiv2('冷藏周转筐', totals.coldContainerCount, 5)}
+                                {bColDiv2('冷冻周转筐', totals.freezeContainerCount, 5)}
+                                {bColDiv2('保温袋', totals.insulatedBagCount, 5)}
+                                {bColDiv2('鲜食筐', totals.freshContainerCount, 5)}
+                              </>
+                            )}
+                          </Row>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <List
+                    header={
+                      <div style={{ textAlign: 'center', fontSize: '18px', fontWeight: 'bold' }}>
+                        排车单查询：
+                        <Input
+                          style={{ width: '150px', marginLeft: '10px' }}
+                          onChange={e => this.scheduleFilter(e.target.value)}
+                        />
+                      </div>
+                    }
+                    size="large"
+                    itemLayout="horizontal"
+                    dataSource={this.state.scheduleList}
+                    renderItem={item => (
+                      <List.Item
+                        extra={
+                          <div>
+                            <Checkbox
+                              style={{ marginRight: '10px' }}
+                              onChange={e => this.checkSchedule(e, item.UUID)}
+                              checked={this.state.checkSchedules.indexOf(item.UUID) != -1}
+                            />
+                            <div
+                              style={{
+                                backgroundColor: this.colors[
+                                  checkSchedules.findIndex(e => e == item.UUID) % 20
+                                ],
+                                width: '20px',
+                                height: '20px',
+                                float: 'left',
+                                marginRight: '10px',
+                                borderRadius: '50px',
+                              }}
+                            />
                           </div>
                         }
-                      />
-                    </List.Item>
-                  )}
-                />
-              )}
-            </Col>
-            <Col span={closeLeft ? 24 : 18}>
-              <a
-                onClick={() => {
-                  this.setState({ closeLeft: !this.state.closeLeft });
-                }}
-              >
-                <div style={{ float: 'left', height: '100%' }}>
-                  <Icon
-                    type={closeLeft ? 'caret-right' : 'caret-left'}
-                    style={{ marginTop: (window.innerHeight - 145) / 2 }}
-                  />
-                </div>
-              </a>
-
-              {orderMarkers.length > 0 || checkScheduleOrders.length > 0 ? (
-                <div>
-                  <Button
-                    size="large"
-                    type={mapSelect ? 'danger' : 'primary'}
-                    onClick={() => {
-                      if (mapSelect) {
-                        orders.map(e => {
-                          e.isSelect = false;
-                          e.sort = undefined;
-                        });
-                        this.setState({ orders, mapSelect: !mapSelect });
-                        this.select.close();
-                      } else {
-                        this.select.open();
-                        this.setState({ mapSelect: !mapSelect });
-                        this.select.addEventListener(OperateEventType.COMPLETE, e => {
-                          this.drawSelete(e.target.overlay.toGeoJSON().geometry.coordinates[0]);
-                        });
-                      }
-                    }}
-                  >
-                    <Icon type="select" />
-                  </Button>
-                </div>
-              ) : (
-                <div />
-              )}
-
-              {orderMarkers.length > 0 || checkScheduleOrders.length > 0 ? (
-                <Map
-                  center={{ lng: 113.809388, lat: 23.067107 }}
-                  zoom={10}
-                  minZoom={6}
-                  enableScrollWheelZoom
-                  enableRotate={false}
-                  enableTilt={false}
-                  enableAutoResize
-                  ref={ref => (this.map = ref?.map)}
-                  style={{ height: '100%' }}
-                >
-                  {this.drawMarker()}
-                  {/* {this.drawCheckSchedules()} */}
-                  {/* 地图测距工具 */}
-                  <DistanceTool
-                    ref={ref => (this.distance = ref?.distancetool)}
-                    defaultOpen={false}
-                  />
-                  {/* 鼠标绘制工具 */}
-                  {this.createMapSelect(this.map)}
-                  {windowInfo ? ( // 地图上在鼠标在美宜佳坐标时显示的窗口
-                    <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
-                      <div
-                        style={{
-                          /* width: 280, height: 150, */
-                          minWidth: 300,
-                          padding: 5,
-                          background: '#FFF',
-                          borderRadius: 5,
-                          boxShadow: '0 0 5px rgba(0, 0, 0, 0.2)',
-                        }}
                       >
+                        <List.Item.Meta
+                          avatar={<Avatar style={{ width: '50px', height: '50px' }} src={truck} />}
+                          title={
+                            <a
+                              style={{ fontSize: '15px' }}
+                              onClick={() => {
+                                this.clickSchdule(item);
+                              }}
+                            >
+                              {item.BILLNUMBER}
+                            </a>
+                          }
+                          description={
+                            <div style={{ fontWeight: 'bold' }}>
+                              车辆：
+                              {item.VEHICLEPLATENUMBER ? item.VEHICLEPLATENUMBER : '<空>'}
+                              &nbsp;&nbsp;司机：[
+                              {item.CARRIERCODE ? item.CARRIERCODE : '<空>'}]
+                              {item.CARRIERNAME ? item.CARRIERNAME : ''}
+                            </div>
+                          }
+                        />
+                      </List.Item>
+                    )}
+                  />
+                )}
+              </Col>
+              <Col span={closeLeft ? 24 : 18}>
+                <a
+                  onClick={() => {
+                    this.setState({ closeLeft: !this.state.closeLeft });
+                  }}
+                >
+                  <div style={{ float: 'left', height: '100%' }}>
+                    <Icon
+                      type={closeLeft ? 'caret-right' : 'caret-left'}
+                      style={{ marginTop: (window.innerHeight - 145) / 2 }}
+                    />
+                  </div>
+                </a>
+
+                {orderMarkers.length > 0 || checkScheduleOrders.length > 0 ? (
+                  <div>
+                    <Button
+                      size="large"
+                      type={mapSelect ? 'danger' : 'primary'}
+                      onClick={() => {
+                        if (mapSelect) {
+                          orders.map(e => {
+                            e.isSelect = false;
+                            e.sort = undefined;
+                          });
+                          this.setState({ orders, mapSelect: !mapSelect });
+                          this.select.close();
+                        } else {
+                          this.select.open();
+                          this.setState({ mapSelect: !mapSelect });
+                          this.select.addEventListener(OperateEventType.COMPLETE, e => {
+                            this.drawSelete(e.target.overlay.toGeoJSON().geometry.coordinates[0]);
+                          });
+                        }
+                      }}
+                    >
+                      <Icon type="select" />
+                    </Button>
+                  </div>
+                ) : (
+                  <div />
+                )}
+
+                {orderMarkers.length > 0 || checkScheduleOrders.length > 0 ? (
+                  <Map
+                    center={{ lng: 113.809388, lat: 23.067107 }}
+                    zoom={10}
+                    minZoom={6}
+                    enableScrollWheelZoom
+                    enableRotate={false}
+                    enableTilt={false}
+                    enableAutoResize
+                    ref={ref => (this.map = ref?.map)}
+                    style={{ height: '95%' }}
+                  >
+                    {this.drawMarker()}
+                    {/* 地图测距工具 */}
+                    <DistanceTool
+                      ref={ref => (this.distance = ref?.distancetool)}
+                      defaultOpen={false}
+                    />
+                    {/* 鼠标绘制工具 */}
+                    {this.createMapSelect(this.map)}
+                    {windowInfo ? ( // 地图上在鼠标在美宜佳坐标时显示的窗口
+                      <CustomOverlay position={windowInfo.point} offset={new BMapGL.Size(15, -15)}>
                         <div
-                          style={{ fontWeight: 'bold', overflow: 'hidden', whiteSpace: 'nowrap' }}
+                          style={{
+                            /* width: 280, height: 150, */
+                            minWidth: 300,
+                            padding: 5,
+                            background: '#FFF',
+                            borderRadius: 5,
+                            boxShadow: '0 0 5px rgba(0, 0, 0, 0.2)',
+                          }}
                         >
-                          {`[${windowInfo.order.deliveryPoint.code}]${
-                            windowInfo.order.deliveryPoint.name
-                          }`}
+                          <div
+                            style={{ fontWeight: 'bold', overflow: 'hidden', whiteSpace: 'nowrap' }}
+                          >
+                            {`[${windowInfo.order.deliveryPoint.code}]${
+                              windowInfo.order.deliveryPoint.name
+                            }`}
+                          </div>
+                          <div style={{ display: 'flex' }}>
+                            {bFlexDiv('线路', windowInfo.order.archLine?.code, false)}
+                            {bFlexDiv('备注', windowInfo.order?.lineNote, false)}
+                          </div>
+                          <div>
+                            配送区域：
+                            {windowInfo.order?.shipAreaName}
+                          </div>
+                          <div>
+                            门店地址：
+                            {windowInfo.order?.deliveryPoint?.address}
+                          </div>
+                          {/* 地图里显示数据 */}
+                          <Divider style={{ margin: 0, marginTop: 5 }} />
+                          <Row type="flex" justify="space-around" style={{ textAlign: 'center' }}>
+                            {bColDiv2('整件数', windowsInfoTotals.cartonCount, 4)}
+                            {bColDiv2('散件数', windowsInfoTotals.scatteredCount, 4)}
+                            {bColDiv2('周转箱', windowsInfoTotals.containerCount, 4)}
+                            {bColDiv2('体积', windowsInfoTotals.volume, 4)}
+                            {bColDiv2('重量', (windowsInfoTotals.weight / 1000).toFixed(3), 4)}
+                            {multiVehicle && ( // 多载具+++
+                              <>
+                                {bColDiv2('冷藏周转筐', windowsInfoTotals.coldContainerCount, 5)}
+                                {bColDiv2('冷冻周转筐', windowsInfoTotals.freezeContainerCount, 5)}
+                                {bColDiv2('保温袋', windowsInfoTotals.insulatedBagCount, 5)}
+                                {bColDiv2('鲜食筐', windowsInfoTotals.freshContainerCount, 5)}
+                              </>
+                            )}
+                          </Row>
                         </div>
-                        <div style={{ display: 'flex' }}>
-                          {bFlexDiv('线路', windowInfo.order.archLine?.code, false)}
-                          {bFlexDiv('备注', windowInfo.order?.lineNote, false)}
-                        </div>
-                        <div>
-                          配送区域：
-                          {windowInfo.order?.shipAreaName}
-                        </div>
-                        <div>
-                          门店地址：
-                          {windowInfo.order?.deliveryPoint?.address}
-                        </div>
-                        {/* 地图里显示数据 */}
-                        <Divider style={{ margin: 0, marginTop: 5 }} />
-                        <Row type="flex" justify="space-around" style={{ textAlign: 'center' }}>
-                          {bColDiv2('整件数', windowsInfoTotals.cartonCount, 4)}
-                          {bColDiv2('散件数', windowsInfoTotals.scatteredCount, 4)}
-                          {bColDiv2('周转箱', windowsInfoTotals.containerCount, 4)}
-                          {bColDiv2('体积', windowsInfoTotals.volume, 4)}
-                          {bColDiv2('重量', (windowsInfoTotals.weight / 1000).toFixed(3), 4)}
-                          {multiVehicle && ( // 多载具+++
-                            <>
-                              {bColDiv2('冷藏周转筐', windowsInfoTotals.coldContainerCount, 5)}
-                              {bColDiv2('冷冻周转筐', windowsInfoTotals.freezeContainerCount, 5)}
-                              {bColDiv2('保温袋', windowsInfoTotals.insulatedBagCount, 5)}
-                              {bColDiv2('鲜食筐', windowsInfoTotals.freshContainerCount, 5)}
-                            </>
-                          )}
-                        </Row>
-                      </div>
-                    </CustomOverlay>
-                  ) : (
-                    <></>
-                  )}
-                </Map>
-              ) : (
-                <Map
-                  center={{ lng: 113.809388, lat: 23.067107 }}
-                  zoom={10}
-                  enableScrollWheelZoom
-                  enableAutoResize
-                  enableRotate={false}
-                  enableTilt={false}
-                  style={{ height: '100%' }}
-                />
-              )}
-            </Col>
-          </Row>
-          <Divider style={{ margin: 0, marginTop: 5 }} />
-          <Row width="100%">
-            <div style={{ display: 'flex', marginTop: 5, fontSize: '14px' }}>
-              {bFlexDiv('总件数', allTotals.totalCount)}
-              {bFlexDiv('总整件数', allTotals.cartonCount)}
-              {bFlexDiv('总散件数', allTotals.scatteredCount)}
-              {bFlexDiv('总周转箱', allTotals.containerCount)}
-              {multiVehicle && ( // 多载具+++
-                <>
-                  {bFlexDiv('总冷藏周转筐', allTotals.coldContainerCount)}
-                  {bFlexDiv('总冷冻周转筐', allTotals.freezeContainerCount)}
-                  {bFlexDiv('总保温袋', allTotals.insulatedBagCount)}
-                  {bFlexDiv('总鲜食筐', allTotals.freshContainerCount)}
-                </>
-              )}
-              {bFlexDiv('总体积', allTotals.volume)}
-              {bFlexDiv('总重量', (allTotals.weight / 1000).toFixed(3))}
-              {bFlexDiv('总门店数', allTotals.stores)}
-            </div>
-          </Row>
-        </Spin>
-      </Modal>
+                      </CustomOverlay>
+                    ) : (
+                      <></>
+                    )}
+                  </Map>
+                ) : (
+                  <Map
+                    center={{ lng: 113.809388, lat: 23.067107 }}
+                    zoom={10}
+                    enableScrollWheelZoom
+                    enableAutoResize
+                    enableRotate={false}
+                    enableTilt={false}
+                    style={{ height: '100%' }}
+                  />
+                )}
+              </Col>
+            </Row>
+            <Divider style={{ margin: 0, marginTop: 5 }} />
+            <Row width="100%">
+              <div style={{ display: 'flex', marginTop: 5, fontSize: '14px' }}>
+                {bFlexDiv('总件数', allTotals.totalCount)}
+                {bFlexDiv('总整件数', allTotals.cartonCount)}
+                {bFlexDiv('总散件数', allTotals.scatteredCount)}
+                {bFlexDiv('总周转箱', allTotals.containerCount)}
+                {multiVehicle && ( // 多载具+++
+                  <>
+                    {bFlexDiv('总冷藏周转筐', allTotals.coldContainerCount)}
+                    {bFlexDiv('总冷冻周转筐', allTotals.freezeContainerCount)}
+                    {bFlexDiv('总保温袋', allTotals.insulatedBagCount)}
+                    {bFlexDiv('总鲜食筐', allTotals.freshContainerCount)}
+                  </>
+                )}
+                {bFlexDiv('总体积', allTotals.volume)}
+                {bFlexDiv('总重量', (allTotals.weight / 1000).toFixed(3))}
+                {bFlexDiv('总门店数', allTotals.stores)}
+              </div>
+            </Row>
+          </Spin>
+        </Page>
+      </PageHeaderWrapper>
     );
   }
 }
