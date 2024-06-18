@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-06-11 15:06:42
+ * @LastEditTime: 2024-06-18 15:36:31
  * @Description: 地图排车
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -125,6 +125,7 @@ export default class DispatchMap extends Component {
     multiVehicle: false, // 是否多载具+++
     mapSelect: false, //地图框选
     dispatchConfig: {},
+    scheduleSelect: [],
   };
 
   colors = [
@@ -177,29 +178,15 @@ export default class DispatchMap extends Component {
   keyDown = (event, ...args) => {
     const that = this;
     const e = event || window.event || args.callee.caller.arguments[0];
-    if (e && e.keyCode == 82 && e.altKey) {
-      // if (!this.drawingManagerRef.drawingmanager?._isOpen) {
-      //   this.drawingManagerRef.drawingmanager?.open();
-      //   this.drawingManagerRef.drawingmanager?.setDrawingMode('rectangle');
-      // } else {
-      //   this.drawingManagerRef.drawingmanager?.close();
-      // }
+    if (e && e.keyCode == 83 && e.altKey) {
+      //alt+s
+      this.mapSelectClick();
     } else if (e && e.keyCode == 81 && e.altKey) {
-      // 81 = q Q
-      // const { orders, orderMarkers } = this.state;
-      // let selectOrderStoreCodes = orderMarkers
-      //   .filter(x => x.isSelect)
-      //   .map(e => e.deliveryPoint.code);
-      // let allSelectOrders = orders.filter(
-      //   e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
-      // );
-      // // const selectPoints = orders.filter(x => x.isSelect);
-      // if (allSelectOrders.length === 0) {
-      //   message.error('请选择需要排车的门店！');
-      //   return;
-      // }
-      // this.props.dispatchingByMap(allSelectOrders);
+      //alt+w
       this.saveSchedule();
+    } else if (e && e.keyCode == 82 && e.altKey) {
+      //alt+r
+      this.cancelSelect();
     }
   };
 
@@ -208,48 +195,6 @@ export default class DispatchMap extends Component {
   }
 
   basicScheduleList = [];
-
-  // 显示modal
-  // show = orders => {
-  //   this.setState({ visible: true });
-  //   queryDict('warehouse').then(res => {
-  //     this.setState({
-  //       startPoint: res.data.find(x => x.itemValue == loginOrg().uuid)?.description,
-  //     });
-  //   });
-  //   if (orders) {
-  //     for (const order of orders.filter(x => !x.isSelect)) {
-  //       const num = orders.filter(e => {
-  //         return e.isSelect;
-  //       }).length;
-  //       order.isSelect = true;
-  //       order.sort = num + 1;
-  //     }
-  //     this.isSelectOrders = orders;
-  //   }
-  //   setTimeout(() => {
-  //     this.drawMenu();
-  //   }, 1000);
-  // };
-
-  // 隐藏modal
-  // hide = () => {
-  //   this.setState({
-  //     visible: false,
-  //     isEdit: false,
-  //     checkScheduleOrders: [],
-  //     checkSchedules: [],
-  //     bearweight: 0,
-  //     volumet: 0,
-  //   });
-  //   this.clusterLayer = undefined;
-  //   this.contextMenu = undefined;
-  //   this.isSelectOrders = [];
-  //   setTimeout(() => {
-  //     window.removeEventListener('keydown', this.keyDown);
-  //   }, 500);
-  //   this.props.addEvent();
-  // };
 
   // 查询
   refresh = params => {
@@ -323,7 +268,7 @@ export default class DispatchMap extends Component {
               // this.drawClusterLayer();
               this.drawMenu();
               // this.clusterSetData(data);
-              this.autoViewPort(orderMarkers);
+              // this.autoViewPort(orderMarkers);
 
               window.addEventListener('keydown', this.keyDown);
             }, 500);
@@ -739,6 +684,15 @@ export default class DispatchMap extends Component {
     return true;
   };
 
+  cancelSelect = () => {
+    const { orders } = this.state;
+    orders.map(e => {
+      e.isSelect = false;
+      e.sort = undefined;
+    });
+    this.setState({ orders });
+  };
+
   // 右键菜单
   drawMenu = () => {
     const { orders } = this.state;
@@ -751,14 +705,9 @@ export default class DispatchMap extends Component {
         },
       },
       {
-        text: '取消选中',
+        text: '取消选中(ALT+R)',
         callback: () => {
-          const { orders } = this.state;
-          orders.map(e => {
-            e.isSelect = false;
-            e.sort = undefined;
-          });
-          this.setState({ orders });
+          this.cancelSelect();
         },
       },
       {
@@ -961,6 +910,7 @@ export default class DispatchMap extends Component {
   };
 
   getTotals = selectOrder => {
+    console.log('selectOrder', selectOrder);
     const selectOrderStoreCodes = selectOrder.map(e => e.deliveryPoint.code);
     const { orders, bearweight, volumet } = this.state;
     const allSelectOrders = orders.filter(
@@ -1127,12 +1077,18 @@ export default class DispatchMap extends Component {
           data.map(order => {
             if (order.billUuid == e) {
               order.scheduleNum = index + 1;
+              order.isSelect = true;
             }
           });
         });
       }
     }
-    this.setState({ checkSchedules: checkList, checkScheduleOrders: data });
+    console.log('checkList', data);
+    this.setState({
+      checkSchedules: checkList,
+      checkScheduleOrders: data,
+      scheduleSelect: data,
+    });
   };
 
   drawCheckSchedules = () => {
@@ -1179,11 +1135,28 @@ export default class DispatchMap extends Component {
     }
   }
 
+  mapSelectClick = () => {
+    const { mapSelect, orders } = this.state;
+    if (mapSelect) {
+      orders.map(e => {
+        e.isSelect = false;
+        e.sort = undefined;
+      });
+      this.setState({ orders, mapSelect: !mapSelect });
+      this.select.close();
+    } else {
+      this.select.open();
+      this.setState({ mapSelect: !mapSelect });
+      this.select.addEventListener(OperateEventType.COMPLETE, e => {
+        this.drawSelete(e.target.overlay.toGeoJSON().geometry.coordinates[0]);
+      });
+    }
+  };
+
   render() {
     const {
       loading,
       windowInfo,
-      orders,
       allTotals,
       orderMarkers,
       isEdit,
@@ -1194,11 +1167,11 @@ export default class DispatchMap extends Component {
       multiVehicle, // 是否多载具+++
       mapSelect,
       dispatchConfig,
+      scheduleSelect,
     } = this.state;
     const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
-    const stores = uniqBy(selectOrder.map(x => x.deliveryPoint), x => x.uuid);
-    const totals = this.getTotals(selectOrder);
-
+    const totals = this.getTotals(selectOrder.length > 0 ? selectOrder : scheduleSelect);
+    console.log("totals",totals);
     let windowsInfoTotals = {};
     if (windowInfo) {
       windowsInfoTotals = this.getOrderTotal(windowInfo.order.deliveryPoint.code);
@@ -1405,23 +1378,10 @@ export default class DispatchMap extends Component {
                       size="large"
                       type={mapSelect ? 'danger' : 'primary'}
                       onClick={() => {
-                        if (mapSelect) {
-                          orders.map(e => {
-                            e.isSelect = false;
-                            e.sort = undefined;
-                          });
-                          this.setState({ orders, mapSelect: !mapSelect });
-                          this.select.close();
-                        } else {
-                          this.select.open();
-                          this.setState({ mapSelect: !mapSelect });
-                          this.select.addEventListener(OperateEventType.COMPLETE, e => {
-                            this.drawSelete(e.target.overlay.toGeoJSON().geometry.coordinates[0]);
-                          });
-                        }
+                        this.mapSelectClick();
                       }}
                     >
-                      <Icon type="select" />
+                      <Icon type="select" />(ALT+S)
                     </Button>
                   </div>
                 ) : (
