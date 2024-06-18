@@ -153,6 +153,16 @@ export const OrderCollectColumns = [
     },
   },
   {
+    title: '波次号',
+    dataIndex: 'waveNum',
+    sorter: true,
+    sorterCode: true,
+    width: 150,
+    render: val => {
+      return val ? <span>{val}</span> : <Empty />;
+    },
+  },
+  {
     title: '送货地址',
     dataIndex: 'address',
     width: 150,
@@ -264,6 +274,13 @@ export const OrderDetailColumns = [
   {
     title: '来源单号',
     dataIndex: 'sourceNum',
+    sorter: true,
+    width: 120,
+    render: val => (val ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: 'WMS来源单号',
+    dataIndex: 'aclNo',
     sorter: true,
     width: 120,
     render: val => (val ? <span>{val}</span> : <Empty />),

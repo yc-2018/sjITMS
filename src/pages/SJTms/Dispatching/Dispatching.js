@@ -35,6 +35,7 @@ export default class Dispatching extends Component {
     selectOrders: [],
     dispatchConfig: {},
     isOrderCollect: true,
+    isOrderCollectType: 0,
   };
 
   async componentDidMount() {
@@ -43,7 +44,8 @@ export default class Dispatching extends Component {
     if (response.success) {
       this.setState({
         dispatchConfig: response.data,
-        isOrderCollect: response.data?.isSumOrder == 1,
+        isOrderCollect: response.data?.isSumOrder != 0,
+        isOrderCollectType: response.data?.isSumOrder,
       });
     }
     const checkBase = await checkBaseData(loginCompany().uuid, loginOrg().uuid);
@@ -143,6 +145,7 @@ export default class Dispatching extends Component {
                         getSchedule={this.getSchedule}
                         ref={ref => (this.orderPoolPageRef = ref)}
                         isOrderCollect={this.state.isOrderCollect}
+                        isOrderCollectType={this.state.isOrderCollectType}
                         refreshOrderCollect={this.refreshOrderCollect}
                         refreshSchedule={this.refreshScheduleTable}
                         refreshPending={this.refreshPendingTable}

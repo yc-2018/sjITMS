@@ -206,11 +206,22 @@ export default class OrderPoolPage extends Component {
 
   //按送货点汇总运输订单
   groupData = (data, sorter) => {
-    let output = groupBy(data, x => x.deliveryPoint.code);
+    const { isOrderCollectType } = this.props;
+    let output;
+    //按波次号+门店号合并
+    if (isOrderCollectType && isOrderCollectType == 2) {
+      output = groupBy(data, x => [x.deliveryPoint.code, x.waveNum]);
+    } else {
+      output = groupBy(data, x => x.deliveryPoint.code);
+    }
+    console.log('output', output);
+    console.log('isOrderCollectType', isOrderCollectType);
+
     let deliveryPointGroupArr = Object.keys(output).map(pointCode => {
       const orders = output[pointCode];
       return {
         pointCode,
+        waveNum: orders[0].waveNum,
         uuid: orders[0].uuid,
         deliveryPoint: orders[0].deliveryPoint,
         deliveryPointCode: orders[0].deliveryPoint?.code,
