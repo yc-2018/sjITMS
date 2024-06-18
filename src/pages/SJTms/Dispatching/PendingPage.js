@@ -72,11 +72,19 @@ export default class PendingPage extends Component {
 
   //按送货点汇总运输订单
   groupData = data => {
-    let output = groupBy(data, x => x.deliveryPoint.code);
+    const { isOrderCollectType } = this.props;
+    let output;
+    //按波次号+门店号合并
+    if (isOrderCollectType && isOrderCollectType == 2) {
+      output = groupBy(data, x => [x.deliveryPoint.code, x.waveNum]);
+    } else {
+      output = groupBy(data, x => x.deliveryPoint.code);
+    }
     let deliveryPointGroupArr = Object.keys(output).map(pointCode => {
       const orders = output[pointCode];
       return {
         pointCode,
+        waveNum: [...new Set(orders.map(e => e.waveNum))].join(','),
         uuid: orders[0].uuid,
         deliveryPoint: orders[0].deliveryPoint,
         archLine: orders[0].archLine,
@@ -96,7 +104,7 @@ export default class PendingPage extends Component {
         coldContainerCount: Math.round(sumBy(orders, 'coldContainerCount') * 1000) / 1000,
         freshContainerCount: Math.round(sumBy(orders, 'freshContainerCount') * 1000) / 1000,
         insulatedBag: Math.round(sumBy(orders, 'insulatedbagcount') * 1000) / 1000,
-        
+
         volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
         weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
       };

@@ -173,6 +173,7 @@ export default class Dispatching extends Component {
                       <PendingPage
                         scheduleRowKeys={this.getScheduleRowKeys}
                         isOrderCollect={this.state.isOrderCollect}
+                        isOrderCollectType={this.state.isOrderCollectType}
                         ref={ref => (this.pendingPageRef = ref)}
                         refreshOrder={this.refreshOrderTable}
                         refreshSchedule={this.refreshScheduleTable}
