@@ -156,7 +156,6 @@ export const OrderCollectColumns = [
     title: '波次号',
     dataIndex: 'waveNum',
     sorter: true,
-    sorterCode: true,
     width: 150,
     render: val => {
       return val ? <span>{val}</span> : <Empty />;

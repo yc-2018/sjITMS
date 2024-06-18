@@ -214,14 +214,11 @@ export default class OrderPoolPage extends Component {
     } else {
       output = groupBy(data, x => x.deliveryPoint.code);
     }
-    console.log('output', output);
-    console.log('isOrderCollectType', isOrderCollectType);
-
     let deliveryPointGroupArr = Object.keys(output).map(pointCode => {
       const orders = output[pointCode];
       return {
         pointCode,
-        waveNum: orders[0].waveNum,
+        waveNum: [...new Set(orders.map(e => e.waveNum))].join(','),
         uuid: orders[0].uuid,
         deliveryPoint: orders[0].deliveryPoint,
         deliveryPointCode: orders[0].deliveryPoint?.code,
@@ -896,7 +893,6 @@ export default class OrderPoolPage extends Component {
   //计算汇总
   collectByOrder = data => {
     data = data.filter(x => x.orderType !== 'OnlyBill');
-    console.log('data', data);
     if (data.length == 0) {
       return {
         realCartonCount: 0,
