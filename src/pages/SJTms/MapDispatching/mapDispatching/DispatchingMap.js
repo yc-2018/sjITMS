@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-06-18 15:36:31
+ * @LastEditTime: 2024-06-18 16:40:04
  * @Description: 地图排车
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -910,7 +910,6 @@ export default class DispatchMap extends Component {
   };
 
   getTotals = selectOrder => {
-    console.log('selectOrder', selectOrder);
     const selectOrderStoreCodes = selectOrder.map(e => e.deliveryPoint.code);
     const { orders, bearweight, volumet } = this.state;
     const allSelectOrders = orders.filter(
@@ -930,7 +929,7 @@ export default class DispatchMap extends Component {
       totalCount: 0, // 总件数
       stores: selectOrderStoreCodes.length,
     };
-    allSelectOrders.map(e => {
+    selectOrder.map(e => {
       totals.cartonCount += e.cartonCount;
       totals.scatteredCount += e.scatteredCount;
       totals.containerCount += e.containerCount;
@@ -1083,7 +1082,6 @@ export default class DispatchMap extends Component {
         });
       }
     }
-    console.log('checkList', data);
     this.setState({
       checkSchedules: checkList,
       checkScheduleOrders: data,
@@ -1171,7 +1169,6 @@ export default class DispatchMap extends Component {
     } = this.state;
     const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
     const totals = this.getTotals(selectOrder.length > 0 ? selectOrder : scheduleSelect);
-    console.log("totals",totals);
     let windowsInfoTotals = {};
     if (windowInfo) {
       windowsInfoTotals = this.getOrderTotal(windowInfo.order.deliveryPoint.code);
@@ -1375,13 +1372,14 @@ export default class DispatchMap extends Component {
                 {orderMarkers.length > 0 || checkScheduleOrders.length > 0 ? (
                   <div>
                     <Button
-                      size="large"
+                      // size="large"
                       type={mapSelect ? 'danger' : 'primary'}
                       onClick={() => {
                         this.mapSelectClick();
                       }}
                     >
-                      <Icon type="select" />(ALT+S)
+                      <Icon type="select" />
+                      (ALT+S)
                     </Button>
                   </div>
                 ) : (
