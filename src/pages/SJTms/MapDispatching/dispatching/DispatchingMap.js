@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-06-11 11:08:44
+ * @LastEditTime: 2024-06-19 10:10:15
  * @Description: 地图排车
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -1368,11 +1368,7 @@ export default class DispatchMap extends Component {
                     type={mapSelect ? 'danger' : 'primary'}
                     onClick={() => {
                       if (mapSelect) {
-                        orders.map(e => {
-                          e.isSelect = false;
-                          e.sort = undefined;
-                        });
-                        this.setState({ orders, mapSelect: !mapSelect });
+                        this.setState({ mapSelect: !mapSelect });
                         this.select.close();
                       } else {
                         this.select.open();
