@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-10-25 10:25:16
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-06-11 16:34:22
+ * @LastEditTime: 2024-06-19 17:28:47
  * @Description:地图排车查询面板
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\SearchForm.js
  */
@@ -91,10 +91,11 @@ export default class SearchForm extends Component {
           loading: false,
           selectFields,
           advancedFields: response.result.columns.filter(data => data.isShow),
-        },
-        () => {
-          this.onSearch(form.getFieldsValue());
         }
+        // ,
+        // () => {
+        //   this.onSearch(form.getFieldsValue());
+        // }
       );
     }
   }

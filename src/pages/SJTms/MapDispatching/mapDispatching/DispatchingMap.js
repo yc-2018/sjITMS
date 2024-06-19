@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-06-19 09:50:03
+ * @LastEditTime: 2024-06-19 17:42:32
  * @Description: 地图排车
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -922,6 +922,7 @@ export default class DispatchMap extends Component {
     const allSelectOrders = orders.filter(
       e => selectOrderStoreCodes.indexOf(e.deliveryPoint?.code) != -1
     );
+    const orderTotals = allSelectOrders.length == 0 ? selectOrder : allSelectOrders;
     let totals = {
       cartonCount: 0, // 整件数
       scatteredCount: 0, // 散件数
@@ -936,7 +937,7 @@ export default class DispatchMap extends Component {
       totalCount: 0, // 总件数
       stores: selectOrderStoreCodes.length,
     };
-    selectOrder.map(e => {
+    orderTotals.map(e => {
       totals.cartonCount += e.cartonCount;
       totals.scatteredCount += e.scatteredCount;
       totals.containerCount += e.containerCount;
