@@ -9,6 +9,7 @@ import React, { PureComponent } from 'react';
 import { Select, Divider, Row, Col, Button, Tooltip } from 'antd';
 import { selectCoulumns, dynamicQuery } from '@/services/quick/Quick';
 import moment from 'moment';
+import _ from 'lodash';
 
 /**
  * 简易查询下拉选择控件
@@ -28,6 +29,7 @@ export default class SimpleSelect extends PureComponent {
 
   componentDidMount() {
     this.initData();
+    this.debouncedSearch = _.debounce(this.getCoulumns, 300);
   }
 
   componentWillReceiveProps(props) {
@@ -161,11 +163,15 @@ export default class SimpleSelect extends PureComponent {
         val: value,
       });
       params = [...params, ...this.props.isOrgQuery];
-      this.getCoulumns({ queryParams: params }, value);
+      this.debouncedSearch({ queryParams: params }, value);
+      // this.getCoulumns({ queryParams: params }, value);
     }
   };
 
   getCoulumns = async (pageFilters, value) => {
+    if (!value) {
+      return;
+    }
     const payload = { superQuery: pageFilters, quickuuid: this.props.reportCode };
     const result = await selectCoulumns(payload);
     let sourceData = new Array();

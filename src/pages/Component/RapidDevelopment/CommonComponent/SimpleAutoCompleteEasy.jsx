@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { AutoComplete } from 'antd';
 import { selectCoulumns } from '@/services/quick/Quick';
 import moment from 'moment';
+import _ from 'lodash';
 
 const { Option } = AutoComplete;
 
@@ -13,6 +14,8 @@ export default class SimpleAutoCompleteEasy extends Component {
 
   componentDidMount() {
     // this.initSearch();
+    //添加延迟查询 避免快速输入时查询多次
+    this.debouncedSearch = _.debounce(this.whenStopSearch, 300);
   }
 
   componentWillReceiveProps(props) {
@@ -67,8 +70,12 @@ export default class SimpleAutoCompleteEasy extends Component {
     }
   };
 
-  //查询数据
-  handleSearch = async value => {
+  whenStopSearch = async value => {
+    if (!value) {
+      //空值保留最后查询
+      // this.setState({ result: [] });
+      return;
+    }
     let params = new Array();
     if (this.props.isOrgQuery) {
       const searchField = this.props.searchField;
@@ -85,6 +92,11 @@ export default class SimpleAutoCompleteEasy extends Component {
     const payload = { superQuery: { queryParams: params }, quickuuid: this.props.reportCode };
     const result = await selectCoulumns(payload);
     this.setState({ result: result.data });
+  };
+
+  //查询数据
+  handleSearch = value => {
+    this.debouncedSearch(value);
   };
 
   onSelect = value => {
