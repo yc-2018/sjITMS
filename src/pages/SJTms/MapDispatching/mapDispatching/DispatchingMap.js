@@ -2,7 +2,7 @@
  * @Author: guankongjin
  * @Date: 2022-07-21 15:59:18
  * @LastEditors: Liaorongchang
- * @LastEditTime: 2024-06-18 16:40:04
+ * @LastEditTime: 2024-06-19 09:50:03
  * @Description: 地图排车
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\dispatching\DispatchingMap.js
  */
@@ -126,6 +126,7 @@ export default class DispatchMap extends Component {
     mapSelect: false, //地图框选
     dispatchConfig: {},
     scheduleSelect: [],
+    fence: { lng: 113.809388, lat: 23.067107 },
   };
 
   colors = [
@@ -173,6 +174,12 @@ export default class DispatchMap extends Component {
     const configResponse = await GetConfig('dispatch', loginOrg().uuid);
     if (configResponse?.data?.[0]?.multiVehicle)
       this.setState({ multiVehicle: configResponse?.data?.[0]?.multiVehicle === '1' });
+
+    const mobileSchedule = await GetConfig('mobileSchedule', loginOrg().uuid);
+    if (mobileSchedule?.data?.[0]?.fence) {
+      let houseLocation = JSON.parse(mobileSchedule?.data?.[0]?.fence);
+      this.setState({ fence: { lng: houseLocation.longitude, lat: houseLocation.latitude } });
+    }
   };
 
   keyDown = (event, ...args) => {
@@ -1136,10 +1143,6 @@ export default class DispatchMap extends Component {
   mapSelectClick = () => {
     const { mapSelect, orders } = this.state;
     if (mapSelect) {
-      orders.map(e => {
-        e.isSelect = false;
-        e.sort = undefined;
-      });
       this.setState({ orders, mapSelect: !mapSelect });
       this.select.close();
     } else {
@@ -1166,6 +1169,7 @@ export default class DispatchMap extends Component {
       mapSelect,
       dispatchConfig,
       scheduleSelect,
+      fence,
     } = this.state;
     const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort);
     const totals = this.getTotals(selectOrder.length > 0 ? selectOrder : scheduleSelect);
@@ -1372,7 +1376,6 @@ export default class DispatchMap extends Component {
                 {orderMarkers.length > 0 || checkScheduleOrders.length > 0 ? (
                   <div>
                     <Button
-                      // size="large"
                       type={mapSelect ? 'danger' : 'primary'}
                       onClick={() => {
                         this.mapSelectClick();
@@ -1388,7 +1391,7 @@ export default class DispatchMap extends Component {
 
                 {orderMarkers.length > 0 || checkScheduleOrders.length > 0 ? (
                   <Map
-                    center={{ lng: 113.809388, lat: 23.067107 }}
+                    center={fence}
                     zoom={10}
                     minZoom={6}
                     enableScrollWheelZoom
@@ -1462,7 +1465,7 @@ export default class DispatchMap extends Component {
                   </Map>
                 ) : (
                   <Map
-                    center={{ lng: 113.809388, lat: 23.067107 }}
+                    center={fence}
                     zoom={10}
                     enableScrollWheelZoom
                     enableAutoResize
