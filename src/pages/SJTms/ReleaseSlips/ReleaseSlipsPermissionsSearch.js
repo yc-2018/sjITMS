@@ -27,7 +27,7 @@ export default class ReleaseSlipsPermissionsSearch extends QuickFormSearchPage {
       field: 'dispatchcenterUuid',
       type: 'VarChar',
       rule: 'like',
-      val: [loginOrg().uuid]        // 分调度中心
+      val: loginOrg().uuid        // 分调度中心
     }
 
     const { dispatch } = this.props
