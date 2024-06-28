@@ -40,7 +40,6 @@ export default class Dispatching extends Component {
 
   async componentDidMount() {
     const response = await getDispatchConfig(loginOrg().uuid);
-    console.log('response', response);
     if (response.success) {
       this.setState({
         dispatchConfig: response.data,

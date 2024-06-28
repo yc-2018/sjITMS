@@ -22,7 +22,6 @@ export async function getDetailByBillUuids(billUuids) {
   });
 }
 
-
 // 运输管理->司机买单导入->取消买单
 export async function changeStatus(billUuids) {
   return request(`/itms-schedule/itms-schedule/driverPayInfo/changeStatus`, {
@@ -31,11 +30,11 @@ export async function changeStatus(billUuids) {
   });
 }
 
-
 //获取排车单
 export async function querySchedule(searchKeyValues) {
   return request(
-    `/itms-schedule/itms-schedule/sj/bill/schedule/getSchedule?companyUuid=${loginCompany().uuid
+    `/itms-schedule/itms-schedule/sj/bill/schedule/getSchedule?companyUuid=${
+      loginCompany().uuid
     }&dcUuid=${loginOrg().uuid}`,
     {
       method: 'POST',
@@ -159,9 +158,12 @@ export async function shipRollback(Uuid) {
 
 // 获取空闲码头
 export async function getPris(dispatchCenterUuid) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/getPris?dispatchCenterUuid=${dispatchCenterUuid}`, {
-    method: 'GET',
-  });
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/schedule/getPris?dispatchCenterUuid=${dispatchCenterUuid}`,
+    {
+      method: 'GET',
+    }
+  );
 }
 
 // 修改码头
@@ -255,37 +257,50 @@ export async function checkOrderInSchedule(payload, scheduleuuid) {
 export async function GetHistoryLocation(payload) {
   return request(`/itms-schedule/itms-schedule/huoyunren/GetHistoryLocation`, {
     method: 'POST',
-    body: payload
+    body: payload,
   });
 }
 export async function GetTrunkLocation(payload) {
   return request(`/itms-schedule/itms-schedule/huoyunren/GetTrunkLocation`, {
     method: 'POST',
-    body: payload
+    body: payload,
   });
 }
 export async function GetTrunkData(payload) {
   return request(`/itms-schedule/itms-schedule/huoyunren/GetTrunkData`, {
     method: 'POST',
-    body: payload
+    body: payload,
   });
 }
 
 export async function GetScheduleEvent(billNumber) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/scheduleEvent/getScheduleEvent?billNumber=${billNumber}`);
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/scheduleEvent/getScheduleEvent?billNumber=${billNumber}`
+  );
 }
 
 export async function GetStopEvent(billNumber) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/scheduleEvent/getStopEvent?billNumber=${billNumber}`);
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/scheduleEvent/getStopEvent?billNumber=${billNumber}`
+  );
 }
 
 export async function GetScheduleDelivery(billUuid) {
-  return request(`/itms-schedule/itms-schedule/sj/bill/scheduleEvent/getScheduleDelivery?billUuid=${billUuid}`);
+  return request(
+    `/itms-schedule/itms-schedule/sj/bill/scheduleEvent/getScheduleDelivery?billUuid=${billUuid}`
+  );
 }
 
 export async function RefreshDelivery(params) {
   return request(`/itms-schedule/itms-schedule/sj/bill/scheduleEvent/refreshDelivery`, {
     method: 'POST',
-    body: params
+    body: params,
+  });
+}
+
+export async function getShortestSort(params) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/getShortestSort`, {
+    method: 'POST',
+    body: params,
   });
 }

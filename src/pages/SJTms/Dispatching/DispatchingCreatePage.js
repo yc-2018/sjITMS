@@ -19,8 +19,14 @@ import {
 } from 'antd';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import { isEmptyObj, guid } from '@/utils/utils';
-import { queryAllData, dynamicQuery, queryDictByCode } from '@/services/quick/Quick';
-import { getSchedule, save, modify, getRecommend } from '@/services/sjitms/ScheduleBill';
+import { queryAllData, dynamicQuery, queryDictByCode, queryDict } from '@/services/quick/Quick';
+import {
+  getSchedule,
+  save,
+  modify,
+  getRecommend,
+  getShortestSort,
+} from '@/services/sjitms/ScheduleBill';
 import EditContainerNumberPageF from './EditContainerNumberPageF';
 import DispatchingTable from './DispatchingTable';
 import { CreatePageOrderColumns } from './DispatchingColumns';
@@ -82,6 +88,7 @@ export default class DispatchingCreatePage extends Component {
     carKey: 'init',
     carSearchSort: [1, 2, 3],
     carrieruuids: [],
+    startPoint: '',
   };
 
   componentDidMount = () => {
@@ -101,6 +108,11 @@ export default class DispatchingCreatePage extends Component {
         carSearchSort: carSearchSort ? carSearchSort : [1, 2, 3],
       });
     }
+    queryDict('warehouse').then(res => {
+      this.setState({
+        startPoint: res.data.find(x => x.itemValue == loginOrg().uuid)?.description,
+      });
+    });
   };
 
   keyDown = (event, ...args) => {
@@ -1135,6 +1147,35 @@ export default class DispatchingCreatePage extends Component {
     });
   };
 
+  //根据经纬度算出最短路径
+  getShortestSort = async () => {
+    let { orders, startPoint } = this.state;
+    if (!startPoint) {
+      message.error('仓库地址未维护，无法一键排序');
+      return;
+    }
+    let params = { start: [startPoint.split(',')[1], startPoint.split(',')[0]] };
+    let orderFilter = orders.filter(e => e.longitude && e.latitude);
+    //无经纬度
+    let remainOrders = orders.filter(e => !e.longitude || !e.latitude);
+    let orderSort = [];
+    if (orderFilter.length > 0) {
+      orderFilter.map(e => {
+        params = {
+          ...params,
+          [e.deliveryPoint.code]: [parseFloat(e.longitude), parseFloat(e.latitude)],
+        };
+      });
+      let result = await getShortestSort(params);
+      orderSort = result?.data.reduce((acc, storeCode) => {
+        const matches = orders.filter(item => item.deliveryPoint.code === storeCode);
+        return acc.concat(matches);
+      }, []);
+    }
+
+    this.setState({ orders: [...orderSort, ...remainOrders] });
+  };
+
   render() {
     const {
       loading,
@@ -1206,6 +1247,10 @@ export default class DispatchingCreatePage extends Component {
               <Dropdown
                 overlay={
                   <Menu>
+                    <Menu.Item onClick={this.getShortestSort}>
+                      <Icon type="redo" />
+                      一键排序
+                    </Menu.Item>
                     <Menu.Item
                       onClick={() => {
                         const records = orders.filter(x => rowKeys.indexOf(x.uuid) != -1);
@@ -1247,6 +1292,9 @@ export default class DispatchingCreatePage extends Component {
                 trigger={['contextMenu']}
               >
                 <div>
+                  {/* <Button className={disStyle.topButtons} onClick={this.getShortestSort}>
+                    一键排序
+                  </Button> */}
                   <DispatchingTable
                     loading={loading}
                     clickRow
