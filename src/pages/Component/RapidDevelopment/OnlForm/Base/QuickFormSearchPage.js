@@ -1105,6 +1105,7 @@ export default class QuickFormSearchPage extends SearchPage {
           hidden={!havePermission(this.state.authority + '.port')}
           onClick={this.port}
           type="primary"
+          loading={this.props.loading}
         >
           导出
         </Button>
@@ -1137,7 +1138,7 @@ export default class QuickFormSearchPage extends SearchPage {
         </Popconfirm>
         <AdvanceQuery
           searchFields={this.state.advancedFields}
-          loading={this.state.searchLoading}
+          loading={this.props.loading}
           fieldInfos={this.columns}
           filterValue={this.state.pageFilter.searchKeyValues}
           refresh={this.onSuperSearch}
@@ -1191,7 +1192,7 @@ export default class QuickFormSearchPage extends SearchPage {
           toggleCallback={() => {
             this.setState({});
           }}
-          loading={this.state.searchLoading}
+          loading={this.props.loading}
           selectFields={this.state.searchFields}
           filterValue={filterValue}
           refresh={this.onSearch}
