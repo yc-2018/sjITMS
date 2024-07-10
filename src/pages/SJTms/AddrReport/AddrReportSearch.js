@@ -8,6 +8,7 @@ import ShopIcon from '@/assets/common/22.png';
 import  styles from './AddrReportSearch.less'
 import { audit, getStoreImgList, voided } from '@/services/sjitms/AddressReport'
 import configs from '@/utils/config'
+import { havePermission } from '@/utils/authority'
 
 /**
  * 搜索列表界面
@@ -40,20 +41,22 @@ export default class AddrReportSearch extends QuickFormSearchPage {
     return (
       <>
         {/* ——————————————-------------开始审核按钮-------------———————————————— */}
-        <Button onClick={() => {
-          if (selectedRows.length === 0) return message.error('请选择一条审核项')
-          if (selectedRows.length > 1) return message.error('每次只能选择一条审核')
-          if (item.STATNAME !== '待审核') return message.error(`${item.STATNAME}状态不能审核`)
+        <Button
+          hidden={!havePermission(this.state.authority + '.examine')}
+          onClick={() => {
+            if (selectedRows.length === 0) return message.error('请选择一条审核项')
+            if (selectedRows.length > 1) return message.error('每次只能选择一条审核')
+            if (item.STATNAME !== '待审核') return message.error(`${item.STATNAME}状态不能审核`)
 
-          this.setState({ MapVisible: true, storeImages: [] })
-          // 请求门店图片
-          getStoreImgList(item.UUID).then(res => {
-            this.setState({
-              storeImages: res?.data?.map(i => `${configs[API_ENV].API_SERVER}/itms-schedule/itms-schedule/addressReport/seeImg/${i.imgUrl}`) ?? []
+            this.setState({ MapVisible: true, storeImages: [] })
+            // 请求门店图片
+            getStoreImgList(item.UUID).then(res => {
+              this.setState({
+                storeImages: res?.data?.map(i => `${configs[API_ENV].API_SERVER}/itms-schedule/itms-schedule/addressReport/seeImg/${i.imgUrl}`) ?? []
+              })
             })
-          })
-
-        }}>
+          }}
+        >
           开始审核
         </Button>
         {/* ——————————————-------------地图审核弹窗-------------———————————————— */}
