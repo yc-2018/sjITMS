@@ -9,6 +9,8 @@ import  styles from './AddrReportSearch.less'
 import { audit, getStoreImgList, voided } from '@/services/sjitms/AddressReport'
 import configs from '@/utils/config'
 import { havePermission } from '@/utils/authority'
+import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm'
+import { cancel } from '@/services/sjitms/OrderBill'
 
 /**
  * 搜索列表界面
@@ -40,6 +42,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
 
     return (
       <>
+        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
         {/* ——————————————-------------开始审核按钮-------------———————————————— */}
         <Button
           hidden={!havePermission(this.state.authority + '.examine')}
@@ -57,7 +60,30 @@ export default class AddrReportSearch extends QuickFormSearchPage {
             })
           }}
         >
-          开始审核
+          单张详细审核
+        </Button>
+
+        {/* ------------一键通过---------------- */}
+        <Button
+          onClick={() => {
+            if (selectedRows.length === 0) return message.error('请选择一条及以上审核项')
+            // 全部都要是待审核状态
+            if (selectedRows.some(i => i.STATNAME !== '待审核')) return message.error(`${selectedRows.find(i => i.STATNAME !== '待审核').STATNAME}状态不能审核`)
+            this.batchProcessConfirmRef.show('审核', selectedRows, this.onAudit, this.onSearch)
+          }}
+        >
+          一键通过
+        </Button>
+
+        {/* ------------一键作废---------------- */}
+        <Button
+          onClick={() => {
+            if (selectedRows.length === 0) return message.error('请选择一条及以上要作废的项')
+            if (selectedRows.some(i => i.STATNAME !== '待审核')) return message.error(`${selectedRows.find(i => i.STATNAME !== '待审核').STATNAME}状态不能作废`)
+            this.batchProcessConfirmRef.show('作废', selectedRows, this.onVoided, this.onSearch)
+          }}
+        >
+          一键作废
         </Button>
         {/* ——————————————-------------地图审核弹窗-------------———————————————— */}
         <Modal
@@ -165,6 +191,24 @@ export default class AddrReportSearch extends QuickFormSearchPage {
         message.error('请求值异常');
     }
   }
+
+  /**
+   * 批量用，批量通过
+   * @author ChenGuangLong
+   * @since 2024/7/15 16:49
+  */
+  onAudit = async item => {
+    return await audit(item.UUID);
+  };
+
+  /**
+   * 批量用，批量作废
+   * @author ChenGuangLong
+   * @since 2024/7/15 16:48
+  */
+  onVoided = async item => {
+    return await voided(item.UUID);
+  };
 
 }
 
