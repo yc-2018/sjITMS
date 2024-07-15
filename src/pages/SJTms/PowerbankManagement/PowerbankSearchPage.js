@@ -4,6 +4,7 @@ import PageHeaderWrapper from '@/components/PageHeaderWrapper'
 import Page from '@/pages/Component/Page/inner/Page'
 import { DndProvider } from 'react-dnd'
 import { Form } from 'antd'
+import styles from './powerbankStyles.less'
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -37,7 +38,7 @@ export default class ETCSearchPage extends QuickFormSearchPage {
   render () {
     let ret = (
       <div style={{ marginTop: '24px' }}>
-        <PageHeaderWrapper>
+        <PageHeaderWrapper wrapperClassName={styles.colNo}>
           <Page withCollect={true} pathname={this.props.pathname}>
             {this.drawPage()}
           </Page>

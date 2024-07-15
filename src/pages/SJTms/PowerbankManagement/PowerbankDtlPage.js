@@ -58,7 +58,7 @@ export default class PowerbankAndDtlPage extends PureComponent {
     return (
       <div>
         {billNumber &&
-          <Button type="primary" onClick={() => this.setState({ showModel: true })}>
+          <Button type="primary" onClick={() => this.setState({ showModel: true })} style={{ margin: 5 }}>
             绑定充电宝收退
           </Button>
         }
@@ -66,12 +66,12 @@ export default class PowerbankAndDtlPage extends PureComponent {
           {data?.length > 0 ?
             <Table
               columns={[
-                { title: '单号', dataIndex: 'ASNNO',width: 130, key: '1' },
-                { title: '门店号', dataIndex: 'SUPPLIERID',width: 75, key: '2' },
-                { title: '商品编号', dataIndex: 'SKU',width: 99, key: '3' },
+                { title: '单号', dataIndex: 'ASNNO',width: 120, key: '1' },
+                { title: '门店号', dataIndex: 'SUPPLIERID',width: 70, key: '2' },
+                { title: '商品编号', dataIndex: 'SKU',width: 90, key: '3' },
                 { title: '数量', dataIndex: 'EXPECTEDQTY',width: 60, key: '5' },
                 { title: '描述', dataIndex: 'DESCR_C',width: 250, key: '4' },
-                { title: '操作人', dataIndex: 'OPERATOR',width: 110, key: '6' },
+                { title: '操作人', dataIndex: 'OPERATOR',width: 100, key: '6' },
                 { title: '操作时间 ', dataIndex: 'OPERATIONTIME',width: 110, key: '7' },
               ]}
               dataSource={data}
@@ -86,8 +86,9 @@ export default class PowerbankAndDtlPage extends PureComponent {
 
         <Modal
           visible={showModel}
-          style={{ top: 0 ,width: '100vw'}}
+          style={{ top: '2vh' }}
           className={styles.powerbankModal}
+          footer={<Button onClick={() => this.setState({ showModel: false })}>返回</Button>}
           onCancel={() => this.setState({ showModel: false })}
         >
           <PowerbankModel quickuuid="v_rtn_cy" billNumber={billNumber} modelClose={this.modelClose} />

@@ -1,14 +1,25 @@
 /* 电宝弹窗 */
 .powerbankModal {
   padding: 0 !important;
-  width: 100vw !important;
+  width: 96vw !important;
 
   [class="ant-modal-content"] {  /* 必须有这个选择器，因为类选择器会被转换 */
-    height: 100vh !important;
+    height: 96vh !important;
     max-height: 100vh !important;
   }
 
   [class="ant-modal-body"] {
-    padding: 5px 0 0 5px !important;
+    padding: 0 10px 3px 10px !important;
+
+    [class="ant-table-body"]{
+      max-height: 480px !important;
+    }
+
+  }
+}
+
+.colNo{
+  [class="ant-col ant-col-6"]{
+    width: unset !important;
   }
 }
