@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
-import { Button, Empty, Modal, Table } from 'antd';
-import { queryData } from '@/services/quick/Quick';
+import { Button, Empty, message, Modal, Popconfirm, Table } from 'antd'
+import { dynamicDelete, queryData } from '@/services/quick/Quick'
 import PowerbankModel from './PowerbankModel';
 import styles from './powerbankStyles.less'
 
@@ -52,6 +52,27 @@ export default class PowerbankAndDtlPage extends PureComponent {
     if (isGetData) this.getData()
   }
 
+  /**
+   * 充电宝收退单解除关联排车单
+   * @author ChenGuangLong
+   * @since 2024/7/15 16:16
+  */
+  removeAssociation = async (uuid) => {
+    const result = await dynamicDelete({
+      code: 'sj_itms_powerbank_management',
+      params: [{
+        tableName: 'sj_itms_powerbank_management',
+        'condition': { 'params': [{ 'field': 'UUID', 'rule': 'eq', 'val': [uuid] }] },
+        'deleteAll': 'false'
+      }]
+    })
+    if (result.success) {
+      message.success('解除关联成功')
+      this.getData()                        // 刷新数据
+      window.PowerbankSearchPage.onSearch() // 刷新主表
+    }
+  }
+
   render() {
     const { data, showModel } = this.state
     const { billNumber } = this.props
@@ -59,10 +80,10 @@ export default class PowerbankAndDtlPage extends PureComponent {
       <div>
         {billNumber &&
           <Button type="primary" onClick={() => this.setState({ showModel: true })} style={{ margin: 5 }}>
-            绑定充电宝收退
+            关联充电宝收退单
           </Button>
         }
-        <div style={{ height: 'calc(100vh - 120px)', backgroundColor: 'white' }}>
+        <div style={{ height: 'calc(100vh - 222px)', backgroundColor: 'white' }}>
           {data?.length > 0 ?
             <Table
               columns={[
@@ -73,11 +94,17 @@ export default class PowerbankAndDtlPage extends PureComponent {
                 { title: '描述', dataIndex: 'DESCR_C',width: 250, key: '4' },
                 { title: '操作人', dataIndex: 'OPERATOR',width: 100, key: '6' },
                 { title: '操作时间 ', dataIndex: 'OPERATIONTIME',width: 110, key: '7' },
+                { title: '操作', key: 'operation', fixed: 'right', width: 110,align:'center',
+                  render: item =>
+                    <Popconfirm title="确定解除关联吗？" onConfirm={() => this.removeAssociation(item.UUID)}>
+                      <Button>解除关联</Button>
+                    </Popconfirm>
+                }
               ]}
               dataSource={data}
-              scroll={{ x: 1300 }}
-              bordered
-              pagination={false}           // 去掉翻页组件
+              scroll={{ x: true, y: 500 }}  // 设置可滚动的宽高
+              bordered                      // 边框
+              pagination={false}            // 去掉翻页组件
             />
             :
             <Empty />
