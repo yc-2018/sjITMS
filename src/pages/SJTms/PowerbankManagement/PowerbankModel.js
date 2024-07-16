@@ -34,23 +34,23 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
     if (selectedRows?.length === 0) return message.warning('请先选择要绑定的数据！')
 
     // ------------------------先查询有没有重复的------------------------------
-    const params = {
-      pageSize: 100,
-      page: 1,
-      quickuuid: 'sj_itms_powerbank_management',
-      superQuery: {
-        matchType: 'and',
-        queryParams: [
-          { field: 'ASNNO', type: 'VarChar', rule: 'in', val: selectedRows.map(item => item.ASNNO).join('||') },
-          { field: 'SKU', type: 'VarChar', rule: 'in', val: selectedRows.map(item => item.SKU).join('||') }
-        ]
-      }
-    }
-    const searchResult = await queryData(params)
-    if (searchResult?.data?.records?.length > 0) {
-      const str = searchResult.data.records.map(item => `${item.ASNNO}商品:${item.SKU}已被排车单${item.BILLNUMBER}绑定`).join(`、`)
-      return message.warning(`请勿重复绑定！->${str}`, 5)
-    }
+    // const params = {
+    //   pageSize: 100,
+    //   page: 1,
+    //   quickuuid: 'sj_itms_powerbank_management',
+    //   superQuery: {
+    //     matchType: 'and',
+    //     queryParams: [
+    //       { field: 'ASNNO', type: 'VarChar', rule: 'in', val: selectedRows.map(item => item.ASNNO).join('||') },
+    //       { field: 'SKU', type: 'VarChar', rule: 'in', val: selectedRows.map(item => item.SKU).join('||') }
+    //     ]
+    //   }
+    // }
+    // const searchResult = await queryData(params)
+    // if (searchResult?.data?.records?.length > 0) {
+    //   const str = searchResult.data.records.map(item => `${item.ASNNO}商品:${item.SKU}已被排车单${item.BILLNUMBER}绑定`).join(`、`)
+    //   return message.warning(`请勿重复绑定！->${str}`, 5)
+    // }
 
     // ---------------------------再请求添加------------------------------
     const localhostUser = JSON.parse(localStorage.getItem('localhost-user'))
@@ -75,9 +75,9 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
     })
     if (result.success) {
       message.success('绑定成功！')
+      this.onSearch()                        // 刷新弹窗绑定表（不然刚刚绑定完了还会在列表显示)
       window.PowerbankSearchPage.onSearch()  // 刷新主表
-      //关闭遮罩层并刷新
-      this.props.modelClose(true)            // 刷新明细
+      this.props.modelClose(true)            // 刷新明细并关闭弹窗
       this.setState({ selectedRows: [] })
     }
   };
