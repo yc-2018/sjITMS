@@ -1,3 +1,8 @@
+/**
+ * 审核门店经纬度
+ * @author ChenGuangLong
+ * @since 2024/5/27
+*/
 import { Button, Col, Empty, Form, message, Modal, Popconfirm, Row } from 'antd'
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
@@ -10,7 +15,6 @@ import { audit, getStoreImgList, voided } from '@/services/sjitms/AddressReport'
 import configs from '@/utils/config'
 import { havePermission } from '@/utils/authority'
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm'
-import { cancel } from '@/services/sjitms/OrderBill'
 
 /**
  * 搜索列表界面
@@ -28,6 +32,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
     ...this.state,
     MapVisible: false,  // 地图弹窗
     storeImages: [],    // 门店图片
+    isAudited: false,   // 是否审核
   };
 
   /**
@@ -36,20 +41,21 @@ export default class AddrReportSearch extends QuickFormSearchPage {
    * @since 2024/5/23 14:55
   */
   drawToolsButton = () => {
-    const { selectedRows, MapVisible, storeImages } = this.state
+    const { selectedRows, MapVisible, storeImages, isAudited } = this.state
     const isOneItem = selectedRows?.length === 1
     const item = selectedRows[0] ?? {}
 
     return (
       <>
-        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
         {/* ——————————————-------------开始审核按钮-------------———————————————— */}
         <Button
           hidden={!havePermission(this.state.authority + '.examine')}
+          type="primary"
           onClick={() => {
             if (selectedRows.length === 0) return message.error('请选择一条审核项')
             if (selectedRows.length > 1) return message.error('每次只能选择一条审核')
-            if (item.STATNAME !== '待审核') return message.error(`${item.STATNAME}状态不能审核`)
+            if (item.STATNAME !== '待审核') message.error(`${item.STATNAME}状态不能审核,允许查看`)
+            this.setState({ isAudited: item.STATNAME !== '待审核' })
 
             this.setState({ MapVisible: true, storeImages: [] })
             // 请求门店图片
@@ -85,6 +91,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
         >
           一键作废
         </Button>
+        <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)}/>
         {/* ——————————————-------------地图审核弹窗-------------———————————————— */}
         <Modal
           className={styles.mapReviewIkunModal}
@@ -95,16 +102,19 @@ export default class AddrReportSearch extends QuickFormSearchPage {
           onCancel={() => this.setState({ MapVisible: false })}
           footer={
             <>
-              <Popconfirm title="确认通过审核？" onConfirm={()=>this.handleAudit('通过')}>
-                <Button type="primary">通过审核</Button>
-              </Popconfirm>
+              {!isAudited &&
+                <>
+                  <Popconfirm title="确认通过审核？" onConfirm={() => this.handleAudit('通过')}>
+                    <Button type="primary">通过审核</Button>
+                  </Popconfirm>
 
-              <Popconfirm title="确认作废该单？" onConfirm={()=>this.handleAudit('作废')}>
-                <Button type="danger">作废该单</Button>
-              </Popconfirm>
+                  <Popconfirm title="确认作废该单？" onConfirm={() => this.handleAudit('作废')}>
+                    <Button type="danger">作废该单</Button>
+                  </Popconfirm>
+                </>
+              }
 
               <Button onClick={() => this.setState({ MapVisible: false })}>返回</Button>
-
             </>
           }
         >
@@ -146,10 +156,10 @@ export default class AddrReportSearch extends QuickFormSearchPage {
 
             {/* ------———-----———————————右边图片———————————————--------- */}
             <Col span={5}>
-              <div style={{fontWeight:'bold',textAlign:'center',marginBottom:20}}>
+              <div style={{ fontWeight: 'bold', textAlign: 'center', marginBottom: 20 }}>
                 司机上传的门店图片
               </div>
-              <div style={{height:'81vh',overflow:'auto'}}>
+              <div style={{ height: '81vh', overflow: 'auto' }}>
                 {storeImages.length === 0 ? <Empty/> : <MyImg images={storeImages}/>}
               </div>
             </Col>
