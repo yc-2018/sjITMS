@@ -34,7 +34,7 @@ export default class PowerbankAndDtlPage extends PureComponent {
             <Row gutter={[0, 1]}>
               <Col>
                 <Card title={<b>收退管理明细 {selectRows?.BILLNUMBER}</b>} bodyStyle={{ padding: 5 }}>
-                  <DtlPage billNumber={selectRows?.BILLNUMBER}/>
+                  <DtlPage billNumber={selectRows?.BILLNUMBER} />
                 </Card>
               </Col>
             </Row>

@@ -62,8 +62,8 @@ export default class PowerbankAndDtlPage extends PureComponent {
       code: 'sj_itms_powerbank_management',
       params: [{
         tableName: 'sj_itms_powerbank_management',
-        'condition': { 'params': [{ 'field': 'UUID', 'rule': 'eq', 'val': [uuid] }] },
-        'deleteAll': 'false'
+        condition: { params: [{ field: 'UUID', rule: 'eq', val: [uuid] }] },
+        deleteAll: 'false'
       }]
     })
     if (result.success) {
