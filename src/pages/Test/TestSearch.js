@@ -1,29 +1,122 @@
-import React, { PureComponent } from 'react';
-import { Table, Button, Input, Col, Row, Popconfirm, message, Modal } from 'antd';
-import { colWidth } from '@/utils/ColWidth';
-import OperateCol from '@/pages/Component/Form/OperateCol';
-import { connect } from 'dva';
-import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import TestCreate from './TestCreate';
-import StandardTable from '@/components/StandardTable';
-import { DndProvider, DragSource, DropTarget } from 'react-dnd';
-import { HTML5Backend } from 'react-dnd-html5-backend';
+import React from 'react'
+import { Button, message, Modal } from 'antd'
+import { colWidth } from '@/utils/ColWidth'
+import OperateCol from '@/pages/Component/Form/OperateCol'
+import { connect } from 'dva'
+import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage'
 // import FormPanel from '../Component/Form/FormPanel';
-import FormPanel from '@/pages/Component/Form/FormPanel';
-import CFormItem from '@/pages/Component/Form/CFormItem';
-import CreatePageModal from '../Component/RapidDevelopment/OnlForm/QuickCreatePageModal';
-import QuickView from '../Component/RapidDevelopment/OnlForm/QuickViewPageDefault';
-import RyzeSettingDrowDown from '../Component/RapidDevelopment/CommonLayout/RyzeSettingDrowDown/RyzeSettingDrowDown';
-import TestView from './TestView';
+import CreatePageModal from '../Component/RapidDevelopment/OnlForm/QuickCreatePageModal'
+import TestView from './TestView'
 
 @connect(({ quick, loading }) => ({
   quick,
   loading: loading.models.quick,
 }))
-//继承QuickFormSearchPage Search页面扩展
+/** 继承QuickFormSearchPage Search页面扩展 */
 export default class TestSearch extends QuickFormSearchPage {
-  //需要操作列的显示 将noActionCol设置为false
-  state = { ...this.state, noActionCol: false, isShow: false, canDragTable: true };
+  constructor(props) {
+    super(props);
+    this.state = {
+      ...this.state,            // 继承父组件的state
+      tableHeight: 480,         // 表格高度
+      isNotHd: true,            // 是没有最外层的边框收藏
+      noActionCol: false,       // 需要操作列的显示 将noActionCol设置为false
+      canDragTable: true,       // 启动拖拽
+      noTable: false,           // 框架的表格显示(默认)
+      isShow: false,
+    };
+  }
+
+  // ↓↓↓↓——————————————————🟢🟢🟢画界面方法🟢🟢🟢————————————————————↓↓↓↓
+
+  /** 该方法会覆盖所有的上层按钮 */
+  drawActionButton = () => {}
+
+  /** 该方法用于写最上层的按钮 多个按钮用<span>包裹 */
+  drawTopButton = () => {
+    return (
+      <span>
+        <Button onClick={this.aaaa} type="primary">在最上面的查看按钮旁边</Button>
+        <CreatePageModal page={{ quickuuid: '20220125', noCategory: true }} onRef={c => (this.aa = c)}/>
+        <Button onClick={this.bbb} type="primary">gotoView</Button>
+
+        <Modal
+          title="Basic Modal"
+          visible={this.state.isShow}
+          //  onOk={this.handleOk}
+          onCancel={this.bbb}
+        >
+          <div style={{ overflow: 'scroll', height: '300px' }}>
+            <TestView
+              quickuuid="20220124"
+              params={{ entityUuid: '1507171023747653633' }}
+              pathname={this.props.pathname}
+            />
+          </div>
+        </Modal>
+      </span>
+    );
+  };
+
+  /** 该方法会覆盖所有的中间功能按钮（就是高级查询那里） */
+  drawToolbarPanel = () => {}
+
+  /** 该方法用于写中间的功能按钮 多个按钮用<span>包裹 （就是在高级查询后面追加） */
+  drawToolsButton = () =>
+    (
+      <span>
+        <Button>审核</Button>
+        <Button>驳回</Button>
+      </span>
+    )
+
+  /** 该方法会覆盖所有的搜索查询 */
+  drawSearchPanel = () => {}
+
+  /**
+   该方法用于修改table的render
+   e的对象结构为{
+   column       // 对应的column
+   record,      // 对应的record
+   component,   // render渲染的组件
+   val          // val值
+   }
+   */
+  drawcell = e => {
+    //找到fieldName为CODE这一列 更改它的component
+    if (e.column.fieldName === 'CODE') {
+      // const component = <p3 style={{ color: 'red' }}>{e.val}</p3>;
+      const component = <a onClick={this.onView.bind(this, e.record)} style={{ color: 'red' }}>{e.val}</a>
+      e.component = component;
+    }
+  };
+
+  /**
+   * 该方法用于自定义扩展列
+   * e={column:column}
+   */
+  drawExColumns = e => {
+    if (e.column.fieldName === 'CODE') {
+      return {
+        title: 'CODE前扩展',
+        dataIndex: 'name',
+        key: 'name',
+        sorter: true,
+        width: colWidth.codeColWidth,
+        render: (_val, record) => {
+          return (
+            <a onClick={this.onView.bind(this, record)} style={{ color: 'red' }}>
+              {111}
+            </a>
+          );
+        },
+      };
+    }
+  };
+
+
+
+  // ↓↓↓↓——————————————————🟢🟢🟢操作方法🟢🟢🟢————————————————————↓↓↓↓
 
   //删除后事件
   afterDelete = response => {
@@ -50,53 +143,8 @@ export default class TestSearch extends QuickFormSearchPage {
   changeState = () => {
     this.setState({ title: '' });
   };
-  /**
-   * 该方法用于自定义扩展列
-     e={
-       column:column
-     }
-   */
-  drawExColumns = e => {
-    if (e.column.fieldName == 'CODE') {
-      const c = {
-        title: 'CODE前扩展',
-        dataIndex: 'name',
-        key: 'name',
-        sorter: true,
-        width: colWidth.codeColWidth,
-        render: (val, record) => {
-          return (
-            <a onClick={this.onView.bind(this, record)} style={{ color: 'red' }}>
-              {111}
-            </a>
-          );
-        },
-      };
-      return c;
-    }
-  };
-  /**
-   该方法用于修改table的render
 
-   e的对象结构为{
-      column   //对应的column
-      record,  //对应的record
-      component, //render渲染的组件
-      val  //val值
-   }  
-   */
-  drawcell = e => {
-    //找到fieldName为CODE这一列 更改它的component
-    if (e.column.fieldName == 'CODE') {
-      // const component = <p3 style={{ color: 'red' }}>{e.val}</p3>;
-      const component = (
-        <a onClick={this.onView.bind(this, e.record)} style={{ color: 'red' }}>
-          {e.val}
-        </a>
-      );
-      e.component = component;
-    }
-  };
+
 
   aaaa = () => {
     this.aa.show();
@@ -105,58 +153,9 @@ export default class TestSearch extends QuickFormSearchPage {
   bbb = () => {
     this.setState({ isShow: !this.state.isShow });
   };
-  //该方法用于写最上层的按钮 多个按钮用<span>包裹
-  drawTopButton = () => {
-    return (
-      <span>
-        <Button onClick={this.aaaa} type="primary">
-          gotoCreate
-        </Button>
-        <CreatePageModal
-          page={{ quickuuid: '20220125', noCategory: true }}
-          onRef={c => (this.aa = c)}
-        />
-        <Button onClick={this.bbb} type="primary">
-          gotoView
-        </Button>
 
-        <Modal
-          title="Basic Modal"
-          visible={this.state.isShow}
-          //  onOk={this.handleOk}
-          onCancel={this.bbb}
-        >
-          <div style={{ overflow: 'scroll', height: '300px' }}>
-            <TestView
-              quickuuid="20220124"
-              params={{ entityUuid: '1507171023747653633' }}
-              pathname={this.props.pathname}
-            />
-          </div>
-        </Modal>
-      </span>
-    );
-  };
 
-  //该方法用于写中间的功能按钮 多个按钮用<span>包裹
-  drawToolsButton = () => {
-    return (
-      <span>
-        <Button>阿巴阿巴</Button>
-        <Button>111</Button>
-        {/* <RyzeSettingDrowDown columns={this.columns} /> */}
-      </span>
-    );
-  };
 
-  //该方法会覆盖所有的上层按钮
-  //drawActionButton = () => {};
-
-  //该方法会覆盖所有的中间功能按钮
-  //drawToolbarPanel = () => {};
-
-  // 该方法会覆盖所有的搜索查询
-  // drawSearchPanel=()=>{}
 
   //该方法用于写操作列的render
   renderOperateCol = record => {

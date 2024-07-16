@@ -18,11 +18,15 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
   constructor(props) {
     super(props);
     this.state = {
-      ...this.state,
+      ...this.state,      // 继承父组件的state
       tableHeight: 480,   // 表格高度
       isNotHd: true,      // 是没有最外层的边框收藏
     };
   }
+
+  changeState = () => {
+    this.setState({ title: '充电宝退收单数据关联页' });
+  };
 
   /**
    * 电宝数据绑定确认
