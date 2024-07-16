@@ -38,6 +38,7 @@ export default class PowerbankAndDtlPage extends PureComponent {
     }
     queryData(params).then(res => {
       if (res?.data?.records) this.setState({ data: res?.data?.records })
+      else this.setState({ data: [] })
     })
   }
 
