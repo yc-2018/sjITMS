@@ -50,7 +50,7 @@ export default class PowerbankSearchPage extends QuickFormSearchPage {
   render () {
     return (
       <div style={{ marginTop: '24px' }}>
-        <PageHeaderWrapper wrapperClassName={styles.colNo}>
+        <PageHeaderWrapper wrapperClassName={styles.mainTable}>
           <Page withCollect={true} pathname={this.props.pathname}>
             {this.drawPage()}
           </Page>

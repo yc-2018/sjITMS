@@ -19,8 +19,17 @@
 }
 
 // 充电宝管理搜索的地方太窄了，不用col样式了
-.colNo{
+.mainTable{
   [class="ant-col ant-col-6"]{
-    width: unset !important;
+    width: 48% !important;
+  }
+  // 隐藏'收起'
+  div[style="float: right;"]> a[style="margin-right: 10px;"]{
+    display: none !important;
+  }
+
+  // 小齿轮向下移动一点
+  [class="antd-pro\\pages\\-component\\-rapid-development\\-common-layout\\-ryze-standard-table\\index-setting ant-dropdown-trigger"]{
+    top:32px;
   }
 }
