@@ -42,6 +42,9 @@ export default class PowerbankSearchPage extends QuickFormSearchPage {
     this.props.refreshSelectedRow(rows)
   }
 
+  /** 该方法会覆盖所有的上层按钮 */
+  drawActionButton = () => <></>
+  /** 绘制批量工具栏 */
   drawToolbarPanel = () => <></>
 
   render () {
