@@ -37,7 +37,7 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
   confirmSubmission = async () => {
     let { selectedRows } = this.state
     if (selectedRows?.length === 0) return message.warning('请先选择要绑定的数据！')
-
+    this.setState({ loading: true })
     // ------------------------先查询有没有重复的------------------------------
     // const params = {
     //   pageSize: 100,
@@ -81,8 +81,9 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
           pass = false
         }
       }
-      if (!pass) return
-    }else return message.error(`该排车单明细数据为空???`, 5)
+      if (!pass) return this.setState({ loading: false })
+    } else return this.setState({ loading: false }) || message.error(`该排车单明细数据为空???`, 5)
+
 
     // ---------------------------再请求添加------------------------------
     const localhostUser = JSON.parse(localStorage.getItem('localhost-user'))
@@ -105,6 +106,8 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
           }))
       }
     })
+    this.setState({ loading: false })
+
     if (result.success) {
       message.success('绑定成功！')
       this.onSearch()                        // 刷新弹窗绑定表（不然刚刚绑定完了还会在列表显示)
