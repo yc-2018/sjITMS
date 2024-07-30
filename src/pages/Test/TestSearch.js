@@ -4,9 +4,9 @@ import { colWidth } from '@/utils/ColWidth'
 import OperateCol from '@/pages/Component/Form/OperateCol'
 import { connect } from 'dva'
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage'
-// import FormPanel from '../Component/Form/FormPanel';
 import CreatePageModal from '../Component/RapidDevelopment/OnlForm/QuickCreatePageModal'
 import TestView from './TestView'
+// import FormPanel from '../Component/Form/FormPanel';
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -18,11 +18,12 @@ export default class TestSearch extends QuickFormSearchPage {
     super(props);
     this.state = {
       ...this.state,            // 继承父组件的state
-      tableHeight: 480,         // 表格高度
-      isNotHd: true,            // 是没有最外层的边框收藏
-      noActionCol: false,       // 需要操作列的显示 将noActionCol设置为false
-      canDragTable: true,       // 启动拖拽
-      noTable: false,           // 框架的表格显示(默认)
+      tableHeight: 480,         // 【覆】表格高度
+      isNotHd: true,            // 【覆】是没有最外层的边框收藏
+      noActionCol: false,       // 【覆】需要操作列的显示 将noActionCol设置为false
+      canDragTable: true,       // 【覆】启动拖拽
+      noTable: false,           // 【覆】框架的表格显示(默认)
+      isRadio: true,            // 【覆】表行是否单选
       isShow: false,
     };
   }
@@ -118,16 +119,18 @@ export default class TestSearch extends QuickFormSearchPage {
 
   // ↓↓↓↓——————————————————🟢🟢🟢操作方法🟢🟢🟢————————————————————↓↓↓↓
 
-  //删除后事件
+  /** 删除后事件 */
   afterDelete = response => {
     console.log('response', response);
   };
+  /** 删除前处理，返回false就不进行后面删除操作了 */
   beforeDelete = e => {
     console.log('e', e);
     message.error('不允许删除');
     return false;
   };
-  //该方法用于扩展查询
+
+  /** 该方法用于扩展查询 */
   exSearchFilter = () => {
     let testS = [
       // {

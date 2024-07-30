@@ -19,8 +19,9 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
     super(props);
     this.state = {
       ...this.state,      // 继承父组件的state
-      tableHeight: 480,   // 表格高度
-      isNotHd: true,      // 是没有最外层的边框收藏
+      tableHeight: 480,   // [fu]表格高度
+      isNotHd: true,      // [fu]是没有最外层的边框收藏
+      loading: false,     // 绑定按钮加载中
     };
   }
 
@@ -56,6 +57,33 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
     //   return message.warning(`请勿重复绑定！->${str}`, 5)
     // }
 
+    // ————————————————————————判断选择的门店是否都在排车单明细门店里面————————————————————
+    const params = {
+      pageSize: 100,
+      page: 1,
+      quickuuid: 'sj_itms_schedule_order',
+      superQuery: {
+        matchType: 'and',
+        queryParams: [
+          { field: 'BILLNUMBER', type: 'VarChar', rule: 'eq', val: this.props.billNumber },
+        ]
+      }
+    }
+    const searchResult = await queryData(params)
+    if (searchResult?.data?.records?.length > 0) {
+      // 【去重】拿到排车单门店代码 （去掉中文提高容错率） 再拿到充电宝明细门店代码 在判断充电宝的是否是排车单的子集
+      const storeCodePCD = [...new Set(searchResult.data.records.map(item => item.DELIVERYPOINTCODE.replace(/[\u4e00-\u9fff]+/g, '')))]
+      const storeCodeCDB = [...new Set(selectedRows.map(item => item.SUPPLIERID.replace(/[\u4e00-\u9fff]+/g, '')))]
+      let pass = true
+      for (let i = 0; i < storeCodeCDB.length; i++) {
+        if (!storeCodePCD.includes(storeCodeCDB[i])) {
+          message.warning(`充电宝明细门店${storeCodeCDB[i]}不在排车单明细门店里面,请检查`, 5)
+          pass = false
+        }
+      }
+      if (!pass) return
+    }else return message.error(`该排车单明细数据为空???`, 5)
+
     // ---------------------------再请求添加------------------------------
     const localhostUser = JSON.parse(localStorage.getItem('localhost-user'))
     const OPERATOR = `[${localhostUser.code}]${localhostUser.name}` // 拿到操作人
@@ -87,18 +115,19 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
   };
 
   /** 该方法会覆盖所有的上层按钮 */
-  drawActionButton = () => {  };
+  drawActionButton = () => {};
 
   /** 该方法会覆盖所有的中间功能按钮 */
   drawToolbarPanel = () => {
+    const { loading } = this.state;
     return (
       <div style={{ marginBottom: 10 }}>
-        <Button type={'primary'}  style={{ marginLeft: 10 }} onClick={this.confirmSubmission}>
+        <Button type="primary" loading={loading} style={{ marginLeft: 10 }} onClick={this.confirmSubmission}>
           数据绑定 {this.props.billNumber}
         </Button>
       </div>
-    );
-  };
+    )
+  }
 
 
 }
