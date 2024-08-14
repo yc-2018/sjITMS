@@ -8,6 +8,7 @@ export default class PowerbankAndDtlPage extends PureComponent {
   state = {
     data: [],
     showModel: false,
+    storeCodeList:[], // 排车单门店代码列表
   }
 
   /**
@@ -74,13 +75,45 @@ export default class PowerbankAndDtlPage extends PureComponent {
     }
   }
 
+  /**
+   * 打开关联充电宝收退单
+   * @author ChenGuangLong
+   * @since 2024/8/13 16:10
+   */
+  openPowerBankModel = async () => {
+    const { billNumber } = this.props
+    // 先打开弹窗
+    this.setState({ showModel: true })
+    // 获取排车单明细
+    const params = {
+      pageSize: 100,
+      page: 1,
+      quickuuid: 'sj_itms_schedule_order',
+      superQuery: {
+        matchType: 'and',
+        queryParams: [
+          { field: 'BILLNUMBER', type: 'VarChar', rule: 'eq', val: billNumber },
+        ]
+      }
+    }
+    const searchResult = await queryData(params)
+    if (searchResult?.data?.records?.length > 0) {
+      // 【去重】拿到排车单门店代码
+      const storeCodeList = [...new Set(searchResult.data.records.map(item => item.DELIVERYPOINTCODE))]
+      this.setState({ storeCodeList })
+    } else {
+      this.setState({ storeCodeList: [] })
+      message.error(`该排车单明细数据为空???`, 5)
+    }
+  }
+
   render() {
-    const { data, showModel } = this.state
+    const { data, showModel, storeCodeList } = this.state
     const { billNumber } = this.props
     return (
       <div>
         {billNumber &&
-          <Button type="primary" onClick={() => this.setState({ showModel: true })} style={{ margin: 5 }}>
+          <Button type="primary" onClick={this.openPowerBankModel} style={{ margin: 5 }}>
             关联充电宝收退单
           </Button>
         }
@@ -119,7 +152,12 @@ export default class PowerbankAndDtlPage extends PureComponent {
           footer={<Button onClick={() => this.setState({ showModel: false })}>返回</Button>}
           onCancel={() => this.setState({ showModel: false })}
         >
-          <PowerbankModel quickuuid="v_rtn_cy" billNumber={billNumber} modelClose={this.modelClose} />
+          <PowerbankModel
+            quickuuid="v_rtn_cy"
+            billNumber={billNumber}
+            modelClose={this.modelClose}
+            storeCodeList={storeCodeList}
+          />
         </Modal>
       </div>
     );

@@ -6,9 +6,10 @@ import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base
 import { connect } from 'dva';
 import { Button, message } from 'antd'
 import React from 'react';
-import { queryData, saveFormData } from '@/services/quick/Quick'
+import { saveFormData } from '@/services/quick/Quick'
 import GetUUID from '@/utils/getUUID'
 import getCurrentDateTime from '@/utils/getCurrentDateTime'
+import { loginUser } from '@/utils/LoginContext'
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -25,9 +26,28 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
     };
   }
 
+
+
+  /** 监控门店变化变化 去改变搜索 */
+  componentWillReceiveProps(nextProps) {
+    // 检查 父组件传过来的门店号列表 是否发生变化 且 不是空列表，就重置查询条件并查询
+    if (this.props.storeCodeList !== nextProps.storeCodeList && nextProps.storeCodeList.length > 0) {
+      let {queryConfig}=this.state;
+      let creatorCol = queryConfig.columns.find(x => x.fieldName === 'SUPPLIERID');
+      creatorCol.searchDefVal = nextProps.storeCodeList.join('||');
+      this.setState({queryConfigColumns:queryConfig.columns,queryConfig,pageFilters:{}});
+      window.setTimeout(() => {
+        this.onSearch('reset')  // 重置查询条件。 在 SearchForm.js组件中有this.props.form.resetFields();没对外提供，导致对外显示的值没有变
+        document.querySelectorAll('.v_rtn_cy-SearchForm button')?.[1]?.click() // 点击重置按钮
+        this.onSearch()               // 查询数据
+      }, 100)
+    }
+  }
+
   changeState = () => {
     this.setState({ title: '充电宝退收单数据关联页' });
   };
+
 
   /**
    * 电宝数据绑定确认
@@ -38,56 +58,10 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
     let { selectedRows } = this.state
     if (selectedRows?.length === 0) return message.warning('请先选择要绑定的数据！')
     this.setState({ loading: true })
-    // ------------------------先查询有没有重复的------------------------------
-    // const params = {
-    //   pageSize: 100,
-    //   page: 1,
-    //   quickuuid: 'sj_itms_powerbank_management',
-    //   superQuery: {
-    //     matchType: 'and',
-    //     queryParams: [
-    //       { field: 'ASNNO', type: 'VarChar', rule: 'in', val: selectedRows.map(item => item.ASNNO).join('||') },
-    //       { field: 'SKU', type: 'VarChar', rule: 'in', val: selectedRows.map(item => item.SKU).join('||') }
-    //     ]
-    //   }
-    // }
-    // const searchResult = await queryData(params)
-    // if (searchResult?.data?.records?.length > 0) {
-    //   const str = searchResult.data.records.map(item => `${item.ASNNO}商品:${item.SKU}已被排车单${item.BILLNUMBER}绑定`).join(`、`)
-    //   return message.warning(`请勿重复绑定！->${str}`, 5)
-    // }
-
-    // ————————————————————————判断选择的门店是否都在排车单明细门店里面————————————————————
-    const params = {
-      pageSize: 100,
-      page: 1,
-      quickuuid: 'sj_itms_schedule_order',
-      superQuery: {
-        matchType: 'and',
-        queryParams: [
-          { field: 'BILLNUMBER', type: 'VarChar', rule: 'eq', val: this.props.billNumber },
-        ]
-      }
-    }
-    const searchResult = await queryData(params)
-    if (searchResult?.data?.records?.length > 0) {
-      // 【去重】拿到排车单门店代码 （去掉中文提高容错率） 再拿到充电宝明细门店代码 在判断充电宝的是否是排车单的子集
-      const storeCodePCD = [...new Set(searchResult.data.records.map(item => item.DELIVERYPOINTCODE.replace(/[\u4e00-\u9fff]+/g, '')))]
-      const storeCodeCDB = [...new Set(selectedRows.map(item => item.SUPPLIERID.replace(/[\u4e00-\u9fff]+/g, '')))]
-      let pass = true
-      for (let i = 0; i < storeCodeCDB.length; i++) {
-        if (!storeCodePCD.includes(storeCodeCDB[i])) {
-          message.warning(`充电宝明细门店${storeCodeCDB[i]}不在排车单明细门店里面,请检查`, 5)
-          pass = false
-        }
-      }
-      if (!pass) return this.setState({ loading: false })
-    } else return this.setState({ loading: false }) || message.error(`该排车单明细数据为空???`, 5)
-
 
     // ---------------------------再请求添加------------------------------
-    const localhostUser = JSON.parse(localStorage.getItem('localhost-user'))
-    const OPERATOR = `[${localhostUser.code}]${localhostUser.name}` // 拿到操作人
+    const user = loginUser()                             // 拿到操作人
+    const OPERATOR = `[${user.code}]${user.name}` // [工号]操作人名
 
     const result = await saveFormData({
       code: 'sj_itms_powerbank_management',
@@ -120,17 +94,19 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
   /** 该方法会覆盖所有的上层按钮 */
   drawActionButton = () => {};
 
+
   /** 该方法会覆盖所有的中间功能按钮 */
   drawToolbarPanel = () => {
     const { loading } = this.state;
+    const { storeCodeList } = this.props;
     return (
       <div style={{ marginBottom: 10 }}>
         <Button type="primary" loading={loading} style={{ marginLeft: 10 }} onClick={this.confirmSubmission}>
           数据绑定 {this.props.billNumber}
         </Button>
+
+        <span>{storeCodeList?.length ? `当前排车单包涵门店：${storeCodeList.join('、')}`:''}</span>
       </div>
     )
   }
-
-
 }

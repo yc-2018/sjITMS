@@ -1187,7 +1187,7 @@ export default class QuickFormSearchPage extends SearchPage {
       }
     }
     return (
-      <div>
+      <div className={`${this?.props?.quickuuid}-SearchForm`}>
         <SimpleQuery
           toggleCallback={() => {
             this.setState({});
