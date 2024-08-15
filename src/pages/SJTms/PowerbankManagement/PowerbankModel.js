@@ -30,9 +30,9 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
 
   /** 监控门店变化变化 去改变搜索 */
   componentWillReceiveProps(nextProps) {
-    // 检查 父组件传过来的门店号列表 是否发生变化 且 不是空列表，就重置查询条件并查询
-    if (this.props.storeCodeList !== nextProps.storeCodeList && nextProps.storeCodeList.length > 0) {
-      let {queryConfig}=this.state;
+    const { queryConfig } = this.state
+    // 检查 父组件传过来的门店号列表 是否发生变化 且 不是空列表 且 queryConfig.columns存在，就重置查询条件并查询
+    if (this.props.storeCodeList !== nextProps.storeCodeList && nextProps.storeCodeList.length > 0 && queryConfig?.columns) {
       let creatorCol = queryConfig.columns.find(x => x.fieldName === 'SUPPLIERID');
       creatorCol.searchDefVal = nextProps.storeCodeList.join('||');
       this.setState({queryConfigColumns:queryConfig.columns,queryConfig,pageFilters:{}});
