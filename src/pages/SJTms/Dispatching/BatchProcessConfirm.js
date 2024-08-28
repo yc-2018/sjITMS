@@ -34,14 +34,22 @@ export default class BatchProcessConfirm extends Component {
     confirmLoading: false,
     task: {},
     refresh: {},
+    tip: <></>,                     // 批量操作前提示
   };
 
   componentDidMount() {
     this.props.onRef && this.props.onRef(this);
   }
 
-  //显示
-  show = (actionName, rowKeys, task, refresh) => {
+  /**
+   * 显示
+   * @param actionName{string} 操作名称 如删除、审核、作废等
+   * @param rowKeys{Array}     需要批量处理的列表
+   * @param task{Function}     执行任务方法（多次执行）
+   * @param refresh{Function} 刷新方法（重新搜索列表）
+   * @param tip{ReactNode}    刷新方法（重新搜索列表）
+  */
+  show = (actionName, rowKeys, task, refresh, tip = <></>) => {
     this.setState({
       actionName,
       rowKeys,
@@ -49,6 +57,7 @@ export default class BatchProcessConfirm extends Component {
       confirmModalVisible: true,
       task,
       refresh,
+      tip,
     });
   };
 
@@ -261,6 +270,7 @@ export default class BatchProcessConfirm extends Component {
       showFailedResultModal,
       confirmLoading,
       errMsg,
+      tip,
     } = this.state;
 
     return (
@@ -275,7 +285,8 @@ export default class BatchProcessConfirm extends Component {
           confirmLoading={confirmLoading}
           key="batchmodal1"
         >
-          <p className={styles.confirmTips}>{'是否批量' + actionName + taskCount + '个选项?'}</p>
+          <p className={styles.confirmTips}>{`是否批量${actionName}${taskCount}个选项?`}</p>
+          <div style={{textAlign: 'center'}}>{tip}</div>
         </Modal>
         {/* 进度 */}
         <Modal

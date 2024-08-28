@@ -75,7 +75,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
             if (selectedRows.length === 0) return message.error('请选择一条及以上审核项')
             // 全部都要是待审核状态
             if (selectedRows.some(i => i.STATNAME !== '待审核')) return message.error(`${selectedRows.find(i => i.STATNAME !== '待审核').STATNAME}状态不能审核`)
-            this.batchProcessConfirmRef.show('审核', selectedRows, this.onAudit, this.onSearch)
+            this.batchProcessConfirmRef.show('审核', selectedRows, this.onAudit, this.onSearch, <b style={{color: 'red'}}>请认真检查经纬度！以免后续司机找不到门店位置！</b>)
           }}
         >
           一键通过

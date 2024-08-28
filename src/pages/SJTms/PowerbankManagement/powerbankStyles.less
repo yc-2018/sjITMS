@@ -21,7 +21,7 @@
 // 充电宝管理搜索的地方太窄了，不用col样式了
 .mainTable{
   [class="ant-col ant-col-6"]{
-    width: 48% !important;
+    width: 50% !important;
   }
   // 隐藏'收起'
   div[style="float: right;"]> a[style="margin-right: 10px;"]{
@@ -32,4 +32,9 @@
   [class~="ant-dropdown-trigger"]{
     top:32px;
   }
+}
+
+// 整个表格向上一点
+[class="v_sj_itms_powerbank_management-SearchForm"] + div + div > div {
+  margin-top: -20px !important;
 }
