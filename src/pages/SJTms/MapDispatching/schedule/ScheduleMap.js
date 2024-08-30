@@ -17,6 +17,7 @@ import { loginOrg } from '@/utils/LoginContext';
 import ShopsIcon from '@/assets/common/shops.png';
 import { uniqBy, orderBy } from 'lodash';
 
+let refreshDataTimer = undefined;  // 刷新数据定时器
 export default class DispatchMap extends Component {
   state = {
     visible: false,
@@ -70,7 +71,7 @@ export default class DispatchMap extends Component {
       if (response.success) {
         let orders = response.data;
         const deliveryPoints = uniqBy(orders.map(x => x.deliveryPoint), x => x.uuid).map(
-          x => x.uuid
+          x => x.uuid,
         );
         if (deliveryPoints.length > 0) {
           const storeRespones = await getAddressByUuids(deliveryPoints);
@@ -88,7 +89,7 @@ export default class DispatchMap extends Component {
           });
           orders = orderBy(orders.filter(res => res), x => x.scheduleNum);
           this.setState({ orders });
-          setTimeout(() => {
+          refreshDataTimer = setInterval(() => {
             this.map?.clearOverlays();
             this.drawMarker(orders);
             this.drawMenu();
@@ -133,7 +134,7 @@ export default class DispatchMap extends Component {
     const icon = new BMapGL.Icon(ShopsIcon, new BMapGL.Size(160 / multiple, 160 / multiple), {
       imageOffset: new BMapGL.Size(
         (160 / multiple) * ((index % 5) - 1),
-        (160 / multiple) * (Math.ceil(index / 5) - 1)
+        (160 / multiple) * (Math.ceil(index / 5) - 1),
       ),
       imageSize: new BMapGL.Size(800 / multiple, 1000 / multiple),
     });
@@ -160,7 +161,7 @@ export default class DispatchMap extends Component {
     const menu = new BMapGL.ContextMenu();
     menuItems.forEach((item, index) => {
       menu.addItem(
-        new BMapGL.MenuItem(item.text, item.callback, { width: 100, id: 'menu' + index })
+        new BMapGL.MenuItem(item.text, item.callback, { width: 100, id: 'menu' + index }),
       );
     });
     this.contextMenu = menu;
@@ -204,7 +205,7 @@ export default class DispatchMap extends Component {
     const response = await queryDriverRoutes(
       startPoint,
       pointArr[pointArr.length - 1],
-      waypoints.join('|')
+      waypoints.join('|'),
     );
     if (response.success) {
       const routePaths = response.result.routes[0].steps.map(x => x.path);
@@ -223,7 +224,7 @@ export default class DispatchMap extends Component {
       });
       this.map?.addOverlay(polyline);
       this.map?.addOverlay(
-        this.drawRouteMarker(startPoint.split(',')[1], startPoint.split(',')[0], 50, 80, 400, 278)
+        this.drawRouteMarker(startPoint.split(',')[1], startPoint.split(',')[0], 50, 80, 400, 278),
       );
       this.map?.setViewport(pts);
     }
@@ -251,7 +252,14 @@ export default class DispatchMap extends Component {
           <Row type="flex" justify="space-between">
             <Col span={22} />
             <Col span={1}>
-              <Button onClick={() => this.setState({ visible: false })}>关闭</Button>
+              <Button
+                onClick={() => {
+                  clearInterval(refreshDataTimer);
+                  refreshDataTimer = undefined;
+                  this.setState({ visible: false });
+                }}>
+                关闭
+              </Button>
             </Col>
           </Row>
         }
