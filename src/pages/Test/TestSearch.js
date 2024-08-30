@@ -6,6 +6,7 @@ import { connect } from 'dva'
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage'
 import CreatePageModal from '../Component/RapidDevelopment/OnlForm/QuickCreatePageModal'
 import TestView from './TestView'
+import styles from '@/pages/SJTms/PowerbankManagement/powerbankStyles.less'
 // import FormPanel from '../Component/Form/FormPanel';
 
 @connect(({ quick, loading }) => ({
@@ -74,23 +75,35 @@ export default class TestSearch extends QuickFormSearchPage {
   /** 该方法会覆盖所有的搜索查询 */
   drawSearchPanel = () => {}
 
+  // /**
+  //  该方法用于修改table的render
+  //  e的对象结构为{
+  //  column       // 对应的column
+  //  record,      // 对应的record
+  //  component,   // render渲染的组件
+  //  val          // val值
+  //  }
+  //  */
+  // drawcell = e => {
+  //   //找到fieldName为CODE这一列 更改它的component
+  //   if (e.column.fieldName === 'CODE') {
+  //     // const component = <p3 style={{ color: 'red' }}>{e.val}</p3>;
+  //     const component = <a onClick={this.onView.bind(this, e.record)} style={{ color: 'red' }}>{e.val}</a>
+  //     e.component = component;
+  //   }
+  // };
   /**
-   该方法用于修改table的render
-   e的对象结构为{
-   column       // 对应的column
-   record,      // 对应的record
-   component,   // render渲染的组件
-   val          // val值
-   }
-   */
-  drawcell = e => {
-    //找到fieldName为CODE这一列 更改它的component
-    if (e.column.fieldName === 'CODE') {
-      // const component = <p3 style={{ color: 'red' }}>{e.val}</p3>;
-      const component = <a onClick={this.onView.bind(this, e.record)} style={{ color: 'red' }}>{e.val}</a>
-      e.component = component;
+   * @description 改变每一行的数据展示（这里改变状态颜色）
+   * @param row 行数据
+   * */
+  drawcell = row => {
+    if (row.column.fieldName === 'STAT') {  // 如果有预览字段(如：STATCN)  还是用本来的字段
+      let color = this.colorChange(row.record.STAT, row.column.textColorJson);  // 低代码里面填 文本颜色 ：scheduleStat,sjtstms
+      let textColor = color ? this.hexToRgb(color) : 'black';
+      row.component = <div className={styles.stat} style={{ backgroundColor: color, color: textColor }}>{row.val}</div>
     }
   };
+
 
   /**
    * 该方法用于自定义扩展列

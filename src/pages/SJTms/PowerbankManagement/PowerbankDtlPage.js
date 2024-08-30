@@ -109,14 +109,16 @@ export default class PowerbankAndDtlPage extends PureComponent {
 
   render() {
     const { data, showModel, storeCodeList } = this.state
-    const { billNumber } = this.props
+    const { billNumber, isBind } = this.props
     return (
       <div>
-        {billNumber &&
+        {billNumber && isBind &&
           <Button type="primary" onClick={this.openPowerBankModel} style={{ margin: 5 }}>
             关联充电宝收退单
           </Button>
         }
+        {!isBind && <Button disabled style={{ margin: 5 }}>发运后不能关联再充电宝收退单</Button>}
+
         <div style={{ height: 'calc(100vh - 222px)', backgroundColor: 'white' }}>
           {data?.length > 0 ?
             <Table

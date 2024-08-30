@@ -7,9 +7,9 @@ import { connect } from 'dva'
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage'
 import PageHeaderWrapper from '@/components/PageHeaderWrapper'
 import Page from '@/pages/Component/Page/inner/Page'
-import { DndProvider } from 'react-dnd'
 import { Form } from 'antd'
 import styles from './powerbankStyles.less'
+import React from 'react'
 
 @connect(({ quick, loading }) => ({
   quick,
@@ -30,6 +30,19 @@ export default class PowerbankSearchPage extends QuickFormSearchPage {
     // 搜索方法给弹窗用，不用传来传去的
     window.PowerbankSearchPage = { onSearch: this.onSearch }
   }
+
+  /**
+   * @description 改变每一行的数据展示（这里改变状态颜色）
+   * @param row 行数据
+   * */
+  drawcell = row => {
+    if (row.column.fieldName === 'STAT') {  // 如果有预览字段  还是用本来的字段
+      let color = this.colorChange(row.record.STAT, row.column.textColorJson);
+      let textColor = color ? this.hexToRgb(color) : 'black';
+      row.component = <div className={styles.stat} style={{ backgroundColor: color, color: textColor }}>{row.val}</div>
+    }
+  };
+
 
   /**
    * 点击某行时调用，父组件会调用，给明细页刷新对应的数据
