@@ -87,7 +87,11 @@ export default class PowerbankAndDtlPage extends PureComponent {
               <Row gutter={[0, 1]}>
                 <Col>
                   <Card title={<b>收退管理明细 {selectRows?.BILLNUMBER}</b>} bodyStyle={{ padding: 5 }}>
-                    <DtlPage billNumber={selectRows?.BILLNUMBER} isBind={isBind} />
+                    <DtlPage
+                      isBind={isBind}
+                      billNumber={selectRows?.BILLNUMBER}
+                      storeCodeList={selectRows?.STORECODE?.split(',') ?? []}
+                    />
                   </Card>
                 </Col>
               </Row>

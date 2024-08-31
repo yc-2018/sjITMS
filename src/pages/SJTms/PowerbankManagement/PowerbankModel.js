@@ -26,21 +26,37 @@ export default class DriverCustomerLessBuy extends QuickFormSearchPage {
     };
   }
 
-
-
-  /** 监控门店变化变化 去改变搜索 */
-  componentWillReceiveProps(nextProps) {
+  /**
+   * 变成在抽屉里面后，挂着是打开才开始的，所以第一次门店传进来是不会改变的，所以还要加上列从无到有的一次改变
+   * @author ChenGuangLong
+   * @since 2024/8/31 15:27
+  */
+  componentDidUpdate (prevProps, prevState) {
     const { queryConfig } = this.state
-    // 检查 父组件传过来的门店号列表 是否发生变化 且 不是空列表 且 queryConfig.columns存在，就重置查询条件并查询
-    if (this.props.storeCodeList !== nextProps.storeCodeList && nextProps.storeCodeList.length > 0 && queryConfig?.columns) {
-      let creatorCol = queryConfig.columns.find(x => x.fieldName === 'SUPPLIERID');
-      creatorCol.searchDefVal = nextProps.storeCodeList.join('||');
-      this.setState({queryConfigColumns:queryConfig.columns,queryConfig,pageFilters:{}});
-      window.setTimeout(() => {
-        this.onSearch('reset')  // 重置查询条件。 在 SearchForm.js组件中有this.props.form.resetFields();没对外提供，导致对外显示的值没有变
-        document.querySelectorAll('.v_rtn_cy-SearchForm button')?.[1]?.click() // 点击重置按钮
-        this.onSearch()               // 查询数据
-      }, 100)
+    const { storeCodeList } = this.props
+    const changeACondition = () => {
+      let creatorCol = queryConfig.columns.find(x => x.fieldName === 'SUPPLIERID')
+      if (creatorCol) {
+        creatorCol.searchDefVal = storeCodeList.join('||')
+        this.setState({ queryConfigColumns: queryConfig.columns, pageFilters: {} })
+        window.setTimeout(() => {
+          // this.onSearch('reset')  // 重置查询条件。 在 SearchForm.js组件中有this.props.form.resetFields();没对外提供，导致对外显示的值没有变
+          document.querySelectorAll('.v_rtn_cy-SearchForm button')?.[1]?.click() // 点击重置按钮
+          this.onSearch()               // 查询数据
+        }, 100)
+      }
+    }
+
+    // 检查 queryConfig.columns 是否已经从 null 变为非 null ⭐⭐⭐就是第一次进来的时候执行
+    if (!prevState.queryConfig?.columns && queryConfig?.columns) {
+      console.log('——————————█监控到初始化列成功█————————————')
+      changeACondition()
+    }
+
+    // 监控门店变化变化 去改变搜索                           ⭐⭐⭐就是第一次以外进来的时候门店发生变化后执行
+    if (queryConfig?.columns && storeCodeList.length > 0 && prevProps.storeCodeList !== storeCodeList) {
+      console.log('——————————█监控到门店发生变化█————————————')
+      changeACondition()
     }
   }
 
