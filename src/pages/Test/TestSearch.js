@@ -25,6 +25,7 @@ export default class TestSearch extends QuickFormSearchPage {
       canDragTable: true,       // 【覆】启动拖拽
       noTable: false,           // 【覆】框架的表格显示(默认)
       isRadio: true,            // 【覆】表行是否单选
+      unShowRow: true,          // 【覆】无表格每一行前面的复选框, 控制 Table rowSelection (这样也没发选择某一行了)
       isShow: false,
     };
   }
