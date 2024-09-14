@@ -94,7 +94,7 @@ export default class PowerbankAndDtlPage extends PureComponent {
             关联充电宝收退单
           </Button>
         }
-        {!isBind && <Button disabled style={{ margin: 5 }}>发运后不能再操作充电宝收退单</Button>}
+        {!isBind && <Button disabled style={{ margin: 5 }}>当前状态不能再操作充电宝收退单</Button>}
 
         <div style={{ height: 'calc(100vh - 222px)', backgroundColor: 'white' }}>
           {data?.length > 0 ?
