@@ -17,7 +17,6 @@ import { loginOrg } from '@/utils/LoginContext';
 import ShopsIcon from '@/assets/common/shops.png';
 import { uniqBy, orderBy } from 'lodash';
 
-let refreshDataTimer = undefined;  // 刷新数据定时器
 export default class DispatchMap extends Component {
   state = {
     visible: false,
@@ -89,12 +88,10 @@ export default class DispatchMap extends Component {
           });
           orders = orderBy(orders.filter(res => res), x => x.scheduleNum);
           this.setState({ orders });
-          refreshDataTimer = setInterval(() => {
             this.map?.clearOverlays();
             this.drawMarker(orders);
             this.drawMenu();
             this.autoViewPort(orders);
-          }, 500);
         }
       }
     }
@@ -254,8 +251,6 @@ export default class DispatchMap extends Component {
             <Col span={1}>
               <Button
                 onClick={() => {
-                  clearInterval(refreshDataTimer);
-                  refreshDataTimer = undefined;
                   this.setState({ visible: false });
                 }}>
                 关闭
