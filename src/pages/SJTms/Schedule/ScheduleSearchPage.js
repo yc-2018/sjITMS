@@ -45,7 +45,8 @@ import scher from '@/assets/common/scher.jpg';
 import { havePermission } from '@/utils/authority';
 import moment from 'moment';
 import { dynamicQuery } from '@/services/quick/Quick';
-import DispatchMapT from '@/pages/SJTms/MapDispatching/schedule/ScheduleMap';
+// import DispatchMapT from '@/pages/SJTms/MapDispatching/schedule/ScheduleMap';
+import ScheduleGdMap from '@/pages/SJTms/MapDispatching/schedule/ScheduleGdMap';
 import mapIcon from '@/assets/common/map.svg';
 
 @connect(({ quick, loading }) => ({
@@ -287,7 +288,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
             </Form.Item>
           </Form>
         </Modal>
-        <DispatchMapT onRef={node => (this.dispatchMapRef = node)} />
+        {/*  <DispatchMapT onRef={node => (this.dispatchMapRef = node)} /> */}
+        <ScheduleGdMap onRef={node => (this.dispatchMapRef = node)} />
       </>
     );
   };

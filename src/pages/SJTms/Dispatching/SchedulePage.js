@@ -16,7 +16,8 @@ import CreatePageModal from '@/pages/Component/RapidDevelopment/OnlForm/QuickCre
 import EllipsisCol from '@/pages/Component/Form/EllipsisCol';
 import mapIcon from '@/assets/common/map.svg';
 import { ScheduleColumns, pagination } from './DispatchingColumns';
-import DispatchMap from '@/pages/SJTms/MapDispatching/schedule/ScheduleMap';
+// import DispatchMap from '@/pages/SJTms/MapDispatching/schedule/ScheduleMap';
+import ScheduleGdMap from '@/pages/SJTms/MapDispatching/schedule/ScheduleGdMap'
 import dispatchingStyles from './Dispatching.less';
 import { convertDateToTime } from '@/utils/utils';
 import { loginUser, loginCompany, loginOrg } from '@/utils/LoginContext';
@@ -560,7 +561,8 @@ export default class SchedulePage extends Component {
       <div>
         {/* 批量操作 */}
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
-        <DispatchMap onRef={node => (this.dispatchMapRef = node)} />
+        {/* <DispatchMap onRef={node => (this.dispatchMapRef = node)} /> */}
+        <ScheduleGdMap onRef={node => {this.dispatchMapRef = node}}/>
         {/* 编辑排车单 */}
         <DispatchingCreatePage
           modal={{ title: '编辑排车单' }}

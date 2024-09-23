@@ -40,6 +40,7 @@
     "docker-prod:build": "docker-compose -f ./docker/docker-compose.yml build"
   },
   "dependencies": {
+    "@amap/amap-jsapi-loader": "^1.0.1",
     "@antv/data-set": "^0.9.6",
     "@antv/g2": "^4.2.5",
     "@babel/runtime": "^7.1.2",
