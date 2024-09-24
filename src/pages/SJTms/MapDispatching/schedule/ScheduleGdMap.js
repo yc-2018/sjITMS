@@ -1,6 +1,6 @@
 /*
  * @Author: chenGuangLong
- * @Date: 2024-09-21 
+ * @Date: 2024-09-21
  * @Description: 排车单高德地图
  * @FilePath: \iwms-web\src\pages\SJTms\MapDispatching\schedule\ScheduleGdMap.js
  */
@@ -69,27 +69,10 @@ export default class ScheduleGdMap extends Component {
     orders = orderBy(orders.filter(res => res), x => x.iconNum)
     window.setTimeout(() => {
       this.gdMapRef.current.addStoreMarkers(orders, this.setMarkerLabel) // 绘制门店图标
-      this.autoFocusViewPort(orders)                                                    // 自动聚焦
+      this.gdMapRef.current.autoFocusViewPort(orders)                                   // 自动聚焦
     }, 1000)
 
     this.setState({ orders })
-  }
-
-  /**
-   * 获取最大经度和纬度，获取最小经度和纬度（自动聚焦）
-   * @param points{[{longitude:number,latitude:number}]} 带经纬度的对象列表
-   * @author ChenGuangLong
-   * @since 2024/9/20 11:49
-   */
-  autoFocusViewPort = points => {
-    try {
-      const maxLng = Math.max(...points.map(point => point.longitude)) + 0.009
-      const minLng = Math.min(...points.map(point => point.longitude)) - 0.009
-      const maxLat = Math.max(...points.map(point => point.latitude)) + 0.009
-      const minLat = Math.min(...points.map(point => point.latitude)) - 0.009
-      const bounds = new this.gdMapRef.current.AMap.Bounds([minLng, minLat], [maxLng, maxLat])
-      this.gdMapRef.current.map.setBounds(bounds)
-    } catch (e) {console.error('对焦报错了:', e) }
   }
 
   /**
@@ -140,7 +123,7 @@ export default class ScheduleGdMap extends Component {
 
     // 起点对象(给线路用)
     const [latitude, longitude] = startPoint.split(',')
-    const startPointObj = {
+    const WarehousePointObj = {
       longitude: Number(longitude),
       latitude: Number(latitude),
     }
@@ -156,8 +139,10 @@ export default class ScheduleGdMap extends Component {
     // 按排车单规划路线
     rowKeys.forEach(rowKey => {
       const pointList = uniqueOrderList.filter(res => res.billUuid === rowKey)
-      // 列表最前面加上起点
-      pointList.unshift(startPointObj)
+      // 列表最前面加上起点(仓库位置)
+      pointList.unshift(WarehousePointObj)
+      // 列表最后面加上终点(仓库位置)
+      pointList.push(WarehousePointObj)
       // 每次规划16个指标点
       this.chunkArrayWithOverlap(pointList, 16).forEach(points => {
         const endIndex = points.length - 1
@@ -193,7 +178,7 @@ export default class ScheduleGdMap extends Component {
     const { orders } = this.state
     this.drivingList.forEach(driving => driving.clear())  // 清除所有路线
     this.drivingList = []
-    this.autoFocusViewPort(orders)                 // 自动聚焦
+    this.gdMapRef.current.autoFocusViewPort(orders)       // 自动聚焦
     this.setState({ showLine: true })
   }
 

@@ -70,7 +70,7 @@ const cachedSave = (response, hashcode) => {
       .then(content => {
         sessionStorage.setItem(hashcode, content);
         sessionStorage.setItem(`${hashcode}:timestamp`, Date.now());
-      });
+      }).catch(e => {console.warn("🔴方法cachedSave报错：", e)});
   }
   return response;
 };

@@ -1,6 +1,9 @@
 import React, { Component } from 'react'
 import AMapLoader from '@amap/amap-jsapi-loader'
 import ShopsIcon from '@/assets/common/shops.png';
+import MyjRedIcon from '@/assets/common/22.png'
+import MyjGreenIcon from '@/assets/common/23.png';
+import MyjBlueIcon from '@/assets/common/24.png';
 import './index.less'
 
 /**
@@ -23,14 +26,14 @@ class GdMap extends Component {
     AMapLoader.load({
       key: '0adda227efca2b24d25df3213c87cca2', // 需要设置您申请的key
       version: '2.0',
-      plugins: ['AMap.ToolBar', 'AMap.Driving'],
+      plugins: ['AMap.ToolBar', 'AMap.Driving','AMap.MouseTool'],
       AMapUI: { version: '1.1', plugins: [], },
       Loca: { version: '2.0.0' },
     }).then((AMap) => {
-      this.AMap=AMap
+      this.AMap = AMap
       this.map = new AMap.Map('mapcontainer', {
         viewMode: '3D',
-        zoom: 5,
+        zoom: 12,
         zooms: [2, 22],
         center: [113.802834,23.061303],
       })
@@ -60,15 +63,18 @@ class GdMap extends Component {
    * 生成门店图标
    * @param positionArr{[{longitude:number,latitude:number,iconNum:number}]} 包涵经纬度和图标序号（1~20）
    * @param labelContent{(item)=>string}                                    显示文字(元素也得用双引号括起来)
+   * @param icon{'store'|'myj'}                                             图标
    * @author ChenGuangLong
    * @since 2024/9/20 10:04
    */
-  addStoreMarkers = (positionArr, labelContent = null) => {
+  addStoreMarkers = (positionArr, labelContent = null, icon = 'store') => {
     positionArr.forEach(item => {
       const marker = new this.AMap.Marker({            // 创建一个Marker对象
         position: [item.longitude, item.latitude],          // 设置Marker的位置
-        icon: this.generateStoreIcon(item.iconNum),    // 设置Marker的图标
+        icon: icon === 'store' ?                            // 设置Marker的图标
+          this.generateStoreIcon(item.iconNum): this.generateMyjIcon(item),
         anchor: 'bottom-center',                            // 设置Marker的锚点
+        extData: { icon },                                  // 用户自定义属性
       })
       if (labelContent) {                                   // 如果有文字 就鼠标移入显示文字
         marker.on('mouseover', () => {                // 鼠标移入
@@ -87,6 +93,24 @@ class GdMap extends Component {
       this.map.add(marker)
     })
   }
+
+    /**
+     * 获取最大经度和纬度，获取最小经度和纬度（自动聚焦）
+     * @param points{[{longitude:number,latitude:number}]} 带经纬度的对象列表
+     * @author ChenGuangLong
+     * @since 2024/9/20 11:49
+     */
+    autoFocusViewPort = points => {
+      if (!points || !points.length) return;
+      try {
+        const maxLng = Math.max(...points.map(point => point.longitude)) + 0.009
+        const minLng = Math.min(...points.map(point => point.longitude)) - 0.009
+        const maxLat = Math.max(...points.map(point => point.latitude)) + 0.009
+        const minLat = Math.min(...points.map(point => point.latitude)) - 0.009
+        const bounds = new this.AMap.Bounds([minLng, minLat], [maxLng, maxLat])
+        this.map.setBounds(bounds)
+      } catch (e) {console.error('对焦报错了:', e) }
+    }
 
   /**
    * 清除地图所有覆盖物
@@ -111,15 +135,29 @@ class GdMap extends Component {
     })
   }
 
+  /**
+   * 生成美宜佳图标
+   * @author ChenGuangLong
+   * @since 2024/9/23 16:30
+  */
+  generateMyjIcon = (order = {}) => {
+    const icon = order.isSelect ? (order.sort ? MyjBlueIcon : MyjGreenIcon) : MyjRedIcon
+    return new this.AMap.Icon({
+      size: new this.AMap.Size(20, 20),          // 图标尺寸
+      image: icon,                               // 图标的取图地址
+      imageSize: new this.AMap.Size(20, 20),     // 图标所用图片大小
+    })
+  }
+
   render () {
-    const { title } = this.props
+    const { title,style={} } = this.props
     // 1.创建地图容器
     return (
       <div className="home_div">
         <div className="map-title">
           <h3>{title}</h3>
         </div>
-        <div id="mapcontainer" className="map" style={{ height: '100%' }} />
+        <div id="mapcontainer" className="map" style={{ height: '100%', ...style }}/>
       </div>
     )
   }
