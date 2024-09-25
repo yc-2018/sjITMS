@@ -89,7 +89,6 @@ class GdMap extends Component {
    * @since 2024/9/20 10:04
    */
   addStoreMarkers = (positionArr = [], labelContent = null, icon = 'store', click) => {
-    let i = 0
     const positionList = positionArr.filter(item=>item.longitude && item.latitude)
     if (positionList.length === 0) return
     this.markerObj[icon] = []                               // 清空数组

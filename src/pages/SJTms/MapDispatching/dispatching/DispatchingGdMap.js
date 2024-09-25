@@ -23,6 +23,7 @@ import { loginCompany, loginOrg } from '@/utils/LoginContext'
 import truck from '@/assets/common/truck.svg'
 import SearchForm from '@/pages/SJTms/MapDispatching/dispatching/SearchForm'
 import GdMap from '@/components/GdMap'
+import startMarkerIcon from '@/assets/common/startMarker.png'
 
 /**
  * build简化Flex Div代码 +++
@@ -52,7 +53,9 @@ export default class DispatchMap extends Component {
   basicScheduleList = []
   select = null
   rectangleTool = null                           // 存储创建好的矩形选取工具
-  gdMapRef = React.createRef()     // 高德地图ref
+  startMarker = null                             // 起始点（仓库位置坐标)
+  drivingList = []                                    // 路线规划数据
+  gdMapRef = React.createRef()    // 高德地图ref
   state = {
     allTotals: {
       cartonCount: 0,               // 整件数
@@ -86,6 +89,7 @@ export default class DispatchMap extends Component {
     volumet: 0,
     multiVehicle: false,              // 是否多载具+++
     mapSelect: false,                 // 地图框选
+    showLine: false,                  // 显示线路
   }
 
   colors = [
@@ -298,7 +302,7 @@ export default class DispatchMap extends Component {
       const { orders } = this.state
       const selectPoints = orders.filter(x => x.isSelect)
       if (selectPoints.length === 0) return message.error('请选择需要排车的门店！')
-      this.searchRoute(selectPoints)
+      this.openLine(selectPoints)
     }, 3)
     contextMenu.addItem('距离量测', () => {
       mouseTool.rule()
@@ -459,45 +463,78 @@ export default class DispatchMap extends Component {
     }
   }
 
-  // 路线规划
-  searchRoute = async selectPoints => {
-    const { map } = this
+  /**
+   * 显示线路
+   * @author ChenGuangLong
+   * @since 2024/9/21 9:03
+   */
+  openLine = selectPoints => {
     const { startPoint } = this.state
-    const pointArr = selectPoints.map(order => {
-      return `${order.latitude},${order.longitude}`.trim()
-    })
-    const waypoints = pointArr.filter((_, index) => index < pointArr.length - 1)
-    const response = await queryDriverRoutes(
-      startPoint,
-      pointArr[pointArr.length - 1],
-      waypoints.join('|')
-    )
-    if (response.success) {
-      const routePaths = response.result.routes[0].steps.map(x => x.path)
-      const pts = new Array()
-      routePaths.forEach(path => {
-        const points = path.split(';')
-        points.forEach(point => {
-          pts.push(new BMapGL.Point(point.split(',')[0], point.split(',')[1]))
-        })
-      })
-      const polyline = new BMapGL.Polyline(pts, {
-        strokeColor: '#00bd01',
-        strokeWeight: 6,
-        strokeOpacity: 1,
-      })
-      map.addOverlay(polyline)
-      map.addOverlay(
-        this.drawRouteMaker(startPoint.split(',')[1], startPoint.split(',')[0], 50, 80, 400, 278)
-      )
-      selectPoints.forEach((point, index) => {
-        index == selectPoints.length - 1
-          ? map.addOverlay(this.drawRouteMaker(point.longitude, point.latitude, 50, 80, 450, 278))
-          : map.addOverlay(this.drawRouteMaker(point.longitude, point.latitude, 70, 80, 530, 420))
-      })
-      map.setViewport(pts)
+    const { AMap, map } = this.gdMapRef.current
+    // 先清除上次绘制的路线
+    if (this.drivingList.length) this.closeLine(true)
+
+    // 仓库点对象(给线路用)
+    const [latitude, longitude] = startPoint.split(',')
+    const warehousePointObj = {
+      longitude: Number(longitude),
+      latitude: Number(latitude),
     }
+
+    // 起点坐标（绘制图标用）
+    this.startMarker = new AMap.Marker({
+      position: [Number(longitude), Number(latitude)],  // 设置Marker的位置
+      anchor: 'bottom-center',                                      // 设置Marker的锚点
+      icon: startMarkerIcon,
+    })
+    map.add(this.startMarker)
+
+    // 列表最前面加上起点(仓库位置)
+    selectPoints.unshift(warehousePointObj)
+    // 列表最后面加上终点(仓库位置)
+    selectPoints.push(warehousePointObj)
+    // 每次规划16个指标点
+    this.gdMapRef.current.chunkArrayWithOverlap(selectPoints, 16).forEach(pointList => {
+      const endIndex = pointList.length - 1
+      // 构造路线导航类
+      const driving = new AMap.Driving({
+        map,                // 绘制路线的Map对象
+        ferry: 1,           // 为1的时候表示不可以使用轮渡
+        hideMarkers: true,  // 不显示点标记
+      })
+      // 根据起终点经纬度规划驾车导航路线
+      driving.search(
+        new AMap.LngLat(pointList[0].longitude, pointList[0].latitude),
+        new AMap.LngLat(pointList[endIndex].longitude, pointList[endIndex].latitude), {
+          waypoints: pointList.slice(1, -1).map(point => new AMap.LngLat(point.longitude, point.latitude)),
+        }, (status, result) => {
+          // result 即是对应的驾车导航信息，相关数据结构文档请参考  https://lbs.amap.com/api/javascript-api/reference/route-search#m_DrivingResult
+          if (status === 'complete') {
+            // message.success('绘制驾车路线成功')
+          } else {
+            message.error('获取驾车数据失败')
+            console.warn('获取驾车数据失败>', result)
+          }
+        })
+      this.drivingList.push(driving)  // 保存路线到数组
+    })
+    this.setState({ showLine: true })
   }
+
+  /**
+   * 关闭线路
+   * @param onOff 是否显示关闭按钮
+   * @author ChenGuangLong
+   * @since 2024/9/25 17:37
+   */
+  closeLine = (onOff = false) => {
+    this.startMarker?.remove()                            // 删除起点图标
+    this.startMarker = null
+    this.drivingList.forEach(driving => driving.clear())  // 清除所有路线
+    this.drivingList = []
+    this.setState({ showLine: onOff })
+  }
+
 
   // 路线规划
   searchRoute2 = async selectPoints => {
@@ -562,99 +599,12 @@ export default class DispatchMap extends Component {
     const selectOrderStoreCodes = orderMarkers
     .filter(x => x.isSelect)
     .map(e => e.deliveryPoint.code)
-    let allSelectOrders = orders.filter(
-      e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) != -1
-    )
-    // console.log('22', selectOrderStoreCodes, allSelectOrders);
-    // const selectPoints = orders.filter(x => x.isSelect);
-    if (allSelectOrders.length === 0) {
-      message.error('请选择需要排车的门店！')
-      return
-    }
-    if (schedule) {
-      schedule.uuid = schedule.UUID
-    }
+    let allSelectOrders = orders.filter(e => selectOrderStoreCodes.indexOf(e.deliveryPoint.code) !== -1)
+    if (allSelectOrders.length === 0) return message.error('请选择需要排车的门店！')
+    if (schedule) schedule.uuid = schedule.UUID
+
     allSelectOrders = uniqBy(allSelectOrders, 'uuid')
     this.props.dispatchingByMap(isEdit, isEdit ? schedule : allSelectOrders, allSelectOrders)
-  }
-
-  // 右键菜单
-  drawMenu = () => {
-    const { orders } = this.state
-    if (orders.length <= 0 || this.contextMenu) return
-    const menuItems = [
-      {
-        text: '排车(ALT+Q)',
-        callback: () => {
-          this.saveSchedule()
-        },
-      },
-      {
-        text: '取消选中',
-        callback: () => {
-          const { orders } = this.state
-          orders.map(e => {
-            e.isSelect = false
-            e.sort = undefined
-          })
-          this.setState({ orders })
-        },
-      },
-      {
-        text: '路线规划',
-        callback: () => {
-          const { orders } = this.state
-          const selectPoints = orders.filter(x => x.isSelect)
-          if (selectPoints.length === 0) {
-            message.error('请选择需要排车的门店！')
-            return
-          }
-          this.searchRoute(selectPoints)
-        },
-      },
-      {
-        text: '导航',
-        callback: () => {
-          const { orders } = this.state
-          let selectPoints = orders.filter(x => x.isSelect)
-          selectPoints = selectPoints.map(order => {
-            return { ...order.deliveryPoint, latitude: order.latitude, longitude: order.longitude }
-          })
-          selectPoints = uniqBy(selectPoints, x => x.uuid)
-          if (selectPoints.length < 1) {
-            message.error('请选择导航起点门店和终点门店！')
-            return
-          }
-          const url = `http://api.map.baidu.com/direction?origin=latlng:${
-            selectPoints[0].latitude
-          },${selectPoints[0].longitude}|name:${selectPoints[0].name.replace(
-            /\([^\)]*\)/g,
-            ''
-          )}&destination=${selectPoints[selectPoints.length - 1].latitude},${
-            selectPoints[selectPoints.length - 1].longitude
-          }|name:${selectPoints[selectPoints.length - 1].name.replace(
-            /\([^\)]*\)/g,
-            ''
-          )}&mode=driving&region=东莞市&output=html&src=webapp.companyName.appName&coord_type=bd09ll`
-          window.open(url, '_blank')
-        },
-      },
-      {
-        text: '显示已排',
-        callback: () => {
-          this.setState({ showScheduled: !this.state.showScheduled })
-        },
-      },
-    ]
-
-    const menu = new BMapGL.ContextMenu()
-    menuItems.forEach((item, index) => {
-      menu.addItem(
-        new BMapGL.MenuItem(item.text, item.callback, { width: 100, id: `menu${index}` })
-      )
-    })
-    this.contextMenu = menu
-    this.map?.addContextMenu(menu)
   }
 
   // 画框选取送货点
@@ -961,6 +911,7 @@ export default class DispatchMap extends Component {
       checkSchedules,
       multiVehicle, // 是否多载具+++
       mapSelect,
+      showLine,
     } = this.state
     const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort)
     const totals = this.getTotals(selectOrder)
@@ -1183,6 +1134,13 @@ export default class DispatchMap extends Component {
                     }}
                   >
                     <Icon type="select"/>
+                  </Button>
+                  <Button
+                    size="large"
+                    onClick={() => this.closeLine(false)}
+                    style={{ zIndex: 1, display: showLine ? 'unset' : 'none', marginLeft: 20 }}
+                  >
+                    隐藏线路
                   </Button>
                 </div>
               }
