@@ -128,7 +128,7 @@ export default class ScheduleGdMap extends Component {
       latitude: Number(latitude),
     }
 
-    // 起点指标（绘制图标用）
+    // 起点坐标（绘制图标用）
     this.startMarker = new AMap.Marker({
       position: [Number(longitude), Number(latitude)],  // 设置Marker的位置
       anchor: 'bottom-center',                                      // 设置Marker的锚点
@@ -144,7 +144,7 @@ export default class ScheduleGdMap extends Component {
       // 列表最后面加上终点(仓库位置)
       pointList.push(WarehousePointObj)
       // 每次规划16个指标点
-      this.chunkArrayWithOverlap(pointList, 16).forEach(points => {
+      this.gdMapRef.current.chunkArrayWithOverlap(pointList, 16).forEach(points => {
         const endIndex = points.length - 1
         // 构造路线导航类
         const driving = new AMap.Driving({
@@ -182,27 +182,7 @@ export default class ScheduleGdMap extends Component {
     this.setState({ showLine: true })
   }
 
-  /**
-   * 将一个数组按指定大小分割为多个子数组，相邻的子数组之间会有一个重叠元素。
-   *
-   * @param {Array} array - 需要分割的原始数组。
-   * @param {number} size - 每个子数组的大小。每个子数组的最后一个元素
-   *                        会作为下一个子数组的第一个元素。
-   * @returns {Array[]} 返回一个二维数组，每个子数组为分割后的数组，且相邻的子数组
-   *                    之间有重叠的元素。
-   *
-   * @example
-   * const list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-   * const chunked = chunkArrayWithOverlap(list, 5);
-   * console.log(chunked); // [[1, 2, 3, 4, 5], [5, 6, 7, 8, 9], [9, 10, 11, 12]]
-   */
-  chunkArrayWithOverlap = (array, size) => {
-    const result = []
-    for (let i = 0; i < array.length; i += (size - 1)) { // 步进值确保每组之间有一个重叠元素
-      result.push(array.slice(i, i + size))
-    }
-    return result
-  }
+
 
   render () {
     const { visible, showLine, orders } = this.state

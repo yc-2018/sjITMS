@@ -36,6 +36,9 @@ module.exports = {
     'consistent-return': 'off',                 // 忽略统一的返回值
     'react/no-access-state-in-setstate': 'off', // 忽略在setState中使用this.state
     'no-param-reassign': 'off',                 // 忽略参数重新赋值
+    'prefer-destructuring': 'off',              // 忽略解构赋值
+    'prefer-const': 'off',                      // 忽略常量声明
+    'dot-notation': 'warn',                     // 警告点符号
   },
   settings: {
     polyfills: ['fetch', 'promises', 'url'],
