@@ -12,12 +12,7 @@ import { uniqBy } from 'lodash'
 import { getSchedule, getDetailByBillUuids } from '@/services/sjitms/ScheduleBill'
 import style from './DispatchingMap.less'
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon'
-import {
-  queryDriverRoutes,
-  queryDriverRoutes2,
-  queryAuditedOrderByParams,
-  GetConfig,
-} from '@/services/sjitms/OrderBill'
+import { queryAuditedOrderByParams, GetConfig } from '@/services/sjitms/OrderBill'
 import { queryDict, queryData, dynamicQuery } from '@/services/quick/Quick'
 import { loginCompany, loginOrg } from '@/utils/LoginContext'
 import truck from '@/assets/common/truck.svg'
@@ -270,12 +265,25 @@ export default class DispatchMap extends Component {
   }
 
   /**
+   * 刷新美宜佳坐标
+   * @param {Array} [orderMarkerList] 美宜佳点位列表 传就用传的 不传就用state的orderMarkers
+   * @author ChenGuangLong
+   * @since 2024/9/26 14:25
+   */
+  reloadMyjMarkers = orderMarkerList => {
+    const { orderMarkers } = this.state // 其实有些地方我没看懂 有些地方只修改了orders，但是orderMarkers就变了？ 共用地址导致？
+    const { removeMarkersByType, addStoreMarkers } = this.gdMapRef.current
+    removeMarkersByType('myj')
+    addStoreMarkers(orderMarkerList ?? orderMarkers, this.setMarkerLabel, 'myj', this.onClickMarker)
+  }
+
+  /**
    * 右键菜单
    * @author ChenGuangLong
    * @since 2024/9/24 9:47
    */
   gdMapContextMenu = () => {
-    const { AMap, map, removeMarkersByType, addStoreMarkers } = this.gdMapRef.current
+    const { AMap, map } = this.gdMapRef.current
     // 创建右键菜单
     const contextMenu = new AMap.ContextMenu()
     // 地图中添加鼠标工具MouseTool插件
@@ -293,8 +301,7 @@ export default class DispatchMap extends Component {
         item.isSelect = false
         item.sort = undefined
       })
-      removeMarkersByType('myj')
-      addStoreMarkers(orderMarkers, this.setMarkerLabel, 'myj',this.onClickMarker)
+      this.reloadMyjMarkers(orderMarkers) // 重新加载美宜佳图标
       this.setState({ orders })
     }, 2)
     contextMenu.addItem('路线规划', () => {
@@ -393,7 +400,7 @@ export default class DispatchMap extends Component {
 
   /** 选门店 */
   onChangeSelect = (checked, order) => {
-    const { orders,orderMarkers } = this.state
+    const { orders } = this.state
     const num = orders.filter(e => e.isSelect).length
     if (!checked) {
       orders.forEach(e => {
@@ -405,9 +412,7 @@ export default class DispatchMap extends Component {
       order.sort = checked ? num + 1 : null
       this.setState({ orders })
     }
-    // ---其实我没看懂 为什么这里只修改了orders，但是orderMarkers就变了
-    this.gdMapRef.current.removeMarkersByType('myj')
-    this.gdMapRef.current.addStoreMarkers(orderMarkers, this.setMarkerLabel, 'myj',this.onClickMarker)
+    this.reloadMyjMarkers() // 重新加载美宜佳图标
   }
 
   /** 清空按钮 */
@@ -434,23 +439,32 @@ export default class DispatchMap extends Component {
    * @since 2024/9/24 17:23
    */
   switchRectangleSelect = () => {
-    const { mapSelect } = this.state
-    const { AMap, map, addMarkers } = this.gdMapRef.current
-    if (!this.rectangleTool) {
+    const { mapSelect, orders, orderMarkers } = this.state
+    const { AMap, map } = this.gdMapRef.current
+    if (!this.rectangleTool) {  // 第一次先创建
       this.rectangleTool = new AMap.MouseTool(map)
       this.rectangleTool.on('draw', (e) => {
         const southWest = e.obj.getOptions().bounds.getSouthWest()  // 西南角坐标
         const northEast = e.obj.getOptions().bounds.getNorthEast()  // 东北角坐标
-        // 矩形左上角坐标(西北角)
-        const topLeftPoint = { longitude: southWest.lng, latitude: northEast.lat }
-        // 矩形右下角坐标(东南角)
-        const lowerRightPoint = { longitude: northEast.lng, latitude: southWest.lat }
-
-        map.remove(e.obj) // 清除上次绘制的图形
-        addMarkers([topLeftPoint, lowerRightPoint]) // TODO 逻辑
+        const rectanglePath = [       // 矩形路径
+          [southWest.lng, northEast.lat],   // 矩形左上角坐标(西北角)
+          [northEast.lng, northEast.lat],   // 矩形右上角坐标(东北角)
+          [northEast.lng, southWest.lat],   // 矩形右下角坐标(东南角)
+          [southWest.lng, southWest.lat],   // 矩形左下角坐标(西南角)
+        ]
+        // 筛选没有选中，且在矩形内的订单
+        orderMarkers.filter(order => !order.isSelect).forEach(order => {
+          const pt = { lng: order.longitude, lat: order.latitude }
+          const num = orders.filter(item => item.isSelect).length
+          order.isSelect = AMap.GeometryUtil.isPointInRing(pt, rectanglePath) // 判断点是否在矩形内
+          order.sort = num +1
+        })
+        map.remove(e.obj) // 清除矩形
+        this.setState({ orders })
+        this.reloadMyjMarkers(orderMarkers) // 重新加载美宜佳图标
       })
     }
-
+    // 画矩形开关
     if (!mapSelect) {
       this.rectangleTool.rectangle({  // 同Polygon的Option设置
         fillColor: '#fff',
@@ -470,7 +484,7 @@ export default class DispatchMap extends Component {
    */
   openLine = selectPoints => {
     const { startPoint } = this.state
-    const { AMap, map } = this.gdMapRef.current
+    const { AMap, map, chunkArrayWithOverlap } = this.gdMapRef.current
     // 先清除上次绘制的路线
     if (this.drivingList.length) this.closeLine(true)
 
@@ -488,13 +502,10 @@ export default class DispatchMap extends Component {
       icon: startMarkerIcon,
     })
     map.add(this.startMarker)
-
-    // 列表最前面加上起点(仓库位置)
-    selectPoints.unshift(warehousePointObj)
-    // 列表最后面加上终点(仓库位置)
-    selectPoints.push(warehousePointObj)
+    selectPoints.unshift(warehousePointObj)     // 列表最前面加上起点(仓库位置)
+    selectPoints.push(warehousePointObj)        // 列表最后面加上终点(仓库位置)
     // 每次规划16个指标点
-    this.gdMapRef.current.chunkArrayWithOverlap(selectPoints, 16).forEach(pointList => {
+    chunkArrayWithOverlap(selectPoints, 16).forEach(pointList => {
       const endIndex = pointList.length - 1
       // 构造路线导航类
       const driving = new AMap.Driving({
@@ -535,65 +546,6 @@ export default class DispatchMap extends Component {
     this.setState({ showLine: onOff })
   }
 
-
-  // 路线规划
-  searchRoute2 = async selectPoints => {
-    const { map } = this
-    const { startPoint } = this.state
-    const pointArr = selectPoints.map(order => {
-      return `${order.latitude},${order.longitude}`.trim()
-    })
-    const waypoints = pointArr.filter((_, index) => index < pointArr.length - 1)
-    const params = {
-      origin: startPoint,
-      destination: pointArr[pointArr.length - 1],
-      waypoints: waypoints.join('|'),
-      height: '2',
-      width: '2',
-      weight: '5',
-      length: '4',
-      is_trailer: '0',
-      plate_color: '0',
-    }
-    const response = await queryDriverRoutes2(params)
-    if (response.success) {
-      const routePaths = response.result.routes[0].steps.map(x => x.path)
-      const pts = new Array()
-      routePaths.forEach(path => {
-        const points = path.split(';')
-        points.forEach(point => {
-          pts.push(new BMapGL.Point(point.split(',')[0], point.split(',')[1]))
-        })
-      })
-      const polyline = new BMapGL.Polyline(pts, {
-        strokeColor: '#00bd01',
-        strokeWeight: 6,
-        strokeOpacity: 1,
-      })
-      map.addOverlay(polyline)
-      map.addOverlay(
-        this.drawRouteMaker(startPoint.split(',')[1], startPoint.split(',')[0], 50, 80, 400, 278)
-      )
-      selectPoints.forEach((point, index) => {
-        index == selectPoints.length - 1
-          ? map.addOverlay(this.drawRouteMaker(point.longitude, point.latitude, 50, 80, 450, 278))
-          : map.addOverlay(this.drawRouteMaker(point.longitude, point.latitude, 70, 80, 530, 420))
-      })
-      map.setViewport(pts)
-    }
-  }
-
-  // 路线规划标注
-  drawRouteMaker = (lng, lat, width, hieght, x, y) => {
-    const iconUrl = '//webmap1.bdimg.com/wolfman/static/common/images/markers_new2x_2960fb4.png'
-    return new BMapGL.Marker(new BMapGL.Point(lng, lat), {
-      icon: new BMapGL.Icon(iconUrl, new BMapGL.Size(width / 2, hieght / 2), {
-        imageOffset: new BMapGL.Size(x / 2, y / 2),
-        imageSize: new BMapGL.Size(600 / 2, 600 / 2),
-      }),
-    })
-  }
-
   saveSchedule = () => {
     const { orders, orderMarkers, isEdit, schedule } = this.state
     const selectOrderStoreCodes = orderMarkers
@@ -607,35 +559,7 @@ export default class DispatchMap extends Component {
     this.props.dispatchingByMap(isEdit, isEdit ? schedule : allSelectOrders, allSelectOrders)
   }
 
-  // 画框选取送货点
-  drawSelete = event => {
-    const { orders, orderMarkers } = this.state
-
-    const pStart = event[3] // 矩形左上角坐标
-    const pEnd = event[1] // 矩形右下角坐标
-    const pt1 = new BMapGL.Point(pStart[0], pStart[1]) // 3象限
-    const pt2 = new BMapGL.Point(pEnd[0], pEnd[1]) // 1象限
-    const bds = new BMapGL.Bounds(pt1, pt2) // 范围
-
-    for (const order of orderMarkers.filter(x => !x.isSelect)) {
-      const pt = new BMapGL.Point(order.longitude, order.latitude)
-      const num = orders.filter(e => {
-        return e.isSelect
-      }).length
-      order.isSelect = this.isPointInRect(pt, bds)
-      order.sort = num + 1
-    }
-    this.map.removeOverlay(event.overlay)
-    this.setState({ orders })
-  }
-
-  // 判断一个点是否在某个矩形中
-  isPointInRect = (point, bounds) => {
-    const sw = bounds.getSouthWest() // 西南脚点
-    const ne = bounds.getNorthEast() // 东北脚点
-    return point.lng >= sw.lng && point.lng <= ne.lng && point.lat >= sw.lat && point.lat <= ne.lat
-  }
-
+  /** 过滤门店 */
   storeFilter = (key, e) => {
     const serachStores = this.basicOrders.filter(
       item => item.deliveryPoint.code.search(e) !== -1 || item.deliveryPoint.name.search(e) !== -1
@@ -809,14 +733,11 @@ export default class DispatchMap extends Component {
     return totals
   }
 
+  /** 排车单查询(本地过滤) */
   scheduleFilter = value => {
-    let serachSchedule = [...this.basicScheduleList]
-    if (value) {
-      serachSchedule = serachSchedule.filter(e => {
-        return e.BILLNUMBER.search(value) !== -1
-      })
-    }
-    this.setState({ scheduleList: serachSchedule })
+    let searchSchedule = [...this.basicScheduleList]
+    if (value) searchSchedule = searchSchedule.filter(schedule => schedule.BILLNUMBER.search(value) !== -1)
+    this.setState({ scheduleList: searchSchedule })
   }
 
   /** 点击‘查询排车单’列表项的单号 转为编辑这张排车单 */
@@ -862,6 +783,7 @@ export default class DispatchMap extends Component {
       this.setState({ orderMarkers, orders, isEdit: true, schedule, checkScheduleOrders: [], checkSchedules: [] })
     }
     this.setState({ loading: false })
+    this.reloadMyjMarkers(orderMarkers) // 重新加载美宜佳图标
   }
 
   /**
@@ -918,26 +840,23 @@ export default class DispatchMap extends Component {
 
     return (
       <Modal
-        style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
         width="100vw"
+        destroyOnClose       // 关闭时销毁
+        closable={false}     // 是否显示右上角的关闭按钮
+        visible={visible}
         className={style.dispatchingMap}
         bodyStyle={{ margin: -24, height: '99vh' }}
-        visible={visible}
+        style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
         title={
           <div>
+            {/* ————————顶部搜索———————— */}
             <Row type="flex" justify="space-between">
-              <Col span={21}>
-                <SearchForm refresh={this.refresh} onRef={node => (this.searchFormRef = node)}/>
-              </Col>
-
-              <Col span={1}>
-                <Button onClick={() => this.onReset()}>清空</Button>
-              </Col>
-              <Col span={1}>
-                <Button onClick={() => this.hide()}>关闭</Button>
-              </Col>
+              <Col span={21}><SearchForm refresh={this.refresh} onRef={node => (this.searchFormRef = node)}/></Col>
+              <Col span={1}><Button onClick={() => this.onReset()}>清空</Button></Col>
+              <Col span={1}><Button onClick={() => this.hide()}>关闭</Button></Col>
             </Row>
             <Divider style={{ margin: 0, marginTop: 5 }}/>
+            {/* ————————顶部统计———————— */}
             <Row>
               <div style={{ display: 'flex', marginTop: 5 }}>
                 {bFlexDiv('总件数', totals.totalCount)}
@@ -962,8 +881,6 @@ export default class DispatchMap extends Component {
             </Row>
           </div>
         }
-        closable={false}
-        destroyOnClose
       >
         <Spin
           indicator={LoadingIcon('default')}
@@ -971,8 +888,9 @@ export default class DispatchMap extends Component {
           tip="加载中..."
           wrapperClassName={style.loading}
         >
-          {/* 是否多载具高度不同+++ */}
+          {/*  中心内容 ———————————————————————————————— 是否多载具高度不同—————————————————— */}
           <Row type="flex" style={{ height: window.innerHeight - (multiVehicle ? 185 : 145) }}>
+            {/* —————————— 左边排车单选择和筛选数据———————————— */}
             <Col
               span={closeLeft ? 0 : 6}
               style={{ height: '100%', background: '#fff', overflow: 'auto' }}
@@ -1099,16 +1017,14 @@ export default class DispatchMap extends Component {
                 />
               )}
             </Col>
+            {/* ————————右边地图———————— */}
             <Col span={closeLeft ? 24 : 18}>
-              <a
-                onClick={() => {
-                  this.setState({ closeLeft: !this.state.closeLeft })
-                }}
-              >
-                <div style={{ float: 'left', height: '100%' }}>
+              {/* ————隐藏/显示左边按钮—————— */}
+              <a onClick={() => this.setState({ closeLeft: !this.state.closeLeft })}>
+                <div style={{ float: 'left', height: '100%' ,zIndex: 1, position: 'absolute', background: 'white'}}>
                   <Icon
                     type={closeLeft ? 'caret-right' : 'caret-left'}
-                    style={{ marginTop: (window.innerHeight - 145) / 2 }}
+                    style={{ marginTop: (window.innerHeight - 145) / 2}}
                   />
                 </div>
               </a>
@@ -1119,19 +1035,7 @@ export default class DispatchMap extends Component {
                     size="large"
                     type={mapSelect ? 'danger' : 'primary'}
                     style={{ zIndex: 1 }}
-                    onClick={() => {
-                      this.switchRectangleSelect()
-                      // if (mapSelect) {
-                      //   this.setState({ mapSelect: !mapSelect })
-                      //   this.select.close()
-                      // } else {
-                      //   this.select.open()
-                      //   this.setState({ mapSelect: !mapSelect })
-                      //   this.select.addEventListener(OperateEventType.COMPLETE, e => {
-                      //     this.drawSelete(e.target.overlay.toGeoJSON().geometry.coordinates[0])
-                      //   })
-                      // }
-                    }}
+                    onClick={this.switchRectangleSelect}
                   >
                     <Icon type="select"/>
                   </Button>
@@ -1149,6 +1053,8 @@ export default class DispatchMap extends Component {
 
             </Col>
           </Row>
+
+          {/* ———————————————— 底部统计 ———————————————— */}
           <Divider style={{ margin: 0, marginTop: 5 }}/>
           <Row width="100%">
             <div style={{ display: 'flex', marginTop: 5, fontSize: '14px' }}>

@@ -24,10 +24,10 @@ import './index.less'
 class GdMap extends Component {
   constructor (props) {
     super(props)
-    this.map = {}
-    this.text = {}
-    this.AMap = null
-    this.markerObj={
+    this.map = {}           // 地图对象
+    this.text = {}          // 文本对象
+    this.AMap = null        // 高德地图类
+    this.markerObj={        // 分类记录点坐标
       store: [],
       myj: [],
       van: [],
@@ -53,10 +53,9 @@ class GdMap extends Component {
         zooms: [2, 22],
         center: [113.802834, 23.061303],
       })
-      this.map.add(this.text);
-    }).catch(e => {
-      console.error(e)
-    })
+      this.map.add(this.text)
+    }).catch(e => console.error('🔴获取高德地图类对象失败🟠', e)
+    )
   }
 
   /**
@@ -101,7 +100,7 @@ class GdMap extends Component {
           van: this.generateVanIcon(),
         }[icon],
         anchor: 'bottom-center',                            // 设置Marker的锚点
-        extData: { obj: item },                             // 用户自定义属性
+        // extData: { obj: item },                          // 用户自定义属性
       })
       if (labelContent) {                                   // 如果有文字 就鼠标移入显示文字
         marker.on('mouseover', () => {                // 鼠标移入
@@ -112,27 +111,12 @@ class GdMap extends Component {
             offset: new this.AMap.Pixel(0, -25),             // 设置文本标注偏移量
           });
           this.map.add(this.text);
-
-
-          // marker.setzIndex(13)                              // 提升层级 不然弹出来的会被其他指标遮住
-          // marker.setLabel({
-          //   offset: new this.AMap.Pixel(0, -5),             // 设置文本标注偏移量
-          //   content: `${labelContent(item).toString()}`,    // 设置文本标注内容
-          // })
         })
         marker.on('mouseout', () => {                 // 鼠标移出
           this.text && this.map.remove(this.text)
-          // marker.setzIndex(12)
-          // marker.setLabel({ direction: undefined, offset: undefined, content: undefined })
         })
       }
-      if (icon === 'myj' && item.isSelect && item.sort) {
-        marker.setLabel({
-          // offset: new this.AMap.Pixel(0, -5),             // 设置文本标注偏移量
-          content: item.sort,                                // 设置文本标注内容
-        })
-      }
-
+      if (icon === 'myj' && item.isSelect && item.sort) marker.setLabel({ content: item.sort })
       if (click) marker.on('click', () => click(item))
 
       this.markerObj[icon].push(marker)
