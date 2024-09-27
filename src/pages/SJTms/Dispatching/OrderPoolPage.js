@@ -31,7 +31,8 @@ import {
 import SearchForm from './SearchForm';
 import BatchProcessConfirm from './BatchProcessConfirm';
 import DispatchingCreatePage from './DispatchingCreatePage';
-import DispatchMap from '@/pages/SJTms/MapDispatching/dispatching/DispatchingMap';
+// import DispatchMap from '@/pages/SJTms/MapDispatching/dispatching/DispatchingMap';
+import DispatchGdMap from '@/pages/SJTms/MapDispatching/dispatching/DispatchingGdMap';
 import dispatchingStyles from './Dispatching.less';
 import {
   queryAuditedOrder,
@@ -50,7 +51,6 @@ import { groupBy, sumBy, uniqBy, orderBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
 import VehiclePoolPage from './VehiclePoolPage';
-import { log } from 'lodash-decorators/utils';
 
 const { TabPane } = Tabs;
 export default class OrderPoolPage extends Component {
@@ -1184,13 +1184,20 @@ export default class OrderPoolPage extends Component {
               onRef={node => (this.createPageModalRef = node)}
               refreshMap={() => this.dispatchMapRef?.refresh()}
             />
-            <DispatchMap
+            {/* <DispatchMap */}
+            {/*   dispatchingByMap={this.dispatchingByMap} */}
+            {/*   onRef={node => (this.dispatchMapRef = node)} */}
+            {/*   addEvent={() => { */}
+            {/*     window.addEventListener('keydown', this.keyDown); */}
+            {/*   }} */}
+            {/* /> */}
+
+            <DispatchGdMap
               dispatchingByMap={this.dispatchingByMap}
-              onRef={node => (this.dispatchMapRef = node)}
-              addEvent={() => {
-                window.addEventListener('keydown', this.keyDown);
-              }}
+              onRef={node => {this.dispatchMapRef = node}}
+              addEvent={() => window.addEventListener('keydown', this.keyDown)}
             />
+
           </TabPane>
           <TabPane tab={<span className={dispatchingStyles.cardTitle}>运力池</span>} key="Vehicle">
             <VehiclePoolPage
