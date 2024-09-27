@@ -1,14 +1,14 @@
 import React, { Component } from 'react'
 import AMapLoader from '@amap/amap-jsapi-loader'
 import ShopsIcon from '@/assets/common/shops.png'
-import MyjRedIcon from '@/assets/common/22.png'
+import MyjRedIcon from '@/assets/common/MyjRedMin.png'
 import MyjGreenIcon from '@/assets/common/23.png'
 import MyjBlueIcon from '@/assets/common/24.png'
-import vanIcon from '@/assets/common/van.svg';
+import vanIcon from '@/assets/common/vanMin.png';
 import './index.less'
 
 /**
- * 高德地图
+ * 高德地图基础组件
  * <br>{@link #addMarkers }               🫵生成默认坐标（批量）
  * <br>{@link #addStoreMarkers }          🫵生成门店坐标（批量）
  * <br>{@link #generateStoreIcon }        🫵生成门店图标
@@ -49,7 +49,7 @@ class GdMap extends Component {
       this.AMap = AMap
       this.map = new AMap.Map('mapcontainer', {
         viewMode: '3D',
-        zoom: 12,
+        zoom: 9,
         zooms: [2, 22],
         center: [113.802834, 23.061303],
       })
@@ -108,7 +108,7 @@ class GdMap extends Component {
             position: new this.AMap.LngLat(item.longitude, item.latitude),
             anchor: 'bottom-center',
             text: labelContent(item),                        // 设置文本标注内容
-            offset: new this.AMap.Pixel(0, -25),             // 设置文本标注偏移量
+            offset: new this.AMap.Pixel(0, -31),             // 设置文本标注偏移量
           });
           this.map.add(this.text);
         })

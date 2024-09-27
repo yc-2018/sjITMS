@@ -49,7 +49,7 @@ export default class DispatchMap extends Component {
   select = null
   rectangleTool = null                           // 存储创建好的矩形选取工具
   startMarker = null                             // 起始点（仓库位置坐标)
-  drivingList = []                                    // 路线规划数据
+  drivingList = []                             // 路线规划数据
   gdMapRef = React.createRef()    // 高德地图ref
   state = {
     allTotals: {
@@ -807,9 +807,7 @@ export default class DispatchMap extends Component {
         checkScheduleOrders = response.data ?? []
         checkList.forEach((item, index) => {
           checkScheduleOrders.forEach(order => {
-            if (order.billUuid === item) {
-              order.iconNum = index + 1
-            }
+            if (order.billUuid === item) order.iconNum = index + 1
           })
         })
       }
@@ -979,9 +977,7 @@ export default class DispatchMap extends Component {
                           />
                           <div
                             style={{
-                              backgroundColor: this.colors[
-                              checkSchedules.findIndex(e => e === item.UUID) % 20
-                                ],
+                              backgroundColor: this.colors[checkSchedules.findIndex(e => e === item.UUID) % 20],
                               width: '20px',
                               height: '20px',
                               float: 'left',
@@ -995,10 +991,7 @@ export default class DispatchMap extends Component {
                       <List.Item.Meta
                         avatar={<Avatar style={{ width: '50px', height: '50px' }} src={truck}/>}
                         title={
-                          <a
-                            style={{ fontSize: '15px' }}
-                            onClick={() => this.clickSchedule(item)}
-                          >
+                          <a onClick={() => this.clickSchedule(item)} style={{ fontSize: '15px' }}>
                             {item.BILLNUMBER}
                           </a>
                         }
@@ -1045,6 +1038,14 @@ export default class DispatchMap extends Component {
                     style={{ zIndex: 1, display: showLine ? 'unset' : 'none', marginLeft: 20 }}
                   >
                     隐藏线路
+                  </Button>
+
+                  <Button
+                    size="large"
+                    onClick={() => this.gdMapRef.current.map.setFitView()}
+                    style={{ zIndex: 1, marginLeft: 20, opacity: 0.5 }}
+                  >
+                    调整地图看到所有点
                   </Button>
                 </div>
               }
