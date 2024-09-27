@@ -19,6 +19,7 @@ import truck from '@/assets/common/truck.svg'
 import SearchForm from '@/pages/SJTms/MapDispatching/dispatching/SearchForm'
 import GdMap from '@/components/GdMap'
 import startMarkerIcon from '@/assets/common/startMarker.png'
+import { bdToGd } from '@/utils/mapUtil'
 
 /**
  * build简化Flex Div代码 +++
@@ -192,7 +193,7 @@ export default class DispatchMap extends Component {
     queryAuditedOrderByParams(filter).then(response => {
       if (response.success) {
         const result = response.data?.records ?? []
-        const data = result.filter(x => x.longitude && x.latitude)
+        const data = result.filter(x => x.longitude && x.latitude).map(item => bdToGd(item))  // 🫵🫵🫵百度转高德🫵🫵🫵
         // 计算所有
         const allTotals = this.getAllTotals(data.filter(e => e.stat !== 'Scheduled'))
 

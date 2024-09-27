@@ -58,7 +58,7 @@ export default class ScheduleGdMap extends Component {
     orders = orders.map(order => {
       const index = rowKeys.findIndex(x => x === order.billUuid)
       let store = stores.find(point => point.uuid === order.deliveryPoint.uuid)
-      store = bdToGd(store)   // 百度转高德
+      store = bdToGd(store)   // 🫵🫵🫵百度转高德🫵🫵🫵
       return {
         ...order,
         longitude: store.longitude || 113.809388,
