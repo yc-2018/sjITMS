@@ -110,7 +110,11 @@ export default class ScheduleGdMap extends Component {
    */
   openLine = () => {
     const { rowKeys, orders, startPoint } = this.state
-    const { AMap, map } = this.gdMapRef.current
+    const { AMap, map, markerObj } = this.gdMapRef.current
+
+    // 显示标签 1 2 3 4 。。。 按创建顺序
+    markerObj.store.forEach((marker,index) => marker.setLabel({ content: index + 1}))
+
     // 根据门店去重
     const flagObj = {}
     const uniqueOrderList = orders.reduce((cur, next) => {
@@ -173,10 +177,11 @@ export default class ScheduleGdMap extends Component {
   }
 
   closeLine = () => {
-    this.startMarker?.remove()                            // 删除起点图标
+    this.gdMapRef.current.markerObj.store.forEach(marker => marker.setLabel({ content: undefined }))  // 去除标签
+    this.startMarker?.remove()                                   // 删除起点图标
     this.startMarker = null
     const { orders } = this.state
-    this.drivingList.forEach(driving => driving.clear())  // 清除所有路线
+    this.drivingList.forEach(driving => driving.clear())         // 清除所有路线
     this.drivingList = []
     this.gdMapRef.current.autoFocusViewPort(orders)       // 自动聚焦
     this.setState({ showLine: true })
