@@ -53,7 +53,6 @@ class GdMap extends Component {
         zooms: [2, 22],
         center: [113.802834, 23.061303],
       })
-      this.map.add(this.text)
     }).catch(e => console.error('🔴获取高德地图类对象失败🟠', e)
     )
   }

@@ -20,7 +20,7 @@ import SearchForm from '@/pages/SJTms/MapDispatching/dispatching/SearchForm'
 import GdMap from '@/components/GdMap'
 import startMarkerIcon from '@/assets/common/startMarker.png'
 import { bdToGd } from '@/utils/mapUtil'
-
+import vanIcon from '@/assets/common/van.svg';
 /**
  * build简化Flex Div代码 +++
  * @author ChenGuangLong
@@ -51,6 +51,8 @@ export default class DispatchMap extends Component {
   rectangleTool = null                           // 存储创建好的矩形选取工具
   startMarker = null                             // 起始点（仓库位置坐标)
   drivingList = []                             // 路线规划数据
+  vanMass = null                                // 货车（已排）海量点列表
+  text  = null                                  // 地图文本对象（循环利用)
   gdMapRef = React.createRef()    // 高德地图ref
   state = {
     allTotals: {
@@ -74,7 +76,6 @@ export default class DispatchMap extends Component {
     orders: [],
     orderMarkers: [],
     ScheduledMarkers: [],
-    showScheduled: false,           // 显示已排
     scheduleList: [],
     isEdit: false,
     schedule: undefined,
@@ -236,10 +237,11 @@ export default class DispatchMap extends Component {
 
         // 地图上添加门店点位
         window.setTimeout(() => {
-          this.gdMapRef.current.clearMap()        // 清除地图所有覆盖物(不包括路径)
+          this.clearMap()      // 清除地图所有覆盖物
           this.gdMapRef.current.addStoreMarkers(orderMarkers, this.setMarkerLabel, 'myj',this.onClickMarker)
           this.gdMapRef.current.map.setFitView() // 无参数时，自动自适应所有覆盖物
           this.gdMapContextMenu()
+
         }, 500)
       }
 
@@ -263,6 +265,61 @@ export default class DispatchMap extends Component {
       })
       this.setState({ loading: false, pageFilter })
     })
+  }
+
+  /**
+   * 清除地图上的所有覆盖物（包括路线）
+   * @author ChenGuangLong
+   * @since 2024/9/27 22:52
+  */
+  clearMap = () => {
+    this.gdMapRef.current.clearMap()
+    this.vanMass = null
+    if (this.drivingList.length) this.closeLine(true)
+  }
+
+  /**
+   * 增加海量点
+   * @author ChenGuangLong
+   * @since 2024/9/27 16:30
+   */
+  addVanMassMarks = () => {
+    const { map, AMap } = this.gdMapRef.current
+    const { ScheduledMarkers } = this.state
+    const vanMassStyle = {
+      url: vanIcon,
+      anchor: new AMap.Pixel(10, 10),   // 锚点位置 一半一半 就是中心位置为锚点  以底部中心为锚点就应该是 new AMap.Pixel(10, 20)
+      size: new AMap.Size(20, 20),
+      zIndex: 12,
+    }
+
+    // 创建海量点
+    this.vanMass = new AMap.MassMarks(ScheduledMarkers.map(item => ({
+      lnglat: `${item.longitude},${item.latitude}]`,
+      item,
+    })), {
+      // opacity: 0.8,
+      zIndex: 111,
+      cursor: 'pointer',
+      style: vanMassStyle,
+    })
+
+    // 中文就创建一次 循环利用
+    this.text = this.text ?? new AMap.Text({
+      anchor: 'bottom-center',
+      offset: new AMap.Pixel(0, -11),             // 设置文本标注偏移量 因为坐标偏移一半 所以是大小的一半+1
+    });
+
+    this.vanMass.on('mouseover', ({ data }) => {                                // 鼠标移入
+      this.text.setPosition(new AMap.LngLat(data.item.longitude, data.item.latitude)) // 改变经纬度
+      this.text.setText(this.setMarkerLabel(data.item))                               // 设置文本标注内容
+      map.add(this.text);
+    })
+    this.vanMass.on('mouseout', () => {                                         // 鼠标移出
+      this.text && map.remove(this.text)
+    })
+
+    this.vanMass.setMap(map)
   }
 
   /**
@@ -320,13 +377,11 @@ export default class DispatchMap extends Component {
     // }, 5)
     contextMenu.addItem('显示已排', () => {
       contextMenu.close()
-      const { ScheduledMarkers, showScheduled } = this.state
-      if (!showScheduled) {
-        this.gdMapRef.current.addStoreMarkers(ScheduledMarkers, this.setMarkerLabel, 'van')
-        this.setState({ showScheduled: true })
+      if (!this.vanMass) {
+        this.addVanMassMarks()
       } else {
-        map.remove(this.gdMapRef.current.markerObj.van)
-        this.setState({ showScheduled: false })
+        this.vanMass.clear()
+        this.vanMass = null
       }
     }, 6)
     // 地图绑定鼠标右击事件——弹出右键菜单
