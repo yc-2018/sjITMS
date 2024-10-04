@@ -21,6 +21,10 @@ import GdMap from '@/components/GdMap'
 import startMarkerIcon from '@/assets/common/startMarker.png'
 import { bdToGd } from '@/utils/mapUtil'
 import vanIcon from '@/assets/common/van.svg';
+import MyjRedIcon from '@/assets/common/MyjRedMin.png'
+import MyjGreenIcon from '@/assets/common/23.png'
+import MyjBlueIcon from '@/assets/common/24.png'
+
 /**
  * build简化Flex Div代码 +++
  * @author ChenGuangLong
@@ -51,7 +55,9 @@ export default class DispatchMap extends Component {
   rectangleTool = null                           // 存储创建好的矩形选取工具
   startMarker = null                             // 起始点（仓库位置坐标)
   drivingList = []                             // 路线规划数据
+  marksIndexList = []                          // 已排序点坐标序号列表
   vanMass = null                                // 货车（已排）海量点列表
+  myjMass = null                                // myj（未排）海量点列表
   text  = null                                  // 地图文本对象（循环利用)
   gdMapRef = React.createRef()    // 高德地图ref
   state = {
@@ -237,8 +243,8 @@ export default class DispatchMap extends Component {
 
         // 地图上添加门店点位
         window.setTimeout(() => {
-          this.clearMap()      // 清除地图所有覆盖物
-          this.gdMapRef.current.addStoreMarkers(orderMarkers, this.setMarkerLabel, 'myj',this.onClickMarker)
+          this.clearMap()      // 清除地图所有覆盖物（包括线路)
+          this.reloadMyjMarkers(orderMarkers) // 重新加载美宜佳图标
           this.gdMapRef.current.map.setFitView() // 无参数时，自动自适应所有覆盖物
           this.gdMapContextMenu()
 
@@ -279,29 +285,85 @@ export default class DispatchMap extends Component {
   }
 
   /**
-   * 增加海量点
+   * 增加未排（myj）海量点
+   * @author ChenGuangLong
+   * @since 2024/10/4 8:47
+  */
+  addMyjMassMarks = orderMarkerList => {
+    const { map, AMap } = this.gdMapRef.current
+    const anchor = new AMap.Pixel(10, 10)   // 锚点位置 一半一半 就是中心位置为锚点  以底部中心为锚点就应该是 new AMap.Pixel(10, 20)
+    const size = new AMap.Size(20, 20)
+    const styleList = [     // 样式列表
+      { url: MyjBlueIcon, anchor, size, zIndex: 12 },
+      { url: MyjGreenIcon, anchor, size, zIndex: 12 },
+      { url: MyjRedIcon, anchor, size, zIndex: 12 },
+    ]
+    // 创建美宜佳图标海量点
+    this.myjMass = new AMap.MassMarks(orderMarkerList.map(item => ({
+      lnglat: `${item.longitude},${item.latitude}]`,
+      style: item.isSelect && item.sort ? 0 : item.isSelect ? 1 : 2,  // 样式序号
+      item,
+    })), {
+      zIndex: 111,
+      cursor: 'pointer',
+      style: styleList,
+    })
+
+    // 创建已排序号(海量点不带label 自己加上)
+    orderMarkerList.filter(item => item.isSelect && item.sort).forEach(order => {
+      const marker = new AMap.Marker({
+        map,
+        content: ' ',       // 不需要点图标
+        position: [order.longitude, order.latitude],
+        label: { content: order.sort, offset: new AMap.Pixel(10, 0) }   // 显示序号
+      })
+      this.marksIndexList.push(marker)  // 添加到数组 后续好删除
+    })
+
+
+    // 中文就创建一次 循环利用
+    this.text = this.text ?? new AMap.Text({
+      anchor: 'bottom-center',
+      offset: new AMap.Pixel(0, -11),             // 设置文本标注偏移量 因为坐标偏移一半 所以是大小的一半+1
+    });
+
+    this.myjMass.on('mouseover', ({ data }) => {                                // 鼠标移入
+      this.text.setPosition(new AMap.LngLat(data.item.longitude, data.item.latitude)) // 改变经纬度
+      this.text.setText(this.setMarkerLabel(data.item))                               // 设置文本标注内容
+      map.add(this.text);
+    })
+    this.myjMass.on('mouseout', () => {                                         // 鼠标移出
+      this.text && map.remove(this.text)
+    })
+    this.myjMass.on('click', ({ data }) => {                                    // 点击事件
+      this.onChangeSelect(!data.item.isSelect, data.item)
+    })
+
+    this.myjMass.setMap(map)
+  }
+
+  /**
+   * 增加已排（货车）海量点
    * @author ChenGuangLong
    * @since 2024/9/27 16:30
    */
   addVanMassMarks = () => {
     const { map, AMap } = this.gdMapRef.current
     const { ScheduledMarkers } = this.state
-    const vanMassStyle = {
-      url: vanIcon,
-      anchor: new AMap.Pixel(10, 10),   // 锚点位置 一半一半 就是中心位置为锚点  以底部中心为锚点就应该是 new AMap.Pixel(10, 20)
-      size: new AMap.Size(20, 20),
-      zIndex: 12,
-    }
 
     // 创建海量点
     this.vanMass = new AMap.MassMarks(ScheduledMarkers.map(item => ({
       lnglat: `${item.longitude},${item.latitude}]`,
       item,
     })), {
-      // opacity: 0.8,
       zIndex: 111,
       cursor: 'pointer',
-      style: vanMassStyle,
+      style: {
+        url: vanIcon,
+        anchor: new AMap.Pixel(10, 10),   // 锚点位置 一半一半 就是中心位置为锚点  以底部中心为锚点就应该是 new AMap.Pixel(10, 20)
+        size: new AMap.Size(20, 20),
+        zIndex: 12,
+      },
     })
 
     // 中文就创建一次 循环利用
@@ -330,9 +392,15 @@ export default class DispatchMap extends Component {
    */
   reloadMyjMarkers = orderMarkerList => {
     const { orderMarkers } = this.state // 其实有些地方我没看懂 有些地方只修改了orders，但是orderMarkers就变了？ 共用地址导致？
-    const { removeMarkersByType, addStoreMarkers } = this.gdMapRef.current
-    removeMarkersByType('myj')
-    addStoreMarkers(orderMarkerList ?? orderMarkers, this.setMarkerLabel, 'myj', this.onClickMarker)
+    const { map } = this.gdMapRef.current
+    // removeMarkersByType('myj')
+    // addStoreMarkers(orderMarkerList ?? orderMarkers, this.setMarkerLabel, 'myj', this.onClickMarker)
+    if (this.marksIndexList.length > 0) {   // 移除已排序号
+      map.remove(this.marksIndexList)
+      this.marksIndexList = []
+    }
+    this.myjMass?.clear()
+    this.addMyjMassMarks(orderMarkerList ?? orderMarkers)
   }
 
   /**
@@ -445,14 +513,14 @@ export default class DispatchMap extends Component {
   `
   }
 
-  /**
-   * 点击坐标点事件
-   * @author ChenGuangLong
-   * @since 2024/9/25 15:10
-  */
-  onClickMarker = (order) => {
-    this.onChangeSelect(!order.isSelect, order)
-  }
+  // /**
+  //  * 点击坐标点事件
+  //  * @author ChenGuangLong
+  //  * @since 2024/9/25 15:10
+  // */
+  // onClickMarker = (order) => {
+  //   this.onChangeSelect(!order.isSelect, order)
+  // }
 
   /** 选门店 */
   onChangeSelect = (checked, order) => {
