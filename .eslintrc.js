@@ -30,8 +30,6 @@ module.exports = {
     'lines-between-class-members': 'off',             // 忽略类成员之间空行
     'react/jsx-tag-spacing': 'off',                   // 忽略jsx标签空格
     'no-unused-expressions': 'off',                   // 忽略未使用的表达式
-    'decoratorsBeforeExport': 'off',                  // 忽略装饰器位置
-    'decorators-before-export': 'off',                // 忽略装饰器位置
     'no-return-assign': 'off',                        // 忽略返回赋值
     'no-nested-ternary': 'off',                       // 忽略嵌套三元表达式
     'consistent-return': 'off',                       // 忽略统一的返回值
@@ -46,4 +44,9 @@ module.exports = {
   settings: {
     polyfills: ['fetch', 'promises', 'url'],
   },
+    "parserOptions": {                                // 允许装饰器位置在export前面
+        "ecmaFeatures": {
+            "legacyDecorators": true
+        }
+    },
 };
