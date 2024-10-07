@@ -36,9 +36,9 @@ class GdMap extends Component {
 
   // 2.dom渲染成功后进行map对象的创建
   componentDidMount () {
-    window._AMapSecurityConfig = {
-      securityJsCode: '77a94bd6b19c71f32a6a5154764fe7f6',   // 安全密钥，路线规划必须要这个配置
-    }
+    // window._AMapSecurityConfig = {
+    //   securityJsCode: '77a94bd6b19c71f32a6a5154764fe7f6',   // 安全密钥，路线规划必须要这个配置
+    // }
     AMapLoader.load({
       key: '0adda227efca2b24d25df3213c87cca2', // 需要设置您申请的key
       version: '2.0',
@@ -53,8 +53,7 @@ class GdMap extends Component {
         zooms: [2, 22],
         center: [113.802834, 23.061303],
       })
-    }).catch(e => console.error('🔴获取高德地图类对象失败🟠', e)
-    )
+    }).catch(e => console.error('🔴获取高德地图类对象失败🟠', e))
   }
 
   /**

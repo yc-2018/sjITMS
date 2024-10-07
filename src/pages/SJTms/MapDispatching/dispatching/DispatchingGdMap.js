@@ -247,7 +247,6 @@ export default class DispatchMap extends Component {
           this.reloadMyjMarkers(orderMarkers) // 重新加载美宜佳图标
           this.gdMapRef.current.map.setFitView() // 无参数时，自动自适应所有覆盖物
           this.gdMapContextMenu()
-
         }, 500)
       }
 
@@ -321,7 +320,7 @@ export default class DispatchMap extends Component {
     })
 
 
-    // 中文就创建一次 循环利用
+    // 文本框就创建一次 循环利用
     this.text = this.text ?? new AMap.Text({
       anchor: 'bottom-center',
       offset: new AMap.Pixel(0, -11),             // 设置文本标注偏移量 因为坐标偏移一半 所以是大小的一半+1

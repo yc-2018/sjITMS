@@ -1,3 +1,27 @@
+import MyjBlueIcon from '@/assets/common/24.png'
+import MyjGreenIcon from '@/assets/common/23.png'
+import MyjRedIcon from '@/assets/common/MyjRedMin.png'
+
+/**
+ * 高德地图默认加上器对象
+ * @author ChenGuangLong
+ * @since 2024/10/5 9:19
+*/
+export const AMapDefaultLoaderObj = {
+  key: '0adda227efca2b24d25df3213c87cca2', // 需要设置您申请的key
+  version: '2.0',
+  plugins: ['AMap.ToolBar', 'AMap.Driving', 'AMap.MouseTool'],
+  AMapUI: { version: '1.1', plugins: [], },
+  Loca: { version: '2.0.0' },
+}
+export const AMapDefaultConfigObj = {
+  viewMode: '3D',
+  zoom: 9,
+  zooms: [2, 22],
+  center: [113.802834, 23.061303],
+}
+
+
 const X_PI = (Math.PI * 3000.0) / 180.0;
 
 /**
@@ -34,9 +58,6 @@ export const bdToGd = (obj) => {
 }
 
 
-
-
-
 /**
  * 火星坐标系 (GCJ-02) 与百度坐标系 (BD-09) 的转换
  * 即 谷歌、高德 转 百度
@@ -51,3 +72,56 @@ export const gcj02tobd09 = (lng, lat) => {
   const bdLat = z * Math.sin(theta) + 0.006;
   return [bdLng, bdLat]
 };
+
+
+/**
+ * 给一个带坐标（lng，lat）对象，这个坐标从高德转百度
+ * @author ChenGuangLong
+ * @since 2024/10/7 11:51
+ */
+export const gdToBd = (obj) => {
+  if (!obj || !obj.lng || !obj.lat) return obj
+  try {
+    const [lng, lat] = gcj02tobd09(obj.lng, obj.lat)
+    return { ...obj, lng, lat }
+  } catch (e) {
+    console.error('转百度失败:', obj, e)
+    return obj
+  }
+}
+
+// ——————————————————————高德地图工具——————————————————————————
+/**
+ * 获取美宜佳图标
+ * @param AMap{obj} 地图对象
+ * @param colour{'red'|'green'|'blue'} 颜色
+ * @author ChenGuangLong
+ * @since 2024/10/5 9:42
+ */
+export const getMyjIcon = (AMap, colour = 'red') => {
+  const icon = {
+    'red': MyjRedIcon,
+    'green': MyjGreenIcon,
+    'blue': MyjBlueIcon
+  }[colour]
+  return new AMap.Icon({
+    size: new AMap.Size(20, 20),          // 图标尺寸
+    image: icon,                          // 图标的取图地址
+    imageSize: new AMap.Size(20, 20),     // 图标所用图片大小
+  })
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
