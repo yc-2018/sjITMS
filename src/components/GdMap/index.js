@@ -6,6 +6,7 @@ import MyjGreenIcon from '@/assets/common/23.png'
 import MyjBlueIcon from '@/assets/common/24.png'
 import vanIcon from '@/assets/common/vanMin.png';
 import './index.less'
+import { AMapDefaultConfigObj, AMapDefaultLoaderObj } from '@/utils/mapUtil'
 
 /**
  * 高德地图基础组件
@@ -18,6 +19,9 @@ import './index.less'
  * <br>{@link #clearMap }                 🫵清除地图所有覆盖物
  * <br>{@link #removeMarkersByType }      🫵根据类型删除点
  * <br>{@link #chunkArrayWithOverlap }    🫵分割数组
+ * @param [props.initFunc] {()=>void}      - 初始化成功的回调函数，可选。
+ * @param [props.style] {any}              - 定义样式的对象或其他样式参数，可选。
+ * @param [props.title] {string}           - 地图顶部标题，可选。
  * @author ChenGuangLong
  * @since 2024/9/19 16:33
  */
@@ -32,6 +36,7 @@ class GdMap extends Component {
       myj: [],
       van: [],
     }
+    this.idSuffix = new Date().valueOf()  // ID后缀 保证id唯一
   }
 
   // 2.dom渲染成功后进行map对象的创建
@@ -39,20 +44,10 @@ class GdMap extends Component {
     // window._AMapSecurityConfig = {
     //   securityJsCode: '77a94bd6b19c71f32a6a5154764fe7f6',   // 安全密钥，路线规划必须要这个配置
     // }
-    AMapLoader.load({
-      key: '0adda227efca2b24d25df3213c87cca2', // 需要设置您申请的key
-      version: '2.0',
-      plugins: ['AMap.ToolBar', 'AMap.Driving', 'AMap.MouseTool'],
-      AMapUI: { version: '1.1', plugins: [], },
-      Loca: { version: '2.0.0' },
-    }).then((AMap) => {
+    AMapLoader.load(AMapDefaultLoaderObj).then((AMap) => {
       this.AMap = AMap
-      this.map = new AMap.Map('mapcontainer', {
-        viewMode: '3D',
-        zoom: 9,
-        zooms: [2, 22],
-        center: [113.802834, 23.061303],
-      })
+      this.map = new AMap.Map(`mapContainer${this.idSuffix}`, AMapDefaultConfigObj)
+      this.props.initFunc && this.props.initFunc()    // 有初始化回调 就执行
     }).catch(e => console.error('🔴获取高德地图类对象失败🟠', e))
   }
 
@@ -63,7 +58,7 @@ class GdMap extends Component {
    * @since 2024/9/20 10:04
    */
   addMarkers = (positionArr) => {
-    const positionList = positionArr || this.props.positionArr || []
+    const positionList = positionArr || []
     positionList.forEach(item => {
       const {longitude, latitude,lng, lat} = item
       const marker = new this.AMap.Marker({
@@ -231,13 +226,12 @@ class GdMap extends Component {
 
   render () {
     const { title, style = {} } = this.props
-    // 1.创建地图容器
     return (
       <div className="home_div">
         <div className="map-title">
           <h3>{title}</h3>
         </div>
-        <div id="mapcontainer" className="map" style={{ height: '100%', ...style }}/>
+        <div id={`mapContainer${this.idSuffix}`} className="map" style={{ height: '100%', ...style }}/>
       </div>
     )
   }

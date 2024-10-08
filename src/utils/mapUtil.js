@@ -3,7 +3,7 @@ import MyjGreenIcon from '@/assets/common/23.png'
 import MyjRedIcon from '@/assets/common/MyjRedMin.png'
 
 /**
- * 高德地图默认加上器对象
+ * 高德地图默认加载器对象    需要其他的在调用处解构添加
  * @author ChenGuangLong
  * @since 2024/10/5 9:19
 */

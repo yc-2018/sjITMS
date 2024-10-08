@@ -1,15 +1,12 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { Card } from 'antd';
 import styles from './TableList.less';
 
-const Page = ({children}) => {
-	return (
-        <Card bordered={false} className={styles.contentWrapper}>
-          <div className={styles.tableList}>
-           {children}
-          </div>
-        </Card>
-		);
-} 
+const Page = ({ children, className='' }) =>
+  <Card bordered={false} className={`${styles.contentWrapper} ${className}`}>
+    <div className={styles.tableList}>
+      {children}
+    </div>
+  </Card>
 
 export default Page;

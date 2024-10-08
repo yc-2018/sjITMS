@@ -59,7 +59,7 @@ export default class StoresGdMap extends Component {
     try { // 加载高德地图，放在最前面
       const AMap = await AMapLoader.load(AMapDefaultLoaderObj);
       this.AMap = AMap;
-      this.map = new AMap.Map('GdStoreMap', AMapDefaultConfigObj);
+      this.map = new AMap.Map('GdStoreMap', AMapDefaultConfigObj);  // GdStoreMap是高德要加载的元素的id，🔴一定要唯一🔴
       this.addAMapMenu()  // 右键菜单
     } catch (error) {
       message.error(`获取高德地图类对象失败:${error}`)
