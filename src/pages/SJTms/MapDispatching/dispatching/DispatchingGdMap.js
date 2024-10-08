@@ -17,6 +17,13 @@ import { queryDict, queryData, dynamicQuery } from '@/services/quick/Quick'
 import { loginCompany, loginOrg } from '@/utils/LoginContext'
 import truck from '@/assets/common/truck.svg'
 import SearchForm from '@/pages/SJTms/MapDispatching/dispatching/SearchForm'
+import {
+  colors,
+  getOrderTotal,
+  setMarkerText,
+  getTotals,
+  getAllTotals
+} from '@/pages/SJTms/MapDispatching/dispatchingGdMapCommon'
 import GdMap from '@/components/GdMap'
 import startMarkerIcon from '@/assets/common/startMarker.png'
 import { bdToGd } from '@/utils/mapUtil'
@@ -94,29 +101,6 @@ export default class DispatchMap extends Component {
     mapSelect: false,                 // 地图框选
     showLine: false,                  // 显示线路
   }
-
-  colors = [
-    '#0069FF',
-    '#EF233C',
-    '#20BF55',
-    '#07BEB8',
-    '#FF715B',
-    '#523F38',
-    '#FF206E',
-    '#086375',
-    '#A9E5BB',
-    '#8F2D56',
-    '#004E98',
-    '#5D576B',
-    '#248232',
-    '#9A031E',
-    '#8E443D',
-    '#F15152',
-    '#F79256',
-    '#640D14',
-    '#3F88C5',
-    '#0FA3B1',
-  ]
 
   componentDidMount = () => {
     this.props.onRef && this.props.onRef(this)
@@ -202,7 +186,7 @@ export default class DispatchMap extends Component {
         const result = response.data?.records ?? []
         const data = result.filter(x => x.longitude && x.latitude).map(item => bdToGd(item))  // 🫵🫵🫵百度转高德🫵🫵🫵
         // 计算所有
-        const allTotals = this.getAllTotals(data.filter(e => e.stat !== 'Scheduled'))
+        const allTotals = getAllTotals(data.filter(e => e.stat !== 'Scheduled'))
 
         // 根据门店去重
         const flagObj = {}
@@ -328,7 +312,7 @@ export default class DispatchMap extends Component {
 
     this.myjMass.on('mouseover', ({ data }) => {                                // 鼠标移入
       this.text.setPosition(new AMap.LngLat(data.item.longitude, data.item.latitude)) // 改变经纬度
-      this.text.setText(this.setMarkerLabel(data.item))                               // 设置文本标注内容
+      this.text.setText(setMarkerText(this.state,data.item))              // 设置文本标注内容
       map.add(this.text);
     })
     this.myjMass.on('mouseout', () => {                                         // 鼠标移出
@@ -373,7 +357,7 @@ export default class DispatchMap extends Component {
 
     this.vanMass.on('mouseover', ({ data }) => {                                // 鼠标移入
       this.text.setPosition(new AMap.LngLat(data.item.longitude, data.item.latitude)) // 改变经纬度
-      this.text.setText(this.setMarkerLabel(data.item))                               // 设置文本标注内容
+      this.text.setText(setMarkerText(this.state, data.item))             // 设置文本标注内容
       map.add(this.text);
     })
     this.vanMass.on('mouseout', () => {                                         // 鼠标移出
@@ -392,8 +376,6 @@ export default class DispatchMap extends Component {
   reloadMyjMarkers = orderMarkerList => {
     const { orderMarkers } = this.state // 其实有些地方我没看懂 有些地方只修改了orders，但是orderMarkers就变了？ 共用地址导致？
     const { map } = this.gdMapRef.current
-    // removeMarkersByType('myj')
-    // addStoreMarkers(orderMarkerList ?? orderMarkers, this.setMarkerLabel, 'myj', this.onClickMarker)
     if (this.marksIndexList.length > 0) {   // 移除已排序号
       map.remove(this.marksIndexList)
       this.marksIndexList = []
@@ -454,72 +436,6 @@ export default class DispatchMap extends Component {
     // 地图绑定鼠标右击事件——弹出右键菜单
     map.on('rightclick', e => contextMenu.open(map, e.lnglat))
   }
-
-  /**
-   * 设置坐标点提示文字
-   * @return {string} 高德要的一定是字符串！！！
-   * @author ChenGuangLong
-   * @since 2024/9/23 17:07
-   */
-  setMarkerLabel = (order) => {
-    const { multiVehicle } = this.state
-    const infoTotals = this.getOrderTotal(order.deliveryPoint.code)
-    const showMultiVehicle = () =>
-      multiVehicle ? `
-        <div style="display: flex; text-align: center;">
-          <div style="flex: 1;">冷藏周转筐</div>
-          <div style="flex: 1;">冷冻周转筐</div>
-          <div style="flex: 1;">保温袋</div>
-          <div style="flex: 1;">鲜食筐</div>
-        </div>
-        <div style="display: flex; text-align: center;">
-          <div style="flex: 1;">${infoTotals.coldContainerCount}</div>
-          <div style="flex: 1;">${infoTotals.freezeContainerCount}</div>
-          <div style="flex: 1;">${infoTotals.insulatedBagCount}</div>
-          <div style="flex: 1;">${infoTotals.freshContainerCount}</div>
-        </div>
-        ` : ''
-
-    return `
-    <div style="width: auto; height: auto; padding: 5px; background: #FFF;">
-      <div style="font-weight: bold; white-space: nowrap;">
-        [${order.deliveryPoint.code}]${order.deliveryPoint.name}
-      </div>
-      <hr style="margin: 5px 0 0 0;" />
-      <div style="display: flex;">
-        <div style="flex: 1;">线路：${order.archLine?.code ?? ''}</div>
-        <div style="flex: 1;">备注：${order.archLine?.lineNote ?? ''}</div>
-      </div>
-      <div>配送区域：${order?.shipAreaName ?? ''}</div>
-      <div>门店地址：${order?.deliveryPoint?.address ?? ''}</div>
-
-      <div style="display: flex; margin-top: 5px; text-align: center;">
-        <div style="flex: 1;">整件数</div>
-        <div style="flex: 1;">散件数</div>
-        <div style="flex: 1;">周转箱</div>
-        <div style="flex: 1;">体积</div>
-        <div style="flex: 1;">重量</div>
-      </div>
-      <div style="display: flex; text-align: center;">
-        <div style="flex: 1;">${infoTotals.cartonCount}</div>
-        <div style="flex: 1;">${infoTotals.scatteredCount}</div>
-        <div style="flex: 1;">${infoTotals.containerCount}</div>
-        <div style="flex: 1;">${infoTotals.volume}</div>
-        <div style="flex: 1;">${(infoTotals.weight / 1000).toFixed(3)}</div>
-      </div>
-      ${showMultiVehicle()}
-    </div>
-  `
-  }
-
-  // /**
-  //  * 点击坐标点事件
-  //  * @author ChenGuangLong
-  //  * @since 2024/9/25 15:10
-  // */
-  // onClickMarker = (order) => {
-  //   this.onChangeSelect(!order.isSelect, order)
-  // }
 
   /** 选门店 */
   onChangeSelect = (checked, order) => {
@@ -690,172 +606,6 @@ export default class DispatchMap extends Component {
     this.setState({ orders: serachStores })
   }
 
-  /** 计算小数 */
-  accAdd = (arg1, arg2) => {
-    if (Number.isNaN(arg1)) {
-      arg1 = 0
-    }
-    if (Number.isNaN(arg2)) {
-      arg2 = 0
-    }
-    arg1 = Number(arg1)
-    arg2 = Number(arg2)
-    let r1
-    let r2
-    let m
-    let c
-    try {
-      r1 = arg1.toString().split('.')[1].length
-    } catch (e) {
-      r1 = 0
-    }
-    try {
-      r2 = arg2.toString().split('.')[1].length
-    } catch (e) {
-      r2 = 0
-    }
-    c = Math.abs(r1 - r2)
-    m = 10 ** Math.max(r1, r2)
-    if (c > 0) {
-      const cm = 10 ** c
-      if (r1 > r2) {
-        arg1 = Number(arg1.toString().replace('.', ''))
-        arg2 = Number(arg2.toString().replace('.', '')) * cm
-      } else {
-        arg1 = Number(arg1.toString().replace('.', '')) * cm
-        arg2 = Number(arg2.toString().replace('.', ''))
-      }
-    } else {
-      arg1 = Number(arg1.toString().replace('.', ''))
-      arg2 = Number(arg2.toString().replace('.', ''))
-    }
-    return (arg1 + arg2) / m
-  }
-
-  /** 计算所有 */
-  getAllTotals = orders => {
-    const totals = {
-      cartonCount: 0, // 整件数
-      scatteredCount: 0, // 散件数
-      containerCount: 0, // 周转箱
-      coldContainerCount: 0, // 冷藏周转筐+++
-      freezeContainerCount: 0, // 冷冻周转筐+++
-      insulatedContainerCount: 0, // 保温箱+++
-      insulatedBagCount: 0, // 保温袋+++
-      freshContainerCount: 0, // 鲜食筐+++
-      volume: 0, // 体积
-      weight: 0, // 重量,
-      totalCount: 0, // 总件数
-      stores: 0, // 总门店数
-    }
-    const totalStores = []
-    orders.forEach(e => {
-      totals.cartonCount += e.cartonCount // 整件数
-      totals.scatteredCount += e.scatteredCount // 散件数
-      totals.containerCount += e.containerCount // 周转箱
-      totals.coldContainerCount += e.coldContainerCount // 冷藏周转筐+++
-      totals.freezeContainerCount += e.freezeContainerCount // 冷冻周转筐+++
-      totals.insulatedContainerCount += e.insulatedContainerCount // 保温箱+++
-      totals.insulatedBagCount += e.insulatedBagCount // 保温袋+++
-      totals.freshContainerCount += e.freshContainerCount // 鲜食筐+++
-      totals.volume = this.accAdd(totals.volume, e.volume)
-      totals.weight = this.accAdd(totals.weight, e.weight)
-      if (totalStores.indexOf(e.deliveryPoint.code) === -1) {
-        totalStores.push(e.deliveryPoint.code)
-      }
-    })
-    totals.stores = totalStores.length
-    // totals.totalCount = totals.cartonCount + totals.scatteredCount + totals.containerCount * 2;
-    // 总件数 = 整件+ 散件+（周转筐 + 冷藏）*2 + 冷冻*3 + 保温袋 + 鲜食筐
-    totals.totalCount =
-      totals.cartonCount +
-      totals.scatteredCount +
-      (totals.containerCount + totals.coldContainerCount) * 2 +
-      totals.freezeContainerCount * 3 +
-      totals.insulatedBagCount +
-      totals.freshContainerCount
-
-    return totals
-  }
-
-  /** 获取总合计数 */
-  getTotals = selectOrder => {
-    const selectOrderStoreCodes = selectOrder.map(e => e.deliveryPoint.code)
-    const { orders, bearweight, volumet } = this.state
-    const allSelectOrders = orders.filter(
-      e => selectOrderStoreCodes.indexOf(e.deliveryPoint?.code) !== -1
-    )
-    let totals = {
-      cartonCount: 0, // 整件数
-      scatteredCount: 0, // 散件数
-      containerCount: 0, // 周转箱
-      coldContainerCount: 0, // 冷藏周转筐+++
-      freezeContainerCount: 0, // 冷冻周转筐+++
-      insulatedContainerCount: 0, // 保温箱+++
-      insulatedBagCount: 0, // 保温袋+++
-      freshContainerCount: 0, // 鲜食筐+++
-      volume: 0, // 体积
-      weight: 0, // 重量,
-      totalCount: 0, // 总件数
-      stores: selectOrderStoreCodes.length,
-    }
-    allSelectOrders.forEach(e => {
-      totals.cartonCount += e.cartonCount
-      totals.scatteredCount += e.scatteredCount
-      totals.containerCount += e.containerCount
-      totals.coldContainerCount += e.coldContainerCount // 冷藏周转筐+++
-      totals.freezeContainerCount += e.freezeContainerCount // 冷冻周转筐+++
-      totals.insulatedContainerCount += e.insulatedContainerCount // 保温箱+++
-      totals.insulatedBagCount += e.insulatedBagCount // 保温袋+++
-      totals.volume = this.accAdd(totals.volume, e.volume)
-      totals.weight = this.accAdd(totals.weight, e.weight)
-    })
-    // totals.totalCount = totals.cartonCount + totals.scatteredCount + totals.containerCount * 2;
-    // 总件数 = 整件+ 散件+（周转筐 + 冷藏）*2 + 冷冻*3 + 保温袋 + 鲜食筐
-    totals.totalCount =
-      totals.cartonCount +
-      totals.scatteredCount +
-      (totals.containerCount + totals.coldContainerCount) * 2 +
-      totals.freezeContainerCount * 3 +
-      totals.insulatedBagCount +
-      totals.freshContainerCount
-
-    totals = { ...totals, bearweight, volumet }
-    return totals
-  }
-
-  /** 一家门店多份运输订单数量合并 */
-  getOrderTotal = storeCode => {
-    const totals = {
-      cartonCount: 0, // 整件数
-      scatteredCount: 0, // 散件数
-      containerCount: 0, // 周转箱
-      coldContainerCount: 0, // 冷藏周转筐+++
-      freezeContainerCount: 0, // 冷冻周转筐+++
-      insulatedContainerCount: 0, // 保温箱+++
-      insulatedBagCount: 0, // 保温袋+++
-      freshContainerCount: 0, // 鲜食筐+++
-      volume: 0, // 体积
-      weight: 0, // 重量,
-    }
-    const { orders, checkScheduleOrders } = this.state
-    const isOrder = [...orders, ...checkScheduleOrders].filter(
-      e => e.deliveryPoint.code === storeCode
-    )
-    isOrder.forEach(e => {
-      totals.cartonCount += e.cartonCount
-      totals.scatteredCount += e.scatteredCount
-      totals.containerCount += e.containerCount
-      totals.coldContainerCount += e.coldContainerCount // 冷藏周转筐+++
-      totals.freezeContainerCount += e.freezeContainerCount // 冷冻周转筐+++
-      totals.insulatedContainerCount += e.insulatedContainerCount // 保温箱+++
-      totals.insulatedBagCount += e.insulatedBagCount // 保温袋+++
-      totals.volume = this.accAdd(totals.volume, e.volume)
-      totals.weight = this.accAdd(totals.weight, e.weight)
-    })
-    return totals
-  }
-
   /** 排车单查询(本地过滤) */
   scheduleFilter = value => {
     let searchSchedule = [...this.basicScheduleList]
@@ -936,7 +686,11 @@ export default class DispatchMap extends Component {
       }
     }
     this.gdMapRef.current.removeMarkersByType('store')
-    this.gdMapRef.current.addStoreMarkers(checkScheduleOrders, this.setMarkerLabel, 'store')
+    this.gdMapRef.current.addStoreMarkers(
+      checkScheduleOrders,
+      (order) => setMarkerText(this.state, order),
+      'store'
+    )
     this.setState({ checkSchedules: checkList, checkScheduleOrders })
   }
 
@@ -957,7 +711,7 @@ export default class DispatchMap extends Component {
       showLine,
     } = this.state
     const selectOrder = orderMarkers.filter(x => x.isSelect).sort(x => x.sort)
-    const totals = this.getTotals(selectOrder)
+    const totals = getTotals(this.state, selectOrder)
 
     return (
       <Modal
@@ -1041,7 +795,7 @@ export default class DispatchMap extends Component {
                   </div>
 
                   {selectOrder.map(order => {
-                    const totalObj = this.getOrderTotal(order.deliveryPoint.code)
+                    const totalObj = getOrderTotal(this.state, order.deliveryPoint.code)
                     return (
                       <div
                         className={style.storeCard}
@@ -1100,7 +854,7 @@ export default class DispatchMap extends Component {
                           />
                           <div
                             style={{
-                              backgroundColor: this.colors[checkSchedules.findIndex(e => e === item.UUID) % 20],
+                              backgroundColor: colors[checkSchedules.findIndex(e => e === item.UUID) % 20],
                               width: '20px',
                               height: '20px',
                               float: 'left',

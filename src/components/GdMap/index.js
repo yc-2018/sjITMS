@@ -76,7 +76,7 @@ class GdMap extends Component {
    * @param positionArr{[{longitude:number,latitude:number,iconNum:number}]} 包涵经纬度和图标序号（1~20）
    * @param labelContent{(item)=>string}                                    显示文字(元素也得用双引号括起来)
    * @param icon{'store'|'myj','van'}                                       图标
-   * @param click{(item)=>void}                                            点击事件
+   * @param [click] {(item)=>void}                                         点击事件
    * @author ChenGuangLong
    * @since 2024/9/20 10:04
    */
