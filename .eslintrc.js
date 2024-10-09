@@ -40,6 +40,7 @@ module.exports = {
     'dot-notation': 'warn',                           // 警告点符号
     'import/no-extraneous-dependencies': 'off',       // 忽略外部依赖
     'jsx-a11y/no-noninteractive-tabindex': 'off',     // 忽略tabindex
+    'no-undef': 'warn',                               // 忽略未定义变量
   },
   settings: {
     polyfills: ['fetch', 'promises', 'url'],

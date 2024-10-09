@@ -5,9 +5,9 @@
 */
 import { Button, Col, Empty, Form, message, Modal, Popconfirm, Row } from 'antd'
 import { connect } from 'dva';
-import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import { Map, Marker } from 'react-bmapgl'
 import React from 'react'
+import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
 import MyImg from '@/components/MyImg'
 import ShopIcon from '@/assets/common/22.png';
 import  styles from './AddrReportSearch.less'
@@ -49,7 +49,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
       <>
         {/* ——————————————-------------开始审核按钮-------------———————————————— */}
         <Button
-          hidden={!havePermission(this.state.authority + '.examine')}
+          hidden={!havePermission(`${this.state.authority}.examine`)}
           type="primary"
           onClick={() => {
             if (selectedRows.length === 0) return message.error('请选择一条审核项')
@@ -75,7 +75,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
             if (selectedRows.length === 0) return message.error('请选择一条及以上审核项')
             // 全部都要是待审核状态
             if (selectedRows.some(i => i.STATNAME !== '待审核')) return message.error(`${selectedRows.find(i => i.STATNAME !== '待审核').STATNAME}状态不能审核`)
-            this.batchProcessConfirmRef.show('审核', selectedRows, this.onAudit, this.onSearch, <b style={{color: 'red'}}>请认真检查经纬度！以免后续司机找不到门店位置！</b>)
+            this.batchProcessConfirmRef.show('审核', selectedRows, x => audit(x.UUID), this.onSearch, <b style={{color: 'red'}}>请认真检查经纬度！以免后续司机找不到门店位置！</b>)
           }}
         >
           一键通过
@@ -86,7 +86,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
           onClick={() => {
             if (selectedRows.length === 0) return message.error('请选择一条及以上要作废的项')
             if (selectedRows.some(i => i.STATNAME !== '待审核')) return message.error(`${selectedRows.find(i => i.STATNAME !== '待审核').STATNAME}状态不能作废`)
-            this.batchProcessConfirmRef.show('作废', selectedRows, this.onVoided, this.onSearch)
+            this.batchProcessConfirmRef.show('作废', selectedRows, x => voided(x.UUID), this.onSearch)
           }}
         >
           一键作废
@@ -98,7 +98,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
           style={{ top: 0 }}
           title="门店经纬度 地图审核"
           visible={MapVisible}
-          width={'100%'}
+          width="100%"
           onCancel={() => this.setState({ MapVisible: false })}
           footer={
             <>
@@ -187,7 +187,8 @@ export default class AddrReportSearch extends QuickFormSearchPage {
           this.onSearch()   // 刷新列表数据
           message.success('审核成功')
           return this.setState({ MapVisible: false })
-        }else return message.error(successReps.message)
+        }
+        return message.error(successReps.message)
 
       case "作废":
         const voidedReps = await voided(item.UUID)
@@ -195,30 +196,13 @@ export default class AddrReportSearch extends QuickFormSearchPage {
           this.onSearch()   // 刷新列表数据
           message.success('作废成功')
           return this.setState({ MapVisible: false })
-        } else return message.error(voidedReps.message)
+        }
+        return message.error(voidedReps.message)
 
       default:
         message.error('请求值异常');
     }
   }
-
-  /**
-   * 批量用，批量通过
-   * @author ChenGuangLong
-   * @since 2024/7/15 16:49
-  */
-  onAudit = async item => {
-    return await audit(item.UUID);
-  };
-
-  /**
-   * 批量用，批量作废
-   * @author ChenGuangLong
-   * @since 2024/7/15 16:48
-  */
-  onVoided = async item => {
-    return await voided(item.UUID);
-  };
 
 }
 
