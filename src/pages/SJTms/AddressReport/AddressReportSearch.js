@@ -3,7 +3,7 @@ import React from 'react';
 import { Button, message, Form } from 'antd';
 import { connect } from 'dva';
 import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
-import { cancellation, audit, voided } from '@/services/sjitms/AddressReport'
+import { audit, voided } from '@/services/sjitms/AddressReport'
 import QuickFormModal from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormModal';
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm'
 
@@ -38,18 +38,6 @@ export default class AddressReportSearch extends QuickFormSearchPage {
     const result = await audit(selectedRows.map(e => e.UUID));
     if (result.success) {
       message.success('审核成功！');
-      this.onSearch();
-    }
-  };
-
-  /** 作废 */
-  cancellation = async () => {
-    const { selectedRows } = this.state;
-    if (selectedRows.length === 0) return message.error('请选中一条记录');
-
-    const result = await cancellation(selectedRows.map(e => e.UUID));
-    if (result.success) {
-      message.success('作废成功！');
       this.onSearch();
     }
   };

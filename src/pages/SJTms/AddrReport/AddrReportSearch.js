@@ -179,25 +179,26 @@ export default class AddrReportSearch extends QuickFormSearchPage {
     const { selectedRows } = this.state;
     if (selectedRows?.length !== 1) return;
     const item = selectedRows[0]
+    let reps  // case里面定义变量会提示 no-case-declarations
 
     switch (type) {
       case "通过":
-        const successReps = await audit(item.UUID)
-        if (successReps.success) {
+        reps = await audit(item.UUID)
+        if (reps.success) {
           this.onSearch()   // 刷新列表数据
           message.success('审核成功')
           return this.setState({ MapVisible: false })
         }
-        return message.error(successReps.message)
+        return message.error(reps.message)
 
       case "作废":
-        const voidedReps = await voided(item.UUID)
-        if (voidedReps.success) {
+        reps = await voided(item.UUID)
+        if (reps.success) {
           this.onSearch()   // 刷新列表数据
           message.success('作废成功')
           return this.setState({ MapVisible: false })
         }
-        return message.error(voidedReps.message)
+        return message.error(reps.message)
 
       default:
         message.error('请求值异常');
