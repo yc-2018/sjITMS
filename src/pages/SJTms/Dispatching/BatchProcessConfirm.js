@@ -61,18 +61,18 @@ export default class BatchProcessConfirm extends Component {
     });
   };
 
-  //任务全部成功
+  // 任务全部成功
   handleAllSuccessed = () => {
-    const { actionName, taskReport } = this.state;
-    message.success(
-      `成功批量${actionName}${taskReport.success}个选项，跳过${taskReport.skip}个选项`
-    );
+    const { actionName, taskReport, taskCount } = this.state
+    message.success(taskCount > 1 ?
+      `成功批量${actionName}${taskReport.success}个选项，跳过${taskReport.skip}个选项` : `成功${actionName}`
+    )
     localStorage.setItem('showMessage', '1');
     this.resetProgress();
     this.state.refresh();
   };
 
-  //确认批量处理
+  // 确认批量处理
   handleBatchProcessConfirmOk = () => {
     const { rowKeys } = this.state;
     this.handleProgressModalVisible(true);
@@ -80,13 +80,14 @@ export default class BatchProcessConfirm extends Component {
     // 执行任务
     this.taskExecutionFunc(rowKeys);
   };
-  //取消
+
+  // 取消
   handleBatchProcessConfirmCancel = () => {
     localStorage.setItem('showMessage', '1');
     this.resetProgress();
     this.setState({ confirmModalVisible: false });
   };
-  //执行任务
+  // 执行任务
   taskExecutionFunc = rowKeys => {
     let bacth = index => {
       this.state.task(rowKeys[index]).then(response => {
@@ -99,7 +100,7 @@ export default class BatchProcessConfirm extends Component {
     bacth(0);
   };
 
-  //任务执行记录
+  // 任务执行记录
   calculateTask = (taskResult, uuid) => {
     let { taskReport, successRowKeys, errMsg } = this.state;
     this.currentIndex++;
@@ -148,7 +149,7 @@ export default class BatchProcessConfirm extends Component {
       progressPercent: total > 0 && index > 0 && total >= index ? precent : 0,
     });
   };
-  //进度条弹出框显示控制
+  // 进度条弹出框显示控制
   handleProgressModalVisible = flag => {
     if (flag) {
       this.setState({
@@ -161,7 +162,7 @@ export default class BatchProcessConfirm extends Component {
     }
     this.setState({ progressModalVisible: !!flag });
   };
-  //批量处理状态
+  // 批量处理状态
   renderProgressFeedbackStatus = () => {
     const { taskCount, taskReport } = this.state;
     return (
@@ -277,7 +278,7 @@ export default class BatchProcessConfirm extends Component {
       <div>
         {/* 确定 */}
         <Modal
-          title={`批量${actionName}`}
+          title={`${taskCount > 1 ? '批量' : ''}${actionName}`}
           visible={confirmModalVisible}
           onOk={this.handleBatchProcessConfirmOk}
           onCancel={this.handleBatchProcessConfirmCancel}
@@ -285,7 +286,9 @@ export default class BatchProcessConfirm extends Component {
           confirmLoading={confirmLoading}
           key="batchmodal1"
         >
-          <p className={styles.confirmTips}>{`是否批量${actionName}${taskCount}个选项?`}</p>
+          <p className={styles.confirmTips}>
+            {taskCount > 1 ? `是否批量${actionName}${taskCount}个选项？` : `确认${actionName}？`}
+          </p>
           <div style={{textAlign: 'center'}}>{tip}</div>
         </Modal>
         {/* 进度 */}
