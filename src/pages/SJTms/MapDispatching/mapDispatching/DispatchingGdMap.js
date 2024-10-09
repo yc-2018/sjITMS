@@ -773,6 +773,7 @@ export default class DispatchMap extends Component {
               {/* —————————— 左边排车单选择和筛选数据———————————— */}
               <Col
                 span={closeLeft ? 0 : 6}
+                className={style.dispatchingMap}
                 style={{ height: '100%', background: '#fff', overflow: 'auto' }}
               >
                 {isEdit || selectOrder.length > 0 ? (
