@@ -26,7 +26,6 @@ import {
 } from '@/pages/SJTms/MapDispatching/dispatchingGdMapCommon'
 import GdMap from '@/components/GdMap'
 import startMarkerIcon from '@/assets/common/startMarker.png'
-import { bdToGd } from '@/utils/mapUtil'
 import vanIcon from '@/assets/common/van.svg';
 import MyjRedIcon from '@/assets/common/MyjRedMin.png'
 import MyjGreenIcon from '@/assets/common/23.png'
@@ -184,7 +183,7 @@ export default class DispatchMap extends Component {
     queryAuditedOrderByParams(filter).then(response => {
       if (response.success) {
         const result = response.data?.records ?? []
-        const data = result.filter(x => x.longitude && x.latitude).map(item => bdToGd(item))  // 🫵🫵🫵百度转高德🫵🫵🫵
+        const data = result.filter(x => x.longitude && x.latitude) // .map(item => bdToGd(item))  // 🫵🫵🫵百度转高德🫵🫵🫵
         // 计算所有
         const allTotals = getAllTotals(data.filter(e => e.stat !== 'Scheduled'))
 

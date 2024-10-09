@@ -8,7 +8,7 @@ import moment from 'moment';
 import * as XLSX from 'xlsx';
 import copy from 'copy-to-clipboard';
 
-import { AMapDefaultConfigObj, AMapDefaultLoaderObj, bdToGd, gdToBd, getMyjIcon } from '@/utils/mapUtil'
+import { AMapDefaultConfigObj, AMapDefaultLoaderObj, getMyjIcon } from '@/utils/mapUtil'
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { shencopy } from '@/utils/SomeUtil';
 
@@ -180,7 +180,7 @@ export default class StoresGdMap extends Component {
     // ————————创建红色图标————————————————————————————————————————————————————————————————
     if (orders.length > 0) {
       const redMyjIcon = getMyjIcon(AMap, 'red')
-      this.myjRedMarkers = orders.map(item => bdToGd(item)).map(order => {   // 🫵🫵🫵百度转高德🫵🫵🫵; 再创建坐标点
+      this.myjRedMarkers = orders/* .map(item => bdToGd(item)) */.map(order => {   // 🫵🫵🫵百度转高德🫵🫵🫵; 再创建坐标点
         const marker = new AMap.Marker({                   // 创建一个Marker对象
           position: [order.longitude, order.latitude],          // 设置Marker的位置
           icon: redMyjIcon,                                     // 红色图标
@@ -218,7 +218,7 @@ export default class StoresGdMap extends Component {
     // ————————创建绿色图标——————————————————————————————————————————————————————————
     if (otherData.length > 0) {
       const greenMyjIcon = getMyjIcon(AMap, 'green')
-      this.myjGreenMarkers = otherData.map(item => bdToGd(item)).map(order => {   // 🫵🫵🫵百度转高德🫵🫵🫵; 再创建坐标点
+      this.myjGreenMarkers = otherData/* .map(item => bdToGd(item)) */.map(order => {   // 🫵🫵🫵百度转高德🫵🫵🫵; 再创建坐标点
         const marker = new AMap.Marker({                   // 创建一个Marker对象
           position: [order.longitude, order.latitude],          // 设置Marker的位置
           icon: greenMyjIcon,                                   // 绿色图标
@@ -296,7 +296,7 @@ export default class StoresGdMap extends Component {
 
   /** 拖拽改变门店经纬度 */
   changePoint = async (e, order, marker) => {
-    const lnglat = gdToBd(e.lnglat)   // 🫵🫵🫵高德转百度🫵🫵🫵
+    const lnglat = e.lnglat // gdToBd(e.lnglat)   // 🫵🫵🫵高德转百度🫵🫵🫵
     let sets = {
       LATITUDE: lnglat.lat,
       LONGITUDE: lnglat.lng,
@@ -322,8 +322,8 @@ export default class StoresGdMap extends Component {
       order.latitude = lnglat.lat;
     } else {
       message.error(`门店 [${order.name}] 修改经纬度失败,请刷新页面重试`);
-      const markerLngLat = bdToGd({ longitude: e.lnglat.lng, latitude: e.lnglat.lat }) // 🫵🫵🫵百度转高德🫵🫵🫵
-      marker.setPosition([markerLngLat.longitude, markerLngLat.latitude])
+      // const markerLngLat = bdToGd({ longitude: e.lnglat.lng, latitude: e.lnglat.lat }) // 🫵🫵🫵百度转高德🫵🫵🫵
+      marker.setPosition([e.lnglat.lng, e.lnglat.lat])
     }
   };
 
