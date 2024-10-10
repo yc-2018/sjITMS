@@ -21,11 +21,11 @@ import {
   YDSiparea,
   exportLineSystem,
 } from '@/services/sjtms/LineSystemHis';
-import { loginKey, loginCompany, loginOrg } from '@/utils/LoginContext';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { havePermission } from '@/utils/authority';
-import { throttleSetter } from 'lodash-decorators';
 import LineSystem from './LineSystem.less';
 import { getDispatchConfig } from '@/services/sjtms/DispatcherConfig';
+import LineGdMap from '@/pages/SJTms/LineSystem/LineGdMap'
 
 export default class LineShipAddressSearchPage extends Component {
   state = {
@@ -374,9 +374,11 @@ export default class LineShipAddressSearchPage extends Component {
                 systemData={systemData}
               />
             </TabPane>
+            {/* ——————当前线路的门店地图———————— */}
             {!systemuuid && (
               <TabPane tab="门店地图" key="2">
-                <LineMap key="storeMap" lineuuid={selectedKey} />
+                {/* <LineMap key="storeMap" lineuuid={selectedKey} /> */}
+                <LineGdMap key="storeMap" lineuuid={selectedKey} />
               </TabPane>
             )}
           </Tabs>

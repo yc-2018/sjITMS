@@ -41,6 +41,7 @@ module.exports = {
     'import/no-extraneous-dependencies': 'off',       // 忽略外部依赖
     'jsx-a11y/no-noninteractive-tabindex': 'off',     // 忽略tabindex
     'no-undef': 'warn',                               // 警告未定义变量
+    'no-plusplus': 'off',                             // 忽略i++
   },
   settings: {
     polyfills: ['fetch', 'promises', 'url'],

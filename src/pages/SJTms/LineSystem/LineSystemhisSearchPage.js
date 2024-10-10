@@ -7,6 +7,7 @@ import LineMap from './LineMap';
 import { findLineSystemHisTree, systemHisExport } from '@/services/sjtms/LineSystemHis';
 import linesStyles from './LineSystem.less';
 import ExportJsonExcel from 'js-export-excel';
+import LineGdMap from '@/pages/SJTms/LineSystem/LineGdMap'
 
 const { Content, Sider } = Layout;
 const { TreeNode } = Tree;
@@ -193,8 +194,10 @@ export default class LineSystemhisSearchPage extends Component {
               }
             />
           </TabPane>
+          {/* ————————历史线路里面的门店地图———————— */}
           <TabPane tab="门店地图" key="2">
-            <LineMap key={`Map${selectedKeys[0]}`} lineuuid={selectedKeys[0]} />
+            {/* <LineMap key={`Map${selectedKeys[0]}`} lineuuid={selectedKeys[0]} /> */}
+            <LineGdMap key={`GdMap${selectedKeys[0]}`} lineuuid={selectedKeys[0]} height="calc(100vh - 230px)"/>
           </TabPane>
         </Tabs>
       ),
