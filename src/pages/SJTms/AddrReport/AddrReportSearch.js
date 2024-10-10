@@ -4,17 +4,18 @@
  * @since 2024/5/27
 */
 import { Button, Col, Empty, Form, message, Modal, Popconfirm, Row } from 'antd'
-import { connect } from 'dva';
-import { Map, Marker } from 'react-bmapgl'
+import { connect } from 'dva'
 import React from 'react'
-import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage';
+import AMapLoader from '@amap/amap-jsapi-loader'
+import QuickFormSearchPage from '@/pages/Component/RapidDevelopment/OnlForm/Base/QuickFormSearchPage'
 import MyImg from '@/components/MyImg'
-import ShopIcon from '@/assets/common/22.png';
-import  styles from './AddrReportSearch.less'
+import styles from './AddrReportSearch.less'
 import { audit, getStoreImgList, voided } from '@/services/sjitms/AddressReport'
 import configs from '@/utils/config'
 import { havePermission } from '@/utils/authority'
 import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm'
+import { AMapDefaultLoaderObj } from '@/utils/mapUtil'
+import AddrReportGdMap from '@/pages/SJTms/AddrReport/AddrReportGdMap'
 
 /**
  * 搜索列表界面
@@ -28,12 +29,27 @@ import BatchProcessConfirm from '@/pages/SJTms/Dispatching/BatchProcessConfirm'
 
 @Form.create()
 export default class AddrReportSearch extends QuickFormSearchPage {
+  map                   // 地图对象
+  AMap                  // 高德地图类
   state = {
     ...this.state,
+    isRadio: true,      // 【父类】表行是否单选
     MapVisible: false,  // 地图弹窗
     storeImages: [],    // 门店图片
     isAudited: false,   // 是否审核
   };
+
+  componentDidMount = async () => {
+    // 父类内容
+    this.queryCoulumns();
+    this.getCreateConfig();
+    // 加载高德地图
+    try {
+      this.AMap = await AMapLoader.load(AMapDefaultLoaderObj);
+    } catch (error) {
+      message.error(`获取高德地图类对象失败:${error}`)
+    }
+  }
 
   /**
    * 搜索下方 表格上方的【自定义按钮】
@@ -42,22 +58,22 @@ export default class AddrReportSearch extends QuickFormSearchPage {
   */
   drawToolsButton = () => {
     const { selectedRows, MapVisible, storeImages, isAudited } = this.state
-    const isOneItem = selectedRows?.length === 1
     const item = selectedRows[0] ?? {}
 
     return (
       <>
-        {/* ——————————————-------------开始审核按钮-------------———————————————— */}
+        {/* ——————————————-------------审核按钮-------------———————————————— */}
         <Button
           hidden={!havePermission(`${this.state.authority}.examine`)}
           type="primary"
           onClick={() => {
             if (selectedRows.length === 0) return message.error('请选择一条审核项')
             if (selectedRows.length > 1) return message.error('每次只能选择一条审核')
-            if (item.STATNAME !== '待审核') message.error(`${item.STATNAME}状态不能审核,允许查看`)
-            this.setState({ isAudited: item.STATNAME !== '待审核' })
+            const audited = item.STATNAME !== '待审核' // 不是待审核状态也能点进去看地图 就是控制按钮显示与否
+            if (audited) message.error(`${item.STATNAME}状态不能审核,允许查看`)
 
-            this.setState({ MapVisible: true, storeImages: [] })
+            this.setState({ isAudited: audited, MapVisible: true, storeImages: [] }, () => {
+            })
             // 请求门店图片
             getStoreImgList(item.UUID).then(res => {
               this.setState({
@@ -92,6 +108,8 @@ export default class AddrReportSearch extends QuickFormSearchPage {
           一键作废
         </Button>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)}/>
+
+
         {/* ——————————————-------------地图审核弹窗-------------———————————————— */}
         <Modal
           className={styles.mapReviewIkunModal}
@@ -113,7 +131,6 @@ export default class AddrReportSearch extends QuickFormSearchPage {
                   </Popconfirm>
                 </>
               }
-
               <Button onClick={() => this.setState({ MapVisible: false })}>返回</Button>
             </>
           }
@@ -131,27 +148,7 @@ export default class AddrReportSearch extends QuickFormSearchPage {
                 <span style={{ marginRight: 40 }}>经度: {item.LONGITUDE}</span>
                 <span style={{ marginRight: 40 }}>纬度: {item.LATITUDE}</span>
               </div>
-              <Map
-                center={                                    // 中心点坐标
-                  isOneItem
-                    ? new BMapGL.Point(item.LONGITUDE, item.LATITUDE)
-                    : new BMapGL.Point(113.809388, 23.067107)
-                }
-                zoom={19}
-                // tilt={30}                                // 地图倾斜角度
-                enableTilt={false}                          // 是否开启地图倾斜功能
-                enableRotate={false}                        // 是否开启地图旋转功能
-                enableScrollWheelZoom                       // 是否开启鼠标滚轮缩放
-                style={{ height: '78vh' }}                  // 地图容器父元素的style样式
-                mapStyleV2={{ styleJson: eval(mapStyle) }}  // 个性化地图样式
-              >
-                {isOneItem &&
-                  <Marker
-                    icon={new BMapGL.Icon(ShopIcon, new BMapGL.Size(30, 30))}
-                    position={new BMapGL.Point(item.LONGITUDE, item.LATITUDE)}
-                  />
-                }
-              </Map>
+              <AddrReportGdMap AMap={this.AMap} reportData={item}/>
             </Col>
 
             {/* ------———-----———————————右边图片———————————————--------- */}
@@ -206,44 +203,3 @@ export default class AddrReportSearch extends QuickFormSearchPage {
   }
 
 }
-
-
-/** 地图样式 */
-const mapStyle=[
-  {
-    // 地图背景
-    featureType: 'land',
-    elementType: 'all',
-    stylers: {
-      color: '#dee8da',
-      lightness: -1,
-    },
-  },
-  {
-    // 水路背景
-    featureType: 'water',
-    elementType: 'all',
-    stylers: {
-      color: '#a2c4c9ff',
-      lightness: -1,
-    },
-  },
-  {
-    // 绿地背景
-    featureType: 'green',
-    elementType: 'all',
-    stylers: {
-      color: '#ffffccff',
-      lightness: -1,
-    },
-  },
-  {
-    // 教育地区
-    featureType: 'education',
-    elementType: 'all',
-    stylers: {
-      color: '#d5a6bdff',
-      lightness: -1,
-    },
-  },
-]

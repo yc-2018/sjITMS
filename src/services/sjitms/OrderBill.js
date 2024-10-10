@@ -87,6 +87,12 @@ export async function queryStoreMaps(params) {
   });
 }
 
+export function getStoreByUUID (uuid) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/getStoreByUUID?uuid=${uuid}`, {
+    method: 'GET',
+  })
+}
+
 export async function queryCollectAuditedOrder(params) {
   return request(`/itms-schedule/itms-schedule/sj/bill/ordertms/queryCollectAuditedOrder`, {
     method: 'POST',
