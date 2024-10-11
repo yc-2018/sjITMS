@@ -9,6 +9,7 @@ import configs from '@/utils/config';
 import { urlToList } from '../_utils/pathTools';
 import defaultSettings from '../../defaultSettings';
 import { loginOrg } from '@/utils/LoginContext';
+import Welcome from '@/components/Welcome'
 
 const { Sider } = Layout;
 
@@ -100,7 +101,7 @@ export default class SiderMenu extends PureComponent {
       [styles.dark]: theme === 'dark',
     });
 
-    return (
+    return (<>
       <Sider
         trigger={null}
         collapsible
@@ -120,7 +121,7 @@ export default class SiderMenu extends PureComponent {
       >
         <div className={styles.logo} id="logo">
           <Link to="/bigData/count" className={styles.linkStyle}>
-            <img src={logo} style={{ width: collapsed ? '20px' : '' }} alt="logo" />
+            <img src={logo} style={{ width: collapsed ? '20px' : '' }} alt="logo"/>
             <h1>
               {configs[API_ENV].PRO_ENV == 1
                 ? loginOrg()?.name
@@ -141,6 +142,18 @@ export default class SiderMenu extends PureComponent {
           {...defaultProps}
         />
       </Sider>
-    );
+
+      {/* ================欢迎页============= */}
+      <div style={{
+        transition: 'all 0.5s',
+        position: 'absolute',
+        width: collapsed ? '100%' : '95%',
+        top: '50px',
+        left: collapsed ? '0' : '5%',
+      }}
+      >
+        <Welcome/>
+      </div>
+    </>)
   }
 }

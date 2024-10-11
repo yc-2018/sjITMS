@@ -5,6 +5,7 @@ import BaseMenu from '../SiderMenu/BaseMenu';
 import configs from '@/utils/config';
 import styles from './index.less';
 import { loginOrg } from '@/utils/LoginContext';
+import Welcome from '@/components/Welcome'
 
 export default class TopNavHeader extends PureComponent {
   state = {
@@ -82,6 +83,10 @@ export default class TopNavHeader extends PureComponent {
           </div>
           <RightContent {...this.props} onMenuSearchChange={this.onMenuSearchChange} />
         </div>
+
+        {/* 欢迎页 */}
+        <Welcome/>
+
       </div>
     );
   }

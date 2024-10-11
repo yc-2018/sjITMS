@@ -42,6 +42,8 @@ module.exports = {
     'jsx-a11y/no-noninteractive-tabindex': 'off',     // 忽略tabindex
     'no-undef': 'warn',                               // 警告未定义变量
     'no-plusplus': 'off',                             // 忽略i++
+    'no-await-in-loop': 'warn',                       // 警告await循环
+    'react/jsx-closing-tag-location': 'off',          // 忽略jsx标签位置
   },
   settings: {
     polyfills: ['fetch', 'promises', 'url'],
