@@ -99,7 +99,7 @@ class MyImg extends Component {
       }))
     } else {
       this.setState((prevState) => ({
-        zoom: Math.max(prevState.zoom - 0.1, 1), // 缩小，最小到1倍
+        zoom: Math.max(prevState.zoom - 0.1, 0.1), // 缩小，最小到1倍
       }))
     }
   }
@@ -211,7 +211,7 @@ class MyImg extends Component {
                 zIndex: 1000, // 确保图片在按钮下方
               }}
             >
-              <img src={images[currentIndex]} alt={`img-${currentIndex}`} style={{ maxWidth: '100%', maxHeight: '100%' }} />
+              <img src={images[currentIndex]} alt={`img-${currentIndex}`}/>
             </div>
 
             {/* 下一张按钮 */}
