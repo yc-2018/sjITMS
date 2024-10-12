@@ -6,7 +6,7 @@
  * @Description: 配送进度
  */
 import React, { Component } from 'react'
-import { Button, Col, Divider, message, Modal, Row } from 'antd'
+import { Button, Col, Divider, message, Modal, Row, Spin } from 'antd'
 import { groupBy, orderBy, sumBy, uniqBy } from 'lodash'
 import moment from 'moment'
 import AMapLoader from '@amap/amap-jsapi-loader'
@@ -40,7 +40,8 @@ export default class ScheduleGdMap extends Component {
     orders: [],
     points: [],
     lastPoints: [],
-    lastTime: ''
+    lastTime: '',
+    spinning: false,
   }
 
   componentDidMount = async () => {
@@ -82,7 +83,9 @@ export default class ScheduleGdMap extends Component {
     const platenumber = schedule.VEHICLEPLATENUMBER
     const returntime = schedule.RETURNTIME
     const dispatchtime = schedule.DISPATCHTIME
+    this.setState({ spinning: true })
     const response = await getDetailByBillUuids([billUuid])    // 获取排车单明细
+    this.setState({ spinning: false })
     if (response.success) {
       let orders = response.data || []
       const points = await this.initPoints(billNumber, billUuid, orders)
@@ -342,7 +345,7 @@ export default class ScheduleGdMap extends Component {
 
 
   render () {
-    const { visible, orders, points, timer } = this.state
+    const { visible, orders, points, timer,spinning } = this.state
     let completePoints = []
     if (points.length > 0) completePoints = points.filter(x => x.complete === true)
 
@@ -377,58 +380,58 @@ export default class ScheduleGdMap extends Component {
         }
         closable={false}
       >
+        <Spin tip="加载中..." delay={50} size="large" spinning={spinning}>
+          <div style={{ display: 'flex', height: 'calc(100vh - 54px)' }}>
+            {/* ——————左边订单列表—————— */}
+            <div className={styles.pointInfoCell} style={{display: orders.length > 0 ? 'block' : 'none',}}>
+              {points.map(point =>
+                <>
+                  <Row type="flex" justify="space-between" className={styles.pointInfoItemCell}>
+                    <Col span={20}>
+                      <span className={styles.numberCircle}>{point.deliveryNumber}</span>
+                      <span className={styles.storeName}>
+                        {`[${point.deliveryPoint.code}]${point.deliveryPoint.name}`}
+                      </span>
+                    </Col>
+                    <Col span={4}>
+                      {
+                        point.complete === 1 || point.shipStat === '已送达' ?
+                          <span className={styles.deliveryStat} style={{ color: '#248232', backgroundColor: '#2482324D' }}>
+                            已送达
+                          </span>
+                          :
+                          <span className={styles.deliveryStat} style={{ color: '#C31B1F', backgroundColor: '#C31B1F4D' }}>
+                            未送达
+                          </span>
+                      }
+                    </Col>
+                    <Col span={12}>
+                      预计到达：
+                      {point.preReachTime ? moment(point.preReachTime).format('MM月DD日 HH:mm') : '---'}
+                    </Col>
+                    <Col span={12}>
+                      实际到达：
+                      {point.relReachTime ? moment(point.relReachTime).format('M月DD日 HH:mm') : '---'}
+                    </Col>
+                    <Col span={12}>
+                      预计离开：
+                      {point.preDeliveryTime ? moment(point.preDeliveryTime).format('M月DD日 HH:mm') : '---'}
+                    </Col>
+                    <Col span={12}>
+                      实际离开：
+                      {point.relDeliveryTime ? moment(point.relDeliveryTime).format('M月DD日 HH:mm') : '---'}
+                    </Col>
+                  </Row>
+                  <Divider style={{ margin: 0, marginTop: 5 }}/>
+                </>
+              )}
+            </div>
 
-        <div style={{ display: 'flex', height: 'calc(100vh - 54px)' }}>
-          {/* ——————左边订单列表—————— */}
-          <div className={styles.pointInfoCell} style={{display: orders.length > 0 ? 'block' : 'none',}}>
-            {points.map(point =>
-              <>
-                <Row type="flex" justify="space-between" className={styles.pointInfoItemCell}>
-                  <Col span={20}>
-                    <span className={styles.numberCircle}>{point.deliveryNumber}</span>
-                    <span className={styles.storeName}>
-                      {`[${point.deliveryPoint.code}]${point.deliveryPoint.name}`}
-                    </span>
-                  </Col>
-                  <Col span={4}>
-                    {
-                      point.complete === 1 || point.shipStat === '已送达' ?
-                        <span className={styles.deliveryStat} style={{ color: '#248232', backgroundColor: '#2482324D' }}>
-                          已送达
-                        </span>
-                        :
-                        <span className={styles.deliveryStat} style={{ color: '#C31B1F', backgroundColor: '#C31B1F4D' }}>
-                          未送达
-                        </span>
-                    }
-                  </Col>
-                  <Col span={12}>
-                    预计到达：
-                    {point.preReachTime ? moment(point.preReachTime).format('MM月DD日 HH:mm') : '---'}
-                  </Col>
-                  <Col span={12}>
-                    实际到达：
-                    {point.relReachTime ? moment(point.relReachTime).format('M月DD日 HH:mm') : '---'}
-                  </Col>
-                  <Col span={12}>
-                    预计离开：
-                    {point.preDeliveryTime ? moment(point.preDeliveryTime).format('M月DD日 HH:mm') : '---'}
-                  </Col>
-                  <Col span={12}>
-                    实际离开：
-                    {point.relDeliveryTime ? moment(point.relDeliveryTime).format('M月DD日 HH:mm') : '---'}
-                  </Col>
-                </Row>
-                <Divider style={{ margin: 0, marginTop: 5 }}/>
-              </>
-            )}
+            {/* ————————右边地图———————— */}
+            {/* <DispatchGdMap style={{ width: orders.length > 0 ? '75vw' : '100vw' }}/> */}
+            <div id="DispatchGdMap" className={styles.DispatchGdMap} style={{ width: orders.length > 0 ? '75vw' : '100vw' }}/>
           </div>
-
-          {/* ————————右边地图———————— */}
-          {/* <DispatchGdMap style={{ width: orders.length > 0 ? '75vw' : '100vw' }}/> */}
-          <div id="DispatchGdMap" className={styles.DispatchGdMap} style={{ width: orders.length > 0 ? '75vw' : '100vw' }}/>
-        </div>
-
+        </Spin>
       </Modal>
     )
   }
