@@ -60,8 +60,8 @@ export default class ScheduleGdMap extends Component {
       // store = bdToGd(store)   // 🫵🫵🫵百度转高德🫵🫵🫵
       return {
         ...order,
-        longitude: store.longitude || 113.809388,
-        latitude: store.latitude || 23.067107,
+        longitude: store?.longitude || 113.809388,
+        latitude: store?.latitude || 23.067107,
         iconNum: index + 1,
       }
     })

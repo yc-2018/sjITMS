@@ -39,6 +39,7 @@ import {
 } from '@/services/sjitms/ScheduleBill';
 import { depart, back, recordLog, callG7Interface } from '@/services/sjitms/ScheduleProcess';
 import DispatchMap from '@/pages/SJTms/Schedule/ScheduleMap';
+import DispatchGdMap from '@/pages/SJTms/Schedule/ScheduleGdMap';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 import { groupBy, sumBy, orderBy } from 'lodash';
 import scher from '@/assets/common/scher.jpg';
@@ -751,7 +752,8 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
             })}
           </Row>
         </Modal>
-        <DispatchMap onRef={node => (this.progressingMapRef = node)} />
+        {/* <DispatchMap onRef={node => (this.progressingMapRef = node)} /> */}
+        <DispatchGdMap onRef={node => (this.progressingMapRef = node)}/>
       </>
     );
   };
