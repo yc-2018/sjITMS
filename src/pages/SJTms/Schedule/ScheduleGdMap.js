@@ -1,10 +1,4 @@
-/*
- * @Author: guankongjin
- * @Date: 2022-07-21 15:59:18
- * @LastEditors: guankongjin
- * @LastEditTime: 2023-08-03 16:53:47
- * @Description: 配送进度
- */
+/* g7数据地图（高德） */
 import React, { Component } from 'react'
 import { Button, Col, Divider, message, Modal, Row, Spin } from 'antd'
 import { groupBy, orderBy, sumBy, uniqBy } from 'lodash'
