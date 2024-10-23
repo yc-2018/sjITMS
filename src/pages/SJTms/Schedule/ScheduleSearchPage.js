@@ -425,10 +425,10 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
 
   updatePirs = async () => {
     const { selectedRows, newPirs } = this.state;
-    if (selectedRows[0].STAT != 'Approved' || selectedRows[0].PIRS == undefined) {
-      message.warn('该排车单未签到或不是批准状态，不能修改码头！');
-      return;
-    }
+    // if (selectedRows[0].STAT != 'Approved' || selectedRows[0].PIRS == undefined) {
+    //   message.warn('该排车单未签到或不是批准状态，不能修改码头！');
+    //   return;
+    // }
     if (newPirs == '') {
       message.warn('修改码头不能为空！');
       return;
