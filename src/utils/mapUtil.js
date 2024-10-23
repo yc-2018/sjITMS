@@ -3,6 +3,7 @@ import MyjGreenIcon from '@/assets/common/23.png'
 import MyjRedIcon from '@/assets/common/MyjRedMin.png'
 import ShopsIcon from '@/assets/common/shops.png'
 
+export const AMAP_KEY = '0adda227efca2b24d25df3213c87cca2'
 
 /**
  * 高德地图默认加载器对象    需要其他的在调用处解构添加
@@ -10,14 +11,14 @@ import ShopsIcon from '@/assets/common/shops.png'
  * @since 2024/10/5 9:19
 */
 export const AMapDefaultLoaderObj = {
-  key: '0adda227efca2b24d25df3213c87cca2', // 需要设置您申请的key
+  key: AMAP_KEY, // 需要设置您申请的key
   version: '2.0',
   plugins: ['AMap.ToolBar', 'AMap.Driving', 'AMap.MouseTool'],
   AMapUI: { version: '1.1', plugins: [], },
   Loca: { version: '2.0.0' },
 }
 export const AMapDefaultConfigObj = {
-  viewMode: '3D',
+  viewMode: '2D',
   zoom: 9,
   zooms: [2, 22],
   center: [113.802834, 23.061303],

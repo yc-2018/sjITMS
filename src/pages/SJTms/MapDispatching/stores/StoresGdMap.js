@@ -8,7 +8,7 @@ import moment from 'moment';
 import * as XLSX from 'xlsx';
 import copy from 'copy-to-clipboard';
 
-import { AMapDefaultConfigObj, AMapDefaultLoaderObj, getMyjIcon } from '@/utils/mapUtil'
+import { AMAP_KEY, AMapDefaultConfigObj, getMyjIcon } from '@/utils/mapUtil'
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { shencopy } from '@/utils/SomeUtil';
 
@@ -26,6 +26,7 @@ import { queryAuditedOrderByStoreMap, queryStoreMaps } from '@/services/sjitms/O
 
 import style from './DispatchingMap.less';
 import  mapStyle from  './storesGdMap.less'
+import MyjRedIcon from '@/assets/common/MyjRedMin.png'
 
 const { Search } = Input;
 const { Option } = Select;
@@ -57,9 +58,9 @@ export default class StoresGdMap extends Component {
 
   componentDidMount = async () => {
     try { // 加载高德地图，放在最前面
-      const AMap = await AMapLoader.load(AMapDefaultLoaderObj);
+      const AMap = await AMapLoader.load({key: AMAP_KEY, version: "2.0"});
       this.AMap = AMap;
-      this.map = new AMap.Map('GdStoreMap', AMapDefaultConfigObj);  // GdStoreMap是高德要加载的元素的id，🔴一定要唯一🔴
+      this.map = new AMap.Map('GdStoreMap', AMapDefaultConfigObj)  // GdStoreMap是高德要加载的元素的id，🔴一定要唯一🔴
       this.addAMapMenu()  // 右键菜单
     } catch (error) {
       message.error(`获取高德地图类对象失败:${error}`)
@@ -90,15 +91,15 @@ export default class StoresGdMap extends Component {
       }])
     }, 2)
 
-    contextMenu.addItem(`${this.openDragStore ? '关闭' : '开启'}拖拽门店`, () => {
-      contextMenu.close()
-      this.openDragStore = !this.openDragStore // 允许拖拽
-      this.myjRedMarkers.forEach(item => {
-        item.setDraggable(this.openDragStore)
-        item.setCursor(this.openDragStore ? 'move' : 'pointer')
-      })
-      this.addAMapMenu()      // 自我调用：重新加载右键菜单
-    }, 3)
+    // contextMenu.addItem(`${this.openDragStore ? '关闭' : '开启'}拖拽门店`, () => {
+    //   contextMenu.close()
+    //   this.openDragStore = !this.openDragStore // 允许拖拽
+    //   this.myjRedMarkers.forEach(item => {
+    //     item.setDraggable(this.openDragStore)
+    //     item.setCursor(this.openDragStore ? 'move' : 'pointer')
+    //   })
+    //   this.addAMapMenu()      // 自我调用：重新加载右键菜单
+    // }, 3)
 
     // 地图绑定鼠标右击事件——弹出右键菜单
     map.on('rightclick', e => contextMenu.open(map, e.lnglat))
@@ -147,7 +148,7 @@ export default class StoresGdMap extends Component {
         const orders = [...data, ...storeRes];
         setTimeout(() => {
           this.createMyjMarkers()
-          this.map.setFitView() // 无参数时，自动自适应所有覆盖物
+          this.map.setFitView(undefined, true) // 无参数时，自动自适应所有覆盖物
         }, 500);
         this.setState({ orders, otherData });
       }
@@ -155,13 +156,72 @@ export default class StoresGdMap extends Component {
     });
   };
 
+
+/**
+ * 增加海量点
+ * @author ChenGuangLong
+ * @since 2024/10/23 15:00
+*/
+  addMassMarks = () => {
+    const { orders = [] } = this.state
+    const { map, AMap } = this
+    this.redMass?.clear()
+    // 创建海量点
+    this.redMass = new AMap.MassMarks(orders.map(item => ({
+      lnglat: `${item.longitude},${item.latitude}]`,
+      item,
+    })), {
+      zIndex: 111,
+      cursor: 'pointer',
+      style: {
+        url: MyjRedIcon,
+        anchor: new AMap.Pixel(10, 10),   // 锚点位置 一半一半 就是中心位置为锚点  以底部中心为锚点就应该是 new AMap.Pixel(10, 20)
+        size: new AMap.Size(20, 20),
+        zIndex: 12,
+      },
+    })
+
+    // 中文就创建一次 循环利用
+    this.text = this.text ?? new AMap.Text({
+      anchor: 'bottom-center',
+      offset: new AMap.Pixel(0, -10),             // 设置文本标注偏移量 因为坐标偏移一半 所以是大小的一半+1
+    });
+    // ——————————鼠标移入——————————
+    this.redMass.on('mouseover', ({ data }) => {
+      this.text.setPosition(new AMap.LngLat(data.item.longitude, data.item.latitude)) // 改变经纬度
+      this.text.setText(this.setMarkerText(data.item))                                // 设置文本标注内容
+      map.add(this.text);
+    })
+    // ——————————鼠标移出——————————
+    this.redMass.on('mouseout', () => {
+      this.text && map.remove(this.text)
+    })
+    // ——————————点击——————————
+    this.redMass.on('click', ({ data }) => {
+      if (data.item.address) {
+        copy(data.item.address)
+        this.setState({ storeInfoVisible: true, storeView: data.item })
+        message.success('复制门店地址成功')
+      } else {
+        message.error('门店地址复制失败，检查该门店是否维护了地址！！')
+      }
+    })
+    // ——————————双击——————————
+    this.redMass.on('dblclick', ({ data }) => {
+      map.setFitView([new AMap.Marker({ position: [data.item.longitude, data.item.latitude]})])
+    })
+
+    this.redMass.setMap(map)
+  }
+
+
   /**
    * 创建美宜佳坐标点
    * @author ChenGuangLong
    * @since 2024/10/4 15:44
   */
   createMyjMarkers = () => {
-    const { orders = [], otherData = [] } = this.state
+    const { otherData = [] } = this.state
     const { map, AMap } = this
 
     this.text = this.text ?? new AMap.Text({      // 中文就创建一次 循环利用
@@ -169,52 +229,55 @@ export default class StoresGdMap extends Component {
       offset: new AMap.Pixel(0, -10),             // 设置文本标注偏移量 因为坐标偏移一半 所以是大小的一半+1
     });
     // ——————————先清除————————————
-    if (this.myjRedMarkers.length > 0) {
-      map.remove(this.myjRedMarkers)
-      this.myjRedMarkers = []
-    }
+    // if (this.myjRedMarkers.length > 0) {
+    //   map.remove(this.myjRedMarkers)
+    //   this.myjRedMarkers = []
+    // }
     if (this.myjGreenMarkers.length > 0) {
       map.remove(this.myjGreenMarkers)
       this.myjGreenMarkers = []
     }
+
+    // 创建红色海量点
+    this.addMassMarks()
     // ————————创建红色图标————————————————————————————————————————————————————————————————
-    if (orders.length > 0) {
-      const redMyjIcon = getMyjIcon(AMap, 'red')
-      this.myjRedMarkers = orders/* .map(item => bdToGd(item)) */.map(order => {   // 🫵🫵🫵百度转高德🫵🫵🫵; 再创建坐标点
-        const marker = new AMap.Marker({                   // 创建一个Marker对象
-          position: [order.longitude, order.latitude],          // 设置Marker的位置
-          icon: redMyjIcon,                                     // 红色图标
-          anchor: 'center',                                     // 设置Marker的锚点
-          draggable: this.openDragStore,                        // 是否允许拖拽
-          cursor: this.openDragStore ? 'move' : 'pointer',      // 鼠标移入时的鼠标样式
-        })
-        marker.on('mouseover', () => {                                        // 鼠标移入————————————
-          this.text.setPosition(new AMap.LngLat(order.longitude, order.latitude))   // 改变经纬度
-          this.text.setText(this.setMarkerText(order))                              // 设置文本标注内容
-          map.add(this.text);
-        })
-        marker.on('mouseout', () => {                                         // 鼠标移出————————————
-          this.text && map.remove(this.text)
-        })
-        marker.on('click', () => {                                            // 左键单击—————————————
-          if (order.address) {
-            copy(order.address);
-            this.setState({ storeInfoVisible: true, storeView: order });
-            message.success('复制门店地址成功');
-          } else {
-            message.error('门店地址复制失败，检查该门店是否维护了地址！！');
-          }
-        })
-        marker.on('dblclick', () => {                                        // 双击——————————————————
-          map.setFitView([marker]);
-        })
-        marker.on('dragend', e => {                                                // 拖拽结束事件——————————————————
-          this.changePoint(e, order, marker)
-        })
-        return marker
-      })
-      map.add(this.myjRedMarkers)
-    }
+    // if (orders.length > 0) {
+    //   const redMyjIcon = getMyjIcon(AMap, 'red')
+    //   this.myjRedMarkers = orders/* .map(item => bdToGd(item)) */.map(order => {   // 🫵🫵🫵百度转高德🫵🫵🫵; 再创建坐标点
+    //     const marker = new AMap.Marker({                   // 创建一个Marker对象
+    //       position: [order.longitude, order.latitude],          // 设置Marker的位置
+    //       icon: redMyjIcon,                                     // 红色图标
+    //       anchor: 'center',                                     // 设置Marker的锚点
+    //       draggable: this.openDragStore,                        // 是否允许拖拽
+    //       cursor: this.openDragStore ? 'move' : 'pointer',      // 鼠标移入时的鼠标样式
+    //     })
+    //     marker.on('mouseover', () => {                                        // 鼠标移入————————————
+    //       this.text.setPosition(new AMap.LngLat(order.longitude, order.latitude))   // 改变经纬度
+    //       this.text.setText(this.setMarkerText(order))                              // 设置文本标注内容
+    //       map.add(this.text);
+    //     })
+    //     marker.on('mouseout', () => {                                         // 鼠标移出————————————
+    //       this.text && map.remove(this.text)
+    //     })
+    //     marker.on('click', () => {                                            // 左键单击—————————————
+    //       if (order.address) {
+    //         copy(order.address);
+    //         this.setState({ storeInfoVisible: true, storeView: order });
+    //         message.success('复制门店地址成功');
+    //       } else {
+    //         message.error('门店地址复制失败，检查该门店是否维护了地址！！');
+    //       }
+    //     })
+    //     marker.on('dblclick', () => {                                        // 双击——————————————————
+    //       map.setFitView([marker]);
+    //     })
+    //     marker.on('dragend', e => {                                                // 拖拽结束事件——————————————————
+    //       this.changePoint(e, order, marker)
+    //     })
+    //     return marker
+    //   })
+    //   map.add(this.myjRedMarkers)
+    // }
     // ————————创建绿色图标——————————————————————————————————————————————————————————
     if (otherData.length > 0) {
       const greenMyjIcon = getMyjIcon(AMap, 'green')
@@ -261,19 +324,19 @@ export default class StoresGdMap extends Component {
     const cartonCount = () => order.cartonCount ? `
       <div>
         <hr style="margin: 5px 0 0 0;"/>
-        <div style={{ display: 'flex', marginTop: 5 }}>
-          <div style={{ flex: 1 }}>整件数</div>
-          <div style={{ flex: 1 }}>散件数</div>
-          <div style={{ flex: 1 }}>周转箱</div>
-          <div style={{ flex: 1 }}>体积</div>
-          <div style={{ flex: 1 }}>重量</div>
+        <div style="display: flex; margin-top: 5px">
+          <div style="flex: 1">整件数</div>
+          <div style="flex: 1">散件数</div>
+          <div style="flex: 1">周转箱</div>
+          <div style="flex: 1">体积</div>
+          <div style="flex: 1">重量</div>
         </div>
-        <div style={{ display: 'flex' }}>
-          <div style={{ flex: 1 }}>${order.cartonCount}</div>
-          <div style={{ flex: 1 }}>${order.scatteredCount}</div>
-          <div style={{ flex: 1 }}>${order.containerCount}</div>
-          <div style={{ flex: 1 }}>${order.volume}</div>
-          <div style={{ flex: 1 }}>{(order.weight / 1000).toFixed(3)}</div>
+        <div style="display: flex">
+          <div style="flex: 1">${order.cartonCount}</div>
+          <div style="flex: 1">${order.scatteredCount}</div>
+          <div style="flex: 1">${order.containerCount}</div>
+          <div style="flex: 1">${order.volume}</div>
+          <div style="flex: 1">${(order.weight / 1000).toFixed(3)}</div>
         </div>
       </div>
     ` : ''
@@ -432,7 +495,7 @@ export default class StoresGdMap extends Component {
             () => {
               setTimeout(() => {
                 this.createMyjMarkers()
-                this.map.setFitView() // 无参数时，自动自适应所有覆盖物
+                this.map.setFitView(undefined, true) // 无参数时，自动自适应所有覆盖物
               }, 100);
             }
           );
@@ -448,7 +511,7 @@ export default class StoresGdMap extends Component {
             () => {
               setTimeout(() => {
                 this.createMyjMarkers()
-                this.map.setFitView() // 无参数时，自动自适应所有覆盖物
+                this.map.setFitView(undefined, true) // 无参数时，自动自适应所有覆盖物
               }, 500);
             }
           );
@@ -501,7 +564,7 @@ export default class StoresGdMap extends Component {
       () => {
         setTimeout(() => {
           this.createMyjMarkers()
-          this.map.setFitView(undefined, false, [60, 60, 60, 500])  // 四周边距，上、下、左、右
+          this.map.setFitView(undefined, true, [60, 60, 60, 500])  // 四周边距，上、下、左、右
         }, 500)
       }
     )
