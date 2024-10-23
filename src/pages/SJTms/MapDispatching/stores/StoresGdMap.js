@@ -60,8 +60,10 @@ export default class StoresGdMap extends Component {
     try { // 加载高德地图，放在最前面
       const AMap = await AMapLoader.load({key: AMAP_KEY, version: "2.0"});
       this.AMap = AMap;
-      this.map = new AMap.Map('GdStoreMap', AMapDefaultConfigObj)  // GdStoreMap是高德要加载的元素的id，🔴一定要唯一🔴
-      this.addAMapMenu()  // 右键菜单
+      window.setTimeout(() => {
+        this.map = new AMap.Map('GdStoreMap', AMapDefaultConfigObj)  // GdStoreMap是高德要加载的元素的id，🔴一定要唯一🔴
+        this.addAMapMenu()  // 右键菜单
+      }, 100)
     } catch (error) {
       message.error(`获取高德地图类对象失败:${error}`)
     }
@@ -166,6 +168,8 @@ export default class StoresGdMap extends Component {
     const { orders = [] } = this.state
     const { map, AMap } = this
     this.redMass?.clear()
+    if (orders.length === 0) return
+
     // 创建海量点
     this.redMass = new AMap.MassMarks(orders.map(item => ({
       lnglat: `${item.longitude},${item.latitude}]`,
@@ -223,6 +227,7 @@ export default class StoresGdMap extends Component {
   createMyjMarkers = () => {
     const { otherData = [] } = this.state
     const { map, AMap } = this
+    if (!map) return message.info('地图加载中')
 
     this.text = this.text ?? new AMap.Text({      // 中文就创建一次 循环利用
       anchor: 'bottom-center',
