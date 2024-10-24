@@ -1,5 +1,6 @@
 /*
  * 地图排车弹窗高德版
+ * 请同步修改独立版：src/pages/SJTms/MapDispatching/mapDispatching/DispatchingGdMap.js
  * @author ChenGuangLong
  * @since 2024/9/23 12:01
 */
@@ -264,6 +265,7 @@ export default class DispatchMap extends Component {
     this.gdMapRef.current?.clearMap()
     this.vanMass = null
     if (this.drivingList.length) this.closeLine(true)
+    this.checkSchedule() // 如果排车单还勾选着，那还是要显示的
   }
 
   /**
@@ -668,14 +670,14 @@ export default class DispatchMap extends Component {
    */
   checkSchedule = async (e, scheduleUUID) => {
     const { checkSchedules } = this.state
-    const { checked } = e.target
+    const { checked } = e?.target ?? {}
     let checkList = [...checkSchedules]   // 获取已选中的排车单
     let checkScheduleOrders = []          // 获取已选中的排车单明细
-    if (checked) {                               // 选中
-      checkList.push(scheduleUUID)
-    } else {                                     // 取消
-      checkList = checkList.filter(item => item !== scheduleUUID)
-    }
+
+    if (e)                                                              // 是不是在页面上点的排车单
+      if (checked) checkList.push(scheduleUUID)                         // 选中
+      else checkList = checkList.filter(item => item !== scheduleUUID)  // 取消
+
     if (checkList.length > 0) {                   // 选中的排车单列表大于0
       const response = await getDetailByBillUuids(checkList)
       if (response.success) {

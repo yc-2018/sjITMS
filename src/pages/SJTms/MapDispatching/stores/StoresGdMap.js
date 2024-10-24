@@ -150,7 +150,7 @@ export default class StoresGdMap extends Component {
         const orders = [...data, ...storeRes];
         setTimeout(() => {
           this.createMyjMarkers()
-          this.map.setFitView(undefined, true) // 无参数时，自动自适应所有覆盖物
+          this.map.setFitView() // 无参数时，自动自适应所有覆盖物
         }, 500);
         this.setState({ orders, otherData });
       }
@@ -500,7 +500,7 @@ export default class StoresGdMap extends Component {
             () => {
               setTimeout(() => {
                 this.createMyjMarkers()
-                this.map.setFitView(undefined, true) // 无参数时，自动自适应所有覆盖物
+                this.map.setFitView() // 无参数时，自动自适应所有覆盖物
               }, 100);
             }
           );
@@ -516,7 +516,7 @@ export default class StoresGdMap extends Component {
             () => {
               setTimeout(() => {
                 this.createMyjMarkers()
-                this.map.setFitView(undefined, true) // 无参数时，自动自适应所有覆盖物
+                this.map.setFitView() // 无参数时，自动自适应所有覆盖物
               }, 500);
             }
           );
