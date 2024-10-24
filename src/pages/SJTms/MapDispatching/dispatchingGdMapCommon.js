@@ -161,9 +161,7 @@ export const setMarkerText = (state, order) => {
 export const getTotals = (state, selectOrder) => {
   const { orders, bearweight, volumet } = state
   const selectOrderStoreCodes = selectOrder.map(e => e.deliveryPoint.code)
-  const allSelectOrders = orders.filter(
-    e => selectOrderStoreCodes.indexOf(e.deliveryPoint?.code) !== -1
-  )
+  const allSelectOrders = orders.filter(e => selectOrderStoreCodes.indexOf(e.deliveryPoint?.code) !== -1)
   const orderTotals = allSelectOrders.length === 0 ? selectOrder : allSelectOrders;
   let totals = {
     cartonCount: 0,             // 整件数

@@ -1,5 +1,5 @@
 /*
- * 地图排车
+ * 地图排车弹窗高德版
  * @author ChenGuangLong
  * @since 2024/9/23 12:01
 */
@@ -27,7 +27,7 @@ import {
 import GdMap from '@/components/GdMap'
 import startMarkerIcon from '@/assets/common/startMarker.png'
 import vanIcon from '@/assets/common/van.svg';
-import MyjRedIcon from '@/assets/common/MyjRedMin.png'
+import MyjRedIcon from '@/assets/common/22.png'
 import MyjGreenIcon from '@/assets/common/23.png'
 import MyjBlueIcon from '@/assets/common/24.png'
 
@@ -261,7 +261,7 @@ export default class DispatchMap extends Component {
    * @since 2024/9/27 22:52
   */
   clearMap = () => {
-    this.gdMapRef.current.clearMap()
+    this.gdMapRef.current?.clearMap()
     this.vanMass = null
     if (this.drivingList.length) this.closeLine(true)
   }
@@ -477,11 +477,12 @@ export default class DispatchMap extends Component {
    * @since 2024/9/24 17:23
    */
   switchRectangleSelect = () => {
-    const { mapSelect, orders, orderMarkers } = this.state
+    const { mapSelect } = this.state
     const { AMap, map } = this.gdMapRef.current
     if (!this.rectangleTool) {  // 第一次先创建
       this.rectangleTool = new AMap.MouseTool(map)
       this.rectangleTool.on('draw', (e) => {
+        const { orders, orderMarkers } = this.state    // 必须放里面（放外面导致严重的教训bug)
         const southWest = e.obj.getOptions().bounds.getSouthWest()  // 西南角坐标
         const northEast = e.obj.getOptions().bounds.getNorthEast()  // 东北角坐标
         const rectanglePath = [       // 矩形路径
@@ -504,12 +505,14 @@ export default class DispatchMap extends Component {
     }
     // 画矩形开关
     if (!mapSelect) {
+      map.setDefaultCursor('crosshair')
       this.rectangleTool.rectangle({  // 同Polygon的Option设置
-        fillColor: '#fff',
+        fillColor: '#f8f4e7',
         strokeColor: '#80d8ff'
       })
       this.setState({ mapSelect: true })
     } else {
+      map.setDefaultCursor('default')
       this.setState({ mapSelect: false })
       this.rectangleTool.close(true)   // 关闭，并清除覆盖物(不清除（false）也没关系
     }

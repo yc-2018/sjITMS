@@ -1,4 +1,4 @@
-// ////////// 地图排车 页面 //////////////////文件创建路径：D:\webCode\iwms-web\src\pages\SJTms\MapDispatching\mapDispatching\DispatchingGdMap.js  由`陈光龙`创建 时间：2024/10/7 17:16
+// ////////// 地图排车独立高德版 //////////////////文件创建路径：D:\webCode\iwms-web\src\pages\SJTms\MapDispatching\mapDispatching\DispatchingGdMap.js  由`陈光龙`创建 时间：2024/10/7 17:16
 import React, { Component } from 'react'
 import {
   Divider, Button, Row, Col, Spin, message, Input,
@@ -23,7 +23,7 @@ import {
 } from '@/pages/SJTms/MapDispatching/dispatchingGdMapCommon'
 import startMarkerIcon from '@/assets/common/startMarker.png'
 import vanIcon from '@/assets/common/van.svg';
-import MyjRedIcon from '@/assets/common/MyjRedMin.png'
+import MyjRedIcon from '@/assets/common/22.png'
 import MyjGreenIcon from '@/assets/common/23.png'
 import MyjBlueIcon from '@/assets/common/24.png'
 import { getDispatchConfig } from '@/services/sjtms/DispatcherConfig'
@@ -57,7 +57,6 @@ const bColDiv2 = (name, value, span = 4) => (
 
 export default class DispatchMap extends Component {
   basicOrders = [];
-  isSelectOrders = [];
   basicScheduleList = [];
   select = null;
 
@@ -186,19 +185,6 @@ export default class DispatchMap extends Component {
         const orderMarkers = orderMarkersAll.filter(e => e.stat !== 'Scheduled')     // 未排车marker
         const ScheduledMarkers = orderMarkersAll.filter(e => e.stat === 'Scheduled') // 已排车marker
 
-        // 获取选中订单相同区域门店
-        const isSelectOrdersArea =
-          this.isSelectOrders?.length > 0 ? uniqBy(this.isSelectOrders.map(e => e.shipAreaName)) : []
-
-        orderMarkers.forEach(e => {
-          if (this.isSelectOrders && this.isSelectOrders.length > 0) {
-            const x = this.isSelectOrders.find(item => item.deliveryPoint.code === e.deliveryPoint.code)
-            if (isSelectOrdersArea.indexOf(e.shipAreaName) !== -1) {
-              e.isSelect = true
-              e.sort = x?.sort ? x.sort : undefined
-            }
-          }
-        })
         const filterData = data.filter(e => e.stat !== 'Scheduled')
         this.basicOrders = filterData
         this.setState(
@@ -238,7 +224,7 @@ export default class DispatchMap extends Component {
         this.basicScheduleList = res?.data?.records;
       });
       this.setState({ loading: false, pageFilter });
-    });
+    }).catch(err => {message.error(`查询失败：${err.message}`)});
   };
 
   /**
@@ -247,7 +233,7 @@ export default class DispatchMap extends Component {
    * @since 2024/9/27 22:52
    */
   clearMap = () => {
-    this.gdMapRef.current.clearMap()
+    this.gdMapRef.current?.clearMap()
     this.vanMass = null
     if (this.drivingList.length) this.closeLine(true)
   }
@@ -449,7 +435,6 @@ export default class DispatchMap extends Component {
     })
     this.storeFilter('')
     this.searchFormRef?.onSubmit()
-    this.isSelectOrders = []
   }
 
   /**
@@ -458,11 +443,12 @@ export default class DispatchMap extends Component {
    * @since 2024/9/24 17:23
    */
   switchRectangleSelect = () => {
-    const { mapSelect, orders, orderMarkers } = this.state
+    const { mapSelect } = this.state
     const { AMap, map } = this.gdMapRef.current
     if (!this.rectangleTool) {  // 第一次先创建
       this.rectangleTool = new AMap.MouseTool(map)
       this.rectangleTool.on('draw', (e) => {
+        let { orders, orderMarkers } = this.state      // 必须放里面（放外面导致严重的教训bug)
         const southWest = e.obj.getOptions().bounds.getSouthWest()  // 西南角坐标
         const northEast = e.obj.getOptions().bounds.getNorthEast()  // 东北角坐标
         const rectanglePath = [       // 矩形路径
@@ -485,12 +471,14 @@ export default class DispatchMap extends Component {
     }
     // 画矩形开关
     if (!mapSelect) {
+      map.setDefaultCursor('crosshair')
       this.rectangleTool.rectangle({  // 同Polygon的Option设置
         fillColor: '#fff',
         strokeColor: '#80d8ff'
       })
       this.setState({ mapSelect: true })
     } else {
+      map.setDefaultCursor('default')
       this.setState({ mapSelect: false })
       this.rectangleTool.close(true)   // 关闭，并清除覆盖物(不清除（false）也没关系
     }
@@ -782,7 +770,6 @@ export default class DispatchMap extends Component {
                       style={{ float: 'left' }}
                       onClick={() => {
                         this.setState({ isEdit: false, bearweight: 0, volumet: 0 });
-                        this.isSelectOrders = [];
                         this.searchFormRef?.onSubmit();
                       }}
                     >
