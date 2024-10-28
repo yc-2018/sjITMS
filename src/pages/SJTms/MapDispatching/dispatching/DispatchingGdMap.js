@@ -66,6 +66,7 @@ export default class DispatchMap extends Component {
   vanMass = null                                // 货车（已排）海量点列表
   myjMass = null                                // myj（未排）海量点列表
   text  = null                                  // 地图文本对象（循环利用)
+  isSetFitView = true                        // 是否需要重新设置视图范围(保存排车单的时候返回不要调整所以加上这个控制)
   gdMapRef = React.createRef()    // 高德地图ref
   state = {
     allTotals: {
@@ -229,7 +230,8 @@ export default class DispatchMap extends Component {
         window.setTimeout(() => {
           this.clearMap()      // 清除地图所有覆盖物（包括线路)
           this.reloadMyjMarkers(orderMarkers) // 重新加载美宜佳图标
-          this.gdMapRef.current.map.setFitView() // 无参数时，自动自适应所有覆盖物
+          if (this.isSetFitView) this.gdMapRef.current.map.setFitView() // 无参数时，自动自适应所有覆盖物
+          else this.isSetFitView = true
           this.gdMapContextMenu()
         }, 500)
       }
@@ -599,6 +601,7 @@ export default class DispatchMap extends Component {
     if (schedule) schedule.uuid = schedule.UUID
 
     allSelectOrders = uniqBy(allSelectOrders, 'uuid')
+    this.isSetFitView = false // 返回不要重新聚集
     this.props.dispatchingByMap(isEdit, isEdit ? schedule : allSelectOrders, allSelectOrders)
   }
 
