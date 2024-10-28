@@ -42,6 +42,8 @@ export default class StoresGdMap extends Component {
   openDragStore = false     // 是否开启拖拽门店
   searchStoreMarkers = []     // 搜索门店点位列表
   infoWindow = null            // 高德搜索点位信息窗体
+  currentMarker = null         // 拖拽门店当前点位
+  newMarker = null             // 拖拽门店新点位
 
   state = {
     storeInfoVisible: false,
@@ -54,6 +56,7 @@ export default class StoresGdMap extends Component {
     reviewVisible: false,    // 门店审核抽屉
     storeView: undefined,    // 抽屉的门店数据
     searchStoreList: [],     // 搜索门店列表（左边渲染)
+    openDragStore: false,    // 是否开启门店拖拽
   }
 
   componentDidMount = async () => {
@@ -104,11 +107,19 @@ export default class StoresGdMap extends Component {
     // }, 3)
 
     // 地图绑定鼠标右击事件——弹出右键菜单
-    map.on('rightclick', e => contextMenu.open(map, e.lnglat))
+    map.on('rightclick', e => {
+      const { openDragStore } = this.state
+      if (openDragStore) return // 开启拖拽时，右键菜单无效
+      contextMenu.open(map, e.lnglat)
+    })
   }
 
   /** 查询 */
   refresh = (params, pageSize, storeParams) => {
+    if (this.state.openDragStore) {                           // 拖拽中，关闭
+      this.setState({ openDragStore: false })           // 关闭拖拽变量
+      this.map.remove([this.currentMarker, this.newMarker])
+    }
     if (params.length <= 0) {
       this.changePage(
         this.state.storePages || '500',
@@ -362,9 +373,8 @@ export default class StoresGdMap extends Component {
   }
 
 
-  /** 拖拽改变门店经纬度 */
-  changePoint = async (e, order, marker) => {
-    const lnglat = e.lnglat // gdToBd(e.lnglat)   // 🫵🫵🫵高德转百度🫵🫵🫵
+  /** 保存拖拽改变门店经纬度 */
+  changePoint = async (order,lnglat) => {
     let sets = {
       LATITUDE: lnglat.lat,
       LONGITUDE: lnglat.lng,
@@ -372,26 +382,19 @@ export default class StoresGdMap extends Component {
     let param = {
       tableName: 'sj_itms_ship_address',
       sets,
-      condition: {
-        params: [
-          {
-            field: 'UUID',
-            rule: 'eq',
-            val: [order.uuid],
-          },
-        ],
-      },
+      condition: { params: [{ field: 'UUID', rule: 'eq', val: [order.uuid] }] },
       updateAll: false,
     };
     let result = await updateEntity(param);
     if (result.success) {
-      message.success(`门店 [${order.name}] 修改经纬度成功`);
-      order.longitude = lnglat.lng;
-      order.latitude = lnglat.lat;
+      message.success(`门店 [${order.name}] 修改经纬度成功`)
+      order.longitude = lnglat.lng
+      order.latitude = lnglat.lat
+      this.map.remove([this.currentMarker, this.newMarker])   // 清除地图上拖拽辅助点
+      this.setState({ openDragStore: false })           // 关闭拖拽变量
+      this.createMyjMarkers()                                // 重新创建地图上门店图标
     } else {
-      message.error(`门店 [${order.name}] 修改经纬度失败,请刷新页面重试`);
-      // const markerLngLat = bdToGd({ longitude: e.lnglat.lng, latitude: e.lnglat.lat }) // 🫵🫵🫵百度转高德🫵🫵🫵
-      marker.setPosition([e.lnglat.lng, e.lnglat.lat])
+      message.error(`门店 [${order.name}] 修改经纬度失败,请刷新页面重试`)
     }
   };
 
@@ -462,13 +465,17 @@ export default class StoresGdMap extends Component {
    * @author ChenGuangLong
    * @since 2024/10/5 15:52
   */
-  markerNumContent = (num) => `
+  markerNumContent = (num, isRed = true) => `
       <div class=${mapStyle.customContentMarker}>
-        <img src="//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-red.png" alt>
+        <img src="//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-${isRed ? 'red' : 'default'}.png" alt>
         <div class=${mapStyle.num}>${num}</div>
       </div>`
 
   changePage = async (e, key, storeParamsp) => {
+    if (this.state.openDragStore) {                           // 拖拽中，关闭
+      this.setState({ openDragStore: false })           // 关闭拖拽变量
+      this.map.remove([this.currentMarker, this.newMarker])
+    }
     const { pageFilter, storeParams } = this.state;
 
     if (pageFilter.length > 0 && !key) {
@@ -590,7 +597,7 @@ export default class StoresGdMap extends Component {
   };
 
   getStoreInfoCard = () => {
-    const { storeView } = this.state;
+    const { storeView,openDragStore } = this.state;
     if (!storeView) return;
     let storeCode = storeView.isOrder ? storeView.deliveryPoint.code : storeView.code;
     let storeName = storeView.isOrder ? storeView.name : storeView.name;
@@ -617,13 +624,55 @@ export default class StoresGdMap extends Component {
             description={storeView.note || '无'}
             style={{ marginTop: '10px', fontSize: '14px' }}
           />
+          <Meta
+            title="经纬度"
+            description={
+              <>
+                {storeView.longitude},{storeView.latitude}
+                {!openDragStore &&
+                  <Button type="primary" onClick={() => this.dragMarker(storeView)}>拖拽修改门店经纬度</Button>
+                }
+              </>
+            }
+            style={{ marginTop: '10px', fontSize: '14px' }}
+          />
         </Card>
       </div>
     );
   };
 
+  /**
+   * 拖拽门店经纬度启动
+   * @param store 门店数据
+   * @author ChenGuangLong
+   * @since 2024/10/28 11:19
+  */
+  dragMarker = store => {
+    const { map, AMap } = this
+    this.setState({ openDragStore: true })
+    this.redMass?.clear()             // 关闭全部海量点
+    map.remove(this.myjGreenMarkers)  // 关闭司机提交坐标点
+    this.myjGreenMarkers = []
+    this.currentMarker = new AMap.Marker({             // 创建一个Marker对象
+      position: [store.longitude, store.latitude],          // 设置Marker的位置
+      content: this.markerNumContent('现'),            // 图标
+      anchor: 'bottom-center',                              // 设置Marker的锚点
+    })
+
+    this.newMarker = new AMap.Marker({                    // 创建一个Marker对象
+      position: [store.longitude, store.latitude],             // 设置Marker的位置
+      content: this.markerNumContent('新', false),  // 图标 蓝
+      anchor: 'bottom-center',                                 // 设置Marker的锚点
+      draggable: true,                                         // 是否允许拖拽
+      cursor: 'move',                                          // 鼠标移入时的鼠标样式
+      extData: store,                                          // 用户自定义属性
+    })
+
+    map.add([this.currentMarker, this.newMarker])
+  }
+
   render() {
-    const {  loading,searchStoreList } = this.state;
+    const { loading, searchStoreList, openDragStore } = this.state
     const uploadProps = {
       name: 'file',
       // action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
@@ -768,6 +817,36 @@ export default class StoresGdMap extends Component {
                   )}
                 </Col>
                 <Col span={18}>
+                  {openDragStore &&
+                    <div style={{ position: 'absolute', zIndex: 1 }}>
+                      {/* ————保存门店改变位置———— */}
+                      <Button
+                        style={{ marginLeft: '10px' }}
+                        type="primary"
+                        onClick={() => {
+                          const tLng = this.currentMarker.getPosition().lng === this.newMarker.getPosition().lng
+                          const tLat = this.currentMarker.getPosition().lat === this.newMarker.getPosition().lat
+                          if (tLng && tLat)
+                            return message.error('未改变门店位置')
+                          this.changePoint(this.newMarker.getExtData(), this.newMarker.getPosition())
+                        }}
+                      >
+                        保存门店位置
+                      </Button>
+                      {/* ————取消保存改变门店位置———— */}
+                      <Button
+                        style={{ marginLeft: '10px' }}
+                        onClick={() => {
+                          this.map.remove([this.currentMarker, this.newMarker])
+                          this.createMyjMarkers()
+                          this.setState({ openDragStore: false })
+                        }}
+                      >
+                        取消
+                      </Button>
+                    </div>
+                  }
+
                   {/* 高德地图加载区域 */}
                   <div id="GdStoreMap" style={{height:'100%'}}/>
                   <Drawer
