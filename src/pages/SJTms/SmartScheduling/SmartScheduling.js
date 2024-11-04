@@ -1,8 +1,11 @@
-import React, { Component } from 'react'
+// ///////////////////////////智能调度页面//////////////
+import React, { Component, createRef } from 'react'
 import AMapLoader from '@amap/amap-jsapi-loader'
 import { Button, Col, Drawer, Empty, Icon, message, Modal, Row, Select } from 'antd'
 import { AMapDefaultConfigObj, AMapDefaultLoaderObj } from '@/utils/mapUtil'
 import styles from './SmartScheduling.less'
+import VehiclePoolPage from '@/pages/SJTms/Dispatching/VehiclePoolPage'
+import OrderPoolModal from '@/pages/SJTms/SmartScheduling/OrderPoolModal'
 
 const { Option } = Select
 
@@ -10,8 +13,12 @@ export default class SmartScheduling extends Component {
   AMap = null                   // 高德地图对象
   map = null                    // 高德地图实例
   text = null                   // 高德地图文本对象
+  vehiclePoolModalRef = createRef()
+  orderPoolModalRef = createRef()
 
   state = {
+    selectOrderList: [],             // 选中订单池订单
+    selectVehicles: [],              // 选中运力池数据
     showSmartSchedulingModal: false, // 显示智能调度弹窗
     showMenuModal: false,            // 显示选订单弹窗
     showVehicleModal: false,         // 显示选车辆弹窗
@@ -33,8 +40,8 @@ export default class SmartScheduling extends Component {
     } catch (error) {
       message.error(`获取高德地图类对象失败:${error}`)
     }
-
   }
+
 
   render () {
     const {
@@ -44,7 +51,9 @@ export default class SmartScheduling extends Component {
       showResultDrawer,
       showButtonDrawer,
       routingConfig,
-      scheduleResults,
+      scheduleResults = [],
+      selectOrderList = [],
+      selectVehicles = [],
     } = this.state
     return (
       <div className={styles.SmartScheduling}>
@@ -121,7 +130,6 @@ export default class SmartScheduling extends Component {
         <Modal
           title="智能调度"
           visible={showSmartSchedulingModal}
-          onOk={() => {}}
           okText="开始智能调度"
           width="100vw"
           style={{ top: 0 }}
@@ -129,14 +137,25 @@ export default class SmartScheduling extends Component {
           onCancel={() => this.setState({ showSmartSchedulingModal: false })}
           confirmLoading={false}
           getContainer={false}    // 挂载到当前节点，因为选单弹窗先弹出又在同一个节点 就会在底下显示看不到
+          onOk={() => {
+
+            this.setState({ showSmartSchedulingModal: false, showButtonDrawer: false, showResultDrawer: true })
+          }}
         >
           <Row style={{ height: 'calc(100vh - 140px)', overflow: 'auto' }}>
             <Col span={12}>
               <Button onClick={() => this.setState({ showMenuModal: true })}>
                 加载订单
               </Button>
-
-              选单
+              {selectOrderList.length ?
+                <>
+                  <div>
+                    {selectOrderList.map(order => <div key={order.uuid}>{order.billNumber}</div>)}
+                  </div>
+                </>
+                :
+                <Empty description="请先加载订单"/>
+              }
             </Col>
             <Col span={12}>
               {/* 配置 设置边框 */}
@@ -178,7 +197,15 @@ export default class SmartScheduling extends Component {
                 <Button onClick={() => this.setState({ showVehicleModal: true })}>
                   加载车辆
                 </Button>
-                选车
+                {selectVehicles.length ?
+                  selectVehicles.map(vehicle => (
+                    <div key={vehicle.UUID}>{vehicle.CODE}{vehicle.PLATENUMBER}</div>
+                  ))
+                  :
+                  <Empty description="请选择排车车辆,以便统计"/>
+
+                }
+
               </div>
 
             </Col>
@@ -188,21 +215,42 @@ export default class SmartScheduling extends Component {
         {/* ————————————————————订单池弹窗———————————————————————— */}
         <Modal
           title="订单池"
+          width="90vw"
+          okText="选定"
+          style={{ top: 20 }}
           visible={showMenuModal}
-          onOk={() => {}}
           onCancel={() => this.setState({ showMenuModal: false })}
+          onOk={() => {
+            if (!this.orderPoolModalRef.state) return message.error('数据异常，请刷新页面重试')
+            const { selectOrders } = this.orderPoolModalRef.state
+            if (selectOrders?.length < 2) return message.error('请选择订单2条以上')
+            this.setState({ showMenuModal: false, selectOrderList: selectOrders })
+          }}
         >
-          选择订单...........
+          <OrderPoolModal ref={ref => (this.orderPoolModalRef = ref)}/>
         </Modal>
 
         {/* ——————————————————运力池弹窗———————————————————— */}
         <Modal
           title="运力池"
+          width="90vw"
+          okText="选定"
+          style={{ top: 20 }}
           visible={showVehicleModal}
-          onOk={() => {}}
           onCancel={() => this.setState({ showVehicleModal: false })}
+          onOk={() => {
+            if (!this.vehiclePoolModalRef.state) return message.error('数据异常，请刷新页面重试')
+            const { vehicleData, vehicleRowKeys } = this.vehiclePoolModalRef.state
+            if (!vehicleRowKeys.length) return message.error('请选择车辆')
+            const selectVehicleList = vehicleData.filter(v => vehicleRowKeys.includes(v.CODE))
+            this.setState({ showVehicleModal: false, selectVehicles: selectVehicleList })
+          }}
         >
-          选择车辆...........
+          <VehiclePoolPage
+            ref={ref => (this.vehiclePoolModalRef = ref)}
+            searchKey="VehiclePoolPageModal"
+            tabHeight={80}
+          />
         </Modal>
 
       </div>
