@@ -215,11 +215,11 @@ export default class StoresGdMap extends Component {
     this.redMass.on('click', ({ data }) => {
       if (data.item.address) {
         copy(data.item.address)
-        this.setState({ storeInfoVisible: true, storeView: data.item })
         message.success('复制门店地址成功')
       } else {
         message.error('门店地址复制失败，检查该门店是否维护了地址！！')
       }
+      this.setState({ storeInfoVisible: true, storeView: data.item })
     })
     // ——————————双击——————————
     this.redMass.on('dblclick', ({ data }) => {
