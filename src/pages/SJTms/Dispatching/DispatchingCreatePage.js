@@ -507,7 +507,7 @@ export default class DispatchingCreatePage extends Component {
 
     const { isEdit, orders, schedule, selectVehicle, selectEmployees, note } = this.state;
     //禁止整车为转运单 针对福建仓
-    if (orders.filter(e => e.orderType == 'Transshipment').length == orders.length) {
+    if (orders.length > 0 && orders.filter(e => e.orderType == 'Transshipment').length == orders.length) {
       message.error('禁止整车为转运单排车！');
       this.setState({ loading: false });
       return;
