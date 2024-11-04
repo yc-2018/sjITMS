@@ -1,3 +1,4 @@
+/* ————————————————运力池组件—————————————————— */
 import React, { Component } from 'react';
 import { Row, Col, message } from 'antd';
 import DispatchingTable from './DispatchingTable';
@@ -179,7 +180,7 @@ export default class VehiclePoolPage extends Component {
 
   render() {
     const { loading, vehiclePagination, vehicleRowKeys, vehicleData } = this.state;
-    const { searchKey } = this.props;
+    const { searchKey, tabHeight = 86 } = this.props
     return (
       <div>
         <BatchProcessConfirm onRef={node => (this.batchProcessConfirmRef = node)} />
@@ -202,7 +203,7 @@ export default class VehiclePoolPage extends Component {
           changeSelectRows={rowKeys => this.tableChangeRows(rowKeys)}
           selectedRowKeys={vehicleRowKeys}
           columns={VehicleColumns}
-          scrollY="calc(86vh - 215px)"
+          scrollY={`calc(${tabHeight}vh - 215px)`}
           title={() => this.drawVehicleCollect(vehicleData, vehicleRowKeys)}
         />
       </div>
