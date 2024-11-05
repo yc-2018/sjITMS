@@ -212,8 +212,7 @@ export default class SmartScheduling extends Component {
           </Row>
         </Modal>
 
-        {/* ————————————————————订单池弹窗———————————————————————— */}
-        <Modal
+        <Modal  // ——————————————————————————————订单池弹窗——————————————————————————————————
           title="订单池"
           width="90vw"
           okText="选定"
@@ -223,15 +222,29 @@ export default class SmartScheduling extends Component {
           onOk={() => {
             if (!this.orderPoolModalRef.state) return message.error('数据异常，请刷新页面重试')
             const { selectOrders } = this.orderPoolModalRef.state
-            if (selectOrders?.length < 2) return message.error('请选择订单2条以上')
-            this.setState({ showMenuModal: false, selectOrderList: selectOrders })
+            if (!selectOrders.length) return message.error('请先选择订单')
+            // 有些仓是一个运输订单是多个订单，所以需要合并
+            const mergeOrders = Object.values(
+              selectOrders.reduce((acc, order) => {
+                if (!acc[order.deliveryPoint.uuid]) {
+                  acc[order.deliveryPoint.uuid] = JSON.parse(JSON.stringify(order))
+                } else {
+                  acc[order.deliveryPoint.uuid].weight += order.weight
+                  acc[order.deliveryPoint.uuid].volume += order.volume
+                }
+                return acc
+              }, {})
+            )
+            if (mergeOrders.length < 2) return message.error('请选择至少两个要排车的门店！')
+
+            this.setState({ showMenuModal: false, selectOrderList: mergeOrders })
           }}
         >
           <OrderPoolModal ref={ref => (this.orderPoolModalRef = ref)}/>
         </Modal>
 
-        {/* ——————————————————运力池弹窗———————————————————— */}
-        <Modal
+
+        <Modal  // ——————————————————————————————运力池弹窗——————————————————————————————————
           title="运力池"
           width="90vw"
           okText="选定"

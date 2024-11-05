@@ -44,6 +44,7 @@ module.exports = {
     'no-plusplus': 'off',                             // 忽略i++
     'no-await-in-loop': 'warn',                       // 警告await循环
     'react/jsx-closing-tag-location': 'off',          // 忽略jsx标签位置
+    'compat/compat': 'off',                           // 忽略Object.values()方法不被Opera Mini、IE Mobile 10和IE浏览器支持。
   },
   settings: {
     polyfills: ['fetch', 'promises', 'url'],

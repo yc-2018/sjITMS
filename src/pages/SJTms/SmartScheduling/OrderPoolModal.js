@@ -116,7 +116,7 @@ export default class OrderPoolModal extends Component {
           showTotal: total => `共 ${total} 条`,
         }
         let data = response.data.records ? response.data.records : []
-        const collectResponse = this.props.dispatchConfig?.isShowSum
+        const collectResponse = this.state.dispatchConfig?.isShowSum
           ? await queryCollectAuditedOrder(filter)
           : {}
         data = data?.map(order => {
@@ -405,6 +405,61 @@ export default class OrderPoolModal extends Component {
     )
   }
 
+  /** 计算汇总 */
+  collectByOrder = data => {
+    data = data.filter(x => x.orderType !== 'OnlyBill');
+    if (data.length === 0) {
+      return {
+        realCartonCount: 0,
+        realScatteredCount: 0,
+        realContainerCount: 0,
+        realColdContainerCount: 0,
+        realFreezeContainerCount: 0,
+        realFreshContainerCount: 0,
+        realInsulatedBagCount: 0,
+        realInsulatedContainerCount: 0,
+        volume: 0,
+        weight: 0,
+        totalStores: 0,
+      };
+    }
+    let totalStores = [];
+    data = data.map(x => {
+      if (x.orderNumber) {
+        x.stillCartonCount = x.cartonCount;
+        x.stillScatteredCount = x.scatteredCount;
+        x.stillContainerCount = x.containerCount;
+
+        x.stillColdContainerCount = x.coldContainerCount;
+        x.stillFreezeContainerCount = x.freezeContainerCount;
+        x.stillFreshContainerCount = x.freshContainerCount;
+        x.stillInsulatedBagCount = x.insulatedBagCount;
+        x.stillInsulatedContainerCount = x.insulatedContainerCount;
+      }
+      if (totalStores.indexOf(x.deliveryPoint.code) === -1) {
+        totalStores.push(x.deliveryPoint.code);
+      }
+      return x;
+    });
+    return {
+      realCartonCount: Math.round(sumBy(data.map(x => x.stillCartonCount)) * 100) / 100,
+      realScatteredCount: Math.round(sumBy(data.map(x => x.stillScatteredCount)) * 100) / 100,
+      realContainerCount: Math.round(sumBy(data.map(x => x.stillContainerCount)) * 100) / 100,
+      realColdContainerCount: Math.round(sumBy(data.map(x => x.coldContainerCount))),
+
+      realFreezeContainerCount:
+        Math.round(sumBy(data.map(x => x.freezeContainerCount)) * 100) / 100,
+      realFreshContainerCount: Math.round(sumBy(data.map(x => x.freshContainerCount)) * 100) / 100,
+      realInsulatedBagCount: Math.round(sumBy(data.map(x => x.insulatedBagCount)) * 100) / 100,
+      realInsulatedContainerCount:
+        Math.round(sumBy(data.map(x => x.insulatedContainerCount)) * 100) / 100,
+
+      weight: Math.round(sumBy(data.map(x => Number(x.weight)))) / 1000,
+      volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,
+      totalStores: totalStores.length,
+    };
+  };
+
   render () {
     const {
       searchKey,
@@ -416,10 +471,10 @@ export default class OrderPoolModal extends Component {
       auditedRowKeys,
       waveOrder,
       isOrderCollect,
-      collectOrder,
       dispatchConfig,
     } = this.state
 
+    const collectOrder = this.collectByOrder(this.state.selectOrders);
     const splitSta = dispatchConfig?.orderPoolStatistics?.split(',')
     const orderPoolHeight = dispatchConfig?.isShowSum
       ? splitSta !== undefined && splitSta.length > 6 ? 290 : 235 : 210
