@@ -1,11 +1,14 @@
 // ///////////////////////////智能调度页面//////////////
 import React, { Component, createRef } from 'react'
 import AMapLoader from '@amap/amap-jsapi-loader'
-import { Button, Col, Drawer, Empty, Icon, message, Modal, Row, Select } from 'antd'
+import { Button, Col, Drawer, Empty, Icon, message, Modal, Row, Select, Table } from 'antd'
 import { AMapDefaultConfigObj, AMapDefaultLoaderObj } from '@/utils/mapUtil'
 import styles from './SmartScheduling.less'
 import VehiclePoolPage from '@/pages/SJTms/Dispatching/VehiclePoolPage'
 import OrderPoolModal from '@/pages/SJTms/SmartScheduling/OrderPoolModal'
+import { mergeOrdersColumns, mergeVehicleColumns } from '@/pages/SJTms/SmartScheduling/columns'
+import { queryDict } from '@/services/quick/Quick'
+import { loginOrg } from '@/utils/LoginContext'
 
 const { Option } = Select
 
@@ -13,6 +16,7 @@ export default class SmartScheduling extends Component {
   AMap = null                   // 高德地图对象
   map = null                    // 高德地图实例
   text = null                   // 高德地图文本对象
+  warehousePoint = ''
   vehiclePoolModalRef = createRef()
   orderPoolModalRef = createRef()
 
@@ -37,9 +41,49 @@ export default class SmartScheduling extends Component {
     try { // 加载高德地图
       this.AMap = window.AMap ?? await AMapLoader.load(AMapDefaultLoaderObj)
       this.map = new this.AMap.Map('smartSchedulingAMap', AMapDefaultConfigObj)
+      queryDict('warehouse').then(res => {    // 获取当前仓库经纬度
+        const description = res.data.find(x => x.itemValue === loginOrg().uuid)?.description
+        if (description) this.warehousePoint = description.split(',').reverse().join(',')  // 字典经纬度位置调换位置
+        else message.error('获取当前仓库经纬度失败')
+      })
     } catch (error) {
       message.error(`获取高德地图类对象失败:${error}`)
     }
+  }
+
+  intelligentScheduling = async () => {
+    const { selectOrderList, selectVehicles, routingConfig } = this.state
+    // —————————————————————————————————校验数据—————————————————————————————
+    if (!this.warehousePoint) return message.error('获取当前仓库经纬度失败，请刷新页面再试试')
+    if (selectOrderList.length === 0) return message.error('请选择订单')
+    if (selectVehicles.length === 0) return message.error('请选择车辆')
+    // 订单总体积或重量超出现有车辆的最大限度，无法进行排车!
+    const orderTotalWeight = selectOrderList.reduce((a, b) => a + b.weight, 0)
+    const orderTotalVolume = selectOrderList.reduce((a, b) => a + b.volume, 0)
+    const vehicleTotalWeight = selectVehicles.reduce((a, b) => a + b.weight, 0)
+    const vehicleTotalVolume = selectVehicles.reduce((a, b) => a + b.volume, 0)
+    if (orderTotalWeight > vehicleTotalWeight) return message.error('订单总重量超出现有车辆重量')
+    if (orderTotalVolume > vehicleTotalVolume) return message.error('订单总体积超出现有车辆体积')
+    // ————————————————————————————————组装请求体——————————————————————————————
+    // 定义仓库信息
+    const depots = [{
+      location:this.warehousePoint,
+      vehicleGroups: [
+        {
+          deliveryType: 0,  // 配送方式，默认值为0（驾车配送）
+          vehicleGroupId: null,  // 车辆组ID，非必填
+          vehicleModelId: null,  // 车辆型号ID，非必填
+          vehicleCount: 1,  // 该（型号）车数量，默认值为1
+          capacity: {
+            weight: null,  // 装载容量，
+            volume: null,  // 装载体积，
+          }
+        }
+      ],
+    }]
+
+
+    this.setState({ showSmartSchedulingModal: false, showButtonDrawer: false, showResultDrawer: true })
   }
 
 
@@ -55,6 +99,7 @@ export default class SmartScheduling extends Component {
       selectOrderList = [],
       selectVehicles = [],
     } = this.state
+
     return (
       <div className={styles.SmartScheduling}>
         {/* ——————————————————————左边按钮侧边栏———————————————————— */}
@@ -79,8 +124,8 @@ export default class SmartScheduling extends Component {
             智能调度
           </Button>
         </div>
-        {/* ——————————————————————左侧边栏开关———————————————————— */}
-        <span
+
+        <span   // ——————————————————————左侧边栏开关————————————————————
           className={styles.leftSidebarSwitch}
           style={{ left: showButtonDrawer ? '250px' : '0px' }}
           onClick={() => this.setState({ showButtonDrawer: !showButtonDrawer })}
@@ -95,8 +140,7 @@ export default class SmartScheduling extends Component {
         {/* ——————————————————————高德地图———————————————————— */}
         <div id="smartSchedulingAMap" style={{ width: '100vw', height: 'calc(100vh - 138px)' }}/>
 
-        {/* ——————————————————————右侧边栏开关———————————————————— */}
-        <span
+        <span   // ——————————————————————右侧边栏开关————————————————————
           className={styles.rightSidebarSwitch}
           style={{ right: showResultDrawer ? '250px' : '-15px' }}
           onClick={() => this.setState({ showResultDrawer: !showResultDrawer })}
@@ -107,8 +151,7 @@ export default class SmartScheduling extends Component {
             style={{ transform: showResultDrawer ? 'rotate(180deg)' : 'unset' }}
           />
         </span>
-        {/* ——————————————————————侧边栏———————————————————— */}
-        <Drawer
+        <Drawer   // ——————————————————————侧边栏(智能调度结果)————————————————————
           title="智能调度结果"
           placement="right"
           mask={false}
@@ -126,8 +169,7 @@ export default class SmartScheduling extends Component {
 
         </Drawer>
 
-        {/* ——————————————————————智能调度弹窗———————————————————————— */}
-        <Modal
+        <Modal    // ————————————————————————————智能调度弹窗——————————————————————————————
           title="智能调度"
           visible={showSmartSchedulingModal}
           okText="开始智能调度"
@@ -137,21 +179,24 @@ export default class SmartScheduling extends Component {
           onCancel={() => this.setState({ showSmartSchedulingModal: false })}
           confirmLoading={false}
           getContainer={false}    // 挂载到当前节点，因为选单弹窗先弹出又在同一个节点 就会在底下显示看不到
-          onOk={() => {
-
-            this.setState({ showSmartSchedulingModal: false, showButtonDrawer: false, showResultDrawer: true })
-          }}
+          onOk={this.intelligentScheduling}
         >
           <Row style={{ height: 'calc(100vh - 140px)', overflow: 'auto' }}>
             <Col span={12}>
               <Button onClick={() => this.setState({ showMenuModal: true })}>
                 加载订单
               </Button>
+              &nbsp;&nbsp;
               {selectOrderList.length ?
                 <>
-                  <div>
-                    {selectOrderList.map(order => <div key={order.uuid}>{order.billNumber}</div>)}
-                  </div>
+                  <Button onClick={() => this.setState({ selectOrderList: [] })}>清空</Button>
+                  <Table
+                    size="small"
+                    pagination={false}
+                    columns={mergeOrdersColumns}
+                    dataSource={selectOrderList}
+                    scroll={{ x: '38vw', y: 'calc(100vh - 217px)' }}
+                  />
                 </>
                 :
                 <Empty description="请先加载订单"/>
@@ -197,17 +242,22 @@ export default class SmartScheduling extends Component {
                 <Button onClick={() => this.setState({ showVehicleModal: true })}>
                   加载车辆
                 </Button>
+                &nbsp;&nbsp;
                 {selectVehicles.length ?
-                  selectVehicles.map(vehicle => (
-                    <div key={vehicle.UUID}>{vehicle.CODE}{vehicle.PLATENUMBER}</div>
-                  ))
+                  <>
+                    <Button onClick={() => this.setState({ selectVehicles: [] })}>清空</Button>
+                    <Table
+                      size="small"
+                      pagination={false}
+                      columns={mergeVehicleColumns}
+                      dataSource={selectVehicles}
+                      scroll={{ x: '38vw', y: 'calc(100vh - 280px)' }}
+                    />
+                  </>
                   :
                   <Empty description="请选择排车车辆,以便统计"/>
-
                 }
-
               </div>
-
             </Col>
           </Row>
         </Modal>
@@ -255,8 +305,34 @@ export default class SmartScheduling extends Component {
             if (!this.vehiclePoolModalRef.state) return message.error('数据异常，请刷新页面重试')
             const { vehicleData, vehicleRowKeys } = this.vehiclePoolModalRef.state
             if (!vehicleRowKeys.length) return message.error('请选择车辆')
-            const selectVehicleList = vehicleData.filter(v => vehicleRowKeys.includes(v.CODE))
-            this.setState({ showVehicleModal: false, selectVehicles: selectVehicleList })
+            let selectVehicleList = vehicleData.filter(v => vehicleRowKeys.includes(v.CODE))
+            if (selectVehicleList.some(v => !v.BEARVOLUME || !v.BEARWEIGHT)) {
+              message.warning('已过滤没有重量体积的车辆')
+              selectVehicleList = selectVehicleList.filter(v => v.BEARVOLUME && v.BEARWEIGHT)
+            }
+            // ——————————————车辆分组——————————————
+            // 创建一个空对象来存储分组后的车量数据
+            const groupedData = {};
+            // 遍历原始数据
+            selectVehicleList.forEach(item => {
+              // 创建一个唯一键，由重量、体积和班组组成
+              const key = `${item.BEARWEIGHT}-${Math.round(item.BEARVOLUME * item.BEARVOLUMERATE) / 100}-${item.VEHICLEGROUP}`
+              // 如果当前组合不存在，则创建一个新的条目
+              if (!groupedData[key]) {
+                groupedData[key] = {
+                  vehicleCount: 0,
+                  vehicleGroup: item.VEHICLEGROUP,
+                  weight: parseFloat(item.BEARWEIGHT.replace(/[^0-9.]/g, '')), // 转换为数字,
+                  volume: Math.round(item.BEARVOLUME * item.BEARVOLUMERATE) / 100,
+                }
+              }
+              // 更新车辆数量
+              groupedData[key].vehicleCount++
+            })
+            // 将分组后的数据转换为数组
+            const groupedVehicle = Object.values(groupedData);
+
+            this.setState({ showVehicleModal: false, selectVehicles: groupedVehicle })
           }}
         >
           <VehiclePoolPage
