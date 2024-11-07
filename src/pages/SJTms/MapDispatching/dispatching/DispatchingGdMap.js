@@ -228,6 +228,7 @@ export default class DispatchMap extends Component {
 
         // 地图上添加门店点位
         window.setTimeout(() => {
+          if (!this.gdMapRef?.current) return
           this.clearMap()      // 清除地图所有覆盖物（包括线路)
           this.reloadMyjMarkers(orderMarkers) // 重新加载美宜佳图标
           if (this.isSetFitView) this.gdMapRef.current.map.setFitView() // 无参数时，自动自适应所有覆盖物
@@ -378,7 +379,6 @@ export default class DispatchMap extends Component {
    */
   reloadMyjMarkers = orderMarkerList => {
     const { orderMarkers } = this.state // 其实有些地方我没看懂 有些地方只修改了orders，但是orderMarkers就变了？ 共用地址导致？
-    if (this.gdMapRef?.current) return
     const { map } = this.gdMapRef.current
     if (this.marksIndexList.length > 0) {   // 移除已排序号
       map.remove(this.marksIndexList)
