@@ -378,6 +378,7 @@ export default class DispatchMap extends Component {
    */
   reloadMyjMarkers = orderMarkerList => {
     const { orderMarkers } = this.state // 其实有些地方我没看懂 有些地方只修改了orders，但是orderMarkers就变了？ 共用地址导致？
+    if (this.gdMapRef?.current) return
     const { map } = this.gdMapRef.current
     if (this.marksIndexList.length > 0) {   // 移除已排序号
       map.remove(this.marksIndexList)
