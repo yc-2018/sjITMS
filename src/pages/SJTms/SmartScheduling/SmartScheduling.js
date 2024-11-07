@@ -9,6 +9,7 @@ import OrderPoolModal from '@/pages/SJTms/SmartScheduling/OrderPoolModal'
 import { mergeOrdersColumns, mergeVehicleColumns } from '@/pages/SJTms/SmartScheduling/columns'
 import { queryDict } from '@/services/quick/Quick'
 import { loginOrg } from '@/utils/LoginContext'
+import { getSmartScheduling } from '@/services/sjitms/smartSchedulingApi'
 
 const { Option } = Select
 
@@ -58,30 +59,47 @@ export default class SmartScheduling extends Component {
     if (selectOrderList.length === 0) return message.error('请选择订单')
     if (selectVehicles.length === 0) return message.error('请选择车辆')
     // 订单总体积或重量超出现有车辆的最大限度，无法进行排车!
-    const orderTotalWeight = selectOrderList.reduce((a, b) => a + b.weight, 0)
+    const orderTotalWeight = selectOrderList.reduce((a, b) => a + b.weight, 0) / 1000
     const orderTotalVolume = selectOrderList.reduce((a, b) => a + b.volume, 0)
-    const vehicleTotalWeight = selectVehicles.reduce((a, b) => a + b.weight, 0)
-    const vehicleTotalVolume = selectVehicles.reduce((a, b) => a + b.volume, 0)
+    const vehicleTotalWeight = selectVehicles.reduce((a, b) => a + b.weight * b.vehicleCount, 0)
+    const vehicleTotalVolume = selectVehicles.reduce((a, b) => a + b.volume * b.vehicleCount, 0)
     if (orderTotalWeight > vehicleTotalWeight) return message.error('订单总重量超出现有车辆重量')
     if (orderTotalVolume > vehicleTotalVolume) return message.error('订单总体积超出现有车辆体积')
     // ————————————————————————————————组装请求体——————————————————————————————
     // 定义仓库信息
     const depots = [{
       location:this.warehousePoint,
-      vehicleGroups: [
-        {
-          deliveryType: 0,  // 配送方式，默认值为0（驾车配送）
-          vehicleGroupId: null,  // 车辆组ID，非必填
-          vehicleModelId: null,  // 车辆型号ID，非必填
-          vehicleCount: 1,  // 该（型号）车数量，默认值为1
-          capacity: {
-            weight: null,  // 装载容量，
-            volume: null,  // 装载体积，
-          }
+      vehicleGroups: selectVehicles.map(x => ({
+        deliveryType: 0,                            // 配送方式，默认值为0（驾车配送）
+        // vehicleGroupId: x.vehicleGroup,          // 车辆组ID，非必填
+        vehicleModelId: `${x.weight}-${x.volume}`,  // 车辆型号ID，非必填
+        vehicleCount: x.vehicleCount,               // 该（型号）车数量，默认值为1
+        capacity: {
+          weight: x.weight,                         // 装载容量，
+          volume: x.volume,                         // 装载体积，
         }
-      ],
+      })),
     }]
+    // 定义配送点信息
+    const servicePoints = selectOrderList.map(x => ({
+      location: `${x.longitude},${x.latitude}`,                // 配送点坐标
+      name: `${x.deliveryPoint.code}`,                         // 配送点poi名称
+      demand: {
+        weight: x.weight / 1000,  // 需求容量
+        volume: x.volume,         // 需求体积
+      }
+    }))
+    // 开始组装
+    const requestBody = {
+      ...routingConfig,
+      depots,
+      servicePoints,
+      deliveryCapacity: 0,
+      infiniteVehicle: 1,
+    }
 
+    const result = await getSmartScheduling(requestBody)
+    if (result.errmsg !== 'OK') return message.error(result.errmsg)
 
     this.setState({ showSmartSchedulingModal: false, showButtonDrawer: false, showResultDrawer: true })
   }
@@ -155,6 +173,7 @@ export default class SmartScheduling extends Component {
           title="智能调度结果"
           placement="right"
           mask={false}
+          getContainer={false}
           onClose={() => this.setState({ showResultDrawer: false })}
           visible={showResultDrawer}
         >{scheduleResults.length ?
@@ -189,7 +208,10 @@ export default class SmartScheduling extends Component {
               &nbsp;&nbsp;
               {selectOrderList.length ?
                 <>
-                  <Button onClick={() => this.setState({ selectOrderList: [] })}>清空</Button>
+                  <Button onClick={() => this.setState({ selectOrderList: [] })}>清空</Button>&nbsp;&nbsp;
+                  <span>总重量：{(selectOrderList.reduce((a, b) => a + b.weight, 0) / 1000).toFixed(3)}t</span>&nbsp;&nbsp;
+                  <span>总体积：{selectOrderList.reduce((a, b) => a + b.volume, 0).toFixed(2)}m³</span>&nbsp;&nbsp;
+                  <span>配送点数量：{selectOrderList.length}</span>
                   <Table
                     size="small"
                     pagination={false}
@@ -245,13 +267,61 @@ export default class SmartScheduling extends Component {
                 &nbsp;&nbsp;
                 {selectVehicles.length ?
                   <>
-                    <Button onClick={() => this.setState({ selectVehicles: [] })}>清空</Button>
+                    <Button onClick={() => this.setState({ selectVehicles: [] })}>清空</Button>&nbsp;&nbsp;
+                    <span>总重量：{selectVehicles.reduce((a, b) => a + b.weight * b.vehicleCount, 0).toFixed(2)}t</span>&nbsp;&nbsp;
+                    <span>总体积：{selectVehicles.reduce((a, b) => a + b.volume * b.vehicleCount, 0).toFixed(2)}m³</span>&nbsp;&nbsp;
+                    <span>车辆数量：{selectVehicles.reduce((a, b) => a + b.vehicleCount, 0)}</span>&nbsp;&nbsp;
                     <Table
                       size="small"
                       pagination={false}
-                      columns={mergeVehicleColumns}
                       dataSource={selectVehicles}
                       scroll={{ x: '38vw', y: 'calc(100vh - 280px)' }}
+                      columns={[
+                        ...mergeVehicleColumns,
+                        {
+                          title: '车辆数',
+                          dataIndex: 'vehicleCount',
+                          width: 100,
+                          render: (_text, record, index) => (
+                            <div>
+                              <Button
+                                size="small"
+                                disabled={record.vehicleCount <= 1}
+                                onClick={() => {
+                                  let { selectVehicles: vehicles } = this.state
+                                  vehicles[index].vehicleCount--
+                                  this.setState({ selectVehicles: vehicles })
+                                }}
+                              >
+                                -
+                              </Button>
+                              &nbsp;{record.vehicleCount}&nbsp;
+                              <Button
+                                size="small"
+                                onClick={() => {
+                                  let { selectVehicles: vehicles } = this.state
+                                  vehicles[index].vehicleCount++
+                                  this.setState({ selectVehicles: vehicles })
+                                }}
+                              >
+                                +
+                              </Button>
+                            </div>
+                          ),
+                        },
+                        {
+                          title: '操作', dataIndex: 'action', width: 80, render: (text, record, index) => (
+                            <Button
+                              type="link"
+                              onClick={() => this.setState({
+                                selectVehicles: selectVehicles.filter((v, i) => i !== index)
+                              })}
+                            >
+                              删除
+                            </Button>
+                          )
+                        }
+                      ]}
                     />
                   </>
                   :
@@ -274,7 +344,7 @@ export default class SmartScheduling extends Component {
             const { selectOrders } = this.orderPoolModalRef.state
             if (!selectOrders.length) return message.error('请先选择订单')
             // 有些仓是一个运输订单是多个订单，所以需要合并
-            const mergeOrders = Object.values(
+            let mergeOrders = Object.values(
               selectOrders.reduce((acc, order) => {
                 if (!acc[order.deliveryPoint.uuid]) {
                   acc[order.deliveryPoint.uuid] = JSON.parse(JSON.stringify(order))
@@ -285,6 +355,11 @@ export default class SmartScheduling extends Component {
                 return acc
               }, {})
             )
+            // 没有经纬度的排除
+            if (mergeOrders.some(item => !item.longitude || !item.latitude)) {
+              message.warning('已排除没有经纬度的点')
+              mergeOrders = mergeOrders.filter(item => item.longitude && item.latitude)
+            }
             if (mergeOrders.length < 2) return message.error('请选择至少两个要排车的门店！')
 
             this.setState({ showMenuModal: false, selectOrderList: mergeOrders })
@@ -316,12 +391,13 @@ export default class SmartScheduling extends Component {
             // 遍历原始数据
             selectVehicleList.forEach(item => {
               // 创建一个唯一键，由重量、体积和班组组成
-              const key = `${item.BEARWEIGHT}-${Math.round(item.BEARVOLUME * item.BEARVOLUMERATE) / 100}-${item.VEHICLEGROUP}`
+              // const key = `${item.BEARWEIGHT}-${Math.round(item.BEARVOLUME * item.BEARVOLUMERATE) / 100}-${item.VEHICLEGROUP}`
+              const key = `${item.BEARWEIGHT}-${Math.round(item.BEARVOLUME * item.BEARVOLUMERATE) / 100}`
               // 如果当前组合不存在，则创建一个新的条目
               if (!groupedData[key]) {
                 groupedData[key] = {
                   vehicleCount: 0,
-                  vehicleGroup: item.VEHICLEGROUP,
+                  // vehicleGroup: item.VEHICLEGROUP,
                   weight: parseFloat(item.BEARWEIGHT.replace(/[^0-9.]/g, '')), // 转换为数字,
                   volume: Math.round(item.BEARVOLUME * item.BEARVOLUMERATE) / 100,
                 }
