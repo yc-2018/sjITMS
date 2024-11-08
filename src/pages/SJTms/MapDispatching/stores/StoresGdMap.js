@@ -793,7 +793,9 @@ export default class StoresGdMap extends Component {
                     <Search
                       placeholder="请输入地址"
                       allowClear
-                      onChange={event => this.storeAddrQuery(event.target.value)}
+                      // onChange={event => this.storeAddrQuery(event.target.value)}
+                      onChange={event => this.setState({ storeInfo: event.target.value })}
+                      onSearch={this.storeAddrQuery}
                       style={{ width: '90%', marginTop: '15px' }}
                       value={this.state.storeInfo}
                     />
