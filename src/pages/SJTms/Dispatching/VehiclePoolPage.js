@@ -202,7 +202,7 @@ export default class VehiclePoolPage extends Component {
           }}
           changeSelectRows={rowKeys => this.tableChangeRows(rowKeys)}
           selectedRowKeys={vehicleRowKeys}
-          columns={VehicleColumns}
+          columns={this.props.vehicleColumns ?? VehicleColumns}
           scrollY={`calc(${tabHeight}vh - 215px)`}
           title={() => this.drawVehicleCollect(vehicleData, vehicleRowKeys)}
         />

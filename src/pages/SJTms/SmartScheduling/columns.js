@@ -95,3 +95,24 @@ export const mergeVehicleColumns = [
     width: 100,
   },
 ]
+
+/** 运力池显示列 */
+export const vehicleColumns = [
+  {
+    title: '限载重量',
+    dataIndex: 'BEARWEIGHT',
+    sorter: true,
+    width: 80,
+    render: val => {
+      return val ? <span>{val}</span> : <Empty/>
+    },
+  },
+  {
+    title: '限载体积',
+    dataIndex: 'BEARVOLUME',
+    sorter: true,
+    width: 80,
+    render: (val, record) =>
+      val ? <span>{Math.round(val * record.BEARVOLUMERATE) / 100}</span> : <Empty/>,
+  },
+]
