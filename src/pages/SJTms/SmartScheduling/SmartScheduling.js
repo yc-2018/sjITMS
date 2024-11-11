@@ -1,7 +1,7 @@
 // ///////////////////////////智能调度页面//////////////
 import React, { Component, createRef } from 'react'
 import AMapLoader from '@amap/amap-jsapi-loader'
-import { Button, Col, Drawer, Empty, Icon, message, Modal, Row, Select, Table } from 'antd'
+import { Button, Col, Divider, Drawer, Empty, Icon, message, Modal, Row, Select, Table } from 'antd'
 import { AMapDefaultConfigObj, AMapDefaultLoaderObj } from '@/utils/mapUtil'
 import styles from './SmartScheduling.less'
 import VehiclePoolPage from '@/pages/SJTms/Dispatching/VehiclePoolPage'
@@ -14,14 +14,43 @@ import { getSmartScheduling } from '@/services/sjitms/smartSchedulingApi'
 const { Option } = Select
 
 export default class SmartScheduling extends Component {
+  RIGHT_DRAWER_WIDTH = 400   // 右侧侧边栏宽度
   AMap = null                   // 高德地图对象
   map = null                    // 高德地图实例
   text = null                   // 高德地图文本对象
-  warehousePoint = ''
+  warehouseMarker = null        // 当前仓库高德点
+  warehousePoint = ''         // 当前仓库经纬度
+  groupMarkers = []            // 分组的高德点位
+  routingPlans = []           // 路线规划数据列表（按index对应groupMarkers）
+
   vehiclePoolModalRef = createRef()
   orderPoolModalRef = createRef()
+  /** 每个排车单不同颜色 */
+  colors = [
+    '#0069FF',
+    '#EF233C',
+    '#20BF55',
+    '#07BEB8',
+    '#FF715B',
+    '#523F38',
+    '#FF206E',
+    '#086375',
+    '#A9E5BB',
+    '#8F2D56',
+    '#004E98',
+    '#5D576B',
+    '#248232',
+    '#9A031E',
+    '#8E443D',
+    '#F15152',
+    '#F79256',
+    '#640D14',
+    '#3F88C5',
+    '#0FA3B1',
+  ]
 
   state = {
+    sx: 0,                           // 有时刷新页面用
     selectOrderList: [],             // 选中订单池订单
     selectVehicles: [],              // 选中运力池数据
     showSmartSchedulingModal: false, // 显示智能调度弹窗
@@ -30,6 +59,8 @@ export default class SmartScheduling extends Component {
     showResultDrawer: false,         // 显示调度结果右侧侧边栏
     showButtonDrawer: true,          // 显示左边按钮侧边栏
     scheduleResults: [],             // 智能调度排车结果
+    unassignedNodes:[],              // 智能调度未分配节点
+    btnLoading: false,               // 智能调度按钮加载状态
     routingConfig: {                 // 智能调度接口参数配置
       sortRule: 0,    // 排线排序⽅式
       routeOption: 0, // 算路选项
@@ -52,6 +83,16 @@ export default class SmartScheduling extends Component {
     }
   }
 
+  /** 非状态变量改变后可刷新页面 */
+  sxYm = () => {
+    this.setState({ sx: this.state.sx + 1 })
+  }
+
+  /**
+   * 智能调度 排单排线
+   * @author ChenGuangLong
+   * @since 2024/11/7 下午5:10
+  */
   intelligentScheduling = async () => {
     const { selectOrderList, selectVehicles, routingConfig } = this.state
     // —————————————————————————————————校验数据—————————————————————————————
@@ -83,7 +124,7 @@ export default class SmartScheduling extends Component {
     // 定义配送点信息
     const servicePoints = selectOrderList.map(x => ({
       location: `${x.longitude},${x.latitude}`,                // 配送点坐标
-      name: `${x.deliveryPoint.code}`,                         // 配送点poi名称
+      name: `${x.deliveryPoint.uuid}`,                         // 配送点poi名称
       demand: {
         weight: x.weight / 1000,  // 需求容量
         volume: x.volume,         // 需求体积
@@ -97,13 +138,107 @@ export default class SmartScheduling extends Component {
       deliveryCapacity: 0,
       infiniteVehicle: 1,
     }
-
+    this.setState({ btnLoading: true })
     const result = await getSmartScheduling(requestBody)
-    if (result.errmsg !== 'OK') return message.error(result.errmsg)
+    this.setState({ btnLoading: false })
 
-    this.setState({ showSmartSchedulingModal: false, showButtonDrawer: false, showResultDrawer: true })
+    if (result.errmsg !== 'OK' || !result.data) return message.error(result.errmsg)
+    const { routes, unassignedNodes } = result.data[0]
+    const groupOrders = routes.map(route =>
+      route.queue.map(r => selectOrderList.find(order => order.deliveryPoint.uuid === r.endName)))
+    this.setState({
+      showSmartSchedulingModal: false,
+      showButtonDrawer: false,
+      showResultDrawer: true,
+      scheduleResults: groupOrders,
+      unassignedNodes,
+    })
+    this.loadingPoint(groupOrders, unassignedNodes)
   }
 
+  /**
+   * 加载地图点位
+   * @author ChenGuangLong
+   * @since 2024/11/8 上午10:59
+  */
+  loadingPoint = (groupOrders = this.state.scheduleResults, unassigneds = this.state.unassignedNodes) => {
+    const { map, AMap, colors, warehouseMarker, warehousePoint, groupMarkers } = this
+    if (!warehouseMarker) { // 仓库点
+      this.warehouseMarker = new AMap.Marker({
+        position: warehousePoint.split(','),      // 设置Marker的位置
+        anchor: 'center',              // 设置Marker的锚点
+        content: `<div class="${styles.point}">仓</div>`
+      })
+      map.add(this.warehouseMarker)
+    }
+
+    groupOrders.forEach((orders, index) => {  // 每个组循环
+      const markers = orders.map((order, i) => {            // 组内循环
+        const { longitude, latitude } = order
+        const marker = new AMap.Marker({
+          position: [longitude, latitude],      // 设置Marker的位置
+          anchor: 'center',                     // 设置Marker的锚点
+          content: `<div style="background: ${colors[index]}" class="${styles.point}">${i + 1}</div>`
+        })
+        return marker
+      })
+      map.add(markers)
+      groupMarkers[index] = markers
+    })
+
+  }
+
+  /**
+   * 路线规划
+   * @author ChenGuangLong
+   * @since 2024/11/9 下午2:57
+   */
+  routePlanning = index => {
+    if (this.routingPlans[index]?.length > 0) {
+      this.map.remove(this.routingPlans[index])
+      this.routingPlans[index] = undefined
+      return this.sxYm()
+    }
+    const { map, AMap, colors, groupMarkers, warehouseMarker } = this
+    // 构造路线导航类
+    const driving = new AMap.Driving({
+      hideMarkers: true,
+      ferry: 1,
+      showTraffic: false,
+      autoFitView: false,
+      outlineColor: colors[index],
+    })
+    this.routingPlans[index] = []                                                   // 初始化路线数组
+    // 因为路线规划一次就最多16个 还要拆分多次调用
+    const aLine = [warehouseMarker, ...groupMarkers[index], warehouseMarker]  // 添加起始点和终点 才是一个完整的路径
+    const arr16 = []                                                          // 拆分后的数组
+    for (let i = 0; i < aLine.length; i += (16 - 1)) {                      // 步进值确保每组之间有一个重叠元素
+      arr16.push(aLine.slice(i, i + 16))
+    }
+    // 每16个点做一次规划
+    arr16.forEach(line => {
+      const waypoints = line.slice(1, line.length - 1).map(x => x.getPosition())
+      // 根据起终点经纬度规划驾车导航路线
+      driving.search(line[0].getPosition(), line[line.length - 1].getPosition(), { waypoints },
+        (status, result) => {
+          if (status === 'complete') {
+            const path = []  // 路径经纬度数组初始化
+            // 从响应里面拿到所有的点位
+            result.routes[0].steps.forEach(step => step.path.forEach(x => path.push([x.lng, x.lat])))
+            // 创建折线图
+            const Polyline = new AMap.Polyline({
+              path,                           // 设置线覆盖物路径
+              showDir: true,
+              strokeColor: colors[index],     // 线颜色
+              strokeWeight: 6                 // 线宽
+            })
+            this.routingPlans[index].push(Polyline)
+            map.add(Polyline)
+            this.sxYm()
+          } else message.error('获取驾车数据失败')
+        })
+    })
+  }
 
   render () {
     const {
@@ -112,6 +247,7 @@ export default class SmartScheduling extends Component {
       showVehicleModal,
       showResultDrawer,
       showButtonDrawer,
+      btnLoading,
       routingConfig,
       scheduleResults = [],
       selectOrderList = [],
@@ -160,7 +296,7 @@ export default class SmartScheduling extends Component {
 
         <span   // ——————————————————————右侧边栏开关————————————————————
           className={styles.rightSidebarSwitch}
-          style={{ right: showResultDrawer ? '250px' : '-15px' }}
+          style={{ right: showResultDrawer ? this.RIGHT_DRAWER_WIDTH : '-15px' }}
           onClick={() => this.setState({ showResultDrawer: !showResultDrawer })}
         >
           <Icon
@@ -171,17 +307,33 @@ export default class SmartScheduling extends Component {
         </span>
         <Drawer   // ——————————————————————侧边栏(智能调度结果)————————————————————
           title="智能调度结果"
-          placement="right"
           mask={false}
+          placement="right"
           getContainer={false}
+          width={this.RIGHT_DRAWER_WIDTH}
           onClose={() => this.setState({ showResultDrawer: false })}
           visible={showResultDrawer}
         >{scheduleResults.length ?
-          <>
-            <p>Some contents...</p>
-            <p>Some contents...</p>
-            <p>Some contents...</p>
-          </>
+          scheduleResults.map((orders, index) =>
+            <div
+              style={{
+                padding: 4,
+                borderRadius: 8,
+                marginBottom: 5,
+                cursor: 'pointer',
+                boxShadow: '2px 2px 5px 0px #39487061',
+                border: this.routingPlans[index] ? `${this.colors[index]} solid 2px` : 'unset',
+              }}
+              onClick={()=> this.routePlanning(index)}
+            >
+              <div style={{width: 14, height: 14, background: this.colors[index], marginRight: 5,display: 'inline-block'}}/>
+              <span style={{fontSize: '16px'}}>线路{index + 1}</span>
+              <Divider style={{ margin: 6 }}/>
+              门店数: {orders.length} &nbsp;&nbsp;
+              总重量: {Math.round(orders.reduce((acc, cur) => acc + cur.weight, 0))/100} &nbsp;&nbsp;
+              总体积: {Math.round(orders.reduce((acc, cur) => acc + cur.volume, 0))/100} &nbsp;&nbsp;
+            </div>
+          )
           :
           <Empty/>
         }
@@ -196,7 +348,7 @@ export default class SmartScheduling extends Component {
           style={{ top: 0 }}
           className={styles.modalxxxxxx}
           onCancel={() => this.setState({ showSmartSchedulingModal: false })}
-          confirmLoading={false}
+          confirmLoading={btnLoading}
           getContainer={false}    // 挂载到当前节点，因为选单弹窗先弹出又在同一个节点 就会在底下显示看不到
           onOk={this.intelligentScheduling}
         >
@@ -215,9 +367,30 @@ export default class SmartScheduling extends Component {
                   <Table
                     size="small"
                     pagination={false}
-                    columns={mergeOrdersColumns}
                     dataSource={selectOrderList}
                     scroll={{ x: '38vw', y: 'calc(100vh - 217px)' }}
+                    columns={[
+                      ...mergeOrdersColumns,
+                      {
+                        title: '操作',
+                        key: 'operation',
+                        width: 50,
+                        align: 'center',
+                        fixed: 'right',
+                        render: (_text, _record, index) =>
+                          <div>
+                            <Button
+                              type="link"
+                              onClick={() => this.setState({
+                                selectOrderList: selectOrderList.filter((_v, i) => i !== index)
+                              })}
+                            >
+                              移除
+                            </Button>
+                          </div>
+                        ,
+                      }
+                    ]}
                   />
                 </>
                 :
