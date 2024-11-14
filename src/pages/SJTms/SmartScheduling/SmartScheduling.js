@@ -19,7 +19,7 @@ import FullScreenLoading from '@/components/FullScreenLoading'
 import { colors } from '@/pages/SJTms/SmartScheduling/colors'
 import { convertCodeName } from '@/utils/utils'
 import { GetConfig } from '@/services/sjitms/OrderBill'
-import { groupByOrder } from '@/pages/SJTms/SmartScheduling/common'
+import { groupByOrder, mapStyle } from '@/pages/SJTms/SmartScheduling/common'
 import { save } from '@/services/sjitms/ScheduleBill'
 
 const { Option } = Select
@@ -34,7 +34,7 @@ export default class SmartScheduling extends Component {
   warehousePoint = ''         // 当前仓库经纬度
   groupMarkers = []            // 分组的高德点位
   routingPlans = []           // 路线规划数据列表（按index对应groupMarkers）
-  isMapBlack = false        // 地图是否为黑底 标准 normal    幻影黑 dark
+  mapStyle = 'normal'         // 地图样式 标准 normal    幻影黑 dark
   orderList = []               // 点击智能调度时订单池原数据列表（用来生成排车单时用）
 
   vehiclePoolModalRef = createRef() // 车辆池弹窗ref
@@ -81,6 +81,13 @@ export default class SmartScheduling extends Component {
    * @since 2024/11/12 下午3:41
   */
   initConfig = async () => {
+    // ————————设置地图样式————————
+    const mapStyleName = window.localStorage.getItem('mapStyle')
+    if (mapStyleName && this.map) {
+      this.mapStyle = mapStyleName
+      this.map.setMapStyle(`amap://styles/${mapStyle[mapStyleName]}`)
+    }
+
     // ————————仓库坐标————————
     queryDict('warehouse').then(res => {    // 获取当前仓库经纬度
       const description = res.data.find(x => x.itemValue === loginOrg().uuid)?.description
@@ -421,7 +428,7 @@ export default class SmartScheduling extends Component {
     if (scheduleParamBodyList.length !== scheduleResults.length) return message.error('线路数和生成数不相等!')
     // ——————————开始请求创建排车单——————————
     const errMessages = []  // 记录失败信息
-    this.setState({ showProgress: 0 })
+    this.setState({ showProgress: 1 })
     scheduleParamBodyList.forEach(async (paramBody, index) => {
       const linkName = `线路${index + 1}`
       const res = await save(paramBody)
@@ -571,16 +578,38 @@ export default class SmartScheduling extends Component {
             )}
 
             <div className={styles.resultBottom}>
-              {/* ——————地图底色转换按钮————————todo 给个列表官方皮肤全部能换 并记录在localStorage */}
-              <Popover content="地图底色黑白转换">
+              {/* ——————地图底色转换按钮——————— */}
+              <Popover
+                content={
+                  <>
+                    <div style={{textAlign: 'center'}}>地图底色设置</div>
+                    {Object.keys(mapStyle).map(name =>
+                      <div
+                        key={name}
+                        className={styles.mapStyleItem}
+                        style={this.mapStyle === name ? { boxShadow: 'inset 1px 1px 4px 0 #39487061' } : {}}
+                        onClick={() => {
+                          this.map.setMapStyle(`amap://styles/${mapStyle[name]}`)
+                          this.sxYm(this.mapStyle = name)
+                          window.localStorage.setItem('mapStyle', name)
+                        }}
+                      >
+                        {name}
+                      </div>
+                    )}
+                  </>
+                }
+              >
                 <Button
                   style={{ marginRight: 8 }}
                   onClick={() => {
-                    this.map.setMapStyle(`amap://styles/${this.isMapBlack ? 'normal' : 'dark'}`)
-                    this.sxYm(this.isMapBlack = !this.isMapBlack)
+                    const mapStyleName = this.mapStyle === '标准' ? '幻影黑' : '标准'
+                    this.map.setMapStyle(`amap://styles/${mapStyle[mapStyleName]}`)
+                    this.sxYm(this.mapStyle = mapStyleName)
+                    window.localStorage.setItem('mapStyle', mapStyleName)
                   }}
                 >
-                  <Icon type="bulb" theme={this.isMapBlack ? 'filled' : 'outlined'}/>
+                  <Icon type="skin" theme={this.mapStyle === '标准' ? 'outlined' : 'filled'}/>
                 </Button>
               </Popover>
               {/* ——————————放弃本次结果按钮—————— */}

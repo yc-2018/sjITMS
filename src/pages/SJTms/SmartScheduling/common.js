@@ -1,5 +1,19 @@
 import { sumBy, uniq } from 'lodash'
 
+export const mapStyle = {
+  '标准': 'normal',
+  '幻影黑': 'dark',
+  '月光银': 'light',
+  '远山黛': 'whitesmoke',
+  '草色青': 'fresh',
+  '雅士灰': 'grey',
+  '涂鸦': 'graffiti',
+  '马卡龙': 'macaron',
+  '靛青蓝': 'blue',
+  '极夜蓝': 'darkblue',
+  '酱籽': 'wine'
+}
+
 /** 汇总排车单明细给排车单主表 */
 export const groupByOrder = data => {
   const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0
