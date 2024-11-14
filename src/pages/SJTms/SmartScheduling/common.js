@@ -1,10 +1,6 @@
 import { sumBy, uniq } from 'lodash'
 
-/**
- * 汇总排车单明细给排车单主表
- * @author ChenGuangLong
- * @since 2024/11/13 下午5:27
- */
+/** 汇总排车单明细给排车单主表 */
 export const groupByOrder = data => {
   const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0
   const pickupPointCount = data ? uniq(data.map(x => x.pickUpPoint.code)).length : 0

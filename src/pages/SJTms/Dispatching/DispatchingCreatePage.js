@@ -17,6 +17,7 @@ import {
   Menu,
   Empty,
 } from 'antd';
+import { uniq, uniqBy, orderBy } from 'lodash';
 import LoadingIcon from '@/pages/Component/Loading/LoadingIcon';
 import { isEmptyObj, guid } from '@/utils/utils';
 import { queryAllData, dynamicQuery, queryDictByCode, queryDict } from '@/services/quick/Quick';
@@ -31,10 +32,10 @@ import EditContainerNumberPageF from './EditContainerNumberPageF';
 import DispatchingTable from './DispatchingTable';
 import { CreatePageOrderColumns } from './DispatchingColumns';
 import disStyle from './Dispatching.less';
-import { sumBy, uniq, uniqBy, orderBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 // import { itemConfig, carSearchSortConfig } from './DispatchingConfig';
 import { getConfigDataByParams } from '@/services/sjconfigcenter/ConfigCenter';
+import { groupByOrder } from '@/pages/SJTms/SmartScheduling/common'
 
 const { Search } = Input;
 const { confirm } = Modal;
@@ -96,7 +97,7 @@ export default class DispatchingCreatePage extends Component {
     this.initConfg();
   };
 
-  //获取配置
+  // 获取配置
   initConfg = async () => {
     let res = await getConfigDataByParams('dispatch', loginOrg().uuid);
     if (res.success && res.data?.length > 0) {
@@ -105,7 +106,7 @@ export default class DispatchingCreatePage extends Component {
       this.setState({
         carSort,
         carKey: this.VehicleCardConfig[parseInt(carSort[0]) - 1].key,
-        carSearchSort: carSearchSort ? carSearchSort : [1, 2, 3],
+        carSearchSort: carSearchSort || [1, 2, 3],
       });
     }
     queryDict('warehouse').then(res => {
@@ -118,15 +119,15 @@ export default class DispatchingCreatePage extends Component {
   keyDown = (event, ...args) => {
     let that = this;
     const { loading } = this.state;
-    var e = event || window.event || args.callee.caller.arguments[0];
+    let e = event || window.event || args.callee.caller.arguments[0];
     if (e && e.keyCode == 87 && e.altKey) {
-      //87 = w W
+      // 87 = w W
       if (!loading) {
         that.handleSave();
       }
     }
     if (e && e.keyCode == 67 && e.altKey) {
-      //67 = c C
+      // 67 = c C
       if (!loading) {
         that.exit();
       }
@@ -137,7 +138,7 @@ export default class DispatchingCreatePage extends Component {
     if (vehicles.length == 0) {
       return;
     }
-    //组装推荐人员车辆接口入参;
+    // 组装推荐人员车辆接口入参;
     let params = {
       storeCodes: record.map(item => {
         return item.deliveryPoint.code;
@@ -146,7 +147,7 @@ export default class DispatchingCreatePage extends Component {
       dUuid: loginOrg().uuid,
       state: 1,
     };
-    //车辆熟练度
+    // 车辆熟练度
     let recommend = await getRecommend(params);
     let cCountsMap = recommend.data?.cCountsMap ? recommend.data.cCountsMap : {};
     let cCountTotal = recommend.data?.cCountTotal;
@@ -157,12 +158,12 @@ export default class DispatchingCreatePage extends Component {
         vehicle.pro = 0;
       }
     }
-    //排序
+    // 排序
     vehicles = vehicles.sort((a, b) => b.pro - a.pro);
     return vehicles;
   };
 
-  //初始化数据
+  // 初始化数据
   initData = async (isEdit, record, orders) => {
     let { vehicles, employees, carrieruuids } = this.state;
     // 查询字典
@@ -170,7 +171,7 @@ export default class DispatchingCreatePage extends Component {
       res => (this.dict = res.data)
     );
 
-    //获取车辆
+    // 获取车辆
     let param = {
       tableName: 'v_sj_itms_vehicle_stat',
       condition: {
@@ -184,10 +185,10 @@ export default class DispatchingCreatePage extends Component {
     const vehiclesData = await dynamicQuery(param);
     if (vehiclesData.success && vehiclesData.result.records != 'false') {
       vehicles = vehiclesData.result.records;
-      //承运商集合
+      // 承运商集合
       carrieruuids = uniq(vehicles.filter(e => e.CARRIERUUID).map(e => e.CARRIERUUID));
     }
-    //获取人员
+    // 获取人员
     let queryParams = [
       { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
       { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
@@ -200,12 +201,12 @@ export default class DispatchingCreatePage extends Component {
     employees = employeesData.data.records;
 
     let details = orderBy(record, x => x.archLine);
-    let schedule = undefined;
+    let schedule;
     let selectEmployees = [];
-    let selectVehicle = undefined;
-    //编辑初始化排车单
+    let selectVehicle;
+    // 编辑初始化排车单
     if (isEdit) {
-      //适配地图排车编辑排车单
+      // 适配地图排车编辑排车单
       const response = await getSchedule(record.uuid);
       if (response.success) {
         schedule = response.data;
@@ -255,18 +256,18 @@ export default class DispatchingCreatePage extends Component {
         }
       }
 
-      //edit init
+      // edit init
       this.setState({ carKey: 'init' });
     }
     // vehicles = await this.getRecommendByOrders(details, vehicles);
     if (schedule) {
-      //将选中车辆放到第一位
+      // 将选中车辆放到第一位
       selectVehicle = vehicles.find(x => x.UUID == schedule.vehicle.uuid);
       if (selectVehicle) {
         vehicles.unshift(selectVehicle);
       }
       vehicles = uniqBy(vehicles, 'UUID');
-      //选中的人放到第一位
+      // 选中的人放到第一位
       const memberList = schedule.memberDetails;
       if (memberList) {
         memberList.forEach(item => {
@@ -297,15 +298,15 @@ export default class DispatchingCreatePage extends Component {
         carrieruuids,
       },
       () => {
-        //itemConfig
+        // itemConfig
         this.changeCarKey(this.state.carKey);
-        //默认光标
+        // 默认光标
         this.carSearchInput?.focus();
       }
     );
   };
 
-  //显示
+  // 显示
   show = (isEdit, record, orders) => {
     const { carSort } = this.state;
     this.setState(
@@ -324,12 +325,12 @@ export default class DispatchingCreatePage extends Component {
     );
     window.addEventListener('keydown', this.keyDown);
   };
-  //取消隐藏
+  // 取消隐藏
   hide = () => {
     this.setState({ visible: false });
     window.removeEventListener('keydown', this.keyDown);
   };
-  //临时保存
+  // 临时保存
   exit = () => {
     this.setState({
       visible: false,
@@ -342,10 +343,10 @@ export default class DispatchingCreatePage extends Component {
     window.removeEventListener('keydown', this.keyDown);
   };
 
-  //选车
+  // 选车
   handleVehicle = async vehicle => {
     if (vehicle.JOBSTATE != 'Used') {
-      message.error(vehicle.PLATENUMBER + '不是正常状态，不能选择！');
+      message.error(`${vehicle.PLATENUMBER  }不是正常状态，不能选择！`);
       return;
     }
     this.setState({
@@ -371,7 +372,7 @@ export default class DispatchingCreatePage extends Component {
       selectEmployees: [...vehicleEmployees],
     });
   };
-  //车辆筛选
+  // 车辆筛选
   vehicleFilter = (key, value) => {
     const { vehicleParam } = this.state;
     let serachVeh = [...this.basicVehicle];
@@ -412,7 +413,7 @@ export default class DispatchingCreatePage extends Component {
       this.handleVehicle(serachVeh[0]);
     }
   };
-  //选人
+  // 选人
   handleEmployee = emp => {
     const { selectEmployees } = this.state;
     let employees = [...selectEmployees];
@@ -428,7 +429,7 @@ export default class DispatchingCreatePage extends Component {
     // }
     this.setState({ selectEmployees: employees });
   };
-  //人员筛选
+  // 人员筛选
   employeeFilter = (key, value) => {
     const { empParams } = this.state;
     let searchEmp = [...this.basicEmployee];
@@ -455,7 +456,7 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ employees: searchEmp, empParams });
   };
 
-  //员工类型选择事件
+  // 员工类型选择事件
   handleEmployeeTypeChange = (employee, val) => {
     const { selectEmployees } = this.state;
     employee.memberType = val;
@@ -467,7 +468,7 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ selectEmployees });
   };
 
-  //添加工种
+  // 添加工种
   addWorkType = emp => {
     const { selectEmployees } = this.state;
     let employee = { ...emp };
@@ -477,7 +478,7 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ selectEmployees });
   };
 
-  //移除明细
+  // 移除明细
   removeDetail = async record => {
     const { orders } = this.state;
     orders.splice(orders.findIndex(x => x.uuid == record.uuid), 1);
@@ -495,18 +496,18 @@ export default class DispatchingCreatePage extends Component {
   onConfirm = content => {
     Modal.confirm({
       title: '提示',
-      content: content,
+      content,
       okText: '确认',
       cancelText: '取消',
       onOk: () => this.onSave(),
     });
   };
-  //保存
+  // 保存
   onSave = async () => {
     this.setState({ loading: true });
 
     const { isEdit, orders, schedule, selectVehicle, selectEmployees, note } = this.state;
-    //禁止整车为转运单 针对福建仓
+    // 禁止整车为转运单 针对福建仓
     if (orders.length > 0 && orders.filter(e => e.orderType == 'Transshipment').length == orders.length) {
       message.error('禁止整车为转运单排车！');
       this.setState({ loading: false });
@@ -546,7 +547,7 @@ export default class DispatchingCreatePage extends Component {
         orderNumber: item.orderNumber || item.billNumber,
       };
     });
-    const orderSummary = this.groupByOrder(details);
+    const orderSummary = groupByOrder(details);
     const carrier = driver
       ? {
           uuid: driver.UUID,
@@ -578,7 +579,7 @@ export default class DispatchingCreatePage extends Component {
       ...orderSummary,
       companyUuid: loginCompany().uuid,
       dispatchCenterUuid: loginOrg().uuid,
-      note: note,
+      note,
     };
     const response = isEdit
       ? await modify(Object.assign(schedule, paramBody))
@@ -587,7 +588,7 @@ export default class DispatchingCreatePage extends Component {
       message.success('保存成功！');
       this.props.refresh();
       this.props.refreshMap && this.props.refreshMap();
-      //保存后清空选中的车与人
+      // 保存后清空选中的车与人
       this.setState({
         visible: false,
         selectEmployees: [],
@@ -600,11 +601,11 @@ export default class DispatchingCreatePage extends Component {
     this.setState({ loading: false });
     window.removeEventListener('keydown', this.keyDown);
   };
-  //保存数据校验
+  // 保存数据校验
   handleSave = async () => {
     const { orders, selectVehicle, selectEmployees } = this.state;
     const { dispatchConfig } = this.props;
-    const orderSummary = this.groupByOrder(orders);
+    const orderSummary = groupByOrder(orders);
     // //校验订单
     // if (orderSummary.orderCount == 0) {
     //   message.error('请选择运输订单！');
@@ -630,7 +631,7 @@ export default class DispatchingCreatePage extends Component {
       let length = selectEmployees.filter(
         x => x.UUID == item.UUID && x.memberType == item.memberType
       ).length;
-      selectEmpLength.push({ length: length });
+      selectEmpLength.push({ length });
     });
     let checkRepeat = selectEmpLength.find(x => x.length > 1);
     if (checkRepeat != undefined) {
@@ -653,17 +654,17 @@ export default class DispatchingCreatePage extends Component {
     //     return;
     //   }
     // }
-    //校验载重
+    // 校验载重
     if (exceedWeight > 0) {
-      this.onConfirm('排车重量超' + (exceedWeight / 1000).toFixed(3) + 't,确定继续吗?');
+      this.onConfirm(`排车重量超${(exceedWeight / 1000).toFixed(3)}t,确定继续吗?`)
       return;
     }
-    //校验容积
+    // 校验容积
     if (exceedVolume > 0) {
-      this.onConfirm('排车体积超' + exceedVolume.toFixed(2) + 'm³,确定继续吗?');
+      this.onConfirm(`排车体积超${exceedVolume.toFixed(2)}m³,确定继续吗?`)
       return;
     }
-    //校验随车人员
+    // 校验随车人员
     if (dispatchConfig.checkVehicleFollower == 1 || dispatchConfig.checkVehicleFollower == 2) {
       const includes = await this.checkVehicleFollower(selectVehicle, selectEmployees);
       if (!includes && dispatchConfig.checkVehicleFollower == 1) {
@@ -683,7 +684,7 @@ export default class DispatchingCreatePage extends Component {
       this.onSave();
     }
   };
-  //查随车人员
+  // 查随车人员
   checkVehicleFollower = async (selectVehicle, selectEmployees) => {
     let param = {
       tableName: 'SJ_ITMS_VEHICLE_EMPLOYEE',
@@ -700,48 +701,6 @@ export default class DispatchingCreatePage extends Component {
     }
     return true;
   };
-  //汇总
-  groupByOrder = data => {
-    const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0;
-    const pickupPointCount = data ? uniq(data.map(x => x.pickUpPoint.code)).length : 0;
-    data = data.filter(x => x.orderType !== 'OnlyBill');
-    return {
-      orderCount: data ? data.length : 0,
-      cartonCount: data ? sumBy(data.map(x => x.stillCartonCount)) : 0,
-      scatteredCount: data ? sumBy(data.map(x => x.stillScatteredCount)) : 0,
-      containerCount: data ? sumBy(data.map(x => x.stillContainerCount)) : 0,
-      coldContainerCount: data ? sumBy(data.map(x => x.stillColdContainerCount)) : 0,
-      freezeContainerCount: data ? sumBy(data.map(x => x.stillFreezeContainerCount)) : 0,
-      insulatedBagCount: data ? sumBy(data.map(x => x.stillInsulatedBagCount)) : 0,
-      insulatedContainerCount: data ? sumBy(data.map(x => x.stillInsulatedContainerCount)) : 0,
-      freshContainerCount: data ? sumBy(data.map(x => x.stillFreshContainerCount)) : 0,
-
-      realCartonCount: data ? sumBy(data.map(x => x.realCartonCount)) : 0,
-      realScatteredCount: data ? sumBy(data.map(x => x.realScatteredCount)) : 0,
-      realContainerCount: data ? sumBy(data.map(x => x.realContainerCount)) : 0,
-      realColdContainerCount: data ? sumBy(data.map(x => x.realColdContainerCount)) : 0,
-      realFreezeContainerCount: data ? sumBy(data.map(x => x.realFreezeContainerCount)) : 0,
-      realInsulatedBagCount: data ? sumBy(data.map(x => x.realInsulatedBagCount)) : 0,
-      realInsulatedContainerCount: data ? sumBy(data.map(x => x.realInsulatedContainerCount)) : 0,
-      realFreshContainerCount: data ? sumBy(data.map(x => x.realFreshContainerCount)) : 0,
-
-      stillCartonCount: data ? sumBy(data.map(x => x.stillCartonCount)) : 0,
-      stillScatteredCount: data ? sumBy(data.map(x => x.stillScatteredCount)) : 0,
-      stillContainerCount: data ? sumBy(data.map(x => x.stillContainerCount)) : 0,
-      stillColdContainerCount: data ? sumBy(data.map(x => x.stillColdContainerCount)) : 0,
-      stillFreezeContainerCount: data ? sumBy(data.map(x => x.stillFreezeContainerCount)) : 0,
-      stillInsulatedBagCount: data ? sumBy(data.map(x => x.stillInsulatedBagCount)) : 0,
-      stillInsulatedContainerCount: data ? sumBy(data.map(x => x.stillInsulatedContainerCount)) : 0,
-      stillFreshContainerCount: data ? sumBy(data.map(x => x.stillFreshContainerCount)) : 0,
-
-      weight: data ? sumBy(data.map(x => Number(x.weight))) : 0,
-      volume: data ? sumBy(data.map(x => Number(x.volume))) : 0,
-      totalAmount: data ? sumBy(data.map(x => Number(x.amount))) : 0,
-      deliveryPointCount,
-      pickupPointCount,
-      ownerCount: data ? uniq(data.map(x => x.owner.code)).length : 0,
-    };
-  };
 
   buildSelectEmployeeCard = () => {
     const { employees, selectEmployees } = this.state;
@@ -751,7 +710,7 @@ export default class DispatchingCreatePage extends Component {
         : employees?.slice(0, this.state.carEmpNums)
       : {};
 
-    //样式一致
+    // 样式一致
     const empTabList = [
       {
         key: 'init',
@@ -778,7 +737,7 @@ export default class DispatchingCreatePage extends Component {
             <Select
               placeholder="员工归属"
               onChange={value => this.employeeFilter('relation', value)}
-              allowClear={true}
+              allowClear
               style={{ width: 100 }}
               value={this.state.carEmpSearch.empOwner}
             >
@@ -789,7 +748,7 @@ export default class DispatchingCreatePage extends Component {
             <Select
               placeholder="工种"
               onChange={value => this.employeeFilter('employeeType', value)}
-              allowClear={true}
+              allowClear
               style={{ width: 100, marginLeft: 5 }}
               value={this.state.carEmpSearch.empType}
             >
@@ -860,7 +819,7 @@ export default class DispatchingCreatePage extends Component {
   changeCarKey = async key => {
     const { orders, isEdit } = this.state;
     if (key == 'recommend') {
-      //熟练度
+      // 熟练度
       let vehiclesByRecom = await this.getRecommendByOrders(orders, this.basicVehicle);
       if (vehiclesByRecom) {
         vehiclesByRecom = vehiclesByRecom.filter(item => {
@@ -874,7 +833,7 @@ export default class DispatchingCreatePage extends Component {
     } else if (key == 'init') {
       this.setState({ vehicles: this.basicVehicle });
     } else {
-      //区域匹配
+      // 区域匹配
       let orderShipAre = uniqBy(orders.map(x => x.shipAreaName));
       let vehicleAre = this.basicVehicle.filter(e => {
         let x = e.SHIPAREANAME?.split(',');
@@ -905,7 +864,7 @@ export default class DispatchingCreatePage extends Component {
       carTabList = this.VehicleCardConfig;
     }
 
-    let carCard = undefined;
+    let carCard;
     switch (carKey) {
       case 'recommend':
         carCard =
@@ -916,7 +875,7 @@ export default class DispatchingCreatePage extends Component {
                   placement="top"
                   title={
                     vehicle.BILLNUMBERS
-                      ? vehicle.PLATENUMBER + '在' + vehicle.BILLNUMBERS + '排车单中有未完成的任务'
+                      ? `${vehicle.PLATENUMBER}在${vehicle.BILLNUMBERS}排车单中有未完成的任务`
                       : ''
                   }
                 >
@@ -955,8 +914,8 @@ export default class DispatchingCreatePage extends Component {
                                     : 'red',
                               marginTop: '-40px',
                             }}
-                            count={vehicle.pro.toFixed(0) + '%'}
-                            title={'熟练度' + vehicle.pro.toFixed(0) + '%'}
+                            count={`${vehicle.pro.toFixed(0)}%`}
+                            title={`熟练度${vehicle.pro.toFixed(0)}%`}
                           />
                         ) : (
                           <></>
@@ -983,7 +942,7 @@ export default class DispatchingCreatePage extends Component {
                   placement="top"
                   title={
                     vehicle.BILLNUMBERS
-                      ? vehicle.PLATENUMBER + '在' + vehicle.BILLNUMBERS + '排车单中有未完成的任务'
+                      ? `${vehicle.PLATENUMBER}在${vehicle.BILLNUMBERS}排车单中有未完成的任务`
                       : ''
                   }
                 >
@@ -1032,7 +991,7 @@ export default class DispatchingCreatePage extends Component {
           </div>
         );
     }
-    //sort
+    // sort
     let carSearchSortConfig = {
       1: (
         <Select
@@ -1043,14 +1002,14 @@ export default class DispatchingCreatePage extends Component {
           <Select.Option value={20}>20</Select.Option>
           <Select.Option value={50}>50</Select.Option>
           <Select.Option value={100}>100</Select.Option>
-          <Select.Option value={'all'}>全部</Select.Option>
+          <Select.Option value="all">全部</Select.Option>
         </Select>
       ),
       2: (
         <Select
           placeholder="车辆归属"
           onChange={value => this.vehicleFilter('vehicleOwner', value)}
-          allowClear={true}
+          allowClear
           style={{ width: 100, marginRight: 2.5, marginLeft: 2.5 }}
           value={this.state.carEmpSearch.vehicleOwner}
         >
@@ -1072,7 +1031,7 @@ export default class DispatchingCreatePage extends Component {
         <Select
           placeholder="承运商"
           onChange={value => this.vehicleFilter('carrier', value)}
-          allowClear={true}
+          allowClear
           style={{ width: 150, marginRight: 2.5, marginLeft: 2.5 }}
           value={this.state.carEmpSearch.carrier}
         >
@@ -1110,14 +1069,14 @@ export default class DispatchingCreatePage extends Component {
     );
   };
 
-  //拆单
+  // 拆单
   editSource = record => {
     this.setState({ editPageVisible: true, currentOrder: record });
   };
-  //更新state订单整件排车件数
+  // 更新state订单整件排车件数
   updateCartonCount = result => {
     const { orders, isEdit } = this.state;
-    const totalData = this.groupByOrder(orders);
+    const totalData = groupByOrder(orders);
     const that = this;
     const stillSum =
       Number(totalData.stillCartonCount) -
@@ -1137,7 +1096,7 @@ export default class DispatchingCreatePage extends Component {
         record.unDispatchCarton = record.stillCartonCount - result.cartonCount;
         record.stillCartonCount = result.cartonCount;
         record.isSplit = 1;
-        record.uuid = isEdit ? record.uuid + 'abc' : record.uuid;
+        record.uuid = isEdit ? `${record.uuid}abc` : record.uuid
         orders.splice(index, 1, record);
         that.setState({ orders, editPageVisible: false });
       },
@@ -1147,7 +1106,7 @@ export default class DispatchingCreatePage extends Component {
     });
   };
 
-  //根据经纬度算出最短路径
+  // 根据经纬度算出最短路径
   getShortestSort = async () => {
     let { orders, startPoint } = this.state;
     if (!startPoint) {
@@ -1156,7 +1115,7 @@ export default class DispatchingCreatePage extends Component {
     }
     let params = { start: [startPoint.split(',')[1], startPoint.split(',')[0]] };
     let orderFilter = orders.filter(e => e.longitude && e.latitude);
-    //无经纬度
+    // 无经纬度
     let remainOrders = orders.filter(e => !e.longitude || !e.latitude);
     let orderSort = [];
     if (orderFilter.length > 0) {
@@ -1189,8 +1148,8 @@ export default class DispatchingCreatePage extends Component {
     } = this.state;
 
     const { dispatchConfig } = this.props;
-    const totalData = this.groupByOrder(orders);
-    //车辆可装载信息
+    const totalData = groupByOrder(orders);
+    // 车辆可装载信息
     let vehicleCalc;
     if (selectVehicle) {
       const bearWeight = selectVehicle.BEARWEIGHT || 0;
