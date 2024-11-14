@@ -3,23 +3,27 @@ import React, { Component, createRef } from 'react'
 import AMapLoader from '@amap/amap-jsapi-loader'
 import {
   Button, Col, Divider, Drawer, Empty, Icon, message,
-  Modal, Popconfirm, Popover, Row, Select, Table
+  Modal, Popconfirm, Popover, Progress, Row, Select, Table
 } from 'antd'
+import { uniqBy } from 'lodash'
 import { AMapDefaultConfigObj, AMapDefaultLoaderObj } from '@/utils/mapUtil'
 import styles from './SmartScheduling.less'
 import VehiclePoolPage from '@/pages/SJTms/Dispatching/VehiclePoolPage'
 import OrderPoolModal from '@/pages/SJTms/SmartScheduling/OrderPoolModal'
 import { mergeOrdersColumns, mergeVehicleColumns, vehicleColumns } from '@/pages/SJTms/SmartScheduling/columns'
 import { queryDict } from '@/services/quick/Quick'
-import { loginOrg } from '@/utils/LoginContext'
+import { loginCompany, loginOrg } from '@/utils/LoginContext'
 import { getSmartScheduling } from '@/services/sjitms/smartSchedulingApi'
 import VehicleInputModal from '@/pages/SJTms/SmartScheduling/VehicleInputModal'
 import FullScreenLoading from '@/components/FullScreenLoading'
 import { colors } from '@/pages/SJTms/SmartScheduling/colors'
 import { convertCodeName } from '@/utils/utils'
 import { GetConfig } from '@/services/sjitms/OrderBill'
+import { groupByOrder } from '@/pages/SJTms/SmartScheduling/common'
+import { save } from '@/services/sjitms/ScheduleBill'
 
 const { Option } = Select
+window.selectOrders = undefined      // 如果是配送调度跳转过来的订单池原数据列表
 
 export default class SmartScheduling extends Component {
   RIGHT_DRAWER_WIDTH = 400   // 右侧侧边栏宽度（智能调度结果抽屉宽度）
@@ -31,9 +35,10 @@ export default class SmartScheduling extends Component {
   groupMarkers = []            // 分组的高德点位
   routingPlans = []           // 路线规划数据列表（按index对应groupMarkers）
   isMapBlack = false        // 地图是否为黑底 标准 normal    幻影黑 dark
+  orderList = []               // 点击智能调度时订单池原数据列表（用来生成排车单时用）
 
-  vehiclePoolModalRef = createRef()
-  orderPoolModalRef = createRef()
+  vehiclePoolModalRef = createRef() // 车辆池弹窗ref
+  orderPoolModalRef = createRef()   // 订单池弹窗ref
 
   state = {
     sx: 0,                           // 有时刷新页面用
@@ -45,8 +50,10 @@ export default class SmartScheduling extends Component {
     showVehicleModal: false,         // 显示选车辆弹窗
     showResultDrawer: false,         // 显示调度结果右侧侧边栏
     showButtonDrawer: true,          // 显示左边按钮侧边栏
+    showProgress: -1,                // 显示生成排车进度条（>0就是显示)
+    errMessages: [],                 // 生成排车单时如果有错误信息
     childrenIndex: -1,               // 显示调度排车子抽屉 这个是它的索引>=0就是显示
-    scheduleResults: [],             // 智能调度排车结果
+    scheduleResults: [],             // 智能调度排车处理后的结果（二重数组内的订单）
     unassignedNodes:[],              // 智能调度未分配节点
     btnLoading: false,               // 智能调度按钮加载状态
     fullScreenLoading: false,        // 全屏加载中
@@ -63,14 +70,10 @@ export default class SmartScheduling extends Component {
     try { // 加载高德地图
       this.AMap = window.AMap ?? await AMapLoader.load(AMapDefaultLoaderObj)
       this.map = new this.AMap.Map('smartSchedulingAMap', AMapDefaultConfigObj)
-      queryDict('warehouse').then(res => {    // 获取当前仓库经纬度
-        const description = res.data.find(x => x.itemValue === loginOrg().uuid)?.description
-        if (description) this.warehousePoint = description.split(',').reverse().join(',')  // 字典经纬度位置调换位置
-        else message.error('获取当前仓库经纬度失败')
-      })
     } catch (error) {
       message.error(`获取高德地图类对象失败:${error}`)
     }
+    this.initConfig()
   }
   /**
    * 初始化配置，如多载具
@@ -78,6 +81,16 @@ export default class SmartScheduling extends Component {
    * @since 2024/11/12 下午3:41
   */
   initConfig = async () => {
+    // ————————仓库坐标————————
+    queryDict('warehouse').then(res => {    // 获取当前仓库经纬度
+      const description = res.data.find(x => x.itemValue === loginOrg().uuid)?.description
+      if (description) {
+        this.warehousePoint = description.split(',').reverse().join(',')  // 字典经纬度位置调换位置
+        if (this.map) this.map.setCenter(this.warehousePoint.split(','), true)  // 立即过渡到仓库位置视野
+      }
+      else message.error('获取当前仓库经纬度失败')
+    })
+    // ————————多载具————————
     GetConfig('dispatch', loginOrg().uuid).then(res => {
       if (res?.data?.[0]?.multiVehicle) this.setState({ isMultiVehicle: res?.data?.[0]?.multiVehicle === '1' })
       else message.error('获取多载具配置失败')
@@ -88,6 +101,44 @@ export default class SmartScheduling extends Component {
   /** 非状态变量改变后可刷新页面 */
   sxYm = () => {
     this.setState({ sx: this.state.sx + 1 })
+  }
+
+  /**
+   * 处理选择订单池订单
+   * @author ChenGuangLong
+   * @since 2024/11/13 上午9:48
+  */
+  handleOrders = (selectOrders = this.orderPoolModalRef?.state?.selectOrders) => {
+    if (!selectOrders?.length) return message.error('请先选择订单')
+    this.orderList = [...selectOrders] // 订单池原数据列表
+    // 有些仓是一个运输订单是多个订单，所以需要合并
+    let mergeOrders = Object.values(
+      selectOrders.reduce((acc, order) => {
+        if (!acc[order.deliveryPoint.uuid]) {
+          acc[order.deliveryPoint.uuid] = JSON.parse(JSON.stringify(order))
+        } else {
+          acc[order.deliveryPoint.uuid].weight += order.weight                       // 重量
+          acc[order.deliveryPoint.uuid].volume += order.volume                       // 体积
+          acc[order.deliveryPoint.uuid].cartonCount += order.cartonCount ?? 0        // 整件数
+          acc[order.deliveryPoint.uuid].scatteredCount += order.scatteredCount ?? 0  // 散件数
+          acc[order.deliveryPoint.uuid].containerCount += order.containerCount ?? 0  // 周转箱
+          // 下面多载具
+          acc[order.deliveryPoint.uuid].coldContainerCount += order.coldContainerCount ?? 0       // 冷藏周转筐
+          acc[order.deliveryPoint.uuid].freezeContainerCount += order.freezeContainerCount ?? 0  // 冷冻周转筐
+          acc[order.deliveryPoint.uuid].insulatedBagCount += order.insulatedBagCount ?? 0       // 保温袋
+          acc[order.deliveryPoint.uuid].freshContainerCount += order.freshContainerCount ?? 0  // 鲜食筐
+        }
+        return acc
+      }, {})
+    )
+    // 没有经纬度的排除
+    if (mergeOrders.some(item => !item.longitude || !item.latitude)) {
+      message.warning('已排除没有经纬度的点')
+      mergeOrders = mergeOrders.filter(item => item.longitude && item.latitude)
+    }
+    if (mergeOrders.length < 2) return message.error('请选择至少两个要排车的门店！')
+
+    this.setState({ showMenuModal: false, selectOrderList: mergeOrders })
   }
 
   /**
@@ -265,6 +316,8 @@ export default class SmartScheduling extends Component {
       unassignedNodes:[],
       showButtonDrawer: true,
       showResultDrawer: false,
+      showProgress: -1,
+      errMessages: [],
     })
   }
 
@@ -274,17 +327,118 @@ export default class SmartScheduling extends Component {
    * @since 2024/11/12 上午9:47
   */
   createSchedules = () => {
-    const { selectOrderList, selectVehicles } = this.state
-    message.info('怎么写啊,不知道啊')
+    const { orderList } = this
+    const { scheduleResults } = this.state
+    let errFlag = false   // 错误标志,forEach的return只能结束内部方法，不能结束外层循环，外层继续循环继续提示报错，到生成排车单前用标记看看生不生成
+    const  scheduleParamBodyList = []  // 准备排车单创建列表
+    scheduleResults.forEach((link, index) => {
+      const linkOrders = []   // 一条路线的全部单（排车单全部明细：一个门店可能有多张单)
+      let deliveryNumber = 1
+      link.forEach(order => {   // 每个门店的全部单都找出来
+        let store = orderList.filter(x => x.deliveryPoint.uuid === order.deliveryPoint.uuid)
+        store = store.map(item => ({ ...item, deliveryNumber: deliveryNumber++ }))  // 好像不用deliveryNumber，就是按顺序分deliveryNumber的
+        linkOrders.push(...store)
+      })
+      // 禁止整车为转运单 针对福建仓
+      if (linkOrders.length > 0 && linkOrders.filter(e => e.orderType === 'Transshipment').length === linkOrders.length) {
+        errFlag = true
+        return message.error(`线路${index + 1}:禁止整车为转运单排车！`)
+      }
+      // ——————————开始构建参数——————————
+      const orderType = uniqBy(linkOrders.map(x => x.orderType)).shift() // 从去重并返回第一个订单类型。
+      const orderTypeArr = ['Delivery', 'DeliveryAgain', 'Transshipment', 'OnlyBill']
+      const type = orderTypeArr.includes(orderType) ? 'Job' : 'Task'   // 排车单类型
+      // todo 司机
+      const driver = null // selectEmployees.find(x => x.memberType == 'Driver');
+      // 订单明细
+      const details = linkOrders.map(item => {
+        if (!item.isSplit) item.isSplit = item.cartonCount === item.stillCartonCount ? 0 : 1
+        item.cartonCount = item.stillCartonCount
+        item.scatteredCount = item.stillScatteredCount
+        item.containerCount = item.stillContainerCount
+        item.coldContainerCount = item.stillColdContainerCount
+        item.freezeContainerCount = item.stillFreezeContainerCount
+        item.insulatedBagCount = item.stillInsulatedBagCount
+        item.insulatedContainerCount = item.stillInsulatedContainerCount
+        item.freshContainerCount = item.stillFreshContainerCount
 
-    // 重置（清空）数据
-    this.resetData()
-    // 刷新订单池
-    this.orderPoolModalRef?.refreshOrderPool()
-    // 刷新车辆池
-    this.vehiclePoolModalRef?.refreshVehiclePool?.()
-    // 跳转到配送调度页面
-    this.props.history.push('/tmscode/dispatch')
+        if (item.reviewed) {
+          item.realCartonCount = item.stillCartonCount
+          item.realScatteredCount = item.stillScatteredCount
+          item.realContainerCount = item.stillContainerCount
+
+          item.realColdContainerCount = item.stillColdContainerCount
+          item.realFreezeContainerCount = item.stillFreezeContainerCount
+          item.realInsulatedBagCount = item.stillInsulatedBagCount
+          item.realInsulatedContainerCount = item.stillInsulatedContainerCount
+          item.realFreshContainerCount = item.stillFreshContainerCount
+        }
+        return {
+          ...item,
+          orderUuid: item.orderUuid || item.uuid,
+          orderNumber: item.orderNumber || item.billNumber,
+        }
+      })
+      // 主表汇总数据
+      const orderSummary = groupByOrder(details)
+      // 司机数据
+      const carrier = driver
+        ? {
+          uuid: driver.UUID,
+          code: driver.CODE,
+          name: driver.NAME,
+        }
+        : {}
+      // 请求体
+      scheduleParamBodyList.push({
+        type,
+        vehicle: {
+          // uuid: selectVehicle.UUID,
+          // code: selectVehicle.CODE,
+          // name: selectVehicle.PLATENUMBER,
+        },
+        vehicleType: {
+          // uuid: selectVehicle.VEHICLETYPEUUID,
+          // code: selectVehicle.VEHICLETYPECODE,
+          // name: selectVehicle.VEHICLETYPENAME,
+        },
+        carrier: { ...carrier },
+        details,
+        memberDetails: [],
+        // memberDetails: selectEmployees.map((x, i) => ({
+        //   line: i + 1,
+        //   member: { uuid: x.UUID, code: x.CODE, name: x.NAME },
+        //   memberType: x.memberType,
+        // })),
+        ...orderSummary,
+        companyUuid: loginCompany().uuid,
+        dispatchCenterUuid: loginOrg().uuid,
+        note: '',
+      })
+    })
+
+    if (errFlag) return
+    if (scheduleParamBodyList.length !== scheduleResults.length) return message.error('线路数和生成数不相等!')
+    // ——————————开始请求创建排车单——————————
+    const errMessages = []  // 记录失败信息
+    this.setState({ showProgress: 0 })
+    scheduleParamBodyList.forEach(async (paramBody, index) => {
+      const linkName = `线路${index + 1}`
+      const res = await save(paramBody)
+      if (res.success) message.success(`${linkName}创建成功`)
+      else {
+        message.error(`${linkName}创建失败`)
+        errMessages.push(`${linkName}:${res.message}`)
+        this.setState({ errMessages: [...errMessages] })
+      }
+      this.setState({ showProgress: parseFloat(((index + 1) / scheduleParamBodyList.length * 100).toFixed(1)) })
+
+    })
+    // ——————创建结束后——————
+    if (errMessages.length === 0) this.setState({ showProgress: -1 })
+    this.orderPoolModalRef?.refreshOrderPool?.()      // 刷新订单池
+    this.vehiclePoolModalRef?.refreshVehiclePool?.()  // 刷新车辆池
+
   }
 
   render () {
@@ -303,6 +457,8 @@ export default class SmartScheduling extends Component {
       fullScreenLoading,
       childrenIndex,
       isMultiVehicle,
+      showProgress,
+      errMessages,
     } = this.state
 
     return (
@@ -415,7 +571,7 @@ export default class SmartScheduling extends Component {
             )}
 
             <div className={styles.resultBottom}>
-              {/* ——————地图底色转换按钮———————— */}
+              {/* ——————地图底色转换按钮————————todo 给个列表官方皮肤全部能换 并记录在localStorage */}
               <Popover content="地图底色黑白转换">
                 <Button
                   style={{ marginRight: 8 }}
@@ -662,39 +818,7 @@ export default class SmartScheduling extends Component {
           style={{ top: 20 }}
           visible={showMenuModal}
           onCancel={() => this.setState({ showMenuModal: false })}
-          onOk={() => {
-            if (!this.orderPoolModalRef.state) return message.error('数据异常，请刷新页面重试')
-            const { selectOrders } = this.orderPoolModalRef.state
-            if (!selectOrders.length) return message.error('请先选择订单')
-            // 有些仓是一个运输订单是多个订单，所以需要合并
-            let mergeOrders = Object.values(
-              selectOrders.reduce((acc, order) => {
-                if (!acc[order.deliveryPoint.uuid]) {
-                  acc[order.deliveryPoint.uuid] = JSON.parse(JSON.stringify(order))
-                } else {
-                  acc[order.deliveryPoint.uuid].weight += order.weight                       // 重量
-                  acc[order.deliveryPoint.uuid].volume += order.volume                       // 体积
-                  acc[order.deliveryPoint.uuid].cartonCount += order.cartonCount ?? 0        // 整件数
-                  acc[order.deliveryPoint.uuid].scatteredCount += order.scatteredCount ?? 0  // 散件数
-                  acc[order.deliveryPoint.uuid].containerCount += order.containerCount ?? 0  // 周转箱
-                  // 下面多载具
-                  acc[order.deliveryPoint.uuid].coldContainerCount += order.coldContainerCount ?? 0       // 冷藏周转筐
-                  acc[order.deliveryPoint.uuid].freezeContainerCount += order.freezeContainerCount ?? 0  // 冷冻周转筐
-                  acc[order.deliveryPoint.uuid].insulatedBagCount += order.insulatedBagCount ?? 0       // 保温袋
-                  acc[order.deliveryPoint.uuid].freshContainerCount += order.freshContainerCount ?? 0  // 鲜食筐
-                }
-                return acc
-              }, {})
-            )
-            // 没有经纬度的排除
-            if (mergeOrders.some(item => !item.longitude || !item.latitude)) {
-              message.warning('已排除没有经纬度的点')
-              mergeOrders = mergeOrders.filter(item => item.longitude && item.latitude)
-            }
-            if (mergeOrders.length < 2) return message.error('请选择至少两个要排车的门店！')
-
-            this.setState({ showMenuModal: false, selectOrderList: mergeOrders })
-          }}
+          onOk={() => this.handleOrders()}  // 不能直接写this.handleOrders，会把event作为参数传进去
         >
           <OrderPoolModal ref={ref => (this.orderPoolModalRef = ref)}/>
         </Modal>
@@ -710,11 +834,12 @@ export default class SmartScheduling extends Component {
             if (!this.vehiclePoolModalRef.state) return message.error('数据异常，请刷新页面重试')
             const { vehicleData, vehicleRowKeys } = this.vehiclePoolModalRef.state
             if (!vehicleRowKeys.length) return message.error('请选择车辆')
-            let selectVehicleList = vehicleData.filter(v => vehicleRowKeys.includes(v.CODE))
+            let selectVehicleList = vehicleData.filter(v => vehicleRowKeys.includes(v.UUID))
             if (selectVehicleList.some(v => !v.BEARVOLUME || !v.BEARWEIGHT)) {
               message.warning('已过滤没有重量体积的车辆')
               selectVehicleList = selectVehicleList.filter(v => v.BEARVOLUME && v.BEARWEIGHT)
             }
+            if (selectVehicleList.length === 0) return message.error('选择车辆均为无效车辆')
             // ——————————————车辆分组——————————————
             // 创建一个空对象来存储分组后的车量数据
             const groupedData = {}
@@ -746,6 +871,27 @@ export default class SmartScheduling extends Component {
             vehicleColumns={vehicleColumns}
             tabHeight={80}
           />
+        </Modal>
+
+        <Modal  // ——————————————————————————————显示进度条——————————————————————————————————
+          footer={null}
+          visible={showProgress >= 0 || errMessages.length > 0}
+          closable={false}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', }}>
+            <Progress percent={showProgress} status={showProgress < 100 ? 'active' : 'success'}/>
+            {errMessages.map(msg => <div>{msg}</div>)}
+            {showProgress === 100 &&
+              <>
+                <Button onClick={() => this.resetData()}>
+                  继续新的排线
+                </Button>
+                <Button onClick={() => this.resetData() || this.props.history.push('/tmscode/dispatch')}>
+                  查看排车单(跳转到配送调度页面)
+                </Button>
+              </>
+            }
+          </div>
         </Modal>
       </div>
     )
