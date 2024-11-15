@@ -1,14 +1,14 @@
 // ////////////////////////////////////// 门店地图高德版 //////////////////////////////// //
 import React, { Component } from 'react';
-import AMapLoader from '@amap/amap-jsapi-loader'
+import AMapLoader from '@amap/amap-jsapi-loader';
 
 
-import { Button, Row, Col, Spin, message, Input, PageHeader, Select, Upload, Drawer, Card, } from 'antd';
+import { Button, Card, Col, Drawer, Input, message, PageHeader, Row, Select, Spin, Upload } from 'antd';
 import moment from 'moment';
 import * as XLSX from 'xlsx';
 import copy from 'copy-to-clipboard';
 
-import { AMAP_KEY, AMapDefaultConfigObj, getMyjIcon } from '@/utils/mapUtil'
+import { AMAP_KEY, AMapDefaultConfigObj, getMyjIcon } from '@/utils/mapUtil';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { shencopy } from '@/utils/SomeUtil';
 
@@ -25,8 +25,8 @@ import { updateEntity } from '@/services/quick/Quick';
 import { queryAuditedOrderByStoreMap, queryStoreMaps } from '@/services/sjitms/OrderBill';
 
 import style from './DispatchingMap.less';
-import  mapStyle from  './storesGdMap.less'
-import MyjRedIcon from '@/assets/common/MyjRedMin.png'
+import mapStyle from './storesGdMap.less';
+import MyjRedIcon from '@/assets/common/MyjRedMin.png';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -34,16 +34,16 @@ const { Meta } = Card;
 
 export default class StoresGdMap extends Component {
   basicOrders = [];
-  text = null                   // 高德地图文本对象
-  myjRedMarkers = []           // 美宜佳红色坐标记录列表
-  myjGreenMarkers = []         // 美宜佳绿色坐标记录列表
-  AMap = null                   // 高德地图对象
-  map = null                    // 高德地图实例
-  openDragStore = false     // 是否开启拖拽门店
-  searchStoreMarkers = []     // 搜索门店点位列表
-  infoWindow = null            // 高德搜索点位信息窗体
-  currentMarker = null         // 拖拽门店当前点位
-  newMarker = null             // 拖拽门店新点位
+  text = null;                   // 高德地图文本对象
+  myjRedMarkers = [];           // 美宜佳红色坐标记录列表
+  myjGreenMarkers = [];         // 美宜佳绿色坐标记录列表
+  AMap = null;                   // 高德地图对象
+  map = null;                    // 高德地图实例
+  openDragStore = false;     // 是否开启拖拽门店
+  searchStoreMarkers = [];     // 搜索门店点位列表
+  infoWindow = null;            // 高德搜索点位信息窗体
+  currentMarker = null;         // 拖拽门店当前点位
+  newMarker = null;             // 拖拽门店新点位
 
   state = {
     storeInfoVisible: false,
@@ -57,44 +57,44 @@ export default class StoresGdMap extends Component {
     storeView: undefined,    // 抽屉的门店数据
     searchStoreList: [],     // 搜索门店列表（左边渲染)
     openDragStore: false,    // 是否开启门店拖拽
-  }
+  };
 
   componentDidMount = async () => {
     try { // 加载高德地图，放在最前面
-      const AMap = await AMapLoader.load({key: AMAP_KEY, version: "2.0"});
+      const AMap = await AMapLoader.load({ key: AMAP_KEY, version: '2.0' });
       this.AMap = AMap;
       window.setTimeout(() => {
-        this.map = new AMap.Map('GdStoreMap', AMapDefaultConfigObj)  // GdStoreMap是高德要加载的元素的id，🔴一定要唯一🔴
-        this.addAMapMenu()  // 右键菜单
-      }, 100)
+        this.map = new AMap.Map('GdStoreMap', AMapDefaultConfigObj);  // GdStoreMap是高德要加载的元素的id，🔴一定要唯一🔴
+        this.addAMapMenu();  // 右键菜单
+      }, 100);
     } catch (error) {
-      message.error(`获取高德地图类对象失败:${error}`)
+      message.error(`获取高德地图类对象失败:${error}`);
     }
 
-    this.changePage('500')
-  }
+    this.changePage('500');
+  };
 
   /** 增加菜单 */
   addAMapMenu = () => {
-    const { map, AMap } = this
-    const contextMenu = new AMap.ContextMenu()  // 创建右键菜单
+    const { map, AMap } = this;
+    const contextMenu = new AMap.ContextMenu();  // 创建右键菜单
 
     contextMenu.addItem('门店审核', () => {
-      contextMenu.close()
-      this.setState({ reviewVisible: true })
-    }, 1)
+      contextMenu.close();
+      this.setState({ reviewVisible: true });
+    }, 1);
 
     contextMenu.addItem('今日配送门店', () => {
-      contextMenu.close()
-      const startDate = moment(new Date()).format('YYYY-MM-DD 00:00:00')
-      const endDate = moment(new Date()).format('YYYY-MM-DD 23:59:59')
+      contextMenu.close();
+      const startDate = moment(new Date()).format('YYYY-MM-DD 00:00:00');
+      const endDate = moment(new Date()).format('YYYY-MM-DD 23:59:59');
       this.refresh([{
         field: 'created',
         type: 'DateTime',
         rule: 'between',
         val: `${startDate}||${endDate}`,
-      }])
-    }, 2)
+      }]);
+    }, 2);
 
     // contextMenu.addItem(`${this.openDragStore ? '关闭' : '开启'}拖拽门店`, () => {
     //   contextMenu.close()
@@ -108,23 +108,23 @@ export default class StoresGdMap extends Component {
 
     // 地图绑定鼠标右击事件——弹出右键菜单
     map.on('rightclick', e => {
-      const { openDragStore } = this.state
-      if (openDragStore) return // 开启拖拽时，右键菜单无效
-      contextMenu.open(map, e.lnglat)
-    })
-  }
+      const { openDragStore } = this.state;
+      if (openDragStore) return; // 开启拖拽时，右键菜单无效
+      contextMenu.open(map, e.lnglat);
+    });
+  };
 
   /** 查询 */
   refresh = (params, pageSize, storeParams) => {
     if (this.state.openDragStore) {                           // 拖拽中，关闭
-      this.setState({ openDragStore: false })           // 关闭拖拽变量
-      this.map.remove([this.currentMarker, this.newMarker])
+      this.setState({ openDragStore: false });           // 关闭拖拽变量
+      this.map.remove([this.currentMarker, this.newMarker]);
     }
     if (params.length <= 0) {
       this.changePage(
         this.state.storePages || '500',
         'onlySearchStore',
-        storeParams
+        storeParams,
       );
       return;
     }
@@ -148,20 +148,22 @@ export default class StoresGdMap extends Component {
     queryAuditedOrderByStoreMap(filter).then(async response => {
       if (response.success) {
         let data = response.data.records ?? [];
-        data = data.filter(x => x.longitude && x.latitude)
+        data = data.filter(x => x.longitude && x.latitude);
         let otherData = response.data.otherRecords ?? [];
-        otherData = otherData.filter(x => x.longitude && x.latitude)
+        otherData = otherData.filter(x => x.longitude && x.latitude);
         this.basicOrders = data;
         // 查询门店
         let storeRes = [];
         if (storeParams && JSON.stringify(storeParams) !== '{}') {
           storeRes = await this.getStoreMaps(pageSize || storePages, storeParams);
         }
-        data.forEach(item => {item.isOrder = true})
+        data.forEach(item => {
+          item.isOrder = true;
+        });
         const orders = [...data, ...storeRes];
         setTimeout(() => {
-          this.createMyjMarkers()
-          this.map.setFitView() // 无参数时，自动自适应所有覆盖物
+          this.createMyjMarkers();
+          this.map.setFitView(); // 无参数时，自动自适应所有覆盖物
         }, 500);
         this.setState({ orders, otherData });
       }
@@ -170,16 +172,16 @@ export default class StoresGdMap extends Component {
   };
 
 
-/**
- * 增加海量点
- * @author ChenGuangLong
- * @since 2024/10/23 15:00
-*/
+  /**
+   * 增加海量点
+   * @author ChenGuangLong
+   * @since 2024/10/23 15:00
+   */
   addMassMarks = () => {
-    const { orders = [] } = this.state
-    const { map, AMap } = this
-    this.redMass?.clear()
-    if (orders.length === 0) return
+    const { orders = [] } = this.state;
+    const { map, AMap } = this;
+    this.redMass?.clear();
+    if (orders.length === 0) return;
 
     // 创建海量点
     this.redMass = new AMap.MassMarks(orders.map(item => ({
@@ -194,7 +196,7 @@ export default class StoresGdMap extends Component {
         size: new AMap.Size(20, 20),
         zIndex: 12,
       },
-    })
+    });
 
     // 中文就创建一次 循环利用
     this.text = this.text ?? new AMap.Text({
@@ -203,42 +205,42 @@ export default class StoresGdMap extends Component {
     });
     // ——————————鼠标移入——————————
     this.redMass.on('mouseover', ({ data }) => {
-      this.text.setPosition(new AMap.LngLat(data.item.longitude, data.item.latitude)) // 改变经纬度
-      this.text.setText(this.setMarkerText(data.item))                                // 设置文本标注内容
+      this.text.setPosition(new AMap.LngLat(data.item.longitude, data.item.latitude)); // 改变经纬度
+      this.text.setText(this.setMarkerText(data.item));                                // 设置文本标注内容
       map.add(this.text);
-    })
+    });
     // ——————————鼠标移出——————————
     this.redMass.on('mouseout', () => {
-      this.text && map.remove(this.text)
-    })
+      this.text && map.remove(this.text);
+    });
     // ——————————点击——————————
     this.redMass.on('click', ({ data }) => {
       if (data.item.address) {
-        copy(data.item.address)
-        message.success('复制门店地址成功')
+        copy(data.item.address);
+        message.success('复制门店地址成功');
       } else {
-        message.error('门店地址复制失败，检查该门店是否维护了地址！！')
+        message.error('门店地址复制失败，检查该门店是否维护了地址！！');
       }
-      this.setState({ storeInfoVisible: true, storeView: data.item })
-    })
+      this.setState({ storeInfoVisible: true, storeView: data.item });
+    });
     // ——————————双击——————————
     this.redMass.on('dblclick', ({ data }) => {
-      map.setFitView([new AMap.Marker({ position: [data.item.longitude, data.item.latitude]})])
-    })
+      map.setFitView([new AMap.Marker({ position: [data.item.longitude, data.item.latitude] })]);
+    });
 
-    this.redMass.setMap(map)
-  }
+    this.redMass.setMap(map);
+  };
 
 
   /**
    * 创建美宜佳坐标点
    * @author ChenGuangLong
    * @since 2024/10/4 15:44
-  */
+   */
   createMyjMarkers = () => {
-    const { otherData = [] } = this.state
-    const { map, AMap } = this
-    if (!map) return message.info('地图加载中')
+    const { otherData = [] } = this.state;
+    const { map, AMap } = this;
+    if (!map) return message.info('地图加载中');
 
     this.text = this.text ?? new AMap.Text({      // 中文就创建一次 循环利用
       anchor: 'bottom-center',
@@ -250,12 +252,12 @@ export default class StoresGdMap extends Component {
     //   this.myjRedMarkers = []
     // }
     if (this.myjGreenMarkers.length > 0) {
-      map.remove(this.myjGreenMarkers)
-      this.myjGreenMarkers = []
+      map.remove(this.myjGreenMarkers);
+      this.myjGreenMarkers = [];
     }
 
     // 创建红色海量点
-    this.addMassMarks()
+    this.addMassMarks();
     // ————————创建红色图标————————————————————————————————————————————————————————————————
     // if (orders.length > 0) {
     //   const redMyjIcon = getMyjIcon(AMap, 'red')
@@ -296,21 +298,21 @@ export default class StoresGdMap extends Component {
     // }
     // ————————创建绿色图标——————————————————————————————————————————————————————————
     if (otherData.length > 0) {
-      const greenMyjIcon = getMyjIcon(AMap, 'green')
+      const greenMyjIcon = getMyjIcon(AMap, 'green');
       this.myjGreenMarkers = otherData/* .map(item => bdToGd(item)) */.map(order => {   // 🫵🫵🫵百度转高德🫵🫵🫵; 再创建坐标点
         const marker = new AMap.Marker({                   // 创建一个Marker对象
           position: [order.longitude, order.latitude],          // 设置Marker的位置
           icon: greenMyjIcon,                                   // 绿色图标
           anchor: 'center',                                     // 设置Marker的锚点
-        })
+        });
         marker.on('mouseover', () => {
-          this.text.setPosition(new AMap.LngLat(order.longitude, order.latitude))         // 改变经纬度
-          this.text.setText(this.setMarkerText(order))                                    // 设置文本标注内容
+          this.text.setPosition(new AMap.LngLat(order.longitude, order.latitude));         // 改变经纬度
+          this.text.setText(this.setMarkerText(order));                                    // 设置文本标注内容
           map.add(this.text);
-        })
+        });
         marker.on('mouseout', () => {
-          this.text && map.remove(this.text)
-        })
+          this.text && map.remove(this.text);
+        });
         marker.on('click', () => {                                                  // 左键单击—————————————
           if (order.address) {
             copy(order.address);
@@ -319,13 +321,13 @@ export default class StoresGdMap extends Component {
           } else {
             message.error('门店地址复制失败，检查该门店是否维护了地址！！');
           }
-        })
+        });
         marker.on('dblclick', () => {                                               // 双击——————————————————
           map.setFitView([marker]);
-        })
-        return marker
-      })
-      map.add(this.myjGreenMarkers)
+        });
+        return marker;
+      });
+      map.add(this.myjGreenMarkers);
     }
   };
 
@@ -333,10 +335,10 @@ export default class StoresGdMap extends Component {
    * 设置鼠标悬浮文字
    * @author ChenGuangLong
    * @since 2024/10/5 9:51
-  */
+   */
   setMarkerText = order => {
-    const storeCode = order.deliveryPoint?.code || order.code || '[空]'
-    const storeName = order.deliveryPoint?.name || order.name || '<空>'
+    const storeCode = order.deliveryPoint?.code || order.code || '[空]';
+    const storeName = order.deliveryPoint?.name || order.name || '<空>';
     const cartonCount = () => order.cartonCount ? `
       <div>
         <hr style="margin: 5px 0 0 0;"/>
@@ -355,7 +357,7 @@ export default class StoresGdMap extends Component {
           <div style="flex: 1">${(order.weight / 1000).toFixed(3)}</div>
         </div>
       </div>
-    ` : ''
+    ` : '';
 
     return `
       <div style="width: auto; height: auto; padding: 5px; background: #FFF;" >
@@ -369,12 +371,12 @@ export default class StoresGdMap extends Component {
         <div>门店地址：${order.address || '<空>'}</div>
         ${cartonCount()}
       </div>
-  `
-  }
+  `;
+  };
 
 
   /** 保存拖拽改变门店经纬度 */
-  changePoint = async (order,lnglat) => {
+  changePoint = async (order, lnglat) => {
     let sets = {
       LATITUDE: lnglat.lat,
       LONGITUDE: lnglat.lng,
@@ -387,56 +389,56 @@ export default class StoresGdMap extends Component {
     };
     let result = await updateEntity(param);
     if (result.success) {
-      message.success(`门店 [${order.name}] 修改经纬度成功`)
-      order.longitude = lnglat.lng
-      order.latitude = lnglat.lat
-      this.map.remove([this.currentMarker, this.newMarker])   // 清除地图上拖拽辅助点
-      this.setState({ openDragStore: false })           // 关闭拖拽变量
-      this.createMyjMarkers()                                // 重新创建地图上门店图标
+      message.success(`门店 [${order.name}] 修改经纬度成功`);
+      order.longitude = lnglat.lng;
+      order.latitude = lnglat.lat;
+      this.map.remove([this.currentMarker, this.newMarker]);   // 清除地图上拖拽辅助点
+      this.setState({ openDragStore: false });           // 关闭拖拽变量
+      this.createMyjMarkers();                                // 重新创建地图上门店图标
     } else {
-      message.error(`门店 [${order.name}] 修改经纬度失败,请刷新页面重试`)
+      message.error(`门店 [${order.name}] 修改经纬度失败,请刷新页面重试`);
     }
   };
 
   /** 界面左边：门店地址查询 */
   storeAddrQuery = keyword => {
-    const { AMap, map } = this
-    this.setState({ storeInfo: keyword })
-    if (this.infoWindow) map.remove(this.infoWindow)
-    if (this.searchStoreMarkers.length > 0) map.remove(this.searchStoreMarkers)
-    if (!keyword || keyword.trim().length === 0) return this.setState({ searchStoreList: [] })
+    const { AMap, map } = this;
+    this.setState({ storeInfo: keyword });
+    if (this.infoWindow) map.remove(this.infoWindow);
+    if (this.searchStoreMarkers.length > 0) map.remove(this.searchStoreMarkers);
+    if (!keyword || keyword.trim().length === 0) return this.setState({ searchStoreList: [] });
 
     AMap.plugin('AMap.AutoComplete', () => {   // 注意：输入提示插件2.0版本需引入AMap.AutoComplete，而1.4版本应使用AMap.Autocomplete
-      const autoOptions = { city: '全国' }
-      const autoComplete = new AMap.AutoComplete(autoOptions)  // 实例化AutoComplete
+      const autoOptions = { city: '全国' };
+      const autoComplete = new AMap.AutoComplete(autoOptions);  // 实例化AutoComplete
       autoComplete.search(keyword, (status, result) => {                   // 搜索成功时，result即是对应的匹配数据
         if (status === 'complete' && result.info === 'OK') {
-          const searchStoreList = result.tips.filter(item => item.location) // 筛选掉没有经纬度的数据
-          this.setState({ searchStoreList })                                     // 显示左边搜索结果
+          const searchStoreList = result.tips.filter(item => item.location); // 筛选掉没有经纬度的数据
+          this.setState({ searchStoreList });                                     // 显示左边搜索结果
           this.searchStoreMarkers = searchStoreList.map((item, index) => {    // 显示右边地图点
             const marker = new AMap.Marker({
               position: [item.location.lng, item.location.lat],
               content: this.markerNumContent(index + 1),
               anchor: 'bottom-center',
               extData: index,                                                         // 给个索引，方便点击事件获取
-            })
+            });
             // 搜索第一个直接显示信息窗口
-            if (index === 0) this.setInfoWindow(marker.getPosition(), item)
+            if (index === 0) this.setInfoWindow(marker.getPosition(), item);
 
             marker.on('click', () => {
-              this.setInfoWindow(marker.getPosition(), item)
-            })
-            return marker
-          })
-          map.add(this.searchStoreMarkers)
-          map.setFitView(this.searchStoreMarkers)
+              this.setInfoWindow(marker.getPosition(), item);
+            });
+            return marker;
+          });
+          map.add(this.searchStoreMarkers);
+          map.setFitView(this.searchStoreMarkers);
         } else {
-          this.setState({ searchStoreList: [] })
-          message.error(`查询地址没有结果:${keyword}`)
+          this.setState({ searchStoreList: [] });
+          message.error(`查询地址没有结果:${keyword}`);
         }
-      })
-    })
-  }
+      });
+    });
+  };
 
   /**
    * 窗口显示地址信息
@@ -444,37 +446,37 @@ export default class StoresGdMap extends Component {
    * @param dateContext 搜索数据对象
    * @author ChenGuangLong
    * @since 2024/10/7 9:32
-  */
-  setInfoWindow = (position,dateContext) => {
-    const { AMap,map } = this
+   */
+  setInfoWindow = (position, dateContext) => {
+    const { AMap, map } = this;
 
     // 创建一个信息窗体 一次就够了
-    this.infoWindow = this.infoWindow ?? new AMap.InfoWindow({ offset: new AMap.Pixel(0, -35)})
+    this.infoWindow = this.infoWindow ?? new AMap.InfoWindow({ offset: new AMap.Pixel(0, -35) });
     this.infoWindow.setContent(`
         <div>
           <div> ${dateContext.name}</div>
           <div>地址:${dateContext.district || ''}${dateContext.address}</div>
           <div>坐标:${dateContext.location.lng},${dateContext.location.lat}</div>
         </div>
-    `)
-    this.infoWindow.open(map, position)
-  }
+    `);
+    this.infoWindow.open(map, position);
+  };
 
   /**
    * 带数字的坐标点
    * @author ChenGuangLong
    * @since 2024/10/5 15:52
-  */
+   */
   markerNumContent = (num, isRed = true) => `
       <div class=${mapStyle.customContentMarker}>
         <img src="//a.amap.com/jsapi_demos/static/demo-center/icons/poi-marker-${isRed ? 'red' : 'default'}.png" alt>
         <div class=${mapStyle.num}>${num}</div>
-      </div>`
+      </div>`;
 
   changePage = async (e, key, storeParamsp) => {
     if (this.state.openDragStore) {                           // 拖拽中，关闭
-      this.setState({ openDragStore: false })           // 关闭拖拽变量
-      this.map.remove([this.currentMarker, this.newMarker])
+      this.setState({ openDragStore: false });           // 关闭拖拽变量
+      this.map.remove([this.currentMarker, this.newMarker]);
     }
     const { pageFilter, storeParams } = this.state;
 
@@ -506,10 +508,10 @@ export default class StoresGdMap extends Component {
             },
             () => {
               setTimeout(() => {
-                this.createMyjMarkers()
-                this.map.setFitView() // 无参数时，自动自适应所有覆盖物
+                this.createMyjMarkers();
+                this.map.setFitView(); // 无参数时，自动自适应所有覆盖物
               }, 100);
-            }
+            },
           );
         } else {
           this.setState(
@@ -522,10 +524,10 @@ export default class StoresGdMap extends Component {
             },
             () => {
               setTimeout(() => {
-                this.createMyjMarkers()
-                this.map.setFitView() // 无参数时，自动自适应所有覆盖物
+                this.createMyjMarkers();
+                this.map.setFitView(); // 无参数时，自动自适应所有覆盖物
               }, 500);
-            }
+            },
           );
         }
       } else {
@@ -539,7 +541,7 @@ export default class StoresGdMap extends Component {
           });
       }
     }
-    this.setState({ storePages: e })
+    this.setState({ storePages: e });
   };
 
   getStoreMaps = async (pageSize, storeParams) => {
@@ -552,35 +554,36 @@ export default class StoresGdMap extends Component {
     };
     let res = await queryStoreMaps(params);
     if (res.success && res.data) {
-      return res.data.records
-    } return [];
+      return res.data.records;
+    }
+    return [];
   };
 
   /** 显示门店审核的门店坐标 */
   showStoreByReview = async e => {
-    this.setState({ loading: true })
+    this.setState({ loading: true });
     let params = {
       DELIVERYPOINTCODE: e.DELIVERYPOINTCODE,
-    }
-    let store = await this.getStoreMaps('20', params)
-    let reviewStore = []
+    };
+    let store = await this.getStoreMaps('20', params);
+    let reviewStore = [];
     if (store?.length > 0) {
-      let review = shencopy(store[0])
-      store[0].code = `(旧)${store[0].code}`
-      review.latitude = e.LATITUDE
-      review.longitude = e.LONGITUDE
-      review.code = `(新)${review.code}`
-      reviewStore.push(review)
+      let review = shencopy(store[0]);
+      store[0].code = `(旧)${store[0].code}`;
+      review.latitude = e.LATITUDE;
+      review.longitude = e.LONGITUDE;
+      review.code = `(新)${review.code}`;
+      reviewStore.push(review);
     }
     this.setState({ orders: store, otherData: reviewStore, pageFilter: [], loading: false },
       () => {
         setTimeout(() => {
-          this.createMyjMarkers()
-          this.map.setFitView(undefined, true, [60, 60, 60, 500])  // 四周边距，上、下、左、右
-        }, 500)
-      }
-    )
-  }
+          this.createMyjMarkers();
+          this.map.setFitView(undefined, true, [60, 60, 60, 500]);  // 四周边距，上、下、左、右
+        }, 500);
+      },
+    );
+  };
 
   tansfomer = arraylist => {
     let attributeList = arraylist[0];
@@ -597,7 +600,7 @@ export default class StoresGdMap extends Component {
   };
 
   getStoreInfoCard = () => {
-    const { storeView,openDragStore } = this.state;
+    const { storeView, openDragStore } = this.state;
     if (!storeView) return;
     let storeCode = storeView.isOrder ? storeView.deliveryPoint.code : storeView.code;
     let storeName = storeView.isOrder ? storeView.name : storeView.name;
@@ -605,7 +608,7 @@ export default class StoresGdMap extends Component {
     return (
       <div>
         <Card
-          cover={<img alt="example" src={noStore} style={{ height: '200px' }} />}
+          cover={<img alt="example" src={storeView.imgurl || noStore} style={{ height: '200px' }} />}
           title={`[${storeCode}]${storeName}`}
           style={{ width: 360 }}
         >
@@ -646,18 +649,18 @@ export default class StoresGdMap extends Component {
    * @param store 门店数据
    * @author ChenGuangLong
    * @since 2024/10/28 11:19
-  */
+   */
   dragMarker = store => {
-    const { map, AMap } = this
-    this.setState({ openDragStore: true })
-    this.redMass?.clear()             // 关闭全部海量点
-    map.remove(this.myjGreenMarkers)  // 关闭司机提交坐标点
-    this.myjGreenMarkers = []
+    const { map, AMap } = this;
+    this.setState({ openDragStore: true });
+    this.redMass?.clear();             // 关闭全部海量点
+    map.remove(this.myjGreenMarkers);  // 关闭司机提交坐标点
+    this.myjGreenMarkers = [];
     this.currentMarker = new AMap.Marker({             // 创建一个Marker对象
       position: [store.longitude, store.latitude],          // 设置Marker的位置
       content: this.markerNumContent('现'),            // 图标
       anchor: 'bottom-center',                              // 设置Marker的锚点
-    })
+    });
 
     this.newMarker = new AMap.Marker({                    // 创建一个Marker对象
       position: [store.longitude, store.latitude],             // 设置Marker的位置
@@ -666,13 +669,13 @@ export default class StoresGdMap extends Component {
       draggable: true,                                         // 是否允许拖拽
       cursor: 'move',                                          // 鼠标移入时的鼠标样式
       extData: store,                                          // 用户自定义属性
-    })
+    });
 
-    map.add([this.currentMarker, this.newMarker])
-  }
+    map.add([this.currentMarker, this.newMarker]);
+  };
 
   render() {
-    const { loading, searchStoreList, openDragStore } = this.state
+    const { loading, searchStoreList, openDragStore } = this.state;
     const uploadProps = {
       name: 'file',
       // action: 'https://www.mocky.io/v2/5cc8019d300000980a055e76',
@@ -687,34 +690,34 @@ export default class StoresGdMap extends Component {
           (fileList[0].name.substring(fileList[0].name.lastIndexOf('.') + 1).toLowerCase() !==
             'xlsx' &&
             fileList[0].name.substring(fileList[0].name.lastIndexOf('.') + 1).toLowerCase() !==
-              'xls')
+            'xls')
         ) return message.error('请检查文件是否为excel文件！');
 
-        let rABS = true
-        const f = fileList[0]
-        let reader = new FileReader()
+        let rABS = true;
+        const f = fileList[0];
+        let reader = new FileReader();
         reader.onload = async (e) => {
-          let data = e.target.result
-          if (!rABS) data = new Uint8Array(data)
+          let data = e.target.result;
+          if (!rABS) data = new Uint8Array(data);
           let workbook = XLSX.read(data, {
             type: rABS ? 'binary' : 'array',
-          })
+          });
           // 假设我们的数据在第一个标签
-          let firstWorksheet = workbook.Sheets[workbook.SheetNames[0]]
+          let firstWorksheet = workbook.Sheets[workbook.SheetNames[0]];
           // XLSX自带了一个工具把导入的数据转成json
-          let jsonArr = XLSX.utils.sheet_to_json(firstWorksheet, { header: 1 })
-          let column = jsonArr[0][0]
-          let storeNames = this.tansfomer(jsonArr).map(item => item[column]).join(',')
+          let jsonArr = XLSX.utils.sheet_to_json(firstWorksheet, { header: 1 });
+          let column = jsonArr[0][0];
+          let storeNames = this.tansfomer(jsonArr).map(item => item[column]).join(',');
           let param = {
             companyuuid: loginCompany().uuid,
             dispatchcenteruuid: loginOrg().uuid,
             cur: 1,
             pageSize: '9999',
             DELIVERYPOINTCODE: storeNames,
-          }
-          let res = await queryStoreMaps(param)
+          };
+          let res = await queryStoreMaps(param);
           if (res.success) {
-            let recordsUuids = res.data?.records.map(item => item.uuid)
+            let recordsUuids = res.data?.records.map(item => item.uuid);
             this.setState({
                 otherData: res.data ? res.data?.records : [],
                 orders: res.data ? res.data?.otherRecords.filter(item => recordsUuids.indexOf(item.uuid) === -1) : [],
@@ -723,18 +726,18 @@ export default class StoresGdMap extends Component {
               },
               () => {
                 setTimeout(() => {
-                  this.createMyjMarkers()
-                  this.map.setFitView() // 无参数时，自动自适应所有覆盖物
-                  if (res.data) message.success('门店导入查询成功，绿色为导入门店，红色为与导入门店同区域门店！')
-                  else message.error('门店导入查询失败，无门店数据或excel文件有错误')
-                }, 500)
-              }
-            )
+                  this.createMyjMarkers();
+                  this.map.setFitView(); // 无参数时，自动自适应所有覆盖物
+                  if (res.data) message.success('门店导入查询成功，绿色为导入门店，红色为与导入门店同区域门店！');
+                  else message.error('门店导入查询失败，无门店数据或excel文件有错误');
+                }, 500);
+              },
+            );
           }
-        }
-          if (rABS) reader.readAsBinaryString(f)
-          else reader.readAsArrayBuffer(f)
-          return false
+        };
+        if (rABS) reader.readAsBinaryString(f);
+        else reader.readAsArrayBuffer(f);
+        return false;
       },
     };
 
@@ -744,11 +747,11 @@ export default class StoresGdMap extends Component {
           <div style={{ backgroundColor: '#ffffff' }}>
             <Row type="flex" justify="space-between">
               <Col span={22}>
-                <SearchForm refresh={this.refresh} changePage={this.changePage}/>
+                <SearchForm refresh={this.refresh} changePage={this.changePage} />
               </Col>
               <Col span={1}>
                 <Upload {...uploadProps}>
-                  <Button shape="round" icon="upload" type="danger"/>
+                  <Button shape="round" icon="upload" type="danger" />
 
                 </Upload>
               </Col>
@@ -806,16 +809,16 @@ export default class StoresGdMap extends Component {
                       tabIndex="0"
                       className={mapStyle.gdSearchListCard}
                       onClick={() => {
-                        const targetMarker = this.searchStoreMarkers.find(marker => index === marker.getExtData())
-                        if (!targetMarker) return
-                        const position = targetMarker.getPosition()
-                        this.setInfoWindow(position, item)
+                        const targetMarker = this.searchStoreMarkers.find(marker => index === marker.getExtData());
+                        if (!targetMarker) return;
+                        const position = targetMarker.getPosition();
+                        this.setInfoWindow(position, item);
                       }}
                     >
                       <b><span className={mapStyle.gdSearchListNum}>{index + 1}</span> {item.name}</b>
                       <div><b>地址：</b>{item.district || ''}{item.address}</div>
                       <div><b>坐标：</b>{item.location.lng},{item.location.lat}</div>
-                    </div>
+                    </div>,
                   )}
                 </Col>
                 <Col span={18}>
@@ -826,11 +829,11 @@ export default class StoresGdMap extends Component {
                         style={{ marginLeft: '10px' }}
                         type="primary"
                         onClick={() => {
-                          const tLng = this.currentMarker.getPosition().lng === this.newMarker.getPosition().lng
-                          const tLat = this.currentMarker.getPosition().lat === this.newMarker.getPosition().lat
+                          const tLng = this.currentMarker.getPosition().lng === this.newMarker.getPosition().lng;
+                          const tLat = this.currentMarker.getPosition().lat === this.newMarker.getPosition().lat;
                           if (tLng && tLat)
-                            return message.error('未改变门店位置')
-                          this.changePoint(this.newMarker.getExtData(), this.newMarker.getPosition())
+                            return message.error('未改变门店位置');
+                          this.changePoint(this.newMarker.getExtData(), this.newMarker.getPosition());
                         }}
                       >
                         保存门店位置
@@ -839,9 +842,9 @@ export default class StoresGdMap extends Component {
                       <Button
                         style={{ marginLeft: '10px' }}
                         onClick={() => {
-                          this.map.remove([this.currentMarker, this.newMarker])
-                          this.createMyjMarkers()
-                          this.setState({ openDragStore: false })
+                          this.map.remove([this.currentMarker, this.newMarker]);
+                          this.createMyjMarkers();
+                          this.setState({ openDragStore: false });
                         }}
                       >
                         取消
@@ -850,7 +853,7 @@ export default class StoresGdMap extends Component {
                   }
 
                   {/* 高德地图加载区域 */}
-                  <div id="GdStoreMap" style={{height:'100%'}}/>
+                  <div id="GdStoreMap" style={{ height: '100%' }} />
                   <Drawer
                     getContainer={false}
                     title="门店资料"
@@ -889,6 +892,6 @@ export default class StoresGdMap extends Component {
           </div>
         </Page>
       </PageHeaderWrapper>
-    )
+    );
   }
 }

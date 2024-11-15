@@ -785,7 +785,7 @@ export default class StoresMap extends Component {
     return (
       <div>
         <Card
-          cover={<img alt="example" src={noStore} style={{ height: '200px' }} />}
+          cover={<img alt="example" src={storeView.imgurl || noStore} style={{ height: '200px' }} />}
           title={`[${storeCode}]${storeName}`}
           style={{ width: 360 }}
         >
