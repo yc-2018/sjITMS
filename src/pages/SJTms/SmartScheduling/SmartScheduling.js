@@ -2,10 +2,11 @@
 import React, { Component, createRef } from 'react'
 import AMapLoader from '@amap/amap-jsapi-loader'
 import {
-  Button, Col, Divider, Drawer, Empty, Icon, message,
+  Button, Col, Divider, Drawer, Empty, Icon, Input, message,
   Modal, Popconfirm, Popover, Progress, Row, Select, Table
 } from 'antd'
 import { uniqBy } from 'lodash'
+import ReactDOM from 'react-dom'
 import { AMapDefaultConfigObj, AMapDefaultLoaderObj } from '@/utils/mapUtil'
 import styles from './SmartScheduling.less'
 import VehiclePoolPage from '@/pages/SJTms/Dispatching/VehiclePoolPage'
@@ -19,7 +20,7 @@ import FullScreenLoading from '@/components/FullScreenLoading'
 import { colors } from '@/pages/SJTms/SmartScheduling/colors'
 import { convertCodeName } from '@/utils/utils'
 import { GetConfig } from '@/services/sjitms/OrderBill'
-import { groupByOrder, mapStyle } from '@/pages/SJTms/SmartScheduling/common'
+import { getMarkerText, groupByOrder, mapStyle } from '@/pages/SJTms/SmartScheduling/common'
 import { save } from '@/services/sjitms/ScheduleBill'
 
 const { Option } = Select
@@ -33,6 +34,7 @@ export default class SmartScheduling extends Component {
   warehouseMarker = null        // 当前仓库高德点
   warehousePoint = ''         // 当前仓库经纬度
   groupMarkers = []            // 分组的高德点位
+  unassignedMarkers = []       // 未分配线路的高德点位
   routingPlans = []           // 路线规划数据列表（按index对应groupMarkers）
   mapStyle = 'normal'         // 地图样式 标准 normal    幻影黑 dark
   orderList = []               // 点击智能调度时订单池原数据列表（用来生成排车单时用）
@@ -54,6 +56,7 @@ export default class SmartScheduling extends Component {
     errMessages: [],                 // 生成排车单时如果有错误信息
     childrenIndex: -1,               // 显示调度排车子抽屉 这个是它的索引>=0就是显示
     scheduleResults: [],             // 智能调度排车处理后的结果（二重数组内的订单）
+    scheduleDataList: [],            // 排车选择数据：如 司机、备注、车辆 用index索引对应scheduleResults
     unassignedNodes:[],              // 智能调度未分配节点
     btnLoading: false,               // 智能调度按钮加载状态
     fullScreenLoading: false,        // 全屏加载中
@@ -63,7 +66,6 @@ export default class SmartScheduling extends Component {
       routeOption: 0, // 算路选项
       isBack: 1,      // 是否算返回仓库
     }
-
   }
 
   componentDidMount = async () => {
@@ -99,7 +101,7 @@ export default class SmartScheduling extends Component {
     })
     // ————————多载具————————
     GetConfig('dispatch', loginOrg().uuid).then(res => {
-      if (res?.data?.[0]?.multiVehicle) this.setState({ isMultiVehicle: res?.data?.[0]?.multiVehicle === '1' })
+      if (res?.data?.[0]?.multiVehicle) this.setState({ isMultiVehicle: res?.data?.[0]?.multiVehicle !== '1' })
       else message.error('获取多载具配置失败')
     }).catch(() => message.error('获取多载具配置失败！'))
 
@@ -144,6 +146,7 @@ export default class SmartScheduling extends Component {
       mergeOrders = mergeOrders.filter(item => item.longitude && item.latitude)
     }
     if (mergeOrders.length < 2) return message.error('请选择至少两个要排车的门店！')
+    if (mergeOrders.length > 200) return message.error('最多只能选择200个门店！')
 
     this.setState({ showMenuModal: false, selectOrderList: mergeOrders })
   }
@@ -204,16 +207,20 @@ export default class SmartScheduling extends Component {
 
     if (result.errmsg !== 'OK' || !result.data) return message.error(`${result.errmsg}:${result.errdetail}`)
     const { routes, unassignedNodes } = result.data[0]
-    const groupOrders = routes.map(route =>
-      route.queue.map(r => selectOrderList.find(order => order.deliveryPoint.uuid === r.endName)))
+    // 订单分组提取
+    const groupOrders = routes.map(route => route.queue.map(r => selectOrderList.find(order => order.deliveryPoint.uuid === r.endName)))
+    // 没分配的订单提取（列表只返回了经纬度字符串，所以只能按经纬度提取）{不一定会返回，没返回就默认给个[]
+    const notGroupOrders = unassignedNodes?.map(nodeStr => selectOrderList.find(order => `${order.longitude},${order.latitude}` === nodeStr)) ?? []
+
     this.setState({
       showSmartSchedulingModal: false,
       showButtonDrawer: false,
       showResultDrawer: true,
       scheduleResults: groupOrders,
-      unassignedNodes,
+      scheduleDataList: Array(groupOrders.length).fill().map(() => ({})), // mad有坑 如果在fill直接写｛}会导致全部使用同一个对象
+      unassignedNodes: notGroupOrders,
     })
-    this.loadingPoint(groupOrders, unassignedNodes)
+    this.loadingPoint(groupOrders, notGroupOrders)
   }
 
   /**
@@ -221,9 +228,11 @@ export default class SmartScheduling extends Component {
    * @author ChenGuangLong
    * @since 2024/11/8 上午10:59
   */
-  loadingPoint = (groupOrders = this.state.scheduleResults, unassigneds = this.state.unassignedNodes) => {
+  loadingPoint = (groupOrders = this.state.scheduleResults, unassigneds = this.state.unassignedNodes ?? []) => {
     const { map, AMap,  warehouseMarker, warehousePoint, groupMarkers } = this
-    if (!warehouseMarker) { // 仓库点
+    const { isMultiVehicle } = this.state
+    // ————————————仓库点————————————
+    if (!warehouseMarker) {
       this.warehouseMarker = new AMap.Marker({
         position: warehousePoint.split(','),      // 设置Marker的位置
         anchor: 'center',              // 设置Marker的锚点
@@ -232,6 +241,12 @@ export default class SmartScheduling extends Component {
       map.add(this.warehouseMarker)
     }
 
+    // ——————文本框就创建一次 循环利用——————
+    this.text = this.text ?? new AMap.Text({
+      anchor: 'bottom-center',
+      offset: new AMap.Pixel(0, -11),             // 设置文本标注偏移量 因为坐标偏移一半 所以是大小的一半+1
+    });
+    // ————————————分组点位————————————
     groupOrders.forEach((orders, index) => {  // 每个组循环
       const markers = orders.map((order, i) => {            // 组内循环
         const { longitude, latitude } = order
@@ -240,11 +255,47 @@ export default class SmartScheduling extends Component {
           anchor: 'center',                     // 设置Marker的锚点
           content: `<div style="background: ${colors[index]}" class="${styles.point}">${i + 1}</div>`
         })
+        marker.on('mouseover', () => {                                        // 鼠标移入
+          // 创建一个 DOM 容器，将 React 组件渲染到该容器中
+          this.text.setPosition(marker.getPosition())                               // 改变经纬度
+          this.text.setText(getMarkerText(order, isMultiVehicle))  // 设置文本标注内容
+          map.add(this.text);
+        })
+        marker.on('mouseout', () => {                                         // 鼠标移出
+          this.text && map.remove(this.text)
+        })
         return marker
       })
       map.add(markers)
       groupMarkers[index] = markers
     })
+    // ————————————没分组点位————————————
+    if (unassigneds.length === 0) return
+    this.unassignedMarkers = unassigneds.map(order => {
+      const { longitude, latitude } = order
+      // 创建一个 DOM 容器，将 React 组件渲染到该容器中
+      const contentDiv = document.createElement('div');
+      ReactDOM.render(
+        <Icon type="warning" theme="twoTone" style={{ fontSize: 25 }} twoToneColor="#eb2f96"/>,
+        contentDiv
+      )
+      const marker = new AMap.Marker({
+        position: [longitude, latitude],      // 设置Marker的位置
+        anchor: 'center',                     // 设置Marker的锚点
+        content: contentDiv
+      })
+      marker.on('mouseover', () => {                                        // 鼠标移入
+        // 创建一个 DOM 容器，将 React 组件渲染到该容器中
+        this.text.setPosition(marker.getPosition())                               // 改变经纬度
+        this.text.setText(getMarkerText(order, isMultiVehicle))  // 设置文本标注内容
+        map.add(this.text);
+      })
+      marker.on('mouseout', () => {                                         // 鼠标移出
+        this.text && map.remove(this.text)
+      })
+      return marker
+    })
+    map.add(this.unassignedMarkers)
 
   }
 
@@ -318,6 +369,7 @@ export default class SmartScheduling extends Component {
     // 清空数据
     this.setState({
       scheduleResults: [],
+      scheduleDataList: [],
       selectOrderList: [],
       selectVehicles: [],
       unassignedNodes:[],
@@ -333,9 +385,9 @@ export default class SmartScheduling extends Component {
    * @author ChenGuangLong
    * @since 2024/11/12 上午9:47
   */
-  createSchedules = () => {
+  createSchedules = async() => {
     const { orderList } = this
-    const { scheduleResults } = this.state
+    const { scheduleResults, scheduleDataList } = this.state
     let errFlag = false   // 错误标志,forEach的return只能结束内部方法，不能结束外层循环，外层继续循环继续提示报错，到生成排车单前用标记看看生不生成
     const  scheduleParamBodyList = []  // 准备排车单创建列表
     scheduleResults.forEach((link, index) => {
@@ -420,7 +472,7 @@ export default class SmartScheduling extends Component {
         ...orderSummary,
         companyUuid: loginCompany().uuid,
         dispatchCenterUuid: loginOrg().uuid,
-        note: '',
+        note: scheduleDataList[index].note || '',
       })
     })
 
@@ -429,7 +481,8 @@ export default class SmartScheduling extends Component {
     // ——————————开始请求创建排车单——————————
     const errMessages = []  // 记录失败信息
     this.setState({ showProgress: 1 })
-    scheduleParamBodyList.forEach(async (paramBody, index) => {
+    for (const paramBody of scheduleParamBodyList) {  // 循环创建，用forEach会异步循环，导致进度条无法正常显示
+      const index = scheduleParamBodyList.indexOf(paramBody)
       const linkName = `线路${index + 1}`
       const res = await save(paramBody)
       if (res.success) message.success(`${linkName}创建成功`)
@@ -439,13 +492,10 @@ export default class SmartScheduling extends Component {
         this.setState({ errMessages: [...errMessages] })
       }
       this.setState({ showProgress: parseFloat(((index + 1) / scheduleParamBodyList.length * 100).toFixed(1)) })
-
-    })
+    }
     // ——————创建结束后——————
-    if (errMessages.length === 0) this.setState({ showProgress: -1 })
     this.orderPoolModalRef?.refreshOrderPool?.()      // 刷新订单池
     this.vehiclePoolModalRef?.refreshVehiclePool?.()  // 刷新车辆池
-
   }
 
   render () {
@@ -458,6 +508,7 @@ export default class SmartScheduling extends Component {
       btnLoading,
       routingConfig,
       scheduleResults = [],
+      scheduleDataList = [],
       selectOrderList = [],
       selectVehicles = [],
       showInputVehicleModal,
@@ -533,6 +584,7 @@ export default class SmartScheduling extends Component {
           <div style={{ height: 'calc(100vh - 120px)', overflow: 'auto', paddingBottom: 5 }}>
             {scheduleResults.map((orders, index) =>
               <div
+                key={orders.uuid}
                 className={styles.resultCard}
                 onClick={() => this.routePlanning(index)}
                 style={{
@@ -543,27 +595,53 @@ export default class SmartScheduling extends Component {
                 <div className={styles.cardTagColor} style={{ background: colors[index] }}/>
                 <span style={{ fontSize: '16px' }}>线路{index + 1}</span>
                 <Divider style={{ margin: 6 }}/>
-                门店数: {orders.length} &nbsp;&nbsp;
-                总重量: {Math.round(orders.reduce((acc, cur) => acc + cur.weight, 0)) / 100} &nbsp;&nbsp;
-                总体积: {Math.round(orders.reduce((acc, cur) => acc + cur.volume, 0)) / 100} &nbsp;&nbsp;
-                <br/>
-                整件数: {orders.reduce((acc, cur) => acc + cur.cartonCount, 0)} &nbsp;&nbsp;
-                散件数: {orders.reduce((acc, cur) => acc + cur.scatteredCount, 0)} &nbsp;&nbsp;
-                周转箱: {orders.reduce((acc, cur) => acc + cur.containerCount, 0)} &nbsp;&nbsp;
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+                  <div>门店数: {orders.length}</div>
+                  <div>总重量: {Math.round(orders.reduce((acc, cur) => acc + cur.weight, 0)) / 100}</div>
+                  <div>总体积: {Math.round(orders.reduce((acc, cur) => acc + cur.volume, 0)) / 100}</div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+                  <div>整件数: {orders.reduce((acc, cur) => acc + cur.cartonCount, 0)}</div>
+                  <div>散件数: {orders.reduce((acc, cur) => acc + cur.scatteredCount, 0)}</div>
+                  <div>周转箱: {orders.reduce((acc, cur) => acc + cur.containerCount, 0)}</div>
+                </div>
                 {isMultiVehicle &&
-                  <>
-                    冷藏周转筐：{orders.reduce((acc, cur) => acc + cur.coldContainerCount, 0)} &nbsp;&nbsp;
-                    冷冻周转筐：{orders.reduce((acc, cur) => acc + cur.freezeContainerCount, 0)} &nbsp;&nbsp;
-                    保温袋: {orders.reduce((acc, cur) => acc + cur.insulatedBagCount, 0)} &nbsp;&nbsp;
-                    鲜食筐：{orders.reduce((acc, cur) => acc + cur.freshContainerCount, 0)} &nbsp;&nbsp;
-                  </>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+                    <div>冷藏筐：{orders.reduce((acc, cur) => acc + cur.coldContainerCount, 0)}</div>
+                    <div>冷冻筐：{orders.reduce((acc, cur) => acc + cur.freezeContainerCount, 0)}</div>
+                    <div>保温袋: {orders.reduce((acc, cur) => acc + cur.insulatedBagCount, 0)}</div>
+                    <div>鲜食筐：{orders.reduce((acc, cur) => acc + cur.freshContainerCount, 0)}</div>
+                  </div>
                 }
-
+                {/* todo 满载率 */}
+                <div onClick={e => e.stopPropagation()} style={{ display: 'flex' }}>
+                  <div style={{ lineHeight: '24px' }}>备注：</div>
+                  <Input
+                    size="small"
+                    placeholder="请输入备注"
+                    style={{ width: '80%'}}
+                    value={scheduleDataList[index].note}
+                    onChange={e => {
+                      const scheduleDataArr = [...scheduleDataList]
+                      scheduleDataArr[index].note = e.target.value
+                      this.setState({ scheduleDataList: scheduleDataArr })
+                    }}
+                  />
+                </div>
                 <Divider style={{ margin: 6 }}/>
                 {/* ————————————打开线路明细抽屉—————————— */}
                 <Button type="link" onClick={e => e.stopPropagation() || this.setState({ childrenIndex: index })}>
                   明细
                 </Button>
+                {/* ——————————打开选择人员和车辆—————————— */}
+                <Button
+                  type="link"
+                  onClick={e => e.stopPropagation()}
+                >
+                  车辆与人员
+                </Button>
+
+
                 {/* ——————————在地图上聚焦这条线路的点—————————— */}
                 <Button
                   type="link"
@@ -650,8 +728,8 @@ export default class SmartScheduling extends Component {
                   </div>
                   {isMultiVehicle &&  // 多载具
                     <div style={{display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8}}>
-                      <span>冷藏周转筐：{order.coldContainerCount}</span>
-                      <span>冷冻周转筐：{order.freezeContainerCount}</span>
+                      <span>冷藏筐：{order.coldContainerCount}</span>
+                      <span>冷冻筐：{order.freezeContainerCount}</span>
                       <span>保温袋：{order.insulatedBagCount}</span>
                       <span>鲜食筐：{order.freshContainerCount}</span>
                     </div>
@@ -869,6 +947,7 @@ export default class SmartScheduling extends Component {
               selectVehicleList = selectVehicleList.filter(v => v.BEARVOLUME && v.BEARWEIGHT)
             }
             if (selectVehicleList.length === 0) return message.error('选择车辆均为无效车辆')
+            if (selectVehicleList.length > 50) return message.error('车辆最多只能选择50辆')
             // ——————————————车辆分组——————————————
             // 创建一个空对象来存储分组后的车量数据
             const groupedData = {}
