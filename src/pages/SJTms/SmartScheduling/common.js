@@ -1,5 +1,13 @@
+import React from 'react'
+import ReactDOMServer from 'react-dom/server'
 import { sumBy, uniq } from 'lodash'
+import { Divider } from 'antd'
 
+/**
+ * 高德样式对象
+ * @author ChenGuangLong
+ * @since 2024/11/15 上午11:05
+ */
 export const mapStyle = {
   '标准': 'normal',
   '幻影黑': 'dark',
@@ -13,6 +21,42 @@ export const mapStyle = {
   '极夜蓝': 'darkblue',
   '酱籽': 'wine'
 }
+
+const div2 = (name, value) =>
+  <div>
+    <div>{name}</div>
+    <div>{value}</div>
+  </div>
+/**
+ * 高德点文本div转字符串返回
+ * @param order          统计好的订单
+ * @param isMultiVehicle 是否多载具
+ * @author ChenGuangLong
+ * @since 2024/11/15 上午11:05
+ */
+export const getMarkerText = (order, isMultiVehicle = false) => ReactDOMServer.renderToStaticMarkup(
+  <div style={{ width: 'auto', height: 'auto', padding: 5, background: '#FFF' }}>
+    <div style={{ fontWeight: 'bold', overflow: 'hidden', whiteSpace: 'nowrap' }}>
+      [{order.deliveryPoint.code}]{order.deliveryPoint.name}
+    </div>
+    <Divider style={{ margin: '5px 0 0 0' }}/>
+    <div>线路：{order.archLine?.code}</div>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, textAlign: 'center' }}>
+      {div2('重量',(order.weight / 1000).toFixed(3))}
+      {div2('体积',order.volume.toFixed(2))}
+      {div2('整件数',order.cartonCount)}
+      {div2('周转箱数',order.containerCount)}
+    </div>
+    {isMultiVehicle &&
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, textAlign: 'center' }}>
+        {div2('冷藏筐', order.coldContainerCount)}
+        {div2('冷冻筐', order.freezeContainerCount)}
+        {div2('保温袋', order.insulatedBagCount)}
+        {div2('鲜食筐', order.freshContainerCount)}
+      </div>
+    }
+  </div>
+)
 
 /** 汇总排车单明细给排车单主表 */
 export const groupByOrder = data => {
