@@ -241,6 +241,7 @@ export default class OrderPoolPage extends Component {
         coldContainerCount: Math.round(sumBy(orders, 'coldContainerCount') * 1000) / 1000,
         freshContainerCount: Math.round(sumBy(orders, 'freshContainerCount') * 1000) / 1000,
         insulatedBagCount: Math.round(sumBy(orders, 'insulatedBagCount') * 1000) / 1000,
+        insulatedContainerCount: Math.round(sumBy(orders, 'insulatedContainerCount') * 1000) / 1000,
 
         volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
         weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
@@ -732,6 +733,7 @@ export default class OrderPoolPage extends Component {
       (Number(orders.realContainerCount) + Number(orders.realColdContainerCount)) * 2 +
       Number(orders.realFreezeContainerCount) * 3 +
       Number(orders.realInsulatedBagCount) +
+      Number(orders.realInsulatedContainerCount) +
       Number(orders.realFreshContainerCount);
     const vehicleCount = Math.ceil(count / dispatchConfig.calvehicle);
     const vehicleCount1 = Math.ceil(orders.weight / (dispatchConfig.calvehicle1 / 1000));
@@ -812,10 +814,10 @@ export default class OrderPoolPage extends Component {
                 );
               case '4':
                 return (
-                  <Tooltip title={orders.realColdContainerCount}>
+                  <Tooltip title={orders.realInsulatedContainerCount}>
                     <Col span={4} style={{ ...columnStyle, flex: 1 }}>
                       保温箱:
-                      <span style={totalTextStyle}>{orders.realColdContainerCount || 0}</span>
+                      <span style={totalTextStyle}>{orders.realInsulatedContainerCount || 0}</span>
                     </Col>
                   </Tooltip>
                 );
@@ -936,8 +938,7 @@ export default class OrderPoolPage extends Component {
         Math.round(sumBy(data.map(x => x.freezeContainerCount)) * 100) / 100,
       realFreshContainerCount: Math.round(sumBy(data.map(x => x.freshContainerCount)) * 100) / 100,
       realInsulatedBagCount: Math.round(sumBy(data.map(x => x.insulatedBagCount)) * 100) / 100,
-      realInsulatedContainerCount:
-        Math.round(sumBy(data.map(x => x.insulatedContainerCount)) * 100) / 100,
+      realInsulatedContainerCount: Math.round(sumBy(data.map(x => x.insulatedContainerCount)) * 100) / 100,
 
       weight: Math.round(sumBy(data.map(x => Number(x.weight)))) / 1000,
       volume: Math.round(sumBy(data.map(x => Number(x.volume))) * 100) / 100,

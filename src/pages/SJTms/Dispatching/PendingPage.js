@@ -104,6 +104,7 @@ export default class PendingPage extends Component {
         coldContainerCount: Math.round(sumBy(orders, 'coldContainerCount') * 1000) / 1000,
         freshContainerCount: Math.round(sumBy(orders, 'freshContainerCount') * 1000) / 1000,
         insulatedBag: Math.round(sumBy(orders, 'insulatedbagcount') * 1000) / 1000,
+        insulatedContainerCount: Math.round(sumBy(orders, 'insulatedContainerCount') * 1000) / 1000,
 
         volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
         weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,

@@ -207,6 +207,13 @@ export const OrderCollectColumns = [
     render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
+    title: '保温箱',
+    dataIndex: 'insulatedContainerCount',
+    sorter: true,
+    width: 60,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
+  {
     title: '冷冻',
     dataIndex: 'freezeContainerCount',
     sorter: true,
@@ -308,6 +315,13 @@ export const OrderDetailColumns = [
   {
     title: '周转箱',
     dataIndex: 'stillContainerCount',
+    sorter: true,
+    width: 60,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
+  {
+    title: '保温箱',
+    dataIndex: 'insulatedContainerCount',
     sorter: true,
     width: 60,
     render: val => (val != undefined ? <span>{val}</span> : <Empty />),
@@ -572,7 +586,13 @@ export const CreatePageOrderColumns = [
     width: 60,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
-
+  {
+    title: '保温箱',
+    dataIndex: 'stillInsulatedContainerCount',
+    sorter: true,
+    width: 60,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
   {
     title: '冷藏箱数',
     dataIndex: 'stillColdContainerCount',
@@ -612,7 +632,6 @@ export const CreatePageOrderColumns = [
   {
     title: '重量',
     dataIndex: 'weight',
-    sorter: true,
     width: 60,
     sorter: true,
     render: val => (val ? <span>{(val / 1000).toFixed(3)}</span> : <Empty />),
@@ -862,6 +881,13 @@ export const ScheduleDetailColumns = [
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
   {
+    title: '保温箱',
+    dataIndex: 'insulatedContainerCount',
+    sorter: true,
+    width: 60,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
+  {
     title: '冷冻',
     dataIndex: 'freezeContainerCount',
     sorter: true,
@@ -878,13 +904,6 @@ export const ScheduleDetailColumns = [
   {
     title: '鲜食筐',
     dataIndex: 'freshContainerCount',
-    sorter: true,
-    width: 60,
-    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
-  },
-  {
-    title: '保温袋',
-    dataIndex: 'insulatedBagCount',
     sorter: true,
     width: 60,
     render: val => (val != undefined ? <span>{val}</span> : <Empty />),
@@ -996,7 +1015,13 @@ export const ScheduleDetailCollectColumns = [
     width: 80,
     render: val => (val ? <span>{val}</span> : <Empty />),
   },
-
+  {
+    title: '保温箱',
+    dataIndex: 'insulatedContainerCount',
+    sorter: true,
+    width: 60,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
   {
     title: '冷冻',
     dataIndex: 'freezeContainerCount',

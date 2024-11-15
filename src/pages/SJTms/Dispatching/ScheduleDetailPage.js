@@ -85,7 +85,7 @@ export default class ScheduleDetailPage extends Component {
         realScatteredCount: Math.round(sumBy(orders, 'realScatteredCount') * 1000) / 1000,
         containerCount: Math.round(sumBy(orders, 'containerCount') * 1000) / 1000,
         realContainerCount: Math.round(sumBy(orders, 'realContainerCount') * 1000) / 1000,
-        
+
         coldContainerCount: Math.round(sumBy(orders, 'coldContainerCount') * 1000) / 1000,
         realColdContainerCount: Math.round(sumBy(orders, 'realColdContainerCount') * 1000) / 1000,
         freezeContainerCount: Math.round(sumBy(orders, 'freezeContainerCount') * 1000) / 1000,
@@ -94,7 +94,9 @@ export default class ScheduleDetailPage extends Component {
         realFreshContainerCount: Math.round(sumBy(orders, 'realFreshContainerCount') * 1000) / 1000,
         insulatedBagCount: Math.round(sumBy(orders, 'insulatedBagCount') * 1000) / 1000,
         realInsulatedBagCount: Math.round(sumBy(orders, 'realInsulatedBagCount') * 1000) / 1000,
-        
+        insulatedContainerCount: Math.round(sumBy(orders, 'insulatedContainerCount') * 1000) / 1000,
+        realInsulatedContainerCount: Math.round(sumBy(orders, 'realInsulatedContainerCount') * 1000) / 1000,
+
 
         volume: Math.round(sumBy(orders, 'volume') * 1000) / 1000,
         weight: Math.round(sumBy(orders, 'weight') * 1000) / 1000,
