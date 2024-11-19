@@ -9,9 +9,9 @@
   // 左边按钮侧边栏
   .leftButtonSidebar{
     position: absolute;
-    top: 33px;
+    top: 0;
     width: 250px;
-    height: calc(100vh - 146px);
+    height: calc(100vh - 80px);
     background: #fff;
     padding: 3px;
     z-index: 999;
@@ -55,12 +55,25 @@
     margin-bottom: 5px;
     cursor: pointer;
     box-shadow: 2px 2px 5px 0 #39487061;
-    // 卡片标签颜色
-    .cardTagColor{
-      width: 14px;
-      height: 14px;
-      margin-right: 5px;
+
+    // 人员标签
+    .empTag{
       display: inline-block;
+      box-shadow: 2px 2px 4px 0 #8f9ca1;
+      border-radius: 4px;
+      padding: 3px;
+      margin: 2px 5px 2px 0;
+      // 角色
+      .empRole{
+        border-radius: 4px;
+        background-color: #c5eee500;
+        border: #d1d1d1 solid 1px;
+        margin-right: 2px;
+      }
+      // 人员姓名
+      .empName{
+        border: #ffffff00 solid 1px;
+      }
     }
   }
 
@@ -77,6 +90,14 @@
     border-radius: 0 0 4px 4px;
   }
 
+}
+
+// 线路颜色
+.LinkColor{
+  width: 14px;
+  height: 14px;
+  margin-right: 5px;
+  display: inline-block;
 }
 
 // 智能调度详细卡片
@@ -124,4 +145,36 @@
   color: white;
 }
 
-
+// 智能调度人员车辆选择弹窗
+.empAndVehicleModal {
+  .panel {
+    border: 2px solid #3b77e3;
+    color: #000000a6;
+    border-radius: 5px;
+    font-weight: bold;
+    width: 128px;
+    height: 60px;
+    display: inline-block;
+    text-align: center;
+    margin: 0 0 4px 5px;
+  }
+  .panelSelect {
+    border-color: #20bf55;
+    color: #20bf55;
+  }
+  .employeeCardContent {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .employeeName {
+    width: 100%;
+    line-height: 24px;
+    text-align: end;
+    margin-right: 5px;
+  }
+}

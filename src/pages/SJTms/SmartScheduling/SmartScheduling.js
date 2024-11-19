@@ -12,7 +12,7 @@ import styles from './SmartScheduling.less'
 import VehiclePoolPage from '@/pages/SJTms/Dispatching/VehiclePoolPage'
 import OrderPoolModal from '@/pages/SJTms/SmartScheduling/OrderPoolModal'
 import { mergeOrdersColumns, mergeVehicleColumns, vehicleColumns } from '@/pages/SJTms/SmartScheduling/columns'
-import { queryDict } from '@/services/quick/Quick'
+import { queryDict, queryDictByCode } from '@/services/quick/Quick';
 import { loginCompany, loginOrg } from '@/utils/LoginContext'
 import { getSmartScheduling } from '@/services/sjitms/smartSchedulingApi'
 import VehicleInputModal from '@/pages/SJTms/SmartScheduling/VehicleInputModal'
@@ -22,39 +22,42 @@ import { convertCodeName } from '@/utils/utils'
 import { GetConfig } from '@/services/sjitms/OrderBill'
 import { getMarkerText, groupByOrder, mapStyle } from '@/pages/SJTms/SmartScheduling/common'
 import { save } from '@/services/sjitms/ScheduleBill'
+import EmpAndVehicleModal from '@/pages/SJTms/SmartScheduling/EmpAndVehicleModal';
 
 const { Option } = Select
 window.selectOrders = undefined      // 如果是配送调度跳转过来的订单池原数据列表
 
 export default class SmartScheduling extends Component {
-  RIGHT_DRAWER_WIDTH = 400   // 右侧侧边栏宽度（智能调度结果抽屉宽度）
-  AMap = null                   // 高德地图对象
-  map = null                    // 高德地图实例
-  text = null                   // 高德地图文本对象
-  warehouseMarker = null        // 当前仓库高德点
-  warehousePoint = ''         // 当前仓库经纬度
-  groupMarkers = []            // 分组的高德点位
-  unassignedMarkers = []       // 未分配线路的高德点位
-  routingPlans = []           // 路线规划数据列表（按index对应groupMarkers）
-  mapStyle = 'normal'         // 地图样式 标准 normal    幻影黑 dark
-  orderList = []               // 点击智能调度时订单池原数据列表（用来生成排车单时用）
+  RIGHT_DRAWER_WIDTH = 400;   // 右侧侧边栏宽度（智能调度结果抽屉宽度）
+  AMap = null;                   // 高德地图对象
+  map = null;                    // 高德地图实例
+  text = null;                   // 高德地图文本对象
+  warehouseMarker = null;        // 当前仓库高德点
+  warehousePoint = '';         // 当前仓库经纬度
+  groupMarkers = [];            // 分组的高德点位
+  unassignedMarkers = [];       // 未分配线路的高德点位
+  routingPlans = [];           // 路线规划数据列表（按index对应groupMarkers）
+  mapStyle = 'normal';         // 地图样式 标准 normal    幻影黑 dark
+  orderList = [];               // 点击智能调度时订单池原数据列表（用来生成排车单时用）
+  empTypeMapper = {};             // 人员类型映射
 
-  vehiclePoolModalRef = createRef() // 车辆池弹窗ref
-  orderPoolModalRef = createRef()   // 订单池弹窗ref
-
+  vehiclePoolModalRef = createRef();     // 车辆池弹窗ref
+  orderPoolModalRef = createRef();       // 订单池弹窗ref
+  empAndVehicleModalRef = createRef();  // 选司机和车弹窗ref
   state = {
     sx: 0,                           // 有时刷新页面用
     selectOrderList: [],             // 选中订单池订单
     selectVehicles: [],              // 选中运力池数据
     showInputVehicleModal: false,    // 显示手动输入车辆弹窗
-    showSmartSchedulingModal: false, // 显示智能调度弹窗
-    showMenuModal: false,            // 显示选订单弹窗
+    showSmartSchedulingModal: true,  // 显示智能调度弹窗
+    showMenuModal: true,             // 显示选订单弹窗
     showVehicleModal: false,         // 显示选车辆弹窗
     showResultDrawer: false,         // 显示调度结果右侧侧边栏
     showButtonDrawer: true,          // 显示左边按钮侧边栏
     showProgress: -1,                // 显示生成排车进度条（>0就是显示)
     errMessages: [],                 // 生成排车单时如果有错误信息
     childrenIndex: -1,               // 显示调度排车子抽屉 这个是它的索引>=0就是显示
+    showEmpAndVehicleModal: -1,      // 显示选司机和车弹窗 这个是它的索引>=0就是显示
     scheduleResults: [],             // 智能调度排车处理后的结果（二重数组内的订单）
     scheduleDataList: [],            // 排车选择数据：如 司机、备注、车辆 用index索引对应scheduleResults
     unassignedNodes:[],              // 智能调度未分配节点
@@ -81,31 +84,40 @@ export default class SmartScheduling extends Component {
    * 初始化配置，如多载具
    * @author ChenGuangLong
    * @since 2024/11/12 下午3:41
-  */
-  initConfig = async () => {
+   */
+  initConfig = () => {
     // ————————设置地图样式————————
-    const mapStyleName = window.localStorage.getItem('mapStyle')
+    const mapStyleName = window.localStorage.getItem('mapStyle');
     if (mapStyleName && this.map) {
-      this.mapStyle = mapStyleName
-      this.map.setMapStyle(`amap://styles/${mapStyle[mapStyleName]}`)
+      this.mapStyle = mapStyleName;
+      this.map.setMapStyle(`amap://styles/${mapStyle[mapStyleName]}`);
     }
-
     // ————————仓库坐标————————
     queryDict('warehouse').then(res => {    // 获取当前仓库经纬度
-      const description = res.data.find(x => x.itemValue === loginOrg().uuid)?.description
+      const description = res.data.find(x => x.itemValue === loginOrg().uuid)?.description;
       if (description) {
-        this.warehousePoint = description.split(',').reverse().join(',')  // 字典经纬度位置调换位置
-        if (this.map) this.map.setCenter(this.warehousePoint.split(','), true)  // 立即过渡到仓库位置视野
-      }
-      else message.error('获取当前仓库经纬度失败')
-    })
+        this.warehousePoint = description.split(',').reverse().join(',');  // 字典经纬度位置调换位置
+        if (this.map) this.map.setCenter(this.warehousePoint.split(','), true);  // 立即过渡到仓库位置视野
+      } else message.error('获取当前仓库经纬度失败');
+    });
     // ————————多载具————————
     GetConfig('dispatch', loginOrg().uuid).then(res => {
-      if (res?.data?.[0]?.multiVehicle) this.setState({ isMultiVehicle: res?.data?.[0]?.multiVehicle !== '1' })
-      else message.error('获取多载具配置失败')
-    }).catch(() => message.error('获取多载具配置失败！'))
-
-  }
+      if (res?.data?.[0]?.multiVehicle) this.setState({ isMultiVehicle: res?.data?.[0]?.multiVehicle === '1' });
+      else message.error('获取多载具配置失败');
+    }).catch(() => message.error('获取多载具配置失败！'));
+    // ————————人员类型映射表————————
+    queryDictByCode(['employeeType']).then(res => {
+      this.empTypeMapper = res.data.reduce((acc, cur) => {
+        acc[cur.itemValue] = cur.itemText;
+        return acc;
+      }, {});
+    }).catch(() => message.error('获取人员类型映射表失败！'));
+    // ————————去白边：没套收藏组件顶部会有白边————————
+    window.setTimeout(() => {
+      const element = document.querySelector('#smartSchedulingPage');
+      if (element) element.parentElement.style.marginTop = '0px';
+    }, 100);
+  };
 
   /** 非状态变量改变后可刷新页面 */
   sxYm = () => {
@@ -167,8 +179,8 @@ export default class SmartScheduling extends Component {
     const orderTotalVolume = selectOrderList.reduce((a, b) => a + b.volume, 0)
     const vehicleTotalWeight = selectVehicles.reduce((a, b) => a + b.weight * b.vehicleCount, 0)
     const vehicleTotalVolume = selectVehicles.reduce((a, b) => a + b.volume * b.vehicleCount, 0)
-    if (orderTotalWeight > vehicleTotalWeight) return message.error('订单总重量超出现有车辆重量')
-    if (orderTotalVolume > vehicleTotalVolume) return message.error('订单总体积超出现有车辆体积')
+    if (orderTotalWeight > vehicleTotalWeight) return message.error('订单总重量超出现有车辆重量！')
+    if (orderTotalVolume > vehicleTotalVolume) return message.error('订单总体积超出现有车辆体积！')
     // ————————————————————————————————组装请求体——————————————————————————————
     // 定义仓库信息
     const depots = [{
@@ -360,7 +372,7 @@ export default class SmartScheduling extends Component {
    * @author ChenGuangLong
    * @since 2024/11/12 上午9:49
   */
-  resetData = () => {
+  resetData = (expStateData = {}) => {
     // 清空地图覆盖物
     this.map.clearMap()
     this.routingPlans = []
@@ -377,6 +389,7 @@ export default class SmartScheduling extends Component {
       showResultDrawer: false,
       showProgress: -1,
       errMessages: [],
+      ...expStateData,
     })
   }
 
@@ -407,8 +420,11 @@ export default class SmartScheduling extends Component {
       const orderType = uniqBy(linkOrders.map(x => x.orderType)).shift() // 从去重并返回第一个订单类型。
       const orderTypeArr = ['Delivery', 'DeliveryAgain', 'Transshipment', 'OnlyBill']
       const type = orderTypeArr.includes(orderType) ? 'Job' : 'Task'   // 排车单类型
-      // todo 司机
-      const driver = null // selectEmployees.find(x => x.memberType == 'Driver');
+      // 选的车
+      const selectVehicle = scheduleDataList[index].selectVehicle ?? {};
+      // 选择的人员
+      const selectEmployees = scheduleDataList[index].selectEmployees ?? [];
+      const driver = selectEmployees.find(x => x.memberType === 'Driver');
       // 订单明细
       const details = linkOrders.map(item => {
         if (!item.isSplit) item.isSplit = item.cartonCount === item.stillCartonCount ? 0 : 1
@@ -452,23 +468,22 @@ export default class SmartScheduling extends Component {
       scheduleParamBodyList.push({
         type,
         vehicle: {
-          // uuid: selectVehicle.UUID,
-          // code: selectVehicle.CODE,
-          // name: selectVehicle.PLATENUMBER,
+          uuid: selectVehicle.UUID,
+          code: selectVehicle.CODE,
+          name: selectVehicle.PLATENUMBER,
         },
         vehicleType: {
-          // uuid: selectVehicle.VEHICLETYPEUUID,
-          // code: selectVehicle.VEHICLETYPECODE,
-          // name: selectVehicle.VEHICLETYPENAME,
+          uuid: selectVehicle.VEHICLETYPEUUID,
+          code: selectVehicle.VEHICLETYPECODE,
+          name: selectVehicle.VEHICLETYPENAME,
         },
         carrier: { ...carrier },
         details,
-        memberDetails: [],
-        // memberDetails: selectEmployees.map((x, i) => ({
-        //   line: i + 1,
-        //   member: { uuid: x.UUID, code: x.CODE, name: x.NAME },
-        //   memberType: x.memberType,
-        // })),
+        memberDetails: selectEmployees.map((x, i) => ({
+          line: i + 1,
+          member: { uuid: x.UUID, code: x.CODE, name: x.NAME },
+          memberType: x.memberType,
+        })),
         ...orderSummary,
         companyUuid: loginCompany().uuid,
         dispatchCenterUuid: loginOrg().uuid,
@@ -498,11 +513,50 @@ export default class SmartScheduling extends Component {
     this.vehiclePoolModalRef?.refreshVehiclePool?.()  // 刷新车辆池
   }
 
+  /**
+   * 获取颜色块
+   * @param index 颜色索引
+   * @author ChenGuangLong
+   * @since 2024/11/19 下午3:33
+   */
+  getColorBlocks = index => <div className={styles.LinkColor} style={{ background: colors[index] }}/>
+
+  /**
+   * 获取对应索引的车辆信息
+   * @param dataName{'车牌号'|'载重'|'体积'|'载重率'|'体积率'} 要获取的数据名称
+   * @param index 车辆索引
+   * @author ChenGuangLong
+   * @since 2024/11/19 下午4:35
+  */
+  getVehicleInfo = (dataName, index) => {
+    const vehicleObj = this.state.scheduleDataList[index].selectVehicle;
+    const action = {
+      '载重': () => Number(vehicleObj.BEARWEIGHT),
+      '体积': () => Math.round(vehicleObj?.BEARVOLUME * vehicleObj?.BEARVOLUMERATE) / 100,
+      '车牌号': () => vehicleObj.PLATENUMBER,
+      '载重率': () => {
+        const orders = this.state.scheduleResults[index];
+        const productWeight = Math.round(orders.reduce((acc, cur) => acc + cur.weight, 0)) / 1000;
+        const vehicleWeight = Number(vehicleObj.BEARWEIGHT);
+        return Number(`${((productWeight / vehicleWeight) * 100).toFixed(2)}`);
+      },
+      '体积率':()=>{
+        const orders = this.state.scheduleResults[index];
+        const productVolume = orders.reduce((acc, cur) => acc + cur.volume, 0);
+        const vehicleVolume = Math.round(vehicleObj.BEARVOLUME * vehicleObj.BEARVOLUMERATE) / 100
+        return Number(`${((productVolume / vehicleVolume) * 100).toFixed(2)}`);
+      }
+    };
+    return action[dataName] ? action[dataName]() : '';
+  };
+
+
   render () {
     const {
       showSmartSchedulingModal,
       showMenuModal,
       showVehicleModal,
+      showEmpAndVehicleModal,
       showResultDrawer,
       showButtonDrawer,
       btnLoading,
@@ -520,7 +574,7 @@ export default class SmartScheduling extends Component {
     } = this.state
 
     return (
-      <div className={styles.SmartScheduling}>
+      <div className={styles.SmartScheduling} id="smartSchedulingPage">
         <FullScreenLoading show={fullScreenLoading}/>
         {/* ——————————————————————左边按钮侧边栏———————————————————— */}
         <div style={{ left: showButtonDrawer ? '0px' : '-250px' }} className={styles.leftButtonSidebar}>
@@ -558,7 +612,7 @@ export default class SmartScheduling extends Component {
         </span>
 
         {/* ——————————————————————高德地图———————————————————— */}
-        <div id="smartSchedulingAMap" style={{ width: '100vw', height: 'calc(100vh - 138px)' }}/>
+        <div id="smartSchedulingAMap" style={{ width: '100vw', height: 'calc(100vh - 104px)' }}/>
 
         <span   // ——————————————————————右侧边栏开关————————————————————
           className={styles.rightSidebarSwitch}
@@ -592,13 +646,13 @@ export default class SmartScheduling extends Component {
                   width: this.RIGHT_DRAWER_WIDTH - 40,
                 }}
               >
-                <div className={styles.cardTagColor} style={{ background: colors[index] }}/>
+                {this.getColorBlocks(index)}
                 <span style={{ fontSize: '16px' }}>线路{index + 1}</span>
                 <Divider style={{ margin: 6 }}/>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
                   <div>门店数: {orders.length}</div>
-                  <div>总重量: {Math.round(orders.reduce((acc, cur) => acc + cur.weight, 0)) / 100}</div>
-                  <div>总体积: {Math.round(orders.reduce((acc, cur) => acc + cur.volume, 0)) / 100}</div>
+                  <div>总重量: {Math.round(orders.reduce((acc, cur) => acc + cur.weight, 0)) / 1000}</div>
+                  <div>总体积: {orders.reduce((acc, cur) => acc + cur.volume, 0).toFixed(2)}</div>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
                   <div>整件数: {orders.reduce((acc, cur) => acc + cur.cartonCount, 0)}</div>
@@ -613,18 +667,48 @@ export default class SmartScheduling extends Component {
                     <div>鲜食筐：{orders.reduce((acc, cur) => acc + cur.freshContainerCount, 0)}</div>
                   </div>
                 }
-                {/* todo 满载率 */}
+
+                {scheduleDataList[index]?.selectEmployees?.map(emp =>
+                  <div key={emp.UUID} className={styles.empTag}>
+                    <span className={styles.empRole}>{this.empTypeMapper[emp.memberType] ?? emp.memberType}</span>
+                    <span className={styles.empName}>[{emp.CODE}]{emp.NAME}</span>
+                  </div>
+                )}
+
+                {scheduleDataList[index]?.selectVehicle?.UUID && // ——————车辆&满载率——————
+                  <div>
+                    <div>车辆：{this.getVehicleInfo('车牌号', index)}</div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: 2 }}>
+                      <div>载重：{this.getVehicleInfo('载重', index)}</div>
+                      <Progress
+                        size="small"
+                        style={{ width: '90%' }}
+                        percent={this.getVehicleInfo('载重率', index)}
+                        status={this.getVehicleInfo('载重率', index) > 100 ? 'exception' : 'normal'}
+                      />
+                    </div>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 3fr', gap: 2 }}>
+                      <div>体积：{this.getVehicleInfo('体积', index)}</div>
+                      <Progress
+                        size="small"
+                        style={{ width: '90%' }}
+                        percent={this.getVehicleInfo('体积率', index)}
+                        status={this.getVehicleInfo('体积率', index) > 100 ? 'exception' : 'normal'}
+                      />
+                    </div>
+                  </div>
+                }
                 <div onClick={e => e.stopPropagation()} style={{ display: 'flex' }}>
                   <div style={{ lineHeight: '24px' }}>备注：</div>
                   <Input
                     size="small"
                     placeholder="请输入备注"
-                    style={{ width: '80%'}}
+                    style={{ width: '80%' }}
                     value={scheduleDataList[index].note}
                     onChange={e => {
-                      const scheduleDataArr = [...scheduleDataList]
-                      scheduleDataArr[index].note = e.target.value
-                      this.setState({ scheduleDataList: scheduleDataArr })
+                      const scheduleDataArr = [...scheduleDataList];
+                      scheduleDataArr[index].note = e.target.value;
+                      this.setState({ scheduleDataList: scheduleDataArr });
                     }}
                   />
                 </div>
@@ -636,7 +720,11 @@ export default class SmartScheduling extends Component {
                 {/* ——————————打开选择人员和车辆—————————— */}
                 <Button
                   type="link"
-                  onClick={e => e.stopPropagation()}
+                  onClick={e => {
+                    e.stopPropagation();
+                    this.setState({ showEmpAndVehicleModal: index });
+                    window.setTimeout(() => this.empAndVehicleModalRef?.show?.(orders), 50);
+                  }}
                 >
                   车辆与人员
                 </Button>
@@ -704,7 +792,7 @@ export default class SmartScheduling extends Component {
           <Empty/>
         }
           <Drawer // ————————————————————智能调度结果明细————————————————————
-            title={`线路${childrenIndex + 1}明细`}
+            title={<div>{this.getColorBlocks(childrenIndex)}线路{childrenIndex + 1}明细</div>}
             width={350}
             closable={false}
             bodyStyle={{ padding: 8 }}
@@ -713,7 +801,7 @@ export default class SmartScheduling extends Component {
           >
             <div style={{ height: 'calc(100vh - 64px)', overflow: 'auto' }}>
               {scheduleResults[childrenIndex]?.map((order, index) =>
-                <div className={styles.detailCard}>
+                <div className={styles.detailCard} key={order.uuid}>
                   <b className={styles.detailIndex}>{index + 1}</b>
                   <b>{convertCodeName(order.deliveryPoint)}</b>
                   <div className={styles.w50}>线路：{order.archLine?.code}</div>
@@ -983,23 +1071,48 @@ export default class SmartScheduling extends Component {
 
         <Modal  // ——————————————————————————————显示进度条——————————————————————————————————
           footer={null}
-          visible={showProgress >= 0 || errMessages.length > 0}
+          visible={showProgress >= 0}
           closable={false}
         >
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', }}>
             <Progress percent={showProgress} status={showProgress < 100 ? 'active' : 'success'}/>
-            {errMessages.map(msg => <div>{msg}</div>)}
+            {errMessages.map(msg => <div key={msg}>{msg}</div>)}
             {showProgress === 100 &&
-              <>
-                <Button onClick={() => this.resetData()}>
+              <div>
+                <Button onClick={() => this.resetData()} style={{margin: '10px 20px 0 0'}} type="primary">
                   继续新的排线
                 </Button>
-                <Button onClick={() => this.resetData() || this.props.history.push('/tmscode/dispatch')}>
+                <Button onClick={() => this.resetData() || this.props.history.push('/tmscode/dispatch')} type="primary">
                   查看排车单(跳转到配送调度页面)
                 </Button>
-              </>
+                <Button onClick={() => this.setState({ showProgress: -1 })} style={{ margin: '0 0 0 20px' }}>
+                  保持界面
+                </Button>
+              </div>
             }
           </div>
+        </Modal>
+
+        <Modal  // ——————————————————————————————选择员工和车辆弹窗——————————————————————————————————
+          title={<div>线路{showEmpAndVehicleModal + 1}{this.getColorBlocks(showEmpAndVehicleModal)}选择员工和车辆</div>}
+          width="78vw"
+          // style={{ top: 20 }}
+          visible={showEmpAndVehicleModal >= 0}
+          onCancel={() => this.setState({ showEmpAndVehicleModal: -1 })}
+          onOk={() => {
+            const { selectVehicle, selectEmployees, } = this.empAndVehicleModalRef.state;
+            if (selectEmployees.filter(item => item.memberType === 'Driver').length > 1) return message.error('只能有一个驾驶员哦');
+            const dataList = [...scheduleDataList]
+            dataList[showEmpAndVehicleModal].selectVehicle = selectVehicle
+            dataList[showEmpAndVehicleModal].selectEmployees = selectEmployees
+            this.setState({ showEmpAndVehicleModal: -1, scheduleDataList: dataList });
+          }}
+        >
+          <EmpAndVehicleModal
+            onRef={ref => this.empAndVehicleModalRef = ref}
+            weight={showEmpAndVehicleModal >= 0 ? Math.round(scheduleResults[showEmpAndVehicleModal].reduce((acc, cur) => acc + cur.weight, 0)) / 1000 : 0}
+            volume={showEmpAndVehicleModal >= 0 ? parseFloat(scheduleResults[showEmpAndVehicleModal].reduce((acc, cur) => acc + cur.volume, 0).toFixed(2)) : 0}
+          />
         </Modal>
       </div>
     )
