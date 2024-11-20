@@ -1096,7 +1096,14 @@ export default class SmartScheduling extends Component {
         </Modal>
 
         <Modal  // ——————————————————————————————选择员工和车辆弹窗——————————————————————————————————
-          title={<div>线路{showEmpAndVehicleModal + 1}{this.getColorBlocks(showEmpAndVehicleModal)}选择员工和车辆</div>}
+          title={
+            <div>
+              线路{showEmpAndVehicleModal + 1}{this.getColorBlocks(showEmpAndVehicleModal)}选择员工和车辆
+              <Popover content="在车辆的默认匹配选项中,重量体积是绿色的,表示这个是智能调度推荐的重量体积">
+                <Icon type="question-circle" style={{ color: 'blue', marginLeft: 5 }}/>
+              </Popover>
+            </div>
+          }
           width="78vw"
           // style={{ top: 20 }}
           visible={showEmpAndVehicleModal >= 0}
