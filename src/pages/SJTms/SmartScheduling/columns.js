@@ -19,7 +19,7 @@ export const mergeOrdersColumns = [
   {
     title: '送货点',
     dataIndex: 'deliveryPoint',
-    width: 250,
+    width: 270,
     render: val => {
       return val ? <span>{convertCodeName(val)}</span> : <Empty/>
     },
@@ -34,34 +34,34 @@ export const mergeOrdersColumns = [
     title: '体积',
     dataIndex: 'volume',
     width: 80,
-    render: val => (val ? <span>{val}</span> : <Empty/>),
+    render: val => (val ? <span>{val.toFixed(4)}</span> : <Empty/>),
   },
-  {
-    title: '配送区域',
-    dataIndex: 'shipAreaName',
-    width: 90,
-    render: val => (val ? <span>{val}</span> : <Empty/>),
-  },
-  {
-    title: '线路',
-    dataIndex: 'archLine',
-    width: 100,
-    render: val => {
-      return val ? <span>{val.code}</span> : <Empty/>
-    },
-  },
-  {
-    title: '货主',
-    dataIndex: 'owner',
-    width: 110,
-    render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty/>),
-  },
-  {
-    title: '配送备注',
-    dataIndex: 'tmsNote',
-    width: 80,
-    render: val => (val ? <span>{val}</span> : <Empty/>),
-  },
+  // {
+  //   title: '配送区域',
+  //   dataIndex: 'shipAreaName',
+  //   width: 90,
+  //   render: val => (val ? <span>{val}</span> : <Empty/>),
+  // },
+  // {
+  //   title: '线路',
+  //   dataIndex: 'archLine',
+  //   width: 100,
+  //   render: val => {
+  //     return val ? <span>{val.code}</span> : <Empty/>
+  //   },
+  // },
+  // {
+  //   title: '货主',
+  //   dataIndex: 'owner',
+  //   width: 110,
+  //   render: val => (val ? <span>{convertCodeName(val)}</span> : <Empty/>),
+  // },
+  // {
+  //   title: '配送备注',
+  //   dataIndex: 'tmsNote',
+  //   width: 80,
+  //   render: val => (val ? <span>{val}</span> : <Empty/>),
+  // },
 ]
 
 /**

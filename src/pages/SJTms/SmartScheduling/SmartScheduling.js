@@ -59,7 +59,7 @@ export default class SmartScheduling extends Component {
     childrenIndex: -1,               // 显示调度排车子抽屉 这个是它的索引>=0就是显示
     showEmpAndVehicleModal: -1,      // 显示选司机和车弹窗 这个是它的索引>=0就是显示
     scheduleResults: [],             // 智能调度排车处理后的结果（二重数组内的订单）
-    scheduleDataList: [],            // 排车选择数据：如 司机、备注、车辆 用index索引对应scheduleResults
+    scheduleDataList: [],            // 排车选择数据：如 司机、备注、车辆 用index索引对应scheduleResults  属性包括：vehicleModel、selectVehicle、selectEmployees、note
     unassignedNodes:[],              // 智能调度未分配节点
     btnLoading: false,               // 智能调度按钮加载状态
     fullScreenLoading: false,        // 全屏加载中
@@ -167,24 +167,24 @@ export default class SmartScheduling extends Component {
    * 智能调度 排单排线
    * @author ChenGuangLong
    * @since 2024/11/7 下午5:10
-  */
+   */
   intelligentScheduling = async () => {
-    const { selectOrderList, selectVehicles, routingConfig } = this.state
+    const { selectOrderList, selectVehicles, routingConfig } = this.state;
     // —————————————————————————————————校验数据—————————————————————————————
-    if (!this.warehousePoint) return message.error('获取当前仓库经纬度失败，请刷新页面再试试')
-    if (selectOrderList.length === 0) return message.error('请选择订单')
-    if (selectVehicles.length === 0) return message.error('请选择车辆')
+    if (!this.warehousePoint) return message.error('获取当前仓库经纬度失败，请刷新页面再试试');
+    if (selectOrderList.length === 0) return message.error('请选择订单');
+    if (selectVehicles.length === 0) return message.error('请选择车辆');
     // 订单总体积或重量超出现有车辆的最大限度，无法进行排车!
-    const orderTotalWeight = selectOrderList.reduce((a, b) => a + b.weight, 0) / 1000
-    const orderTotalVolume = selectOrderList.reduce((a, b) => a + b.volume, 0)
-    const vehicleTotalWeight = selectVehicles.reduce((a, b) => a + b.weight * b.vehicleCount, 0)
-    const vehicleTotalVolume = selectVehicles.reduce((a, b) => a + b.volume * b.vehicleCount, 0)
-    if (orderTotalWeight > vehicleTotalWeight) return message.error('订单总重量超出现有车辆重量！')
-    if (orderTotalVolume > vehicleTotalVolume) return message.error('订单总体积超出现有车辆体积！')
+    const orderTotalWeight = selectOrderList.reduce((a, b) => a + b.weight, 0) / 1000;
+    const orderTotalVolume = selectOrderList.reduce((a, b) => a + b.volume, 0);
+    const vehicleTotalWeight = selectVehicles.reduce((a, b) => a + b.weight * b.vehicleCount, 0);
+    const vehicleTotalVolume = selectVehicles.reduce((a, b) => a + b.volume * b.vehicleCount, 0);
+    if (orderTotalWeight > vehicleTotalWeight) return message.error('订单总重量超出现有车辆重量！');
+    if (orderTotalVolume > vehicleTotalVolume) return message.error('订单总体积超出现有车辆体积！');
     // ————————————————————————————————组装请求体——————————————————————————————
     // 定义仓库信息
     const depots = [{
-      location:this.warehousePoint,
+      location: this.warehousePoint,
       vehicleGroups: selectVehicles.map(x => ({
         deliveryType: 0,                            // 配送方式，默认值为0（驾车配送）
         // vehicleGroupId: x.vehicleGroup,          // 车辆组ID，非必填
@@ -195,7 +195,7 @@ export default class SmartScheduling extends Component {
           volume: x.volume,                         // 装载体积，
         }
       })),
-    }]
+    }];
     // 定义配送点信息
     const servicePoints = selectOrderList.map(x => ({
       location: `${x.longitude},${x.latitude}`,                // 配送点坐标
@@ -204,7 +204,7 @@ export default class SmartScheduling extends Component {
         weight: x.weight / 1000,  // 需求容量
         volume: x.volume,         // 需求体积
       }
-    }))
+    }));
     // 开始组装
     const requestBody = {
       ...routingConfig,
@@ -212,28 +212,28 @@ export default class SmartScheduling extends Component {
       servicePoints,
       deliveryCapacity: 0,
       infiniteVehicle: 1,
-    }
-    this.setState({ btnLoading: true, fullScreenLoading: true })
-    const result = await getSmartScheduling(requestBody)
-    this.setState({ btnLoading: false, fullScreenLoading: false })
+    };
+    this.setState({ btnLoading: true, fullScreenLoading: true });
+    const result = await getSmartScheduling(requestBody);
+    this.setState({ btnLoading: false, fullScreenLoading: false });
 
-    if (result.errmsg !== 'OK' || !result.data) return message.error(`${result.errmsg}:${result.errdetail}`)
-    const { routes, unassignedNodes } = result.data[0]
+    if (result.errmsg !== 'OK' || !result.data) return message.error(`${result.errmsg}:${result.errdetail}`);
+    const { routes, unassignedNodes } = result.data[0];
     // 订单分组提取
-    const groupOrders = routes.map(route => route.queue.map(r => selectOrderList.find(order => order.deliveryPoint.uuid === r.endName)))
+    const groupOrders = routes.map(route => route.queue.map(r => selectOrderList.find(order => order.deliveryPoint.uuid === r.endName)));
     // 没分配的订单提取（列表只返回了经纬度字符串，所以只能按经纬度提取）{不一定会返回，没返回就默认给个[]
-    const notGroupOrders = unassignedNodes?.map(nodeStr => selectOrderList.find(order => `${order.longitude},${order.latitude}` === nodeStr)) ?? []
+    const notGroupOrders = unassignedNodes?.map(nodeStr => selectOrderList.find(order => `${order.longitude},${order.latitude}` === nodeStr)) ?? [];
 
     this.setState({
       showSmartSchedulingModal: false,
       showButtonDrawer: false,
       showResultDrawer: true,
       scheduleResults: groupOrders,
-      scheduleDataList: Array(groupOrders.length).fill().map(() => ({})), // mad有坑 如果在fill直接写｛}会导致全部使用同一个对象
+      scheduleDataList: routes.map(x => ({ vehicleModel: x.vehicleModelId })),
       unassignedNodes: notGroupOrders,
-    })
-    this.loadingPoint(groupOrders, notGroupOrders)
-  }
+    });
+    this.loadingPoint(groupOrders, notGroupOrders);
+  };
 
   /**
    * 加载地图点位
@@ -667,7 +667,7 @@ export default class SmartScheduling extends Component {
                     <div>鲜食筐：{orders.reduce((acc, cur) => acc + cur.freshContainerCount, 0)}</div>
                   </div>
                 }
-
+                {/* todo 公里数等 */}
                 {scheduleDataList[index]?.selectEmployees?.map(emp =>
                   <div key={emp.UUID} className={styles.empTag}>
                     <span className={styles.empRole}>{this.empTypeMapper[emp.memberType] ?? emp.memberType}</span>
@@ -724,7 +724,7 @@ export default class SmartScheduling extends Component {
                     e.stopPropagation();
                     this.setState({ showEmpAndVehicleModal: index });
                     window.setTimeout(() => {
-                      this.empAndVehicleModalRef?.show?.(orders, scheduleDataList[index].selectEmployees, scheduleDataList[index].selectVehicle);
+                      this.empAndVehicleModalRef?.show?.(orders, scheduleDataList[index].selectEmployees, scheduleDataList[index].selectVehicle, scheduleDataList[index].vehicleModel);
                     }, 50);
                   }}
                 >

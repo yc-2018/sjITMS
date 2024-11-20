@@ -56,6 +56,7 @@ export default class EmpAndVehicleModal extends Component{
     carKey: 'init',
     carSearchSort: [1, 2, 3],
     carrieruuids: [],
+    vehicleModel: '',   // 高德推荐车 `${x.weight}-${x.volume}`
   };
 
   componentDidMount = () => {
@@ -79,7 +80,7 @@ export default class EmpAndVehicleModal extends Component{
   };
 
   /** 显示 */
-  show = (record,  selectEmployees = [], selectVehicle = {}) => {
+  show = (record, selectEmployees = [], selectVehicle = {}, vehicleModel) => {
     const { carSort } = this.state;
     this.setState(
       {
@@ -89,22 +90,31 @@ export default class EmpAndVehicleModal extends Component{
           : 'init',
       },
       () => {
-        this.initData(record, selectEmployees, selectVehicle);
+        this.initData(record, selectEmployees, selectVehicle, vehicleModel);
       }
     );
   };
 
-  /** 初始化数据 */
-  initData = async (record, selectEmployees = [], selectVehicle = {}) => {
+  /**
+   * 初始化数据
+   * @param record{Array}      订单数据
+   * @param [selectEmployees]{Array}  选中的人员
+   * @param [selectVehicle]{Object}  选中的车辆
+   * @param [vehicleModel]{string} 推荐车辆类型（高德返回的线路里面是包括车辆类型的，有传就把它放最前面）
+   * @since 2024/11/20 下午4:17
+  */
+  initData = async (record, selectEmployees = [], selectVehicle = {}, vehicleModel) => {
     let { vehicles, employees, carrieruuids } = this.state;
     // 查询字典
-    queryDictByCode(['vehicleOwner', 'employeeType', 'relation']).then(res => {
-      this.dict = res.data
-      this.empTypeMapper = this.dict.filter(x => x.dictCode === 'employeeType').reduce((acc, cur) => {
-        acc[cur.itemValue] = cur.itemText;
-        return acc;
-      }, {});
-    });
+    if (this.dict.length === 0) {
+      queryDictByCode(['vehicleOwner', 'employeeType', 'relation']).then(res => {
+        this.dict = res.data;
+        this.empTypeMapper = this.dict.filter(x => x.dictCode === 'employeeType').reduce((acc, cur) => {
+          acc[cur.itemValue] = cur.itemText;
+          return acc;
+        }, {});
+      });
+    }
 
     // 获取车辆
     let param = {
@@ -137,6 +147,12 @@ export default class EmpAndVehicleModal extends Component{
 
     let details = orderBy(record, x => x.archLine);
 
+    // 把高德推荐的车放最前面
+    if (vehicleModel) {
+      const likeVehicles = vehicles.filter(item => this.toWeightVolumeStr(item) === vehicleModel);
+      vehicles = uniqBy([...likeVehicles, ...vehicles], 'UUID');
+    }
+
     // 将选中车辆放到第一位
     if (selectVehicle.UUID) {
       vehicles.unshift(selectVehicle);
@@ -149,6 +165,7 @@ export default class EmpAndVehicleModal extends Component{
     this.basicVehicle = vehicles;
     this.setState(
       {
+        vehicleModel,
         selectVehicle,
         selectEmployees,
         vehicles,
@@ -166,9 +183,21 @@ export default class EmpAndVehicleModal extends Component{
     );
   };
 
+  /**
+   * 将车辆重量和体积转换为字符串
+   * @param vehicle{Object} 车辆对象
+   * @author ChenGuangLong
+   * @since 2024/11/20 下午4:59
+  */
+  toWeightVolumeStr = (vehicle) => {
+    const weight = parseFloat(vehicle.BEARWEIGHT.replace(/[^0-9.]/g, '')); // 转换为数字,
+    const volume = Math.round(vehicle.BEARVOLUME * vehicle.BEARVOLUMERATE) / 100;
+    return `${weight}-${volume}`;
+  };
+
   /** 构建车辆选择卡片 */
   buildSelectVehicleCard = () => {
-    const { vehicles, selectVehicle, carKey, carSort, carSearchSort, carrieruuids } = this.state;
+    const { vehicleModel, vehicles, selectVehicle, carKey, carSort, carSearchSort, carrieruuids } = this.state;
     let sliceVehicles = this.state.carEmpNums === 'all' ? vehicles : vehicles.slice(0, this.state.carEmpNums);
 
     let carTabList;
@@ -270,7 +299,9 @@ export default class EmpAndVehicleModal extends Component{
                           <div className={style.employeeName} style={{ textAlign: 'center', lineHeight: '20px' }}>
                             <div>{vehicle.PLATENUMBER}</div>
                             {vehicle.DRIVERNAME && <div>{vehicle.DRIVERNAME.replace(/\([^)]*\)|（[^)]*）/g, '')}</div>}
-                            <div style={{ color: '#999' }}>
+                            <div  // 车辆体积和重量和高德推荐相同就显示字体是绿色
+                              style={{ color: this.toWeightVolumeStr(vehicle) === vehicleModel ? '#23c057' : '#999' }}
+                            >
                               {vehicle.BEARWEIGHT}/{Math.round(vehicle?.BEARVOLUME * vehicle?.BEARVOLUMERATE) / 100}
                             </div>
                           </div>
