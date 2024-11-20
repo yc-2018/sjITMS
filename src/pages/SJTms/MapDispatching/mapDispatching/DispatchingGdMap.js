@@ -948,6 +948,7 @@ export default class DispatchMap extends Component {
                   <>
                     {bFlexDiv('总冷藏周转筐', allTotals.coldContainerCount)}
                     {bFlexDiv('总冷冻周转筐', allTotals.freezeContainerCount)}
+                    {bFlexDiv('总保温箱', allTotals.insulatedContainerCount)}
                     {bFlexDiv('总保温袋', allTotals.insulatedBagCount)}
                     {bFlexDiv('总鲜食筐', allTotals.freshContainerCount)}
                   </>
