@@ -723,7 +723,9 @@ export default class SmartScheduling extends Component {
                   onClick={e => {
                     e.stopPropagation();
                     this.setState({ showEmpAndVehicleModal: index });
-                    window.setTimeout(() => this.empAndVehicleModalRef?.show?.(orders), 50);
+                    window.setTimeout(() => {
+                      this.empAndVehicleModalRef?.show?.(orders, scheduleDataList[index].selectEmployees, scheduleDataList[index].selectVehicle);
+                    }, 50);
                   }}
                 >
                   车辆与人员
@@ -1007,7 +1009,7 @@ export default class SmartScheduling extends Component {
         </Modal>
 
         <Modal  // ——————————————————————————————订单池弹窗——————————————————————————————————
-          title="订单池"
+          title="订单池（上限200个门店）"
           width="90vw"
           okText="选定"
           style={{ top: 20 }}
@@ -1019,7 +1021,7 @@ export default class SmartScheduling extends Component {
         </Modal>
 
         <Modal  // ——————————————————————————————运力池弹窗——————————————————————————————————
-          title="运力池"
+          title="运力池（上限50辆）"
           width="90vw"
           okText="选定"
           style={{ top: 20 }}
@@ -1099,9 +1101,27 @@ export default class SmartScheduling extends Component {
           // style={{ top: 20 }}
           visible={showEmpAndVehicleModal >= 0}
           onCancel={() => this.setState({ showEmpAndVehicleModal: -1 })}
-          onOk={() => {
+          onOk={async() => {
             const { selectVehicle, selectEmployees, } = this.empAndVehicleModalRef.state;
+            const { dispatchConfig, checkVehicleFollower } = this.empAndVehicleModalRef;
             if (selectEmployees.filter(item => item.memberType === 'Driver').length > 1) return message.error('只能有一个驾驶员哦');
+            if (selectEmployees.some(item => !item.memberType)) return message.error('已选人有未选工种');
+            if (selectEmployees.length > [...new Set(selectEmployees.map(x => x.memberType + x.UUID))].length) return message.error('有重复人员且重复工种');
+            if (dispatchConfig.checkVehicleFollower === 1 || dispatchConfig.checkVehicleFollower === 2) { // 校验随车人员
+              const includes = await checkVehicleFollower(selectVehicle, selectEmployees);
+              if (!includes && dispatchConfig.checkVehicleFollower === 1) {
+                return Modal.confirm({
+                  title: '车辆与人员不匹配，确定生成排车单吗？',
+                  onOk: () => {
+                    const dataList = [...scheduleDataList]
+                    dataList[showEmpAndVehicleModal].selectVehicle = selectVehicle
+                    dataList[showEmpAndVehicleModal].selectEmployees = selectEmployees
+                    this.setState({ showEmpAndVehicleModal: -1, scheduleDataList: dataList });
+                    },
+                });
+              }
+              if (!includes && dispatchConfig.checkVehicleFollower === 2) return message.error('车辆与人员不匹配');
+            }
             const dataList = [...scheduleDataList]
             dataList[showEmpAndVehicleModal].selectVehicle = selectVehicle
             dataList[showEmpAndVehicleModal].selectEmployees = selectEmployees

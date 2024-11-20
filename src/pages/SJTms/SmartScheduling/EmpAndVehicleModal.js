@@ -1,14 +1,16 @@
-import React,{ Component } from 'react'
+import React, { Component } from 'react';
 import { Badge, Card, Col, Empty, Icon, Input, message, Progress, Row, Select, Spin, Tooltip } from 'antd';
 import { orderBy, uniq, uniqBy } from 'lodash';
-import { guid, isEmptyObj } from '@/utils/utils'
+import { guid, isEmptyObj } from '@/utils/utils';
 import { dynamicQuery, queryAllData, queryDictByCode } from '@/services/quick/Quick';
-import { loginCompany, loginOrg } from '@/utils/LoginContext'
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { getRecommend } from '@/services/sjitms/ScheduleBill';
 import { getConfigDataByParams } from '@/services/sjconfigcenter/ConfigCenter';
-import style from '@/pages/SJTms/SmartScheduling/SmartScheduling.less'
+import style from '@/pages/SJTms/SmartScheduling/SmartScheduling.less';
+import { getDispatchConfig } from '@/services/sjtms/DispatcherConfig';
 
 const { Search } = Input;
+const { Option } = Select;
 
 /**
  * 人和车的选择
@@ -22,7 +24,8 @@ export default class EmpAndVehicleModal extends Component{
   basicEmployee = [];
   basicVehicle = [];
   dict = [];
-  empTypeMapper = {};
+  empTypeMapper = {};   // 人员类型映射
+  dispatchConfig = {};  // 调度配置
   VehicleCardConfig = [
     {
       key: 'init',
@@ -72,26 +75,27 @@ export default class EmpAndVehicleModal extends Component{
         carSearchSort: carSearchSort || [1, 2, 3],
       });
     }
+    getDispatchConfig(loginOrg().uuid).then(result => this.dispatchConfig = result.data);
   };
 
   /** 显示 */
-  show = (record) => {
+  show = (record,  selectEmployees = [], selectVehicle = {}) => {
     const { carSort } = this.state;
     this.setState(
       {
         loading: true,
-        carKey: this.VehicleCardConfig[parseInt(carSort[0],10) - 1]?.key
+        carKey: selectVehicle.UUID ? 'init' : this.VehicleCardConfig[parseInt(carSort[0], 10) - 1]?.key
           ? this.VehicleCardConfig[parseInt(carSort[0], 10) - 1]?.key
           : 'init',
       },
       () => {
-        this.initData(record);
+        this.initData(record, selectEmployees, selectVehicle);
       }
     );
   };
 
   /** 初始化数据 */
-  initData = async (record) => {
+  initData = async (record, selectEmployees = [], selectVehicle = {}) => {
     let { vehicles, employees, carrieruuids } = this.state;
     // 查询字典
     queryDictByCode(['vehicleOwner', 'employeeType', 'relation']).then(res => {
@@ -132,37 +136,20 @@ export default class EmpAndVehicleModal extends Component{
     employees = employeesData.data.records;
 
     let details = orderBy(record, x => x.archLine);
-    let selectEmployees = [];
-    let selectVehicle;
 
-    // if (schedule) {
-    //   // 将选中车辆放到第一位
-    //   selectVehicle = vehicles.find(x => x.UUID === schedule.vehicle.uuid);
-    //   if (selectVehicle) {
-    //     vehicles.unshift(selectVehicle);
-    //   }
-    //   vehicles = uniqBy(vehicles, 'UUID');
-    //   // 选中的人放到第一位
-    //   const memberList = schedule.memberDetails;
-    //   if (memberList) {
-    //     memberList.forEach(item => {
-    //       let emp = employees.find(x => x.UUID === item.member.uuid);
-    //       if (emp) {
-    //         selectEmployees.push({
-    //           ...emp,
-    //           memberType: item.memberType,
-    //           memberUuid: item.uuid,
-    //         });
-    //       }
-    //     });
-    //   }
-    //   employees = uniqBy([...selectEmployees, ...employees], 'CODE');
-    // }
+    // 将选中车辆放到第一位
+    if (selectVehicle.UUID) {
+      vehicles.unshift(selectVehicle);
+      vehicles = uniqBy(vehicles, 'UUID');  // 根据uuid去重，如果多个元素的 UUID 相同，则保留第一个出现的元素。
+    }
+    // 选中的人放到第一位
+    employees = uniqBy([...selectEmployees, ...employees], 'CODE');
+
     this.basicEmployee = employees;
     this.basicVehicle = vehicles;
     this.setState(
       {
-        selectVehicle: selectVehicle === undefined ? {} : selectVehicle,
+        selectVehicle,
         selectEmployees,
         vehicles,
         employees,
@@ -572,6 +559,16 @@ export default class EmpAndVehicleModal extends Component{
     this.setState({ employees: searchEmp, empParams });
   };
 
+  /** 人员添加工种(复制员工，类型空白自己选) */
+  addWorkType = emp => {
+    const { selectEmployees } = this.state;
+    let employee = { ...emp };
+    employee.memberUuid = guid();
+    employee.memberType = '';
+    selectEmployees.push(employee);
+    this.setState({ selectEmployees });
+  };
+
   /** 按熟练度匹配车辆 */
   getRecommendByOrders = async (record, vehicles) => {
     if (vehicles.length === 0) return;
@@ -611,7 +608,23 @@ export default class EmpAndVehicleModal extends Component{
     emp.memberUuid = guid();
     index === -1 ? employees.push(emp) : (employees = employees.filter(x => x.memberUuid !== emp.memberUuid))
     this.setState({ selectEmployees: employees });
-    console.log("███████employees>>>>🔴", employees,"🔴<<<<██████")
+  };
+
+  /** 查随车人员(ref用) */
+  checkVehicleFollower = async (selectVehicle, selectEmployees) => {
+    let param = {
+      tableName: 'SJ_ITMS_VEHICLE_EMPLOYEE',
+      condition: {
+        params: [{ field: 'VEHICLEUUID', rule: 'eq', val: [selectVehicle.UUID] }],
+      },
+    };
+    const response = await dynamicQuery(param);
+    if (response.success && response.result.records !== 'false') {
+      return selectEmployees
+      .map(f => f.CODE)
+      .every(a => response.result.records.map(e => e.EMPCODE).includes(a));
+    }
+    return true;
   };
 
   render () {
@@ -629,13 +642,15 @@ export default class EmpAndVehicleModal extends Component{
             <Col span={12}>{this.buildSelectEmployeeCard()}</Col>
           </Row>
 
-          {/* ——————————————底部显示选择的数据—————————————— */}
-          <Row gutter={[0, 0]} style={{ marginTop: 6 }}>
+          <Row gutter={[0, 0]} style={{ marginTop: 6 }}> {/* ——————————————底部显示选择的数据—————————————— */}
             <Col span={12}>
               {selectVehicle.BEARWEIGHT ? (
                 <Row>
+                  {/* ————————车辆载重比例———————— */}
                   <Col span={12} style={{ textAlign: 'center' }}>
-                    <div>车辆载重t/商品总重：&nbsp;{selectVehicle.BEARWEIGHT}/{weight}</div>
+                    <div style={{ marginBottom: 20 }}>
+                      {selectVehicle.PLATENUMBER}车辆/商品载重t：{selectVehicle.BEARWEIGHT}/{weight}
+                    </div>
                     <Progress
                       type="circle"
                       percent={weightPercent}
@@ -643,9 +658,10 @@ export default class EmpAndVehicleModal extends Component{
                       format={() => weightPercent === Infinity ? 'X' : `${weightPercent.toFixed(2)} %`}
                     />
                   </Col>
+                  {/* ————————车辆体积比例———————— */}
                   <Col span={12} style={{ textAlign: 'center' }}>
-                    <div>
-                      车辆体积m³/商品体积：&nbsp;
+                    <div style={{ marginBottom: 20 }}>
+                      {selectVehicle.PLATENUMBER}车辆/商品体积m³：
                       {Math.round(selectVehicle?.BEARVOLUME * selectVehicle?.BEARVOLUMERATE) / 100}/{volume}
                     </div>
                     <Progress
@@ -663,10 +679,37 @@ export default class EmpAndVehicleModal extends Component{
               )}
             </Col>
             <Col span={12}>
-              已选人：&nbsp;
+              已选人：
               {selectEmployees?.map(item => (
-                <span key={item.UUID} style={{ border: '1px solid #ccc', padding: '0 5px', marginRight: 5 }}>
-                  {this.empTypeMapper[item.memberType]}[{item.CODE}]{item.NAME}
+                <span key={item.memberUuid} className={style.selectedPersonnel}>
+                  <Select
+                    size="small"
+                    value={item.memberType}
+                    style={{ minWidth: 70 }}
+                    disabled={this.dispatchConfig?.isStuckEmpType === 0 && item.HIRED_TYPE === '承运商'}
+                    onChange={v => {
+                      item.memberType = v;
+                      this.setState({ selectEmployees: [...selectEmployees] });
+                    }}
+                  >
+                    {Object.keys(this.empTypeMapper).map(key => (
+                      <Option key={key} value={key}>{this.empTypeMapper[key]}</Option>
+                    ))}
+                  </Select>
+                  [{item.CODE}]{item.NAME}
+                  {(this.dispatchConfig?.isStuckEmpType !== 0 || item.HIRED_TYPE !== '承运商') &&
+                    <Icon
+                      type="copy"
+                      style={{ color: '#999', marginLeft: 3 }}
+                      onClick={() => this.addWorkType(item)}
+                    />
+                  }
+
+                  <Icon
+                    type="close"
+                    style={{ color: '#999', border: '1px solid #999', marginLeft: 3, borderRadius: '50%' }}
+                    onClick={() => this.handleEmployee(item)}
+                  />
                 </span>
               ))}
             </Col>

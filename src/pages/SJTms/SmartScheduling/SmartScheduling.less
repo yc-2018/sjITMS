@@ -124,8 +124,7 @@
   }
 }
 
-// 地图皮肤按钮
-.mapStyleItem{
+.mapStyleItem{    // 地图皮肤按钮
   margin: 3px;
   padding: 3px;
   cursor: pointer;
@@ -134,8 +133,8 @@
   box-shadow: 1px 1px 4px 0 #39487061;
 }
 
-// 高德地图点位样式
-.point{
+
+.point{   // 高德地图点位样式
   background: black;
   border: black solid 2px;
   border-radius: 50%;
@@ -145,8 +144,7 @@
   color: white;
 }
 
-// 智能调度人员车辆选择弹窗
-.empAndVehicleModal {
+.empAndVehicleModal {   // ————————————智能调度人员车辆选择弹窗————————————
   .panel {
     border: 2px solid #3b77e3;
     color: #000000a6;
@@ -176,5 +174,22 @@
     line-height: 24px;
     text-align: end;
     margin-right: 5px;
+  }
+
+  // 选的人员
+  .selectedPersonnel {
+    display: inline-block;    // 强制将元素当作块级元素对待，但仍然可以在一行中排列
+    white-space: nowrap;      // 禁止内容内部换行
+    border: 1px solid #ccc;   // 边框设置
+    border-radius: 5px;       // 圆角设置
+    padding: 0 5px 0 0;       // 内边距设置
+    margin: 5px 0 0 5px;      // 外边距设置
+
+    [role="combobox"]{  // 人员类型选择器样式
+      border: none; // 去掉组件本身的边框
+      border-right: 1px solid #ffffff;
+      border-radius: 5px 0 0 5px;
+      border-color: #cdcdcd!important;  // 去掉组件本身的边框
+    }
   }
 }
