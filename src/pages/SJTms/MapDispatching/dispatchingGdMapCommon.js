@@ -114,8 +114,8 @@ export const setMarkerText = (state, order) => {
         <div style="display: flex; text-align: center;">
           <div style="flex: 1;">冷藏周转筐</div>
           <div style="flex: 1;">冷冻周转筐</div>
-          <div style="flex: 1;">保温袋</div>
           <div style="flex: 1;">保温箱</div>
+          <div style="flex: 1;">保温袋</div>
           <div style="flex: 1;">鲜食筐</div>
         </div>
         <div style="display: flex; text-align: center;">
