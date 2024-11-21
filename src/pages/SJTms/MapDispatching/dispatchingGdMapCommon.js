@@ -115,11 +115,13 @@ export const setMarkerText = (state, order) => {
           <div style="flex: 1;">冷藏周转筐</div>
           <div style="flex: 1;">冷冻周转筐</div>
           <div style="flex: 1;">保温袋</div>
+          <div style="flex: 1;">保温箱</div>
           <div style="flex: 1;">鲜食筐</div>
         </div>
         <div style="display: flex; text-align: center;">
           <div style="flex: 1;">${infoTotals.coldContainerCount}</div>
           <div style="flex: 1;">${infoTotals.freezeContainerCount}</div>
+          <div style="flex: 1;">${infoTotals.insulatedContainerCount}</div>
           <div style="flex: 1;">${infoTotals.insulatedBagCount}</div>
           <div style="flex: 1;">${infoTotals.freshContainerCount}</div>
         </div>

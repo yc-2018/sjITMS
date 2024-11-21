@@ -820,8 +820,9 @@ export default class DispatchMap extends Component {
                               <>
                                 {bColDiv2('冷藏周转筐', totalObj.coldContainerCount, 5)}
                                 {bColDiv2('冷冻周转筐', totalObj.freezeContainerCount, 5)}
-                                {bColDiv2('保温袋', totalObj.insulatedBagCount, 5)}
-                                {bColDiv2('鲜食筐', totalObj.freshContainerCount, 5)}
+                                {bColDiv2('保温箱', totalObj.insulatedContainerCount, 4)}
+                                {bColDiv2('保温袋', totalObj.insulatedBagCount, 4)}
+                                {bColDiv2('鲜食筐', totalObj.freshContainerCount, 4)}
                               </>
                             )}
                           </Row>
