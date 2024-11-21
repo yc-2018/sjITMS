@@ -128,7 +128,7 @@ export const setMarkerText = (state, order) => {
         ` : ''
 
   return `
-    <div style="width: auto; height: auto; padding: 5px; background: #FFF;">
+    <div style="width: auto;min-width: 350px; height: auto; padding: 5px; background: #FFF;">
       <div style="font-weight: bold; white-space: nowrap;">
         [${order.deliveryPoint.code}]${order.deliveryPoint.name}
       </div>
