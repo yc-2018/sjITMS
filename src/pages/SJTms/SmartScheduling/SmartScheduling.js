@@ -362,15 +362,24 @@ export default class SmartScheduling extends Component {
 
   /**
    * 路线规划
+   * @param index {number}      线路索引
+   * @param [isRefresh]:boolean 是否刷新
    * @author ChenGuangLong
    * @since 2024/11/9 下午2:57
    */
-  routePlanning = index => {
+  routePlanning = (index, isRefresh) => {
     let { scheduleDataList } = this.state;
     // 无论有无，都空空如也
     scheduleDataList[index].routeDistance = [];
     scheduleDataList[index].routeTime = [];
     scheduleDataList[index].routeTolls = [];
+
+    // 如果有要刷新的线路
+    if (isRefresh) {
+      this.map.remove(this.routingPlans[index]);
+      this.routingPlans[index] = undefined;
+    }
+
     // 如果有线路的了，就是删除
     if (this.routingPlans[index]?.length > 0) {
       this.map.remove(this.routingPlans[index]);
@@ -379,6 +388,7 @@ export default class SmartScheduling extends Component {
       // return this.sxYm()
       return this.setState({ scheduleDataList: [...scheduleDataList] });
     }
+
     // 没有线路，开始创建线路
     const { map, AMap, groupMarkers, warehouseMarker } = this;
     // 构造路线导航类
@@ -627,10 +637,7 @@ export default class SmartScheduling extends Component {
       this.setState({ scheduleResults, showPointModal: null });
       // 线路更新： 里程 时间 过路费 更新
       if (this.routingPlans[linkIndex]?.length > 0) {
-        this.map.remove(this.routingPlans[linkIndex]);
-        this.routingPlans[linkIndex] = undefined;
-        this.state.scheduleDataList[linkIndex].routeDistance = null;
-        this.routePlanning(linkIndex);
+        this.routePlanning(linkIndex, true);
       }
     } else {
       const newUnassignedNodes = unassignedNodes.filter(x => x.uuid !== order.uuid);
@@ -658,8 +665,12 @@ export default class SmartScheduling extends Component {
     }
     this.setState({ showPointModal: null });
     this.loadingPoint(scheduleResults, unassignedNodes);
-    this.setState({ scheduleResults: [...scheduleResults], unassignedNodes: [...unassignedNodes] });
-
+    this.setState({ scheduleResults: [...scheduleResults], unassignedNodes: [...unassignedNodes] },()=>{
+      // 旧线路更新： 里程 时间 过路费 更新
+      if (this.routingPlans[oldLink]?.length > 0) this.routePlanning(oldLink, true);
+      // 新线路更新： 里程 时间 过路费 更新
+      if (this.routingPlans[newLinkIndex]?.length > 0) this.routePlanning(newLinkIndex, true);
+    });
   };
 
   render () {
@@ -1302,7 +1313,6 @@ export default class SmartScheduling extends Component {
             </div>
           </Modal>
         }
-
       </div>
     );
   }
