@@ -1,5 +1,5 @@
 // ///////////////////////////智能调度页面//////////////
-// todo 配送调度跳转过来逻辑
+// todo 配送调度跳转过来逻辑 和完成去配送调度逻辑
 // todo 明细拖拽
 // todo 生成排车单后保持页面控制一些按钮不能点击
 // todo 生成排车单出问题的保持界面看看能不能给一个按钮直接单独到配送调度自己调整
@@ -80,6 +80,7 @@ export default class SmartScheduling extends Component {
     errMessages: [],                 // 生成排车单时如果有错误信息
     childrenIndex: -1,               // 显示调度排车子抽屉 这个是它的索引>=0就是显示
     showEmpAndVehicleModal: -1,      // 显示选司机和车弹窗 这个是它的索引>=0就是显示
+    showRemoveModal: -1,             // 显示移除线路弹窗   这个是它的索引>=0就是显示
     scheduleResults: [],             // 智能调度排车处理后的结果（二重数组内的订单）
     /** @type {ScheduleData[]} */
     scheduleDataList: [],            // 排车选择数据：如 司机、备注、车辆 用index索引对应scheduleResults  属性包括：vehicleModel、selectVehicle、selectEmployees、note
@@ -251,6 +252,7 @@ export default class SmartScheduling extends Component {
       scheduleDataList: routes.map(x => ({ vehicleModel: x.vehicleModelId })),
       unassignedNodes: notGroupOrders,
     });
+    this.routingPlans = routes.map(() => null);
     this.loadingPoint(groupOrders, notGroupOrders);
   };
 
@@ -669,6 +671,41 @@ export default class SmartScheduling extends Component {
     });
   };
 
+  /**
+   * 删除线路
+   * @param linkIndex {number} 要删除的线路索引
+   * @param [isDissolution] {boolean} 是否是解散 解散就放未分配列表 否则就直接没了
+   * @author ChenGuangLong
+   * @since 2024/11/22 下午4:22
+  */
+  removeLine = (linkIndex = this.state.showRemoveModal, isDissolution) => {
+    const { scheduleResults, scheduleDataList } = this.state;
+    if (isDissolution) {  // 解散 放派送点到未分配列表
+      const { unassignedNodes } = this.state;
+      const newUnassignedNodes = unassignedNodes.concat(scheduleResults[linkIndex]);
+      this.loadingPoint(undefined, newUnassignedNodes, 2);  // 点位更新
+      this.setState({ unassignedNodes: [...newUnassignedNodes] });
+    }
+    // 去掉路线规划
+    if (this.routingPlans[linkIndex]?.length > 0) this.map.remove(this.routingPlans[linkIndex].flat());
+
+    // 对应的线路和数据删除
+    const newScheduleResults = scheduleResults.filter((__, index) => index !== linkIndex);
+    const newScheduleDataList = scheduleDataList.filter((__, index) => index !== linkIndex);
+    this.routingPlans = this.routingPlans.filter((__, index) => index !== linkIndex);
+    // 更新折线图（路线颜色）
+    this.routingPlans.forEach((item, index) => {
+      item?.map(line => line.setOptions({ strokeColor: colors[index] }))
+    });
+    this.loadingPoint(newScheduleResults, undefined, 1); // 点位更新
+    this.setState({
+      showRemoveModal: -1,
+      scheduleResults: [...newScheduleResults],
+      scheduleDataList: [...newScheduleDataList],
+    });
+  };
+
+
   render () {
     const {
       showSmartSchedulingModal,
@@ -677,6 +714,7 @@ export default class SmartScheduling extends Component {
       showEmpAndVehicleModal,
       showResultDrawer,
       showButtonDrawer,
+      showRemoveModal,
       btnLoading,
       showPointModal,
       routingConfig,
@@ -838,35 +876,40 @@ export default class SmartScheduling extends Component {
                   />
                 </div>
                 <Divider style={{ margin: 6 }}/>
-                {/* ————————————打开线路明细抽屉—————————— */}
-                <Button type="link" onClick={e => e.stopPropagation() || this.setState({ childrenIndex: index })}>
-                  明细
-                </Button>
-                {/* ——————————打开选择人员和车辆—————————— */}
-                <Button
-                  type="link"
-                  onClick={e => {
-                    e.stopPropagation();
-                    this.setState({ showEmpAndVehicleModal: index });
-                    window.setTimeout(() => {
-                      this.empAndVehicleModalRef?.show?.(orders, scheduleDataList[index].selectEmployees, scheduleDataList[index].selectVehicle, scheduleDataList[index].vehicleModel);
-                    }, 50);
-                  }}
-                >
-                  车辆与人员
-                </Button>
+                <div onClick={e => e.stopPropagation()}>
+                  {/* ————————————打开线路明细抽屉—————————— */}
+                  <Button type="link" onClick={() => this.setState({ childrenIndex: index })}>
+                    明细
+                  </Button>
+                  {/* ——————————打开选择人员和车辆—————————— */}
+                  <Button
+                    type="link"
+                    onClick={() => {
+                      this.setState({ showEmpAndVehicleModal: index });
+                      window.setTimeout(() => {
+                        this.empAndVehicleModalRef?.show?.(orders, scheduleDataList[index].selectEmployees, scheduleDataList[index].selectVehicle, scheduleDataList[index].vehicleModel);
+                      }, 50);
+                    }}
+                  >
+                    车辆与人员
+                  </Button>
 
-
-                {/* ——————————在地图上聚焦这条线路的点—————————— */}
-                <Button
-                  type="link"
-                  onClick={e => {
-                    e.stopPropagation();
-                    this.map.setFitView(this.groupMarkers[index], false, [60, 60, 60, 500]); // 不是立即过渡 四周边距，上、下、左、右
-                  }}
-                >
-                  聚焦
-                </Button>
+                  {/* ——————————在地图上聚焦这条线路的点—————————— */}
+                  <Button
+                    type="link"
+                    onClick={() => this.map.setFitView(this.groupMarkers[index], false, [60, 60, 60, 500])}    // 不是立即过渡 四周边距，上、下、左、右
+                  >
+                    聚焦
+                  </Button>
+                  {/* ——————————删除改线路—————————— */}
+                  <Button
+                    type="link"
+                    className={styles.redBtn}
+                    onClick={() => this.setState({ showRemoveModal: index })}
+                  >
+                    移除
+                  </Button>
+                </div>
               </div>
             )}
 
@@ -1305,6 +1348,28 @@ export default class SmartScheduling extends Component {
             </div>
           </Modal>
         }
+
+        <Modal  // ——————————————————————————————操作线路弹窗——————————————————————————————————
+          title={<div>{this.getColorBlocks(showRemoveModal, 9)}线路{showRemoveModal + 1}操作</div>}
+          footer={null}
+          visible={showRemoveModal >= 0}
+          onCancel={() => this.setState({ showRemoveModal: -1 })}
+        >
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, textAlign: 'center' }}>
+            <Button onClick={() => this.setState({ showRemoveModal: -1 })}>取消</Button>
+            <Popover content="移除后,线路内所有派送点在本次排车将无法使用" placement="bottom">
+              <Button type="danger" onClick={() => {this.removeLine()}}>
+                移除
+              </Button>
+            </Popover>
+            <Popover content="解散后,线路内所有派送点变成未分配线路状态" placement="bottom">
+              <Button type="danger" onClick={() => this.removeLine(showRemoveModal, true)}>
+                解散
+              </Button>
+            </Popover>
+          </div>
+        </Modal>
+
       </div>
     );
   }
