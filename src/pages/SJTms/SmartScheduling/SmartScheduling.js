@@ -41,7 +41,7 @@ import FullScreenLoading from '@/components/FullScreenLoading';
 import { colors } from '@/pages/SJTms/SmartScheduling/colors';
 import { convertCodeName } from '@/utils/utils';
 import { GetConfig } from '@/services/sjitms/OrderBill';
-import { formatSeconds, getMarkerText, groupByOrder, mapStyle } from '@/pages/SJTms/SmartScheduling/common';
+import { formatSeconds, getMarkerText, groupByOrder, mapStyleMap, Tips } from '@/pages/SJTms/SmartScheduling/common';
 import { save } from '@/services/sjitms/ScheduleBill';
 import EmpAndVehicleModal from '@/pages/SJTms/SmartScheduling/EmpAndVehicleModal';
 
@@ -57,8 +57,8 @@ export default class SmartScheduling extends Component {
   warehousePoint = '';         // 当前仓库经纬度
   groupMarkers = [];            // 分组的高德点位
   unassignedMarkers = [];       // 未分配线路的高德点位
-  routingPlans = [];           // 路线规划数据列表（按index对应groupMarkers）
-  mapStyle = 'normal';         // 地图样式 标准 normal    幻影黑 dark
+  routingPlans = [];            // 路线规划数据列表（按index对应groupMarkers）
+  mapStyleName = '月光银';       // 地图样式
   orderList = [];               // 点击智能调度时订单池原数据列表（用来生成排车单时用）
   empTypeMapper = {};             // 人员类型映射
 
@@ -95,9 +95,11 @@ export default class SmartScheduling extends Component {
   };
 
   componentDidMount = async () => {
+    this.mapStyleName = window.localStorage.getItem('mapStyleName') ?? this.mapStyleName;
+    const mapStyle = `amap://styles/${mapStyleMap[this.mapStyleName]}`;
     try { // 加载高德地图
       this.AMap = window.AMap ?? await AMapLoader.load(AMapDefaultLoaderObj);
-      this.map = new this.AMap.Map('smartSchedulingAMap', AMapDefaultConfigObj);
+      this.map = new this.AMap.Map('smartSchedulingAMap', { ...AMapDefaultConfigObj, mapStyle });
     } catch (error) {
       message.error(`获取高德地图类对象失败:${error}`);
     }
@@ -109,12 +111,6 @@ export default class SmartScheduling extends Component {
    * @since 2024/11/12 下午3:41
    */
   initConfig = () => {
-    // ————————设置地图样式————————
-    const mapStyleName = window.localStorage.getItem('mapStyle');
-    if (mapStyleName && this.map) {
-      this.mapStyle = mapStyleName;
-      this.map.setMapStyle(`amap://styles/${mapStyle[mapStyleName]}`);
-    }
     // ————————仓库坐标————————
     queryDict('warehouse').then(res => {    // 获取当前仓库经纬度
       const description = res.data.find(x => x.itemValue === loginOrg().uuid)?.description;
@@ -665,7 +661,7 @@ export default class SmartScheduling extends Component {
     }
     this.setState({ showPointModal: null });
     this.loadingPoint(scheduleResults, unassignedNodes);
-    this.setState({ scheduleResults: [...scheduleResults], unassignedNodes: [...unassignedNodes] },()=>{
+    this.setState({ scheduleResults: [...scheduleResults], unassignedNodes: [...unassignedNodes] }, () => {
       // 旧线路更新： 里程 时间 过路费 更新
       if (this.routingPlans[oldLink]?.length > 0) this.routePlanning(oldLink, true);
       // 新线路更新： 里程 时间 过路费 更新
@@ -880,15 +876,15 @@ export default class SmartScheduling extends Component {
                 content={
                   <>
                     <div style={{ textAlign: 'center' }}>地图底色设置</div>
-                    {Object.keys(mapStyle).map(name =>
+                    {Object.keys(mapStyleMap).map(name =>
                       <div
                         key={name}
                         className={styles.mapStyleItem}
-                        style={this.mapStyle === name ? { boxShadow: 'inset 1px 1px 4px 0 #39487061' } : {}}
+                        style={this.mapStyleName === name ? { boxShadow: 'inset 1px 1px 4px 0 #39487061' } : {}}
                         onClick={() => {
-                          this.map.setMapStyle(`amap://styles/${mapStyle[name]}`);
-                          this.sxYm(this.mapStyle = name);
-                          window.localStorage.setItem('mapStyle', name);
+                          this.map.setMapStyle(`amap://styles/${mapStyleMap[name]}`);
+                          this.sxYm(this.mapStyleName = name);
+                          window.localStorage.setItem('mapStyleName', name);
                         }}
                       >
                         {name}
@@ -900,13 +896,13 @@ export default class SmartScheduling extends Component {
                 <Button
                   style={{ marginRight: 8 }}
                   onClick={() => {
-                    const mapStyleName = this.mapStyle === '标准' ? '幻影黑' : '标准';
-                    this.map.setMapStyle(`amap://styles/${mapStyle[mapStyleName]}`);
-                    this.sxYm(this.mapStyle = mapStyleName);
-                    window.localStorage.setItem('mapStyle', mapStyleName);
+                    const mapStyleName = this.mapStyleName === '标准' ? '幻影黑' : '标准';
+                    this.map.setMapStyle(`amap://styles/${mapStyleMap[mapStyleName]}`);
+                    this.sxYm(this.mapStyleName = mapStyleName);
+                    window.localStorage.setItem('mapStyleName', mapStyleName);
                   }}
                 >
-                  <Icon type="skin" theme={this.mapStyle === '标准' ? 'outlined' : 'filled'}/>
+                  <Icon type="skin" theme={this.mapStyleName === '标准' ? 'outlined' : 'filled'}/>
                 </Button>
               </Popover>
               {/* ——————————放弃本次结果按钮—————— */}
@@ -1232,9 +1228,7 @@ export default class SmartScheduling extends Component {
           title={
             <div>
               线路{showEmpAndVehicleModal + 1}{this.getColorBlocks(showEmpAndVehicleModal)}选择员工和车辆
-              <Popover content="在车辆的默认匹配选项中,重量体积是绿色的,表示这个是智能调度推荐的重量体积">
-                <Icon type="question-circle" style={{ color: '#999', marginLeft: 5 }}/>
-              </Popover>
+              <Tips>在车辆的默认匹配选项中,重量体积是绿色的,表示这个是智能调度推荐的重量体积</Tips>
             </div>
           }
           width="78vw"
@@ -1306,9 +1300,7 @@ export default class SmartScheduling extends Component {
                     </Option>
                   ))}
                 </Select>
-                <Popover content="选择后该配送点直接改变到新选线路最后一个。">
-                  <Icon type="question-circle" style={{ color: '#999', marginLeft: 5 }}/>
-                </Popover>
+                <Tips>选择后该配送点直接改变到新选线路最后一个。</Tips>
               </div>
             </div>
           </Modal>

@@ -1,14 +1,25 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import { sumBy, uniq } from 'lodash';
-import { Divider } from 'antd';
+import { Divider, Icon, Popover } from 'antd';
+
+/**
+ * 提示组件
+ * @author ChenGuangLong
+ * @since 2024/11/22 下午2:18
+*/
+export const Tips = ({children}) =>
+  <Popover content={children}>
+    <Icon type="question-circle" style={{ color: '#999', marginLeft: 5 }}/>
+  </Popover>;
+
 
 /**
  * 高德样式对象
  * @author ChenGuangLong
  * @since 2024/11/15 上午11:05
  */
-export const mapStyle = {
+export const mapStyleMap = {
   '标准': 'normal',
   '幻影黑': 'dark',
   '月光银': 'light',
