@@ -1,27 +1,48 @@
 // ///////////////////////////智能调度页面//////////////
-import React, { Component, createRef } from 'react'
-import AMapLoader from '@amap/amap-jsapi-loader'
+// todo 配送调度跳转过来逻辑
+// todo 明细拖拽
+// todo 生成排车单后保持页面控制一些按钮不能点击
+// todo 生成排车单出问题的保持界面看看能不能给一个按钮直接单独到配送调度自己调整
+// todo 整条线路能添加和移除
+// todo 以前的排车单地图的线路规划没有按顺序排序生成
+// todo 后续高德api放后端请求
+
+import React, { Component, createRef } from 'react';
+import AMapLoader from '@amap/amap-jsapi-loader';
 import {
-  Button, Col, Divider, Drawer, Empty, Icon, Input, message,
-  Modal, Popconfirm, Popover, Progress, Row, Select, Table
-} from 'antd'
-import { uniqBy } from 'lodash'
-import ReactDOM from 'react-dom'
-import { AMapDefaultConfigObj, AMapDefaultLoaderObj } from '@/utils/mapUtil'
-import styles from './SmartScheduling.less'
-import VehiclePoolPage from '@/pages/SJTms/Dispatching/VehiclePoolPage'
-import OrderPoolModal from '@/pages/SJTms/SmartScheduling/OrderPoolModal'
-import { mergeOrdersColumns, mergeVehicleColumns, vehicleColumns } from '@/pages/SJTms/SmartScheduling/columns'
+  Button,
+  Col,
+  Divider,
+  Drawer,
+  Empty,
+  Icon,
+  Input,
+  message,
+  Modal,
+  Popconfirm,
+  Popover,
+  Progress,
+  Row,
+  Select,
+  Table
+} from 'antd';
+import _, { uniqBy } from 'lodash';
+import ReactDOM from 'react-dom';
+import { AMapDefaultConfigObj, AMapDefaultLoaderObj } from '@/utils/mapUtil';
+import styles from './SmartScheduling.less';
+import VehiclePoolPage from '@/pages/SJTms/Dispatching/VehiclePoolPage';
+import OrderPoolModal from '@/pages/SJTms/SmartScheduling/OrderPoolModal';
+import { mergeOrdersColumns, mergeVehicleColumns, vehicleColumns } from '@/pages/SJTms/SmartScheduling/columns';
 import { queryDict, queryDictByCode } from '@/services/quick/Quick';
-import { loginCompany, loginOrg } from '@/utils/LoginContext'
-import { getSmartScheduling } from '@/services/sjitms/smartSchedulingApi'
-import VehicleInputModal from '@/pages/SJTms/SmartScheduling/VehicleInputModal'
-import FullScreenLoading from '@/components/FullScreenLoading'
-import { colors } from '@/pages/SJTms/SmartScheduling/colors'
-import { convertCodeName } from '@/utils/utils'
-import { GetConfig } from '@/services/sjitms/OrderBill'
-import { getMarkerText, groupByOrder, mapStyle } from '@/pages/SJTms/SmartScheduling/common'
-import { save } from '@/services/sjitms/ScheduleBill'
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { getSmartScheduling } from '@/services/sjitms/smartSchedulingApi';
+import VehicleInputModal from '@/pages/SJTms/SmartScheduling/VehicleInputModal';
+import FullScreenLoading from '@/components/FullScreenLoading';
+import { colors } from '@/pages/SJTms/SmartScheduling/colors';
+import { convertCodeName } from '@/utils/utils';
+import { GetConfig } from '@/services/sjitms/OrderBill';
+import { formatSeconds, getMarkerText, groupByOrder, mapStyle } from '@/pages/SJTms/SmartScheduling/common';
+import { save } from '@/services/sjitms/ScheduleBill';
 import EmpAndVehicleModal from '@/pages/SJTms/SmartScheduling/EmpAndVehicleModal';
 
 const { Option } = Select
@@ -52,6 +73,7 @@ export default class SmartScheduling extends Component {
     showSmartSchedulingModal: true,  // 显示智能调度弹窗
     showMenuModal: true,             // 显示选订单弹窗
     showVehicleModal: false,         // 显示选车辆弹窗
+    showPointModal: null,           // 显示配送点弹窗(有就是显示[对象,线路几])
     showResultDrawer: false,         // 显示调度结果右侧侧边栏
     showButtonDrawer: true,          // 显示左边按钮侧边栏
     showProgress: -1,                // 显示生成排车进度条（>0就是显示)
@@ -59,8 +81,9 @@ export default class SmartScheduling extends Component {
     childrenIndex: -1,               // 显示调度排车子抽屉 这个是它的索引>=0就是显示
     showEmpAndVehicleModal: -1,      // 显示选司机和车弹窗 这个是它的索引>=0就是显示
     scheduleResults: [],             // 智能调度排车处理后的结果（二重数组内的订单）
+    /** @type {ScheduleData[]} */
     scheduleDataList: [],            // 排车选择数据：如 司机、备注、车辆 用index索引对应scheduleResults  属性包括：vehicleModel、selectVehicle、selectEmployees、note
-    unassignedNodes:[],              // 智能调度未分配节点
+    unassignedNodes: [],              // 智能调度未分配节点
     btnLoading: false,               // 智能调度按钮加载状态
     fullScreenLoading: false,        // 全屏加载中
     isMultiVehicle: false,           // 是否是多载具仓库
@@ -237,11 +260,14 @@ export default class SmartScheduling extends Component {
 
   /**
    * 加载地图点位
+   * @param groupOrders 分组订单
+   * @param unassigneds 未分组订单
+   * @param [refresh]{1|2} 刷新:没参数全部，1：分组刷新，2：未分组刷新
    * @author ChenGuangLong
    * @since 2024/11/8 上午10:59
-  */
-  loadingPoint = (groupOrders = this.state.scheduleResults, unassigneds = this.state.unassignedNodes ?? []) => {
-    const { map, AMap,  warehouseMarker, warehousePoint, groupMarkers } = this
+   */
+  loadingPoint = (groupOrders = this.state.scheduleResults, unassigneds = this.state.unassignedNodes ?? [], refresh) => {
+    const { map, AMap,  warehouseMarker, warehousePoint } = this
     const { isMultiVehicle } = this.state
     // ————————————仓库点————————————
     if (!warehouseMarker) {
@@ -258,8 +284,25 @@ export default class SmartScheduling extends Component {
       anchor: 'bottom-center',
       offset: new AMap.Pixel(0, -11),             // 设置文本标注偏移量 因为坐标偏移一半 所以是大小的一半+1
     });
+
+    // ——————————————清空上次数据————————————
+    if (refresh) {
+      if (refresh === 1) {
+        map.remove(this.groupMarkers.flat());
+        this.groupMarkers = [];
+      }
+      if (refresh === 2) {
+        map.remove(this.unassignedMarkers);
+        this.unassignedMarkers = [];
+      }
+    } else {
+      map.remove([...this.groupMarkers.flat(), ...this.unassignedMarkers]);
+      this.groupMarkers = [];
+      this.unassignedMarkers = [];
+    }
+
     // ————————————分组点位————————————
-    groupOrders.forEach((orders, index) => {  // 每个组循环
+    ((refresh ?? 1) === 1) && groupOrders.forEach((orders, index) => {  // 每个组循环
       const markers = orders.map((order, i) => {            // 组内循环
         const { longitude, latitude } = order
         const marker = new AMap.Marker({
@@ -276,13 +319,16 @@ export default class SmartScheduling extends Component {
         marker.on('mouseout', () => {                                         // 鼠标移出
           this.text && map.remove(this.text)
         })
+        marker.on('click', () => {
+          this.setState({ showPointModal: [order, index] });
+        })
         return marker
       })
       map.add(markers)
-      groupMarkers[index] = markers
-    })
+      this.groupMarkers[index] = markers
+    });
     // ————————————没分组点位————————————
-    if (unassigneds.length === 0) return
+    if (unassigneds.length === 0 || (refresh ?? 2) !== 2) return;
     this.unassignedMarkers = unassigneds.map(order => {
       const { longitude, latitude } = order
       // 创建一个 DOM 容器，将 React 组件渲染到该容器中
@@ -305,6 +351,9 @@ export default class SmartScheduling extends Component {
       marker.on('mouseout', () => {                                         // 鼠标移出
         this.text && map.remove(this.text)
       })
+      marker.on('click', () => {
+        this.setState({ showPointModal: [order, -1] });
+      })
       return marker
     })
     map.add(this.unassignedMarkers)
@@ -317,11 +366,20 @@ export default class SmartScheduling extends Component {
    * @since 2024/11/9 下午2:57
    */
   routePlanning = index => {
+    let { scheduleDataList } = this.state;
+    // 无论有无，都空空如也
+    scheduleDataList[index].routeDistance = [];
+    scheduleDataList[index].routeTime = [];
+    scheduleDataList[index].routeTolls = [];
+    // 如果有线路的了，就是删除
     if (this.routingPlans[index]?.length > 0) {
       this.map.remove(this.routingPlans[index])
       this.routingPlans[index] = undefined
-      return this.sxYm()
+      scheduleDataList[index].routeDistance = null;
+      // return this.sxYm()
+      return this.setState({ scheduleDataList: [...scheduleDataList] });
     }
+    // 没有线路，开始创建线路
     const { map, AMap,  groupMarkers, warehouseMarker } = this
     // 构造路线导航类
     const driving = new AMap.Driving({
@@ -360,7 +418,10 @@ export default class SmartScheduling extends Component {
             this.routingPlans[index].push(Polyline)
             map.add(Polyline)
             isLoad[i] = false
-            this.setState({ fullScreenLoading: isLoad.some(x => x) })
+            scheduleDataList[index].routeDistance[i] = result.routes[0].distance;
+            scheduleDataList[index].routeTime[i] = result.routes[0].time;
+            scheduleDataList[index].routeTolls[i] = result.routes[0].tolls;
+            this.setState({ fullScreenLoading: isLoad.some(x => x), scheduleDataList });
             // this.sxYm()
           } else message.error('获取驾车数据失败')
         })
@@ -515,11 +576,13 @@ export default class SmartScheduling extends Component {
 
   /**
    * 获取颜色块
-   * @param index 颜色索引
+   * @param index {number} 颜色索引
+   * @param [px] {number}  颜色块大小，默认为14px
    * @author ChenGuangLong
    * @since 2024/11/19 下午3:33
    */
-  getColorBlocks = index => <div className={styles.LinkColor} style={{ background: colors[index] }}/>
+  getColorBlocks = (index, px) =>
+    <div className={styles.LinkColor} style={{ background: colors[index], ...(px ? { width: px, height: px } : {}) }}/>
 
   /**
    * 获取对应索引的车辆信息
@@ -540,16 +603,65 @@ export default class SmartScheduling extends Component {
         const vehicleWeight = Number(vehicleObj.BEARWEIGHT);
         return Number(`${((productWeight / vehicleWeight) * 100).toFixed(2)}`);
       },
-      '体积率':()=>{
+      '体积率': () => {
         const orders = this.state.scheduleResults[index];
         const productVolume = orders.reduce((acc, cur) => acc + cur.volume, 0);
-        const vehicleVolume = Math.round(vehicleObj.BEARVOLUME * vehicleObj.BEARVOLUMERATE) / 100
+        const vehicleVolume = Math.round(vehicleObj.BEARVOLUME * vehicleObj.BEARVOLUMERATE) / 100;
         return Number(`${((productVolume / vehicleVolume) * 100).toFixed(2)}`);
       }
     };
     return action[dataName] ? action[dataName]() : '';
   };
 
+  /**
+   * 删除点位
+   * @author ChenGuangLong
+   * @since 2024/11/21 下午2:52
+   */
+  removePoint = (order, linkIndex) => {
+    const { scheduleResults, unassignedNodes } = this.state;
+    if (linkIndex >= 0) {
+      const link = scheduleResults[linkIndex];
+      scheduleResults[linkIndex] = link.filter(x => x.uuid !== order.uuid);
+      this.loadingPoint(scheduleResults, undefined, 1);     // 点位更新
+      this.setState({ scheduleResults, showPointModal: null });
+      // 线路更新： 里程 时间 过路费 更新
+      if (this.routingPlans[linkIndex]?.length > 0) {
+        this.map.remove(this.routingPlans[linkIndex])
+        this.routingPlans[linkIndex] = undefined
+        this.state.scheduleDataList[linkIndex].routeDistance = null;
+        this.routePlanning(linkIndex);
+      }
+    } else {
+      const newUnassignedNodes = unassignedNodes.filter(x => x.uuid !== order.uuid);
+      this.loadingPoint(undefined, newUnassignedNodes, 2);  // 点位更新
+      this.setState({ unassignedNodes: newUnassignedNodes, showPointModal: null });
+    }
+  };
+
+  /**
+   * 切换线路
+   * @author ChenGuangLong
+   * @since 2024/11/22 上午9:17
+  */
+  switchingLine = (newLinkIndex) => {
+    const [order, oldLink] = this.state.showPointModal;
+    let { scheduleResults, unassignedNodes } = this.state;
+
+    if (oldLink >= 0) {
+      scheduleResults[oldLink] = scheduleResults[oldLink].filter(x => x.uuid !== order.uuid);
+      if (newLinkIndex >= 0) scheduleResults[newLinkIndex].push(order);
+      else unassignedNodes.push(order);
+    } else {
+      unassignedNodes = unassignedNodes.filter(x => x.uuid !== order.uuid);
+      scheduleResults[newLinkIndex].push(order);
+    }
+    this.setState({ showPointModal: null })
+    this.loadingPoint(scheduleResults, unassignedNodes);
+    this.setState({ scheduleResults: [...scheduleResults], unassignedNodes: [...unassignedNodes] });
+
+
+  };
 
   render () {
     const {
@@ -560,6 +672,7 @@ export default class SmartScheduling extends Component {
       showResultDrawer,
       showButtonDrawer,
       btnLoading,
+      showPointModal,
       routingConfig,
       scheduleResults = [],
       scheduleDataList = [],
@@ -667,7 +780,13 @@ export default class SmartScheduling extends Component {
                     <div>鲜食筐：{orders.reduce((acc, cur) => acc + cur.freshContainerCount, 0)}</div>
                   </div>
                 }
-                {/* todo 公里数等 */}
+                {scheduleDataList[index]?.routeDistance?.length > 0 && // 公里数等
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+                    <div>预估公里：{(_.sum(scheduleDataList[index].routeDistance) / 1000).toFixed(2)}</div>
+                    <div>预估耗时：{formatSeconds(_.sum(scheduleDataList[index].routeTime))}</div>
+                    <div>预估过路费: {_.sum(scheduleDataList[index].routeTolls)}元</div>
+                  </div>
+                }
                 {scheduleDataList[index]?.selectEmployees?.map(emp =>
                   <div key={emp.UUID} className={styles.empTag}>
                     <span className={styles.empRole}>{this.empTypeMapper[emp.memberType] ?? emp.memberType}</span>
@@ -990,7 +1109,7 @@ export default class SmartScheduling extends Component {
                             <Button
                               type="link"
                               onClick={() => this.setState({
-                                selectVehicles: selectVehicles.filter((_, i) => i !== index)
+                                selectVehicles: selectVehicles.filter((_v, i) => i !== index)
                               })}
                             >
                               移除
@@ -1081,7 +1200,11 @@ export default class SmartScheduling extends Component {
             {errMessages.map(msg => <div key={msg}>{msg}</div>)}
             {showProgress === 100 &&
               <div>
-                <Button onClick={() => this.resetData()} style={{margin: '10px 20px 0 0'}} type="primary">
+                <Button
+                  type="primary"
+                  style={{margin: '10px 20px 0 0'}}
+                  onClick={() => this.resetData({ showSmartSchedulingModal: true, showMenuModal: true })}
+                >
                   继续新的排线
                 </Button>
                 <Button onClick={() => this.resetData() || this.props.history.push('/tmscode/dispatch')} type="primary">
@@ -1100,7 +1223,7 @@ export default class SmartScheduling extends Component {
             <div>
               线路{showEmpAndVehicleModal + 1}{this.getColorBlocks(showEmpAndVehicleModal)}选择员工和车辆
               <Popover content="在车辆的默认匹配选项中,重量体积是绿色的,表示这个是智能调度推荐的重量体积">
-                <Icon type="question-circle" style={{ color: 'blue', marginLeft: 5 }}/>
+                <Icon type="question-circle" style={{ color: '#999', marginLeft: 5 }}/>
               </Popover>
             </div>
           }
@@ -1141,7 +1264,74 @@ export default class SmartScheduling extends Component {
             volume={showEmpAndVehicleModal >= 0 ? parseFloat(scheduleResults[showEmpAndVehicleModal].reduce((acc, cur) => acc + cur.volume, 0).toFixed(2)) : 0}
           />
         </Modal>
+
+        {Boolean(showPointModal) &&
+          <Modal // ——————————————————————————————操作配送点弹窗——————————————————————————————————
+            title="配送点操作"
+            visible
+            footer={null}
+            onCancel={() => this.setState({ showPointModal: null })}
+          >
+            <div style={{ textAlign: 'center' }}>{convertCodeName(showPointModal[0].deliveryPoint)}</div>
+            {showPointModal[1]>=0 ?
+              <div>当前线路：{showPointModal[1] + 1}{this.getColorBlocks(showPointModal[1], 9)}</div>
+              :
+              <div>当前未分配线路</div>
+            }
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 2fr', gap: 8, textAlign: 'center' }}>
+              <Button onClick={() => this.setState({ showPointModal: null })}>取消</Button>
+              <Popconfirm
+                title="移除后,本次排车将无法使用该点?"
+                onConfirm={() => this.removePoint(...showPointModal)}
+              >
+                <Button type="danger">移除</Button>
+              </Popconfirm>
+              <div>
+                切换线路：
+                <Select value={showPointModal[1]} style={{ width: 90 }} onChange={this.switchingLine}>
+                  <Option value={-1}>未分配</Option>
+                  {scheduleResults.map((_item, i) => (
+                    <Option key={i} value={i} disabled={i === showPointModal[1]}>
+                      {this.getColorBlocks(i, 9)}线路{i + 1}
+                    </Option>
+                  ))}
+                </Select>
+                <Popover content="选择后该配送点直接改变到新选线路最后一个。">
+                  <Icon type="question-circle" style={{ color: '#999', marginLeft: 5 }}/>
+                </Popover>
+              </div>
+            </div>
+          </Modal>
+        }
+
       </div>
     )
   }
-}
+  }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

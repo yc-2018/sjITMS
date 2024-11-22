@@ -100,3 +100,47 @@ export const groupByOrder = data => {
     ownerCount: data ? uniq(data.map(x => x.owner.code)).length : 0,
   }
 }
+
+/**
+ * 将秒数转换为 HH小时mm分钟 格式
+ * @param {number} seconds - 输入的秒数
+ * @returns {string} 格式化后的时间字符串
+ */
+export const formatSeconds = seconds => {
+  if (typeof seconds !== 'number' || seconds < 0) return '无时间';
+  const hours = Math.floor(seconds / 3600); // 计算小时数
+  const minutes = Math.floor((seconds % 3600) / 60); // 计算剩余的分钟数
+  return `${hours}.${minutes}小时`;
+};
+
+/**
+ * @typedef {Object} ScheduleData
+ * @property {string} vehicleModel          - 车辆型号（重量-体积）
+ * @property {string} note                  - 备注
+ * @property {Vehicle} selectVehicle        - 选择的车辆对象
+ * @property {Employees[]} selectEmployees  - 选择的人员对象列表
+ * @property {number[]} routeDistance       - 起点到终点的驾车距离，单位：米 (列表是防止避免异步相加可能丢失数据)
+ * @property {number[]} routeTime           - 时间预计，单位：秒 (列表是防止避免异步相加可能丢失数据)
+ * @property {number[]} routeTolls          - 此驾车路线收费金额，单位：元 (列表是防止避免异步相加可能丢失数据)
+ */
+
+/**
+ * @typedef {Object} Employees
+ * @property {string} UUID         - 人员UUID
+ * @property {string} memberType   - 人员类型
+ * @property {string} CODE         - 人员编号
+ * @property {string} NAME         - 人员名称
+ *  <hr/>....还有很多省略了
+ */
+
+/**
+ * @typedef {Object} Vehicle
+ * @property {string} UUID              - UUID
+ * @property {string} PLATENUMBER       - 车牌号
+ * @property {string} CODE              - 车辆代码
+ * @property {string} BEARWEIGHT        - 车辆载重t
+ * @property {number} BEARVOLUME        - 体积利用率的一个比例系数
+ * @property {number} BEARVOLUMERATE    - 体积利用率的一个比例系数 实际可用体积 = BEARVOLUME * (BEARVOLUMERATE / 100)。
+ * @property {string} VEHICLEGROUP      - 车辆组
+ *  <hr/>....还有很多省略了
+ */
