@@ -45,8 +45,8 @@ import { formatSeconds, getMarkerText, groupByOrder, mapStyle } from '@/pages/SJ
 import { save } from '@/services/sjitms/ScheduleBill';
 import EmpAndVehicleModal from '@/pages/SJTms/SmartScheduling/EmpAndVehicleModal';
 
-const { Option } = Select
-window.selectOrders = undefined      // 如果是配送调度跳转过来的订单池原数据列表
+const { Option } = Select;
+window.selectOrders = undefined;      // 如果是配送调度跳转过来的订单池原数据列表
 
 export default class SmartScheduling extends Component {
   RIGHT_DRAWER_WIDTH = 400;   // 右侧侧边栏宽度（智能调度结果抽屉宽度）
@@ -92,17 +92,17 @@ export default class SmartScheduling extends Component {
       routeOption: 0, // 算路选项
       isBack: 1,      // 是否算返回仓库
     }
-  }
+  };
 
   componentDidMount = async () => {
     try { // 加载高德地图
-      this.AMap = window.AMap ?? await AMapLoader.load(AMapDefaultLoaderObj)
-      this.map = new this.AMap.Map('smartSchedulingAMap', AMapDefaultConfigObj)
+      this.AMap = window.AMap ?? await AMapLoader.load(AMapDefaultLoaderObj);
+      this.map = new this.AMap.Map('smartSchedulingAMap', AMapDefaultConfigObj);
     } catch (error) {
-      message.error(`获取高德地图类对象失败:${error}`)
+      message.error(`获取高德地图类对象失败:${error}`);
     }
-    this.initConfig()
-  }
+    this.initConfig();
+  };
   /**
    * 初始化配置，如多载具
    * @author ChenGuangLong
@@ -144,47 +144,47 @@ export default class SmartScheduling extends Component {
 
   /** 非状态变量改变后可刷新页面 */
   sxYm = () => {
-    this.setState({ sx: this.state.sx + 1 })
-  }
+    this.setState({ sx: this.state.sx + 1 });
+  };
 
   /**
    * 处理选择订单池订单
    * @author ChenGuangLong
    * @since 2024/11/13 上午9:48
-  */
+   */
   handleOrders = (selectOrders = this.orderPoolModalRef?.state?.selectOrders) => {
-    if (!selectOrders?.length) return message.error('请先选择订单')
-    this.orderList = [...selectOrders] // 订单池原数据列表
+    if (!selectOrders?.length) return message.error('请先选择订单');
+    this.orderList = [...selectOrders]; // 订单池原数据列表
     // 有些仓是一个运输订单是多个订单，所以需要合并
     let mergeOrders = Object.values(
       selectOrders.reduce((acc, order) => {
         if (!acc[order.deliveryPoint.uuid]) {
-          acc[order.deliveryPoint.uuid] = JSON.parse(JSON.stringify(order))
+          acc[order.deliveryPoint.uuid] = JSON.parse(JSON.stringify(order));
         } else {
-          acc[order.deliveryPoint.uuid].weight += order.weight                       // 重量
-          acc[order.deliveryPoint.uuid].volume += order.volume                       // 体积
-          acc[order.deliveryPoint.uuid].cartonCount += order.cartonCount ?? 0        // 整件数
-          acc[order.deliveryPoint.uuid].scatteredCount += order.scatteredCount ?? 0  // 散件数
-          acc[order.deliveryPoint.uuid].containerCount += order.containerCount ?? 0  // 周转箱
+          acc[order.deliveryPoint.uuid].weight += order.weight;                       // 重量
+          acc[order.deliveryPoint.uuid].volume += order.volume;                       // 体积
+          acc[order.deliveryPoint.uuid].cartonCount += order.cartonCount ?? 0;        // 整件数
+          acc[order.deliveryPoint.uuid].scatteredCount += order.scatteredCount ?? 0;  // 散件数
+          acc[order.deliveryPoint.uuid].containerCount += order.containerCount ?? 0;  // 周转箱
           // 下面多载具
-          acc[order.deliveryPoint.uuid].coldContainerCount += order.coldContainerCount ?? 0       // 冷藏周转筐
-          acc[order.deliveryPoint.uuid].freezeContainerCount += order.freezeContainerCount ?? 0  // 冷冻周转筐
-          acc[order.deliveryPoint.uuid].insulatedBagCount += order.insulatedBagCount ?? 0       // 保温袋
-          acc[order.deliveryPoint.uuid].freshContainerCount += order.freshContainerCount ?? 0  // 鲜食筐
+          acc[order.deliveryPoint.uuid].coldContainerCount += order.coldContainerCount ?? 0;       // 冷藏周转筐
+          acc[order.deliveryPoint.uuid].freezeContainerCount += order.freezeContainerCount ?? 0;  // 冷冻周转筐
+          acc[order.deliveryPoint.uuid].insulatedBagCount += order.insulatedBagCount ?? 0;       // 保温袋
+          acc[order.deliveryPoint.uuid].freshContainerCount += order.freshContainerCount ?? 0;  // 鲜食筐
         }
-        return acc
+        return acc;
       }, {})
-    )
+    );
     // 没有经纬度的排除
     if (mergeOrders.some(item => !item.longitude || !item.latitude)) {
-      message.warning('已排除没有经纬度的点')
-      mergeOrders = mergeOrders.filter(item => item.longitude && item.latitude)
+      message.warning('已排除没有经纬度的点');
+      mergeOrders = mergeOrders.filter(item => item.longitude && item.latitude);
     }
-    if (mergeOrders.length < 2) return message.error('请选择至少两个要排车的门店！')
-    if (mergeOrders.length > 200) return message.error('最多只能选择200个门店！')
+    if (mergeOrders.length < 2) return message.error('请选择至少两个要排车的门店！');
+    if (mergeOrders.length > 200) return message.error('最多只能选择200个门店！');
 
-    this.setState({ showMenuModal: false, selectOrderList: mergeOrders })
-  }
+    this.setState({ showMenuModal: false, selectOrderList: mergeOrders });
+  };
 
   /**
    * 智能调度 排单排线
@@ -267,16 +267,16 @@ export default class SmartScheduling extends Component {
    * @since 2024/11/8 上午10:59
    */
   loadingPoint = (groupOrders = this.state.scheduleResults, unassigneds = this.state.unassignedNodes ?? [], refresh) => {
-    const { map, AMap,  warehouseMarker, warehousePoint } = this
-    const { isMultiVehicle } = this.state
+    const { map, AMap, warehouseMarker, warehousePoint } = this;
+    const { isMultiVehicle } = this.state;
     // ————————————仓库点————————————
     if (!warehouseMarker) {
       this.warehouseMarker = new AMap.Marker({
         position: warehousePoint.split(','),      // 设置Marker的位置
         anchor: 'center',              // 设置Marker的锚点
         content: `<div class="${styles.point}" style="border: white solid 2px;">仓</div>`
-      })
-      map.add(this.warehouseMarker)
+      });
+      map.add(this.warehouseMarker);
     }
 
     // ——————文本框就创建一次 循环利用——————
@@ -304,61 +304,61 @@ export default class SmartScheduling extends Component {
     // ————————————分组点位————————————
     ((refresh ?? 1) === 1) && groupOrders.forEach((orders, index) => {  // 每个组循环
       const markers = orders.map((order, i) => {            // 组内循环
-        const { longitude, latitude } = order
+        const { longitude, latitude } = order;
         const marker = new AMap.Marker({
           position: [longitude, latitude],      // 设置Marker的位置
           anchor: 'center',                     // 设置Marker的锚点
           content: `<div style="background: ${colors[index]}" class="${styles.point}">${i + 1}</div>`
-        })
+        });
         marker.on('mouseover', () => {                                        // 鼠标移入
           // 创建一个 DOM 容器，将 React 组件渲染到该容器中
-          this.text.setPosition(marker.getPosition())                               // 改变经纬度
-          this.text.setText(getMarkerText(order, isMultiVehicle))  // 设置文本标注内容
+          this.text.setPosition(marker.getPosition());                               // 改变经纬度
+          this.text.setText(getMarkerText(order, isMultiVehicle));  // 设置文本标注内容
           map.add(this.text);
-        })
+        });
         marker.on('mouseout', () => {                                         // 鼠标移出
-          this.text && map.remove(this.text)
-        })
+          this.text && map.remove(this.text);
+        });
         marker.on('click', () => {
           this.setState({ showPointModal: [order, index] });
-        })
-        return marker
-      })
-      map.add(markers)
-      this.groupMarkers[index] = markers
+        });
+        return marker;
+      });
+      map.add(markers);
+      this.groupMarkers[index] = markers;
     });
     // ————————————没分组点位————————————
     if (unassigneds.length === 0 || (refresh ?? 2) !== 2) return;
     this.unassignedMarkers = unassigneds.map(order => {
-      const { longitude, latitude } = order
+      const { longitude, latitude } = order;
       // 创建一个 DOM 容器，将 React 组件渲染到该容器中
       const contentDiv = document.createElement('div');
       ReactDOM.render(
         <Icon type="warning" theme="twoTone" style={{ fontSize: 25 }} twoToneColor="#eb2f96"/>,
         contentDiv
-      )
+      );
       const marker = new AMap.Marker({
         position: [longitude, latitude],      // 设置Marker的位置
         anchor: 'center',                     // 设置Marker的锚点
         content: contentDiv
-      })
+      });
       marker.on('mouseover', () => {                                        // 鼠标移入
         // 创建一个 DOM 容器，将 React 组件渲染到该容器中
-        this.text.setPosition(marker.getPosition())                               // 改变经纬度
-        this.text.setText(getMarkerText(order, isMultiVehicle))  // 设置文本标注内容
+        this.text.setPosition(marker.getPosition());                               // 改变经纬度
+        this.text.setText(getMarkerText(order, isMultiVehicle));  // 设置文本标注内容
         map.add(this.text);
-      })
+      });
       marker.on('mouseout', () => {                                         // 鼠标移出
-        this.text && map.remove(this.text)
-      })
+        this.text && map.remove(this.text);
+      });
       marker.on('click', () => {
         this.setState({ showPointModal: [order, -1] });
-      })
-      return marker
-    })
-    map.add(this.unassignedMarkers)
+      });
+      return marker;
+    });
+    map.add(this.unassignedMarkers);
 
-  }
+  };
 
   /**
    * 路线规划
@@ -373,14 +373,14 @@ export default class SmartScheduling extends Component {
     scheduleDataList[index].routeTolls = [];
     // 如果有线路的了，就是删除
     if (this.routingPlans[index]?.length > 0) {
-      this.map.remove(this.routingPlans[index])
-      this.routingPlans[index] = undefined
+      this.map.remove(this.routingPlans[index]);
+      this.routingPlans[index] = undefined;
       scheduleDataList[index].routeDistance = null;
       // return this.sxYm()
       return this.setState({ scheduleDataList: [...scheduleDataList] });
     }
     // 没有线路，开始创建线路
-    const { map, AMap,  groupMarkers, warehouseMarker } = this
+    const { map, AMap, groupMarkers, warehouseMarker } = this;
     // 构造路线导航类
     const driving = new AMap.Driving({
       hideMarkers: true,
@@ -388,99 +388,99 @@ export default class SmartScheduling extends Component {
       showTraffic: false,
       autoFitView: false,
       outlineColor: colors[index],
-    })
-    this.routingPlans[index] = []                                                   // 初始化路线数组
+    });
+    this.routingPlans[index] = [];                                                   // 初始化路线数组
     // 因为路线规划一次就最多16个 还要拆分多次调用
-    const aLine = [warehouseMarker, ...groupMarkers[index], warehouseMarker]  // 添加起始点和终点 才是一个完整的路径
-    const arr16 = []                                                          // 拆分后的数组
+    const aLine = [warehouseMarker, ...groupMarkers[index], warehouseMarker];  // 添加起始点和终点 才是一个完整的路径
+    const arr16 = [];                                                          // 拆分后的数组
     for (let i = 0; i < aLine.length; i += (16 - 1)) {                      // 步进值确保每组之间有一个重叠元素
-      arr16.push(aLine.slice(i, i + 16))
+      arr16.push(aLine.slice(i, i + 16));
     }
-    const isLoad = Array(arr16.length).fill(true)   // 多次规划路线是否加载全部完毕|标记
+    const isLoad = Array(arr16.length).fill(true);   // 多次规划路线是否加载全部完毕|标记
     // 每16个点做一次规划
-    arr16.forEach((line,i) => {
-      const waypoints = line.slice(1, line.length - 1).map(x => x.getPosition())
+    arr16.forEach((line, i) => {
+      const waypoints = line.slice(1, line.length - 1).map(x => x.getPosition());
       // 根据起终点经纬度规划驾车导航路线
       driving.search(line[0].getPosition(), line[line.length - 1].getPosition(), { waypoints },
         (status, result) => {
           if (status === 'complete') {
-            this.setState({ fullScreenLoading: true })
-            const path = []  // 路径经纬度数组初始化
+            this.setState({ fullScreenLoading: true });
+            const path = [];  // 路径经纬度数组初始化
             // 从响应里面拿到所有的点位
-            result.routes[0].steps.forEach(step => step.path.forEach(x => path.push([x.lng, x.lat])))
+            result.routes[0].steps.forEach(step => step.path.forEach(x => path.push([x.lng, x.lat])));
             // 创建折线图
             const Polyline = new AMap.Polyline({
               path,                           // 设置线覆盖物路径
               showDir: true,
               strokeColor: colors[index],     // 线颜色
               strokeWeight: 6                 // 线宽
-            })
-            this.routingPlans[index].push(Polyline)
-            map.add(Polyline)
-            isLoad[i] = false
+            });
+            this.routingPlans[index].push(Polyline);
+            map.add(Polyline);
+            isLoad[i] = false;
             scheduleDataList[index].routeDistance[i] = result.routes[0].distance;
             scheduleDataList[index].routeTime[i] = result.routes[0].time;
             scheduleDataList[index].routeTolls[i] = result.routes[0].tolls;
             this.setState({ fullScreenLoading: isLoad.some(x => x), scheduleDataList });
             // this.sxYm()
-          } else message.error('获取驾车数据失败')
-        })
-    })
-  }
+          } else message.error('获取驾车数据失败');
+        });
+    });
+  };
 
   /**
    * 重置数据
    * @author ChenGuangLong
    * @since 2024/11/12 上午9:49
-  */
+   */
   resetData = (expStateData = {}) => {
     // 清空地图覆盖物
-    this.map.clearMap()
-    this.routingPlans = []
-    this.groupMarkers = []
-    this.warehouseMarker = undefined
+    this.map.clearMap();
+    this.routingPlans = [];
+    this.groupMarkers = [];
+    this.warehouseMarker = undefined;
     // 清空数据
     this.setState({
       scheduleResults: [],
       scheduleDataList: [],
       selectOrderList: [],
       selectVehicles: [],
-      unassignedNodes:[],
+      unassignedNodes: [],
       showButtonDrawer: true,
       showResultDrawer: false,
       showProgress: -1,
       errMessages: [],
       ...expStateData,
-    })
-  }
+    });
+  };
 
   /**
    * 生成排车单（批量）
    * @author ChenGuangLong
    * @since 2024/11/12 上午9:47
-  */
-  createSchedules = async() => {
-    const { orderList } = this
-    const { scheduleResults, scheduleDataList } = this.state
-    let errFlag = false   // 错误标志,forEach的return只能结束内部方法，不能结束外层循环，外层继续循环继续提示报错，到生成排车单前用标记看看生不生成
-    const  scheduleParamBodyList = []  // 准备排车单创建列表
+   */
+  createSchedules = async () => {
+    const { orderList } = this;
+    const { scheduleResults, scheduleDataList } = this.state;
+    let errFlag = false;   // 错误标志,forEach的return只能结束内部方法，不能结束外层循环，外层继续循环继续提示报错，到生成排车单前用标记看看生不生成
+    const scheduleParamBodyList = [];  // 准备排车单创建列表
     scheduleResults.forEach((link, index) => {
-      const linkOrders = []   // 一条路线的全部单（排车单全部明细：一个门店可能有多张单)
-      let deliveryNumber = 1
+      const linkOrders = [];   // 一条路线的全部单（排车单全部明细：一个门店可能有多张单)
+      let deliveryNumber = 1;
       link.forEach(order => {   // 每个门店的全部单都找出来
-        let store = orderList.filter(x => x.deliveryPoint.uuid === order.deliveryPoint.uuid)
-        store = store.map(item => ({ ...item, deliveryNumber: deliveryNumber++ }))  // 好像不用deliveryNumber，就是按顺序分deliveryNumber的
-        linkOrders.push(...store)
-      })
+        let store = orderList.filter(x => x.deliveryPoint.uuid === order.deliveryPoint.uuid);
+        store = store.map(item => ({ ...item, deliveryNumber: deliveryNumber++ }));  // 好像不用deliveryNumber，就是按顺序分deliveryNumber的
+        linkOrders.push(...store);
+      });
       // 禁止整车为转运单 针对福建仓
       if (linkOrders.length > 0 && linkOrders.filter(e => e.orderType === 'Transshipment').length === linkOrders.length) {
-        errFlag = true
-        return message.error(`线路${index + 1}:禁止整车为转运单排车！`)
+        errFlag = true;
+        return message.error(`线路${index + 1}:禁止整车为转运单排车！`);
       }
       // ——————————开始构建参数——————————
-      const orderType = uniqBy(linkOrders.map(x => x.orderType)).shift() // 从去重并返回第一个订单类型。
-      const orderTypeArr = ['Delivery', 'DeliveryAgain', 'Transshipment', 'OnlyBill']
-      const type = orderTypeArr.includes(orderType) ? 'Job' : 'Task'   // 排车单类型
+      const orderType = uniqBy(linkOrders.map(x => x.orderType)).shift(); // 从去重并返回第一个订单类型。
+      const orderTypeArr = ['Delivery', 'DeliveryAgain', 'Transshipment', 'OnlyBill'];
+      const type = orderTypeArr.includes(orderType) ? 'Job' : 'Task';   // 排车单类型
       // 选的车
       const selectVehicle = scheduleDataList[index].selectVehicle ?? {};
       // 选择的人员
@@ -488,35 +488,35 @@ export default class SmartScheduling extends Component {
       const driver = selectEmployees.find(x => x.memberType === 'Driver');
       // 订单明细
       const details = linkOrders.map(item => {
-        if (!item.isSplit) item.isSplit = item.cartonCount === item.stillCartonCount ? 0 : 1
-        item.cartonCount = item.stillCartonCount
-        item.scatteredCount = item.stillScatteredCount
-        item.containerCount = item.stillContainerCount
-        item.coldContainerCount = item.stillColdContainerCount
-        item.freezeContainerCount = item.stillFreezeContainerCount
-        item.insulatedBagCount = item.stillInsulatedBagCount
-        item.insulatedContainerCount = item.stillInsulatedContainerCount
-        item.freshContainerCount = item.stillFreshContainerCount
+        if (!item.isSplit) item.isSplit = item.cartonCount === item.stillCartonCount ? 0 : 1;
+        item.cartonCount = item.stillCartonCount;
+        item.scatteredCount = item.stillScatteredCount;
+        item.containerCount = item.stillContainerCount;
+        item.coldContainerCount = item.stillColdContainerCount;
+        item.freezeContainerCount = item.stillFreezeContainerCount;
+        item.insulatedBagCount = item.stillInsulatedBagCount;
+        item.insulatedContainerCount = item.stillInsulatedContainerCount;
+        item.freshContainerCount = item.stillFreshContainerCount;
 
         if (item.reviewed) {
-          item.realCartonCount = item.stillCartonCount
-          item.realScatteredCount = item.stillScatteredCount
-          item.realContainerCount = item.stillContainerCount
+          item.realCartonCount = item.stillCartonCount;
+          item.realScatteredCount = item.stillScatteredCount;
+          item.realContainerCount = item.stillContainerCount;
 
-          item.realColdContainerCount = item.stillColdContainerCount
-          item.realFreezeContainerCount = item.stillFreezeContainerCount
-          item.realInsulatedBagCount = item.stillInsulatedBagCount
-          item.realInsulatedContainerCount = item.stillInsulatedContainerCount
-          item.realFreshContainerCount = item.stillFreshContainerCount
+          item.realColdContainerCount = item.stillColdContainerCount;
+          item.realFreezeContainerCount = item.stillFreezeContainerCount;
+          item.realInsulatedBagCount = item.stillInsulatedBagCount;
+          item.realInsulatedContainerCount = item.stillInsulatedContainerCount;
+          item.realFreshContainerCount = item.stillFreshContainerCount;
         }
         return {
           ...item,
           orderUuid: item.orderUuid || item.uuid,
           orderNumber: item.orderNumber || item.billNumber,
-        }
-      })
+        };
+      });
       // 主表汇总数据
-      const orderSummary = groupByOrder(details)
+      const orderSummary = groupByOrder(details);
       // 司机数据
       const carrier = driver
         ? {
@@ -524,7 +524,7 @@ export default class SmartScheduling extends Component {
           code: driver.CODE,
           name: driver.NAME,
         }
-        : {}
+        : {};
       // 请求体
       scheduleParamBodyList.push({
         type,
@@ -549,30 +549,30 @@ export default class SmartScheduling extends Component {
         companyUuid: loginCompany().uuid,
         dispatchCenterUuid: loginOrg().uuid,
         note: scheduleDataList[index].note || '',
-      })
-    })
+      });
+    });
 
-    if (errFlag) return
-    if (scheduleParamBodyList.length !== scheduleResults.length) return message.error('线路数和生成数不相等!')
+    if (errFlag) return;
+    if (scheduleParamBodyList.length !== scheduleResults.length) return message.error('线路数和生成数不相等!');
     // ——————————开始请求创建排车单——————————
-    const errMessages = []  // 记录失败信息
-    this.setState({ showProgress: 1 })
+    const errMessages = [];  // 记录失败信息
+    this.setState({ showProgress: 1 });
     for (const paramBody of scheduleParamBodyList) {  // 循环创建，用forEach会异步循环，导致进度条无法正常显示
-      const index = scheduleParamBodyList.indexOf(paramBody)
-      const linkName = `线路${index + 1}`
-      const res = await save(paramBody)
-      if (res.success) message.success(`${linkName}创建成功`)
+      const index = scheduleParamBodyList.indexOf(paramBody);
+      const linkName = `线路${index + 1}`;
+      const res = await save(paramBody);
+      if (res.success) message.success(`${linkName}创建成功`);
       else {
-        message.error(`${linkName}创建失败`)
-        errMessages.push(`${linkName}:${res.message}`)
-        this.setState({ errMessages: [...errMessages] })
+        message.error(`${linkName}创建失败`);
+        errMessages.push(`${linkName}:${res.message}`);
+        this.setState({ errMessages: [...errMessages] });
       }
-      this.setState({ showProgress: parseFloat(((index + 1) / scheduleParamBodyList.length * 100).toFixed(1)) })
+      this.setState({ showProgress: parseFloat(((index + 1) / scheduleParamBodyList.length * 100).toFixed(1)) });
     }
     // ——————创建结束后——————
-    this.orderPoolModalRef?.refreshOrderPool?.()      // 刷新订单池
-    this.vehiclePoolModalRef?.refreshVehiclePool?.()  // 刷新车辆池
-  }
+    this.orderPoolModalRef?.refreshOrderPool?.();      // 刷新订单池
+    this.vehiclePoolModalRef?.refreshVehiclePool?.();  // 刷新车辆池
+  };
 
   /**
    * 获取颜色块
@@ -582,7 +582,7 @@ export default class SmartScheduling extends Component {
    * @since 2024/11/19 下午3:33
    */
   getColorBlocks = (index, px) =>
-    <div className={styles.LinkColor} style={{ background: colors[index], ...(px ? { width: px, height: px } : {}) }}/>
+    <div className={styles.LinkColor} style={{ background: colors[index], ...(px ? { width: px, height: px } : {}) }}/>;
 
   /**
    * 获取对应索引的车辆信息
@@ -590,7 +590,7 @@ export default class SmartScheduling extends Component {
    * @param index 车辆索引
    * @author ChenGuangLong
    * @since 2024/11/19 下午4:35
-  */
+   */
   getVehicleInfo = (dataName, index) => {
     const vehicleObj = this.state.scheduleDataList[index].selectVehicle;
     const action = {
@@ -627,8 +627,8 @@ export default class SmartScheduling extends Component {
       this.setState({ scheduleResults, showPointModal: null });
       // 线路更新： 里程 时间 过路费 更新
       if (this.routingPlans[linkIndex]?.length > 0) {
-        this.map.remove(this.routingPlans[linkIndex])
-        this.routingPlans[linkIndex] = undefined
+        this.map.remove(this.routingPlans[linkIndex]);
+        this.routingPlans[linkIndex] = undefined;
         this.state.scheduleDataList[linkIndex].routeDistance = null;
         this.routePlanning(linkIndex);
       }
@@ -643,7 +643,7 @@ export default class SmartScheduling extends Component {
    * 切换线路
    * @author ChenGuangLong
    * @since 2024/11/22 上午9:17
-  */
+   */
   switchingLine = (newLinkIndex) => {
     const [order, oldLink] = this.state.showPointModal;
     let { scheduleResults, unassignedNodes } = this.state;
@@ -656,10 +656,9 @@ export default class SmartScheduling extends Component {
       unassignedNodes = unassignedNodes.filter(x => x.uuid !== order.uuid);
       scheduleResults[newLinkIndex].push(order);
     }
-    this.setState({ showPointModal: null })
+    this.setState({ showPointModal: null });
     this.loadingPoint(scheduleResults, unassignedNodes);
     this.setState({ scheduleResults: [...scheduleResults], unassignedNodes: [...unassignedNodes] });
-
 
   };
 
@@ -684,7 +683,7 @@ export default class SmartScheduling extends Component {
       isMultiVehicle,
       showProgress,
       errMessages,
-    } = this.state
+    } = this.state;
 
     return (
       <div className={styles.SmartScheduling} id="smartSchedulingPage">
@@ -855,8 +854,8 @@ export default class SmartScheduling extends Component {
                 <Button
                   type="link"
                   onClick={e => {
-                    e.stopPropagation()
-                    this.map.setFitView(this.groupMarkers[index], false, [60, 60, 60, 500]) // 不是立即过渡 四周边距，上、下、左、右
+                    e.stopPropagation();
+                    this.map.setFitView(this.groupMarkers[index], false, [60, 60, 60, 500]); // 不是立即过渡 四周边距，上、下、左、右
                   }}
                 >
                   聚焦
@@ -869,16 +868,16 @@ export default class SmartScheduling extends Component {
               <Popover
                 content={
                   <>
-                    <div style={{textAlign: 'center'}}>地图底色设置</div>
+                    <div style={{ textAlign: 'center' }}>地图底色设置</div>
                     {Object.keys(mapStyle).map(name =>
                       <div
                         key={name}
                         className={styles.mapStyleItem}
                         style={this.mapStyle === name ? { boxShadow: 'inset 1px 1px 4px 0 #39487061' } : {}}
                         onClick={() => {
-                          this.map.setMapStyle(`amap://styles/${mapStyle[name]}`)
-                          this.sxYm(this.mapStyle = name)
-                          window.localStorage.setItem('mapStyle', name)
+                          this.map.setMapStyle(`amap://styles/${mapStyle[name]}`);
+                          this.sxYm(this.mapStyle = name);
+                          window.localStorage.setItem('mapStyle', name);
                         }}
                       >
                         {name}
@@ -890,10 +889,10 @@ export default class SmartScheduling extends Component {
                 <Button
                   style={{ marginRight: 8 }}
                   onClick={() => {
-                    const mapStyleName = this.mapStyle === '标准' ? '幻影黑' : '标准'
-                    this.map.setMapStyle(`amap://styles/${mapStyle[mapStyleName]}`)
-                    this.sxYm(this.mapStyle = mapStyleName)
-                    window.localStorage.setItem('mapStyle', mapStyleName)
+                    const mapStyleName = this.mapStyle === '标准' ? '幻影黑' : '标准';
+                    this.map.setMapStyle(`amap://styles/${mapStyle[mapStyleName]}`);
+                    this.sxYm(this.mapStyle = mapStyleName);
+                    window.localStorage.setItem('mapStyle', mapStyleName);
                   }}
                 >
                   <Icon type="skin" theme={this.mapStyle === '标准' ? 'outlined' : 'filled'}/>
@@ -936,7 +935,7 @@ export default class SmartScheduling extends Component {
                     <span>重量:{(order.weight / 1000).toFixed(3)}</span>
                   </div>
                   {isMultiVehicle &&  // 多载具
-                    <div style={{display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8}}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
                       <span>冷藏筐：{order.coldContainerCount}</span>
                       <span>冷冻筐：{order.freezeContainerCount}</span>
                       <span>保温袋：{order.insulatedBagCount}</span>
@@ -1053,8 +1052,8 @@ export default class SmartScheduling extends Component {
                 &nbsp;&nbsp;
                 <Button   // 打开运力池按钮
                   onClick={() => {
-                    this.setState({ showVehicleModal: true })
-                    if (selectVehicles.length) message.warning('此操作会覆盖本来选择的车辆数据，如果不想被覆盖可以选择手动添加按钮！')
+                    this.setState({ showVehicleModal: true });
+                    if (selectVehicles.length) message.warning('此操作会覆盖本来选择的车辆数据，如果不想被覆盖可以选择手动添加按钮！');
                   }}
                 >
                   加载车辆参数
@@ -1083,9 +1082,9 @@ export default class SmartScheduling extends Component {
                                 size="small"
                                 disabled={record.vehicleCount <= 1}
                                 onClick={() => {
-                                  let { selectVehicles: vehicles } = this.state
-                                  vehicles[index].vehicleCount--
-                                  this.setState({ selectVehicles: vehicles })
+                                  let { selectVehicles: vehicles } = this.state;
+                                  vehicles[index].vehicleCount--;
+                                  this.setState({ selectVehicles: vehicles });
                                 }}
                               >
                                 -
@@ -1094,9 +1093,9 @@ export default class SmartScheduling extends Component {
                               <Button
                                 size="small"
                                 onClick={() => {
-                                  let { selectVehicles: vehicles } = this.state
-                                  vehicles[index].vehicleCount++
-                                  this.setState({ selectVehicles: vehicles })
+                                  let { selectVehicles: vehicles } = this.state;
+                                  vehicles[index].vehicleCount++;
+                                  this.setState({ selectVehicles: vehicles });
                                 }}
                               >
                                 +
@@ -1147,24 +1146,24 @@ export default class SmartScheduling extends Component {
           visible={showVehicleModal}
           onCancel={() => this.setState({ showVehicleModal: false })}
           onOk={() => {
-            if (!this.vehiclePoolModalRef.state) return message.error('数据异常，请刷新页面重试')
-            const { vehicleData, vehicleRowKeys } = this.vehiclePoolModalRef.state
-            if (!vehicleRowKeys.length) return message.error('请选择车辆')
-            let selectVehicleList = vehicleData.filter(v => vehicleRowKeys.includes(v.UUID))
+            if (!this.vehiclePoolModalRef.state) return message.error('数据异常，请刷新页面重试');
+            const { vehicleData, vehicleRowKeys } = this.vehiclePoolModalRef.state;
+            if (!vehicleRowKeys.length) return message.error('请选择车辆');
+            let selectVehicleList = vehicleData.filter(v => vehicleRowKeys.includes(v.UUID));
             if (selectVehicleList.some(v => !v.BEARVOLUME || !v.BEARWEIGHT)) {
-              message.warning('已过滤没有重量体积的车辆')
-              selectVehicleList = selectVehicleList.filter(v => v.BEARVOLUME && v.BEARWEIGHT)
+              message.warning('已过滤没有重量体积的车辆');
+              selectVehicleList = selectVehicleList.filter(v => v.BEARVOLUME && v.BEARWEIGHT);
             }
-            if (selectVehicleList.length === 0) return message.error('选择车辆均为无效车辆')
-            if (selectVehicleList.length > 50) return message.error('车辆最多只能选择50辆')
+            if (selectVehicleList.length === 0) return message.error('选择车辆均为无效车辆');
+            if (selectVehicleList.length > 50) return message.error('车辆最多只能选择50辆');
             // ——————————————车辆分组——————————————
             // 创建一个空对象来存储分组后的车量数据
-            const groupedData = {}
+            const groupedData = {};
             // 遍历原始数据
             selectVehicleList.forEach(item => {
               // 创建一个唯一键，由重量、体积和班组组成
               // const key = `${item.BEARWEIGHT}-${Math.round(item.BEARVOLUME * item.BEARVOLUMERATE) / 100}-${item.VEHICLEGROUP}`
-              const key = `${item.BEARWEIGHT}-${Math.round(item.BEARVOLUME * item.BEARVOLUMERATE) / 100}`
+              const key = `${item.BEARWEIGHT}-${Math.round(item.BEARVOLUME * item.BEARVOLUMERATE) / 100}`;
               // 如果当前组合不存在，则创建一个新的条目
               if (!groupedData[key]) {
                 groupedData[key] = {
@@ -1172,14 +1171,14 @@ export default class SmartScheduling extends Component {
                   // vehicleGroup: item.VEHICLEGROUP,
                   weight: parseFloat(item.BEARWEIGHT.replace(/[^0-9.]/g, '')), // 转换为数字,
                   volume: Math.round(item.BEARVOLUME * item.BEARVOLUMERATE) / 100,
-                }
+                };
               }
               // 更新车辆数量
-              groupedData[key].vehicleCount++
-            })
+              groupedData[key].vehicleCount++;
+            });
             // 将分组后的数据转换为数组
-            const groupedVehicle = Object.values(groupedData)
-            this.setState({ showVehicleModal: false, selectVehicles: groupedVehicle })
+            const groupedVehicle = Object.values(groupedData);
+            this.setState({ showVehicleModal: false, selectVehicles: groupedVehicle });
           }}
         >
           <VehiclePoolPage
@@ -1202,7 +1201,7 @@ export default class SmartScheduling extends Component {
               <div>
                 <Button
                   type="primary"
-                  style={{margin: '10px 20px 0 0'}}
+                  style={{ margin: '10px 20px 0 0' }}
                   onClick={() => this.resetData({ showSmartSchedulingModal: true, showMenuModal: true })}
                 >
                   继续新的排线
@@ -1231,7 +1230,7 @@ export default class SmartScheduling extends Component {
           // style={{ top: 20 }}
           visible={showEmpAndVehicleModal >= 0}
           onCancel={() => this.setState({ showEmpAndVehicleModal: -1 })}
-          onOk={async() => {
+          onOk={async () => {
             const { selectVehicle, selectEmployees, } = this.empAndVehicleModalRef.state;
             const { dispatchConfig, checkVehicleFollower } = this.empAndVehicleModalRef;
             if (selectEmployees.filter(item => item.memberType === 'Driver').length > 1) return message.error('只能有一个驾驶员哦');
@@ -1243,18 +1242,18 @@ export default class SmartScheduling extends Component {
                 return Modal.confirm({
                   title: '车辆与人员不匹配，确定生成排车单吗？',
                   onOk: () => {
-                    const dataList = [...scheduleDataList]
-                    dataList[showEmpAndVehicleModal].selectVehicle = selectVehicle
-                    dataList[showEmpAndVehicleModal].selectEmployees = selectEmployees
+                    const dataList = [...scheduleDataList];
+                    dataList[showEmpAndVehicleModal].selectVehicle = selectVehicle;
+                    dataList[showEmpAndVehicleModal].selectEmployees = selectEmployees;
                     this.setState({ showEmpAndVehicleModal: -1, scheduleDataList: dataList });
-                    },
+                  },
                 });
               }
               if (!includes && dispatchConfig.checkVehicleFollower === 2) return message.error('车辆与人员不匹配');
             }
-            const dataList = [...scheduleDataList]
-            dataList[showEmpAndVehicleModal].selectVehicle = selectVehicle
-            dataList[showEmpAndVehicleModal].selectEmployees = selectEmployees
+            const dataList = [...scheduleDataList];
+            dataList[showEmpAndVehicleModal].selectVehicle = selectVehicle;
+            dataList[showEmpAndVehicleModal].selectEmployees = selectEmployees;
             this.setState({ showEmpAndVehicleModal: -1, scheduleDataList: dataList });
           }}
         >
@@ -1273,7 +1272,7 @@ export default class SmartScheduling extends Component {
             onCancel={() => this.setState({ showPointModal: null })}
           >
             <div style={{ textAlign: 'center' }}>{convertCodeName(showPointModal[0].deliveryPoint)}</div>
-            {showPointModal[1]>=0 ?
+            {showPointModal[1] >= 0 ?
               <div>当前线路：{showPointModal[1] + 1}{this.getColorBlocks(showPointModal[1], 9)}</div>
               :
               <div>当前未分配线路</div>
@@ -1305,33 +1304,6 @@ export default class SmartScheduling extends Component {
         }
 
       </div>
-    )
+    );
   }
-  }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}

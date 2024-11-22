@@ -1,13 +1,14 @@
-.SmartScheduling{
+.SmartScheduling {
   .modalxxxxxx {
     padding: unset !important;
+
     [class="ant-modal-content"] {
       max-height: 100vh;
     }
   }
 
   // 左边按钮侧边栏
-  .leftButtonSidebar{
+  .leftButtonSidebar {
     position: absolute;
     top: 0;
     width: 250px;
@@ -20,7 +21,7 @@
   }
 
   // 左侧边栏开关
-  .leftSidebarSwitch{
+  .leftSidebarSwitch {
     position: absolute;
     z-index: 1000;
     top: 48vh;
@@ -29,15 +30,16 @@
     border-radius: 0 10px 10px 0;
     transition: all 0.5s;
   }
+
   // 图标样式
-  .iconStyle{
+  .iconStyle {
     font-size: 30px;
     color: #999;
     transition: all 0.5s;
   }
 
   // 右侧边栏开关
-  .rightSidebarSwitch{
+  .rightSidebarSwitch {
     z-index: 1;
     top: 48vh;
     cursor: pointer;
@@ -49,7 +51,7 @@
   }
 
   // 智能调度结果卡片
-  .resultCard{
+  .resultCard {
     padding: 4px;
     border-radius: 8px;
     margin-bottom: 5px;
@@ -57,28 +59,29 @@
     box-shadow: 2px 2px 5px 0 #39487061;
 
     // 人员标签
-    .empTag{
+    .empTag {
       display: inline-block;
       box-shadow: 2px 2px 4px 0 #8f9ca1;
       border-radius: 4px;
       padding: 3px;
       margin: 2px 5px 2px 0;
       // 角色
-      .empRole{
+      .empRole {
         border-radius: 4px;
         background-color: #c5eee500;
         border: #d1d1d1 solid 1px;
         margin-right: 2px;
       }
+
       // 人员姓名
-      .empName{
+      .empName {
         border: #ffffff00 solid 1px;
       }
     }
   }
 
   // 智能调度结果底部
-  .resultBottom{
+  .resultBottom {
     position: absolute;
     bottom: 0;
     width: 100%;
@@ -93,7 +96,7 @@
 }
 
 // 线路颜色
-.LinkColor{
+.LinkColor {
   width: 14px;
   height: 14px;
   margin-right: 5px;
@@ -101,7 +104,7 @@
 }
 
 // 智能调度详细卡片
-.detailCard{
+.detailCard {
   width: 320px;
   padding: 4px;
   border-radius: 8px;
@@ -118,13 +121,14 @@
     border: 1px solid #4d4d4d;
     border-radius: 50%;
   }
-  .w50{
+
+  .w50 {
     display: inline-block;
     width: 50%;
   }
 }
 
-.mapStyleItem{    // 地图皮肤按钮
+.mapStyleItem { // 地图皮肤按钮
   margin: 3px;
   padding: 3px;
   cursor: pointer;
@@ -134,7 +138,7 @@
 }
 
 
-.point{   // 高德地图点位样式
+.point { // 高德地图点位样式
   background: black;
   border: black solid 2px;
   border-radius: 50%;
@@ -144,7 +148,7 @@
   color: white;
 }
 
-.empAndVehicleModal {   // ————————————智能调度人员车辆选择弹窗————————————
+.empAndVehicleModal { // ————————————智能调度人员车辆选择弹窗————————————
   .panel {
     border: 2px solid #3b77e3;
     color: #000000a6;
@@ -156,10 +160,12 @@
     text-align: center;
     margin: 0 0 4px 5px;
   }
+
   .panelSelect {
     border-color: #20bf55;
     color: #20bf55;
   }
+
   .employeeCardContent {
     height: 100%;
     display: flex;
@@ -169,6 +175,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+
   .employeeName {
     width: 100%;
     line-height: 24px;
@@ -185,11 +192,11 @@
     padding: 0 5px 0 0;       // 内边距设置
     margin: 5px 0 0 5px;      // 外边距设置
 
-    [role="combobox"]{  // 人员类型选择器样式
+    [role="combobox"] { // 人员类型选择器样式
       border: none; // 去掉组件本身的边框
       border-right: 1px solid #ffffff;
       border-radius: 5px 0 0 5px;
-      border-color: #cdcdcd!important;  // 去掉组件本身的边框
+      border-color: #cdcdcd !important; // 去掉组件本身的边框
     }
   }
 }

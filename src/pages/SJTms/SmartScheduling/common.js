@@ -1,7 +1,7 @@
-import React from 'react'
-import ReactDOMServer from 'react-dom/server'
-import { sumBy, uniq } from 'lodash'
-import { Divider } from 'antd'
+import React from 'react';
+import ReactDOMServer from 'react-dom/server';
+import { sumBy, uniq } from 'lodash';
+import { Divider } from 'antd';
 
 /**
  * 高德样式对象
@@ -20,13 +20,13 @@ export const mapStyle = {
   '靛青蓝': 'blue',
   '极夜蓝': 'darkblue',
   '酱籽': 'wine'
-}
+};
 
 const div2 = (name, value) =>
   <div>
     <div>{name}</div>
     <div>{value}</div>
-  </div>
+  </div>;
 /**
  * 高德点文本div转字符串返回
  * @param order          统计好的订单
@@ -42,10 +42,10 @@ export const getMarkerText = (order, isMultiVehicle = false) => ReactDOMServer.r
     <Divider style={{ margin: '5px 0 0 0' }}/>
     <div>线路：{order.archLine?.code}</div>
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, textAlign: 'center' }}>
-      {div2('重量',(order.weight / 1000).toFixed(3))}
-      {div2('体积',order.volume.toFixed(2))}
-      {div2('整件数',order.cartonCount)}
-      {div2('周转箱数',order.containerCount)}
+      {div2('重量', (order.weight / 1000).toFixed(3))}
+      {div2('体积', order.volume.toFixed(2))}
+      {div2('整件数', order.cartonCount)}
+      {div2('周转箱数', order.containerCount)}
     </div>
     {isMultiVehicle &&
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8, textAlign: 'center' }}>
@@ -56,13 +56,13 @@ export const getMarkerText = (order, isMultiVehicle = false) => ReactDOMServer.r
       </div>
     }
   </div>
-)
+);
 
 /** 汇总排车单明细给排车单主表 */
 export const groupByOrder = data => {
-  const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0
-  const pickupPointCount = data ? uniq(data.map(x => x.pickUpPoint.code)).length : 0
-  data = data.filter(x => x.orderType !== 'OnlyBill')
+  const deliveryPointCount = data ? uniq(data.map(x => x.deliveryPoint.code)).length : 0;
+  const pickupPointCount = data ? uniq(data.map(x => x.pickUpPoint.code)).length : 0;
+  data = data.filter(x => x.orderType !== 'OnlyBill');
   return {
     orderCount: data ? data.length : 0,
     cartonCount: data ? sumBy(data.map(x => x.stillCartonCount)) : 0,
@@ -98,8 +98,8 @@ export const groupByOrder = data => {
     deliveryPointCount,
     pickupPointCount,
     ownerCount: data ? uniq(data.map(x => x.owner.code)).length : 0,
-  }
-}
+  };
+};
 
 /**
  * 将秒数转换为 HH小时mm分钟 格式
