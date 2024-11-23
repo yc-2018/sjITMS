@@ -289,6 +289,7 @@ export default class DispatchingCreatePage extends Component {
       {
         schedule,
         note: schedule ? schedule.note : '',
+        transferCode: schedule ? schedule.transferCode : '',
         selectVehicle: selectVehicle == undefined ? {} : selectVehicle,
         selectEmployees,
         vehicles,
@@ -506,7 +507,7 @@ export default class DispatchingCreatePage extends Component {
   onSave = async () => {
     this.setState({ loading: true });
 
-    const { isEdit, orders, schedule, selectVehicle, selectEmployees, note } = this.state;
+    const { isEdit, orders, schedule, selectVehicle, selectEmployees, note ,transferCode} = this.state;
     // 禁止整车为转运单 针对福建仓
     if (orders.length > 0 && orders.filter(e => e.orderType == 'Transshipment').length == orders.length) {
       message.error('禁止整车为转运单排车！');
@@ -580,6 +581,7 @@ export default class DispatchingCreatePage extends Component {
       companyUuid: loginCompany().uuid,
       dispatchCenterUuid: loginOrg().uuid,
       note,
+      transferCode
     };
     const response = isEdit
       ? await modify(Object.assign(schedule, paramBody))
@@ -1145,9 +1147,9 @@ export default class DispatchingCreatePage extends Component {
       currentOrder,
       editPageVisible,
       note,
+      transferCode
     } = this.state;
-
-    const { dispatchConfig } = this.props;
+    const { dispatchConfig, transferData} = this.props;
     const totalData = groupByOrder(orders);
     // 车辆可装载信息
     let vehicleCalc;
@@ -1530,12 +1532,33 @@ export default class DispatchingCreatePage extends Component {
                 <Col span={4} style={{ fontWeight: 'bold', lineHeight: '24px', fontSize: 14 }}>
                   备注：
                 </Col>
-                <Col span={20}>
+                <Col span={4}>
                   <Input
+                    style={{width:300}}
                     placeholder="请输入备注"
                     defaultValue={note}
                     onChange={event => this.setState({ note: event.target.value })}
                   />
+                </Col>
+              </Row>
+              <Row style={{ marginTop: 2 }}>
+                <Col span={4} style={{ fontWeight: 'bold', lineHeight: '24px', fontSize: 14 }}>
+                  转运代码：
+                </Col>
+                <Col span={4}>
+                  <Select
+                    style={{ width: 300 }}
+                    value={transferCode}
+                    defaultValue={""}
+                    onChange={
+                      event => this.setState({ transferCode: event })
+                    }
+                  >
+                    <Option value={""}>空</Option>
+                    {transferData?.map(e => {
+                      return <Option value={e.CODE}>[{e.CODE}]{e.NAME}</Option>
+                    })}
+                  </Select>
                 </Col>
               </Row>
             </Col>

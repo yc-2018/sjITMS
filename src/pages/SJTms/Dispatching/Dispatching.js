@@ -19,7 +19,7 @@ import dispatchingStyles from './Dispatching.less';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { getDispatchConfig } from '@/services/sjtms/DispatcherConfig';
 import { checkBaseData } from '@/services/sjitms/ScheduleBill';
-
+import { dynamicQuery } from '@/services/quick/Quick';
 const { Content } = Layout;
 
 @connect(({ dispatching, loading }) => ({
@@ -36,10 +36,12 @@ export default class Dispatching extends Component {
     dispatchConfig: {},
     isOrderCollect: true,
     isOrderCollectType: 0,
+    transferData : []
   };
 
   async componentDidMount() {
     const response = await getDispatchConfig(loginOrg().uuid);
+    this.gettransferStation();
     if (response.success) {
       this.setState({
         dispatchConfig: response.data,
@@ -108,7 +110,22 @@ export default class Dispatching extends Component {
     this.orderPoolPageRef.initialiPage();
     this.schedulePageRef.initialiPage();
   };
-
+  // 获取转运站信息-赣州仓用
+  gettransferStation = async () => {
+    let param = {
+      tableName: 'SJ_ITMS_TRANSFER_STATION',
+      condition: {
+        params: [
+          { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+          { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] }
+        ],
+      },
+    };
+    let transferData = await dynamicQuery(param);
+    if (transferData.success && transferData.result.records != 'false') {
+      this.state.transferData = transferData.result.records;
+    }
+  }
   render() {
     if (this.props.dispatching.showPage === 'query') {
       return (
@@ -152,6 +169,7 @@ export default class Dispatching extends Component {
                         dispatchConfig={this.state.dispatchConfig}
                         refreshSelectRowOrder={this.refreshSelectRowOrder}
                         totalOrder={this.state.selectOrders}
+                        transferData ={this.state.transferData}
                       />
                     </div>
                   </Col>
@@ -163,6 +181,7 @@ export default class Dispatching extends Component {
                         refreshPending={this.refreshPendingTable}
                         refreshDetail={this.refreshSelectScheduleTable}
                         dispatchConfig={this.state.dispatchConfig}
+                        transferData ={this.state.transferData}
                         authority={this.props.route?.authority ? this.props.route.authority : null}
                       />
                     </div>

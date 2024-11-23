@@ -64,6 +64,13 @@ export async function addOrders(payload) {
     body: payload,
   });
 }
+//排车单匹配运输订单
+export async function mappingOrders(payload) {
+  return request(`/itms-schedule/itms-schedule/sj/bill/schedule/mappingOrders`, {
+    method: 'POST',
+    body: payload,
+  });
+}
 //删除排车单运输订单
 export async function removeOrders(payload) {
   return request(`/itms-schedule/itms-schedule/sj/bill/schedule/removeOrders`, {
