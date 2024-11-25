@@ -126,7 +126,7 @@ export const formatSeconds = seconds => {
 
 /**
  * @typedef {Object} ScheduleData
- * @property {string} vehicleModel          - 车辆型号（重量-体积）
+ * @property [string] vehicleModel          - 车辆型号（重量-体积）
  * @property {string} note                  - 备注
  * @property {Vehicle} selectVehicle        - 选择的车辆对象
  * @property {Employees[]} selectEmployees  - 选择的人员对象列表

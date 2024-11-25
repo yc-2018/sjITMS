@@ -1,6 +1,6 @@
 // ///////////////////////////智能调度页面//////////////
-// todo 配送调度跳转过来逻辑 和完成去配送调度逻辑
 // todo 明细拖拽
+// todo 配送调度跳转过来逻辑 和完成去配送调度逻辑
 // todo 生成排车单后保持页面控制一些按钮不能点击
 // todo 生成排车单出问题的保持界面看看能不能给一个按钮直接单独到配送调度自己调整
 // todo 整条线路能添加和移除
@@ -627,17 +627,18 @@ export default class SmartScheduling extends Component {
    * @since 2024/11/21 下午2:52
    */
   removePoint = (order, linkIndex) => {
-    const { scheduleResults, unassignedNodes } = this.state;
-    if (linkIndex >= 0) {
+    const { scheduleResults, unassignedNodes,scheduleDataList } = this.state;
+    if (linkIndex >= 0) {   // 线路内配送点
       const link = scheduleResults[linkIndex];
       scheduleResults[linkIndex] = link.filter(x => x.uuid !== order.uuid);
       this.loadingPoint(scheduleResults, undefined, 1);     // 点位更新
-      this.setState({ scheduleResults, showPointModal: null });
+      scheduleDataList[linkIndex].vehicleModel = null;    // 定位改变高德推荐就没用了
+      this.setState({ scheduleResults, showPointModal: null, scheduleDataList });
       // 线路更新： 里程 时间 过路费 更新
       if (this.routingPlans[linkIndex]?.length > 0) {
         this.routePlanning(linkIndex, true);
       }
-    } else {
+    } else {              // 未分配线路配送点
       const newUnassignedNodes = unassignedNodes.filter(x => x.uuid !== order.uuid);
       this.loadingPoint(undefined, newUnassignedNodes, 2);  // 点位更新
       this.setState({ unassignedNodes: newUnassignedNodes, showPointModal: null });
@@ -651,8 +652,11 @@ export default class SmartScheduling extends Component {
    */
   switchingLine = (newLinkIndex) => {
     const [order, oldLink] = this.state.showPointModal;
-    let { scheduleResults, unassignedNodes } = this.state;
-
+    let { scheduleResults, unassignedNodes, scheduleDataList } = this.state;
+    // ——————取消推荐———————
+    if (oldLink >= 0) scheduleDataList[oldLink].vehicleModel = null;              // 定位改变高德推荐就没用了
+    if (newLinkIndex >= 0) scheduleDataList[newLinkIndex].vehicleModel = null;    // 定位改变高德推荐就没用了
+    // ————————切换————————
     if (oldLink >= 0) {
       scheduleResults[oldLink] = scheduleResults[oldLink].filter(x => x.uuid !== order.uuid);
       if (newLinkIndex >= 0) scheduleResults[newLinkIndex].push(order);
@@ -661,7 +665,7 @@ export default class SmartScheduling extends Component {
       unassignedNodes = unassignedNodes.filter(x => x.uuid !== order.uuid);
       scheduleResults[newLinkIndex].push(order);
     }
-    this.setState({ showPointModal: null });
+    this.setState({ showPointModal: null, scheduleDataList });
     this.loadingPoint(scheduleResults, unassignedNodes);
     this.setState({ scheduleResults: [...scheduleResults], unassignedNodes: [...unassignedNodes] }, () => {
       // 旧线路更新： 里程 时间 过路费 更新
