@@ -26,6 +26,8 @@ import {
   Select,
   Table
 } from 'antd';
+import { DndProvider } from 'react-dnd';
+import { HTML5Backend } from 'react-dnd-html5-backend';
 import _, { uniqBy } from 'lodash';
 import ReactDOM from 'react-dom';
 import { AMapDefaultConfigObj, AMapDefaultLoaderObj } from '@/utils/mapUtil';
@@ -44,6 +46,7 @@ import { GetConfig } from '@/services/sjitms/OrderBill';
 import { formatSeconds, getMarkerText, groupByOrder, mapStyleMap, Tips } from '@/pages/SJTms/SmartScheduling/common';
 import { save } from '@/services/sjitms/ScheduleBill';
 import EmpAndVehicleModal from '@/pages/SJTms/SmartScheduling/EmpAndVehicleModal';
+import DragDtlCard from '@/pages/SJTms/SmartScheduling/DragDtlCard';
 
 const { Option } = Select;
 window.selectOrders = undefined;      // 如果是配送调度跳转过来的订单池原数据列表
@@ -73,7 +76,7 @@ export default class SmartScheduling extends Component {
     showSmartSchedulingModal: true,  // 显示智能调度弹窗
     showMenuModal: true,             // 显示选订单弹窗
     showVehicleModal: false,         // 显示选车辆弹窗
-    showPointModal: null,           // 显示配送点弹窗(有就是显示[对象,线路几])
+    showPointModal: null,            // 显示配送点弹窗(有就是显示[对象,线路几])
     showResultDrawer: false,         // 显示调度结果右侧侧边栏
     showButtonDrawer: true,          // 显示左边按钮侧边栏
     showProgress: -1,                // 显示生成排车进度条（>0就是显示)
@@ -88,6 +91,7 @@ export default class SmartScheduling extends Component {
     btnLoading: false,               // 智能调度按钮加载状态
     fullScreenLoading: false,        // 全屏加载中
     isMultiVehicle: false,           // 是否是多载具仓库
+    highlightUUID: '',               // 按下时高亮派送点单uuid
     routingConfig: {                 // 智能调度接口参数配置
       sortRule: 0,    // 排线排序⽅式
       routeOption: 0, // 算路选项
@@ -709,6 +713,36 @@ export default class SmartScheduling extends Component {
     });
   };
 
+  /**
+   * 拖动更新顺序的函数
+   * @author ChenGuangLong
+   * @since 2024/11/25 下午3:12
+  */
+  moveCard = (dragIndex, hoverIndex) => {
+    const {scheduleResults,childrenIndex} = this.state;
+    const updatedOrders = [...scheduleResults[childrenIndex]];
+    const [draggedItem] = updatedOrders.splice(dragIndex, 1);
+    updatedOrders.splice(hoverIndex, 0, draggedItem);
+    scheduleResults[childrenIndex] = updatedOrders;
+    this.setState({ scheduleResults: [...scheduleResults] });
+  };
+
+  /**
+   * 拖动结束的函数
+   * @author ChenGuangLong
+   * @since 2024/11/25 下午3:36
+   */
+  onDragEnd = (isUpdate) => {
+    const { childrenIndex } = this.state;
+    this.setState({ highlightUUID: '' });
+    if (isUpdate){
+      // 更新点位序号
+      this.loadingPoint(undefined, undefined, 1);
+      // 如果有显示了路线规划，就重新规划
+      if (this.routingPlans[childrenIndex]?.length > 0) this.routePlanning(childrenIndex, true);
+    }
+
+  };
 
   render () {
     const {
@@ -732,6 +766,7 @@ export default class SmartScheduling extends Component {
       isMultiVehicle,
       showProgress,
       errMessages,
+      highlightUUID,
     } = this.state;
 
     return (
@@ -967,37 +1002,50 @@ export default class SmartScheduling extends Component {
         }
           <Drawer // ————————————————————智能调度结果明细————————————————————
             title={<div>{this.getColorBlocks(childrenIndex)}线路{childrenIndex + 1}明细</div>}
-            width={350}
+            width={370}
             closable={false}
             bodyStyle={{ padding: 8 }}
             visible={childrenIndex >= 0}
             onClose={() => this.setState({ childrenIndex: -1 })}
           >
             <div style={{ height: 'calc(100vh - 64px)', overflow: 'auto' }}>
-              {scheduleResults[childrenIndex]?.map((order, index) =>
-                <div className={styles.detailCard} key={order.uuid}>
-                  <b className={styles.detailIndex}>{index + 1}</b>
-                  <b>{convertCodeName(order.deliveryPoint)}</b>
-                  <div className={styles.w50}>线路：{order.archLine?.code}</div>
-                  <div className={styles.w50}>备注：{order.lineNote}</div>
-                  <Divider style={{ margin: 6 }}/>
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8 }}>
-                    <span>整件数:{order.cartonCount}</span>
-                    <span>散件数:{order.scatteredCount}</span>
-                    <span>周转箱:{order.containerCount}</span>
-                    <span>体积:{order.volume.toFixed(2)}</span>
-                    <span>重量:{(order.weight / 1000).toFixed(3)}</span>
-                  </div>
-                  {isMultiVehicle &&  // 多载具
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
-                      <span>冷藏筐：{order.coldContainerCount}</span>
-                      <span>冷冻筐：{order.freezeContainerCount}</span>
-                      <span>保温袋：{order.insulatedBagCount}</span>
-                      <span>鲜食筐：{order.freshContainerCount}</span>
+              <DndProvider backend={HTML5Backend}>
+                {scheduleResults[childrenIndex]?.map((order, index) =>
+                  <DragDtlCard
+                    key={order.uuid}
+                    index={index}
+                    moveCard={this.moveCard}
+                    onDragEnd={this.onDragEnd}
+                  >
+                    <div
+                      className={`${styles.detailCard} ${highlightUUID === order.uuid ? styles.detailHighlight : ''}`}
+                      onMouseDown={() => this.setState({ highlightUUID: order.uuid })}
+                      onMouseUp={() => this.setState({ highlightUUID: '' })}
+                    >
+                      <b className={styles.detailIndex}>{index + 1}</b>
+                      <b>{convertCodeName(order.deliveryPoint)}</b>
+                      <div className={styles.w50}>线路：{order.archLine?.code}</div>
+                      <div className={styles.w50}>备注：{order.lineNote}</div>
+                      <Divider style={{ margin: 6 }}/>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8 }}>
+                        <span>整件数:{order.cartonCount}</span>
+                        <span>散件数:{order.scatteredCount}</span>
+                        <span>周转箱:{order.containerCount}</span>
+                        <span>体积:{order.volume.toFixed(2)}</span>
+                        <span>重量:{(order.weight / 1000).toFixed(3)}</span>
+                      </div>
+                      {isMultiVehicle &&  // 多载具
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+                          <span>冷藏筐：{order.coldContainerCount}</span>
+                          <span>冷冻筐：{order.freezeContainerCount}</span>
+                          <span>保温袋：{order.insulatedBagCount}</span>
+                          <span>鲜食筐：{order.freshContainerCount}</span>
+                        </div>
+                      }
                     </div>
-                  }
-                </div>
-              )}
+                  </DragDtlCard>
+                )}
+              </DndProvider>
             </div>
           </Drawer>
         </Drawer>
