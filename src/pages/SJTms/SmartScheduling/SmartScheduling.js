@@ -24,7 +24,7 @@ import {
   Progress,
   Row,
   Select,
-  Table
+  Table, Tooltip
 } from 'antd';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -50,6 +50,9 @@ import DragDtlCard from '@/pages/SJTms/SmartScheduling/DragDtlCard';
 
 const { Option } = Select;
 window.selectOrders = undefined;      // 如果是配送调度跳转过来的订单池原数据列表
+// 说明window.localStorage》mapStyleName：当前地图样式名称
+// 说明window.localStorage》lastVehicles+loginOrg().uuid：上次车辆池数据列表
+
 
 export default class SmartScheduling extends Component {
   RIGHT_DRAWER_WIDTH = 400;   // 右侧侧边栏宽度（智能调度结果抽屉宽度）
@@ -205,6 +208,8 @@ export default class SmartScheduling extends Component {
     const vehicleTotalVolume = selectVehicles.reduce((a, b) => a + b.volume * b.vehicleCount, 0);
     if (orderTotalWeight > vehicleTotalWeight) return message.error('订单总重量超出现有车辆重量！');
     if (orderTotalVolume > vehicleTotalVolume) return message.error('订单总体积超出现有车辆体积！');
+    // 记录车辆列表到本地
+    localStorage.setItem(`lastVehicles${loginOrg().uuid}`, JSON.stringify(selectVehicles));
     // ————————————————————————————————组装请求体——————————————————————————————
     // 定义仓库信息
     const depots = [{
@@ -785,12 +790,12 @@ export default class SmartScheduling extends Component {
         <div style={{ left: showButtonDrawer ? '0px' : '-250px' }} className={styles.leftButtonSidebar}>
           <Row gutter={[8, 16]}>
             <Col span={12}>
-              <Button onClick={() => this.setState({ showMenuModal: true })} block>
+              <Button onClick={() => this.setState({ showMenuModal: true, showSmartSchedulingModal: true })} block>
                 加载订单
               </Button>
             </Col>
             <Col span={12}>
-              <Button onClick={() => this.setState({ showVehicleModal: true })} block>
+              <Button onClick={() => this.setState({ showVehicleModal: true, showSmartSchedulingModal: true })} block>
                 加载车辆
               </Button>
             </Col>
@@ -1077,7 +1082,7 @@ export default class SmartScheduling extends Component {
         >
           <Row style={{ height: 'calc(100vh - 140px)', overflow: 'auto' }}>
             <Col span={12}>
-              <Button onClick={() => this.setState({ showMenuModal: true })}>
+              <Button type="primary" onClick={() => this.setState({ showMenuModal: true })}>
                 加载订单
               </Button>
               &nbsp;&nbsp;
@@ -1156,16 +1161,8 @@ export default class SmartScheduling extends Component {
               </div>
 
               <div>
-                <Button onClick={() => this.setState({ showInputVehicleModal: true })}>
-                  手动添加车辆参数
-                </Button>
-                <VehicleInputModal
-                  open={showInputVehicleModal}
-                  onClose={() => this.setState({ showInputVehicleModal: false })}
-                  addVehicle={vehicle => this.setState({ selectVehicles: [...selectVehicles, vehicle] })}
-                />
-                &nbsp;&nbsp;
                 <Button   // 打开运力池按钮
+                  type="primary"
                   onClick={() => {
                     this.setState({ showVehicleModal: true });
                     if (selectVehicles.length) message.warning('此操作会覆盖本来选择的车辆数据，如果不想被覆盖可以选择手动添加按钮！');
@@ -1174,9 +1171,37 @@ export default class SmartScheduling extends Component {
                   加载车辆参数
                 </Button>
                 &nbsp;&nbsp;
+                <Tooltip title="手动添加车辆参数：不会覆盖，在当前表格下追加一列" mouseEnterDelay={1}>
+                  <Button onClick={() => this.setState({ showInputVehicleModal: true })}>
+                    手动添加车辆
+                  </Button>
+                </Tooltip>
+                <VehicleInputModal  // 手动添加车辆参数弹窗
+                  open={showInputVehicleModal}
+                  onClose={() => this.setState({ showInputVehicleModal: false })}
+                  addVehicle={vehicle => this.setState({ selectVehicles: [...selectVehicles, vehicle] })}
+                />&nbsp;&nbsp;
+                {Boolean(localStorage.getItem(`lastVehicles${loginOrg().uuid}`)) && // 从localStorage读取上次车辆参数
+                  <>
+                    <Tooltip title="使用上次车辆参数：如果已经添加了参数，会被覆盖!" mouseEnterDelay={1}>
+                      <Button
+                        onClick={() => {
+                          this.setState({ selectVehicles: JSON.parse(localStorage.getItem(`lastVehicles${loginOrg().uuid}`)) });
+                          message.warning('已使用上次车辆参数，请注意检查数据是否正确！');
+                        }}
+                      >
+                        使用上次车辆
+                      </Button>
+                    </Tooltip>
+                    &nbsp;&nbsp;
+                  </>
+                }
+
                 {selectVehicles.length ?
                   <>
-                    <Button onClick={() => this.setState({ selectVehicles: [] })}>清空</Button>&nbsp;&nbsp;
+                    <Button type="danger" onClick={() => this.setState({ selectVehicles: [] })}>
+                      清空
+                    </Button>&nbsp;&nbsp;
                     <span>总重量：{selectVehicles.reduce((a, b) => a + b.weight * b.vehicleCount, 0).toFixed(2)}t</span>&nbsp;&nbsp;
                     <span>总体积：{selectVehicles.reduce((a, b) => a + b.volume * b.vehicleCount, 0).toFixed(2)}m³</span>&nbsp;&nbsp;
                     <span>车辆数量：{selectVehicles.reduce((a, b) => a + b.vehicleCount, 0)}</span>&nbsp;&nbsp;
