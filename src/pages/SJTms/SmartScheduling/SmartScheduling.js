@@ -68,6 +68,7 @@ export default class SmartScheduling extends Component {
   vehiclePoolModalRef = createRef();     // 车辆池弹窗ref
   orderPoolModalRef = createRef();       // 订单池弹窗ref
   empAndVehicleModalRef = createRef();  // 选司机和车弹窗ref
+  orderDtlRef = createRef();            // 拖动排序明细ref
   state = {
     sx: 0,                           // 有时刷新页面用
     selectOrderList: [],             // 选中订单池订单
@@ -91,7 +92,6 @@ export default class SmartScheduling extends Component {
     btnLoading: false,               // 智能调度按钮加载状态
     fullScreenLoading: false,        // 全屏加载中
     isMultiVehicle: false,           // 是否是多载具仓库
-    highlightUUID: '',               // 按下时高亮派送点单uuid
     routingConfig: {                 // 智能调度接口参数配置
       sortRule: 0,    // 排线排序⽅式
       routeOption: 0, // 算路选项
@@ -631,7 +631,7 @@ export default class SmartScheduling extends Component {
    * @since 2024/11/21 下午2:52
    */
   removePoint = (order, linkIndex) => {
-    const { scheduleResults, unassignedNodes,scheduleDataList } = this.state;
+    const { scheduleResults, unassignedNodes, scheduleDataList } = this.state;
     if (linkIndex >= 0) {   // 线路内配送点
       const link = scheduleResults[linkIndex];
       scheduleResults[linkIndex] = link.filter(x => x.uuid !== order.uuid);
@@ -685,7 +685,7 @@ export default class SmartScheduling extends Component {
    * @param [isDissolution] {boolean} 是否是解散 解散就放未分配列表 否则就直接没了
    * @author ChenGuangLong
    * @since 2024/11/22 下午4:22
-  */
+   */
   removeLine = (linkIndex = this.state.showRemoveModal, isDissolution) => {
     const { scheduleResults, scheduleDataList } = this.state;
     if (isDissolution) {  // 解散 放派送点到未分配列表
@@ -703,7 +703,7 @@ export default class SmartScheduling extends Component {
     this.routingPlans = this.routingPlans.filter((__, index) => index !== linkIndex);
     // 更新折线图（路线颜色）
     this.routingPlans.forEach((item, index) => {
-      item?.map(line => line.setOptions({ strokeColor: colors[index] }))
+      item?.map(line => line.setOptions({ strokeColor: colors[index] }));
     });
     this.loadingPoint(newScheduleResults, undefined, 1); // 点位更新
     this.setState({
@@ -714,34 +714,44 @@ export default class SmartScheduling extends Component {
   };
 
   /**
-   * 拖动更新顺序的函数
+   * 拖动中的逻辑
+   * @param originallyIndex {number} 拖动的本来的索引
+   * @param hoverIndex {number}      拖动后放置的索引
    * @author ChenGuangLong
    * @since 2024/11/25 下午3:12
-  */
-  moveCard = (dragIndex, hoverIndex) => {
-    const {scheduleResults,childrenIndex} = this.state;
-    const updatedOrders = [...scheduleResults[childrenIndex]];
-    const [draggedItem] = updatedOrders.splice(dragIndex, 1);
-    updatedOrders.splice(hoverIndex, 0, draggedItem);
-    scheduleResults[childrenIndex] = updatedOrders;
-    this.setState({ scheduleResults: [...scheduleResults] });
+   */
+  moveCard = (originallyIndex, hoverIndex) => {
+    this.orderDtlRef.current.childNodes.forEach(child => child.removeAttribute('class'));
+    if (originallyIndex === hoverIndex) return;
+    if (originallyIndex > hoverIndex) this.orderDtlRef.current.childNodes[hoverIndex].className = styles.dragIngUp;
+    else this.orderDtlRef.current.childNodes[hoverIndex].className = styles.dragIngDown;
   };
 
   /**
    * 拖动结束的函数
+   * @param originallyIndex {number} 拖动的本来的索引
+   * @param hoverIndex {number}      拖动后放置的索引
    * @author ChenGuangLong
    * @since 2024/11/25 下午3:36
    */
-  onDragEnd = (isUpdate) => {
-    const { childrenIndex } = this.state;
-    this.setState({ highlightUUID: '' });
-    if (isUpdate){
+  onDragEnd = (originallyIndex, hoverIndex) => {
+    this.orderDtlRef.current.childNodes.forEach(child => child.removeAttribute('class'));
+    this.orderDtlRef.current.childNodes.forEach(child => child.removeAttribute('style'));
+
+    const { scheduleResults, childrenIndex } = this.state;
+    const updatedOrders = [...scheduleResults[childrenIndex]];
+    const [draggedItem] = updatedOrders.splice(originallyIndex, 1);   // 从列表删除被拖动的元素，并拿到
+    updatedOrders.splice(hoverIndex, 0, draggedItem);           // 将被拖动的元素插入到目标位置
+    scheduleResults[childrenIndex] = updatedOrders;
+    this.setState({ scheduleResults: [...scheduleResults] });
+
+    // 拖动后更新地图点位序号和路线规划
+    if (originallyIndex !== hoverIndex) {
       // 更新点位序号
       this.loadingPoint(undefined, undefined, 1);
       // 如果有显示了路线规划，就重新规划
       if (this.routingPlans[childrenIndex]?.length > 0) this.routePlanning(childrenIndex, true);
     }
-
   };
 
   render () {
@@ -766,7 +776,6 @@ export default class SmartScheduling extends Component {
       isMultiVehicle,
       showProgress,
       errMessages,
-      highlightUUID,
     } = this.state;
 
     return (
@@ -1003,12 +1012,17 @@ export default class SmartScheduling extends Component {
           <Drawer // ————————————————————智能调度结果明细————————————————————
             title={<div>{this.getColorBlocks(childrenIndex)}线路{childrenIndex + 1}明细</div>}
             width={370}
+            id="order-dtl-list"
             closable={false}
             bodyStyle={{ padding: 8 }}
             visible={childrenIndex >= 0}
             onClose={() => this.setState({ childrenIndex: -1 })}
           >
-            <div style={{ height: 'calc(100vh - 64px)', overflow: 'auto' }}>
+            <div
+              ref={this.orderDtlRef}
+              style={{ height: 'calc(100vh - 64px)', overflow: 'auto' }}
+              onMouseUp={() => this.orderDtlRef.current.childNodes.forEach(child => child.removeAttribute('style'))}
+            >
               <DndProvider backend={HTML5Backend}>
                 {scheduleResults[childrenIndex]?.map((order, index) =>
                   <DragDtlCard
@@ -1018,9 +1032,8 @@ export default class SmartScheduling extends Component {
                     onDragEnd={this.onDragEnd}
                   >
                     <div
-                      className={`${styles.detailCard} ${highlightUUID === order.uuid ? styles.detailHighlight : ''}`}
-                      onMouseDown={() => this.setState({ highlightUUID: order.uuid })}
-                      onMouseUp={() => this.setState({ highlightUUID: '' })}
+                      className={styles.detailCard}
+                      onMouseDown={() => this.orderDtlRef.current.childNodes[index].style.background = '#f2ffeb'}
                     >
                       <b className={styles.detailIndex}>{index + 1}</b>
                       <b>{convertCodeName(order.deliveryPoint)}</b>
@@ -1410,7 +1423,7 @@ export default class SmartScheduling extends Component {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, textAlign: 'center' }}>
             <Button onClick={() => this.setState({ showRemoveModal: -1 })}>取消</Button>
             <Popover content="移除后,线路内所有派送点在本次排车将无法使用" placement="bottom">
-              <Button type="danger" onClick={() => {this.removeLine()}}>
+              <Button type="danger" onClick={() => {this.removeLine();}}>
                 移除
               </Button>
             </Popover>

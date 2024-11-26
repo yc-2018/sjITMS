@@ -128,11 +128,6 @@
   }
 }
 
-.detailHighlight{
-  background: #f3fcee;
-  box-shadow: inset 0 0 8px 0 #00000061;
-}
-
 .mapStyleItem { // 地图皮肤按钮
   margin: 3px;
   padding: 3px;
@@ -216,3 +211,21 @@
 .redBtn:focus {
   color: #ff8063;
 }
+
+.dragIngDown,
+.dragIngUp {
+  cursor: move;
+  transition: all 0.2s;
+  margin-bottom: 5px;
+}
+
+.dragIngUp:before,
+.dragIngDown:after {
+  content: '';
+  display: block;
+  text-align: center;
+  border: 1px dashed #348dfb;
+  margin: 9px;
+}
+
+
