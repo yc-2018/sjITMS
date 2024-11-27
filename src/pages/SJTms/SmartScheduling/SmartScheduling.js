@@ -1,9 +1,6 @@
 // ///////////////////////////智能调度页面//////////////
-// todo 明细拖拽
 // todo 配送调度跳转过来逻辑 和完成去配送调度逻辑
-// todo 生成排车单后保持页面控制一些按钮不能点击
 // todo 生成排车单出问题的保持界面看看能不能给一个按钮直接单独到配送调度自己调整
-// todo 整条线路能添加和移除
 // todo 以前的排车单地图的线路规划没有按顺序排序生成
 // todo 后续高德api放后端请求
 
@@ -451,6 +448,7 @@ export default class SmartScheduling extends Component {
    * @since 2024/11/12 上午9:49
    */
   resetData = (expStateData = {}) => {
+    message.info('重置中，请稍等...')
     // 清空地图覆盖物
     this.map.clearMap();
     this.routingPlans = [];
@@ -458,6 +456,9 @@ export default class SmartScheduling extends Component {
     this.warehouseMarker = undefined;
     // 清空数据
     this.setState({
+      showProgress: -1,
+      errMessages: [],
+      ...expStateData,
       scheduleResults: [],
       scheduleDataList: [],
       selectOrderList: [],
@@ -465,9 +466,6 @@ export default class SmartScheduling extends Component {
       unassignedNodes: [],
       showButtonDrawer: true,
       showResultDrawer: false,
-      showProgress: -1,
-      errMessages: [],
-      ...expStateData,
     });
   };
 
@@ -782,6 +780,8 @@ export default class SmartScheduling extends Component {
       showProgress,
       errMessages,
     } = this.state;
+    // 出结果了之后，禁止一些操作
+    const lockBtn = scheduleResults.length > 0;
 
     return (
       <div className={styles.SmartScheduling} id="smartSchedulingPage">
@@ -790,12 +790,20 @@ export default class SmartScheduling extends Component {
         <div style={{ left: showButtonDrawer ? '0px' : '-250px' }} className={styles.leftButtonSidebar}>
           <Row gutter={[8, 16]}>
             <Col span={12}>
-              <Button onClick={() => this.setState({ showMenuModal: true, showSmartSchedulingModal: true })} block>
+              <Button
+                block
+                disabled={lockBtn}
+                onClick={() => this.setState({ showMenuModal: true, showSmartSchedulingModal: true })}
+              >
                 加载订单
               </Button>
             </Col>
             <Col span={12}>
-              <Button onClick={() => this.setState({ showVehicleModal: true, showSmartSchedulingModal: true })} block>
+              <Button
+                block
+                disabled={lockBtn}
+                onClick={() => this.setState({ showVehicleModal: true, showSmartSchedulingModal: true })}
+              >
                 加载车辆
               </Button>
             </Col>
@@ -811,7 +819,7 @@ export default class SmartScheduling extends Component {
 
         <span   // ——————————————————————左侧边栏开关————————————————————
           className={styles.leftSidebarSwitch}
-          style={{ left: showButtonDrawer ? '250px' : '0px', display: scheduleResults.length ? 'none' : 'block' }}
+          style={{ left: showButtonDrawer ? '250px' : '0px' }}
           onClick={() => this.setState({ showButtonDrawer: !showButtonDrawer })}
         >
           <Icon
@@ -826,7 +834,7 @@ export default class SmartScheduling extends Component {
 
         <span   // ——————————————————————右侧边栏开关————————————————————
           className={styles.rightSidebarSwitch}
-          style={{ right: showResultDrawer ? this.RIGHT_DRAWER_WIDTH : '-15px' }}
+          style={{ right: showResultDrawer ? this.RIGHT_DRAWER_WIDTH - 5 : -5 }}
           onClick={() => this.setState({ showResultDrawer: !showResultDrawer })}
         >
           <Icon
@@ -966,6 +974,7 @@ export default class SmartScheduling extends Component {
               </div>
             )}
 
+            {/* ——————————————————智能调度结果底部按钮———————————————————— */}
             <div className={styles.resultBottom}>
               {/* ——————地图底色转换按钮——————— */}
               <Popover
@@ -1001,6 +1010,23 @@ export default class SmartScheduling extends Component {
                   <Icon type="skin" theme={this.mapStyleName === '标准' ? 'outlined' : 'filled'}/>
                 </Button>
               </Popover>
+              {/* ——————————加上一条线路按钮—————— */}
+              <Popover content={<div>添加一条空的线路</div>}>
+                <Button
+                  style={{ marginRight: 8 }}
+                  onClick={() => {
+                    this.setState({
+                      scheduleResults: [...scheduleResults, []],
+                      scheduleDataList:[...scheduleDataList,[]],
+                    })
+                    this.routingPlans.push(null);
+                  }}
+                >
+                  <Icon type="plus"/>
+                </Button>
+
+              </Popover>
+
               {/* ——————————放弃本次结果按钮—————— */}
               <Popconfirm title="确定放弃本次智能调度结果?" onConfirm={this.resetData}>
                 <Popover content="放弃本次智能调度结果">
@@ -1072,6 +1098,7 @@ export default class SmartScheduling extends Component {
           title="智能调度"
           visible={showSmartSchedulingModal}
           okText="开始智能调度"
+          okButtonProps={{ disabled: lockBtn }}   // ok按钮参数
           width="100vw"
           style={{ top: 0 }}
           className={styles.modalxxxxxx}
@@ -1080,15 +1107,17 @@ export default class SmartScheduling extends Component {
           getContainer={false}    // 挂载到当前节点，因为选单弹窗先弹出又在同一个节点 就会在底下显示看不到
           onOk={this.intelligentScheduling}
         >
-          <Row style={{ height: 'calc(100vh - 140px)', overflow: 'auto' }}>
+          <Row style={{ height: 'calc(100vh - 140px)', overflow: 'auto', cursor: lockBtn ? 'not-allowed' : 'unset' }}>
             <Col span={12}>
-              <Button type="primary" onClick={() => this.setState({ showMenuModal: true })}>
+              <Button type="primary" onClick={() => this.setState({ showMenuModal: true })} disabled={lockBtn}>
                 加载订单
               </Button>
               &nbsp;&nbsp;
               {selectOrderList.length ?
                 <>
-                  <Button onClick={() => this.setState({ selectOrderList: [] })}>清空</Button>&nbsp;&nbsp;
+                  <Button onClick={() => this.setState({ selectOrderList: [] })} disabled={lockBtn}>
+                    清空
+                  </Button>&nbsp;&nbsp;
                   <span>总重量：{(selectOrderList.reduce((a, b) => a + b.weight, 0) / 1000).toFixed(3)}t</span>&nbsp;&nbsp;
                   <span>总体积：{selectOrderList.reduce((a, b) => a + b.volume, 0).toFixed(2)}m³</span>&nbsp;&nbsp;
                   <span>配送点数量：{selectOrderList.length}</span>
@@ -1109,6 +1138,7 @@ export default class SmartScheduling extends Component {
                           <div>
                             <Button
                               type="link"
+                              disabled={lockBtn}
                               onClick={() => this.setState({
                                 selectOrderList: selectOrderList.filter((_v, i) => i !== index)
                               })}
@@ -1126,7 +1156,15 @@ export default class SmartScheduling extends Component {
             </Col>
             <Col span={12}>
               {/* 配置 设置边框 */}
-              <div style={{ border: '1px solid #ccc', borderRadius: 6, padding: 5, marginBottom: 5 }}>
+              <div
+                style={{
+                  border: '1px solid #ccc',
+                  borderRadius: 6,
+                  padding: 5,
+                  marginBottom: 5,
+                  pointerEvents: lockBtn ? 'none' : 'unset',
+                }}
+              >
                 <div>配置</div>
                 排线排序⽅式：
                 <Select
@@ -1159,47 +1197,49 @@ export default class SmartScheduling extends Component {
                 {/*   <Option value={1}>否</Option> */}
                 {/* </Select> */}
               </div>
-
               <div>
-                <Button   // 打开运力池按钮
-                  type="primary"
-                  onClick={() => {
-                    this.setState({ showVehicleModal: true });
-                    if (selectVehicles.length) message.warning('此操作会覆盖本来选择的车辆数据，如果不想被覆盖可以选择手动添加按钮！');
-                  }}
-                >
-                  加载车辆参数
-                </Button>
-                &nbsp;&nbsp;
-                <Tooltip title="手动添加车辆参数：不会覆盖，在当前表格下追加一列" mouseEnterDelay={1}>
-                  <Button onClick={() => this.setState({ showInputVehicleModal: true })}>
-                    手动添加车辆
+
+                <span style={{ pointerEvents: lockBtn ? 'none' : 'unset' }}>
+                  <Button   // 打开运力池按钮
+                    type="primary"
+                    onClick={() => {
+                      this.setState({ showVehicleModal: true });
+                      if (selectVehicles.length) message.warning('此操作会覆盖本来选择的车辆数据，如果不想被覆盖可以选择手动添加按钮！');
+                    }}
+                  >
+                    加载车辆参数
                   </Button>
-                </Tooltip>
-                <VehicleInputModal  // 手动添加车辆参数弹窗
-                  open={showInputVehicleModal}
-                  onClose={() => this.setState({ showInputVehicleModal: false })}
-                  addVehicle={vehicle => this.setState({ selectVehicles: [...selectVehicles, vehicle] })}
-                />&nbsp;&nbsp;
-                {Boolean(localStorage.getItem(`lastVehicles${loginOrg().uuid}`)) && // 从localStorage读取上次车辆参数
-                  <>
-                    <Tooltip title="使用上次车辆参数：如果已经添加了参数，会被覆盖!" mouseEnterDelay={1}>
-                      <Button
-                        onClick={() => {
-                          this.setState({ selectVehicles: JSON.parse(localStorage.getItem(`lastVehicles${loginOrg().uuid}`)) });
-                          message.warning('已使用上次车辆参数，请注意检查数据是否正确！');
-                        }}
-                      >
-                        使用上次车辆
-                      </Button>
-                    </Tooltip>
-                    &nbsp;&nbsp;
-                  </>
-                }
+                  &nbsp;&nbsp;
+                  <Tooltip title="手动添加车辆参数：不会覆盖，在当前表格下追加一列" mouseEnterDelay={1}>
+                    <Button onClick={() => this.setState({ showInputVehicleModal: true })}>
+                      手动添加车辆
+                    </Button>
+                  </Tooltip>
+                  <VehicleInputModal  // 手动添加车辆参数弹窗
+                    open={showInputVehicleModal}
+                    onClose={() => this.setState({ showInputVehicleModal: false })}
+                    addVehicle={vehicle => this.setState({ selectVehicles: [...selectVehicles, vehicle] })}
+                  />&nbsp;&nbsp;
+                  {Boolean(localStorage.getItem(`lastVehicles${loginOrg().uuid}`)) && // 从localStorage读取上次车辆参数
+                    <>
+                      <Tooltip title="使用上次车辆参数：如果已经添加了参数，会被覆盖!" mouseEnterDelay={1}>
+                        <Button
+                          onClick={() => {
+                            this.setState({ selectVehicles: JSON.parse(localStorage.getItem(`lastVehicles${loginOrg().uuid}`)) });
+                            message.warning('已使用上次车辆参数，请注意检查数据是否正确！');
+                          }}
+                        >
+                          使用上次车辆
+                        </Button>
+                      </Tooltip>
+                      &nbsp;&nbsp;
+                    </>
+                  }
+                </span>
 
                 {selectVehicles.length ?
                   <>
-                    <Button type="danger" onClick={() => this.setState({ selectVehicles: [] })}>
+                    <Button type="danger" onClick={() => this.setState({ selectVehicles: [] })} disabled={lockBtn}>
                       清空
                     </Button>&nbsp;&nbsp;
                     <span>总重量：{selectVehicles.reduce((a, b) => a + b.weight * b.vehicleCount, 0).toFixed(2)}t</span>&nbsp;&nbsp;
@@ -1220,7 +1260,7 @@ export default class SmartScheduling extends Component {
                             <div>
                               <Button
                                 size="small"
-                                disabled={record.vehicleCount <= 1}
+                                disabled={record.vehicleCount <= 1 || lockBtn}
                                 onClick={() => {
                                   let { selectVehicles: vehicles } = this.state;
                                   vehicles[index].vehicleCount--;
@@ -1232,6 +1272,7 @@ export default class SmartScheduling extends Component {
                               &nbsp;{record.vehicleCount}&nbsp;
                               <Button
                                 size="small"
+                                disabled={lockBtn}
                                 onClick={() => {
                                   let { selectVehicles: vehicles } = this.state;
                                   vehicles[index].vehicleCount++;
@@ -1247,6 +1288,7 @@ export default class SmartScheduling extends Component {
                           title: '操作', dataIndex: 'action', width: 80, render: (text, record, index) => (
                             <Button
                               type="link"
+                              disabled={lockBtn}
                               onClick={() => this.setState({
                                 selectVehicles: selectVehicles.filter((_v, i) => i !== index)
                               })}
@@ -1346,10 +1388,13 @@ export default class SmartScheduling extends Component {
                 >
                   继续新的排线
                 </Button>
-                <Button onClick={() => this.resetData() || this.props.history.push('/tmscode/dispatch')} type="primary">
+                <Button onClick={() => this.props.history.push('/tmscode/dispatch')} type="primary">
                   查看排车单(跳转到配送调度页面)
                 </Button>
-                <Button onClick={() => this.setState({ showProgress: -1 })} style={{ margin: '0 0 0 20px' }}>
+                <Button
+                  style={{ margin: '0 0 0 20px' }}
+                  onClick={() => this.setState({ showProgress: -1 })}
+                >
                   保持界面
                 </Button>
               </div>
@@ -1421,7 +1466,9 @@ export default class SmartScheduling extends Component {
                 title="移除后,本次排车将无法使用该点?"
                 onConfirm={() => this.removePoint(...showPointModal)}
               >
-                <Button type="danger">移除</Button>
+                <Tooltip title="移除后,本次排车将无法使用该点。如果本次还想操作请使用切换线路" mouseEnterDelay={1}>
+                  <Button type="danger">移除</Button>
+                </Tooltip>
               </Popconfirm>
               <div>
                 切换线路：
@@ -1448,7 +1495,7 @@ export default class SmartScheduling extends Component {
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, textAlign: 'center' }}>
             <Button onClick={() => this.setState({ showRemoveModal: -1 })}>取消</Button>
             <Popover content="移除后,线路内所有派送点在本次排车将无法使用" placement="bottom">
-              <Button type="danger" onClick={() => {this.removeLine();}}>
+              <Button type="danger" onClick={() => this.removeLine()}>
                 移除
               </Button>
             </Popover>
