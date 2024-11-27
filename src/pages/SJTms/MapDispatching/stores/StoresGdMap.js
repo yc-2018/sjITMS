@@ -27,6 +27,7 @@ import { queryAuditedOrderByStoreMap, queryStoreMaps } from '@/services/sjitms/O
 import style from './DispatchingMap.less';
 import mapStyle from './storesGdMap.less';
 import MyjRedIcon from '@/assets/common/MyjRedMin.png';
+import YueHeJi from '@/assets/common/YueHeJi.svg';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -182,20 +183,29 @@ export default class StoresGdMap extends Component {
     const { map, AMap } = this;
     this.redMass?.clear();
     if (orders.length === 0) return;
-
-    // 创建海量点
-    this.redMass = new AMap.MassMarks(orders.map(item => ({
-      lnglat: `${item.longitude},${item.latitude}]`,
-      item,
-    })), {
-      zIndex: 111,
-      cursor: 'pointer',
-      style: {
+    const style = [
+      {
+        url: YueHeJi,
+        anchor: new AMap.Pixel(20, 15),   // 锚点位置 一半一半 就是中心位置为锚点  以底部中心为锚点就应该是 new AMap.Pixel(10, 20)
+        size: new AMap.Size(40, 30),
+        zIndex: 12,
+      }, {
         url: MyjRedIcon,
         anchor: new AMap.Pixel(10, 10),   // 锚点位置 一半一半 就是中心位置为锚点  以底部中心为锚点就应该是 new AMap.Pixel(10, 20)
         size: new AMap.Size(20, 20),
         zIndex: 12,
       },
+    ];
+    console.log(orders);
+    // 创建海量点
+    this.redMass = new AMap.MassMarks(orders.map(item => ({
+      lnglat: `${item.longitude},${item.latitude}]`,
+      item,
+      style: item.name?.indexOf('彩华') !== -1 || item.name?.indexOf('悦合集') !== -1 ? 0 : 1,
+    })), {
+      zIndex: 111,
+      cursor: 'pointer',
+      style: style,
     });
 
     // 中文就创建一次 循环利用
