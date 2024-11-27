@@ -46,7 +46,9 @@ import {
   checkArea,
   checkAreaSchedule,
   checkOrderInSchedule,
+  mappingOrders
 } from '@/services/sjitms/ScheduleBill';
+import { havePermission } from '@/utils/authority';
 import { groupBy, sumBy, uniqBy, orderBy } from 'lodash';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import mapIcon from '@/assets/common/map.svg';
@@ -537,6 +539,23 @@ export default class OrderPoolPage extends Component {
     }
     this.setState({ btnLoading: false });
   };
+  //匹配排车单
+  handleMappingOrder = async () => {
+    const { auditedRowKeys, auditedData } = this.state;
+    const scheduleRowKeys = this.props.scheduleRowKeys();
+    if (auditedRowKeys == undefined || auditedRowKeys.length == 0) {
+      message.warning('请选择待定运输订单！');
+      return;
+    }
+    this.setState({ btnLoading: true });
+    const response = await mappingOrders({ billUuids: scheduleRowKeys, orderUuids: auditedRowKeys });
+    if (response.success) {
+      message.success(response.data);
+      this.refreshTable();
+      this.props.refreshSchedule();
+    }
+    this.setState({ btnLoading: false });
+  };
   //添加
   add = () => {
     const { searchParams, queryKey } = this.state;
@@ -963,6 +982,14 @@ export default class OrderPoolPage extends Component {
             </Button>
             <Button
               style={{ marginLeft: 10 }}
+              onClick={() => this.handleMappingOrder()}
+              loading={btnLoading}
+              hidden={!havePermission(this.state.authority + '.mappingOrder')}
+            >
+              匹配排车单
+            </Button>
+            <Button
+              style={{ marginLeft: 10 }}
               onClick={() => this.handleAddOrder()}
               loading={btnLoading}
             >
@@ -1181,6 +1208,7 @@ export default class OrderPoolPage extends Component {
                 this.props.refreshPending();
                 this.props.refreshSchedule();
               }}
+              transferData = {this.props.transferData}
               dispatchConfig={this.props.dispatchConfig}
               onRef={node => (this.createPageModalRef = node)}
               refreshMap={() => this.dispatchMapRef?.refresh()}

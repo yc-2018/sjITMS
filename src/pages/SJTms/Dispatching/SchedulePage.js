@@ -570,6 +570,7 @@ export default class SchedulePage extends Component {
             this.refreshScheduleAndpending();
             this.props.refreshOrder();
           }}
+          transferData = {this.props.transferData}
           dispatchConfig={this.props.dispatchConfig}
           onRef={node => (this.createPageModalRef = node)}
         />

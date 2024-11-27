@@ -19,8 +19,8 @@ const { Option } = Select;
  * @param props.volume{number} 订单体积
  * @author ChenGuangLong
  * @since 2024/11/18 下午4:13
-*/
-export default class EmpAndVehicleModal extends Component{
+ */
+export default class EmpAndVehicleModal extends Component {
   basicEmployee = [];
   basicVehicle = [];
   dict = [];
@@ -102,7 +102,7 @@ export default class EmpAndVehicleModal extends Component{
    * @param [selectVehicle]{Object}  选中的车辆
    * @param [vehicleModel]{string} 推荐车辆类型（高德返回的线路里面是包括车辆类型的，有传就把它放最前面）
    * @since 2024/11/20 下午4:17
-  */
+   */
   initData = async (record, selectEmployees = [], selectVehicle = {}, vehicleModel) => {
     let { vehicles, employees, carrieruuids } = this.state;
     // 查询字典
@@ -188,7 +188,7 @@ export default class EmpAndVehicleModal extends Component{
    * @param vehicle{Object} 车辆对象
    * @author ChenGuangLong
    * @since 2024/11/20 下午4:59
-  */
+   */
   toWeightVolumeStr = (vehicle) => {
     const weight = parseFloat(vehicle.BEARWEIGHT.replace(/[^0-9.]/g, '')); // 转换为数字,
     const volume = Math.round(vehicle.BEARVOLUME * vehicle.BEARVOLUMERATE) / 100;
@@ -202,7 +202,7 @@ export default class EmpAndVehicleModal extends Component{
 
     let carTabList;
     try {
-      carTabList = carSort.map(e => this.VehicleCardConfig[e - 1])
+      carTabList = carSort.map(e => this.VehicleCardConfig[e - 1]);
     } catch (error) {
       carTabList = this.VehicleCardConfig;
     }
@@ -235,7 +235,7 @@ export default class EmpAndVehicleModal extends Component{
                     >
                       <Row justify="space-between" style={{ height: '100%' }}>
                         <Col span={8} className={style.employeeCardContent}>
-                          <Icon type="car" style={{ fontSize: 28 }} />
+                          <Icon type="car" style={{ fontSize: 28 }}/>
                         </Col>
                         <Col span={16} className={style.employeeCardContent}>
                           <div className={style.employeeName}>
@@ -273,7 +273,7 @@ export default class EmpAndVehicleModal extends Component{
               );
             })
           ) : (
-            <Empty description="无熟练度推荐" />
+            <Empty description="无熟练度推荐"/>
           );
         break;
       default:
@@ -463,7 +463,7 @@ export default class EmpAndVehicleModal extends Component{
                   >
                     <Row justify="space-between" style={{ height: '100%' }}>
                       <Col span={8} className={style.employeeCardContent}>
-                        <Icon type="user" style={{ fontSize: 28 }} />
+                        <Icon type="user" style={{ fontSize: 28 }}/>
                       </Col>
                       <Col span={16} className={style.employeeCardContent}>
                         <div className={style.employeeName}>
@@ -513,9 +513,9 @@ export default class EmpAndVehicleModal extends Component{
 
   /** 选车 */
   handleVehicle = async vehicle => {
-    if (vehicle.JOBSTATE !== 'Used') return message.error(`${vehicle.PLATENUMBER  }不是正常状态，不能选择！`);
+    if (vehicle.JOBSTATE !== 'Used') return message.error(`${vehicle.PLATENUMBER}不是正常状态，不能选择！`);
 
-    this.setState({ selectVehicle: vehicle })
+    this.setState({ selectVehicle: vehicle });
     let param = {
       tableName: 'v_sj_itms_vehicle_employee_z',
       condition: {
@@ -637,7 +637,7 @@ export default class EmpAndVehicleModal extends Component{
     const index = selectEmployees.findIndex(x => x.UUID === emp.UUID);
     emp.memberType = emp.ROLE_TYPE;
     emp.memberUuid = guid();
-    index === -1 ? employees.push(emp) : (employees = employees.filter(x => x.memberUuid !== emp.memberUuid))
+    index === -1 ? employees.push(emp) : (employees = employees.filter(x => x.memberUuid !== emp.memberUuid));
     this.setState({ selectEmployees: employees });
   };
 

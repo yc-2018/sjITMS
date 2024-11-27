@@ -47,6 +47,7 @@ module.exports = {
     'compat/compat': 'off',                           // 忽略Object.values()方法不被Opera Mini、IE Mobile 10和IE浏览器支持。
     'import/prefer-default-export': 'off',            // 忽略默认导出
     'no-restricted-syntax':'warn',                    // 警告循环
+    'react/no-array-index-key': 'off',                // 忽略数组索引作为key
   },
   settings: {
     polyfills: ['fetch', 'promises', 'url'],

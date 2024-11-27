@@ -1,6 +1,6 @@
-import React from 'react'
-import Empty from '@/pages/Component/Form/Empty'
-import { convertCodeName } from '@/utils/utils'
+import React from 'react';
+import Empty from '@/pages/Component/Form/Empty';
+import { convertCodeName } from '@/utils/utils';
 
 /**
  * 智能调度选择的订单简单显示
@@ -21,7 +21,7 @@ export const mergeOrdersColumns = [
     dataIndex: 'deliveryPoint',
     width: 270,
     render: val => {
-      return val ? <span>{convertCodeName(val)}</span> : <Empty/>
+      return val ? <span>{convertCodeName(val)}</span> : <Empty/>;
     },
   },
   {
@@ -62,7 +62,7 @@ export const mergeOrdersColumns = [
   //   width: 80,
   //   render: val => (val ? <span>{val}</span> : <Empty/>),
   // },
-]
+];
 
 /**
  * 智能调度选择的车辆合并数据显示
@@ -94,7 +94,7 @@ export const mergeVehicleColumns = [
     dataIndex: 'volume',
     width: 100,
   },
-]
+];
 
 /** 运力池显示列 */
 export const vehicleColumns = [
@@ -104,7 +104,7 @@ export const vehicleColumns = [
     sorter: true,
     width: 80,
     render: val => {
-      return val ? <span>{val}</span> : <Empty/>
+      return val ? <span>{val}</span> : <Empty/>;
     },
   },
   {
@@ -115,4 +115,4 @@ export const vehicleColumns = [
     render: (val, record) =>
       val ? <span>{Math.round(val * record.BEARVOLUMERATE) / 100}</span> : <Empty/>,
   },
-]
+];
