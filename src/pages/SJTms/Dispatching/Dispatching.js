@@ -65,6 +65,12 @@ export default class Dispatching extends Component {
     }
     // const isOrderCollect = localStorage.getItem(window.location.hostname + '-orderCollect');
     // this.setState({ isOrderCollect: isOrderCollect != 'false' });
+    window.refreshDispatchAll = this.refreshDispatchAll;
+  }
+
+  /** 组件卸载前window.refreshDispatchAll设置回空 */
+  componentWillUnmount () {
+    window.refreshDispatchAll = null;
   }
 
   refreshOrderTable = () => {
@@ -78,6 +84,17 @@ export default class Dispatching extends Component {
   };
   refreshSelectScheduleTable = schedule => {
     return this.scheduleDetailPageRef.refreshTable(schedule);
+  };
+
+  /**
+   * 刷新全部表格数据方法（提供window提供给智能调度）
+   * @author ChenGuangLong
+   * @since 2024/11/27 下午2:26
+   */
+  refreshDispatchAll = () => {
+    this.refreshOrderTable();
+    this.refreshScheduleTable();
+    this.refreshPendingTable();
   };
 
   getScheduleRowKeys = () => {

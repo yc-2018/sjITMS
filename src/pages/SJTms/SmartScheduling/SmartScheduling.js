@@ -48,6 +48,7 @@ import DragDtlCard from '@/pages/SJTms/SmartScheduling/DragDtlCard';
 
 const { Option } = Select;
 window.selectOrders = undefined;      // 如果是配送调度跳转过来的订单池原数据列表
+// window.refreshDispatchAll：配送调度打开后存在在的方法，调用可以刷新配送调度的全部数据
 // 说明window.localStorage》mapStyleName：当前地图样式名称
 // 说明window.localStorage》lastVehicles+loginOrg().uuid：上次车辆池数据列表
 
@@ -1404,7 +1405,13 @@ export default class SmartScheduling extends Component {
                 >
                   继续新的排线
                 </Button>
-                <Button onClick={() => this.props.history.push('/tmscode/dispatch')} type="primary">
+                <Button
+                  type="primary"
+                  onClick={() => {
+                    this.props.history.push('/tmscode/dispatch');
+                    window.refreshDispatchAll && window.refreshDispatchAll();   // 本来打开了就刷新调度页面数据
+                  }}
+                >
                   查看排车单(跳转到配送调度页面)
                 </Button>
                 <Button
