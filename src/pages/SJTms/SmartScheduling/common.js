@@ -7,12 +7,11 @@ import { Divider, Icon, Popover } from 'antd';
  * 提示组件
  * @author ChenGuangLong
  * @since 2024/11/22 下午2:18
-*/
-export const Tips = ({children}) =>
+ */
+export const Tips = ({ children }) =>
   <Popover content={children}>
     <Icon type="question-circle" style={{ color: '#999', marginLeft: 5 }}/>
   </Popover>;
-
 
 /**
  * 高德样式对象
@@ -126,13 +125,15 @@ export const formatSeconds = seconds => {
 
 /**
  * @typedef {Object} ScheduleData
- * @property [string] vehicleModel          - 车辆型号（重量-体积）
+ * @property {string} [vehicleModel]        - 车辆型号（重量-体积）
  * @property {string} note                  - 备注
  * @property {Vehicle} selectVehicle        - 选择的车辆对象
  * @property {Employees[]} selectEmployees  - 选择的人员对象列表
  * @property {number[]} routeDistance       - 起点到终点的驾车距离，单位：米 (列表是防止避免异步相加可能丢失数据)
  * @property {number[]} routeTime           - 时间预计，单位：秒 (列表是防止避免异步相加可能丢失数据)
  * @property {number[]} routeTolls          - 此驾车路线收费金额，单位：元 (列表是防止避免异步相加可能丢失数据)
+ * @property {boolean} [ok]                 - 这条线路是否成功生成排车单 （空还没生成排车单 false失败 true成功)
+ * @property {string} [errMsg]              - 这条线路生成排车单失败信息
  */
 
 /**

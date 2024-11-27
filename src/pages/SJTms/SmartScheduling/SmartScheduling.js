@@ -1,4 +1,5 @@
 // ///////////////////////////智能调度页面//////////////
+// todo 配置化几个参数
 // todo 配送调度跳转过来逻辑 和完成去配送调度逻辑
 // todo 生成排车单出问题的保持界面看看能不能给一个按钮直接单独到配送调度自己调整
 // todo 以前的排车单地图的线路规划没有按顺序排序生成
@@ -81,7 +82,6 @@ export default class SmartScheduling extends Component {
     showResultDrawer: false,         // 显示调度结果右侧侧边栏
     showButtonDrawer: true,          // 显示左边按钮侧边栏
     showProgress: -1,                // 显示生成排车进度条（>0就是显示)
-    errMessages: [],                 // 生成排车单时如果有错误信息
     childrenIndex: -1,               // 显示调度排车子抽屉 这个是它的索引>=0就是显示
     showEmpAndVehicleModal: -1,      // 显示选司机和车弹窗 这个是它的索引>=0就是显示
     showRemoveModal: -1,             // 显示移除线路弹窗   这个是它的索引>=0就是显示
@@ -457,7 +457,6 @@ export default class SmartScheduling extends Component {
     // 清空数据
     this.setState({
       showProgress: -1,
-      errMessages: [],
       ...expStateData,
       scheduleResults: [],
       scheduleDataList: [],
@@ -570,17 +569,15 @@ export default class SmartScheduling extends Component {
     if (errFlag) return;
     if (scheduleParamBodyList.length !== scheduleResults.length) return message.error('线路数和生成数不相等!');
     // ——————————开始请求创建排车单——————————
-    const errMessages = [];  // 记录失败信息
-    this.setState({ showProgress: 1 });
     for (const paramBody of scheduleParamBodyList) {  // 循环创建，用forEach会异步循环，导致进度条无法正常显示
       const index = scheduleParamBodyList.indexOf(paramBody);
       const linkName = `线路${index + 1}`;
       const res = await save(paramBody);
+      scheduleDataList[index].ok = Boolean(res.success);
       if (res.success) message.success(`${linkName}创建成功`);
       else {
         message.error(`${linkName}创建失败`);
-        errMessages.push(`${linkName}:${res.message}`);
-        this.setState({ errMessages: [...errMessages] });
+        scheduleDataList[index].errMsg = `${linkName}:${res.message}`;
       }
       this.setState({ showProgress: parseFloat(((index + 1) / scheduleParamBodyList.length * 100).toFixed(1)) });
     }
@@ -596,8 +593,24 @@ export default class SmartScheduling extends Component {
    * @author ChenGuangLong
    * @since 2024/11/19 下午3:33
    */
-  getColorBlocks = (index, px) =>
-    <div className={styles.LinkColor} style={{ background: colors[index], ...(px ? { width: px, height: px } : {}) }}/>;
+  getColorBlocks = (index, px = 14) =>
+    <div className={styles.LinkColor} style={{ background: colors[index], width: px, height: px }}/>;
+
+  /**
+   * 获取是否创建成功图标
+   * @author ChenGuangLong
+   * @since 2024/11/27 上午11:30
+  */
+  getCreateIcon = index => {
+    const ok = this.state.scheduleDataList[index].ok;
+    if (typeof ok === 'undefined') return <></>
+    return ok ?
+      <Icon type="check" style={{ color: '#4caf50' }}/> :
+      <Popover content={this.state.scheduleDataList[index].errMsg?.split(':')[1] ?? '无错误信息'}>
+        <Icon type="close" style={{ color: '#f44336' }}/>
+      </Popover>
+  };
+
 
   /**
    * 获取对应索引的车辆信息
@@ -778,10 +791,11 @@ export default class SmartScheduling extends Component {
       childrenIndex,
       isMultiVehicle,
       showProgress,
-      errMessages,
     } = this.state;
     // 出结果了之后，禁止一些操作
     const lockBtn = scheduleResults.length > 0;
+    // 已经生成排车单之后，禁止一些操作
+    const isCreate = scheduleDataList.some(x => typeof x.ok === 'boolean');
 
     return (
       <div className={styles.SmartScheduling} id="smartSchedulingPage">
@@ -865,7 +879,8 @@ export default class SmartScheduling extends Component {
                 }}
               >
                 {this.getColorBlocks(index)}
-                <span style={{ fontSize: '16px' }}>线路{index + 1}</span>
+                <span style={{ fontSize: '16px' }}>线路{index + 1}</span> &nbsp;
+                {this.getCreateIcon(index)}
                 <Divider style={{ margin: 6 }}/>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
                   <div>门店数: {orders.length}</div>
@@ -1017,7 +1032,7 @@ export default class SmartScheduling extends Component {
                   onClick={() => {
                     this.setState({
                       scheduleResults: [...scheduleResults, []],
-                      scheduleDataList:[...scheduleDataList,[]],
+                      scheduleDataList: [...scheduleDataList, {}],
                     })
                     this.routingPlans.push(null);
                   }}
@@ -1028,8 +1043,8 @@ export default class SmartScheduling extends Component {
               </Popover>
 
               {/* ——————————放弃本次结果按钮—————— */}
-              <Popconfirm title="确定放弃本次智能调度结果?" onConfirm={this.resetData}>
-                <Popover content="放弃本次智能调度结果">
+              <Popconfirm title={lockBtn ? '开始新的智能调度' : '确定放弃本次智能调度结果?'} onConfirm={this.resetData}>
+                <Popover content={lockBtn ? '重新新的智能调度' : '放弃本次智能调度结果'}>
                   <Button type="danger" style={{ marginRight: 8 }}><Icon type="delete"/></Button>
                 </Popover>
               </Popconfirm>
@@ -1373,12 +1388,13 @@ export default class SmartScheduling extends Component {
 
         <Modal  // ——————————————————————————————显示进度条——————————————————————————————————
           footer={null}
-          visible={showProgress >= 0}
           closable={false}
+          getContainer={false}    // 挂载到当前节点，因为要是跳转到配送调度页面，弹窗还卡着呢
+          visible={showProgress >= 0}
         >
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', }}>
             <Progress percent={showProgress} status={showProgress < 100 ? 'active' : 'success'}/>
-            {errMessages.map(msg => <div key={msg}>{msg}</div>)}
+            {scheduleDataList.map((x, i) => x.errMsg && <div key={x.errMsg + i}>{x.errMsg}</div>)}
             {showProgress === 100 &&
               <div>
                 <Button
