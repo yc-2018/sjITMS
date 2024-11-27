@@ -572,13 +572,15 @@ export default class SmartScheduling extends Component {
     // ——————————开始请求创建排车单——————————
     for (const paramBody of scheduleParamBodyList) {  // 循环创建，用forEach会异步循环，导致进度条无法正常显示
       const index = scheduleParamBodyList.indexOf(paramBody);
-      const linkName = `线路${index + 1}`;
-      const res = await save(paramBody);
-      scheduleDataList[index].ok = Boolean(res.success);
-      if (res.success) message.success(`${linkName}创建成功`);
-      else {
-        message.error(`${linkName}创建失败`);
-        scheduleDataList[index].errMsg = `${linkName}:${res.message}`;
+      if (!scheduleDataList[index].ok) {  // 没创建过或没成功的,创建排车单
+        const linkName = `线路${index + 1}`;
+        const res = await save(paramBody);
+        scheduleDataList[index].ok = Boolean(res.success);
+        if (res.success) message.success(`${linkName}创建成功`);
+        else {
+          message.error(`${linkName}创建失败`);
+          scheduleDataList[index].errMsg = `${linkName}:${res.message}`;
+        }
       }
       this.setState({ showProgress: parseFloat(((index + 1) / scheduleParamBodyList.length * 100).toFixed(1)) });
     }
@@ -797,6 +799,7 @@ export default class SmartScheduling extends Component {
     const lockBtn = scheduleResults.length > 0;
     // 已经生成排车单之后，禁止一些操作
     const isCreate = scheduleDataList.some(x => typeof x.ok === 'boolean');
+    const allOk = isCreate && !scheduleDataList.some(x => !x.ok);
 
     return (
       <div className={styles.SmartScheduling} id="smartSchedulingPage">
@@ -830,6 +833,19 @@ export default class SmartScheduling extends Component {
           >
             智能调度
           </Button>
+
+          <Divider/>
+
+          {lockBtn &&
+            <Button
+              block
+              size="large"
+              type="primary"
+              onClick={() => this.resetData({ showSmartSchedulingModal: true, showMenuModal: true })}
+            >
+              重新智能调度
+            </Button>
+          }
         </div>
 
         <span   // ——————————————————————左侧边栏开关————————————————————
@@ -962,6 +978,8 @@ export default class SmartScheduling extends Component {
                   <Button
                     type="link"
                     onClick={() => {
+                      if (scheduleDataList[index].ok) return message.error('无效操作：已生成排车单!');
+                      if (scheduleResults[index].length === 0) return message.error('没有配送点时，不支持选车辆和人员!');
                       this.setState({ showEmpAndVehicleModal: index });
                       window.setTimeout(() => {
                         this.empAndVehicleModalRef?.show?.(orders, scheduleDataList[index].selectEmployees, scheduleDataList[index].selectVehicle, scheduleDataList[index].vehicleModel);
@@ -978,11 +996,14 @@ export default class SmartScheduling extends Component {
                   >
                     聚焦
                   </Button>
-                  {/* ——————————删除改线路—————————— */}
+                  {/* ——————————移除or解散 线路—————————— */}
                   <Button
                     type="link"
                     className={styles.redBtn}
-                    onClick={() => this.setState({ showRemoveModal: index })}
+                    onClick={() => {
+                      if (scheduleDataList[index].ok) return message.error('无效操作：已生成排车单!');
+                      this.setState({ showRemoveModal: index })
+                    }}
                   >
                     移除
                   </Button>
@@ -1044,13 +1065,20 @@ export default class SmartScheduling extends Component {
               </Popover>
 
               {/* ——————————放弃本次结果按钮—————— */}
-              <Popconfirm title={lockBtn ? '开始新的智能调度' : '确定放弃本次智能调度结果?'} onConfirm={this.resetData}>
-                <Popover content={lockBtn ? '重新新的智能调度' : '放弃本次智能调度结果'}>
+              <Popconfirm title={isCreate ? '开始新的智能调度' : '确定放弃本次智能调度结果?'} onConfirm={this.resetData}>
+                <Popover content={isCreate ? '重新新的智能调度' : '放弃本次智能调度结果'}>
                   <Button type="danger" style={{ marginRight: 8 }}><Icon type="delete"/></Button>
                 </Popover>
               </Popconfirm>
               {/* ——————————生成排车单按钮———————— */}
-              <Button onClick={this.createSchedules} type="primary">生成排车单</Button>
+              <Tooltip
+                placement="topRight"
+                title={!allOk && isCreate ? '重新尝试保存生成失败的线路(已经成功的排车单不会再被保存)' : null}
+              >
+                <Button onClick={this.createSchedules} type="primary" disabled={allOk}>
+                  {!allOk && isCreate ? '重试生成' : '生成排车单'}
+                </Button>
+              </Tooltip>
             </div>
           </div>
           :
@@ -1067,7 +1095,7 @@ export default class SmartScheduling extends Component {
           >
             <div
               ref={this.orderDtlRef}
-              style={{ height: 'calc(100vh - 64px)', overflow: 'auto' }}
+              className={styles.orderDtlList}
               onMouseUp={() => this.orderDtlRef.current.childNodes.forEach(child => child.removeAttribute('style'))}
             >
               <DndProvider backend={HTML5Backend}>
@@ -1077,6 +1105,7 @@ export default class SmartScheduling extends Component {
                     index={index}
                     moveCard={this.moveCard}
                     onDragEnd={this.onDragEnd}
+                    disabled={scheduleDataList[childrenIndex].ok}
                   >
                     <div
                       className={styles.detailCard}
@@ -1416,7 +1445,7 @@ export default class SmartScheduling extends Component {
                 </Button>
                 <Button
                   style={{ margin: '0 0 0 20px' }}
-                  onClick={() => this.setState({ showProgress: -1 })}
+                  onClick={() => this.setState({ showProgress: -1, showButtonDrawer: true })}
                 >
                   保持界面
                 </Button>

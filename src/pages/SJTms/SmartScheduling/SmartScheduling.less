@@ -46,7 +46,7 @@
     position: absolute;
     transition: all 0.2s;
     background: #fff;
-    border-radius: 50%  0  0 50%;
+    border-radius: 50% 0 0 50%;
     padding: 2px;
   }
 
@@ -101,13 +101,22 @@
   display: inline-block;
 }
 
+// 智能调度明细列表
+.orderDtlList {
+  height: calc(100vh - 64px);
+  overflow: auto;
+
+  [draggable="true"] {
+    cursor: move;
+  }
+}
+
 // 智能调度详细卡片
 .detailCard {
   width: 340px;
   padding: 4px;
   border-radius: 8px;
   margin-bottom: 5px;
-  cursor: move;
   box-shadow: inset 1px 1px 4px 0 #39487061;
   // 智能调度详情页索引
   .detailIndex {
@@ -183,12 +192,12 @@
 
   // 选的人员
   .selectedPersonnel {
-    display: inline-block;    // 强制将元素当作块级元素对待，但仍然可以在一行中排列
-    white-space: nowrap;      // 禁止内容内部换行
-    border: 1px solid #ccc;   // 边框设置
-    border-radius: 5px;       // 圆角设置
-    padding: 0 5px 0 0;       // 内边距设置
-    margin: 5px 0 0 5px;      // 外边距设置
+    display: inline-block; // 强制将元素当作块级元素对待，但仍然可以在一行中排列
+    white-space: nowrap; // 禁止内容内部换行
+    border: 1px solid #ccc; // 边框设置
+    border-radius: 5px; // 圆角设置
+    padding: 0 5px 0 0; // 内边距设置
+    margin: 5px 0 0 5px; // 外边距设置
 
     [role="combobox"] { // 人员类型选择器样式
       border: none; // 去掉组件本身的边框
