@@ -20,6 +20,7 @@ import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { getDispatchConfig } from '@/services/sjtms/DispatcherConfig';
 import { checkBaseData } from '@/services/sjitms/ScheduleBill';
 import { dynamicQuery } from '@/services/quick/Quick';
+
 const { Content } = Layout;
 
 @connect(({ dispatching, loading }) => ({
@@ -65,14 +66,21 @@ export default class Dispatching extends Component {
     }
     // const isOrderCollect = localStorage.getItem(window.location.hostname + '-orderCollect');
     // this.setState({ isOrderCollect: isOrderCollect != 'false' });
-    window.refreshDispatchAll = this.refreshDispatchAll;
-    window.setTimeout(()=>{console.log("███████this.props>>>>🔴", this.props,"🔴<<<<██████")},3000)
 
+    // ————————暴露给智能调度用——————
+    window.refreshDispatchAll = this.refreshDispatchAll;
+    window.openCreateSchedule = (orders) => this.orderPoolPageRef.createPageModalRef.show(false, orders);
+    // 通过智能调度打开（打开时包涵window.createScheduleOrders）时，直接显示创建页面
+    if (window.createScheduleOrders) {
+      this.orderPoolPageRef.createPageModalRef.show(false, window.createScheduleOrders);
+      window.createScheduleOrders = undefined;
+    }
   }
 
-  /** 组件卸载前window.refreshDispatchAll设置回空 */
+  /** 组件卸载前设置的window.*回空 */
   componentWillUnmount () {
-    window.refreshDispatchAll = null;
+    window.refreshDispatchAll = undefined;   // 刷新调度所有表格数据
+    window.openCreateSchedule = undefined;   // 打开创建排车单界面
   }
 
   refreshOrderTable = () => {
@@ -150,7 +158,7 @@ export default class Dispatching extends Component {
       return (
         <PageHeaderWrapper>
           <Page
-            withCollect={true}
+            withCollect
             pathname={this.props.location ? this.props.location.pathname : ''}
           >
             <Content className={dispatchingStyles.dispatchingContent}>

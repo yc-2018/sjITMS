@@ -1,13 +1,14 @@
 // ///////////////////////////智能调度页面//////////////
 // todo 配置化几个参数
-// todo 生成排车单出问题的保持界面看看能不能给一个按钮直接单独到配送调度自己调整
 // todo 以前的排车单地图的线路规划没有按顺序排序生成
 // todo 后续高德api放后端请求
 // 配送调度提供window.selectOrders   如果是配送调度跳转过来的订单池原数据列表(如果是刚打开就读取到就直接使用) 使用完马上清空
 // 配送调度提供window.refreshDispatchAll：配送调度打开后存在在的方法，调用可以刷新配送调度的全部数据
+// 配送调度提供window.openCreateSchedule：打开排车单创建界面
 // 说明window.localStorage》mapStyleName：当前地图样式名称
 // 说明window.localStorage》lastVehicles+loginOrg().uuid：上次车辆池数据列表
 // 智能调度提供window.smartSchedulingHandleOrders 打开了这个界面，又从配送调度界面选单时 给配送调度界面使用的（还要考虑是否现在正在智能调度中）
+// 智能调度提供window.createScheduleOrders 监测到没打开配送调度时，把一条线路数据赋值给它，并打开配送调度，剩下的交给配送调度
 
 import React, { Component, createRef } from 'react';
 import AMapLoader from '@amap/amap-jsapi-loader';
@@ -41,7 +42,7 @@ import DragDtlCard from '@/pages/SJTms/SmartScheduling/DragDtlCard';
 const { Option } = Select;
 
 export default class SmartScheduling extends Component {
-  RIGHT_DRAWER_WIDTH = 400;            // 右侧侧边栏宽度（智能调度结果抽屉宽度）
+  RIGHT_DRAWER_WIDTH = 410;            // 右侧侧边栏宽度（智能调度结果抽屉宽度）
   AMap = null;                            // 高德地图对象
   map = null;                             // 高德地图实例
   text = null;                            // 高德地图文本对象
@@ -57,8 +58,9 @@ export default class SmartScheduling extends Component {
 
   vehiclePoolModalRef = createRef();     // 车辆池弹窗ref
   orderPoolModalRef = createRef();       // 订单池弹窗ref
-  empAndVehicleModalRef = createRef();  // 选司机和车弹窗ref
-  orderDtlRef = createRef();            // 拖动排序明细ref
+  empAndVehicleModalRef = createRef();   // 选司机和车弹窗ref
+  orderDtlRef = createRef();             // 拖动排序明细ref
+  
   state = {
     sx: 0,                                // 有时刷新页面用
     selectOrderList: [],                  // 选中订单池订单
@@ -411,7 +413,7 @@ export default class SmartScheduling extends Component {
     }
 
     // 没有线路，开始创建线路
-    const { map, AMap, groupMarkers, warehouseMarker } = this;
+    const { map, AMap, warehouseMarker } = this;
     // 构造路线导航类
     const driving = new AMap.Driving({
       hideMarkers: true,
@@ -420,17 +422,17 @@ export default class SmartScheduling extends Component {
       autoFitView: false,
       outlineColor: colors[index],
     });
-    this.routingPlans[index] = [];                                                   // 初始化路线数组
+    this.routingPlans[index] = [];                                                        // 初始化路线数组
     // 因为路线规划一次就最多16个 还要拆分多次调用
-    const aLine = [warehouseMarker, ...groupMarkers[index], warehouseMarker];  // 添加起始点和终点 才是一个完整的路径
-    const arr16 = [];                                                          // 拆分后的数组
-    for (let i = 0; i < aLine.length; i += (16 - 1)) {                      // 步进值确保每组之间有一个重叠元素
+    const aLine = [warehouseMarker, ...this.groupMarkers[index] || [], warehouseMarker];  // 添加起始点和终点 才是一个完整的路径
+    const arr16 = [];                                                                     // 拆分后的数组
+    for (let i = 0; i < aLine.length; i += (16 - 1)) {                                  // 步进值确保每组之间有一个重叠元素
       arr16.push(aLine.slice(i, i + 16));
     }
     const isLoad = Array(arr16.length).fill(true);   // 多次规划路线是否加载全部完毕|标记
     // 每16个点做一次规划
     arr16.forEach((line, i) => {
-      const waypoints = line.slice(1, line.length - 1).map(x => x.getPosition());
+      const waypoints = line.slice(1, line.length - 1).map(x => x.getPosition());   // 全部途经点
       // 根据起终点经纬度规划驾车导航路线
       driving.search(line[0].getPosition(), line[line.length - 1].getPosition(), { waypoints },
         (status, result) => {
@@ -619,17 +621,16 @@ export default class SmartScheduling extends Component {
    * 获取是否创建成功图标
    * @author ChenGuangLong
    * @since 2024/11/27 上午11:30
-  */
+   */
   getCreateIcon = index => {
     const ok = this.state.scheduleDataList[index].ok;
-    if (typeof ok === 'undefined') return <></>
+    if (typeof ok === 'undefined') return <></>;
     return ok ?
       <Icon type="check" style={{ color: '#4caf50' }}/> :
       <Popover content={this.state.scheduleDataList[index].errMsg?.split(':')[1] ?? '无错误信息'}>
         <Icon type="close" style={{ color: '#f44336' }}/>
-      </Popover>
+      </Popover>;
   };
-
 
   /**
    * 获取对应索引的车辆信息
@@ -995,7 +996,7 @@ export default class SmartScheduling extends Component {
                     type="link"
                     onClick={() => {
                       if (scheduleDataList[index].ok) return message.error('无效操作：已生成排车单!');
-                      if (scheduleResults[index].length === 0) return message.error('没有配送点时，不支持选车辆和人员!');
+                      if (orders.length === 0) return message.error('没有配送点时，不支持选车辆和人员!');
                       this.setState({ showEmpAndVehicleModal: index });
                       window.setTimeout(() => {
                         this.empAndVehicleModalRef?.show?.(orders, scheduleDataList[index].selectEmployees, scheduleDataList[index].selectVehicle, scheduleDataList[index].vehicleModel);
@@ -1008,6 +1009,7 @@ export default class SmartScheduling extends Component {
                   {/* ——————————在地图上聚焦这条线路的点—————————— */}
                   <Button
                     type="link"
+                    disabled={orders.length === 0}
                     onClick={() => this.map.setFitView(this.groupMarkers[index], false, [60, 60, 60, 500])}    // 不是立即过渡 四周边距，上、下、左、右
                   >
                     聚焦
@@ -1023,6 +1025,24 @@ export default class SmartScheduling extends Component {
                   >
                     移除
                   </Button>
+                  {scheduleDataList[index].ok === false &&  // ——————————到配送调度界面创建——————————一点写false是因为空时不显示
+                    <Popover
+                      placement="topRight"
+                      content={<div>跳转到配送调度的创建排车单页面，!!!这里选择的人、车、备注不会被带过去</div>}
+                    >
+                      <Button
+                        type="link"
+                        className={styles.yellowBtn}
+                        onClick={() => {
+                          if (window.openCreateSchedule) window.openCreateSchedule(orders);
+                          else window.createScheduleOrders = orders;
+                          this.props.history.push(this.dispatchingUri);
+                        }}
+                      >
+                        单张保存
+                      </Button>
+                    </Popover>
+                  }
                 </div>
               </div>
             )}
