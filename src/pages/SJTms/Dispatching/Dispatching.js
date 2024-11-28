@@ -66,6 +66,8 @@ export default class Dispatching extends Component {
     // const isOrderCollect = localStorage.getItem(window.location.hostname + '-orderCollect');
     // this.setState({ isOrderCollect: isOrderCollect != 'false' });
     window.refreshDispatchAll = this.refreshDispatchAll;
+    window.setTimeout(()=>{console.log("███████this.props>>>>🔴", this.props,"🔴<<<<██████")},3000)
+
   }
 
   /** 组件卸载前window.refreshDispatchAll设置回空 */
@@ -186,7 +188,9 @@ export default class Dispatching extends Component {
                         dispatchConfig={this.state.dispatchConfig}
                         refreshSelectRowOrder={this.refreshSelectRowOrder}
                         totalOrder={this.state.selectOrders}
-                        transferData ={this.state.transferData}
+                        transferData={this.state.transferData}
+                        go={(uri) => this.props.history.push(uri)}
+                        authority={this.props.route?.authority ? this.props.route.authority : null}
                       />
                     </div>
                   </Col>
@@ -198,7 +202,7 @@ export default class Dispatching extends Component {
                         refreshPending={this.refreshPendingTable}
                         refreshDetail={this.refreshSelectScheduleTable}
                         dispatchConfig={this.state.dispatchConfig}
-                        transferData ={this.state.transferData}
+                        transferData={this.state.transferData}
                         authority={this.props.route?.authority ? this.props.route.authority : null}
                       />
                     </div>

@@ -1,28 +1,20 @@
 // ///////////////////////////智能调度页面//////////////
 // todo 配置化几个参数
-// todo 配送调度跳转过来逻辑 和完成去配送调度逻辑
 // todo 生成排车单出问题的保持界面看看能不能给一个按钮直接单独到配送调度自己调整
 // todo 以前的排车单地图的线路规划没有按顺序排序生成
 // todo 后续高德api放后端请求
+// 配送调度提供window.selectOrders   如果是配送调度跳转过来的订单池原数据列表(如果是刚打开就读取到就直接使用) 使用完马上清空
+// 配送调度提供window.refreshDispatchAll：配送调度打开后存在在的方法，调用可以刷新配送调度的全部数据
+// 说明window.localStorage》mapStyleName：当前地图样式名称
+// 说明window.localStorage》lastVehicles+loginOrg().uuid：上次车辆池数据列表
+// 智能调度提供window.smartSchedulingHandleOrders 打开了这个界面，又从配送调度界面选单时 给配送调度界面使用的（还要考虑是否现在正在智能调度中）
 
 import React, { Component, createRef } from 'react';
 import AMapLoader from '@amap/amap-jsapi-loader';
 import {
-  Button,
-  Col,
-  Divider,
-  Drawer,
-  Empty,
-  Icon,
-  Input,
-  message,
-  Modal,
-  Popconfirm,
-  Popover,
-  Progress,
-  Row,
-  Select,
-  Table, Tooltip
+  Button, Input, Modal, Select, Table, Progress,
+  Col, Divider, Drawer, Empty, Icon, Row, message,
+  Popconfirm, Popover, Tooltip
 } from 'antd';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -47,56 +39,52 @@ import EmpAndVehicleModal from '@/pages/SJTms/SmartScheduling/EmpAndVehicleModal
 import DragDtlCard from '@/pages/SJTms/SmartScheduling/DragDtlCard';
 
 const { Option } = Select;
-window.selectOrders = undefined;      // 如果是配送调度跳转过来的订单池原数据列表
-// window.refreshDispatchAll：配送调度打开后存在在的方法，调用可以刷新配送调度的全部数据
-// 说明window.localStorage》mapStyleName：当前地图样式名称
-// 说明window.localStorage》lastVehicles+loginOrg().uuid：上次车辆池数据列表
-
 
 export default class SmartScheduling extends Component {
-  RIGHT_DRAWER_WIDTH = 400;   // 右侧侧边栏宽度（智能调度结果抽屉宽度）
-  AMap = null;                   // 高德地图对象
-  map = null;                    // 高德地图实例
-  text = null;                   // 高德地图文本对象
-  warehouseMarker = null;        // 当前仓库高德点
-  warehousePoint = '';         // 当前仓库经纬度
-  groupMarkers = [];            // 分组的高德点位
-  unassignedMarkers = [];       // 未分配线路的高德点位
-  routingPlans = [];            // 路线规划数据列表（按index对应groupMarkers）
-  mapStyleName = '月光银';       // 地图样式
-  orderList = [];               // 点击智能调度时订单池原数据列表（用来生成排车单时用）
-  empTypeMapper = {};             // 人员类型映射
+  RIGHT_DRAWER_WIDTH = 400;            // 右侧侧边栏宽度（智能调度结果抽屉宽度）
+  AMap = null;                            // 高德地图对象
+  map = null;                             // 高德地图实例
+  text = null;                            // 高德地图文本对象
+  warehouseMarker = null;                 // 当前仓库高德点
+  warehousePoint = '';                  // 当前仓库经纬度
+  groupMarkers = [];                     // 分组的高德点位
+  unassignedMarkers = [];                // 未分配线路的高德点位
+  routingPlans = [];                     // 路线规划数据列表（按index对应groupMarkers）
+  mapStyleName = '月光银';                // 地图样式
+  orderList = [];                        // 点击智能调度时订单池原数据列表（用来生成排车单时用）
+  empTypeMapper = {};                       // 人员类型映射
+  dispatchingUri = '/tmscode/dispatch';  // 初始化配送调度uri（会被字典routeJump的配送调度值覆盖)
 
   vehiclePoolModalRef = createRef();     // 车辆池弹窗ref
   orderPoolModalRef = createRef();       // 订单池弹窗ref
   empAndVehicleModalRef = createRef();  // 选司机和车弹窗ref
   orderDtlRef = createRef();            // 拖动排序明细ref
   state = {
-    sx: 0,                           // 有时刷新页面用
-    selectOrderList: [],             // 选中订单池订单
-    selectVehicles: [],              // 选中运力池数据
-    showInputVehicleModal: false,    // 显示手动输入车辆弹窗
-    showSmartSchedulingModal: true,  // 显示智能调度弹窗
-    showMenuModal: true,             // 显示选订单弹窗
-    showVehicleModal: false,         // 显示选车辆弹窗
-    showPointModal: null,            // 显示配送点弹窗(有就是显示[对象,线路几])
-    showResultDrawer: false,         // 显示调度结果右侧侧边栏
-    showButtonDrawer: true,          // 显示左边按钮侧边栏
-    showProgress: -1,                // 显示生成排车进度条（>0就是显示)
-    childrenIndex: -1,               // 显示调度排车子抽屉 这个是它的索引>=0就是显示
-    showEmpAndVehicleModal: -1,      // 显示选司机和车弹窗 这个是它的索引>=0就是显示
-    showRemoveModal: -1,             // 显示移除线路弹窗   这个是它的索引>=0就是显示
-    scheduleResults: [],             // 智能调度排车处理后的结果（二重数组内的订单）
+    sx: 0,                                // 有时刷新页面用
+    selectOrderList: [],                  // 选中订单池订单
+    selectVehicles: [],                   // 选中运力池数据
+    showInputVehicleModal: false,         // 显示手动输入车辆弹窗
+    showSmartSchedulingModal: true,       // 显示智能调度弹窗
+    showMenuModal: !window.selectOrders,  // 显示选订单弹窗
+    showVehicleModal: false,              // 显示选车辆弹窗
+    showPointModal: null,                 // 显示配送点弹窗(有就是显示[对象,线路几])
+    showResultDrawer: false,              // 显示调度结果右侧侧边栏
+    showButtonDrawer: true,               // 显示左边按钮侧边栏
+    showProgress: -1,                     // 显示生成排车进度条（>0就是显示)
+    childrenIndex: -1,                    // 显示调度排车子抽屉 这个是它的索引>=0就是显示
+    showEmpAndVehicleModal: -1,           // 显示选司机和车弹窗 这个是它的索引>=0就是显示
+    showRemoveModal: -1,                  // 显示移除线路弹窗   这个是它的索引>=0就是显示
+    scheduleResults: [],                  // 智能调度排车处理后的结果（二重数组内的订单）
     /** @type {ScheduleData[]} */
-    scheduleDataList: [],            // 排车选择数据：如 司机、备注、车辆 用index索引对应scheduleResults  属性包括：vehicleModel、selectVehicle、selectEmployees、note
-    unassignedNodes: [],              // 智能调度未分配节点
-    btnLoading: false,               // 智能调度按钮加载状态
-    fullScreenLoading: false,        // 全屏加载中
-    isMultiVehicle: false,           // 是否是多载具仓库
-    routingConfig: {                 // 智能调度接口参数配置
-      sortRule: 0,    // 排线排序⽅式
-      routeOption: 0, // 算路选项
-      isBack: 1,      // 是否算返回仓库
+    scheduleDataList: [],                 // 排车选择数据：如 司机、备注、车辆 用index索引对应scheduleResults  属性包括：vehicleModel、selectVehicle、selectEmployees、note
+    unassignedNodes: [],                  // 智能调度未分配节点
+    btnLoading: false,                    // 智能调度按钮加载状态
+    fullScreenLoading: false,             // 全屏加载中
+    isMultiVehicle: false,                // 是否是多载具仓库
+    routingConfig: {      // 智能调度接口参数配置
+      sortRule: 0,        // 排线排序⽅式
+      routeOption: 0,     // 算路选项
+      isBack: 1,          // 是否算返回仓库
     }
   };
 
@@ -110,9 +98,17 @@ export default class SmartScheduling extends Component {
       message.error(`获取高德地图类对象失败:${error}`);
     }
     this.initConfig();
+    this.initAction();
+    window.smartSchedulingHandleOrders = this.handleOrders;
   };
+
+  /** 卸载组件前清空产生的window */
+  componentWillUnmount() {
+    window.smartSchedulingHandleOrders = null;
+  }
+
   /**
-   * 初始化配置，如多载具
+   * 初始化配置
    * @author ChenGuangLong
    * @since 2024/11/12 下午3:41
    */
@@ -137,6 +133,22 @@ export default class SmartScheduling extends Component {
         return acc;
       }, {});
     }).catch(() => message.error('获取人员类型映射表失败！'));
+    // ——————拿到配送调度路由————————
+    // 查询字典拿到智能调度路由uri
+    queryDictByCode(['routeJump']).then(
+      res => res.data?.forEach(item => {item.itemText === '配送调度' && (this.dispatchingUri = item.itemValue);})
+    );
+  };
+
+  /**
+   * 初始化动作
+   * @author ChenGuangLong
+   * @since 2024/11/28 上午8:43
+  */
+  initAction = () => {
+    // ———————判断是否是从配送调度按钮跳转打开的————————
+    if(window.selectOrders) this.handleOrders(window.selectOrders);
+
     // ————————去白边：没套收藏组件顶部会有白边————————
     window.setTimeout(() => {
       const element = document.querySelector('#smartSchedulingPage');
@@ -151,10 +163,13 @@ export default class SmartScheduling extends Component {
 
   /**
    * 处理选择订单池订单
+   * @param selectOrders 选择订单池订单
+   * @param extState    设置state
    * @author ChenGuangLong
    * @since 2024/11/13 上午9:48
    */
-  handleOrders = (selectOrders = this.orderPoolModalRef?.state?.selectOrders) => {
+  handleOrders = (selectOrders = this.orderPoolModalRef?.state?.selectOrders, extState = {}) => {
+    if (this.state.scheduleResults.length > 0) return message.error('已智能调度，请先清空当前数据后再操作');
     if (!selectOrders?.length) return message.error('请先选择订单');
     this.orderList = [...selectOrders]; // 订单池原数据列表
     // 有些仓是一个运输订单是多个订单，所以需要合并
@@ -185,7 +200,8 @@ export default class SmartScheduling extends Component {
     if (mergeOrders.length < 2) return message.error('请选择至少两个要排车的门店！');
     if (mergeOrders.length > 200) return message.error('最多只能选择200个门店！');
 
-    this.setState({ showMenuModal: false, selectOrderList: mergeOrders });
+    this.setState({ showMenuModal: false, selectOrderList: mergeOrders, ...extState });
+    if (window.selectOrders) window.selectOrders = undefined;  // 用完即清
   };
 
   /**
@@ -1437,7 +1453,7 @@ export default class SmartScheduling extends Component {
                 <Button
                   type="primary"
                   onClick={() => {
-                    this.props.history.push('/tmscode/dispatch');
+                    this.props.history.push(this.dispatchingUri);
                     window.refreshDispatchAll && window.refreshDispatchAll();   // 本来打开了就刷新调度页面数据
                   }}
                 >
