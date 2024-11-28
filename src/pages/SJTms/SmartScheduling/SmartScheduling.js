@@ -54,7 +54,7 @@ export default class SmartScheduling extends Component {
   mapStyleName = '月光银';                // 地图样式
   orderList = [];                        // 点击智能调度时订单池原数据列表（用来生成排车单时用）
   empTypeMapper = {};                       // 人员类型映射
-  dispatchingUri = '/tmscode/dispatch';  // 初始化配送调度uri（会被字典routeJump的配送调度值覆盖)
+  dispatchingUri = '/tmscode/dispatch';  // 初始化配送调度uri（会被字典routeJump（路由跳转）的配送调度值覆盖)
 
   vehiclePoolModalRef = createRef();     // 车辆池弹窗ref
   orderPoolModalRef = createRef();       // 订单池弹窗ref

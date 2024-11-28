@@ -393,6 +393,9 @@ export default class OrderPoolPage extends Component {
       return;
     }
     if (isSmartScheduling) {
+      const ordersCount = new Set(orders.map(x => x.deliveryPoint.uuid)).size;
+      if (ordersCount < 2) return message.error('智能调度至少需要2个配送点');
+      if (ordersCount > 200) return message.error('智能调度最多支持200个配送点');
       if (window.smartSchedulingHandleOrders) window.smartSchedulingHandleOrders(orders, { showSmartSchedulingModal: true });
       else window.selectOrders = orders;
       this.props.go(this.smartSchedulingUri);
