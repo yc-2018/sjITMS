@@ -987,17 +987,9 @@ export default class OrderPoolPage extends Component {
                 hidden={!havePermission(`${this.state.authority}.smartScheduling`)}
                 onClick={() => this.dispatching(undefined, undefined, true)}
               >
-                智能调度
+                智能调度门店
               </Button>
             </Tooltip>
-            <Button
-              style={{ marginLeft: 10 }}
-              onClick={() => this.handleMappingOrder()}
-              loading={btnLoading}
-              hidden={!havePermission(`${this.state.authority}.mappingOrder`)}
-            >
-              匹配排车单
-            </Button>
             <Button
               style={{ marginLeft: 10 }}
               onClick={() => this.handleAddOrder()}
@@ -1110,6 +1102,18 @@ export default class OrderPoolPage extends Component {
                   >
                     <img src={mapIcon} style={{ width: 20, height: 20 }} />
                     地图排车
+                  </Menu.Item>
+                  <Menu.Item
+                    onClick={ () =>{
+                      if (auditedRowKeys.length + this.props.selectPending.length == 0) {
+                        message.warning('请选择运输订单！');
+                        return;
+                      }
+                      this.handleMappingOrder()
+                      } 
+                    }
+                  >
+                   匹配排车单
                   </Menu.Item>
                 </Menu>
               }
