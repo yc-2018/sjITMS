@@ -1535,6 +1535,7 @@ export default class SmartScheduling extends Component {
             onRef={ref => this.empAndVehicleModalRef = ref}
             weight={showEmpAndVehicleModal >= 0 ? Math.round(scheduleResults[showEmpAndVehicleModal].reduce((acc, cur) => acc + cur.weight, 0)) / 1000 : 0}
             volume={showEmpAndVehicleModal >= 0 ? parseFloat(scheduleResults[showEmpAndVehicleModal].reduce((acc, cur) => acc + cur.volume, 0).toFixed(2)) : 0}
+            lineNum={showEmpAndVehicleModal + 1}
           />
         </Modal>
 

@@ -14,9 +14,10 @@ const { Option } = Select;
 
 /**
  * 人和车的选择
- * @param props.onRef{Object}  对象this给父组件
- * @param props.weight{number} 订单重量
- * @param props.volume{number} 订单体积
+ * @param props.onRef{Object}   对象this给父组件
+ * @param props.weight{number}  订单重量
+ * @param props.volume{number}  订单体积
+ * @param props.lineNum{number} 线路号
  * @author ChenGuangLong
  * @since 2024/11/18 下午4:13
  */
@@ -660,7 +661,7 @@ export default class EmpAndVehicleModal extends Component {
 
   render () {
     const { loading, selectVehicle, selectEmployees } = this.state;
-    const { weight = 0, volume = 0 } = this.props;
+    const { weight = 0, volume = 0, lineNum } = this.props;
     // 重量比例
     const weightPercent = (weight / Number(selectVehicle.BEARWEIGHT || 0)) * 100;
     // 体积比例
@@ -679,28 +680,37 @@ export default class EmpAndVehicleModal extends Component {
                 <Row>
                   {/* ————————车辆载重比例———————— */}
                   <Col span={12} style={{ textAlign: 'center' }}>
-                    <div style={{ marginBottom: 20 }}>
-                      {selectVehicle.PLATENUMBER}车辆/商品载重t：{selectVehicle.BEARWEIGHT}/{weight}
-                    </div>
                     <Progress
-                      type="circle"
+                      strokeWidth={12}
                       percent={weightPercent}
+                      style={{ width: '80%' }}
                       status={weightPercent > 100 ? 'exception' : 'normal'}
                       format={() => weightPercent === Infinity ? 'X' : `${weightPercent.toFixed(2)} %`}
                     />
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
+                      <div style={{ textAlign: 'right' }}>{lineNum ? `线路${lineNum}` : ''}商品重量：</div>
+                      <b style={{ textAlign: 'left' }}>{weight}t</b>
+                      <div style={{ textAlign: 'right' }}>{selectVehicle.PLATENUMBER}车辆载重：</div>
+                      <b style={{ textAlign: 'left' }}>{selectVehicle.BEARWEIGHT}t</b>
+                    </div>
                   </Col>
                   {/* ————————车辆体积比例———————— */}
                   <Col span={12} style={{ textAlign: 'center' }}>
-                    <div style={{ marginBottom: 20 }}>
-                      {selectVehicle.PLATENUMBER}车辆/商品体积m³：
-                      {Math.round(selectVehicle?.BEARVOLUME * selectVehicle?.BEARVOLUMERATE) / 100}/{volume}
-                    </div>
                     <Progress
-                      type="circle"
+                      strokeWidth={12}
                       percent={volumePercent}
+                      style={{ width: '80%' }}
                       status={volumePercent > 100 ? 'exception' : 'normal'}
                       format={() => volumePercent === Infinity ? 'X' : `${volumePercent.toFixed(2)} %`}
                     />
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2,1fr)', gap: 8 }}>
+                      <div style={{ textAlign: 'right' }}>{lineNum ? `线路${lineNum}` : ''}商品体积：</div>
+                      <b style={{ textAlign: 'left' }}>{volume}m³</b>
+                      <div style={{ textAlign: 'right' }}>{selectVehicle.PLATENUMBER}车辆体积：</div>
+                      <b style={{ textAlign: 'left' }}>
+                        {Math.round(selectVehicle?.BEARVOLUME * selectVehicle?.BEARVOLUMERATE) / 100}m³
+                      </b>
+                    </div>
                   </Col>
                 </Row>
               ) : (
