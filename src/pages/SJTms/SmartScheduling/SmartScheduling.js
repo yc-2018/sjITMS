@@ -1,6 +1,7 @@
 // ///////////////////////////智能调度页面//////////////
 // todo 配置化几个参数
-// todo 以前的排车单地图的线路规划没有按顺序排序生成
+// todo 要不要每个线路卡片加上个小眼睛 可看看隐藏 底部也加个总的控制全部？
+// todo 未分配的配送点要不要也在列表显示一个专门的卡片？
 // todo 后续高德api放后端请求
 // 配送调度提供window.selectOrders   如果是配送调度跳转过来的订单池原数据列表(如果是刚打开就读取到就直接使用) 使用完马上清空
 // 配送调度提供window.refreshDispatchAll：配送调度打开后存在在的方法，调用可以刷新配送调度的全部数据
@@ -140,6 +141,8 @@ export default class SmartScheduling extends Component {
     queryDictByCode(['routeJump']).then(
       res => res.data?.forEach(item => {item.itemText === '配送调度' && (this.dispatchingUri = item.itemValue);})
     );
+    // ————————加上颜色————————todo
+
   };
 
   /**
