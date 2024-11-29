@@ -983,7 +983,7 @@ export default class OrderPoolPage extends Component {
             </Button>
             <Tooltip title="勾选订单池或待定列表数据后点击跳转到智能调度页面排单排线。如果打不开就请联系管理员开权限。" mouseEnterDelay={1}>
               <Button
-                style={{ marginLeft: 10 }}
+                className={dispatchingStyles.greenBtn}
                 hidden={!havePermission(`${this.state.authority}.smartScheduling`)}
                 onClick={() => this.dispatching(undefined, undefined, true)}
               >
