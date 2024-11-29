@@ -6,7 +6,7 @@
  */
 import React, { Component } from 'react'
 import { Modal, Button, Row, Col, message } from 'antd'
-import { uniqBy, orderBy } from 'lodash'
+import _, { uniqBy, orderBy } from 'lodash'
 import { getDetailByBillUuids } from '@/services/sjitms/ScheduleBill'
 import { queryDict } from '@/services/quick/Quick'
 import { getAddressByUuids } from '@/services/sjitms/StoreTeam'
@@ -47,7 +47,7 @@ export default class ScheduleGdMap extends Component {
     if (rowKeys.length === 0) return
     const response = await getDetailByBillUuids(rowKeys)
     if (!response.success) return
-    let orders = response.data
+    let orders = _.sortBy(response.data, 'deliveryNumber');  // 根据配送顺序排序
     const deliveryPoints = uniqBy(orders.map(x => x.deliveryPoint), x => x.uuid).map(x => x.uuid)
 
     if (deliveryPoints.length === 0) return
