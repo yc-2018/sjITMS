@@ -1112,7 +1112,7 @@ export default class SmartScheduling extends Component {
               {/* ——————————生成排车单按钮———————— */}
               <Tooltip
                 placement="topRight"
-                title={!allOk && isCreate ? '重新尝试保存生成失败的线路(已经成功的排车单不会再被保存)' : null}
+                title={!allOk && isCreate ? '重新尝试保存生成失败的线路(已经成功的排车单不会再被保存)，ps：如果用了单张保存功能就建议不要在点击了,因为两边数据不互通！' : null}
               >
                 <Button onClick={this.createSchedules} type="primary" disabled={allOk}>
                   {!allOk && isCreate ? '重试生成' : '生成排车单'}
