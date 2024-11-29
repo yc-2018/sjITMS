@@ -987,7 +987,7 @@ export default class OrderPoolPage extends Component {
                 hidden={!havePermission(`${this.state.authority}.smartScheduling`)}
                 onClick={() => this.dispatching(undefined, undefined, true)}
               >
-                智能调度门店
+                智能调度
               </Button>
             </Tooltip>
             <Button
