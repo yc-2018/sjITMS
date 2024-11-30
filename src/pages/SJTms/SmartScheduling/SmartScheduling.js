@@ -634,10 +634,13 @@ export default class SmartScheduling extends Component {
     const ok = this.state.scheduleDataList[index].ok;
     if (typeof ok === 'undefined') return <></>;
     return ok ?
-      <Icon type="check" style={{ color: '#4caf50' }}/> :
-      <Popover content={this.state.scheduleDataList[index].errMsg?.split(':')[1] ?? '无错误信息'}>
-        <Icon type="close" style={{ color: '#f44336' }}/>
-      </Popover>;
+      <span className={styles.successTag}><Icon type="check" style={{ color: '#4caf50' }}/> 创建成功</span>
+      :
+      <span>
+        <Popover content={this.state.scheduleDataList[index].errMsg?.split(':')[1] ?? '无错误信息'}>
+          <span className={styles.failTag}><Icon type="close" style={{ color: '#f44336' }}/> 创建失败</span>
+        </Popover>
+      </span>;
   };
 
   /**
