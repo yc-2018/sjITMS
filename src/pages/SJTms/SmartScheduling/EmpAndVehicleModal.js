@@ -3,11 +3,11 @@ import { Badge, Card, Col, Empty, Icon, Input, message, Progress, Row, Select, S
 import { orderBy, uniq, uniqBy } from 'lodash';
 import { guid, isEmptyObj } from '@/utils/utils';
 import { dynamicQuery, queryAllData, queryDictByCode } from '@/services/quick/Quick';
-import { loginCompany, loginOrg } from '@/utils/LoginContext';
-import { getRecommend } from '@/services/sjitms/ScheduleBill';
+import { loginOrg } from '@/utils/LoginContext';
 import { getConfigDataByParams } from '@/services/sjconfigcenter/ConfigCenter';
 import style from '@/pages/SJTms/SmartScheduling/SmartScheduling.less';
 import { getDispatchConfig } from '@/services/sjtms/DispatcherConfig';
+import { getRecommendByOrders, getVehiclesParam, queryEmpParams } from '@/pages/SJTms/SmartScheduling/common';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -117,33 +117,14 @@ export default class EmpAndVehicleModal extends Component {
       });
     }
 
-    // 获取车辆
-    let param = {
-      tableName: 'v_sj_itms_vehicle_stat',
-      condition: {
-        params: [
-          { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
-          { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
-          { field: 'state', rule: 'eq', val: [1] },
-        ],
-      },
-    };
-    const vehiclesData = await dynamicQuery(param);
+    const vehiclesData = await dynamicQuery(getVehiclesParam());
     if (vehiclesData.success && vehiclesData.result.records !== 'false') {
       vehicles = vehiclesData.result.records;
       // 承运商集合
       carrieruuids = uniq(vehicles.filter(e => e.CARRIERUUID).map(e => e.CARRIERUUID));
     }
-    // 获取人员
-    let queryParams = [
-      { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
-      { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
-      { field: 'state', type: 'Integer', rule: 'eq', val: 1 },
-    ];
-    const employeesData = await queryAllData({
-      quickuuid: 'sj_itms_employee',
-      superQuery: { queryParams },
-    });
+
+    const employeesData = await queryAllData(queryEmpParams());
     employees = employeesData.data.records;
 
     let details = orderBy(record, x => x.archLine);
@@ -489,7 +470,7 @@ export default class EmpAndVehicleModal extends Component {
     const { orders } = this.state;
     if (key === 'recommend') {
       // 熟练度
-      let vehiclesByRecom = await this.getRecommendByOrders(orders, this.basicVehicle);
+      let vehiclesByRecom = await getRecommendByOrders(orders, this.basicVehicle);
       if (vehiclesByRecom) {
         vehiclesByRecom = vehiclesByRecom.filter(item => item.pro && item.pro !== 0);
         this.setState({ vehicles: vehiclesByRecom });
@@ -599,36 +580,6 @@ export default class EmpAndVehicleModal extends Component {
     employee.memberType = '';
     selectEmployees.push(employee);
     this.setState({ selectEmployees });
-  };
-
-  /** 按熟练度匹配车辆 */
-  getRecommendByOrders = async (record, vehicles) => {
-    if (vehicles.length === 0) return;
-    if (record.length === 0) return message.error('没有点位');
-
-    // 组装推荐人员车辆接口入参;
-    let params = {
-      storeCodes: record.map(item => {
-        return item.deliveryPoint.code;
-      }),
-      companyUuid: loginCompany().uuid,
-      dUuid: loginOrg().uuid,
-      state: 1,
-    };
-    // 车辆熟练度
-    let recommend = await getRecommend(params);
-    let cCountsMap = recommend.data?.cCountsMap ? recommend.data.cCountsMap : {};
-    let cCountTotal = recommend.data?.cCountTotal;
-    for (const vehicle of vehicles) {
-      if (vehicle.CODE in cCountsMap) {
-        vehicle.pro = (cCountsMap[vehicle.CODE] / cCountTotal) * 100;
-      } else {
-        vehicle.pro = 0;
-      }
-    }
-    // 排序
-    vehicles = vehicles.sort((a, b) => b.pro - a.pro);
-    return vehicles;
   };
 
   /** 选人 */

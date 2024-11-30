@@ -27,7 +27,7 @@ import styles from './SmartScheduling.less';
 import VehiclePoolPage from '@/pages/SJTms/Dispatching/VehiclePoolPage';
 import OrderPoolModal from '@/pages/SJTms/SmartScheduling/OrderPoolModal';
 import { mergeOrdersColumns, mergeVehicleColumns, vehicleColumns } from '@/pages/SJTms/SmartScheduling/columns';
-import { queryDict, queryDictByCode } from '@/services/quick/Quick';
+import { dynamicQuery, queryDict, queryDictByCode } from '@/services/quick/Quick';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { getSmartScheduling } from '@/services/sjitms/smartSchedulingApi';
 import VehicleInputModal from '@/pages/SJTms/SmartScheduling/VehicleInputModal';
@@ -35,7 +35,11 @@ import FullScreenLoading from '@/components/FullScreenLoading';
 import { colors } from '@/pages/SJTms/SmartScheduling/colors';
 import { convertCodeName } from '@/utils/utils';
 import { GetConfig } from '@/services/sjitms/OrderBill';
-import { formatSeconds, getMarkerText, groupByOrder, mapStyleMap, Tips } from '@/pages/SJTms/SmartScheduling/common';
+import {
+  formatSeconds, getMarkerText,
+  getRecommendByOrders, getVehiclesParam,
+  groupByOrder, mapStyleMap, Tips
+} from '@/pages/SJTms/SmartScheduling/common';
 import { save } from '@/services/sjitms/ScheduleBill';
 import EmpAndVehicleModal from '@/pages/SJTms/SmartScheduling/EmpAndVehicleModal';
 import DragDtlCard from '@/pages/SJTms/SmartScheduling/DragDtlCard';
@@ -56,6 +60,7 @@ export default class SmartScheduling extends Component {
   orderList = [];                        // 点击智能调度时订单池原数据列表（用来生成排车单时用）
   empTypeMapper = {};                       // 人员类型映射
   dispatchingUri = '/tmscode/dispatch';  // 初始化配送调度uri（会被字典routeJump（路由跳转）的配送调度值覆盖)
+  vehiclesAllData = null;                  // 整个车辆池数据列表(一键推荐用)
 
   vehiclePoolModalRef = createRef();     // 车辆池弹窗ref
   orderPoolModalRef = createRef();       // 订单池弹窗ref
@@ -793,6 +798,68 @@ export default class SmartScheduling extends Component {
     }
   };
 
+  /**
+   * 一键推荐人和车
+   * @author ChenGuangLong
+   * @since 2024/11/30 上午8:41
+   */
+  recommendPeopleAndVehicle = async () => {
+    // 获取车辆数据
+    if (!this.vehiclesAllData) {
+      const reps = await dynamicQuery(getVehiclesParam());
+      if (reps.success && reps.result.records !== 'false') this.vehiclesAllData = reps.result.records;
+      else return message.error('车辆数据获取失败');
+    }
+    // 显示进度条
+    this.setState({ showProgress: 0 });
+
+    const { scheduleResults, scheduleDataList } = this.state;
+    // 开始遍历推荐
+    for (let i = 0; i < scheduleResults.length; i++) {
+      // 进度条（放前面是因为用了continue）
+      i !== 0 && this.setState({ showProgress: Number((i / scheduleResults.length * 100).toFixed(2)) });
+      if (scheduleResults[i].length === 0) {
+        message.info(`线路${i + 1}:无配送点 跳过`);
+        continue;
+      }
+      if (scheduleDataList[i].selectEmployees?.length > 0 || scheduleDataList[i].selectVehicle) {
+        message.info(`线路${i + 1}:已选 跳过`);
+        continue;
+      }
+      const vehicles = await getRecommendByOrders(scheduleResults[i], this.vehiclesAllData);
+      const productWeight = Math.round(scheduleResults[i].reduce((acc, cur) => acc + cur.weight, 0)) / 1000; // 配送点重量
+      const productVolume = scheduleResults[i].reduce((acc, cur) => acc + cur.volume, 0);  // 配送点体积
+      const vehicleWeight = x => Number(x.BEARWEIGHT);  // 车辆载重
+      const vehicleVolume = x => Math.round(x?.BEARVOLUME * x?.BEARVOLUMERATE) / 100; // 车辆容积
+      const canInstall = x => vehicleWeight(x) >= productWeight && vehicleVolume(x) >= productVolume; // 能装？
+      const vehicle = vehicles.filter(x => x.JOBSTATE === 'Used' && canInstall(x))[0];
+      if (vehicle.pro === 0) {
+        message.info(`线路${i + 1}:无推荐车辆`);
+        continue;
+      }
+      scheduleDataList[i].selectVehicle = vehicle;
+      // ————————开始获取推荐员工————————
+      const param = {
+        tableName: 'v_sj_itms_vehicle_employee_z',
+        condition: { params: [{ field: 'VEHICLEUUID', rule: 'eq', val: [vehicle.UUID] }] }
+      };
+      const resp = await dynamicQuery(param);
+      if (resp.success && resp.result.records !== 'false') {
+        scheduleDataList[i].selectEmployees = uniqBy(resp.result.records, 'CODE').map(item => ({
+          ...item,
+          memberType: item.ROLE_TYPE,
+        }));
+      } else {
+        message.info(`线路${i + 1}:车辆推荐成功,无员工推荐`);
+        continue;
+      }
+      message.success(`线路${i + 1}:推荐成功`);
+    }
+    // 显示进度条
+    this.setState({ showProgress: 101 }); // 不写100是因为复用保存排车单的,写100会显示按钮，
+    this.setState({ showProgress: -1 });
+  };
+
   render () {
     const {
       showSmartSchedulingModal,
@@ -1086,6 +1153,17 @@ export default class SmartScheduling extends Component {
                   <Icon type="skin" theme={this.mapStyleName === '标准' ? 'outlined' : 'filled'}/>
                 </Button>
               </Popover>
+
+              {/* ——————————一键推荐车和人按钮—————— */}
+              <Popover content={<div>一键按熟练度推荐车辆和人员，如果已经选过车辆或人员的不会覆盖</div>}>
+                <Button
+                  style={{ marginRight: 8 }}
+                  onClick={this.recommendPeopleAndVehicle}
+                >
+                  <Icon type="car" />
+                </Button>
+              </Popover>
+
               {/* ——————————加上一条线路按钮—————— */}
               <Popover content={<div>添加一条空的线路</div>}>
                 <Button
@@ -1100,7 +1178,6 @@ export default class SmartScheduling extends Component {
                 >
                   <Icon type="plus"/>
                 </Button>
-
               </Popover>
 
               {/* ——————————放弃本次结果按钮—————— */}

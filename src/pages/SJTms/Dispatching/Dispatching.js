@@ -93,11 +93,11 @@ export default class Dispatching extends Component {
     this.pendingPageRef.refreshTable();
   };
   refreshSelectScheduleTable = schedule => {
-    return this.scheduleDetailPageRef.refreshTable(schedule);
+    return this.scheduleDetailPageRef?.refreshTable(schedule);
   };
 
   /**
-   * 刷新全部表格数据方法（提供window提供给智能调度）
+   * 刷新全部表格数据方法（通过window提供给智能调度）
    * @author ChenGuangLong
    * @since 2024/11/27 下午2:26
    */

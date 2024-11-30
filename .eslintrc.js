@@ -48,6 +48,7 @@ module.exports = {
     'import/prefer-default-export': 'off',            // 忽略默认导出
     'no-restricted-syntax':'warn',                    // 警告循环
     'react/no-array-index-key': 'off',                // 忽略数组索引作为key
+    'no-continue': 'off',                             // 忽略continue
   },
   settings: {
     polyfills: ['fetch', 'promises', 'url'],

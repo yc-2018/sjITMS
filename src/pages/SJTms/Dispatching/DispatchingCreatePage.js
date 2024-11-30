@@ -25,7 +25,6 @@ import {
   getSchedule,
   save,
   modify,
-  getRecommend,
   getShortestSort,
 } from '@/services/sjitms/ScheduleBill';
 import EditContainerNumberPageF from './EditContainerNumberPageF';
@@ -35,7 +34,12 @@ import disStyle from './Dispatching.less';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 // import { itemConfig, carSearchSortConfig } from './DispatchingConfig';
 import { getConfigDataByParams } from '@/services/sjconfigcenter/ConfigCenter';
-import { groupByOrder } from '@/pages/SJTms/SmartScheduling/common'
+import {
+  getRecommendByOrders,
+  getVehiclesParam,
+  groupByOrder,
+  queryEmpParams
+} from '@/pages/SJTms/SmartScheduling/common';
 
 const { Search } = Input;
 const { confirm } = Modal;
@@ -134,35 +138,6 @@ export default class DispatchingCreatePage extends Component {
     }
   };
 
-  getRecommendByOrders = async (record, vehicles) => {
-    if (vehicles.length == 0) {
-      return;
-    }
-    // 组装推荐人员车辆接口入参;
-    let params = {
-      storeCodes: record.map(item => {
-        return item.deliveryPoint.code;
-      }),
-      companyUuid: loginCompany().uuid,
-      dUuid: loginOrg().uuid,
-      state: 1,
-    };
-    // 车辆熟练度
-    let recommend = await getRecommend(params);
-    let cCountsMap = recommend.data?.cCountsMap ? recommend.data.cCountsMap : {};
-    let cCountTotal = recommend.data?.cCountTotal;
-    for (const vehicle of vehicles) {
-      if (vehicle.CODE in cCountsMap) {
-        vehicle.pro = (cCountsMap[vehicle.CODE] / cCountTotal) * 100;
-      } else {
-        vehicle.pro = 0;
-      }
-    }
-    // 排序
-    vehicles = vehicles.sort((a, b) => b.pro - a.pro);
-    return vehicles;
-  };
-
   // 初始化数据
   initData = async (isEdit, record, orders) => {
     let { vehicles, employees, carrieruuids } = this.state;
@@ -171,33 +146,14 @@ export default class DispatchingCreatePage extends Component {
       res => (this.dict = res.data)
     );
 
-    // 获取车辆
-    let param = {
-      tableName: 'v_sj_itms_vehicle_stat',
-      condition: {
-        params: [
-          { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
-          { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
-          { field: 'state', rule: 'eq', val: [1] },
-        ],
-      },
-    };
-    const vehiclesData = await dynamicQuery(param);
+    const vehiclesData = await dynamicQuery(getVehiclesParam());
     if (vehiclesData.success && vehiclesData.result.records != 'false') {
       vehicles = vehiclesData.result.records;
       // 承运商集合
       carrieruuids = uniq(vehicles.filter(e => e.CARRIERUUID).map(e => e.CARRIERUUID));
     }
-    // 获取人员
-    let queryParams = [
-      { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
-      { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
-      { field: 'state', type: 'Integer', rule: 'eq', val: 1 },
-    ];
-    const employeesData = await queryAllData({
-      quickuuid: 'sj_itms_employee',
-      superQuery: { queryParams },
-    });
+
+    const employeesData = await queryAllData(queryEmpParams());
     employees = employeesData.data.records;
 
     let details = orderBy(record, x => x.archLine);
@@ -259,7 +215,7 @@ export default class DispatchingCreatePage extends Component {
       // edit init
       this.setState({ carKey: 'init' });
     }
-    // vehicles = await this.getRecommendByOrders(details, vehicles);
+    // vehicles = await getRecommendByOrders(details, vehicles);
     if (schedule) {
       // 将选中车辆放到第一位
       selectVehicle = vehicles.find(x => x.UUID == schedule.vehicle.uuid);
@@ -483,14 +439,14 @@ export default class DispatchingCreatePage extends Component {
   removeDetail = async record => {
     const { orders } = this.state;
     orders.splice(orders.findIndex(x => x.uuid == record.uuid), 1);
-    let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
+    let vehicles = await getRecommendByOrders(orders, this.state.vehicles);
     this.setState({ orders, vehicles });
   };
   removeDetails = async records => {
     let { orders } = this.state;
     const uuids = records.map(x => x.uuid);
     orders = orders.filter(x => uuids.indexOf(x.uuid) == -1);
-    let vehicles = await this.getRecommendByOrders(orders, this.state.vehicles);
+    let vehicles = await getRecommendByOrders(orders, this.state.vehicles);
     this.setState({ orders, vehicles });
   };
 
@@ -822,7 +778,7 @@ export default class DispatchingCreatePage extends Component {
     const { orders, isEdit } = this.state;
     if (key == 'recommend') {
       // 熟练度
-      let vehiclesByRecom = await this.getRecommendByOrders(orders, this.basicVehicle);
+      let vehiclesByRecom = await getRecommendByOrders(orders, this.basicVehicle);
       if (vehiclesByRecom) {
         vehiclesByRecom = vehiclesByRecom.filter(item => {
           return item.pro && item.pro != 0;

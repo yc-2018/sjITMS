@@ -2,6 +2,8 @@ import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import { sumBy, uniq } from 'lodash';
 import { Divider, Icon, Popover } from 'antd';
+import { loginCompany, loginOrg } from '@/utils/LoginContext';
+import { getRecommend } from '@/services/sjitms/ScheduleBill';
 
 /**
  * 提示组件
@@ -111,7 +113,62 @@ export const groupByOrder = data => {
   };
 };
 
-/**
+/** 按熟练度匹配车辆(通过传进来的配送点列表和车辆列表按熟练度排序车辆列表并返回车辆列表) */
+export const getRecommendByOrders = async (record, vehicles) => {
+  if (vehicles.length === 0) return;
+  if (record.length === 0) return;
+
+  // 组装推荐人员车辆接口入参;
+  let params = {
+    storeCodes: record.map(item => {
+      return item.deliveryPoint.code;
+    }),
+    companyUuid: loginCompany().uuid,
+    dUuid: loginOrg().uuid,
+    state: 1,
+  };
+  // 车辆熟练度
+  let recommend = await getRecommend(params);
+  let cCountsMap = recommend.data?.cCountsMap ?? {};
+  let cCountTotal = recommend.data?.cCountTotal;
+  for (const vehicle of vehicles) {
+    if (vehicle.CODE in cCountsMap) {
+      vehicle.pro = (cCountsMap[vehicle.CODE] / cCountTotal) * 100;
+    } else {
+      vehicle.pro = 0;
+    }
+  }
+  // 排序
+  vehicles = vehicles.sort((a, b) => b.pro - a.pro);
+  return vehicles;
+};
+
+/** 获取车辆的请求参数(为什么写成方法？因为里面有变量，所以如果这也是变量那就切换了调度中心也不会变 */
+export const getVehiclesParam = () => ({
+  tableName: 'v_sj_itms_vehicle_stat',
+  condition: {
+    params: [
+      { field: 'COMPANYUUID', rule: 'eq', val: [loginCompany().uuid] },
+      { field: 'DISPATCHCENTERUUID', rule: 'like', val: [loginOrg().uuid] },
+      { field: 'state', rule: 'eq', val: [1] },
+    ],
+  },
+});
+
+/** 获取人员的请求参数(为什么写成方法不写成变量？因为里面还有变量，所以如果这也是变量那就切换了仓库也不会变 */
+export const queryEmpParams = () =>
+  ({
+    quickuuid: 'sj_itms_employee',
+    superQuery: {
+      queryParams: [
+        { field: 'companyuuid', type: 'VarChar', rule: 'eq', val: loginCompany().uuid },
+        { field: 'dispatchCenterUuid', type: 'VarChar', rule: 'like', val: loginOrg().uuid },
+        { field: 'state', type: 'Integer', rule: 'eq', val: 1 },
+      ]
+    },
+  });
+
+  /**
  * 将秒数转换为 HH小时mm分钟 格式
  * @param {number} seconds - 输入的秒数
  * @returns {string} 格式化后的时间字符串
