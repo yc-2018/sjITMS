@@ -100,7 +100,7 @@ export default class SmartScheduling extends Component {
     this.mapStyleName = window.localStorage.getItem('mapStyleName') ?? this.mapStyleName;
     const mapStyle = `amap://styles/${mapStyleMap[this.mapStyleName]}`;
     try { // 加载高德地图
-      this.AMap = window.AMap ?? await AMapLoader.load(AMapDefaultLoaderObj);
+      this.AMap = await AMapLoader.load(AMapDefaultLoaderObj);
       this.map = new this.AMap.Map('smartSchedulingAMap', { ...AMapDefaultConfigObj, mapStyle });
     } catch (error) {
       message.error(`获取高德地图类对象失败:${error}`);
@@ -453,8 +453,9 @@ export default class SmartScheduling extends Component {
             const Polyline = new AMap.Polyline({
               path,                           // 设置线覆盖物路径
               showDir: true,
+              strokeWeight: 6,                // 线宽
+              strokeOpacity: 0.8,             // 线透明度(默认0.5
               strokeColor: colors[index],     // 线颜色
-              strokeWeight: 6                 // 线宽
             });
             this.routingPlans[index].push(Polyline);
             map.add(Polyline);
@@ -1145,22 +1146,33 @@ export default class SmartScheduling extends Component {
                 }
               >
                 <Button
-                  style={{ marginRight: 8 }}
+                  className={styles.resultBottomBtn}
                   onClick={() => {
-                    const mapStyleName = this.mapStyleName === '标准' ? '幻影黑' : '标准';
+                    const mapStyleName = this.mapStyleName === '月光银' ? '幻影黑' : '月光银';
                     this.map.setMapStyle(`amap://styles/${mapStyleMap[mapStyleName]}`);
                     this.sxYm(this.mapStyleName = mapStyleName);
                     window.localStorage.setItem('mapStyleName', mapStyleName);
                   }}
                 >
-                  <Icon type="skin" theme={this.mapStyleName === '标准' ? 'outlined' : 'filled'}/>
+                  <Icon type="skin" theme={this.mapStyleName === '月光银' ? 'outlined' : 'filled'}/>
                 </Button>
               </Popover>
+
+
+              {/* /!* ——————————一键隐藏或查看全部全部点—————— *!/ */}
+              {/* <Button className={styles.resultBottomBtn}> */}
+              {/*   <Icon type="eye" /> */}
+              {/* </Button> */}
+
+              {/* /!* ——————————批量选择点—————— *!/ */}
+              {/* <Button className={styles.resultBottomBtn}> */}
+              {/*   <Icon type="select" /> */}
+              {/* </Button> */}
 
               {/* ——————————一键推荐车和人按钮—————— */}
               <Popover content={<div>一键按熟练度推荐车辆和人员，如果已经选过车辆或人员的不会覆盖</div>}>
                 <Button
-                  style={{ marginRight: 8 }}
+                  className={styles.resultBottomBtn}
                   onClick={this.recommendPeopleAndVehicle}
                 >
                   <Icon type="car" />
@@ -1170,7 +1182,7 @@ export default class SmartScheduling extends Component {
               {/* ——————————加上一条线路按钮—————— */}
               <Popover content={<div>添加一条空的线路</div>}>
                 <Button
-                  style={{ marginRight: 8 }}
+                  className={styles.resultBottomBtn}
                   onClick={() => {
                     this.setState({
                       scheduleResults: [...scheduleResults, []],
@@ -1186,7 +1198,7 @@ export default class SmartScheduling extends Component {
               {/* ——————————放弃本次结果按钮—————— */}
               <Popconfirm title={isCreate ? '开始新的智能调度' : '确定放弃本次智能调度结果?'} onConfirm={this.resetData}>
                 <Popover content={isCreate ? '重新新的智能调度' : '放弃本次智能调度结果'}>
-                  <Button type="danger" style={{ marginRight: 8 }}><Icon type="delete"/></Button>
+                  <Button type="danger" className={styles.resultBottomBtn}><Icon type="delete"/></Button>
                 </Popover>
               </Popconfirm>
               {/* ——————————生成排车单按钮———————— */}
@@ -1232,6 +1244,13 @@ export default class SmartScheduling extends Component {
                     >
                       <b className={styles.detailIndex}>{index + 1}</b>
                       <b>{convertCodeName(order.deliveryPoint)}</b>
+                      <Popover content="地图上聚焦该点">
+                        <Icon
+                          type="environment"
+                          style={{ color: '#999', marginLeft: 3 }}
+                          onClick={() => this.map.setFitView(new this.AMap.Marker({ position: [order.longitude, order.latitude] }))}
+                        />
+                      </Popover>
                       <div className={styles.w50}>线路：{order.archLine?.code}</div>
                       <div className={styles.w50}>备注：{order.lineNote}</div>
                       <Divider style={{ margin: 6 }}/>
