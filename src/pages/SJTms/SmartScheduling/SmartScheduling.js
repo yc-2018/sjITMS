@@ -299,7 +299,7 @@ export default class SmartScheduling extends Component {
    */
   loadingPoint = (groupOrders = this.state.scheduleResults, unassigneds = this.state.unassignedNodes ?? [], refresh) => {
     const { map, AMap, warehouseMarker, warehousePoint } = this;
-    const { isMultiVehicle } = this.state;
+    const { isMultiVehicle, scheduleDataList } = this.state;
     // ————————————仓库点————————————
     if (!warehouseMarker) {
       this.warehouseMarker = new AMap.Marker({
@@ -339,7 +339,8 @@ export default class SmartScheduling extends Component {
         const marker = new AMap.Marker({
           position: [longitude, latitude],      // 设置Marker的位置
           anchor: 'center',                     // 设置Marker的锚点
-          content: `<div style="background: ${colors[index]}" class="${styles.point}">${i + 1}</div>`
+          content: `<div style="background: ${colors[index]}" class="${styles.point}">${i + 1}</div>`,
+          visible: !scheduleDataList[index].unseen,
         });
         marker.on('mouseover', () => {                                        // 鼠标移入
           // 创建一个 DOM 容器，将 React 组件渲染到该容器中
@@ -708,6 +709,9 @@ export default class SmartScheduling extends Component {
     // ——————取消推荐———————
     if (oldLink >= 0) scheduleDataList[oldLink].vehicleModel = null;              // 定位改变高德推荐就没用了
     if (newLinkIndex >= 0) scheduleDataList[newLinkIndex].vehicleModel = null;    // 定位改变高德推荐就没用了
+    // ——————隐藏显示———————
+    if (scheduleDataList[oldLink]?.unseen) scheduleDataList[oldLink].unseen = false;
+    if (scheduleDataList[newLinkIndex]?.unseen) scheduleDataList[newLinkIndex].unseen = false;
     // ————————切换————————
     if (oldLink >= 0) {
       scheduleResults[oldLink] = scheduleResults[oldLink].filter(x => x.uuid !== order.uuid);
@@ -786,15 +790,18 @@ export default class SmartScheduling extends Component {
     this.orderDtlRef.current.childNodes.forEach(child => child.removeAttribute('class'));
     this.orderDtlRef.current.childNodes.forEach(child => child.removeAttribute('style'));
 
-    const { scheduleResults, childrenIndex } = this.state;
-    const updatedOrders = [...scheduleResults[childrenIndex]];
-    const [draggedItem] = updatedOrders.splice(originallyIndex, 1);   // 从列表删除被拖动的元素，并拿到
-    updatedOrders.splice(hoverIndex, 0, draggedItem);           // 将被拖动的元素插入到目标位置
-    scheduleResults[childrenIndex] = updatedOrders;
-    this.setState({ scheduleResults: [...scheduleResults] });
-
+    const { scheduleResults, scheduleDataList, childrenIndex } = this.state;
     // 拖动后更新地图点位序号和路线规划
     if (originallyIndex !== hoverIndex) {
+      // ——————显示隐藏——————
+      if (scheduleDataList[childrenIndex]?.unseen) scheduleDataList[childrenIndex].unseen = false;
+      // ——————改变位置——————
+      const updatedOrders = [...scheduleResults[childrenIndex]];
+      const [draggedItem] = updatedOrders.splice(originallyIndex, 1);   // 从列表删除被拖动的元素，并拿到
+      updatedOrders.splice(hoverIndex, 0, draggedItem);           // 将被拖动的元素插入到目标位置
+      scheduleResults[childrenIndex] = updatedOrders;
+      this.setState({ scheduleResults: [...scheduleResults] });
+
       // 更新点位序号
       this.loadingPoint(undefined, undefined, 1);
       // 如果有显示了路线规划，就重新规划
@@ -988,6 +995,21 @@ export default class SmartScheduling extends Component {
               >
                 {this.getColorBlocks(index)}
                 <span style={{ fontSize: '16px' }}>线路{index + 1}</span> &nbsp;
+                <Icon
+                  style={{ fontSize: 14, color: scheduleDataList[index].unseen ? '#f75353' : '#999' }}
+                  type={scheduleDataList[index].unseen ? 'eye-invisible' : 'eye'}
+                  onClick={e => {
+                    e.stopPropagation();
+                    const unseen = !scheduleDataList[index].unseen;
+                    scheduleDataList[index].unseen = unseen;
+                    this.setState({ scheduleDataList: [...scheduleDataList] }, () => {
+                      this.loadingPoint(undefined, undefined, 1);
+                      if (this.routingPlans[index]?.length > 0)
+                        if (unseen) this.routingPlans[index].forEach(x => x.hide());
+                        else this.routingPlans[index].forEach(x => x.show());
+                    });
+                  }}
+                />
                 {this.getCreateIcon(index)}
                 <Divider style={{ margin: 6 }}/>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
@@ -1158,11 +1180,25 @@ export default class SmartScheduling extends Component {
                 </Button>
               </Popover>
 
-
-              {/* /!* ——————————一键隐藏或查看全部全部点—————— *!/ */}
-              {/* <Button className={styles.resultBottomBtn}> */}
-              {/*   <Icon type="eye" /> */}
-              {/* </Button> */}
+              {/* ——————————一键隐藏或查看全部全部点—————— */}
+              <Popover
+                content={`一键${scheduleDataList.some(x => x.unseen) ? '显示' : '隐藏'}配送点，未分配点位不受影响。ps:线路配送点受到影响时,会自动显示`}
+              >
+                <Button
+                  className={styles.resultBottomBtn}
+                  onClick={() => {
+                    const unseen = !scheduleDataList.some(x => x.unseen);
+                    scheduleDataList.forEach(x => x.unseen = unseen);
+                    this.routingPlans.forEach(lineArr => lineArr?.forEach(x => {
+                      if (unseen) x.hide();
+                      else x.show();
+                    }));
+                    this.setState({ scheduleDataList: [...scheduleDataList] }, () => this.loadingPoint(undefined, undefined, 1));
+                  }}
+                >
+                  <Icon type={scheduleDataList.some(x => x.unseen) ? 'eye-invisible' : 'eye'}/>
+                </Button>
+              </Popover>
 
               {/* /!* ——————————批量选择点—————— *!/ */}
               {/* <Button className={styles.resultBottomBtn}> */}

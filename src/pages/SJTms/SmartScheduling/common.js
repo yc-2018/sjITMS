@@ -191,6 +191,7 @@ export const formatSeconds = seconds => {
  * @property {number[]} routeTolls          - 此驾车路线收费金额，单位：元 (列表是防止避免异步相加可能丢失数据)
  * @property {boolean} [ok]                 - 这条线路是否成功生成排车单 （空还没生成排车单 false失败 true成功)
  * @property {string} [errMsg]              - 这条线路生成排车单失败信息
+ * @property {boolean} [unseen]             - 这条线路是否隐藏 （默认undefined不隐藏） false:看见 true:隐藏
  */
 
 /**
