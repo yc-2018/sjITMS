@@ -1,6 +1,5 @@
 // ///////////////////////////智能调度页面//////////////
 // todo 配置化几个参数
-// todo 要不要每个线路卡片加上个小眼睛 可看看隐藏 底部也加个总的控制全部？
 // todo 未分配的配送点要不要也在列表显示一个专门的卡片？
 // todo 后续高德api放后端请求
 // 配送调度提供window.selectOrders   如果是配送调度跳转过来的订单池原数据列表(如果是刚打开就读取到就直接使用) 使用完马上清空
@@ -477,7 +476,7 @@ export default class SmartScheduling extends Component {
    * @since 2024/11/12 上午9:49
    */
   resetData = (expStateData = {}) => {
-    message.info('重置中，请稍等...')
+    message.info('重置中，请稍等...');
     // 清空地图覆盖物
     this.map.clearMap();
     this.routingPlans = [];
@@ -494,7 +493,7 @@ export default class SmartScheduling extends Component {
       unassignedNodes: [],
       showButtonDrawer: true,
       showResultDrawer: false,
-    });
+    },message.destroy);
   };
 
   /**

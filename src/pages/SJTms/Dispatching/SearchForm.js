@@ -316,6 +316,7 @@ export default class SearchForm extends Component {
 
   render() {
     const { getFieldDecorator } = this.props.form;
+    const { span } = this.props;
     let { selectFields, loading } = this.state;
     const column = selectFields.length > 4 ? 3 : 2;
     const newSelectFields = selectFields.map(item => {
@@ -344,64 +345,116 @@ export default class SearchForm extends Component {
           onSubmit={this.onSubmit}
           autoComplete="off"
         >
-          <Row justify="space-around">
-            {newSelectFields.filter((_, index) => index < column * 1).map(searchField => {
-              return (
-                <Col span={column == 2 ? 10 : 7}>
-                  <Form.Item key={searchField.id} label={searchField.fieldTxt}>
-                    {getFieldDecorator(searchField.fieldName, {
-                      initialValue: searchField.searchDefVal || undefined,
-                      rules: [
-                        {
-                          required: searchField.searchRequire,
-                          message: notNullLocale(searchField.fieldTxt),
-                        },
-                      ],
-                    })(this.buildSearchItem(searchField))}
-                  </Form.Item>
+          {!span &&   // 金哥本来的，控制配送调度里面全部搜索组件
+            <>
+              <Row justify="space-around">
+                {newSelectFields.filter((_, index) => index < column * 1).map(searchField => {
+                  return (
+                    <Col span={column == 2 ? 10 : 7}>
+                      <Form.Item key={searchField.id} label={searchField.fieldTxt}>
+                        {getFieldDecorator(searchField.fieldName, {
+                          initialValue: searchField.searchDefVal || undefined,
+                          rules: [
+                            {
+                              required: searchField.searchRequire,
+                              message: notNullLocale(searchField.fieldTxt),
+                            },
+                          ],
+                        })(this.buildSearchItem(searchField))}
+                      </Form.Item>
+                    </Col>
+                  );
+                })}
+                <Col span={3} style={{ paddingLeft: 5 }}>
+                  <AdvanceQuery
+                    reportCode={this.props.quickuuid}
+                    searchFields={this.state.advancedFields}
+                    isOrgQuery={isOrgQuery}
+                    refresh={this.onAdvanceSearch}
+                  />
                 </Col>
-              );
-            })}
-            <Col span={3} style={{ paddingLeft: 5 }}>
-              <AdvanceQuery
-                reportCode={this.props.quickuuid}
-                searchFields={this.state.advancedFields}
-                isOrgQuery={isOrgQuery}
-                refresh={this.onAdvanceSearch}
-              />
-            </Col>
-          </Row>
-          <Row justify="space-around">
-            {newSelectFields
-              .filter((_, index) => index > column * 1 - 1 && index < column * 2 + 1)
-              .map(searchField => {
-                return (
-                  <Col span={column == 2 ? 10 : 7}>
-                    <Form.Item key={searchField.id} label={searchField.fieldTxt}>
-                      {getFieldDecorator(searchField.fieldName, {
-                        initialValue: searchField.searchDefVal || undefined,
-                        rules: [
-                          {
-                            required: searchField.searchRequire,
-                            message: notNullLocale(searchField.fieldTxt),
-                          },
-                        ],
-                      })(this.buildSearchItem(searchField))}
-                    </Form.Item>
+              </Row>
+              <Row justify="space-around">
+                {newSelectFields
+                .filter((_, index) => index > column * 1 - 1 && index < column * 2 + 1)
+                .map(searchField => {
+                  return (
+                    <Col span={column == 2 ? 10 : 7}>
+                      <Form.Item key={searchField.id} label={searchField.fieldTxt}>
+                        {getFieldDecorator(searchField.fieldName, {
+                          initialValue: searchField.searchDefVal || undefined,
+                          rules: [
+                            {
+                              required: searchField.searchRequire,
+                              message: notNullLocale(searchField.fieldTxt),
+                            },
+                          ],
+                        })(this.buildSearchItem(searchField))}
+                      </Form.Item>
+                    </Col>
+                  );
+                })}
+                <Col span={3}>
+                  <Button
+                    type={'primary'}
+                    style={{ marginLeft: 5 }}
+                    loading={this.props.loading}
+                    htmlType="submit"
+                  >
+                    查询
+                  </Button>
+                </Col>
+              </Row>
+            </>
+          }
+
+          { span && // 搜索列定义：变4列（不复用，金哥的涉及太多了)
+            <Row justify="space-around">
+              <Col span={21}>
+                <Row justify="space-around">
+                  {newSelectFields.map(searchField => {
+                    return (
+                      <Col span={span}>
+                        <Form.Item key={searchField.id} label={searchField.fieldTxt}>
+                          {getFieldDecorator(searchField.fieldName, {
+                            initialValue: searchField.searchDefVal || undefined,
+                            rules: [
+                              {
+                                required: searchField.searchRequire,
+                                message: notNullLocale(searchField.fieldTxt),
+                              },
+                            ],
+                          })(this.buildSearchItem(searchField))}
+                        </Form.Item>
+                      </Col>
+                    );
+                  })}
+                </Row>
+              </Col>
+              <Col span={3}>  {/* ————————————搜索操作按钮———————————— */}
+                <Row justify="space-around">
+                  <Col span={24} style={{ marginLeft: 5, marginBottom: 7 }}>
+                    <AdvanceQuery
+                      reportCode={this.props.quickuuid}
+                      searchFields={this.state.advancedFields}
+                      isOrgQuery={isOrgQuery}
+                      refresh={this.onAdvanceSearch}
+                    />
                   </Col>
-                );
-              })}
-            <Col span={3}>
-              <Button
-                type={'primary'}
-                style={{ marginLeft: 5 }}
-                loading={this.props.loading}
-                htmlType="submit"
-              >
-                查询
-              </Button>
-            </Col>
-          </Row>
+                  <Col span={24} style={{ marginLeft: 5 }}>
+                    <Button
+                      type="primary"
+                      loading={this.props.loading}
+                      htmlType="submit"
+                    >
+                      查询
+                    </Button>
+                  </Col>
+                </Row>
+              </Col>
+            </Row>
+          }
+
         </Form>
       </Skeleton>
     );

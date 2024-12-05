@@ -481,6 +481,7 @@ export default class OrderPoolModal extends Component {
           quickuuid="sj_itms_dispatching_orderpool"
           dispatchcenterSearch
           refreshOrderPool={this.refreshOrderPool}
+          span={6}
         />
 
         <div>
