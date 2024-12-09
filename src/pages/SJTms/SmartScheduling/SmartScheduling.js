@@ -14,7 +14,7 @@ import AMapLoader from '@amap/amap-jsapi-loader';
 import {
   Button, Input, Modal, Select, Table, Progress,
   Col, Divider, Drawer, Empty, Icon, Row, message,
-  Popconfirm, Popover, Tooltip
+  Popconfirm, Popover, Tooltip, InputNumber
 } from 'antd';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -147,7 +147,7 @@ export default class SmartScheduling extends Component {
         }
         if (config.colors && config.colors !== '0') {  // ——————配置颜色
           try {
-            colors = [...config.colors.split(','), ...myColors];
+            colors = [...config.colors.split(',').map(x => x.trim()), ...myColors];
           } catch (e) {
             colors = [...myColors];
             message.error('配置颜色配置有问题，请联系管理员检查(不影响正常使用)');
@@ -256,7 +256,7 @@ export default class SmartScheduling extends Component {
    * @since 2024/11/7 下午5:10
    */
   intelligentScheduling = async () => {
-    const { selectOrderList, selectVehicles, routingConfig } = this.state;
+    const { selectOrderList, selectVehicles, routingConfig, fullLoadRate } = this.state;
     // —————————————————————————————————校验数据—————————————————————————————
     if (!this.warehousePoint) return message.error('获取当前仓库经纬度失败，请刷新页面再试试');
     if (selectOrderList.length === 0) return message.error('请选择订单');
@@ -280,8 +280,8 @@ export default class SmartScheduling extends Component {
         vehicleModelId: `${x.weight}-${x.volume}`,  // 车辆型号ID，非必填
         vehicleCount: x.vehicleCount,               // 该（型号）车数量，默认值为1
         capacity: {
-          weight: x.weight,                         // 装载容量，
-          volume: x.volume,                         // 装载体积，
+          weight: x.weight * (fullLoadRate / 100),  // 装载容量，
+          volume: x.volume * (fullLoadRate / 100),  // 装载体积，
         }
       })),
     }];
@@ -928,6 +928,7 @@ export default class SmartScheduling extends Component {
       childrenIndex,
       isMultiVehicle,
       showProgress,
+      fullLoadRate,
       arrivalType,
     } = this.state;
     // 出结果了之后，禁止一些操作
@@ -1443,6 +1444,15 @@ export default class SmartScheduling extends Component {
                   <Option value={2}>避免收费</Option>
                 </Select>
                 &nbsp;&nbsp;
+                车辆最大满载率：
+                <InputNumber
+                  min={10}
+                  max={100}
+                  value={fullLoadRate}
+                  onChange={v => this.setState({ fullLoadRate: v })}
+                />
+
+
                 {/* 是否算返回仓库： */}
                 {/* <Select */}
                 {/*   value={routingConfig.isBack} */}
