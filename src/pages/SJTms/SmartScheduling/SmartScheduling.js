@@ -1,5 +1,4 @@
 // ///////////////////////////智能调度页面//////////////
-// todo 配置化几个参数
 // todo 未分配的配送点要不要也在列表显示一个专门的卡片？
 // todo 后续高德api放后端请求
 // 配送调度提供window.selectOrders   如果是配送调度跳转过来的订单池原数据列表(如果是刚打开就读取到就直接使用) 使用完马上清空
@@ -31,10 +30,11 @@ import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { getSmartScheduling } from '@/services/sjitms/smartSchedulingApi';
 import VehicleInputModal from '@/pages/SJTms/SmartScheduling/VehicleInputModal';
 import FullScreenLoading from '@/components/FullScreenLoading';
-import { colors } from '@/pages/SJTms/SmartScheduling/colors';
+import { myColors } from '@/pages/SJTms/SmartScheduling/colors';
 import { convertCodeName } from '@/utils/utils';
 import { GetConfig } from '@/services/sjitms/OrderBill';
 import {
+  checkRange,
   formatSeconds, getMarkerText,
   getRecommendByOrders, getVehiclesParam,
   groupByOrder, mapStyleMap, Tips
@@ -44,6 +44,7 @@ import EmpAndVehicleModal from '@/pages/SJTms/SmartScheduling/EmpAndVehicleModal
 import DragDtlCard from '@/pages/SJTms/SmartScheduling/DragDtlCard';
 
 const { Option } = Select;
+let colors = [...myColors];
 
 export default class SmartScheduling extends Component {
   RIGHT_DRAWER_WIDTH = 410;            // 右侧侧边栏宽度（智能调度结果抽屉宽度）
@@ -72,7 +73,7 @@ export default class SmartScheduling extends Component {
     selectVehicles: [],                   // 选中运力池数据
     showInputVehicleModal: false,         // 显示手动输入车辆弹窗
     showSmartSchedulingModal: true,       // 显示智能调度弹窗
-    showMenuModal: !window.selectOrders,  // 显示选订单弹窗
+    showMenuModal: false,                 // 显示选订单弹窗
     showVehicleModal: false,              // 显示选车辆弹窗
     showPointModal: null,                 // 显示配送点弹窗(有就是显示[对象,线路几])
     showResultDrawer: false,              // 显示调度结果右侧侧边栏
@@ -88,6 +89,8 @@ export default class SmartScheduling extends Component {
     btnLoading: false,                    // 智能调度按钮加载状态
     fullScreenLoading: false,             // 全屏加载中
     isMultiVehicle: false,                // 是否是多载具仓库
+    arrivalType: null,                    // 控制订单池是否显示送货类型 str： 单日达、次日达
+    fullLoadRate: 100,                    // 设置车辆最大满载率
     routingConfig: {      // 智能调度接口参数配置
       sortRule: 0,        // 排线排序⽅式
       routeOption: 0,     // 算路选项
@@ -120,6 +123,40 @@ export default class SmartScheduling extends Component {
    * @since 2024/11/12 下午3:41
    */
   initConfig = () => {
+    // ————————智能调度配置——————
+    GetConfig('smartScheduling', loginOrg().uuid).then(res => {
+      if (res.data?.[0]) {
+        const config = res.data?.[0];
+        if (config.arrivalType && config.arrivalType !== '0') {  // ——————是否显示到货类型
+          let arrivalType = '显示';
+          if (config.arrivalType === '当日达') arrivalType = '次日达';
+          if (config.arrivalType === '次日达') arrivalType = '当日达';
+          this.state.arrivalType = arrivalType;
+        }
+        if (config.fullLoadRate) {  // ——————最大满载率
+          if (!checkRange(config.fullLoadRate, 10, 100)) message.warn('最大满载率配置有问题，请联系管理员检查(不影响正常使用)');
+          else this.state.fullLoadRate = Number(config.fullLoadRate);
+        }
+        if (config.sortRule) {  // ——————排线排序⽅式
+          if (!checkRange(config.sortRule, 0, 1)) message.warn('排线排序⽅式配置有问题，请联系管理员检查(不影响正常使用)');
+          else this.state.routingConfig.sortRule = Number(config.sortRule);
+        }
+        if (config.routeOption) {  // ——————算路选项
+          if (!checkRange(config.routeOption, 0, 2)) message.warn('算路选项配置有问题，请联系管理员检查(不影响正常使用)');
+          else this.state.routingConfig.routeOption = Number(config.routeOption);
+        }
+        if (config.colors && config.colors !== '0') {  // ——————配置颜色
+          try {
+            colors = [...config.colors.split(','), ...myColors];
+          } catch (e) {
+            colors = [...myColors];
+            message.error('配置颜色配置有问题，请联系管理员检查(不影响正常使用)');
+          }
+        } else colors = [...myColors];
+        this.setState({ showMenuModal: !window.selectOrders });   // 显示选订单弹窗
+      }
+    }).catch(() => message.error('获取多载具配置失败！'));
+
     // ————————仓库坐标————————
     queryDict('warehouse').then(res => {    // 获取当前仓库经纬度
       const description = res.data.find(x => x.itemValue === loginOrg().uuid)?.description;
@@ -145,8 +182,6 @@ export default class SmartScheduling extends Component {
     queryDictByCode(['routeJump']).then(
       res => res.data?.forEach(item => {item.itemText === '配送调度' && (this.dispatchingUri = item.itemValue);})
     );
-    // ————————加上颜色————————todo
-
   };
 
   /**
@@ -210,7 +245,9 @@ export default class SmartScheduling extends Component {
     if (mergeOrders.length > 200) return message.error('最多只能选择200个门店！');
 
     this.setState({ showMenuModal: false, selectOrderList: mergeOrders, ...extState });
-    if (window.selectOrders) window.selectOrders = undefined;  // 用完即清
+    if (window.selectOrders) window.setTimeout(() => {
+      window.selectOrders = undefined;  // 用完即等等清 因为还有个初始化请求没这么快
+    }, 3000);
   };
 
   /**
@@ -891,6 +928,7 @@ export default class SmartScheduling extends Component {
       childrenIndex,
       isMultiVehicle,
       showProgress,
+      arrivalType,
     } = this.state;
     // 出结果了之后，禁止一些操作
     const lockBtn = scheduleResults.length > 0;
@@ -1535,7 +1573,10 @@ export default class SmartScheduling extends Component {
           onCancel={() => this.setState({ showMenuModal: false })}
           onOk={() => this.handleOrders()}  // 不能直接写this.handleOrders，会把event作为参数传进去
         >
-          <OrderPoolModal ref={ref => (this.orderPoolModalRef = ref)}/>
+          <OrderPoolModal
+            arrivalType={arrivalType} // 订单池搜索条件是否加上到货类型搜索条件
+            ref={ref => (this.orderPoolModalRef = ref)}
+          />
         </Modal>
 
         <Modal  // ——————————————————————————————运力池弹窗——————————————————————————————————

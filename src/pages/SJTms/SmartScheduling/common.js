@@ -181,6 +181,19 @@ export const formatSeconds = seconds => {
 };
 
 /**
+ * 检查数字是否在某个范围内 如果传进来的是字符串就转为数字
+ * @param {number|string} num - 要检查的数字
+ * @param {number} min - 范围的最小值
+ * @param {number} max - 范围的最大值
+ * @author ChenGuangLong
+ * @since 2024/12/9 下午2:18
+ */
+export const checkRange = (num, min = 1, max = 100) => {
+  if (typeof num === 'string') num = Number(num);
+  return num >= min && num <= max;
+};
+
+/**
  * @typedef {Object} ScheduleData
  * @property {string} [vehicleModel]        - 车辆型号（重量-体积）
  * @property {string} note                  - 备注

@@ -60,23 +60,31 @@ export default class SearchForm extends Component {
   async componentDidMount() {
     this.setState({ loading: true });
     const response = await queryColumns({ reportCode: this.props.quickuuid, sysCode: 'tms' });
-    let { form } = this.props;
+    let { form, arrivalType } = this.props;
+    const showType = arrivalType ? 'ARRIVALTYPE' : '-';   // 到货类型
+
     if (response.success) {
-      let selectFields = response.result.columns.filter(data => data.isSearch);
+      let selectFields = response.result.columns.filter(data => data.isSearch || data.fieldName === showType);
       if (this.props.dispatchcenterSearch) {
-        const field = response.result.columns.find(x => x.fieldName == 'DISPATCHCENTERUUID');
-        const fieldProperties = field.searchProperties.searchParams
-          ? field.searchProperties
-          : JSON.parse(field.searchProperties);
+        const field = response.result.columns.find(x => x.fieldName === 'DISPATCHCENTERUUID');
+        const fieldProperties = field.searchProperties.searchParams ? field.searchProperties : JSON.parse(field.searchProperties);
         if (fieldProperties) {
-          const search = fieldProperties.searchParams.find(x => x.dispatch == loginOrg().uuid);
+          const search = fieldProperties.searchParams.find(x => x.dispatch === loginOrg().uuid);
           if (search) {
             selectFields = response.result.columns.filter(
-              data => search.searchFields.indexOf(data.fieldName) != -1
+              data => search.searchFields.indexOf(data.fieldName) !== -1  || data.fieldName === showType
             );
           }
         }
       }
+
+      // 到货类型 给默认值
+      if (arrivalType?.indexOf('达') !== -1) {
+        selectFields.forEach(x => {
+          if (x.fieldName === 'ARRIVALTYPE') x.searchDefVal = arrivalType;
+        });
+      }
+
       for (let item of selectFields) {
         if (item.searchDefVal) {
           if (isJSON(item.searchDefVal)) {

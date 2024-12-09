@@ -466,6 +466,7 @@ export default class OrderPoolModal extends Component {
       isOrderCollect,
       dispatchConfig,
     } = this.state;
+    const { arrivalType } = this.props;
 
     const collectOrder = this.collectByOrder(this.state.selectOrders);
     const splitSta = dispatchConfig?.orderPoolStatistics?.split(',');
@@ -482,6 +483,7 @@ export default class OrderPoolModal extends Component {
           dispatchcenterSearch
           refreshOrderPool={this.refreshOrderPool}
           span={6}
+          arrivalType={arrivalType} // 订单池搜索条件是否加上到货类型搜索条件
         />
 
         <div>

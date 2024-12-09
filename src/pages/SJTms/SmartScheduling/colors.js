@@ -1,5 +1,5 @@
 /** 每个排车单不同颜色 */
-export const colors = [
+export const myColors = [
   '#0069FF',
   '#EF233C',
   '#20BF55',
