@@ -2,6 +2,7 @@ import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import { sumBy, uniq } from 'lodash';
 import { Divider, Icon, Popover } from 'antd';
+import styles from '@/pages/SJTms/SmartScheduling/SmartScheduling.less';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { getRecommend } from '@/services/sjitms/ScheduleBill';
 
@@ -69,6 +70,18 @@ export const getMarkerText = (order, isMultiVehicle = false) => ReactDOMServer.r
     }
   </div>
 );
+
+/** 送货类型div */
+export const getArrivalType = (type) =>
+  type ?
+    <div className={styles.w50}>
+      送货类型：
+      <span style={{ color: type === '当日达' ? 'green' : 'blue' }}>
+        {type}
+      </span>
+    </div>
+    :
+    <></>;
 
 /** 汇总排车单明细给排车单主表 */
 export const groupByOrder = data => {
@@ -168,7 +181,7 @@ export const queryEmpParams = () =>
     },
   });
 
-  /**
+/**
  * 将秒数转换为 HH小时mm分钟 格式
  * @param {number} seconds - 输入的秒数
  * @returns {string} 格式化后的时间字符串

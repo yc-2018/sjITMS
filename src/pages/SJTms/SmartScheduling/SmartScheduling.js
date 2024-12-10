@@ -35,7 +35,7 @@ import { convertCodeName } from '@/utils/utils';
 import { GetConfig } from '@/services/sjitms/OrderBill';
 import {
   checkRange,
-  formatSeconds, getMarkerText,
+  formatSeconds, getArrivalType, getMarkerText,
   getRecommendByOrders, getVehiclesParam,
   groupByOrder, mapStyleMap, Tips
 } from '@/pages/SJTms/SmartScheduling/common';
@@ -936,6 +936,7 @@ export default class SmartScheduling extends Component {
     // 已经生成排车单之后，禁止一些操作
     const isCreate = scheduleDataList.some(x => typeof x.ok === 'boolean');
     const allOk = isCreate && !scheduleDataList.some(x => !x.ok);
+    const showDtlType = new Set(scheduleResults[childrenIndex]?.filter(x => x.arrivalType).map(x => x.arrivalType)).size > 1;
 
     return (
       <div className={styles.SmartScheduling} id="smartSchedulingPage">
@@ -1032,7 +1033,8 @@ export default class SmartScheduling extends Component {
                 }}
               >
                 {this.getColorBlocks(index)}
-                <span style={{ fontSize: '16px' }}>线路{index + 1}</span> &nbsp;
+                <span style={{ fontSize: '16px' }}>线路{index + 1}</span>
+                &nbsp;
                 <Icon
                   style={{ fontSize: 14, color: scheduleDataList[index].unseen ? '#f75353' : '#999' }}
                   type={scheduleDataList[index].unseen ? 'eye-invisible' : 'eye'}
@@ -1048,6 +1050,7 @@ export default class SmartScheduling extends Component {
                     });
                   }}
                 />
+                &nbsp;
                 {this.getCreateIcon(index)}
                 <Divider style={{ margin: 6 }}/>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
@@ -1326,7 +1329,9 @@ export default class SmartScheduling extends Component {
                         />
                       </Popover>
                       <div className={styles.w50}>线路：{order.archLine?.code}</div>
-                      <div className={styles.w50}>备注：{order.lineNote}</div>
+                      {showDtlType && getArrivalType(order.arrivalType) /* 送货类型 */}
+                      {order.lineNote && <div className={styles.w50}>备注：{order.lineNote}</div>}
+                      {order.shipAreaName && <div className={styles.w50}>配送区域：{order.shipAreaName}</div>}
                       <Divider style={{ margin: 6 }}/>
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8 }}>
                         <span>整件数:{order.cartonCount}</span>
