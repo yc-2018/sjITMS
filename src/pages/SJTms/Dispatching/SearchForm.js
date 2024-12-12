@@ -419,10 +419,10 @@ export default class SearchForm extends Component {
           { span && // 搜索列定义：变4列（不复用，金哥的涉及太多了)
             <Row justify="space-around">
               <Col span={21}>
-                <Row justify="space-around">
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 0 }}>
                   {newSelectFields.map(searchField => {
                     return (
-                      <Col span={span}>
+                      <div>
                         <Form.Item key={searchField.id} label={searchField.fieldTxt}>
                           {getFieldDecorator(searchField.fieldName, {
                             initialValue: searchField.searchDefVal || undefined,
@@ -434,10 +434,10 @@ export default class SearchForm extends Component {
                             ],
                           })(this.buildSearchItem(searchField))}
                         </Form.Item>
-                      </Col>
+                      </div>
                     );
                   })}
-                </Row>
+                </div>
               </Col>
               <Col span={3}>  {/* ————————————搜索操作按钮———————————— */}
                 <Row justify="space-around">
