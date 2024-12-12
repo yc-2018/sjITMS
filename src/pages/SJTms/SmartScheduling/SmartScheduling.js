@@ -1397,14 +1397,11 @@ export default class SmartScheduling extends Component {
                   <Button onClick={() => this.setState({ selectOrderList: [] })} disabled={lockBtn}>
                     清空
                   </Button>&nbsp;&nbsp;
-                  <span>总重量：{(selectOrderList.reduce((a, b) => a + b.weight, 0) / 1000).toFixed(3)}t</span>&nbsp;&nbsp;
-                  <span>总体积：{selectOrderList.reduce((a, b) => a + b.volume, 0).toFixed(2)}m³</span>&nbsp;&nbsp;
-                  <span>配送点数量：{selectOrderList.length}</span>
                   <Table
                     size="small"
                     pagination={false}
                     dataSource={selectOrderList}
-                    scroll={{ x: '38vw', y: 'calc(100vh - 217px)' }}
+                    scroll={{ x: '38vw', y: 'calc(100vh - 235px)' }}
                     columns={[
                       ...mergeOrdersColumns,
                       {
@@ -1427,6 +1424,14 @@ export default class SmartScheduling extends Component {
                           </div>
                       }
                     ]}
+                    footer={(data) =>
+                      <div style={{ color: 'red', display: 'grid', gridTemplateColumns: '0.4fr 3fr 1fr 1fr 0.5fr' }}>
+                        <b>合计</b>
+                        <span>配送点数量：{data.length}</span>
+                        <span>总重量：{(data.reduce((a, b) => a + b.weight, 0) / 1000).toFixed(3)}t</span>
+                        <span>总体积：{data.reduce((a, b) => a + b.volume, 0).toFixed(2)}m³</span>
+                      </div>
+                    }
                   />
                 </>
                 :
@@ -1532,14 +1537,11 @@ export default class SmartScheduling extends Component {
                     <Button type="danger" onClick={() => this.setState({ selectVehicles: [] })} disabled={lockBtn}>
                       清空
                     </Button>&nbsp;&nbsp;
-                    <span>总重量：{selectVehicles.reduce((a, b) => a + b.weight * b.vehicleCount, 0).toFixed(2)}t</span>&nbsp;&nbsp;
-                    <span>总体积：{selectVehicles.reduce((a, b) => a + b.volume * b.vehicleCount, 0).toFixed(2)}m³</span>&nbsp;&nbsp;
-                    <span>车辆数量：{selectVehicles.reduce((a, b) => a + b.vehicleCount, 0)}</span>&nbsp;&nbsp;
                     <Table
                       size="small"
                       pagination={false}
                       dataSource={selectVehicles}
-                      scroll={{ x: '38vw', y: 'calc(100vh - 280px)' }}
+                      scroll={{ x: '38vw', y: 'calc(100vh - 298px)' }}
                       columns={[
                         ...mergeVehicleColumns,
                         {
@@ -1588,6 +1590,14 @@ export default class SmartScheduling extends Component {
                           )
                         }
                       ]}
+                      footer={(data) =>
+                        <div style={{ color: 'red', display: 'grid', gridTemplateColumns: '0.2fr 1fr 1fr 1fr 0.7fr' }}>
+                          <b>合计</b>
+                          <span>总载重：{data.reduce((a, b) => a + b.weight * b.vehicleCount, 0).toFixed(2)}t</span>
+                          <span>总体积：{data.reduce((a, b) => a + b.volume * b.vehicleCount, 0).toFixed(2)}m³</span>
+                          <span>车辆数量：{data.reduce((a, b) => a + b.vehicleCount, 0)}</span>
+                        </div>
+                      }
                     />
                   </>
                   :
@@ -1604,6 +1614,7 @@ export default class SmartScheduling extends Component {
           okText="选定"
           style={{ top: 20 }}
           visible={showMenuModal}
+          className={styles.modalMaxHeight100}
           onCancel={() => this.setState({ showMenuModal: false })}
           onOk={() => this.handleOrders()}  // 不能直接写this.handleOrders，会把event作为参数传进去
         >
@@ -1619,6 +1630,7 @@ export default class SmartScheduling extends Component {
           okText="选定"
           style={{ top: 20 }}
           visible={showVehicleModal}
+          className={styles.modalMaxHeight100}
           onCancel={() => this.setState({ showVehicleModal: false })}
           onOk={() => {
             if (!this.vehiclePoolModalRef.state) return message.error('数据异常，请刷新页面重试');
