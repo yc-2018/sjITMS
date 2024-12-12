@@ -78,7 +78,8 @@ export default class SmartScheduling extends Component {
     showPointModal: null,                 // 显示配送点弹窗(有就是显示[对象,线路几])
     showResultDrawer: false,              // 显示调度结果右侧侧边栏
     showButtonDrawer: true,               // 显示左边按钮侧边栏
-    showProgress: -1,                     // 显示生成排车进度条（>0就是显示)
+    showProgress: -1,                     // 显示生成排车进度条（>=0就是显示)
+    fakeProgressBar: 0,                   // 智能调度假进度条（>0就是显示)
     childrenIndex: -1,                    // 显示调度排车子抽屉 这个是它的索引>=0就是显示
     showEmpAndVehicleModal: -1,           // 显示选司机和车弹窗 这个是它的索引>=0就是显示
     showRemoveModal: -1,                  // 显示移除线路弹窗   这个是它的索引>=0就是显示
@@ -153,8 +154,8 @@ export default class SmartScheduling extends Component {
             message.error('配置颜色配置有问题，请联系管理员检查(不影响正常使用)');
           }
         } else colors = [...myColors];
-        this.setState({ showMenuModal: !window.selectOrders });   // 显示选订单弹窗
       }
+      this.setState({ showMenuModal: !window.selectOrders });   // 显示选订单弹窗
     }).catch(() => message.error('获取多载具配置失败！'));
 
     // ————————仓库坐标————————
@@ -323,6 +324,20 @@ export default class SmartScheduling extends Component {
     });
     this.routingPlans = routes.map(() => null);
     this.loadingPoint(groupOrders, notGroupOrders);
+  };
+
+  /**
+   * 智能调度显示假的进度条
+   * @author ChenGuangLong
+   * @since 2024/12/10 下午3:48
+   */
+  showFakeProgressBar = (func) => {
+    const { selectOrderList } = this.state;
+    const count = selectOrderList.length * 3;   // 订单数量*3==模拟进度条毫秒数/10
+
+
+
+    if (func) func();
   };
 
   /**
@@ -633,6 +648,7 @@ export default class SmartScheduling extends Component {
 
     if (errFlag) return;
     if (scheduleParamBodyList.length !== scheduleResults.length) return message.error('线路数和生成数不相等!');
+    scheduleDataList.forEach(x => x.errMsg = undefined);  // 清空错误信息(防止上次有，处理重新生成情况)
     // ——————————开始请求创建排车单——————————
     for (const paramBody of scheduleParamBodyList) {  // 循环创建，用forEach会异步循环，导致进度条无法正常显示
       const index = scheduleParamBodyList.indexOf(paramBody);
@@ -776,7 +792,7 @@ export default class SmartScheduling extends Component {
    */
   removeLine = (linkIndex = this.state.showRemoveModal, isDissolution) => {
     const { scheduleResults, scheduleDataList } = this.state;
-    if (isDissolution) {  // 解散 放派送点到未分配列表
+    if (isDissolution) {  // 解散 放配送点到未分配列表
       const { unassignedNodes } = this.state;
       const newUnassignedNodes = unassignedNodes.concat(scheduleResults[linkIndex]);
       this.loadingPoint(undefined, newUnassignedNodes, 2);  // 点位更新
@@ -930,6 +946,7 @@ export default class SmartScheduling extends Component {
       showProgress,
       fullLoadRate,
       arrivalType,
+      fakeProgressBar,
     } = this.state;
     // 出结果了之后，禁止一些操作
     const lockBtn = scheduleResults.length > 0;
@@ -1449,13 +1466,13 @@ export default class SmartScheduling extends Component {
                   <Option value={2}>避免收费</Option>
                 </Select>
                 &nbsp;&nbsp;
-                车辆最大满载率：
+                最大满载率：
                 <InputNumber
                   min={10}
                   max={100}
                   value={fullLoadRate}
                   onChange={v => this.setState({ fullLoadRate: v })}
-                />
+                />%
 
 
                 {/* 是否算返回仓库： */}
@@ -1471,26 +1488,28 @@ export default class SmartScheduling extends Component {
               <div>
 
                 <span style={{ pointerEvents: lockBtn ? 'none' : 'unset' }}>
-                  <Button   // 打开运力池按钮
-                    type="primary"
-                    onClick={() => {
-                      this.setState({ showVehicleModal: true });
-                      if (selectVehicles.length) message.warning('此操作会覆盖本来选择的车辆数据，如果不想被覆盖可以选择手动添加按钮！');
-                    }}
-                  >
-                    加载车辆参数
-                  </Button>
-                  &nbsp;&nbsp;
                   <Tooltip title="手动添加车辆参数：不会覆盖，在当前表格下追加一列" mouseEnterDelay={1}>
-                    <Button onClick={() => this.setState({ showInputVehicleModal: true })}>
-                      手动添加车辆
+                    <Button onClick={() => this.setState({ showInputVehicleModal: true })} type="primary">
+                      添加车型
                     </Button>
                   </Tooltip>
                   <VehicleInputModal  // 手动添加车辆参数弹窗
                     open={showInputVehicleModal}
                     onClose={() => this.setState({ showInputVehicleModal: false })}
                     addVehicle={vehicle => this.setState({ selectVehicles: [...selectVehicles, vehicle] })}
-                  />&nbsp;&nbsp;
+                  />
+                  &nbsp;&nbsp;
+                  <Tooltip title="使用运力池车型：会覆盖当前输入的数据！！！" mouseEnterDelay={1}>
+                    <Button   // 打开运力池按钮
+                      onClick={() => {
+                        this.setState({ showVehicleModal: true });
+                        if (selectVehicles.length) message.warning('此操作会覆盖本来选择的车辆数据，如果不想被覆盖可以选择手动添加按钮！');
+                      }}
+                    >
+                      使用运力池车型
+                    </Button>
+                  </Tooltip>
+                  &nbsp;&nbsp;
                   {Boolean(localStorage.getItem(`lastVehicles${loginOrg().uuid}`)) && // 从localStorage读取上次车辆参数
                     <>
                       <Tooltip title="使用上次车辆参数：如果已经添加了参数，会被覆盖!" mouseEnterDelay={1}>
@@ -1500,7 +1519,7 @@ export default class SmartScheduling extends Component {
                             message.warning('已使用上次车辆参数，请注意检查数据是否正确！');
                           }}
                         >
-                          使用上次车辆
+                          使用上次车型
                         </Button>
                       </Tooltip>
                       &nbsp;&nbsp;
@@ -1572,7 +1591,7 @@ export default class SmartScheduling extends Component {
                     />
                   </>
                   :
-                  <Empty description="载入排车车辆参数，系统会按照车辆参数进行排排线"/>
+                  <Empty description="载入排车车型参数，系统会按照车型参数进行排排线"/>
                 }
               </div>
             </Col>
@@ -1683,6 +1702,17 @@ export default class SmartScheduling extends Component {
           </div>
         </Modal>
 
+        <Modal  // ——————————————————————————————智能调度假进度条——————————————————————————————————
+          footer={null}
+          closable={false}
+          getContainer={false}
+          visible={fakeProgressBar > 0}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', }}>
+            <Progress percent={fakeProgressBar} status={fakeProgressBar < 100 ? 'active' : 'success'}/>
+          </div>
+        </Modal>
+
         <Modal  // ——————————————————————————————选择员工和车辆弹窗——————————————————————————————————
           title={
             <div>
@@ -1755,7 +1785,7 @@ export default class SmartScheduling extends Component {
               <div>
                 切换线路：
                 <Select value={showPointModal[1]} style={{ width: 90 }} onChange={this.switchingLine}>
-                  <Option value={-1}>未分配</Option>
+                  <Option value={-1} disabled={showPointModal[1] === -1}>未分配</Option>
                   {scheduleResults.map((_item, i) => (
                     <Option key={i} value={i} disabled={i === showPointModal[1]}>
                       {this.getColorBlocks(i, 9)}线路{i + 1}
@@ -1776,12 +1806,12 @@ export default class SmartScheduling extends Component {
         >
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8, textAlign: 'center' }}>
             <Button onClick={() => this.setState({ showRemoveModal: -1 })}>取消</Button>
-            <Popover content="移除后,线路内所有派送点在本次排车将无法使用" placement="bottom">
+            <Popover content="移除后,线路内所有配送点在本次排车将无法使用" placement="bottom">
               <Button type="danger" onClick={() => this.removeLine()}>
                 移除
               </Button>
             </Popover>
-            <Popover content="解散后,线路内所有派送点变成未分配线路状态" placement="bottom">
+            <Popover content="解散后,线路内所有配送点变成未分配线路状态" placement="bottom">
               <Button type="danger" onClick={() => this.removeLine(showRemoveModal, true)}>
                 解散
               </Button>
