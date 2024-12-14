@@ -1,5 +1,8 @@
 // ///////////////////////////智能调度页面//////////////
 // todo 未分配的配送点要不要也在列表显示一个专门的卡片？
+// todo 框选批量操作
+// todo 无限车辆配置 控制 显示
+// todo 车型合并
 // todo 后续高德api放后端请求
 // 配送调度提供window.selectOrders   如果是配送调度跳转过来的订单池原数据列表(如果是刚打开就读取到就直接使用) 使用完马上清空
 // 配送调度提供window.refreshDispatchAll：配送调度打开后存在在的方法，调用可以刷新配送调度的全部数据
@@ -42,6 +45,7 @@ import {
 import { save } from '@/services/sjitms/ScheduleBill';
 import EmpAndVehicleModal from '@/pages/SJTms/SmartScheduling/EmpAndVehicleModal';
 import DragDtlCard from '@/pages/SJTms/SmartScheduling/DragDtlCard';
+import VanLoader from '@/components/VanLoad';
 
 const { Option } = Select;
 let colors = [...myColors];
@@ -61,6 +65,8 @@ export default class SmartScheduling extends Component {
   empTypeMapper = {};                       // 人员类型映射
   dispatchingUri = '/tmscode/dispatch';  // 初始化配送调度uri（会被字典routeJump（路由跳转）的配送调度值覆盖)
   vehiclesAllData = null;                  // 整个车辆池数据列表(一键推荐用)
+  resultFunc;                                    // 智能调度结果回调函数（因为假进度条，所以要给个全局的用)
+  resultOk;                                      // 智能调度请求OK了没 1:ok了 -1:错误了 其他:还没ok（因为假进度条，所以要给个全局的用)
 
   vehiclePoolModalRef = createRef();     // 车辆池弹窗ref
   orderPoolModalRef = createRef();       // 订单池弹窗ref
@@ -96,6 +102,7 @@ export default class SmartScheduling extends Component {
       sortRule: 0,        // 排线排序⽅式
       routeOption: 0,     // 算路选项
       isBack: 1,          // 是否算返回仓库
+      infiniteVehicle: 1, // 是否无限车辆 0：无限车辆 1：限
     }
   };
 
@@ -262,13 +269,14 @@ export default class SmartScheduling extends Component {
     if (!this.warehousePoint) return message.error('获取当前仓库经纬度失败，请刷新页面再试试');
     if (selectOrderList.length === 0) return message.error('请选择订单');
     if (selectVehicles.length === 0) return message.error('请选择车辆');
-    // 订单总体积或重量超出现有车辆的最大限度，无法进行排车!
-    const orderTotalWeight = selectOrderList.reduce((a, b) => a + b.weight, 0) / 1000;
-    const orderTotalVolume = selectOrderList.reduce((a, b) => a + b.volume, 0);
-    const vehicleTotalWeight = selectVehicles.reduce((a, b) => a + b.weight * b.vehicleCount, 0);
-    const vehicleTotalVolume = selectVehicles.reduce((a, b) => a + b.volume * b.vehicleCount, 0);
-    if (orderTotalWeight > vehicleTotalWeight) return message.error('订单总重量超出现有车辆重量！');
-    if (orderTotalVolume > vehicleTotalVolume) return message.error('订单总体积超出现有车辆体积！');
+    if (routingConfig.infiniteVehicle === 1) {  // 有限车辆时，订单总体积或重量超出现有车辆的最大限度，无法进行排车!
+      const orderTotalWeight = selectOrderList.reduce((a, b) => a + b.weight, 0) / 1000;
+      const orderTotalVolume = selectOrderList.reduce((a, b) => a + b.volume, 0);
+      const vehicleTotalWeight = selectVehicles.reduce((a, b) => a + b.weight * b.vehicleCount, 0);
+      const vehicleTotalVolume = selectVehicles.reduce((a, b) => a + b.volume * b.vehicleCount, 0);
+      if (orderTotalWeight > vehicleTotalWeight) return message.error('订单总重量超出现有车辆重量！');
+      if (orderTotalVolume > vehicleTotalVolume) return message.error('订单总体积超出现有车辆体积！');
+    }
     // 记录车辆列表到本地
     localStorage.setItem(`lastVehicles${loginOrg().uuid}`, JSON.stringify(selectVehicles));
     // ————————————————————————————————组装请求体——————————————————————————————
@@ -300,30 +308,39 @@ export default class SmartScheduling extends Component {
       ...routingConfig,
       depots,
       servicePoints,
-      deliveryCapacity: 0,
-      infiniteVehicle: 1,
+      deliveryCapacity: 0,  // 0：机动⻋  1：⾮机动⻋
     };
-    this.setState({ btnLoading: true, fullScreenLoading: true });
+
+    this.showFakeProgressBar()  // 显示假的进度条
+    this.setState({ btnLoading: true/* , fullScreenLoading: true */ });
     const result = await getSmartScheduling(requestBody);
-    this.setState({ btnLoading: false, fullScreenLoading: false });
+    this.setState({ btnLoading: false/* , fullScreenLoading: false */ });
 
-    if (result.errmsg !== 'OK' || !result.data) return message.error(`${result.errmsg}:${result.errdetail}`);
-    const { routes, unassignedNodes } = result.data[0];
-    // 订单分组提取
-    const groupOrders = routes.map(route => route.queue.map(r => selectOrderList.find(order => order.deliveryPoint.uuid === r.endName)));
-    // 没分配的订单提取（列表只返回了经纬度字符串，所以只能按经纬度提取）{不一定会返回，没返回就默认给个[]
-    const notGroupOrders = unassignedNodes?.map(nodeStr => selectOrderList.find(order => `${order.longitude},${order.latitude}` === nodeStr)) ?? [];
+    if (result.errmsg !== 'OK' || !result.data) {
+      this.resultOk = -1;
+      return message.error(`${result.errmsg}:${result.errdetail}`);
+    }
 
-    this.setState({
-      showSmartSchedulingModal: false,
-      showButtonDrawer: false,
-      showResultDrawer: true,
-      scheduleResults: groupOrders,
-      scheduleDataList: routes.map(x => ({ vehicleModel: x.vehicleModelId })),
-      unassignedNodes: notGroupOrders,
-    });
-    this.routingPlans = routes.map(() => null);
-    this.loadingPoint(groupOrders, notGroupOrders);
+    this.resultFunc = () => {   // 智能调度结果处理，为了假进度条，不然就直接写不用方法了
+      const { routes, unassignedNodes } = result.data[0];
+      // 订单分组提取
+      const groupOrders = routes.map(route => route.queue.map(r => selectOrderList.find(order => order.deliveryPoint.uuid === r.endName)));
+      // 没分配的订单提取（列表只返回了经纬度字符串，所以只能按经纬度提取）{不一定会返回，没返回就默认给个[]
+      const notGroupOrders = unassignedNodes?.map(nodeStr => selectOrderList.find(order => `${order.longitude},${order.latitude}` === nodeStr)) ?? [];
+
+      this.setState({
+        showSmartSchedulingModal: false,
+        showButtonDrawer: false,
+        showResultDrawer: true,
+        scheduleResults: groupOrders,
+        scheduleDataList: routes.map(x => ({ vehicleModel: x.vehicleModelId })),
+        unassignedNodes: notGroupOrders,
+        fakeProgressBar: 0, // 假进度条隐藏
+      });
+      this.routingPlans = routes.map(() => null);
+      this.loadingPoint(groupOrders, notGroupOrders);
+    };
+    this.resultOk = 1;
   };
 
   /**
@@ -331,13 +348,33 @@ export default class SmartScheduling extends Component {
    * @author ChenGuangLong
    * @since 2024/12/10 下午3:48
    */
-  showFakeProgressBar = (func) => {
+  showFakeProgressBar = () => {
     const { selectOrderList } = this.state;
-    const count = selectOrderList.length * 3;   // 订单数量*3==模拟进度条毫秒数/10
-
-
-
-    if (func) func();
+    const countMS = selectOrderList.length * 3 * 10;   // 订单数量 * 3 * 10 == 模拟进度条毫秒数
+    let i = 0;
+    const timer = setInterval(() => {
+      let millisecond = 200;
+      if (i > countMS * 0.8 && this.resultOk !== 1) millisecond = 100;  // 模拟进度条到了80% 就慢慢来
+      if (this.resultOk === 1) millisecond *= 3;                        // 实际请求成功了就加速
+      if (this.resultOk === -1) {                                       // 失败了就停止
+        this.setState({ fakeProgressBar: 0 });
+        this.resultOk = undefined;
+        clearInterval(timer);
+      } else {              // 继续增加进度条
+        i += millisecond;
+        if (i >= countMS) {
+          if (this.resultOk === 1) {
+            this.resultOk = undefined;
+            clearInterval(timer);
+            this.setState({ fakeProgressBar: 666 });
+            if (this.resultFunc) {
+              this.resultFunc();
+              this.resultFunc = undefined;
+            }
+          } else this.setState({ fakeProgressBar: 99 });
+        } else this.setState({ fakeProgressBar: Math.floor(((i / countMS) * 100)) });
+      }
+    }, 200);
   };
 
   /**
@@ -1029,7 +1066,7 @@ export default class SmartScheduling extends Component {
           />
         </span>
         <Drawer   // ——————————————————————侧边栏(智能调度结果)————————————————————
-          title="智能调度结果"
+          title="智能调度结果预览"
           mask={false}
           placement="right"
           getContainer={false}
@@ -1718,10 +1755,13 @@ export default class SmartScheduling extends Component {
           footer={null}
           closable={false}
           getContainer={false}
+          style={{ top: '35vh' }}
           visible={fakeProgressBar > 0}
         >
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', }}>
-            <Progress percent={fakeProgressBar} status={fakeProgressBar < 100 ? 'active' : 'success'}/>
+            <Progress percent={fakeProgressBar}/>
+            <VanLoader/>
+            <b>智能调度中...</b>
           </div>
         </Modal>
 
