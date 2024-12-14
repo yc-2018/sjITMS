@@ -17,7 +17,7 @@ import AMapLoader from '@amap/amap-jsapi-loader';
 import {
   Button, Input, Modal, Select, Table, Progress,
   Col, Divider, Drawer, Empty, Icon, Row, message,
-  Popconfirm, Popover, Tooltip, InputNumber
+  Popconfirm, Popover, Tooltip, InputNumber, Switch
 } from 'antd';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -1486,46 +1486,57 @@ export default class SmartScheduling extends Component {
                   pointerEvents: lockBtn ? 'none' : 'unset',
                 }}
               >
-                <div>配置</div>
-                排线排序⽅式：
-                <Select
-                  value={routingConfig.sortRule}
-                  style={{ width: 120 }}
-                  onChange={v => this.setState({ routingConfig: { ...routingConfig, sortRule: v } })}
-                >
-                  <Option value={0}>距离最短</Option>
-                  <Option value={1}>时间最短</Option>
-                </Select>
-                &nbsp;&nbsp;
-                算路选项：
-                <Select
-                  value={routingConfig.routeOption}
-                  style={{ width: 120 }}
-                  onChange={v => this.setState({ routingConfig: { ...routingConfig, routeOption: v } })}
-                >
-                  <Option value={0}>综合最优</Option>
-                  <Option value={1}>不走高速</Option>
-                  <Option value={2}>避免收费</Option>
-                </Select>
-                &nbsp;&nbsp;
-                最大满载率：
-                <InputNumber
-                  min={10}
-                  max={100}
-                  value={fullLoadRate}
-                  onChange={v => this.setState({ fullLoadRate: v })}
-                />%
+                <b>配置</b>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  <div>
+                    算路选项：
+                    <Select
+                      value={routingConfig.routeOption}
+                      style={{ width: 120 }}
+                      onChange={v => this.setState({ routingConfig: { ...routingConfig, routeOption: v } })}
+                    >
+                      <Option value={0}>综合最优</Option>
+                      <Option value={1}>不走高速</Option>
+                      <Option value={2}>避免收费</Option>
+                    </Select>
+                  </div>
+
+                  <div>
+                    排线排序⽅式：
+                    <Select
+                      value={routingConfig.sortRule}
+                      style={{ width: 120 }}
+                      onChange={v => this.setState({ routingConfig: { ...routingConfig, sortRule: v } })}
+                    >
+                      <Option value={0}>距离最短</Option>
+                      <Option value={1}>时间最短</Option>
+                    </Select>
+                  </div>
 
 
-                {/* 是否算返回仓库： */}
-                {/* <Select */}
-                {/*   value={routingConfig.isBack} */}
-                {/*   style={{ width: 120 }} */}
-                {/*   onChange={v => this.setState({ routingConfig: { ...routingConfig, isBack: v } })} */}
-                {/* > */}
-                {/*   <Option value={0}>是</Option> */}
-                {/*   <Option value={1}>否</Option> */}
-                {/* </Select> */}
+                  <div>
+                    最大满载率：
+                    <InputNumber
+                      min={10}
+                      max={100}
+                      value={fullLoadRate}
+                      onChange={v => this.setState({ fullLoadRate: v })}
+                    />%
+                  </div>
+
+                  <div>
+                    是否回仓：
+                    <Switch
+                      checkedChildren="开"
+                      unCheckedChildren="关"
+                      checked={!routingConfig.isBack}
+                      onChange={v => this.setState({ routingConfig: { ...routingConfig, isBack: v ? 0 : 1 } })}
+                    />
+                  </div>
+
+                </div>
+
+
               </div>
               <div>
 
