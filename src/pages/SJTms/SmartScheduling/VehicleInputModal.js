@@ -15,7 +15,7 @@ let weight; // 重量
 let volume; // 体积
 let count = 10; // 数量
 let sxIndex = 1;                           // 刷新页面索引
-const VehicleInputModal = ({ open, onClose, addVehicle }) => {
+const VehicleInputModal = ({ open, onClose, addVehicle,showCount }) => {
   const [, setSx] = useState(0);          // 刷新页面状态
   const sxYm = () => setSx(++sxIndex);  // 刷新页面方法
 
@@ -35,7 +35,12 @@ const VehicleInputModal = ({ open, onClose, addVehicle }) => {
     >
       车辆载重/t：<InputNumber max={50} min={0.5} value={weight} onChange={v => sxYm(weight = v)}/>&nbsp;&nbsp;
       车辆体积/m³：<InputNumber max={100} min={1} value={volume} onChange={v => sxYm(volume = v)}/>&nbsp;&nbsp;
-      车辆数量：<InputNumber max={50} min={1} value={count} onChange={v => sxYm(count = v)}/>&nbsp;&nbsp;&nbsp;&nbsp;
+      {showCount &&
+        <>
+          车辆数量：<InputNumber max={50} min={1} value={count} onChange={v => sxYm(count = v)}/>&nbsp;&nbsp;
+        </>
+      }
+      &nbsp;&nbsp;
       <Button
         type="primary"
         onClick={() => {

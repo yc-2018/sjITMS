@@ -1,7 +1,6 @@
 // ///////////////////////////智能调度页面//////////////
 // todo 未分配的配送点要不要也在列表显示一个专门的卡片？
 // todo 框选批量操作
-// todo 无限车辆配置 控制 显示
 // todo 车型合并
 // todo 后续高德api放后端请求
 // 配送调度提供window.selectOrders   如果是配送调度跳转过来的订单池原数据列表(如果是刚打开就读取到就直接使用) 使用完马上清空
@@ -101,7 +100,7 @@ export default class SmartScheduling extends Component {
     routingConfig: {      // 智能调度接口参数配置
       sortRule: 0,        // 排线排序⽅式
       routeOption: 0,     // 算路选项
-      isBack: 1,          // 是否算返回仓库
+      isBack: 0,          // 是否算返回仓库 0是  1否
       infiniteVehicle: 1, // 是否无限车辆 0：无限车辆 1：限
     }
   };
@@ -152,6 +151,14 @@ export default class SmartScheduling extends Component {
         if (config.routeOption) {  // ——————算路选项
           if (!checkRange(config.routeOption, 0, 2)) message.warn('算路选项配置有问题，请联系管理员检查(不影响正常使用)');
           else this.state.routingConfig.routeOption = Number(config.routeOption);
+        }
+        if (config.isBack) {  // ——————回仓
+          if (!checkRange(config.isBack, 0, 1)) message.warn('回仓配置有问题，请联系管理员检查(不影响正常使用)');
+          else this.state.routingConfig.isBack = Number(config.isBack);
+        }
+        if (config.infiniteVehicle) {  // ——————无限车辆
+          if (!checkRange(config.infiniteVehicle, 0, 1)) message.warn('无限车辆配置有问题，请联系管理员检查(不影响正常使用)');
+          else this.state.routingConfig.infiniteVehicle = Number(config.infiniteVehicle);
         }
         if (config.colors && config.colors !== '0') {  // ——————配置颜色
           try {
@@ -323,10 +330,11 @@ export default class SmartScheduling extends Component {
 
     this.resultFunc = () => {   // 智能调度结果处理，为了假进度条，不然就直接写不用方法了
       const { routes, unassignedNodes } = result.data[0];
-      // 订单分组提取
-      const groupOrders = routes.map(route => route.queue.map(r => selectOrderList.find(order => order.deliveryPoint.uuid === r.endName)));
+      // 订单分组提取，ps：参数是回仓的话 最后一点会有仓库endName: "仓1"  这里直接找不到是undefined 过滤掉
+      const groupOrders = routes.map(route => route.queue.map(r => selectOrderList.find(order => order.deliveryPoint.uuid === r.endName)).filter(x => x));
       // 没分配的订单提取（列表只返回了经纬度字符串，所以只能按经纬度提取）{不一定会返回，没返回就默认给个[]
       const notGroupOrders = unassignedNodes?.map(nodeStr => selectOrderList.find(order => `${order.longitude},${order.latitude}` === nodeStr)) ?? [];
+      
 
       this.setState({
         showSmartSchedulingModal: false,
@@ -488,7 +496,7 @@ export default class SmartScheduling extends Component {
    * @since 2024/11/9 下午2:57
    */
   routePlanning = (index, isRefresh) => {
-    let { scheduleDataList } = this.state;
+    let { scheduleDataList, routingConfig } = this.state;
     // 无论有无，都空空如也
     scheduleDataList[index].routeDistance = [];
     scheduleDataList[index].routeTime = [];
@@ -521,7 +529,9 @@ export default class SmartScheduling extends Component {
     });
     this.routingPlans[index] = [];                                                        // 初始化路线数组
     // 因为路线规划一次就最多16个 还要拆分多次调用
-    const aLine = [warehouseMarker, ...this.groupMarkers[index] || [], warehouseMarker];  // 添加起始点和终点 才是一个完整的路径
+    const aLine = [warehouseMarker, ...this.groupMarkers[index] || []];  // 添加起始点和终点 才是一个完整的路径
+    if (routingConfig.isBack === 0) aLine.push(warehouseMarker);               // 配置回仓 终点就是仓库
+
     const arr16 = [];                                                                     // 拆分后的数组
     for (let i = 0; i < aLine.length; i += (16 - 1)) {                                  // 步进值确保每组之间有一个重叠元素
       arr16.push(aLine.slice(i, i + 16));
@@ -1534,6 +1544,16 @@ export default class SmartScheduling extends Component {
                     />
                   </div>
 
+                  <div>
+                    ⽆限⻋辆：
+                    <Switch
+                      checkedChildren="开"
+                      unCheckedChildren="关"
+                      checked={!routingConfig.infiniteVehicle}
+                      onChange={v => this.setState({ routingConfig: { ...routingConfig, infiniteVehicle: v ? 0 : 1 } })}
+                    />
+                  </div>
+
                 </div>
 
 
@@ -1547,6 +1567,7 @@ export default class SmartScheduling extends Component {
                     </Button>
                   </Tooltip>
                   <VehicleInputModal  // 手动添加车辆参数弹窗
+                    showCount={routingConfig.infiniteVehicle === 1}
                     open={showInputVehicleModal}
                     onClose={() => this.setState({ showInputVehicleModal: false })}
                     addVehicle={vehicle => this.setState({ selectVehicles: [...selectVehicles, vehicle] })}
@@ -1637,8 +1658,8 @@ export default class SmartScheduling extends Component {
                             </Button>
                           )
                         }
-                      ]}
-                      footer={(data) =>
+                      ].filter(c => routingConfig.infiniteVehicle ? true : c.title !== '车辆数')}
+                      footer={(data) => Boolean(routingConfig.infiniteVehicle) && // 无限车就不用合计了
                         <div style={{ color: 'red', display: 'grid', gridTemplateColumns: '0.2fr 1fr 1fr 1fr 0.7fr' }}>
                           <b>合计</b>
                           <span>总载重：{data.reduce((a, b) => a + b.weight * b.vehicleCount, 0).toFixed(2)}t</span>
