@@ -71,7 +71,7 @@ export default class SmartScheduling extends Component {
   orderPoolModalRef = createRef();       // 订单池弹窗ref
   empAndVehicleModalRef = createRef();   // 选司机和车弹窗ref
   orderDtlRef = createRef();             // 拖动排序明细ref
-  
+
   state = {
     sx: 0,                                // 有时刷新页面用
     selectOrderList: [],                  // 选中订单池订单
@@ -120,7 +120,7 @@ export default class SmartScheduling extends Component {
   };
 
   /** 卸载组件前清空产生的window */
-  componentWillUnmount() {
+  componentWillUnmount () {
     window.smartSchedulingHandleOrders = null;
   }
 
@@ -140,25 +140,20 @@ export default class SmartScheduling extends Component {
           if (config.arrivalType === '次日达') arrivalType = '当日达';
           this.state.arrivalType = arrivalType;
         }
-        if (config.fullLoadRate) {  // ——————最大满载率
-          if (!checkRange(config.fullLoadRate, 10, 100)) message.warn('最大满载率配置有问题，请联系管理员检查(不影响正常使用)');
-          else this.state.fullLoadRate = Number(config.fullLoadRate);
+        if (checkRange(config.fullLoadRate, 10, 100, '最大满载率')) {  // ——————最大满载率
+          this.state.fullLoadRate = Number(config.fullLoadRate);
         }
-        if (config.sortRule) {  // ——————排线排序⽅式
-          if (!checkRange(config.sortRule, 0, 1)) message.warn('排线排序⽅式配置有问题，请联系管理员检查(不影响正常使用)');
-          else this.state.routingConfig.sortRule = Number(config.sortRule);
+        if (checkRange(config.sortRule, 0, 1, '排线排序⽅式')) {  // ——————排线排序⽅式
+          this.state.routingConfig.sortRule = Number(config.sortRule);
         }
-        if (config.routeOption) {  // ——————算路选项
-          if (!checkRange(config.routeOption, 0, 2)) message.warn('算路选项配置有问题，请联系管理员检查(不影响正常使用)');
-          else this.state.routingConfig.routeOption = Number(config.routeOption);
+        if (checkRange(config.routeOption, 0, 2, '算路选项')) {  // ——————算路选项
+          this.state.routingConfig.routeOption = Number(config.routeOption);
         }
-        if (config.isBack) {  // ——————回仓
-          if (!checkRange(config.isBack, 0, 1)) message.warn('回仓配置有问题，请联系管理员检查(不影响正常使用)');
-          else this.state.routingConfig.isBack = Number(config.isBack);
+        if (checkRange(config.isBack, 0, 1, '回仓')) {  // ——————回仓
+          this.state.routingConfig.isBack = Number(config.isBack);
         }
-        if (config.infiniteVehicle) {  // ——————无限车辆
-          if (!checkRange(config.infiniteVehicle, 0, 1)) message.warn('无限车辆配置有问题，请联系管理员检查(不影响正常使用)');
-          else this.state.routingConfig.infiniteVehicle = Number(config.infiniteVehicle);
+        if (checkRange(config.infiniteVehicle, 0, 1, '无限车辆')) {  // ——————无限车辆
+          this.state.routingConfig.infiniteVehicle = Number(config.infiniteVehicle);
         }
         if (config.colors && config.colors !== '0') {  // ——————配置颜色
           try {
@@ -203,10 +198,10 @@ export default class SmartScheduling extends Component {
    * 初始化动作
    * @author ChenGuangLong
    * @since 2024/11/28 上午8:43
-  */
+   */
   initAction = () => {
     // ———————判断是否是从配送调度按钮跳转打开的————————
-    if(window.selectOrders) this.handleOrders(window.selectOrders);
+    if (window.selectOrders) this.handleOrders(window.selectOrders);
 
     // ————————去白边：没套收藏组件顶部会有白边————————
     window.setTimeout(() => {
@@ -318,7 +313,7 @@ export default class SmartScheduling extends Component {
       deliveryCapacity: 0,  // 0：机动⻋  1：⾮机动⻋
     };
 
-    this.showFakeProgressBar()  // 显示假的进度条
+    this.showFakeProgressBar();  // 显示假的进度条
     this.setState({ btnLoading: true/* , fullScreenLoading: true */ });
     const result = await getSmartScheduling(requestBody);
     this.setState({ btnLoading: false/* , fullScreenLoading: false */ });
@@ -334,7 +329,6 @@ export default class SmartScheduling extends Component {
       const groupOrders = routes.map(route => route.queue.map(r => selectOrderList.find(order => order.deliveryPoint.uuid === r.endName)).filter(x => x));
       // 没分配的订单提取（列表只返回了经纬度字符串，所以只能按经纬度提取）{不一定会返回，没返回就默认给个[]
       const notGroupOrders = unassignedNodes?.map(nodeStr => selectOrderList.find(order => `${order.longitude},${order.latitude}` === nodeStr)) ?? [];
-      
 
       this.setState({
         showSmartSchedulingModal: false,
@@ -592,7 +586,7 @@ export default class SmartScheduling extends Component {
       unassignedNodes: [],
       showButtonDrawer: true,
       showResultDrawer: false,
-    },message.destroy);
+    }, message.destroy);
   };
 
   /**
@@ -1221,7 +1215,7 @@ export default class SmartScheduling extends Component {
                     className={styles.redBtn}
                     onClick={() => {
                       if (scheduleDataList[index].ok) return message.error('无效操作：已生成排车单!');
-                      this.setState({ showRemoveModal: index })
+                      this.setState({ showRemoveModal: index });
                     }}
                   >
                     移除
@@ -1316,7 +1310,7 @@ export default class SmartScheduling extends Component {
                   className={styles.resultBottomBtn}
                   onClick={this.recommendPeopleAndVehicle}
                 >
-                  <Icon type="car" />
+                  <Icon type="car"/>
                 </Button>
               </Popover>
 
@@ -1328,7 +1322,7 @@ export default class SmartScheduling extends Component {
                     this.setState({
                       scheduleResults: [...scheduleResults, []],
                       scheduleDataList: [...scheduleDataList, {}],
-                    })
+                    });
                     this.routingPlans.push(null);
                   }}
                 >
@@ -1337,7 +1331,10 @@ export default class SmartScheduling extends Component {
               </Popover>
 
               {/* ——————————放弃本次结果按钮—————— */}
-              <Popconfirm title={isCreate ? '开始新的智能调度' : '确定放弃本次智能调度结果?'} onConfirm={this.resetData}>
+              <Popconfirm
+                title={isCreate ? '开始新的智能调度' : '确定放弃本次智能调度结果?'}
+                onConfirm={this.resetData}
+              >
                 <Popover content={isCreate ? '重新新的智能调度' : '放弃本次智能调度结果'}>
                   <Button type="danger" className={styles.resultBottomBtn}><Icon type="delete"/></Button>
                 </Popover>
