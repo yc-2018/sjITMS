@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import { sumBy, uniq } from 'lodash';
-import { Divider, Icon, Popover } from 'antd';
+import { Divider, Icon, message, Popover } from 'antd';
 import styles from '@/pages/SJTms/SmartScheduling/SmartScheduling.less';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { getRecommend } from '@/services/sjitms/ScheduleBill';
@@ -196,14 +196,20 @@ export const formatSeconds = seconds => {
 /**
  * 检查数字是否在某个范围内 如果传进来的是字符串就转为数字
  * @param {number|string} num - 要检查的数字
- * @param {number} min - 范围的最小值
- * @param {number} max - 范围的最大值
+ * @param {number} min        - 范围的最小值
+ * @param {number} max        - 范围的最大值
+ * @param {string} errName    - 错误提示名称
  * @author ChenGuangLong
  * @since 2024/12/9 下午2:18
  */
-export const checkRange = (num, min = 1, max = 100) => {
+export const checkRange = (num, min = 1, max = 100, errName = '') => {
+  if (num === undefined) return false;
   if (typeof num === 'string') num = Number(num);
-  return num >= min && num <= max;
+  if (num < min || num > max){
+    errName && message.warn(`${errName}配置有问题，请联系管理员检查(不影响正常使用)`);
+    return false;
+  }
+  return true;
 };
 
 /**
