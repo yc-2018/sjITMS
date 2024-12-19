@@ -729,6 +729,13 @@ export const ScheduleColumns = [
     render: val => (val != undefined ? <span>{val}</span> : <Empty />),
   },
   {
+    title: '保温箱',
+    dataIndex: 'INSULATEDCONTAINERCOUNT',
+    sorter: true,
+    width: 100,
+    render: val => (val != undefined ? <span>{val}</span> : <Empty />),
+  },
+  {
     title: '体积',
     dataIndex: 'VOLUME',
     sorter: true,

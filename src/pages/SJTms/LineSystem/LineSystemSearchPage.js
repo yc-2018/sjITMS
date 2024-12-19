@@ -589,7 +589,7 @@ export default class LineSystemSearchPage extends Component {
       request(`/itms-schedule/itms-schedule/lineShipAddress/upload/${this.state.lineSystemValue}`, {
         method: 'POST',
         body: formData,
-      }).then(result => {
+      },true).then(result => {
         this.setState({ uploading: false });
         if (result && result.success) {
           //message.success('导入成功,共导入'+result.data+'家门店');
