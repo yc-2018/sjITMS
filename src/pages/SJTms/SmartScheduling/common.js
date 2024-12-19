@@ -190,7 +190,7 @@ export const formatSeconds = seconds => {
   if (typeof seconds !== 'number' || seconds < 0) return '无时间';
   const hours = Math.floor(seconds / 3600); // 计算小时数
   const minutes = Math.floor((seconds % 3600) / 60); // 计算剩余的分钟数
-  return `${hours}.${minutes}小时`;
+  return `${hours}时${minutes}分`;
 };
 
 /**

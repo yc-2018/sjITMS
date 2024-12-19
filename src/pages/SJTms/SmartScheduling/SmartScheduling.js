@@ -1,5 +1,4 @@
 // ///////////////////////////智能调度页面//////////////
-// todo 未分配的配送点要不要也在列表显示一个专门的卡片？
 // todo 框选批量操作
 // todo 车型合并
 // todo 后续高德api放后端请求
@@ -85,7 +84,7 @@ export default class SmartScheduling extends Component {
     showButtonDrawer: true,               // 显示左边按钮侧边栏
     showProgress: -1,                     // 显示生成排车进度条（>=0就是显示)
     fakeProgressBar: 0,                   // 智能调度假进度条（>0就是显示)
-    childrenIndex: -1,                    // 显示调度排车子抽屉 这个是它的索引>=0就是显示
+    childrenIndex: -1,                    // 显示调度排车子抽屉 这个是它的索引>=0就是显示   -9就是显示未分配线路的索引
     showEmpAndVehicleModal: -1,           // 显示选司机和车弹窗 这个是它的索引>=0就是显示
     showRemoveModal: -1,                  // 显示移除线路弹窗   这个是它的索引>=0就是显示
     scheduleResults: [],                  // 智能调度排车处理后的结果（二重数组内的订单）
@@ -978,6 +977,7 @@ export default class SmartScheduling extends Component {
       routingConfig,
       scheduleResults = [],
       scheduleDataList = [],
+      unassignedNodes = [],
       selectOrderList = [],
       selectVehicles = [],
       showInputVehicleModal,
@@ -995,6 +995,38 @@ export default class SmartScheduling extends Component {
     const isCreate = scheduleDataList.some(x => typeof x.ok === 'boolean');
     const allOk = isCreate && !scheduleDataList.some(x => !x.ok);
     const showDtlType = new Set(scheduleResults[childrenIndex]?.filter(x => x.arrivalType).map(x => x.arrivalType)).size > 1;
+    const dtlCardContent = (order, index) =>    // 配送点详情 因为未分配的和线路内的分开抽屉，所以用函数
+      <>
+        <b className={styles.detailIndex}>{index + 1}</b>
+        <b>{convertCodeName(order.deliveryPoint)}</b>
+        <Popover content="地图上聚焦该点">
+          <Icon
+            type="environment"
+            style={{ color: '#999', marginLeft: 3 }}
+            onClick={() => this.map.setFitView(new this.AMap.Marker({ position: [order.longitude, order.latitude] }))}
+          />
+        </Popover>
+        <div className={styles.w50}>线路：{order.archLine?.code}</div>
+        {(showDtlType || childrenIndex === -9) && getArrivalType(order.arrivalType) /* 送货类型 */}
+        {order.lineNote && <div className={styles.w50}>备注：{order.lineNote}</div>}
+        {order.shipAreaName && <div className={styles.w50}>配送区域：{order.shipAreaName}</div>}
+        <Divider style={{ margin: 6 }}/>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8 }}>
+          <span>整件数:{order.cartonCount}</span>
+          <span>散件数:{order.scatteredCount}</span>
+          <span>周转箱:{order.containerCount}</span>
+          <span>体积:{order.volume.toFixed(2)}</span>
+          <span>重量:{(order.weight / 1000).toFixed(3)}</span>
+        </div>
+        {isMultiVehicle &&  // 多载具
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+            <span>冷藏筐：{order.coldContainerCount}</span>
+            <span>冷冻筐：{order.freezeContainerCount}</span>
+            <span>保温袋：{order.insulatedBagCount}</span>
+            <span>鲜食筐：{order.freshContainerCount}</span>
+          </div>
+        }
+      </>;
 
     return (
       <div className={styles.SmartScheduling} id="smartSchedulingPage">
@@ -1110,19 +1142,19 @@ export default class SmartScheduling extends Component {
                 />
                 &nbsp;
                 {this.getCreateIcon(index)}
-                <Divider style={{ margin: 6 }}/>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+                <Divider style={{ margin: '6px 0' }}/>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1 }}>
                   <div>门店数: {orders.length}</div>
                   <div>总重量: {Math.round(orders.reduce((acc, cur) => acc + cur.weight, 0)) / 1000}</div>
                   <div>总体积: {orders.reduce((acc, cur) => acc + cur.volume, 0).toFixed(2)}</div>
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+
                   <div>整件数: {orders.reduce((acc, cur) => acc + cur.cartonCount, 0)}</div>
                   <div>散件数: {orders.reduce((acc, cur) => acc + cur.scatteredCount, 0)}</div>
                   <div>周转箱: {orders.reduce((acc, cur) => acc + cur.containerCount, 0)}</div>
                 </div>
+
                 {isMultiVehicle &&
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1 }}>
                     <div>冷藏筐：{orders.reduce((acc, cur) => acc + cur.coldContainerCount, 0)}</div>
                     <div>冷冻筐：{orders.reduce((acc, cur) => acc + cur.freezeContainerCount, 0)}</div>
                     <div>保温袋: {orders.reduce((acc, cur) => acc + cur.insulatedBagCount, 0)}</div>
@@ -1130,7 +1162,7 @@ export default class SmartScheduling extends Component {
                   </div>
                 }
                 {scheduleDataList[index]?.routeDistance?.length > 0 && // 公里数等
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 8 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1 }}>
                     <div>预估公里：{(_.sum(scheduleDataList[index].routeDistance) / 1000).toFixed(2)}</div>
                     <div>预估耗时：{formatSeconds(_.sum(scheduleDataList[index].routeTime))}</div>
                     <div>预估过路费: {_.sum(scheduleDataList[index].routeTolls)}元</div>
@@ -1180,7 +1212,7 @@ export default class SmartScheduling extends Component {
                     }}
                   />
                 </div>
-                <Divider style={{ margin: 6 }}/>
+                <Divider style={{ margin: '6px 0' }}/>
                 <div onClick={e => e.stopPropagation()}>
                   {/* ————————————打开线路明细抽屉—————————— */}
                   <Button type="link" onClick={() => this.setState({ childrenIndex: index })}>
@@ -1241,6 +1273,87 @@ export default class SmartScheduling extends Component {
                 </div>
               </div>
             )}
+            {unassignedNodes.length > 0 &&
+              <div
+                className={styles.resultCard}
+                style={{ width: this.RIGHT_DRAWER_WIDTH - 40, boxShadow: 'inset 0px 0px 6px 0px #b5181861' }}
+              >
+                <Icon type="warning" theme="twoTone" style={{ fontSize: 19 }} twoToneColor="#eb2f96"/>
+                <span style={{ fontSize: 14, marginLeft: 5 }}>未分配配送点</span>
+                <Divider style={{ margin: '6px 0' }}/>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 1 }}>
+                  <div>门店数: {unassignedNodes.length}</div>
+                  <div>总重量: {Math.round(unassignedNodes.reduce((acc, cur) => acc + cur.weight, 0)) / 1000}</div>
+                  <div>总体积: {unassignedNodes.reduce((acc, cur) => acc + cur.volume, 0).toFixed(2)}</div>
+
+                  <div>整件数: {unassignedNodes.reduce((acc, cur) => acc + cur.cartonCount, 0)}</div>
+                  <div>散件数: {unassignedNodes.reduce((acc, cur) => acc + cur.scatteredCount, 0)}</div>
+                  <div>周转箱: {unassignedNodes.reduce((acc, cur) => acc + cur.containerCount, 0)}</div>
+                </div>
+                {isMultiVehicle &&
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 1 }}>
+                    <div>冷藏筐：{unassignedNodes.reduce((acc, cur) => acc + cur.coldContainerCount, 0)}</div>
+                    <div>冷冻筐：{unassignedNodes.reduce((acc, cur) => acc + cur.freezeContainerCount, 0)}</div>
+                    <div>保温袋: {unassignedNodes.reduce((acc, cur) => acc + cur.insulatedBagCount, 0)}</div>
+                    <div>鲜食筐：{unassignedNodes.reduce((acc, cur) => acc + cur.freshContainerCount, 0)}</div>
+                  </div>
+                }
+                <Divider style={{ margin: '6px 0' }}/>
+                <a
+                  style={{ display: 'inline-block', padding: '0px 8px 5px 8px' }}
+                  onClick={() => this.setState({ childrenIndex: -9 })}
+                >
+                  明细
+                </a>
+                <a
+                  style={{ display: 'inline-block', padding: '0px 8px 5px 8px' }}
+                  onClick={() => this.map.setFitView(this.unassignedMarkers, false, [60, 60, 60, 500])}    // 不是立即过渡 四周边距，上、下、左、右
+                >
+                  聚焦
+                </a>
+
+                <Popover
+                  content={
+                    <>
+                      <div style={{ textAlign: 'center' }}>选择转移的路线</div>
+                      {scheduleResults.map((_item, index) =>
+                        <div
+                          key={index}
+                          className={styles.mapStyleItem}
+                          onClick={() => {
+                            scheduleResults[index] = [...scheduleResults[index], ...unassignedNodes];
+                            this.setState({ scheduleResults, unassignedNodes: [] }, () => {
+                              message.success(`已添加${unassignedNodes.length}个点到线路${index + 1}`);
+                              this.loadingPoint();
+                              // 如果有显示了路线规划，就重新规划
+                              if (this.routingPlans[index]?.length > 0) this.routePlanning(index, true);
+                            });
+                          }}
+                        >
+                          线路{index + 1}
+                        </div>
+                      )}
+                    </>
+                  }
+                >
+                  <a style={{ display: 'inline-block', padding: '0px 8px 5px 8px' }}>一键转移</a>
+                </Popover>
+
+                <Popconfirm
+                  title="确定移除吗"
+                  onConfirm={() => {
+                    this.map.remove(this.unassignedMarkers);
+                    this.setState({ unassignedNodes: [] });
+                  }}
+                >
+                  <a style={{ display: 'inline-block', padding: '0px 8px 5px 8px', color: 'red' }}>
+                    一键移除
+                  </a>
+                </Popconfirm>
+
+              </div>
+
+            }
 
             {/* ——————————————————智能调度结果底部按钮———————————————————— */}
             <div className={styles.resultBottom}>
@@ -1380,41 +1493,77 @@ export default class SmartScheduling extends Component {
                       className={styles.detailCard}
                       onMouseDown={() => this.orderDtlRef.current.childNodes[index].style.background = '#f2ffeb'}
                     >
-                      <b className={styles.detailIndex}>{index + 1}</b>
-                      <b>{convertCodeName(order.deliveryPoint)}</b>
-                      <Popover content="地图上聚焦该点">
-                        <Icon
-                          type="environment"
-                          style={{ color: '#999', marginLeft: 3 }}
-                          onClick={() => this.map.setFitView(new this.AMap.Marker({ position: [order.longitude, order.latitude] }))}
-                        />
-                      </Popover>
-                      <div className={styles.w50}>线路：{order.archLine?.code}</div>
-                      {showDtlType && getArrivalType(order.arrivalType) /* 送货类型 */}
-                      {order.lineNote && <div className={styles.w50}>备注：{order.lineNote}</div>}
-                      {order.shipAreaName && <div className={styles.w50}>配送区域：{order.shipAreaName}</div>}
-                      <Divider style={{ margin: 6 }}/>
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8 }}>
-                        <span>整件数:{order.cartonCount}</span>
-                        <span>散件数:{order.scatteredCount}</span>
-                        <span>周转箱:{order.containerCount}</span>
-                        <span>体积:{order.volume.toFixed(2)}</span>
-                        <span>重量:{(order.weight / 1000).toFixed(3)}</span>
-                      </div>
-                      {isMultiVehicle &&  // 多载具
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 8 }}>
-                          <span>冷藏筐：{order.coldContainerCount}</span>
-                          <span>冷冻筐：{order.freezeContainerCount}</span>
-                          <span>保温袋：{order.insulatedBagCount}</span>
-                          <span>鲜食筐：{order.freshContainerCount}</span>
-                        </div>
-                      }
+                      {dtlCardContent(order, index)}
                     </div>
                   </DragDtlCard>
                 )}
               </DndProvider>
             </div>
           </Drawer>
+
+          <Drawer // ————————————————————智能调度未分配明细————————————————————
+            title={
+              <div>
+                <Icon type="warning" theme="twoTone" style={{ fontSize: 19 }} twoToneColor="#eb2f96"/>
+                <span style={{ fontSize: 14, marginLeft: 5 }}>未分配配送点</span>明细
+              </div>
+            }
+            width={370}
+            closable={false}
+            bodyStyle={{ padding: 8 }}
+            visible={childrenIndex === -9 && unassignedNodes.length > 0}
+            onClose={() => this.setState({ childrenIndex: -1 })}
+          >
+            {unassignedNodes.map((order,index) =>
+              <div key={order.uuid} className={styles.detailCard}>
+                {dtlCardContent(order, index)}
+                <Divider style={{ margin: '6px 0' }}/>
+                <Popover // ————————————未分配转移的路线按钮——————————————
+                  content={
+                    <>
+                      <div style={{ textAlign: 'center' }}>选择转移的路线</div>
+                      {scheduleResults.map((_item, i) =>
+                        <div
+                          key={i}
+                          className={styles.mapStyleItem}
+                          onClick={() => {
+                            scheduleResults[i] = [...scheduleResults[i], order];
+                            if(unassignedNodes.length === 1) this.setState({ childrenIndex: -1 });
+                            this.setState({ scheduleResults, unassignedNodes: unassignedNodes.filter(item => item.uuid !== order.uuid) }, () => {
+                              message.success(`已添加到线路${i + 1}`);
+                              this.loadingPoint();
+                              // 如果有显示了路线规划，就重新规划
+                              if (this.routingPlans[i]?.length > 0) this.routePlanning(i, true);
+                            });
+                          }}
+                        >
+                          线路{i + 1}
+                        </div>
+                      )}
+                    </>
+                  }
+                >
+                  <a style={{ display: 'inline-block', padding: '0px 8px 5px 8px' }}>转移</a>
+                </Popover>
+
+                <Popconfirm // ————————————移除未分配按钮——————————————
+                  title="确定移除吗"
+                  onConfirm={() => {
+                    if(unassignedNodes.length === 1) this.setState({ childrenIndex: -1 });
+                    this.setState({ unassignedNodes: unassignedNodes.filter(item => item.uuid !== order.uuid) },()=>{
+                      this.loadingPoint(undefined, undefined, 2);
+                    });
+                  }}
+                >
+                  <a style={{ display: 'inline-block', padding: '0px 8px 5px 8px', color: 'red' }}>
+                    移除
+                  </a>
+                </Popconfirm>
+              </div>
+            )}
+          </Drawer>
+
+
         </Drawer>
 
         <Modal    // ————————————————————————————智能调度弹窗——————————————————————————————
