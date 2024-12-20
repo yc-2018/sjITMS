@@ -17,6 +17,21 @@ export const Tips = ({ children }) =>
   </Popover>;
 
 /**
+ * 链接样式按钮
+ * @author ChenGuangLong
+ * @since 2024/12/20 上午8:49
+ */
+export const LinkBtn = ({ children, onClick, style = {}, className, disabled }) =>
+  <a
+    onClick={onClick}
+    className={`${disabled ? styles.disabledLink : ''} ${className ?? ''}`}
+    style={{ display: 'inline-block', padding: '0px 8px 5px 8px', ...style }}
+  >
+    {children}
+  </a>;
+
+
+/**
  * 高德样式对象
  * @author ChenGuangLong
  * @since 2024/11/15 上午11:05

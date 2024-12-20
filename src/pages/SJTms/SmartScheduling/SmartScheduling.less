@@ -56,7 +56,7 @@
     border-radius: 8px;
     margin-bottom: 5px;
     cursor: pointer;
-    box-shadow: 2px 2px 5px 0 #39487061;
+    box-shadow: 2px 2px 3px 0 #b6bdce61, inset 0 0 3px 0 #39487061;
 
     // 人员标签
     .empTag {
@@ -278,4 +278,11 @@
 // 弹窗最高
 .modalMaxHeight100 [class="ant-modal-content"] {
   max-height: 100vh;
+}
+
+.disabledLink {
+  pointer-events: none; /* 禁止鼠标点击 */
+  color: gray; /* 改变颜色 */
+  text-decoration: none; /* 去掉下划线 */
+  cursor: not-allowed; /* 鼠标样式为“禁用” */
 }
