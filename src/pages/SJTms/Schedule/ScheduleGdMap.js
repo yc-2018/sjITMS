@@ -17,7 +17,7 @@ import myjPointClick from '@/assets/common/myjPoint_click.svg'
 import truckStop from '@/assets/common/truck_stop.png'
 import { getDistance } from '@/utils/gcoord'
 import styles from './ScheduleGdMap.less'
-import { AMapDefaultConfigObj, AMapDefaultLoaderObj, bd09togcj02, getStoreIcon } from '@/utils/mapUtil'
+import { AMapDefaultConfigObj, AMapDefaultLoaderObj, getStoreIcon } from '@/utils/mapUtil'
 import startMarkerIcon from '@/assets/common/startMarker.png'
 
 let AMap = null                   // 高德地图对象
@@ -74,9 +74,9 @@ export default class ScheduleGdMap extends Component {
   initialize = async (schedule) => {
     const billUuid = schedule.UUID
     const billNumber = schedule.BILLNUMBER
-    const platenumber = schedule.VEHICLEPLATENUMBER
-    const returntime = schedule.RETURNTIME
-    const dispatchtime = schedule.DISPATCHTIME
+    const plateNumber = schedule.VEHICLEPLATENUMBER   // 车牌号
+    const returnTime = schedule.RETURNTIME            // 回车时间
+    const dispatchtime = schedule.DISPATCHTIME        // 出车时间
     this.setState({ spinning: true })
     const response = await getDetailByBillUuids([billUuid])    // 获取排车单明细
     this.setState({ spinning: false })
@@ -93,23 +93,24 @@ export default class ScheduleGdMap extends Component {
       // 初始化地图 和 门店 和 车辆历史轨迹
       setTimeout(async () => {
         if (AMap && !map) map = new AMap.Map('DispatchGdMap', AMapDefaultConfigObj)   // 只能放这里 放其他地方总是有问题 烦死了
-        const hours = Math.ceil(moment(returntime || moment()).diff(dispatchtime, 'minute') / 60)
+        // 从 dispatchtime 到 returnTime（或当前时间）之间经过的时间，以分钟为单位，然后除以60得到小时数，再用 Math.ceil() 将结果向上取整为整数小时数。
+        const hours = Math.ceil(moment(returnTime || moment()).diff(dispatchtime, 'minute') / 60)
         if (hours > 1) {
           for (let i = 0; i < Math.ceil(hours / 2); i++) {
             const from = moment(dispatchtime).add(i * 2, 'hours').format('YYYY-MM-DD HH:mm:ss')
             if (moment().isAfter(from)) {
               let to = moment(dispatchtime).add((i + 1) * 2, 'hours').format('YYYY-MM-DD HH:mm:ss')
               to = moment().isAfter(to) ? to : firstTime
-              await this.getHistoryLocation(platenumber, from, to, [])
+              await this.getHistoryLocation(plateNumber, from, to, [])
             }
           }
         } else {
-          await this.getHistoryLocation(platenumber, dispatchtime, returntime || firstTime, [])
+          await this.getHistoryLocation(plateNumber, dispatchtime, returnTime || firstTime, [])
         }
 
-        this.getTrunkLocation(platenumber)    // 初始化车辆当前位置
+        this.getTrunkLocation(plateNumber)    // 初始化车辆当前位置
         this.drawMarker(points)                   // 初始化门店marker
-        this.autoFresh(billNumber, billUuid, platenumber, returntime, orders)
+        this.autoFresh(billNumber, billUuid, plateNumber, returnTime, orders)
       }, 500)
     }
   }
@@ -278,13 +279,13 @@ export default class ScheduleGdMap extends Component {
 
   /** 历史轨迹 */
   getHistoryLocation = async (plateNumber, from, to, lastPoints) => {
-    const params = { plate_num: `粤${plateNumber}`, from, to, timeInterval: '10', map: 'baidu' }
+    const params = { plate_num: `粤${plateNumber}`, from, to, timeInterval: '10' }
     const response = await GetHistoryLocation(params)
     if (response.success && response.data.data) {
       let pts = [...lastPoints]
       const historys = response.data.data || []
       if (historys.length > 0) {
-        historys.forEach(point => pts.push(bd09togcj02(point.lng, point.lat)))
+        historys.forEach(point => pts.push([point.lng, point.lat]))
         // 起点坐标
         if (!startMarker) {
           startMarker = new AMap.Marker({
@@ -316,7 +317,6 @@ export default class ScheduleGdMap extends Component {
       plate_num: `粤${plateNumber}`,
       fields: 'loc,status',
       addr_required: false,
-      map: 'baidu'
     }
     const response = await GetTrunkData(params)
     if (response.success && response.data.data) {
@@ -331,7 +331,7 @@ export default class ScheduleGdMap extends Component {
         }),
         anchor: 'center',                       // 设置Marker的锚点
       })
-      currentMarker.setPosition(bd09togcj02(point.loc.lng, point.loc.lat))
+      currentMarker.setPosition([point.loc.lng, point.loc.lat])
       currentMarker.setAngle(rotaition)
       map.add(currentMarker)
     }
