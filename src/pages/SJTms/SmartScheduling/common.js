@@ -227,6 +227,12 @@ export const checkRange = (num, min = 1, max = 100, errName = '') => {
   return true;
 };
 
+export const getLineName = i => {
+  i = Number(i);
+  if (i === -9) return '未分配';
+  return `线路${i + 1}`;
+};
+
 /**
  * @typedef {Object} ScheduleData
  * @property {string} [vehicleModel]        - 车辆型号（重量-体积）

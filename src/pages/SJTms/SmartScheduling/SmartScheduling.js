@@ -15,7 +15,7 @@ import AMapLoader from '@amap/amap-jsapi-loader';
 import {
   Button, Input, Modal, Select, Table, Progress,
   Col, Divider, Drawer, Empty, Icon, Row, message,
-  Popconfirm, Popover, Tooltip, InputNumber, Switch
+  Popconfirm, Popover, Tooltip, InputNumber, Switch, Badge
 } from 'antd';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -36,7 +36,7 @@ import { convertCodeName } from '@/utils/utils';
 import { GetConfig } from '@/services/sjitms/OrderBill';
 import {
   checkRange,
-  formatSeconds, getArrivalType, getMarkerText,
+  formatSeconds, getArrivalType, getLineName, getMarkerText,
   getRecommendByOrders, getVehiclesParam,
   groupByOrder, LinkBtn, mapStyleMap, Tips
 } from '@/pages/SJTms/SmartScheduling/common';
@@ -46,6 +46,11 @@ import DragDtlCard from '@/pages/SJTms/SmartScheduling/DragDtlCard';
 import VanLoader from '@/components/VanLoad';
 
 const { Option } = Select;
+const NOT_LINE = -9;        // 未分配线路
+const ALL_LINE = -1;        // 所有线路
+const RE_LINE = 1;          // 刷新线路点位
+const RE_NOT_LINE = 2;     // 刷新未分配线路点位
+
 let colors = [...myColors];
 
 export default class SmartScheduling extends Component {
@@ -53,6 +58,7 @@ export default class SmartScheduling extends Component {
   AMap = null;                            // 高德地图对象
   map = null;                             // 高德地图实例
   text = null;                            // 高德地图文本对象
+  rectangleTool = null;                   // 高德地图矩形工具(框选选择)
   warehouseMarker = null;                 // 当前仓库高德点
   warehousePoint = '';                  // 当前仓库经纬度
   groupMarkers = [];                     // 分组的高德点位
@@ -101,6 +107,11 @@ export default class SmartScheduling extends Component {
       routeOption: 0,     // 算路选项
       isBack: 0,          // 是否算返回仓库 0是  1否
       infiniteVehicle: 1, // 是否无限车辆 0：无限车辆 1：限
+    },
+    selectMarkers: {      // 批量选择地图上的点,
+      tag: NOT_LINE,      // 点在显示状态才允许被选择,-1:全部线路;-9:未分配点;>=0:这条索引的线路
+      open: false,
+      selectList: [],
     }
   };
 
@@ -585,6 +596,7 @@ export default class SmartScheduling extends Component {
       unassignedNodes: [],
       showButtonDrawer: true,
       showResultDrawer: false,
+      selectMarkers: { tag: -9, open: false }
     }, message.destroy);
   };
 
@@ -776,7 +788,7 @@ export default class SmartScheduling extends Component {
     if (linkIndex >= 0) {   // 线路内配送点
       const link = scheduleResults[linkIndex];
       scheduleResults[linkIndex] = link.filter(x => x.uuid !== order.uuid);
-      this.loadingPoint(scheduleResults, undefined, 1);     // 点位更新
+      this.loadingPoint(scheduleResults, [], RE_LINE);     // 点位更新
       scheduleDataList[linkIndex].vehicleModel = null;    // 定位改变高德推荐就没用了
       this.setState({ scheduleResults, showPointModal: null, scheduleDataList });
       // 线路更新： 里程 时间 过路费 更新
@@ -785,7 +797,7 @@ export default class SmartScheduling extends Component {
       }
     } else {              // 未分配线路配送点
       const newUnassignedNodes = unassignedNodes.filter(x => x.uuid !== order.uuid);
-      this.loadingPoint(undefined, newUnassignedNodes, 2);  // 点位更新
+      this.loadingPoint([], newUnassignedNodes, RE_NOT_LINE);  // 点位更新
       this.setState({ unassignedNodes: newUnassignedNodes, showPointModal: null });
     }
   };
@@ -835,7 +847,7 @@ export default class SmartScheduling extends Component {
     if (isDissolution) {  // 解散 放配送点到未分配列表
       const { unassignedNodes } = this.state;
       const newUnassignedNodes = unassignedNodes.concat(scheduleResults[linkIndex]);
-      this.loadingPoint(undefined, newUnassignedNodes, 2);  // 点位更新
+      this.loadingPoint([], newUnassignedNodes, RE_NOT_LINE);  // 点位更新
       this.setState({ unassignedNodes: [...newUnassignedNodes] });
     }
     // 去掉路线规划
@@ -849,7 +861,7 @@ export default class SmartScheduling extends Component {
     this.routingPlans.forEach((item, index) => {
       item?.map(line => line.setOptions({ strokeColor: colors[index] }));
     });
-    this.loadingPoint(newScheduleResults, undefined, 1); // 点位更新
+    this.loadingPoint(newScheduleResults, [], RE_LINE); // 点位更新
     this.setState({
       showRemoveModal: -1,
       scheduleResults: [...newScheduleResults],
@@ -895,7 +907,7 @@ export default class SmartScheduling extends Component {
       this.setState({ scheduleResults: [...scheduleResults] });
 
       // 更新点位序号
-      this.loadingPoint(undefined, undefined, 1);
+      this.loadingPoint(undefined, [], RE_LINE);
       // 如果有显示了路线规划，就重新规划
       if (this.routingPlans[childrenIndex]?.length > 0) this.routePlanning(childrenIndex, true);
     }
@@ -963,6 +975,140 @@ export default class SmartScheduling extends Component {
     this.setState({ showProgress: -1 });
   };
 
+  /**
+   * 批量选择地图上的点    点在显示状态才允许被选择  -1 全部线路 -9 未分配点 >=0 这条索引的线路
+   * @author ChenGuangLong
+   * @since 2024/12/20 上午10:59
+   */
+  batchSelect = () => {
+    if (!this.rectangleTool) {  // 第一次先创建
+      this.rectangleTool = new this.AMap.MouseTool(this.map);
+      this.rectangleTool.on('draw', (e) => {
+        const { selectMarkers, scheduleResults, scheduleDataList, unassignedNodes } = this.state;    // 必须放里面（放外面导致严重的教训bug)
+        const southWest = e.obj.getOptions().bounds.getSouthWest();  // 西南角坐标
+        const northEast = e.obj.getOptions().bounds.getNorthEast();  // 东北角坐标
+        const rectanglePath = [       // 矩形路径
+          [southWest.lng, northEast.lat],   // 矩形左上角坐标(西北角)
+          [northEast.lng, northEast.lat],   // 矩形右上角坐标(东北角)
+          [northEast.lng, southWest.lat],   // 矩形右下角坐标(东南角)
+          [southWest.lng, southWest.lat],   // 矩形左下角坐标(西南角)
+        ];
+        const orders = [];  // 矩形内的订单 格式：[{-9:[order1、2、3]}，{1:[order1、2、3]}]
+        // ————————————————————————无线————————————————————————————————
+        if (selectMarkers.tag === NOT_LINE) {
+          const selectList = [];
+          unassignedNodes.forEach(order => {
+            const pt = { lng: order.longitude, lat: order.latitude };
+            const isSelect = this.AMap.GeometryUtil.isPointInRing(pt, rectanglePath); // 判断点是否在矩形内
+            if (isSelect) selectList.push(order);
+          });
+          if (selectList.length > 0) {
+            orders.push({ [NOT_LINE]: selectList });
+            this.setState({ selectMarkers: { ...selectMarkers, selectList: orders } });
+          } else message.info('无选中点');
+        }
+        // ——————————————————————————全线——————————————————————————————
+        if (selectMarkers.tag === ALL_LINE) {
+          scheduleResults.forEach((orderList, index) => {
+            const selectList = [];
+            !scheduleDataList[index].unseen && orderList.forEach(order => {
+              const pt = { lng: order.longitude, lat: order.latitude };
+              const isSelect = this.AMap.GeometryUtil.isPointInRing(pt, rectanglePath); // 判断点是否在矩形内
+              if (isSelect) selectList.push(order);
+            });
+            if (selectList.length > 0) orders.push({ [index]: selectList });
+          });
+          if (orders.length > 0) this.setState({ selectMarkers: { ...selectMarkers, selectList: orders } });
+          else message.info('无选中点');
+        }
+        // ———————————————————————————一线—————————————————————————————
+        if (selectMarkers.tag > -1) {
+          if (scheduleDataList[selectMarkers.tag].unseen) return message.info('该线路已隐藏');
+          const selectList = [];
+          scheduleResults[selectMarkers.tag].forEach(order => {
+            const pt = { lng: order.longitude, lat: order.latitude };
+            const isSelect = this.AMap.GeometryUtil.isPointInRing(pt, rectanglePath); // 判断点是否在矩形内
+            if (isSelect) selectList.push(order);
+          });
+          if (selectList.length > 0) {
+            orders.push({ [selectMarkers.tag]: selectList });
+            this.setState({ selectMarkers: { ...selectMarkers, selectList: orders } });
+          } else message.info('无选中点');
+        }
+
+        this.map.remove(e.obj); // 清除矩形
+      });
+    }
+
+    if (this.state.selectMarkers.open) {  // 现在是打开的 那么执行关闭
+      this.map.setDefaultCursor('default');
+      this.state.selectMarkers.open = false;
+      this.rectangleTool.close(true);   // 关闭，并清除覆盖物(不清除（false）也没关系
+    } else {     // 现在是关闭的 那么执行打开
+      this.map.setDefaultCursor('crosshair');
+      this.rectangleTool.rectangle({  // 同Polygon的Option设置
+        fillColor: '#beffd7',
+        strokeColor: '#f1b786'
+      });
+      this.state.selectMarkers.open = true;
+    }
+    this.sxYm();
+  };
+
+  /**
+   * 批量选择处理
+   * @param action{'解散'|'移除'|'转移'} 操作动作
+   * @param [toLine] {number}         转移到的线路
+   * @author ChenGuangLong
+   * @since 2024/12/23 下午2:23
+   */
+  batchSelectHandle = (action, toLine) => {
+    let { selectMarkers, scheduleResults, unassignedNodes } = this.state;
+    const lines = []; // 记录被处理的路线 一会用来处理线路规划
+    selectMarkers.selectList.forEach(item => {
+      const line = Number(Object.keys(item)[0]);
+      lines.push(line);
+      const orders = Object.values(item)[0];
+      const ordersUuid = orders.map(order => order.uuid);
+      switch (action) {
+        case '解散':
+          scheduleResults[line] = scheduleResults[line].filter(order => !ordersUuid.includes(order.uuid));
+          unassignedNodes = [...unassignedNodes, ...orders];
+          break;
+        case '转移':
+          if (line > -1) {
+            if (line !== toLine) { // 本身不用处理
+              const schedule = [...scheduleResults[line]];   // 抽出来是因为下面一起用两个相反的过滤会导致后面的过滤拿不到数据
+              scheduleResults[line] = schedule.filter(order => !ordersUuid.includes(order.uuid));
+              scheduleResults[toLine] = [...scheduleResults[toLine], ...schedule.filter(order => ordersUuid.includes(order.uuid))];
+            }
+          } else {
+            const unNodes = [...unassignedNodes];
+            unassignedNodes = unNodes.filter(order => !ordersUuid.includes(order.uuid));
+            scheduleResults[toLine] = [...scheduleResults[toLine], ...unNodes.filter(order => ordersUuid.includes(order.uuid))];
+          }
+          break;
+        default:  // 移除
+          if (line > -1) scheduleResults[line] = scheduleResults[line].filter(order => !ordersUuid.includes(order.uuid));
+          else unassignedNodes = unassignedNodes.filter(order => !ordersUuid.includes(order.uuid));
+          break;
+      }
+    });
+    this.loadingPoint(scheduleResults, unassignedNodes,);
+    this.setState({
+      scheduleResults,
+      unassignedNodes,
+      selectMarkers: { ...selectMarkers, selectList: [] },
+    }, () => {
+      lines.forEach(line => {
+        if (this.routingPlans[line]?.length > 0) this.routePlanning(line, true);
+      });
+      if (toLine && !lines.includes(toLine) && this.routingPlans[toLine]?.length > 0) {
+        this.routePlanning(toLine, true);
+      }
+    });
+  };
+
   render () {
     const {
       showSmartSchedulingModal,
@@ -988,6 +1134,7 @@ export default class SmartScheduling extends Component {
       fullLoadRate,
       arrivalType,
       fakeProgressBar,
+      selectMarkers,
     } = this.state;
     // 出结果了之后，禁止一些操作
     const lockBtn = scheduleResults.length > 0;
@@ -1158,7 +1305,7 @@ export default class SmartScheduling extends Component {
                     const unseen = !scheduleDataList[index].unseen;
                     scheduleDataList[index].unseen = unseen;
                     this.setState({ scheduleDataList: [...scheduleDataList] }, () => {
-                      this.loadingPoint(undefined, undefined, 1);
+                      this.loadingPoint(undefined, [], RE_LINE);
                       if (this.routingPlans[index]?.length > 0)
                         if (unseen) this.routingPlans[index].forEach(x => x.hide());
                         else this.routingPlans[index].forEach(x => x.show());
@@ -1330,7 +1477,7 @@ export default class SmartScheduling extends Component {
                     this.setState({ unassignedNodes: [] });
                   }}
                 >
-                  <LinkBtn style={{color: 'red' }}>
+                  <LinkBtn style={{ color: 'red' }}>
                     一键移除
                   </LinkBtn>
                 </Popconfirm>
@@ -1352,6 +1499,7 @@ export default class SmartScheduling extends Component {
                         className={styles.mapStyleItem}
                         style={this.mapStyleName === name ? { boxShadow: 'inset 1px 1px 4px 0 #39487061' } : {}}
                         onClick={() => {
+                          if (this.mapStyleName === name) return;
                           this.map.setMapStyle(`amap://styles/${mapStyleMap[name]}`);
                           this.sxYm(this.mapStyleName = name);
                           window.localStorage.setItem('mapStyleName', name);
@@ -1389,17 +1537,83 @@ export default class SmartScheduling extends Component {
                       if (unseen) x.hide();
                       else x.show();
                     }));
-                    this.setState({ scheduleDataList: [...scheduleDataList] }, () => this.loadingPoint(undefined, undefined, 1));
+                    this.setState({ scheduleDataList: [...scheduleDataList] }, () => this.loadingPoint(undefined, [], RE_LINE));
                   }}
                 >
                   <Icon type={scheduleDataList.some(x => x.unseen) ? 'eye-invisible' : 'eye'}/>
                 </Button>
               </Popover>
 
-              {/* /!* ——————————批量选择点—————— *!/ */}
-              {/* <Button className={styles.resultBottomBtn}> */}
-              {/*   <Icon type="select" /> */}
-              {/* </Button> */}
+              {/* ——————————批量选择点—————— */}
+              <Popover
+                content={
+                  <div style={{ textAlign: 'center' }}>
+                    <div>选择指定线路</div>
+                    <div
+                      className={styles.mapStyleItem}
+                      style={selectMarkers.tag === -9 ? { boxShadow: 'inset 1px 1px 4px 0 #39487061' } : {}}
+                      onClick={() => {
+                        if (selectMarkers.tag !== -9) this.setState({ selectMarkers: { ...selectMarkers, tag: -9 } });
+                      }}
+                    >
+                      未分配
+                    </div>
+                    <div
+                      className={styles.mapStyleItem}
+                      style={selectMarkers.tag === -1 ? { boxShadow: 'inset 1px 1px 4px 0 #39487061' } : {}}
+                      onClick={() => {
+                        if (selectMarkers.tag !== -1) this.setState({ selectMarkers: { ...selectMarkers, tag: -1 } });
+                      }}
+                    >
+                      全部线路
+                    </div>
+                    {scheduleResults.map((_x, index) =>
+                      <div
+                        key={index}
+                        className={styles.mapStyleItem}
+                        style={selectMarkers.tag === index ? { boxShadow: 'inset 1px 1px 4px 0 #39487061' } : {}}
+                        onClick={() => {
+                          if (selectMarkers.tag !== index) this.setState({
+                            selectMarkers: {
+                              ...selectMarkers,
+                              tag: index
+                            }
+                          });
+                        }}
+                      >
+                        线路{index + 1}
+                      </div>
+                    )}
+                  </div>
+                }
+              >
+                <Badge
+                  offset={[-25, -3]}
+                  count={
+                    selectMarkers.open ?
+                      <div
+                        style={{
+                          width: 45,
+                          borderRadius: 4,
+                          padding: '0px 2px',
+                          background: '#a9f6cb',
+                          textAlign: 'center',
+                        }}
+                      >
+                        {selectMarkers.tag === -9 && '未分配'}
+                        {selectMarkers.tag === -1 && '全线路'}
+                        {selectMarkers.tag > -1 && `线路${selectMarkers.tag + 1}`}
+                      </div> : 0
+                  }
+                >
+                  <Button
+                    className={`${styles.resultBottomBtn} ${selectMarkers.open ? styles.bgColorAnimation : ''}`}
+                    onClick={this.batchSelect}
+                  >
+                    <Icon type="select"/>
+                  </Button>
+                </Badge>
+              </Popover>
 
               {/* ——————————一键推荐车和人按钮—————— */}
               <Popover content={<div>一键按熟练度推荐车辆和人员，如果已经选过车辆或人员的不会覆盖</div>}>
@@ -1516,7 +1730,7 @@ export default class SmartScheduling extends Component {
             visible={childrenIndex === -9 && unassignedNodes.length > 0}
             onClose={() => this.setState({ childrenIndex: -1 })}
           >
-            {unassignedNodes.map((order,index) =>
+            {unassignedNodes.map((order, index) =>
               <div key={order.uuid} className={styles.detailCard}>
                 {dtlCardContent(order, index)}
                 <Divider style={{ margin: '6px 0' }}/>
@@ -1530,8 +1744,11 @@ export default class SmartScheduling extends Component {
                           className={styles.mapStyleItem}
                           onClick={() => {
                             scheduleResults[i] = [...scheduleResults[i], order];
-                            if(unassignedNodes.length === 1) this.setState({ childrenIndex: -1 });
-                            this.setState({ scheduleResults, unassignedNodes: unassignedNodes.filter(item => item.uuid !== order.uuid) }, () => {
+                            if (unassignedNodes.length === 1) this.setState({ childrenIndex: -1 });
+                            this.setState({
+                              scheduleResults,
+                              unassignedNodes: unassignedNodes.filter(item => item.uuid !== order.uuid)
+                            }, () => {
                               message.success(`已添加到线路${i + 1}`);
                               this.loadingPoint();
                               // 如果有显示了路线规划，就重新规划
@@ -1551,9 +1768,9 @@ export default class SmartScheduling extends Component {
                 <Popconfirm // ————————————移除未分配按钮——————————————
                   title="确定移除吗"
                   onConfirm={() => {
-                    if(unassignedNodes.length === 1) this.setState({ childrenIndex: -1 });
-                    this.setState({ unassignedNodes: unassignedNodes.filter(item => item.uuid !== order.uuid) },()=>{
-                      this.loadingPoint(undefined, undefined, 2);
+                    if (unassignedNodes.length === 1) this.setState({ childrenIndex: -1 });
+                    this.setState({ unassignedNodes: unassignedNodes.filter(item => item.uuid !== order.uuid) }, () => {
+                      this.loadingPoint([], undefined, RE_NOT_LINE);
                     });
                   }}
                 >
@@ -2045,6 +2262,99 @@ export default class SmartScheduling extends Component {
               <Button type="danger" onClick={() => this.removeLine(showRemoveModal, true)}>
                 解散
               </Button>
+            </Popover>
+          </div>
+        </Modal>
+
+        <Modal  // ——————————————————————————————框选批量操作弹窗————————————[{-9:[order1、2、3]}，{1:[order1、2、3]}]———————
+          title="框选批量操作"
+          width="60vw"
+          footer={null}
+          visible={selectMarkers?.selectList?.length > 0}
+          onCancel={() => this.setState({ selectMarkers: { ...selectMarkers, selectList: [] } })}
+        >
+          <div style={{ textAlign: 'center', overflowY: 'auto', height: '65vh' }}>
+            {selectMarkers.selectList.map((obj, index) => Object.entries(obj).map(([line, orders]) =>
+              <div>
+                <b style={{ fontSize: 16 }}>{getLineName(line)}</b>
+                <Icon
+                  type="close-circle"
+                  style={{ fontSize: 16, paddingLeft: 5 }}
+                  onClick={() => {
+                    selectMarkers.selectList = selectMarkers.selectList.filter(item => item !== obj);
+                    this.setState({ selectMarkers });
+                  }}
+                />
+                {orders.map(order =>
+                  <div style={{ display: 'flex', gap: 2 }}>
+                    <Icon
+                      type="close-circle"
+                      style={{ padding: '7px 5px', fontSize: 15, cursor: 'pointer' }}
+                      onClick={() => {
+                        selectMarkers.selectList[index][line] = orders.filter(item => item.uuid !== order.uuid);
+                        this.setState({ selectMarkers });
+                      }}
+                    />
+                    <div className={styles.cellBorder}>[{order.deliveryPoint.code}]{order.deliveryPoint.name}</div>
+                    <div className={styles.cellBorder}>线路：{order.archLine?.code}</div>
+                    <div className={styles.cellBorder}>配送区域：{order.shipAreaName}</div>
+                    <div className={styles.cellBorder}>{getArrivalType(order.arrivalType)}</div>
+                  </div>
+                )}
+                <br/>
+              </div>
+            ))}
+          </div>
+          <div
+            style={{
+              display: 'flex',
+              gap: 15,
+              justifyContent: 'center',
+              paddingTop: 10,
+              marginTop: 5,
+              boxShadow: '0 -4px 6px #0000001a'
+            }}
+          >
+            <Button onClick={() => this.setState({ selectMarkers: { ...selectMarkers, selectList: [] } })}>
+              取消
+            </Button>
+            <Popconfirm
+              title="确定批量解散吗？"
+              okText="我肯定"
+              cancelText="点错了"
+              onConfirm={() => this.batchSelectHandle('解散')}
+            >
+              <Button type="danger" style={{ display: selectMarkers.tag === -9 ? 'none' : 'inline-block' }}>
+                解散
+              </Button>
+            </Popconfirm>
+
+            <Popconfirm
+              title="确定批量移除吗？"
+              okText="我确定"
+              cancelText="我再想想"
+              onConfirm={() => this.batchSelectHandle('移除')}
+            >
+              <Button type="danger">移除</Button>
+            </Popconfirm>
+            <Popover
+              getPopupContainer={triggerNode => triggerNode} // 弹出框位置放到按钮上。 默认body，tmd弹窗消失他还在
+              content={
+                <div style={{ textAlign: 'center', width: 99 }}>
+                  {scheduleResults.map((_item, i) =>
+                    <div
+                      key={i}
+                      className={styles.mapStyleItem}
+                      onClick={() => this.batchSelectHandle('转移', i)}
+                    >
+                      {this.getColorBlocks(i, 9)}
+                      线路{i + 1}
+                    </div>
+                  )}
+                </div>
+              }
+            >
+              <Button type="primary">转移</Button>
             </Popover>
           </div>
         </Modal>

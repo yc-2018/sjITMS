@@ -286,3 +286,36 @@
   text-decoration: none; /* 去掉下划线 */
   cursor: not-allowed; /* 鼠标样式为“禁用” */
 }
+
+// 背景颜色动画
+.bgColorAnimation,
+.bgColorAnimation:hover,
+.bgColorAnimation:focus {
+  color: red;
+  border: red 1px solid;
+  background: #f4ddfe;
+  animation: bgColorAnimation 3s infinite;
+}
+
+@keyframes bgColorAnimation {
+  0% {
+    background: #f4ddfe;
+  }
+  25% {
+    background: #dddffe;
+  }
+  50% {
+    background: #ddfef9;
+  }
+  75% {
+    background: #ddfee0;
+  }
+  100% {
+    background: #f4ddfe;
+  }
+}
+
+.cellBorder {
+  border: 1px solid #ccc;
+  padding: 5px;
+}
