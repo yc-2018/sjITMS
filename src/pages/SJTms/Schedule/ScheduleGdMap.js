@@ -1,6 +1,6 @@
 /* g7数据地图（高德） */
 import React, { Component } from 'react';
-import { Button, Col, Divider, message, Modal, Row, Spin } from 'antd';
+import { Button, Col, Divider, message, Modal, Row } from 'antd';
 import { groupBy, orderBy, sumBy, uniqBy } from 'lodash';
 import moment from 'moment';
 import AMapLoader from '@amap/amap-jsapi-loader';
@@ -19,6 +19,7 @@ import { getDistance } from '@/utils/gcoord';
 import styles from './ScheduleGdMap.less';
 import { AMapDefaultConfigObj, AMapDefaultLoaderObj, getStoreIcon } from '@/utils/mapUtil';
 import startMarkerIcon from '@/assets/common/startMarker.png';
+import LoadVan from '@/components/VanLoad/LoadVan';
 
 let AMap = null;                   // 高德地图对象
 let map = null;                    // 高德地图实例
@@ -38,7 +39,7 @@ export default class ScheduleGdMap extends Component {
     orders: [],
     points: [],
     visible: false,
-    spinning: false,
+    loading: false,
   };
 
   componentDidMount = async () => {
@@ -62,7 +63,7 @@ export default class ScheduleGdMap extends Component {
     if (schedule) {
       this.initialize(schedule);
     }
-    this.setState({ visible: true });
+    this.setState({ visible: true, loading: true });
   };
 
   hide = () => {
@@ -78,9 +79,7 @@ export default class ScheduleGdMap extends Component {
     const plateNumber = schedule.VEHICLEPLATENUMBER;   // 车牌号
     const returnTime = schedule.RETURNTIME;            // 回车时间
     const dispatchtime = schedule.DISPATCHTIME;        // 出车时间
-    this.setState({ spinning: true });
     const response = await getDetailByBillUuids([billUuid]);    // 获取排车单明细
-    this.setState({ spinning: false });
     if (response.success) {
       timer = null;
       lastPoints = [];
@@ -89,15 +88,17 @@ export default class ScheduleGdMap extends Component {
       this.setState({ orders, points });
       // 初始化地图 和 门店 和 车辆历史轨迹
       setTimeout(async () => {
+        this.setState({ loading: false });
         if (AMap && !map) map = new AMap.Map('G7AMap', AMapDefaultConfigObj);   // 只能放这里 放其他地方总是有问题 烦死了
         const firstTime = moment().format('YYYY-MM-DD HH:mm:ss');
-        // 从 dispatchtime 到 returnTime（或当前时间）之间经过的时间，以分钟为单位，然后除以60得到小时数，再用 Math.ceil() 将结果向上取整为整数小时数。
-        const hours = Math.ceil(moment(returnTime || moment()).diff(dispatchtime, 'minute') / 60);
-        if (hours > 1) {
-          for (let i = 0; i < Math.ceil(hours / 2); i++) {  // 循环获取历史轨迹每次获取2个小时的轨迹 第一次i=0*2=0
-            const from = moment(dispatchtime).add(i * 2, 'hours').format('YYYY-MM-DD HH:mm:ss');
+        const minutesDiff = moment(returnTime || moment()).diff(dispatchtime, 'minute');
+        const forOne = 30; // 分钟/循环请求一次  // 因为轨迹点一次请求最多返回999个 所以要拆到多少分钟区间一次请求
+        const intervals = Math.ceil(minutesDiff / forOne); // 计算40分钟区间数
+        if (intervals > 1) { // 出发40分钟以上，循环获取历史轨迹
+          for (let i = 0; i <= intervals; i++) {  // 循环获取历史轨迹每次获取1个小时的轨迹
+            const from = moment(dispatchtime).add(i * forOne, 'minutes').format('YYYY-MM-DD HH:mm:ss');
             if (moment().isAfter(from)) {
-              let to = moment(dispatchtime).add((i + 1) * 2, 'hours').format('YYYY-MM-DD HH:mm:ss');
+              let to = moment(dispatchtime).add((i + 1) * forOne, 'minutes').format('YYYY-MM-DD HH:mm:ss');
               to = moment().isAfter(to) ? to : firstTime;    // 如果当前时间晚于指定时间，就设置为指定时间，否则设置为当前时间
               await this.getHistoryLocation(plateNumber, from, to, []);
             } else break;
@@ -297,7 +298,8 @@ export default class ScheduleGdMap extends Component {
             path: pts,                // 设置线覆盖物路径
             showDir: true,
             strokeColor: '#3366bb',   // 线颜色
-            strokeWeight: 6           // 线宽
+            strokeWeight: 6,          // 线宽
+            fillOpacity: 0.8,         // 填充透明度
           });
           map.add(polyline);
         }
@@ -335,7 +337,7 @@ export default class ScheduleGdMap extends Component {
   };
 
   render () {
-    const { visible, orders, points, spinning } = this.state;
+    const { visible, orders, points, loading } = this.state;
     let completePoints = [];
     if (points.length > 0) completePoints = points.filter(x => x.complete === true);
 
@@ -370,65 +372,40 @@ export default class ScheduleGdMap extends Component {
         }
         closable={false}
       >
-        <Spin tip="加载中..." delay={50} size="large" spinning={spinning}>
-          <div style={{ display: 'flex', height: 'calc(100vh - 54px)' }}>
-            {/* ——————左边订单列表—————— */}
-            <div className={styles.pointInfoCell} style={{ display: orders.length > 0 ? 'block' : 'none', }}>
-              {points.map(point =>
-                <>
-                  <Row type="flex" justify="space-between" className={styles.pointInfoItemCell}>
-                    <Col span={20}>
-                      <span className={styles.numberCircle}>{point.deliveryNumber}</span>
-                      <span className={styles.storeName}>
-                        {`[${point.deliveryPoint.code}]${point.deliveryPoint.name}`}
-                      </span>
-                    </Col>
-                    <Col span={4}>
-                      {
-                        point.complete === 1 || point.shipStat === '已送达' ?
-                          <span className={`${styles.deliveryStat} ${styles.colorGreen}`}>已送达</span> :
-                          <span className={`${styles.deliveryStat} ${styles.colorRed}`}>未送达</span>
-                      }
-                    </Col>
-                    <Col span={12}>预计到达：{formatTime(point.preReachTime)}</Col>
-                    <Col span={12}>实际到达：{formatTime(point.relReachTime)}</Col>
-                    <Col span={12}>预计离开：{formatTime(point.preDeliveryTime)}</Col>
-                    <Col span={12}>实际离开：{formatTime(point.relDeliveryTime)}</Col>
-                  </Row>
-                  <Divider style={{ margin: 0, marginTop: 5 }}/>
-                </>
-              )}
-            </div>
-
-            {/* ————————右边地图———————— */}
-            {/* <DispatchGdMap style={{ width: orders.length > 0 ? '75vw' : '100vw' }}/> */}
-            <div id="G7AMap" className={styles.DispatchGdMap} style={{ width: orders.length > 0 ? '75vw' : '100vw' }}/>
+        <LoadVan show={loading} text="正在拼命加载中..."/>
+        <div style={{ display: 'flex', height: 'calc(100vh - 54px)' }}>
+          {/* ——————左边订单列表—————— */}
+          <div className={styles.pointInfoCell} style={{ display: orders.length > 0 ? 'block' : 'none', }}>
+            {points.map(point =>
+              <>
+                <Row type="flex" justify="space-between" className={styles.pointInfoItemCell}>
+                  <Col span={20}>
+                    <span className={styles.numberCircle}>{point.deliveryNumber}</span>
+                    <span className={styles.storeName}>
+                      {`[${point.deliveryPoint.code}]${point.deliveryPoint.name}`}
+                    </span>
+                  </Col>
+                  <Col span={4}>
+                    {
+                      point.complete === 1 || point.shipStat === '已送达' ?
+                        <span className={`${styles.deliveryStat} ${styles.colorGreen}`}>已送达</span> :
+                        <span className={`${styles.deliveryStat} ${styles.colorRed}`}>未送达</span>
+                    }
+                  </Col>
+                  <Col span={12}>预计到达：{formatTime(point.preReachTime)}</Col>
+                  <Col span={12}>实际到达：{formatTime(point.relReachTime)}</Col>
+                  <Col span={12}>预计离开：{formatTime(point.preDeliveryTime)}</Col>
+                  <Col span={12}>实际离开：{formatTime(point.relDeliveryTime)}</Col>
+                </Row>
+                <Divider style={{ margin: 0, marginTop: 5 }}/>
+              </>
+            )}
           </div>
-        </Spin>
+
+          {/* ————————右边地图———————— */}
+          <div id="G7AMap" className={styles.DispatchGdMap} style={{ width: orders.length > 0 ? '75vw' : '100vw' }}/>
+        </div>
       </Modal>
     );
   }
 }
-
-// ////////// 地图 //////////////////文件创建路径：D:\webCode\iwms-web\src\pages\SJTms\Schedule\ScheduleGdMap.js  由`陈光龙`创建 时间：2024/10/11 9:37
-// /**
-//  * 地图组件，为什么要单独提出来：因为Modal里面内容不会马上加载，但是初始化的钩子会执行，没找到对应id的div就会报错
-//  * @author ChenGuangLong
-//  * @since 2024/10/11 10:21
-// */
-// const DispatchGdMap = ({ style = {} }) => {
-//
-//   /** 页面初始化 */
-//   useEffect(() => {
-//     window.setTimeout(() => {
-//       if (AMap && !map) map = new AMap.Map('DispatchGdMap', AMapDefaultConfigObj)
-//     }, 500)
-//     return () => {  // 页面卸载时，清除地图实例
-//       map.destroy()
-//       map = null
-//     }
-//   }, [])
-//
-//   return <div id="DispatchGdMap" className={styles.DispatchGdMap} style={style}/>
-//
-// }
