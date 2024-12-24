@@ -279,34 +279,32 @@ export default class ScheduleGdMap extends Component {
   getHistoryLocation = async (plateNumber, from, to, lastPointList) => {
     const params = { plate_num: `粤${plateNumber}`, from, to, timeInterval: '10' };
     const response = await GetHistoryLocation(params);
-    if (response.success && response.data.data) {
-      let pts = [...lastPointList];
-      const historys = response.data.data || [];
-      if (historys.length > 0) {
-        historys.forEach(point => pts.push([point.lng, point.lat]));
-        // 起点坐标
-        if (!startMarker) {
-          startMarker = new AMap.Marker({
-            position: [pts[0][0], pts[0][1]],              // 设置Marker的位置
-            anchor: 'bottom-center',                       // 设置Marker的锚点
-            icon: startMarkerIcon,
-          });
-          map.add(startMarker);
-        }
-        if (pts.length > 1) {
-          const polyline = new AMap.Polyline({
-            path: pts,                // 设置线覆盖物路径
-            showDir: true,
-            strokeColor: '#3366bb',   // 线颜色
-            strokeWeight: 6,          // 线宽
-            fillOpacity: 0.8,         // 填充透明度
-          });
-          map.add(polyline);
-        }
-        lastPoints = [...pts].slice(-1);  // 记录最后一个点好拼接路线
-        lastTime = to;
-      }
+    if (!response.success || !response.data?.data) return;
+    const historyList = response.data.data || [];
+    if (historyList.length === 0) return;
+    let pts = [...lastPointList];   // 其实就最后一个点
+    historyList.forEach(point => pts.push([point.lng, point.lat]));
+    // 起点坐标
+    if (!startMarker) {
+      startMarker = new AMap.Marker({
+        position: [pts[0][0], pts[0][1]],              // 设置Marker的位置
+        anchor: 'bottom-center',                       // 设置Marker的锚点
+        icon: startMarkerIcon,
+      });
+      map.add(startMarker);
     }
+    if (pts.length > 1) {
+      const polyline = new AMap.Polyline({
+        path: pts,                // 设置线覆盖物路径
+        showDir: true,            // 显示方向
+        strokeColor: '#3366bb',   // 线颜色
+        strokeWeight: 6,          // 线宽
+        fillOpacity: 0.8,         // 填充透明度
+      });
+      map.add(polyline);
+    }
+    lastPoints = [...pts].slice(-1);  // 记录最后一个点好拼接路线
+    lastTime = to;
   };
 
   /** 通过车牌号获取车辆当前位置 */
@@ -347,7 +345,7 @@ export default class ScheduleGdMap extends Component {
         width="100vw"
         bodyStyle={{ margin: -24, height: '100vh' }}
         afterClose={() => clearInterval(timer) || (timer = null)}
-        onCancel={() => this.hide()}
+        onCancel={this.hide}
         visible={visible}
         title={
           <Row type="flex" justify="space-between">
@@ -365,9 +363,7 @@ export default class ScheduleGdMap extends Component {
                 </Col>
               </Row>
             </Col>
-            <Col span={1}>
-              <Button onClick={() => this.setState({ visible: false })}>关闭</Button>
-            </Col>
+            <Col span={1}><Button onClick={this.hide}>关闭</Button></Col>
           </Row>
         }
         closable={false}
