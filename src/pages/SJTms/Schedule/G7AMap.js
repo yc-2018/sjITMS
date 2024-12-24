@@ -16,7 +16,7 @@ import myjPointNormal from '@/assets/common/myjPoint_normal.svg';
 import myjPointClick from '@/assets/common/myjPoint_click.svg';
 import truckStop from '@/assets/common/truck_stop.png';
 import { getDistance } from '@/utils/gcoord';
-import styles from './ScheduleGdMap.less';
+import styles from './G7AMap.less';
 import { AMapDefaultConfigObj, AMapDefaultLoaderObj, getStoreIcon } from '@/utils/mapUtil';
 import startMarkerIcon from '@/assets/common/startMarker.png';
 import LoadVan from '@/components/VanLoad/LoadVan';
@@ -30,10 +30,11 @@ let startMarker = null;            // 起始点
 
 let timer = null;                  // 定时器
 let lastTime = null;               // 上次刷新时间
-let lastPoints = [];              // 上一次记录的轨迹点
+let historyTimes = new Set(); // 记录的请求的历史轨迹时间
+let lastPoint = null;             // 上一次记录的最后一个点的历史轨迹点
 const formatTime = (time) => time ? moment(time).format('M月DD日 HH:mm') : '---';
 
-export default class ScheduleGdMap extends Component {
+export default class G7AMap extends Component {
 
   state = {
     orders: [],
@@ -60,6 +61,10 @@ export default class ScheduleGdMap extends Component {
   show = schedule => {
     map?.clearMap();
     startMarker = null;  // 主要为了防止换了调度中心，不然都不用重新加载
+    timer = null;                     // 定时器
+    lastTime = null;                 // 上次刷新时间
+    historyTimes = new Set();       // 记录的请求的历史轨迹时间
+    lastPoint = null;              // 上一次记录的最后一个点的历史轨迹时间
     if (schedule) {
       this.initialize(schedule);
     }
@@ -82,7 +87,6 @@ export default class ScheduleGdMap extends Component {
     const response = await getDetailByBillUuids([billUuid]);    // 获取排车单明细
     if (response.success) {
       timer = null;
-      lastPoints = [];
       let orders = response.data || [];
       const points = await this.initPoints(billNumber, billUuid, orders);
       this.setState({ orders, points });
@@ -92,24 +96,24 @@ export default class ScheduleGdMap extends Component {
         if (AMap && !map) map = new AMap.Map('G7AMap', AMapDefaultConfigObj);   // 只能放这里 放其他地方总是有问题 烦死了
         const firstTime = moment().format('YYYY-MM-DD HH:mm:ss');
         const minutesDiff = moment(returnTime || moment()).diff(dispatchtime, 'minute');
-        const forOne = 30; // 分钟/循环请求一次  // 因为轨迹点一次请求最多返回999个 所以要拆到多少分钟区间一次请求
+        const forOne = 50; // 分钟/循环请求一次  // 因为轨迹点一次请求最多返回999个 所以要拆到多少分钟区间一次请求
         const intervals = Math.ceil(minutesDiff / forOne); // 计算40分钟区间数
         if (intervals > 1) { // 出发40分钟以上，循环获取历史轨迹
           for (let i = 0; i <= intervals; i++) {  // 循环获取历史轨迹每次获取1个小时的轨迹
-            const from = moment(dispatchtime).add(i * forOne, 'minutes').format('YYYY-MM-DD HH:mm:ss');
+            const from = moment(dispatchtime).add(i * (forOne - 5), 'minutes').format('YYYY-MM-DD HH:mm:ss');
             if (moment().isAfter(from)) {
               let to = moment(dispatchtime).add((i + 1) * forOne, 'minutes').format('YYYY-MM-DD HH:mm:ss');
               to = moment().isAfter(to) ? to : firstTime;    // 如果当前时间晚于指定时间，就设置为指定时间，否则设置为当前时间
-              await this.getHistoryLocation(plateNumber, from, to, []);
+              this.getHistoryLocation(plateNumber, from, to, i === 0);
             } else break;
           }
         } else {
           // 获取历史轨迹 通过车牌号，开始时间和结束时间(没有结束时间就拿当前时间)
-          await this.getHistoryLocation(plateNumber, dispatchtime, returnTime || firstTime, []);
+          this.getHistoryLocation(plateNumber, dispatchtime, returnTime || firstTime, true);
         }
 
+        this.drawMarker(points);                     // 初始化门店marker
         this.getTrunkLocation(plateNumber);    // 初始化车辆当前位置
-        this.drawMarker(points);                   // 初始化门店marker
         this.autoFresh(billNumber, billUuid, plateNumber, returnTime, orders);
       }, 500);
     }
@@ -122,7 +126,7 @@ export default class ScheduleGdMap extends Component {
       this.getTrunkLocation(plateNumber);
       // 历史轨迹
       if (returnTime === undefined) {
-        await this.getHistoryLocation(plateNumber, lastTime, moment().format('YYYY-MM-DD HH:mm:ss'), lastPoints);
+        await this.getHistoryLocation(plateNumber, lastTime, moment().format('YYYY-MM-DD HH:mm:ss'), false, true);
         const points = await this.initPoints(billNumber, billUuid, orders);
         this.setState({ points });
       }
@@ -275,17 +279,29 @@ export default class ScheduleGdMap extends Component {
     map.setFitView();
   };
 
-  /** 历史轨迹 */
-  getHistoryLocation = async (plateNumber, from, to, lastPointList) => {
+  /**
+   * 历史轨迹
+   * @param plateNumber       车牌号
+   * @param from              轨迹起始时间
+   * @param to                轨迹结束时间
+   * @param isCreateWrhPoint  是否创建仓库点
+   * @param ignore           是否忽略添加轨迹条件（轨迹条件是防止多次覆盖的画同一个地方，初始化的时候控制条件，循环时就不用了true）
+   */
+  getHistoryLocation = async (plateNumber, from, to, isCreateWrhPoint = false, ignore = false) => {
     const params = { plate_num: `粤${plateNumber}`, from, to, timeInterval: '10' };
     const response = await GetHistoryLocation(params);
     if (!response.success || !response.data?.data) return;
     const historyList = response.data.data || [];
     if (historyList.length === 0) return;
-    let pts = [...lastPointList];   // 其实就最后一个点
-    historyList.forEach(point => pts.push([point.lng, point.lat]));
+    const pts = ignore ? [[lastPoint?.lng, lastPoint?.lat]] : [];
+    historyList.forEach(point => { // 添加历史轨迹点(通过时间排除上次有的)
+      if (ignore || (!historyTimes.has(point.time) || point.time === lastPoint?.time)) {
+        pts.push([point.lng, point.lat]);
+      }
+    });
+    historyTimes = new Set([...historyTimes, ...historyList.map(x => x.time)]);  // 记录时间，避免重复
     // 起点坐标
-    if (!startMarker) {
+    if (!startMarker && isCreateWrhPoint) {
       startMarker = new AMap.Marker({
         position: [pts[0][0], pts[0][1]],              // 设置Marker的位置
         anchor: 'bottom-center',                       // 设置Marker的锚点
@@ -299,11 +315,11 @@ export default class ScheduleGdMap extends Component {
         showDir: true,            // 显示方向
         strokeColor: '#3366bb',   // 线颜色
         strokeWeight: 6,          // 线宽
-        fillOpacity: 0.8,         // 填充透明度
+        fillOpacity: 1,           // 填充透明度
       });
       map.add(polyline);
+      lastPoint = historyList[historyList.length - 1];
     }
-    lastPoints = [...pts].slice(-1);  // 记录最后一个点好拼接路线
     lastTime = to;
   };
 

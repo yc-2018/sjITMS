@@ -6,6 +6,7 @@
  * @Description: 排车单列表
  * @FilePath: \iwms-web\src\pages\SJTms\Schedule\ScheduleSearchPage.js
  */
+import React from 'react';
 import { connect } from 'dva';
 import {
   Dropdown,
@@ -38,15 +39,12 @@ import {
   getTengBoxRecord,
 } from '@/services/sjitms/ScheduleBill';
 import { depart, back, recordLog, callG7Interface } from '@/services/sjitms/ScheduleProcess';
-import DispatchMap from '@/pages/SJTms/Schedule/ScheduleMap';
-import DispatchGdMap from '@/pages/SJTms/Schedule/ScheduleGdMap';
+import G7AMap from '@/pages/SJTms/Schedule/G7AMap';
 import { getLodop } from '@/pages/Component/Printer/LodopFuncs';
 import { groupBy, sumBy, orderBy } from 'lodash';
 import scher from '@/assets/common/scher.jpg';
 import { havePermission } from '@/utils/authority';
-import moment from 'moment';
 import { dynamicQuery } from '@/services/quick/Quick';
-// import DispatchMapT from '@/pages/SJTms/MapDispatching/schedule/ScheduleMap';
 import ScheduleGdMap from '@/pages/SJTms/MapDispatching/schedule/ScheduleGdMap';
 import mapIcon from '@/assets/common/map.svg';
 
@@ -753,7 +751,7 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
           </Row>
         </Modal>
         {/* <DispatchMap onRef={node => (this.progressingMapRef = node)} /> */}
-        <DispatchGdMap onRef={node => (this.progressingMapRef = node)}/>
+        <G7AMap onRef={node => (this.progressingMapRef = node)}/>
       </>
     );
   };
