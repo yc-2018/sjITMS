@@ -26,15 +26,18 @@ let text = null                   // 高德地图文本对象
 let storeMarkers = []            // 门店坐标记录列表
 let currentMarker = null          // 当前位置marker
 let startMarker = null            // 起始点
+
+let timer = null;                  // 定时器
+let lastTime = null;               // 上次刷新时间
+let lastPoints = [];              // 上一次记录的轨迹点
+const formatTime = (time) => time ? moment(time).format('M月DD日 HH:mm') : '---';
+
 export default class ScheduleGdMap extends Component {
 
   state = {
-    timer: undefined,
-    visible: false,
     orders: [],
     points: [],
-    lastPoints: [],
-    lastTime: '',
+    visible: false,
     spinning: false,
   }
 
@@ -45,11 +48,9 @@ export default class ScheduleGdMap extends Component {
       message.error(`获取高德地图类对象失败:${error}`)
     }
     this.props.onRef && this.props.onRef(this)
-
   }
 
   componentWillUnmount () {
-    const { timer } = this.state
     clearInterval(timer)
     map?.destroy()
     map = null
@@ -65,9 +66,9 @@ export default class ScheduleGdMap extends Component {
   }
 
   hide = () => {
-    const { timer } = this.state
     clearInterval(timer)
-    this.setState({ visible: false, timer: undefined })
+    timer = null;
+    this.setState({ visible: false })
   }
 
   /** 初始化 */
@@ -81,30 +82,28 @@ export default class ScheduleGdMap extends Component {
     const response = await getDetailByBillUuids([billUuid])    // 获取排车单明细
     this.setState({ spinning: false })
     if (response.success) {
+      timer = null;
+      lastPoints = [];
       let orders = response.data || []
       const points = await this.initPoints(billNumber, billUuid, orders)
-      let firstTime = moment().format('YYYY-MM-DD HH:mm:ss')
-      this.setState({
-        timer: undefined,
-        lastPoints: [],
-        orders,
-        points,
-      })
+      this.setState({ orders, points });
       // 初始化地图 和 门店 和 车辆历史轨迹
       setTimeout(async () => {
-        if (AMap && !map) map = new AMap.Map('DispatchGdMap', AMapDefaultConfigObj)   // 只能放这里 放其他地方总是有问题 烦死了
+        if (AMap && !map) map = new AMap.Map('G7AMap', AMapDefaultConfigObj)   // 只能放这里 放其他地方总是有问题 烦死了
+        const firstTime = moment().format('YYYY-MM-DD HH:mm:ss')
         // 从 dispatchtime 到 returnTime（或当前时间）之间经过的时间，以分钟为单位，然后除以60得到小时数，再用 Math.ceil() 将结果向上取整为整数小时数。
         const hours = Math.ceil(moment(returnTime || moment()).diff(dispatchtime, 'minute') / 60)
         if (hours > 1) {
-          for (let i = 0; i < Math.ceil(hours / 2); i++) {
+          for (let i = 0; i < Math.ceil(hours / 2); i++) {  // 循环获取历史轨迹每次获取2个小时的轨迹 第一次i=0*2=0
             const from = moment(dispatchtime).add(i * 2, 'hours').format('YYYY-MM-DD HH:mm:ss')
             if (moment().isAfter(from)) {
               let to = moment(dispatchtime).add((i + 1) * 2, 'hours').format('YYYY-MM-DD HH:mm:ss')
-              to = moment().isAfter(to) ? to : firstTime
+              to = moment().isAfter(to) ? to : firstTime    // 如果当前时间晚于指定时间，就设置为指定时间，否则设置为当前时间
               await this.getHistoryLocation(plateNumber, from, to, [])
-            }
+            }else break;
           }
         } else {
+          // 获取历史轨迹 通过车牌号，开始时间和结束时间(没有结束时间就拿当前时间)
           await this.getHistoryLocation(plateNumber, dispatchtime, returnTime || firstTime, [])
         }
 
@@ -115,20 +114,18 @@ export default class ScheduleGdMap extends Component {
     }
   }
 
-  /** 定时刷新 */
+  /** 定时刷新历史轨迹：还没有回车时间时每5秒获取一次历史轨迹和车辆位置，如果回车时间有了就只获取车辆位置 */
   autoFresh = async (billNumber, billUuid, plateNumber, returnTime, orders) => {
-    const timer = setInterval(async () => {
-      const { lastTime, lastPoints } = this.state
+    timer = setInterval(async () => {
+      // 当前位置
+      this.getTrunkLocation(plateNumber)
       // 历史轨迹
       if (returnTime === undefined) {
-        this.getHistoryLocation(plateNumber, lastTime, moment().format('YYYY-MM-DD HH:mm:ss'), lastPoints)
+        await this.getHistoryLocation(plateNumber, lastTime, moment().format('YYYY-MM-DD HH:mm:ss'), lastPoints)
         const points = await this.initPoints(billNumber, billUuid, orders)
         this.setState({ points })
       }
-      // 当前位置
-      this.getTrunkLocation(plateNumber)
     }, 5000)
-    this.setState({ timer })
   }
 
   /** 初始化门店 */
@@ -278,11 +275,11 @@ export default class ScheduleGdMap extends Component {
   }
 
   /** 历史轨迹 */
-  getHistoryLocation = async (plateNumber, from, to, lastPoints) => {
+  getHistoryLocation = async (plateNumber, from, to, lastPointList) => {
     const params = { plate_num: `粤${plateNumber}`, from, to, timeInterval: '10' }
     const response = await GetHistoryLocation(params)
     if (response.success && response.data.data) {
-      let pts = [...lastPoints]
+      let pts = [...lastPointList]
       const historys = response.data.data || []
       if (historys.length > 0) {
         historys.forEach(point => pts.push([point.lng, point.lat]))
@@ -304,13 +301,13 @@ export default class ScheduleGdMap extends Component {
           })
           map.add(polyline)
         }
-        const lastPointList = [...pts].slice(-2)
-        this.setState({ lastTime: to, lastPoints: lastPointList })
+        lastPoints = [...pts].slice(-1);  // 记录最后一个点好拼接路线
+        lastTime = to;
       }
     }
   }
 
-  /** 获取当前位置 */
+  /** 通过车牌号获取车辆当前位置 */
   getTrunkLocation = async (plateNumber) => {
     const params = {
       path: '/v1/device/truck/current_info',
@@ -337,9 +334,8 @@ export default class ScheduleGdMap extends Component {
     }
   }
 
-
   render () {
-    const { visible, orders, points, timer,spinning } = this.state
+    const { visible, orders, points, spinning } = this.state
     let completePoints = []
     if (points.length > 0) completePoints = points.filter(x => x.complete === true)
 
@@ -348,7 +344,7 @@ export default class ScheduleGdMap extends Component {
         style={{ top: 0, height: '100vh', overflow: 'hidden', background: '#fff' }}
         width="100vw"
         bodyStyle={{ margin: -24, height: '100vh' }}
-        afterClose={() => clearInterval(timer)}
+        afterClose={() => clearInterval(timer) || (timer = null)}
         onCancel={() => this.hide()}
         visible={visible}
         title={
@@ -400,20 +396,16 @@ export default class ScheduleGdMap extends Component {
                       }
                     </Col>
                     <Col span={12}>
-                      预计到达：
-                      {point.preReachTime ? moment(point.preReachTime).format('MM月DD日 HH:mm') : '---'}
+                      预计到达：{formatTime(point.preReachTime)}
                     </Col>
                     <Col span={12}>
-                      实际到达：
-                      {point.relReachTime ? moment(point.relReachTime).format('M月DD日 HH:mm') : '---'}
+                      实际到达：{formatTime(point.relReachTime)}
                     </Col>
                     <Col span={12}>
-                      预计离开：
-                      {point.preDeliveryTime ? moment(point.preDeliveryTime).format('M月DD日 HH:mm') : '---'}
+                      预计离开：{formatTime(point.preDeliveryTime)}
                     </Col>
                     <Col span={12}>
-                      实际离开：
-                      {point.relDeliveryTime ? moment(point.relDeliveryTime).format('M月DD日 HH:mm') : '---'}
+                      实际离开：{formatTime(point.relDeliveryTime)}
                     </Col>
                   </Row>
                   <Divider style={{ margin: 0, marginTop: 5 }}/>
@@ -423,7 +415,7 @@ export default class ScheduleGdMap extends Component {
 
             {/* ————————右边地图———————— */}
             {/* <DispatchGdMap style={{ width: orders.length > 0 ? '75vw' : '100vw' }}/> */}
-            <div id="DispatchGdMap" className={styles.DispatchGdMap} style={{ width: orders.length > 0 ? '75vw' : '100vw' }}/>
+            <div id="G7AMap" className={styles.DispatchGdMap} style={{ width: orders.length > 0 ? '75vw' : '100vw' }}/>
           </div>
         </Spin>
       </Modal>

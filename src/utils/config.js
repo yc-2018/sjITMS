@@ -4,8 +4,9 @@ const configs = {
   // 本地
   local: {
     API_SERVER: 'http://127.0.0.1:8081',            // 本地的后端环境
- // API_SERVER: 'http://192.168.111.82:8000/iwms',  // 测试库后端环境
- // API_SERVER: 'http://172.29.30.104:8000/iwms',   // 正式库后端环境
+    // API_SERVER: 'http://192.168.111.82:8000/iwms',  // 测试库后端环境
+    // API_SERVER: 'http://172.29.30.104:8000/iwms',   // 正式库后端环境
+    // API_SERVER: 'http://itms2.timeexpress.com.cn/iwms',   // 正式库外网后端环境
     //  API_SERVER: 'http://172.17.2.226:8080' ,//CHT
     //  API_SERVER: 'http://172.17.5.240:8080' ,  //WXB
     'avatar.default.url': 'https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png',
