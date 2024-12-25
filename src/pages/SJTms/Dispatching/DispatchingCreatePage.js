@@ -462,14 +462,17 @@ export default class DispatchingCreatePage extends Component {
   // 保存
   onSave = async () => {
     this.setState({ loading: true });
-
+    const { dispatchConfig } = this.props;
     const { isEdit, orders, schedule, selectVehicle, selectEmployees, note ,transferCode} = this.state;
-    // 禁止整车为转运单 针对福建仓
-    if (orders.length > 0 && orders.filter(e => e.orderType == 'Transshipment').length == orders.length) {
-      message.error('禁止整车为转运单排车！');
-      this.setState({ loading: false });
-      return;
+    if (dispatchConfig.checkTransport == 1) {
+        // 禁止整车为转运单 针对福建仓
+      if (orders.length > 0 && orders.filter(e => e.orderType == 'Transshipment').length == orders.length) {
+        message.error('禁止整车为转运单排车！');
+        this.setState({ loading: false });
+        return;
+      }
     }
+    
     const orderType = uniqBy(orders.map(x => x.orderType)).shift();
     const orderTypeArr = ['Delivery', 'DeliveryAgain', 'Transshipment', 'OnlyBill'];
     const type = orderTypeArr.includes(orderType) ? 'Job' : 'Task';
@@ -1497,7 +1500,7 @@ export default class DispatchingCreatePage extends Component {
                   />
                 </Col>
               </Row>
-              <Row style={{ marginTop: 2 }}>
+              {/* <Row style={{ marginTop: 2 }}>
                 <Col span={4} style={{ fontWeight: 'bold', lineHeight: '24px', fontSize: 14 }}>
                   转运代码：
                 </Col>
@@ -1516,7 +1519,7 @@ export default class DispatchingCreatePage extends Component {
                     })}
                   </Select>
                 </Col>
-              </Row>
+              </Row> */}
             </Col>
           </Row>
         </Spin>
