@@ -1,6 +1,4 @@
 // ///////////////////////////智能调度页面//////////////
-// todo 框选批量操作
-// todo 车型合并
 // todo 后续高德api放后端请求
 // 配送调度提供window.selectOrders   如果是配送调度跳转过来的订单池原数据列表(如果是刚打开就读取到就直接使用) 使用完马上清空
 // 配送调度提供window.refreshDispatchAll：配送调度打开后存在在的方法，调用可以刷新配送调度的全部数据
@@ -13,9 +11,25 @@
 import React, { Component, createRef } from 'react';
 import AMapLoader from '@amap/amap-jsapi-loader';
 import {
-  Button, Input, Modal, Select, Table, Progress,
-  Col, Divider, Drawer, Empty, Icon, Row, message,
-  Popconfirm, Popover, Tooltip, InputNumber, Switch, Badge
+  Badge,
+  Button,
+  Col,
+  Divider,
+  Drawer,
+  Empty,
+  Icon,
+  Input,
+  InputNumber,
+  message,
+  Modal,
+  Popconfirm,
+  Popover,
+  Progress,
+  Row,
+  Select,
+  Switch,
+  Table,
+  Tooltip
 } from 'antd';
 import { DndProvider } from 'react-dnd';
 import { HTML5Backend } from 'react-dnd-html5-backend';
@@ -36,9 +50,16 @@ import { convertCodeName } from '@/utils/utils';
 import { GetConfig } from '@/services/sjitms/OrderBill';
 import {
   checkRange,
-  formatSeconds, getArrivalType, getLineName, getMarkerText,
-  getRecommendByOrders, getVehiclesParam,
-  groupByOrder, LinkBtn, mapStyleMap, Tips
+  formatSeconds,
+  getArrivalType,
+  getLineName,
+  getMarkerText,
+  getRecommendByOrders,
+  getVehiclesParam,
+  groupByOrder,
+  LinkBtn,
+  mapStyleMap,
+  Tips
 } from '@/pages/SJTms/SmartScheduling/common';
 import { save } from '@/services/sjitms/ScheduleBill';
 import EmpAndVehicleModal from '@/pages/SJTms/SmartScheduling/EmpAndVehicleModal';
@@ -76,6 +97,7 @@ export default class SmartScheduling extends Component {
   orderPoolModalRef = createRef();       // 订单池弹窗ref
   empAndVehicleModalRef = createRef();   // 选司机和车弹窗ref
   orderDtlRef = createRef();             // 拖动排序明细ref
+  configDivRef = createRef();            // 配置信息ref (拿高度)
 
   state = {
     sx: 0,                                // 有时刷新页面用
@@ -579,6 +601,10 @@ export default class SmartScheduling extends Component {
    * @since 2024/11/12 上午9:49
    */
   resetData = (expStateData = {}) => {
+    if (this.state.selectMarkers.open) {  // 现在是打开的 那么执行关闭
+      this.map.setDefaultCursor('default');
+      this.rectangleTool?.close(true);   // 关闭，并清除覆盖物(不清除（false）也没关系
+    }
     message.info('重置中，请稍等...');
     // 清空地图覆盖物
     this.map.clearMap();
@@ -596,7 +622,7 @@ export default class SmartScheduling extends Component {
       unassignedNodes: [],
       showButtonDrawer: true,
       showResultDrawer: false,
-      selectMarkers: { tag: -9, open: false }
+      selectMarkers: { tag: -9, open: false, selectList: [] }
     }, message.destroy);
   };
 
@@ -1109,6 +1135,27 @@ export default class SmartScheduling extends Component {
     });
   };
 
+  /**
+   * 合并车型 载重和体积相同的车型可以合并方便查看
+   * @author ChenGuangLong
+   * @since 2024/12/25 下午2:46
+  */
+  mergeVehicles = () => {
+    const { selectVehicles } = this.state;
+    const newSelectVehicles = [];
+    selectVehicles.forEach(item => {
+      const newVehicleModelList = newSelectVehicles.map(x => `${x.volume}+${x.weight}`);
+      if (newVehicleModelList.includes(`${item.volume}+${item.weight}`)) {
+        newSelectVehicles.find(x => `${x.volume}+${x.weight}` === `${item.volume}+${item.weight}`).vehicleCount += item.vehicleCount;
+      } else newSelectVehicles.push(item);
+    });
+
+    if (newSelectVehicles < selectVehicles) {
+      message.success('合并车型成功');
+      this.setState({ selectVehicles: newSelectVehicles });
+    } else message.info('没有可合并');
+  };
+
   render () {
     const {
       showSmartSchedulingModal,
@@ -1201,31 +1248,28 @@ export default class SmartScheduling extends Component {
         }
       </>;
 
+    // 获取车型上面的配送元素的高度 直接用element.offsetHeight拿不到margin占用的高，所以就这样吧
+    const getConfigHeight = () => {
+      if (!this.configDivRef.current) return 66;
+      let element = this.configDivRef.current;
+      let rect = element.getBoundingClientRect();
+      return rect.height + parseFloat(window.getComputedStyle(element).marginTop) + parseFloat(window.getComputedStyle(element).marginBottom);
+    };
+
     return (
       <div className={styles.SmartScheduling} id="smartSchedulingPage">
         <FullScreenLoading show={fullScreenLoading}/>
         {/* ——————————————————————左边按钮侧边栏———————————————————— */}
         <div style={{ left: showButtonDrawer ? '0px' : '-250px' }} className={styles.leftButtonSidebar}>
-          <Row gutter={[8, 16]}>
-            <Col span={12}>
-              <Button
-                block
-                disabled={lockBtn}
-                onClick={() => this.setState({ showMenuModal: true, showSmartSchedulingModal: true })}
-              >
-                加载订单
-              </Button>
-            </Col>
-            <Col span={12}>
-              <Button
-                block
-                disabled={lockBtn}
-                onClick={() => this.setState({ showVehicleModal: true, showSmartSchedulingModal: true })}
-              >
-                加载车辆
-              </Button>
-            </Col>
-          </Row>
+          <div style={{ padding: 4 }}/>
+          <Button
+            block
+            disabled={lockBtn}
+            onClick={() => this.setState({ showMenuModal: true, showSmartSchedulingModal: true })}
+          >
+            加载订单
+          </Button>
+          <div style={{ padding: 4 }}/>
           <Button
             block
             type="primary"
@@ -1851,6 +1895,7 @@ export default class SmartScheduling extends Component {
             <Col span={12}>
               {/* 配置 设置边框 */}
               <div
+                ref={this.configDivRef}
                 style={{
                   border: '1px solid #ccc',
                   borderRadius: 6,
@@ -1916,13 +1961,9 @@ export default class SmartScheduling extends Component {
                       onChange={v => this.setState({ routingConfig: { ...routingConfig, infiniteVehicle: v ? 0 : 1 } })}
                     />
                   </div>
-
                 </div>
-
-
               </div>
               <div>
-
                 <span style={{ pointerEvents: lockBtn ? 'none' : 'unset' }}>
                   <Tooltip title="手动添加车辆参数：不会覆盖，在当前表格下追加一列" mouseEnterDelay={1}>
                     <Button onClick={() => this.setState({ showInputVehicleModal: true })} type="primary">
@@ -1944,6 +1985,12 @@ export default class SmartScheduling extends Component {
                       }}
                     >
                       使用运力池车型
+                    </Button>
+                  </Tooltip>
+                  &nbsp;&nbsp;
+                  <Tooltip title="载重和体积相同的车型可以合并方便查看">
+                    <Button onClick={this.mergeVehicles} style={selectVehicles.length ? {} : { display: 'none' }}>
+                      合并车型
                     </Button>
                   </Tooltip>
                   &nbsp;&nbsp;
@@ -1973,7 +2020,7 @@ export default class SmartScheduling extends Component {
                       size="small"
                       pagination={false}
                       dataSource={selectVehicles}
-                      scroll={{ x: '38vw', y: 'calc(100vh - 298px)' }}
+                      scroll={{ x: '38vw', y: `calc(100vh - 235px - ${getConfigHeight()}px)` }}
                       columns={[
                         ...mergeVehicleColumns,
                         {
@@ -2274,7 +2321,7 @@ export default class SmartScheduling extends Component {
           onCancel={() => this.setState({ selectMarkers: { ...selectMarkers, selectList: [] } })}
         >
           <div style={{ textAlign: 'center', overflowY: 'auto', height: '65vh' }}>
-            {selectMarkers.selectList.map((obj, index) => Object.entries(obj).map(([line, orders]) =>
+            {selectMarkers.selectList?.map((obj, index) => Object.entries(obj).map(([line, orders]) =>
               <div>
                 <b style={{ fontSize: 16 }}>{getLineName(line)}</b>
                 <Icon
