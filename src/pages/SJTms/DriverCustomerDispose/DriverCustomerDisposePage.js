@@ -45,7 +45,7 @@ export default class DriverCustomerDisposePageModal extends Component {
     });
   };
 
-  //TODO 是隐藏？
+
   hide = () => {
     this.formRef.resetFields();
     this.setState({ visible: false, bill: {} });

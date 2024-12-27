@@ -351,13 +351,16 @@ export default class DriverDisposeForm extends Component {
             wrapperCol={{ span: 21 }}
           >
             {getFieldDecorator('remark', {
-              rules: [{ required: true, message: '请输入' + this.placeholders[operation] }],
+              rules: [
+                { required: true, message: `请输入${this.placeholders[operation]}` },
+                { max: 999, message: '最多允许输入999个字符' }],
               initialValue: operation === 'Result' ? bill.STAFFRESULT : '',
             })(
               <Input.TextArea
-                placeholder={'请输入' + this.placeholders[operation]}
+                placeholder={`请输入${this.placeholders[operation]}`}
                 autoSize={{ minRows: 6, maxRows: 10 }}
                 style={{ width: '100%' }}
+                maxLength={1000}
               />
             )}
           </Form.Item>
