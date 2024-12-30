@@ -1,4 +1,4 @@
-import { Fragment } from 'react';
+import React,{ Fragment } from 'react';
 import { Button, Tabs, message } from 'antd';
 import RyzeViewPage from '../../CommonLayout/RyzeViewPage';
 import ViewPanel from '@/pages/Component/Form/ViewPanel';
@@ -15,6 +15,7 @@ const TabPane = Tabs.TabPane;
  * 预览界面
  */
 export default class QuickView extends RyzeViewPage {
+  infoBottomExtra = () => <></>;  // 底部扩展
   entity = {};
   drawcell = e => {}; //扩展component
   renderOperateCol = () => {}; //操作列
@@ -635,6 +636,7 @@ export default class QuickView extends RyzeViewPage {
         tab={this.state.viewStyle?.noTitle ? '' : onlFormInfos[0].onlFormHead.tableTxt}
       >
         {itemMerge}
+        {this.infoBottomExtra()}
       </TabPane>
     );
   };

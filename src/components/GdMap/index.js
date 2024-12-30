@@ -58,16 +58,19 @@ class GdMap extends Component {
    * @since 2024/9/20 10:04
    */
   addMarkers = (positionArr) => {
-    const positionList = positionArr || []
+    const positionList = positionArr || [];
+    const markers = [];
     positionList.forEach(item => {
-      const {longitude, latitude,lng, lat} = item
+      const { longitude, latitude, lng, lat } = item;
       const marker = new this.AMap.Marker({
         position: [longitude ?? lng, latitude ?? lat],      // 设置Marker的位置
         anchor: 'bottom-center',                            // 设置Marker的锚点
-      })
-      this.map.add(marker)
-    })
-  }
+      });
+      markers.push(marker);
+    });
+    this.map.add(markers);
+    return markers;
+  };
 
   /**
    * 生成门店坐标（批量）
