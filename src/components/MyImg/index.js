@@ -1,13 +1,15 @@
-import React, { Component } from 'react'
-import { Button } from 'antd'
+import React, { Component } from 'react';
+import { Button } from 'antd';
 
 /**
  * 图片列表展示+预览组件
- * @param props 参数：
- * ------images:      【必填】图片URL数组
- * ------className:   【可选】列表图片样式class
- * ------imgListStyle 【可选】列表的图片样式
- * 注意：不传图片URL列表或传参为空，直接报错，请使用组件前用 三元表达式 判断是后使用该组件
+ * @component
+ * @param {Object} props - 组件参数
+ * @param {string[]} props.images    - 必填。图片 URL 数组。如果未提供或为空，会直接报错。建议在使用组件前使用三元表达式进行判断。
+ * @param {string} [props.className]                  - 可选。列表图片的样式类名。
+ * @param {React.CSSProperties} [props.listStyle]     - 可选。列表的样式对象。
+ * @param {React.CSSProperties} [props.imgCardStyle]  - 可选。图片卡片（img 上的 div）的样式对象。
+ * @param {React.CSSProperties} [props.imgListStyle]  - 可选。列表中每张图片的样式对象。
  * @author ChenGuangLong
  * @since 2024/5/24 8:36
  */
@@ -23,7 +25,7 @@ class MyImg extends Component {
     offsetY: 0,             // 图片偏移量（Y轴）
     lastOffsetX: 0,         // 上一次的偏移量（X轴）
     lastOffsetY: 0,         // 上一次的偏移量（Y轴）
-  }
+  };
 
   /**
    * 显示全屏预览
@@ -35,8 +37,8 @@ class MyImg extends Component {
     this.setState({
       isFullscreen: true,
       currentIndex: index,
-    })
-  }
+    });
+  };
 
   /**
    * 退出全屏预览
@@ -51,8 +53,8 @@ class MyImg extends Component {
       offsetY: 0,
       lastOffsetX: 0,
       lastOffsetY: 0,
-    })
-  }
+    });
+  };
 
   /**
    * 切换到上一张图片
@@ -67,8 +69,8 @@ class MyImg extends Component {
       offsetY: 0,
       lastOffsetX: 0,
       lastOffsetY: 0,
-    }))
-  }
+    }));
+  };
 
   /**
    * 切换到下一张图片
@@ -83,8 +85,8 @@ class MyImg extends Component {
       offsetY: 0,
       lastOffsetX: 0,
       lastOffsetY: 0,
-    }))
-  }
+    }));
+  };
 
   /**
    * 处理鼠标滚轮事件，用于放大和缩小图片
@@ -96,13 +98,13 @@ class MyImg extends Component {
     if (event.deltaY < 0) {
       this.setState((prevState) => ({
         zoom: Math.min(prevState.zoom + 0.1, 3), // 放大，最大到3倍
-      }))
+      }));
     } else {
       this.setState((prevState) => ({
         zoom: Math.max(prevState.zoom - 0.1, 0.1), // 缩小，最小到1倍
-      }))
+      }));
     }
-  }
+  };
 
   /**
    * 鼠标按下事件，用于开始拖动
@@ -110,13 +112,13 @@ class MyImg extends Component {
    * @since 2024/5/24 11:24
    */
   handleMouseDown = (event) => {
-    event.preventDefault() // 防止浏览器默认拖动行为
+    event.preventDefault(); // 防止浏览器默认拖动行为
     this.setState({
       isDragging: true,
       startX: event.clientX,
       startY: event.clientY,
-    })
-  }
+    });
+  };
 
   /**
    * 鼠标移动事件，用于拖动图片
@@ -125,14 +127,14 @@ class MyImg extends Component {
    * @since 2024/5/24 12:33
    */
   handleMouseMove = (event) => {
-    const { isDragging, startX, startY, lastOffsetX, lastOffsetY } = this.state
+    const { isDragging, startX, startY, lastOffsetX, lastOffsetY } = this.state;
     if (isDragging) {
       this.setState({
         offsetX: lastOffsetX + (event.clientX - startX),
         offsetY: lastOffsetY + (event.clientY - startY),
-      })
+      });
     }
-  }
+  };
 
   /**
    * 鼠标松开事件，结束拖动
@@ -144,19 +146,22 @@ class MyImg extends Component {
       isDragging: false,
       lastOffsetX: prevState.offsetX,
       lastOffsetY: prevState.offsetY,
-    }))
-  }
+    }));
+  };
 
   render () {
-    const { isDragging, isFullscreen, currentIndex, zoom, offsetX, offsetY } = this.state
-    const { images, className, imgListStyle } = this.props
+    const { isDragging, isFullscreen, currentIndex, zoom, offsetX, offsetY } = this.state;
+    const { images, className, imgListStyle, listStyle = {}, imgCardStyle = {} } = this.props;
 
     return (
       <div>
         {/* ---------------------———————————图片列表———————————------------------- */}
-        <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap' }} className={className}>
+        <div
+          className={className}
+          style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', ...listStyle }}
+        >
           {images.map((src, index) => (
-            <div key={src} style={{ margin: 5 }}>
+            <div key={src} style={{ margin: 5, ...imgCardStyle }}>
               <img
                 src={src}
                 loading="lazy"
@@ -211,7 +216,11 @@ class MyImg extends Component {
                 zIndex: 1000, // 确保图片在按钮下方
               }}
             >
-              <img src={images[currentIndex]} alt={`img-${currentIndex}`}/>
+              <img
+                src={images[currentIndex]}
+                alt={`img-${currentIndex}`}
+                style={{ maxWidth: ' 100%', maxHeight: '100vh', width: 'auto', height: 'auto' }}
+              />
             </div>
 
             {/* 下一张按钮 */}
@@ -239,8 +248,8 @@ class MyImg extends Component {
           </div>
         )}
       </div>
-    )
+    );
   }
 }
 
-export default MyImg
+export default MyImg;
