@@ -21,13 +21,15 @@ import noStore from '@/assets/common/no_store.jpeg';
 
 import PageHeaderWrapper from '@/components/PageHeaderWrapper';
 
-import { updateEntity } from '@/services/quick/Quick';
+import { dynamicQuery, updateEntity } from '@/services/quick/Quick';
 import { queryAuditedOrderByStoreMap, queryStoreMaps } from '@/services/sjitms/OrderBill';
 
 import style from './DispatchingMap.less';
 import mapStyle from './storesGdMap.less';
 import MyjRedIcon from '@/assets/common/MyjRedMin.png';
 import YueHeJi from '@/assets/common/YueHeJi.svg';
+import configs from '@/utils/config';
+import MyImg from '@/components/MyImg';
 
 const { Search } = Input;
 const { Option } = Select;
@@ -45,6 +47,7 @@ export default class StoresGdMap extends Component {
   infoWindow = null;            // 高德搜索点位信息窗体
   currentMarker = null;         // 拖拽门店当前点位
   newMarker = null;             // 拖拽门店新点位
+  storeUuid = null;             // 门店uuid(用来找门店图片)
 
   state = {
     storeInfoVisible: false,
@@ -58,6 +61,7 @@ export default class StoresGdMap extends Component {
     storeView: undefined,    // 抽屉的门店数据
     searchStoreList: [],     // 搜索门店列表（左边渲染)
     openDragStore: false,    // 是否开启门店拖拽
+    imgList: [],             // 门店图片列表
   };
 
   componentDidMount = async () => {
@@ -183,7 +187,7 @@ export default class StoresGdMap extends Component {
     const { map, AMap } = this;
     this.redMass?.clear();
     if (orders.length === 0) return;
-    const style = [
+    const MassStyle = [
       {
         url: YueHeJi,
         anchor: new AMap.Pixel(20, 15),   // 锚点位置 一半一半 就是中心位置为锚点  以底部中心为锚点就应该是 new AMap.Pixel(10, 20)
@@ -196,7 +200,7 @@ export default class StoresGdMap extends Component {
         zIndex: 12,
       },
     ];
-    console.log(orders);
+
     // 创建海量点
     this.redMass = new AMap.MassMarks(orders.map(item => ({
       lnglat: `${item.longitude},${item.latitude}]`,
@@ -205,7 +209,7 @@ export default class StoresGdMap extends Component {
     })), {
       zIndex: 111,
       cursor: 'pointer',
-      style: style,
+      style: MassStyle,
     });
 
     // 中文就创建一次 循环利用
@@ -226,6 +230,7 @@ export default class StoresGdMap extends Component {
     // ——————————点击——————————
     this.redMass.on('click', ({ data }) => {
       if (data.item.address) {
+        this.getStoreImg(data.item.uuid);
         copy(data.item.address);
         message.success('复制门店地址成功');
       } else {
@@ -268,48 +273,13 @@ export default class StoresGdMap extends Component {
 
     // 创建红色海量点
     this.addMassMarks();
-    // ————————创建红色图标————————————————————————————————————————————————————————————————
-    // if (orders.length > 0) {
-    //   const redMyjIcon = getMyjIcon(AMap, 'red')
-    //   this.myjRedMarkers = orders/* .map(item => bdToGd(item)) */.map(order => {   // 🫵🫵🫵百度转高德🫵🫵🫵; 再创建坐标点
-    //     const marker = new AMap.Marker({                   // 创建一个Marker对象
-    //       position: [order.longitude, order.latitude],          // 设置Marker的位置
-    //       icon: redMyjIcon,                                     // 红色图标
-    //       anchor: 'center',                                     // 设置Marker的锚点
-    //       draggable: this.openDragStore,                        // 是否允许拖拽
-    //       cursor: this.openDragStore ? 'move' : 'pointer',      // 鼠标移入时的鼠标样式
-    //     })
-    //     marker.on('mouseover', () => {                                        // 鼠标移入————————————
-    //       this.text.setPosition(new AMap.LngLat(order.longitude, order.latitude))   // 改变经纬度
-    //       this.text.setText(this.setMarkerText(order))                              // 设置文本标注内容
-    //       map.add(this.text);
-    //     })
-    //     marker.on('mouseout', () => {                                         // 鼠标移出————————————
-    //       this.text && map.remove(this.text)
-    //     })
-    //     marker.on('click', () => {                                            // 左键单击—————————————
-    //       if (order.address) {
-    //         copy(order.address);
-    //         this.setState({ storeInfoVisible: true, storeView: order });
-    //         message.success('复制门店地址成功');
-    //       } else {
-    //         message.error('门店地址复制失败，检查该门店是否维护了地址！！');
-    //       }
-    //     })
-    //     marker.on('dblclick', () => {                                        // 双击——————————————————
-    //       map.setFitView([marker]);
-    //     })
-    //     marker.on('dragend', e => {                                                // 拖拽结束事件——————————————————
-    //       this.changePoint(e, order, marker)
-    //     })
-    //     return marker
-    //   })
-    //   map.add(this.myjRedMarkers)
-    // }
+
     // ————————创建绿色图标——————————————————————————————————————————————————————————
     if (otherData.length > 0) {
       const greenMyjIcon = getMyjIcon(AMap, 'green');
+      // const chIcon = getCHIcon(AMap)   // 不行 没有别的颜色图标
       this.myjGreenMarkers = otherData/* .map(item => bdToGd(item)) */.map(order => {   // 🫵🫵🫵百度转高德🫵🫵🫵; 再创建坐标点
+        // const isCh = order.name?.indexOf('彩华') !== -1 || order.name?.indexOf('悦合集') !== -1;
         const marker = new AMap.Marker({                   // 创建一个Marker对象
           position: [order.longitude, order.latitude],          // 设置Marker的位置
           icon: greenMyjIcon,                                   // 绿色图标
@@ -326,6 +296,7 @@ export default class StoresGdMap extends Component {
         marker.on('click', () => {                                                  // 左键单击—————————————
           if (order.address) {
             copy(order.address);
+            this.getStoreImg(order.uuid);
             this.setState({ storeInfoVisible: true, storeView: order });
             message.success('复制门店地址成功');
           } else {
@@ -383,7 +354,6 @@ export default class StoresGdMap extends Component {
       </div>
   `;
   };
-
 
   /** 保存拖拽改变门店经纬度 */
   changePoint = async (order, lnglat) => {
@@ -610,15 +580,22 @@ export default class StoresGdMap extends Component {
   };
 
   getStoreInfoCard = () => {
-    const { storeView, openDragStore } = this.state;
+    const { storeView, openDragStore,imgList } = this.state;
     if (!storeView) return;
     let storeCode = storeView.isOrder ? storeView.deliveryPoint.code : storeView.code;
     let storeName = storeView.isOrder ? storeView.name : storeView.name;
-    // TODO 等门店图片上传后再添加门店图片
     return (
       <div>
         <Card
-          cover={<img alt="example" src={storeView.imgurl || noStore} style={{ height: '200px' }} />}
+          cover={imgList.length === 0 ?
+            <img alt="example" src={noStore} style={{ height: 200 }}/> :
+            <MyImg
+              images={imgList}
+              listStyle={{ display: 'block', whiteSpace: 'nowrap', overflowX: 'auto' }}
+              imgCardStyle={{ display: 'inline-block', margin: '0 5px 0 0' }}
+              imgListStyle={{ width: 'unset', height: 200 }}
+            />
+          }
           title={`[${storeCode}]${storeName}`}
           style={{ width: 360 }}
         >
@@ -682,6 +659,29 @@ export default class StoresGdMap extends Component {
     });
 
     map.add([this.currentMarker, this.newMarker]);
+  };
+
+  /**
+   * 获取门店图片
+   * @author ChenGuangLong
+   * @since 2024/12/31 下午5:47
+   */
+  getStoreImg = (storeUuid) => {
+    if (this.storeUuid === storeUuid) return;
+    this.storeUuid = storeUuid;
+    this.setState({ imgList: [] });
+
+    let param = {
+      tableName: 'v_sj_itms_store_img',
+      condition: {
+        params: [{ field: 'DELIVERYPOINTUUID', rule: 'eq', val: [storeUuid] }],
+      },
+    };
+    dynamicQuery(param).then(res => {
+      if (!res.success || res.result.records === 'false') return;
+      const imgList = res.result.records.map(i => `${configs[API_ENV].API_SERVER}/itms-schedule/itms-schedule/addressReport/seeImg/${i.IMGURL}`);
+      this.setState({ imgList });
+    });
   };
 
   render() {

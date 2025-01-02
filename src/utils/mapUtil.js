@@ -2,6 +2,7 @@ import MyjBlueIcon from '@/assets/common/24.png'
 import MyjGreenIcon from '@/assets/common/23.png'
 import MyjRedIcon from '@/assets/common/MyjRedMin.png'
 import ShopsIcon from '@/assets/common/shops.png'
+import YueHeJi from '@/assets/common/YueHeJi.svg';
 
 export const AMAP_KEY = '0adda227efca2b24d25df3213c87cca2'
 
@@ -111,6 +112,21 @@ export const getMyjIcon = (AMap, colour = 'red', size = 20) => {
   return new AMap.Icon({
     size: new AMap.Size(size, size),          // 图标尺寸
     image: icon,                              // 图标的取图地址
+    imageSize: new AMap.Size(size, size),     // 图标所用图片大小
+  })
+}
+
+/**
+ * 获取彩华图标
+ * @param AMap      {obj}                  地图对象
+ * @param [size]    {number}               尺寸
+ * @author ChenGuangLong
+ * @since 2024/12/31 下午5:35
+ */
+export const getCHIcon = (AMap,  size = 20) => {
+  return new AMap.Icon({
+    size: new AMap.Size(size, size),          // 图标尺寸
+    image: YueHeJi,                           // 图标的取图地址
     imageSize: new AMap.Size(size, size),     // 图标所用图片大小
   })
 }
