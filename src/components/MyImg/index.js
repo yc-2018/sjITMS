@@ -1,8 +1,16 @@
 import React, { Component } from 'react';
 import { Button } from 'antd';
+import ReactDOM from 'react-dom';
 
 /**
  * 图片列表展示+预览组件
+ * 默认展示图片是一列的，可以这样设置变成一行的
+ * <MyImg
+ *   images={imgList}
+ *   listStyle={{ display: 'block', whiteSpace: 'nowrap', overflowX: 'auto' }}
+ *   imgCardStyle={{ display: 'inline-block', margin: '0 5px 0 0' }}
+ *   imgListStyle={{ width: 'unset', height: 200 }}
+ * />
  * @component
  * @param {Object} props - 组件参数
  * @param {string[]} props.images    - 必填。图片 URL 数组。如果未提供或为空，会直接报错。建议在使用组件前使用三元表达式进行判断。
@@ -101,7 +109,7 @@ class MyImg extends Component {
       }));
     } else {
       this.setState((prevState) => ({
-        zoom: Math.max(prevState.zoom - 0.1, 0.1), // 缩小，最小到1倍
+        zoom: Math.max(prevState.zoom - 0.1, 0.1), // 缩小，最小到0.1倍
       }));
     }
   };
@@ -172,8 +180,8 @@ class MyImg extends Component {
             </div>
           ))}
         </div>
-        {/* ---------————————————————————图片预览————————————————————————------- */}
-        {isFullscreen && (
+        {/* ---------————————————————————图片预览（放body，避免某些情况看不到）————————————————————————------- */}
+        {isFullscreen && ReactDOM.createPortal(
           <div
             style={{
               position: 'fixed',
@@ -245,8 +253,7 @@ class MyImg extends Component {
             >
               X
             </Button>
-          </div>
-        )}
+          </div>, document.body)}
       </div>
     );
   }
