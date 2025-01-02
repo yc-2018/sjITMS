@@ -8,7 +8,7 @@ import moment from 'moment';
 import * as XLSX from 'xlsx';
 import copy from 'copy-to-clipboard';
 
-import { AMAP_KEY, AMapDefaultConfigObj, getMyjIcon } from '@/utils/mapUtil';
+import { AMAP_KEY, AMapDefaultConfigObj, getCHPointIcon, getMyjPointIcon } from '@/utils/mapUtil';
 import { loginCompany, loginOrg } from '@/utils/LoginContext';
 import { shencopy } from '@/utils/SomeUtil';
 
@@ -26,8 +26,8 @@ import { queryAuditedOrderByStoreMap, queryStoreMaps } from '@/services/sjitms/O
 
 import style from './DispatchingMap.less';
 import mapStyle from './storesGdMap.less';
-import MyjRedIcon from '@/assets/common/MyjRedMin.png';
-import YueHeJi from '@/assets/common/YueHeJi.svg';
+import MyjRedIcon from '@/assets/common/myjPoint_normal.svg';
+import YueHeJiYellow from '@/assets/common/YueHeJiYellow.svg';
 import configs from '@/utils/config';
 import MyImg from '@/components/MyImg';
 
@@ -38,11 +38,10 @@ const { Meta } = Card;
 export default class StoresGdMap extends Component {
   basicOrders = [];
   text = null;                   // 高德地图文本对象
-  myjRedMarkers = [];           // 美宜佳红色坐标记录列表
-  myjGreenMarkers = [];         // 美宜佳绿色坐标记录列表
+  redMass = null;                // 红色坐标记录列表
+  myjGreenMarkers = [];         // 绿色坐标记录列表
   AMap = null;                   // 高德地图对象
   map = null;                    // 高德地图实例
-  openDragStore = false;     // 是否开启拖拽门店
   searchStoreMarkers = [];     // 搜索门店点位列表
   infoWindow = null;            // 高德搜索点位信息窗体
   currentMarker = null;         // 拖拽门店当前点位
@@ -100,16 +99,6 @@ export default class StoresGdMap extends Component {
         val: `${startDate}||${endDate}`,
       }]);
     }, 2);
-
-    // contextMenu.addItem(`${this.openDragStore ? '关闭' : '开启'}拖拽门店`, () => {
-    //   contextMenu.close()
-    //   this.openDragStore = !this.openDragStore // 允许拖拽
-    //   this.myjRedMarkers.forEach(item => {
-    //     item.setDraggable(this.openDragStore)
-    //     item.setCursor(this.openDragStore ? 'move' : 'pointer')
-    //   })
-    //   this.addAMapMenu()      // 自我调用：重新加载右键菜单
-    // }, 3)
 
     // 地图绑定鼠标右击事件——弹出右键菜单
     map.on('rightclick', e => {
@@ -189,14 +178,14 @@ export default class StoresGdMap extends Component {
     if (orders.length === 0) return;
     const MassStyle = [
       {
-        url: YueHeJi,
-        anchor: new AMap.Pixel(20, 15),   // 锚点位置 一半一半 就是中心位置为锚点  以底部中心为锚点就应该是 new AMap.Pixel(10, 20)
-        size: new AMap.Size(40, 30),
+        url: YueHeJiYellow,
+        anchor: new AMap.Pixel(15, 30),   // 锚点位置 一半一半 就是中心位置为锚点  以底部中心为锚点就应该是 new AMap.Pixel(15, 30)
+        size: new AMap.Size(30, 30),
         zIndex: 12,
       }, {
         url: MyjRedIcon,
-        anchor: new AMap.Pixel(10, 10),   // 锚点位置 一半一半 就是中心位置为锚点  以底部中心为锚点就应该是 new AMap.Pixel(10, 20)
-        size: new AMap.Size(20, 20),
+        anchor: new AMap.Pixel(15, 30),   // 锚点位置 一半一半 就是中心位置为锚点  以底部中心为锚点就应该是 new AMap.Pixel(15, 30)
+        size: new AMap.Size(30, 30),
         zIndex: 12,
       },
     ];
@@ -215,7 +204,7 @@ export default class StoresGdMap extends Component {
     // 中文就创建一次 循环利用
     this.text = this.text ?? new AMap.Text({
       anchor: 'bottom-center',
-      offset: new AMap.Pixel(0, -10),             // 设置文本标注偏移量 因为坐标偏移一半 所以是大小的一半+1
+      offset: new AMap.Pixel(0, -30),             // 设置文本标注偏移量 因为坐标偏移一半 所以是大小的一半+1
     });
     // ——————————鼠标移入——————————
     this.redMass.on('mouseover', ({ data }) => {
@@ -259,13 +248,9 @@ export default class StoresGdMap extends Component {
 
     this.text = this.text ?? new AMap.Text({      // 中文就创建一次 循环利用
       anchor: 'bottom-center',
-      offset: new AMap.Pixel(0, -10),             // 设置文本标注偏移量 因为坐标偏移一半 所以是大小的一半+1
+      offset: new AMap.Pixel(0, -30),             // 设置文本标注偏移量 因为坐标偏移一半 所以是大小的一半+1
     });
-    // ——————————先清除————————————
-    // if (this.myjRedMarkers.length > 0) {
-    //   map.remove(this.myjRedMarkers)
-    //   this.myjRedMarkers = []
-    // }
+    // 如果本来有绿色搜索点 先清除
     if (this.myjGreenMarkers.length > 0) {
       map.remove(this.myjGreenMarkers);
       this.myjGreenMarkers = [];
@@ -274,16 +259,16 @@ export default class StoresGdMap extends Component {
     // 创建红色海量点
     this.addMassMarks();
 
-    // ————————创建绿色图标——————————————————————————————————————————————————————————
+    // ————————创建(搜索点)绿色图标——————————————————————————————————————————————————————————
     if (otherData.length > 0) {
-      const greenMyjIcon = getMyjIcon(AMap, 'green');
-      // const chIcon = getCHIcon(AMap)   // 不行 没有别的颜色图标
-      this.myjGreenMarkers = otherData/* .map(item => bdToGd(item)) */.map(order => {   // 🫵🫵🫵百度转高德🫵🫵🫵; 再创建坐标点
-        // const isCh = order.name?.indexOf('彩华') !== -1 || order.name?.indexOf('悦合集') !== -1;
-        const marker = new AMap.Marker({                   // 创建一个Marker对象
+      const greenMyjIcon = getMyjPointIcon(AMap, 'green');
+      const greenChIcon = getCHPointIcon(AMap, 'green', 30);
+      this.myjGreenMarkers = otherData.map(order => {   // 创建坐标点
+        const isCh = order.name?.indexOf('彩华') !== -1 || order.name?.indexOf('悦合集') !== -1;
+        const marker = new AMap.Marker({           // 创建一个Marker对象
           position: [order.longitude, order.latitude],          // 设置Marker的位置
-          icon: greenMyjIcon,                                   // 绿色图标
-          anchor: 'center',                                     // 设置Marker的锚点
+          icon: isCh ?  greenChIcon : greenMyjIcon,             // 绿色图标
+          anchor: 'bottom-center',                              // 设置Marker的锚点
         });
         marker.on('mouseover', () => {
           this.text.setPosition(new AMap.LngLat(order.longitude, order.latitude));         // 改变经纬度
@@ -615,15 +600,17 @@ export default class StoresGdMap extends Component {
             style={{ marginTop: '10px', fontSize: '14px' }}
           />
           <Meta
-            title="经纬度"
-            description={
-              <>
-                {storeView.longitude},{storeView.latitude}
+            title={
+              <div>
+                <span style={{ padding: '2px 5px 0 0' }}>经纬度</span>
                 {!openDragStore &&
-                  <Button type="primary" onClick={() => this.dragMarker(storeView)}>拖拽修改门店经纬度</Button>
+                  <Button type="primary" onClick={() => this.dragMarker(storeView)} size="small">
+                    拖拽修改
+                  </Button>
                 }
-              </>
+              </div>
             }
+            description={`经度:${storeView.longitude} 纬度:${storeView.latitude}`}
             style={{ marginTop: '10px', fontSize: '14px' }}
           />
         </Card>

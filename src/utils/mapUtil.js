@@ -1,8 +1,12 @@
 import MyjBlueIcon from '@/assets/common/24.png'
 import MyjGreenIcon from '@/assets/common/23.png'
 import MyjRedIcon from '@/assets/common/MyjRedMin.png'
+import myjPointBlueIcon from '@/assets/common/myjPoint.svg';
+import myjPointGreenIcon from '@/assets/common/myjPoint_click.svg';
+import myjPointRedIcon from '@/assets/common/myjPoint_normal.svg';
 import ShopsIcon from '@/assets/common/shops.png'
-import YueHeJi from '@/assets/common/YueHeJi.svg';
+import YueHeJiYellow from '@/assets/common/YueHeJiYellow.svg';
+import YueHeJiGreen from '@/assets/common/YueHeJiGreen.svg';
 
 export const AMAP_KEY = '0adda227efca2b24d25df3213c87cca2'
 
@@ -117,19 +121,42 @@ export const getMyjIcon = (AMap, colour = 'red', size = 20) => {
 }
 
 /**
- * 获取彩华图标
+ * 获取美宜佳坐标图标（尖）
  * @param AMap      {obj}                  地图对象
+ * @param [colour]  {'red'|'green'|'blue'} 颜色
  * @param [size]    {number}               尺寸
  * @author ChenGuangLong
  * @since 2024/12/31 下午5:35
  */
-export const getCHIcon = (AMap,  size = 20) => {
+export const getMyjPointIcon = (AMap, colour = 'red', size = 30) => {
+  const icon = {
+    'red': myjPointRedIcon,
+    'green': myjPointGreenIcon,
+    'blue': myjPointBlueIcon
+  }[colour];
   return new AMap.Icon({
-    size: new AMap.Size(size, size),          // 图标尺寸
-    image: YueHeJi,                           // 图标的取图地址
-    imageSize: new AMap.Size(size, size),     // 图标所用图片大小
-  })
-}
+    size: new AMap.Size(size, size),                      // 图标尺寸
+    image: icon,                                          // 图标的取图地址
+    imageSize: new AMap.Size(size, size),                 // 图标所用图片大小
+  });
+};
+
+
+/**
+ * 获取彩华坐标图标（尖）
+ * @param AMap      {obj}                  地图对象
+ * @param [colour]  {'yellow'|'green'}     颜色
+ * @param [size]    {number}               尺寸
+ * @author ChenGuangLong
+ * @since 2024/12/31 下午5:35
+ */
+export const getCHPointIcon = (AMap, colour = 'yellow', size = 30) => {
+  return new AMap.Icon({
+    size: new AMap.Size(size, size),                      // 图标尺寸
+    image: colour === 'red' ? YueHeJiYellow : YueHeJiGreen,  // 图标的取图地址
+    imageSize: new AMap.Size(size, size),                 // 图标所用图片大小
+  });
+};
 
 /**
  * 生成门店图标 num是几就是第几个 最小1(默认) 最大20
