@@ -824,15 +824,12 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
           billnumber: e.BILLNUMBER,
           checked: false,
         });
+        message.success('作废成功！已生成新的排车单据！');
       } else {
-        this.abortedAndReset(e, false);
+        this.abortedAndReset(e, false, true);
       }
     }
-    if (billnumbers.length == 0) {
-      message.success('作废成功！已生成新的排车单据！');
-      this.queryCoulumns();
-      return;
-    }
+    if (billnumbers.length === 0) return this.queryCoulumns();
     this.setState({ billnumbers: billnumbers, basketMovement: true });
   };
 
@@ -879,12 +876,12 @@ export default class ScheduleSearchPage extends QuickFormSearchPage {
     return await aborted(record.UUID);
   };
 
-  abortedAndReset = async (record, moveTengBox) => {
+  abortedAndReset = async (record, moveTengBox, isMsg = false) => {
     const response = await abortedAndReset(record.UUID, moveTengBox);
-    // if (response.success) {
-    //   message.success('作废成功！已生成新的排车单据！');
-    //   this.queryCoulumns();
-    // }
+    if (response.success && isMsg) {
+      message.success('作废成功！已生成新的排车单据！');
+      // this.queryCoulumns();
+    }
   };
 
   //发运
