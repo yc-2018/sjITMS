@@ -3,7 +3,6 @@ import { Chart, Tooltip, Geom, Coord } from 'bizcharts';
 import { DataView } from '@antv/data-set';
 import { Divider } from 'antd';
 import classNames from 'classnames';
-import ReactFitText from 'react-fittext';
 import Debounce from 'lodash-decorators/debounce';
 import Bind from 'lodash-decorators/bind';
 import autoHeight from '../autoHeight';
@@ -208,7 +207,7 @@ class Pie extends Component {
 
     return (
       <div ref={this.handleRoot} className={pieClassName} style={style}>
-        <ReactFitText maxFontSize={25}>
+        <div>
           <div className={styles.chart}>
             <Chart
               scale={scale}
@@ -241,7 +240,7 @@ class Pie extends Component {
               </div>
             )}
           </div>
-        </ReactFitText>
+        </div>
 
         {hasLegend && (
           <ul className={styles.legend}>
